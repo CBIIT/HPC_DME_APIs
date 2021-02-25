@@ -48,6 +48,8 @@
 				<xsd:element name="linkSourcePath" type="xsd:string" />
 				<xsd:element name="extractedMetadataAttributes" type="xsd:string" />
 				<xsd:element name="dmeDataId" type="xsd:string"  minOccurs="0"  />
+				<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" minOccurs="0"/>
+				<xsd:element name="deepArchiveDate" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -206,4 +206,35 @@ public interface HpcEventService {
    */
   public void addDataObjectRegistrationEvent(String collectionPath, String userId)
       throws HpcException;
+  
+  /**
+   * Add a restore request completed event.
+   *
+   * @param userId The user ID.
+   * @param restoreTaskId The data registration task ID.
+   * @param path The restore request path.
+   * @param completed The time the bulk registration task completed.
+   * @throws HpcException on service failure.
+   */
+  public void addRestoreRequestCompletedEvent(
+      String userId,
+      String restoreTaskId,
+      String path,
+      Calendar completed)
+      throws HpcException;
+
+  /**
+   * Add a restore request failed event.
+   *
+   * @param userId The user ID.
+   * @param restoreTaskId The data registration task ID.
+   * @param path The restore request path.
+   * @param completed The time the data registration task failed.
+   * @param errorMessage the upload failed error message.
+   * @throws HpcException on service failure.
+   */
+  public void addRestoreRequestFailedEvent(
+      String userId, String restoreTaskId, String path, Calendar completed, String errorMessage)
+      throws HpcException;
+  
 }

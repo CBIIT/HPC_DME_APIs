@@ -47,6 +47,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -54,6 +55,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -73,6 +75,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataTieringService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -122,6 +125,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Autowired
 	private HpcReportService reportService = null;
 
+	// Data Tiering Application Service Instance
+	@Autowired
+	private HpcDataTieringService dataTieringService = null;
+
 	// The collection download task executor.
 	@Autowired
 	@Qualifier("hpcCollectionDownloadTaskExecutor")
@@ -132,6 +139,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Qualifier("hpcDataObjectDownloadTaskExecutor")
 	Executor dataObjectDownloadTaskExecutor = null;
 
+	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -175,7 +183,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(),
 						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
-						null, null);
+						null, null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process queued data transfer upload :" + path, e);
@@ -214,7 +222,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Data object is archived. Note: This is a configured filesystem archive.
 
 					// Generate archive (File System) system generated metadata.
-					String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+					HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 							systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
 							systemGeneratedMetadata.getConfigurationId(),
 							systemGeneratedMetadata.getS3ArchiveConfigurationId(),
@@ -222,8 +230,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					// Update data management w/ data transfer status, checksum and completion time.
 					dataTransferCompleted = Calendar.getInstance();
-					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
-							dataTransferStatus, null, null, dataTransferCompleted, null, null, null);
+					Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
+					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
+							dataTransferStatus, null, null, dataTransferCompleted, null, null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 
 					// Record data object registration result.
 					systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
@@ -240,7 +249,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					// Update data transfer status.
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
-							null, null, null, null, null, null);
+							null, null, null, null, null, null, null, null);
 					break;
 
 				case FAILED:
@@ -348,7 +357,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Streaming stopped (server shutdown). We just update the status accordingly.
 					logger.info("Upload streaming stopped for: {}", path);
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-							HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null, null, null);
+							HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null, null, null, null, null);
 				}
 
 			} catch (HpcException e) {
@@ -398,7 +407,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Update the transfer status and request id.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(), null,
-						null, null, null, null, null);
+						null, null, null, null, null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process restart upload streaming for data object:" + path, e);
@@ -418,7 +427,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.info("{} Data Objects Upload In Temporary Archive: {}", dataObjectsInTemporaryArchive.size(),
 				dataObjectsInTemporaryArchive);
 		uploadDataObjectsFile(dataObjectsInTemporaryArchive, true);
-	}
+				}
 
 	@Override
 	@HpcExecuteAsSystemAccount
@@ -825,6 +834,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						HpcEventType eventType = event.getType();
 						HpcNotificationSubscription subscription = notificationService
 								.getNotificationSubscription(userId, eventType);
+						// If event type is restoration, send out notification regardless of subscription.
+						if (eventType.equals(HpcEventType.RESTORE_REQUEST_COMPLETED)
+								|| eventType.equals(HpcEventType.RESTORE_REQUEST_FAILED)) {
+							subscription = new HpcNotificationSubscription();
+							subscription.getNotificationDeliveryMethods().add(HpcNotificationDeliveryMethod.EMAIL);
+						}
 						if (subscription != null) {
 							// Iterate through all the delivery methods the user is subscribed to.
 							for (HpcNotificationDeliveryMethod deliveryMethod : subscription
@@ -949,6 +964,38 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		reportService.refreshViews();
 	}
 
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void completeDeepArchiveInProgress() throws HpcException {
+		
+		// Iterate through all the deep archive status in progress objects
+		List<HpcDataObject> dataObjectsDeepArchiveInProgress = dataManagementService.getDataObjectsDeepArchiveInProgress();
+		dataObjectsDeepArchiveInProgress.forEach(this::updateDeepArchiveStatus);
+	}
+	
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void completeRestoreRequest() throws HpcException {
+		
+		// Iterate through all the data object download tasks with RESTORE_REQUESTED status
+		List<HpcDataObjectDownloadTask> downloadTasks = dataTransferService.getDataObjectDownloadTaskByStatus(HpcDataTransferDownloadStatus.RESTORE_REQUESTED);
+
+		for (HpcDataObjectDownloadTask downloadTask : downloadTasks) {
+			try {
+				logger.info(
+						"complete restore task: {} - completing restore_requested",
+						downloadTask.getId());
+				completeRestoreRequestedDataObjectDownloadTask(downloadTask);
+
+			} catch (HpcException e) {
+				logger.error("restore task: {} - Failed to process",
+						downloadTask.getId(),
+						e);
+			}
+		}
+		
+	}
+	
 	@Override
 	public void closeConnection() {
 		dataManagementService.closeConnection();
@@ -1340,6 +1387,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
+			downloadItem.setRestoreInProgress(dataObjectDownloadResponse.getRestoreInProgress());
 
 		} catch (HpcException e) {
 			// Data object download failed.
@@ -1640,7 +1688,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
 		try {
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-					HpcDataTransferUploadStatus.FAILED, null, null, null, null, null, null);
+					HpcDataTransferUploadStatus.FAILED, null, null, null, null, null, null, null, null);
 
 			systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -1895,7 +1943,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			// Update the archive data object's system-metadata.
 			logger.info("Before addSystemGeneratedMetadataToDataObject(): {}", path);
-			String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
 					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(),
 					systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
@@ -1905,9 +1953,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			Calendar dataTransferCompleted = Calendar.getInstance();
 
 			logger.info("Before updateDataObjectSystemGeneratedMetadata(): {}", path);
-			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
+			Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
+			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
 					HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
-					archivePathAttributes.getSize(), null, null);
+					archivePathAttributes.getSize(), null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 			logger.info("After updateDataObjectSystemGeneratedMetadata(): {}", path);
 
 			// Add an event if needed.
@@ -1973,7 +2022,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getConfigurationId());
 
 				// Generate archive system generated metadata.
-				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+				HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 						uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
 						systemGeneratedMetadata.getConfigurationId(),
 						systemGeneratedMetadata.getS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
@@ -1985,10 +2034,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 
 				// Update system metadata of the data object.
+				Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
-						uploadResponse.getDataTransferRequestId(), checksum, uploadResponse.getDataTransferStatus(),
+						uploadResponse.getDataTransferRequestId(), objectMetadata.getChecksum(), uploadResponse.getDataTransferStatus(),
 						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
-						null, null);
+						null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 
 				// Data transfer upload completed successfully. Add an event if needed.
 				if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
@@ -2008,6 +2058,135 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Process the data object registration failure.
 				processDataObjectRegistrationFailure(path, e.getMessage());
 			}
+		}
+	}
+	
+	/**
+	 * add restore request event.
+	 *
+	 * @param restoreTask	   The restore task.
+	 * @param result           The restore task result.
+	 * @param message          A failure message.
+	 * @param completed        The completion time.
+	 */
+	private void addRestoreRequestEvent(HpcDataObjectDownloadTask restoreTask, HpcDownloadResult result,
+			String message, Calendar completed) {
+
+		// Format the task ID. If the caller provided a UI URL, then use it to construct
+		// a URL link to view this task on UI.
+		String taskId = restoreTask.getId();
+
+		try {
+			if (result.equals(HpcDownloadResult.COMPLETED)) {
+				eventService.addRestoreRequestCompletedEvent(restoreTask.getUserId(), taskId,
+						restoreTask.getPath(), completed);
+			} else {
+				eventService.addRestoreRequestFailedEvent(restoreTask.getUserId(), taskId, restoreTask.getPath(), completed,
+						message);
+			}
+
+		} catch (HpcException e) {
+			logger.error("Failed to add a restore request event", e);
+		}
+	}
+
+	/**
+	 * Complete a data object download task that is RESTORE_REQUESTED
+	 * 1. Check the status of restoration. 2. If completed
+	 * (completed or failed), resume the download or record failure.
+	 *
+	 * @param downloadTask The download task to complete.
+	 * @throws HpcException on service failure.
+	 */
+	private void completeRestoreRequestedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+
+		String restorationStatus = null;
+		try {
+			// Get the System generated metadata.
+			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+					.getDataObjectSystemGeneratedMetadata(downloadTask.getPath());
+	
+			// Get the data object metadata to check for restoration status
+			HpcArchiveObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
+					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(), 
+					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+			
+			restorationStatus = objectMetadata.getRestorationStatus();
+		} catch (Exception e) {
+			// Fail the download task if any exception is thrown.
+			logger.error("restore task: {} - Failed to process",
+					downloadTask.getId(),
+					e);
+		}
+		
+		if (restorationStatus != null && restorationStatus.equals("in progress")) {
+			logger.info("restore request task: {} - still in-progress",
+					downloadTask.getId());
+		} else {
+			// Determine the download result.
+			HpcDownloadResult result = HpcDownloadResult.FAILED;
+			if (restorationStatus != null && restorationStatus.equals("success")) {	
+				result = HpcDownloadResult.COMPLETED;
+			}
+
+			String message = null;
+			if (result.equals(HpcDownloadResult.FAILED)
+					|| downloadTask.getS3DownloadDestination() != null && downloadTask.getS3DownloadDestination()
+							.getDestinationLocation().getFileContainerId().equals("Synchronous Download")) {
+				// toggle the status to RESTORED and populate HPC_EVENT to notify the user for sync download
+				message = result.equals(HpcDownloadResult.COMPLETED) ? null
+						: downloadTask.getDataTransferType() + " transfer failed ["
+								+ "Restoration request failed" + "].";
+				Calendar completed = Calendar.getInstance();
+				dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed, 0);
+				
+				if (downloadTask.getCompletionEvent()) {
+					// Send a restoration completion event
+					addRestoreRequestEvent(downloadTask, result, message, completed);
+				}
+			} else {
+				// toggle the status to RECEIVED for async download
+				dataTransferService.resetDataObjectDownloadTask(downloadTask);
+			}
+		}
+	}
+	
+	/**
+	 * Check and update status of data object that is deep archive in progress
+	 *
+	 * @param dataObject The data object to check.
+	 */
+	private void updateDeepArchiveStatus(HpcDataObject dataObject) {
+		try {
+			// This deep archive status in progress - check if tiered.
+			String path = dataObject.getAbsolutePath();
+			
+			// Get the System generated metadata.
+			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+					.getDataObjectSystemGeneratedMetadata(path);
+			
+			// Get the data object metadata.
+			HpcArchiveObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
+					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(), 
+					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+			HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
+
+			// Check the storage class.
+			if (deepArchiveStatus != null) {
+
+				// Add/Update system generated metadata to iRODs
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
+						null, null, null, null, null, null, null, deepArchiveStatus, null);
+			} else {
+				// Check if there is a delay and toggle deep archive status to delayed
+				if(dataTieringService.deepArchiveDelayed(systemGeneratedMetadata.getDeepArchiveDate())) {
+					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
+							null, null, null, null, null, null, null, HpcDeepArchiveStatus.DELAYED, null);
+				}
+			}
+
+		} catch (HpcException e) {
+			logger.error("Failed to check deep archive status", e);
 		}
 	}
 
@@ -2091,4 +2270,5 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			return false;
 		}
 	}
+
 }

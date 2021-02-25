@@ -1693,6 +1693,12 @@ function dm_register_directory {
     local src_path="$1"
     local dst_path="$2"
 
+	case "$(uname -s)" in
+	    Linux|CYGWIN*|MINGW32*|MSYS*)
+	      src_path=$(readlink -f "$1")
+	    ;;
+	esac
+	
     #Check if the jar exists:
     local jar_file=$(get_jar)
     local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
@@ -1773,9 +1779,6 @@ function dm_register_directory {
     local command_file=$HPC_DM_UTILS/temp/cmd-file
     echo "registerFromFilePath  " $command_args >  $command_file
 
-    local log_file=./dm_log
-    local error_file=./dm_error
-
     case "$(uname -s)" in
     
        Darwin|Linux)
@@ -1800,9 +1803,6 @@ function dm_register_directory {
     if [ "$exit_code" -eq  "1" ]
     then
       echo "The batch registration did not fully complete successfully" >&2
-      echo "Check complete log and error files at:" >&2
-      echo "$log_file" >&2
-      echo "$error_file" >&2
       return 1
     fi
 
@@ -1955,9 +1955,6 @@ function dm_register_globus_directory {
     local command_file=$HPC_DM_UTILS/temp/cmd-file
     echo "registerFromGlobusPath --globusEndpoint $globus_endpoint --globusSourcePath $src_path --destinationArchivePath $dst_path" $command_args >  $command_file
 
-    local log_file=./dm_log
-    local error_file=./dm_error
-
     
     case "$(uname -s)" in
     
@@ -1978,9 +1975,6 @@ function dm_register_globus_directory {
     if [ "$?" -eq  1 ]
     then
       echo "The batch registration did not fully complete successfully" >&2
-      echo "Check complete log and error files at:" >&2
-      echo "$log_file" >&2
-      echo "$error_file" >&2
       return 1
     fi
 
@@ -3588,9 +3582,6 @@ function dm_download_collection {
     local command_file=$HPC_DM_UTILS/temp/cmd-file
     echo "downloadCollection  " $command_args >  $command_file
 
-    local log_file=./dm_log
-    local error_file=./dm_error
-
     case "$(uname -s)" in
     
        Darwin|Linux)
@@ -3615,9 +3606,6 @@ function dm_download_collection {
     if [ "$exit_code" -eq  "1" ]
     then
       echo "The collection download did not fully complete successfully" >&2
-      echo "Check complete log and error files at:" >&2
-      echo "$log_file" >&2
-      echo "$error_file" >&2
       return 1
     fi
 
