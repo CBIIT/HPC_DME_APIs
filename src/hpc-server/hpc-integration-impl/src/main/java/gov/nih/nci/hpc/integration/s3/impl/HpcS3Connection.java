@@ -38,6 +38,16 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public class HpcS3Connection {
 	// ---------------------------------------------------------------------//
+	// Constants
+	// ---------------------------------------------------------------------//
+
+	// 5GB in bytes
+	private static final long FIVE_GB = 5368709120L;
+
+	// Google Storage S3 URL.
+	private static final String GOOGLE_STORAGE_URL = "https://storage.googleapis.com";
+
+	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
 
@@ -47,11 +57,11 @@ public class HpcS3Connection {
 
 	// The multipart upload minimum part size.
 	@Value("${hpc.integration.s3.minimumUploadPartSize}")
-	Long minimumUploadPartSize = null;
+	private Long minimumUploadPartSize = null;
 
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
-	Long multipartUploadThreshold = null;
+	private Long multipartUploadThreshold = null;
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -181,13 +191,16 @@ public class HpcS3Connection {
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
-		// Create and return the S3 transfer manager.
+		// Create and return the S3 transfer manager. Note that Google Storage doesn't
+		// support multipart upload,
+		// so we override the configured threshold w/ the max size of 5GB.
 		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
 		s3TransferManager.transferManager = TransferManagerBuilder.standard()
 				.withS3Client(AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
 						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
 						.withEndpointConfiguration(endpointConfiguration).build())
-				.withMinimumUploadPartSize(minimumUploadPartSize).withMultipartUploadThreshold(multipartUploadThreshold)
+				.withMinimumUploadPartSize(minimumUploadPartSize).withMultipartUploadThreshold(
+						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
 				.build();
 		s3TransferManager.s3Provider = s3Provider;
 		return s3TransferManager;
