@@ -803,7 +803,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Optionally add a checksum header.
 		if (!StringUtils.isEmpty(uploadRequestURLChecksum)) {
-			generatePresignedUrlRequest.putCustomRequestHeader("md5chksum", uploadRequestURLChecksum);
+			generatePresignedUrlRequest.setContentMd5(uploadRequestURLChecksum);
 		}
 
 		// Generate the pre-signed URL.
