@@ -175,7 +175,9 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     if(StringUtils.isNotBlank(metadataFile)) {
       //This is a single file upload request
       destinationPath = Paths.get(destinationBasePath).getFileName().toString();
+      destinationPath = destinationPath.replace('\\', '/');
       destinationBasePath = Paths.get(destinationBasePath).getParent().toString();
+      destinationBasePath = destinationBasePath.replace('\\', '/');
     } else {
       destinationPath = getObjectPath(filePath, filePathBaseName, entity.getPath());
     }
