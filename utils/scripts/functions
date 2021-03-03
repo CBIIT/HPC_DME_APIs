@@ -358,7 +358,7 @@ function dm_register_dataobject_presigned {
     fi
     
     local description_json=`get_file_value "$description"`
-    description_json=$(echo $description_json | sed "s/{/{ \"checksum\": \""${checksum_val}"\",/")
+    description_json=$(echo $description_json | sed "s|{|{ \"checksum\": \""${checksum_val}"\",|")
 
     dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" "$destination_path" dataObject 
     if [ "$?" -eq  1 ]
