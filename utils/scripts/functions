@@ -150,7 +150,8 @@ function dm_register () {
     SERVER=$(get_server) || exit 1
     CONFIG=$(get_config) || exit 1
 
-    if [ ! -e "$DESCRIPTION" ]
+	JSON=`get_file_value "$DESCRIPTION"`
+    if [ "" == "$JSON" ]
     then
       echo "ERROR: Cannot access the \"$DESCRIPTION\" file" >&2
       exit 1
@@ -175,14 +176,14 @@ function dm_register () {
     then
         if [ -z "$DATAOBJECT_FILE" ]
         then
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
+            curl -F "dataObjectRegistration=$JSON;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
         else
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status 
+            curl -F "dataObjectRegistration=$JSON;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status 
         fi
     elif [ "$TYPE" == "collection" ]
     then
             
-           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS_COLLECTION  -H "Accept: application/json" 2>$HPC_DM_UTILS/temp/curl-status
+           curl -H "Content-Type: application/json" -d @$JSON $CURL_FLAGS_COLLECTION  -H "Accept: application/json" 2>$HPC_DM_UTILS/temp/curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
         exit 1
@@ -348,17 +349,21 @@ function dm_register_dataobject_presigned {
     local description="$1"
     local destination_path="$2"
     local source_file="$3"
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description" "$destination_path" dataObject 
-    if [ "$?" -eq  1 ]
-    then
-      return 1
-    fi
-
+    
     checksum_val=`openssl md5 -binary ${source_file} | base64`
     if [ -z "$checksum_val" ]
     then
      echo "cannot extract checksum of source file" >&2
      return 1
+    fi
+    
+    local description_json=`get_file_value "$description"`
+    description_json=$(echo $description_json | sed "s|{|{ \"checksum\": \""${checksum_val}"\",|")
+
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" "$destination_path" dataObject 
+    if [ "$?" -eq  1 ]
+    then
+      return 1
     fi
 
     #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
