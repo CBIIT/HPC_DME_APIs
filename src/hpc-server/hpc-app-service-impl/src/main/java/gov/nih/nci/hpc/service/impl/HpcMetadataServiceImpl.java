@@ -38,6 +38,13 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_PERMISSIONS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_NIH_DN_ATTRIBUTE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -69,6 +76,7 @@ import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -81,12 +89,13 @@ import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcSelfMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
+import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
-
 
 /**
  * HPC Data Management Application Service Implementation.
@@ -104,7 +113,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
-	//The Data Management Service
+	// The Data Management Service
 	@Autowired
 	private HpcDataManagementService dataManagementService = null;
 
@@ -127,6 +136,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// Metadata DAO.
 	@Autowired
 	private HpcMetadataDAO metadataDAO = null;
+
+	// LDAP Proxy.
+	@Autowired
+	private HpcLdapAuthenticationProxy ldapProxy = null;
 
 	// Date formatter to format metadata entries of type Calendar (like data
 	// transfer start/completion time).
@@ -167,8 +180,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		} else {
 			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
-			if(!validationResult.getValid()) {
-				if(StringUtils.isEmpty(validationResult.getMessage())) {
+			if (!validationResult.getValid()) {
+				if (StringUtils.isEmpty(validationResult.getMessage())) {
 					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 				} else {
 					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -192,8 +205,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		} else {
 			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, true);
-			if(!validationResult.getValid()) {
-				if(StringUtils.isEmpty(validationResult.getMessage())) {
+			if (!validationResult.getValid()) {
+				if (StringUtils.isEmpty(validationResult.getMessage())) {
 					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 				} else {
 					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -227,7 +240,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-
 
 		// Generate a UUID and add it as metadata.
 		metadataEntries.add(generateIdMetadata());
@@ -367,10 +379,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			}
 		}
 		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
-			systemGeneratedMetadata
-					.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
+			systemGeneratedMetadata.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
 		}
-		
+
 		return systemGeneratedMetadata;
 	}
 
@@ -444,8 +455,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		} else {
 			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
-			if(!validationResult.getValid()) {
-				if(StringUtils.isEmpty(validationResult.getMessage())) {
+			if (!validationResult.getValid()) {
+				if (StringUtils.isEmpty(validationResult.getMessage())) {
 					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 				} else {
 					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -537,8 +548,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			String dataTransferRequestId, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
 			Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize, String sourceURL,
-			String callerObjectId, String userId, String userName, String configurationId,
-			String s3ArchiveConfigurationId, boolean registrationCompletionEvent) throws HpcException {
+			HpcPathPermissions sourcePermissions, String callerObjectId, String userId, String userName,
+			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent,
+			String userSearchBase, String groupSearchBase) throws HpcException {
 		// Input validation.
 		if (path == null || dataTransferStatus == null || dataTransferType == null || dataTransferMethod == null
 				|| dataTransferStarted == null || dataObjectIdMetadataEntry == null) {
@@ -560,6 +572,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Create and add the registrar ID, name and data management configuration
 		// metadata.
 		metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
+
+		// Create and add the source permissions metadata.
+		metadataEntries.addAll(generateSourcePermissionsMetadata(sourcePermissions, userSearchBase, groupSearchBase));
 
 		if (sourceLocation != null) {
 			// Create the source location file-container-id metadata.
@@ -740,15 +755,16 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		if (deepArchiveStatus != null) {
 			// Update the deep archive date metadata.
-			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_STATUS_ATTRIBUTE, deepArchiveStatus.value()));
+			addMetadataEntry(metadataEntries,
+					toMetadataEntry(DEEP_ARCHIVE_STATUS_ATTRIBUTE, deepArchiveStatus.value()));
 		}
 
 		if (deepArchiveDate != null) {
 			// Update the deep archive date metadata.
-			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE,
-					dateFormat.format(deepArchiveDate.getTime())));
+			addMetadataEntry(metadataEntries,
+					toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE, dateFormat.format(deepArchiveDate.getTime())));
 		}
-		
+
 		if (!metadataEntries.isEmpty()) {
 			dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
 					metadataEntries);
@@ -763,8 +779,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		} else {
 			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, true);
-			if(!validationResult.getValid()) {
-				if(StringUtils.isEmpty(validationResult.getMessage())) {
+			if (!validationResult.getValid()) {
+				if (StringUtils.isEmpty(validationResult.getMessage())) {
 					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 				} else {
 					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -872,7 +888,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		return toMetadataEntry(ID_ATTRIBUTE, keyGenerator.generateKey());
 	}
 
-
 	/**
 	 * Generate the global DME ID metadata.
 	 *
@@ -882,8 +897,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	private HpcMetadataEntry generateDmeIdMetadata(int collectionId) {
 		return toMetadataEntry(DME_ID_ATTRIBUTE, "NCI-DME-MS01-" + collectionId);
 	}
-
-
 
 	/**
 	 * Generate Metadata Updated Metadata.
@@ -915,6 +928,70 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Create the data management configuration ID metadata.
 		addMetadataEntry(metadataEntries, toMetadataEntry(CONFIGURATION_ID_ATTRIBUTE, configurationId.toString()));
+
+		return metadataEntries;
+	}
+
+	/**
+	 * Generate source permissions metadata
+	 *
+	 * @param userId          The user ID.
+	 * @param userName        The user name.
+	 * @param configurationId The data management configuration ID..
+	 * @return A List of the 3 metadata.
+	 * @throws HpcException if the service invoker is unknown.
+	 */
+	private List<HpcMetadataEntry> generateSourcePermissionsMetadata(HpcPathPermissions sourcePermissions,
+			String userSearchBase, String groupSearchBase) throws HpcException {
+		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+
+		if (sourcePermissions != null) {
+			// Create the permissions metadata.
+			if (!StringUtils.isEmpty(sourcePermissions.getPermissions())) {
+				addMetadataEntry(metadataEntries,
+						toMetadataEntry(SOURCE_FILE_PERMISSIONS_ATTRIBUTE, sourcePermissions.getPermissions()));
+			}
+
+			if (sourcePermissions.getUserId() != null) {
+				// Create the source (owner) user-id metadata.
+				addMetadataEntry(metadataEntries,
+						toMetadataEntry(SOURCE_FILE_USER_ID_ATTRIBUTE, sourcePermissions.getUserId().toString()));
+
+				if (!StringUtils.isEmpty(userSearchBase)) {
+					// Search LDAP for user distinguished names and create metadata if found.
+					HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
+							.getDistinguishedName(sourcePermissions.getUserId(), "uid", userSearchBase);
+					if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
+						addMetadataEntry(metadataEntries,
+								toMetadataEntry(SOURCE_FILE_USER_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));
+					}
+					if (!StringUtils.isEmpty(dnSearchResult.getNihDistinguishedName())) {
+						addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_USER_NIH_DN_ATTRIBUTE,
+								dnSearchResult.getNihDistinguishedName()));
+					}
+				}
+			}
+
+			if (sourcePermissions.getGroupId() != null) {
+				// Create the source (owner) user-id metadata.
+				addMetadataEntry(metadataEntries,
+						toMetadataEntry(SOURCE_FILE_GROUP_ID_ATTRIBUTE, sourcePermissions.getGroupId().toString()));
+
+				if (!StringUtils.isEmpty(groupSearchBase)) {
+					// Search LDAP for group distinguished names and create metadata if found.
+					HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
+							.getDistinguishedName(sourcePermissions.getGroupId(), "gid", groupSearchBase);
+					if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
+						addMetadataEntry(metadataEntries,
+								toMetadataEntry(SOURCE_FILE_GROUP_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));
+					}
+					if (!StringUtils.isEmpty(dnSearchResult.getNihDistinguishedName())) {
+						addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE,
+								dnSearchResult.getNihDistinguishedName()));
+					}
+				}
+			}
+		}
 
 		return metadataEntries;
 	}

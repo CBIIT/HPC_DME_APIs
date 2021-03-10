@@ -57,6 +57,8 @@
 				<xsd:element name="parentCollectionsBulkMetadataEntries"
 					type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 				<xsd:element name="checksum" type="xsd:string" />
+				<xsd:element name="userSearchBase" type="xsd:string" />
+				<xsd:element name="groupSearchBase" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -116,6 +118,8 @@
 				type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="parentCollectionsBulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
+			<xsd:element name="userSearchBase" type="xsd:string" />
+			<xsd:element name="groupSearchBase" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -130,7 +134,7 @@
 			<xsd:element name="googleDriveScanDirectory"
 				type="hpc-domain-datatransfer:HpcGoogleDriveScanDirectory" />
 			<xsd:element name="fileSystemScanDirectory"
-				type="hpc-domain-datatransfer:HpcScanDirectory" />
+				type="hpc-domain-datatransfer:HpcFileSystemScanDirectory" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="includePatterns" type="xsd:string"
 				minOccurs="0" maxOccurs="unbounded" />
