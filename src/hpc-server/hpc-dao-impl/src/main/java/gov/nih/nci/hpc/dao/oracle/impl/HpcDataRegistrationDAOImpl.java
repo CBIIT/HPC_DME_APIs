@@ -160,7 +160,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Calendar completed = Calendar.getInstance();
 		completed.setTime(rs.getTimestamp("COMPLETED"));
 		bulkDdataObjectRegistrationResult.setCompleted(completed);
-		
+
 		return bulkDdataObjectRegistrationResult;
 	};
 
@@ -253,8 +253,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
-					registrationResult.getCompleted(), registrationResult.getId(), 
-					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
+					registrationResult.getCompleted(), registrationResult.getId(), registrationResult.getUserId(),
+					registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
 					registrationResult.getCompleted());
 
@@ -462,6 +462,13 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			if (request.getCallerObjectId() != null) {
 				jsonRequest.put("callerObjectId", request.getCallerObjectId());
 			}
+			if (request.getUserSearchBase() != null) {
+				jsonRequest.put("userSearchBase", request.getUserSearchBase());
+			}
+			if (request.getGroupSearchBase() != null) {
+				jsonRequest.put("groupSearchBase", request.getGroupSearchBase());
+			}
+
 			if (request.getGlobusUploadSource() != null) {
 				JSONObject jsonGlobusUploadSource = new JSONObject();
 				HpcUploadSource globusUploadSource = request.getGlobusUploadSource();
@@ -758,6 +765,16 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Object createParentCollection = jsonRequest.get("createParentCollection");
 		if (createParentCollection != null) {
 			request.setCreateParentCollections(Boolean.valueOf(createParentCollection.toString()));
+		}
+
+		Object userSearchBase = jsonRequest.get("userSearchBase");
+		if (userSearchBase != null) {
+			request.setUserSearchBase(userSearchBase.toString());
+		}
+
+		Object groupSearchBase = jsonRequest.get("groupSearchBase");
+		if (groupSearchBase != null) {
+			request.setGroupSearchBase(groupSearchBase.toString());
 		}
 
 		// HpcDataObjectRegistrationRequest data structure has changed to support upload
