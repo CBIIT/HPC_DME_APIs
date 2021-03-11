@@ -1017,6 +1017,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
 			dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
 					dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+			dataObjectRegistrationRequest.setUserSearchBase(dataObjectRegistrationItem.getUserSearchBase());
+			dataObjectRegistrationRequest.setGroupSearchBase(dataObjectRegistrationItem.getGroupSearchBase());
 
 			String path = dataObjectRegistrationItem.getPath();
 			if (StringUtils.isEmpty(path)) {
