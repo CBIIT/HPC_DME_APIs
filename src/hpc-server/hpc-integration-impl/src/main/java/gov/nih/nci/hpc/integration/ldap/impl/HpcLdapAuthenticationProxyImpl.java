@@ -41,6 +41,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	private static final String KEYWORDS_ATTRIBUTE_ID = "keywords";
 	private static final String PARENT_LINK_ATTRIBUTE_ID = "parentLink";
 	private static final String OBJECT_SID_ATTRIBUTE_ID = "objectSid";
+	private static final String CN_ATTRIBUTE_ID = "cn";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -249,7 +250,9 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 
 				searchResults = dirContext.search(base, objectSidSearchFilter, objectSidSearchControls);
 				if (searchResults.hasMore()) {
-					dnSearchResult.setNihDistinguishedName(searchResults.next().getNameInNamespace());
+					SearchResult searchResult = searchResults.next();
+					dnSearchResult.setNihDistinguishedName(searchResult.getNameInNamespace());
+					dnSearchResult.setNihCommonName(searchResult.getAttributes().get(CN_ATTRIBUTE_ID).toString());
 				}
 			}
 

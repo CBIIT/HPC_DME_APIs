@@ -39,12 +39,12 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_DN_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_PERMISSIONS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_DN_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_NIH_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_OWNER_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_NIH_USER_DN_ATTRIBUTE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -952,44 +952,50 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 						toMetadataEntry(SOURCE_FILE_PERMISSIONS_ATTRIBUTE, sourcePermissions.getPermissions()));
 			}
 
-			if (sourcePermissions.getUserId() != null) {
-				// Create the source (owner) user-id metadata.
-				addMetadataEntry(metadataEntries,
-						toMetadataEntry(SOURCE_FILE_USER_ID_ATTRIBUTE, sourcePermissions.getUserId().toString()));
-
-				if (!StringUtils.isEmpty(userSearchBase)) {
-					// Search LDAP for user distinguished names and create metadata if found.
-					HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
-							.getDistinguishedName(sourcePermissions.getUserId(), "uid", userSearchBase);
-					if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
-						addMetadataEntry(metadataEntries,
-								toMetadataEntry(SOURCE_FILE_USER_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));
-					}
-					if (!StringUtils.isEmpty(dnSearchResult.getNihDistinguishedName())) {
-						addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_USER_NIH_DN_ATTRIBUTE,
-								dnSearchResult.getNihDistinguishedName()));
-					}
+			String owner = sourcePermissions.getOwner();
+			if (sourcePermissions.getUserId() != null && !StringUtils.isEmpty(userSearchBase)) {
+				// Search LDAP for user distinguished names and create metadata if found.
+				HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
+						.getDistinguishedName(sourcePermissions.getUserId(), "uid", userSearchBase);
+				if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
+					addMetadataEntry(metadataEntries,
+							toMetadataEntry(SOURCE_FILE_USER_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));
+				}
+				if (!StringUtils.isEmpty(dnSearchResult.getNihDistinguishedName())) {
+					addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_NIH_USER_DN_ATTRIBUTE,
+							dnSearchResult.getNihDistinguishedName()));
+				}
+				if (!StringUtils.isEmpty(dnSearchResult.getNihCommonName())) {
+					owner = dnSearchResult.getNihCommonName();
 				}
 			}
 
-			if (sourcePermissions.getGroupId() != null) {
-				// Create the source (owner) user-id metadata.
-				addMetadataEntry(metadataEntries,
-						toMetadataEntry(SOURCE_FILE_GROUP_ID_ATTRIBUTE, sourcePermissions.getGroupId().toString()));
+			// Create the source owner metadata.
+			if (!StringUtils.isEmpty(owner)) {
+				addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_OWNER_ATTRIBUTE, owner));
+			}
 
-				if (!StringUtils.isEmpty(groupSearchBase)) {
-					// Search LDAP for group distinguished names and create metadata if found.
-					HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
-							.getDistinguishedName(sourcePermissions.getGroupId(), "gid", groupSearchBase);
-					if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
-						addMetadataEntry(metadataEntries,
-								toMetadataEntry(SOURCE_FILE_GROUP_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));
-					}
-					if (!StringUtils.isEmpty(dnSearchResult.getNihDistinguishedName())) {
-						addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE,
-								dnSearchResult.getNihDistinguishedName()));
-					}
+			String group = sourcePermissions.getGroup();
+			if (sourcePermissions.getGroupId() != null && !StringUtils.isEmpty(groupSearchBase)) {
+				// Search LDAP for group distinguished names and create metadata if found.
+				HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
+						.getDistinguishedName(sourcePermissions.getGroupId(), "gid", groupSearchBase);
+				if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
+					addMetadataEntry(metadataEntries,
+							toMetadataEntry(SOURCE_FILE_GROUP_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));
 				}
+				if (!StringUtils.isEmpty(dnSearchResult.getNihDistinguishedName())) {
+					addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE,
+							dnSearchResult.getNihDistinguishedName()));
+				}
+				if (!StringUtils.isEmpty(dnSearchResult.getNihCommonName())) {
+					group = dnSearchResult.getNihCommonName();
+				}
+			}
+
+			// Create the source group metadata.
+			if (!StringUtils.isEmpty(group)) {
+				addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_GROUP_ATTRIBUTE, group));
 			}
 		}
 
