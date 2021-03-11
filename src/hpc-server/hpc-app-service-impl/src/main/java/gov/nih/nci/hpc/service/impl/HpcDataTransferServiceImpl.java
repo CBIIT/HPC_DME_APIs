@@ -20,6 +20,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -707,6 +708,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				pathPermissions.setUserId((Integer) Files.getAttribute(path, "unix:uid"));
 				pathPermissions.setGroupId((Integer) Files.getAttribute(path, "unix:gid"));
 				pathPermissions.setPermissions(PosixFilePermissions.toString(Files.getPosixFilePermissions(path)));
+
+				PosixFileAttributes posixAttributes = Files.readAttributes(path, PosixFileAttributes.class);
+				pathPermissions.setOwner(posixAttributes.owner().getName());
+				pathPermissions.setGroup(posixAttributes.group().getName());
+
 				pathAttributes.setPermissions(pathPermissions);
 			}
 			if (pathAttributes.getIsFile()) {
