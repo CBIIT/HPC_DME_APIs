@@ -201,15 +201,6 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcFileSystemScanDirectory">
-		<xsd:sequence>
-			<xsd:element name="directoryLocation"
-				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="userSearchBase" type="xsd:string" />
-			<xsd:element name="groupSearchBase" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
-	
 	<xsd:complexType name="HpcMultipartUpload">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
