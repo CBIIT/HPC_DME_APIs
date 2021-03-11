@@ -252,7 +252,8 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 				if (searchResults.hasMore()) {
 					SearchResult searchResult = searchResults.next();
 					dnSearchResult.setNihDistinguishedName(searchResult.getNameInNamespace());
-					dnSearchResult.setNihCommonName(searchResult.getAttributes().get(CN_ATTRIBUTE_ID).toString());
+					dnSearchResult.setNihCommonName(searchResult.getAttributes().get(CN_ATTRIBUTE_ID).toString()
+							.substring(CN_ATTRIBUTE_ID.length() + 1).trim());
 				}
 			}
 
