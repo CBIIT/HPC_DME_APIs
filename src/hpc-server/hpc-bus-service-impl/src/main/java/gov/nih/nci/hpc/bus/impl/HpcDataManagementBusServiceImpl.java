@@ -2205,8 +2205,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataTransferType dataTransferType = null;
 			HpcS3Account s3Account = null;
 			String googleDriveAccessToken = null;
-			String userBaseSearch = null;
-			String groupBaseSearch = null;
 			if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
 				// It is a request to scan a Globus endpoint.
 				dataTransferType = HpcDataTransferType.GLOBUS;
@@ -2232,8 +2230,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				scanDirectoryLocation = directoryScanRegistrationItem.getFileSystemScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(scanDirectoryLocation);
-				userBaseSearch = directoryScanRegistrationItem.getFileSystemScanDirectory().getUserSearchBase();
-				groupBaseSearch = directoryScanRegistrationItem.getFileSystemScanDirectory().getGroupSearchBase();
 			}
 
 			if (!pathAttributes.getExists()) {
@@ -2258,8 +2254,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			final String fileContainerId = scanDirectoryLocation.getFileContainerId();
 			final HpcS3Account fs3Account = s3Account;
 			final String fgoogleDriveAccessToken = googleDriveAccessToken;
-			final String fuserBaseSearch = userBaseSearch;
-			final String fgroupBaseSearch = groupBaseSearch;
 			final HpcDataTransferType fdataTransferType = dataTransferType;
 			dataTransferService
 					.scanDirectory(dataTransferType, s3Account, googleDriveAccessToken, scanDirectoryLocation,
@@ -2268,7 +2262,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleDriveAccessToken, fuserBaseSearch, fgroupBaseSearch)));
+							fs3Account, fgoogleDriveAccessToken, directoryScanRegistrationItem.getUserSearchBase(),
+							directoryScanRegistrationItem.getGroupSearchBase())));
 		}
 
 		return dataObjectRegistrationItems;
