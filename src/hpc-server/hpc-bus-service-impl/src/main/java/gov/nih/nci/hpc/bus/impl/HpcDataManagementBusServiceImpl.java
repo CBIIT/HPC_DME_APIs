@@ -298,7 +298,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcCollection collection = dataManagementService.getCollection(path, list != null ? list : false);
 		if (collection == null) {
-			return null;
+			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the metadata.
@@ -1139,7 +1139,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the data object.
 		HpcDataObject dataObject = dataManagementService.getDataObject(path);
 		if (dataObject == null) {
-			return null;
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the metadata for this data object.
