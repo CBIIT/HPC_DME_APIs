@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
@@ -331,7 +332,6 @@ public interface HpcDataManagementRestService {
 	public Response registerDataObjects(
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
 
-
 	/**
 	 * Get bulk data object registration task status.
 	 *
@@ -391,19 +391,20 @@ public interface HpcDataManagementRestService {
 			@QueryParam("totalCount") Boolean totalCount);
 
 	/**
-     * Get data objects registration summary (for the request invoker's DOC or all for system administrator).
-     *
-     * @param page       The requested results page.
-     * @param totalCount If set to true, return the total count of completed tasks.
-     *                   All active tasks are always returned.
-     * @return The REST service response w/ HpcBulkDataObjectRegistrationSummaryDTO
-     *         entity.
-     */
-    @GET
-    @Path("/registration/all")
-    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-    public Response getAllRegistrationSummary(@QueryParam("page") Integer page,
-            @QueryParam("totalCount") Boolean totalCount);
+	 * Get data objects registration summary (for the request invoker's DOC or all
+	 * for system administrator).
+	 *
+	 * @param page       The requested results page.
+	 * @param totalCount If set to true, return the total count of completed tasks.
+	 *                   All active tasks are always returned.
+	 * @return The REST service response w/ HpcBulkDataObjectRegistrationSummaryDTO
+	 *         entity.
+	 */
+	@GET
+	@Path("/registration/all")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response getAllRegistrationSummary(@QueryParam("page") Integer page,
+			@QueryParam("totalCount") Boolean totalCount);
 
 	/**
 	 * Get a data object.
@@ -559,6 +560,20 @@ public interface HpcDataManagementRestService {
 	public Response getDataObjectPermission(@PathParam("path") String path, @PathParam("userId") String userId);
 
 	/**
+	 * Set a data object's archive permission.
+	 *
+	 * @param path                      The data object path.
+	 * @param archivePermissionsRequest Request to set archive permissions.
+	 * @return The REST service response w/ HpcArchivePermissionsResponseDTO entity.
+	 */
+	@POST
+	@Path("/dataObject/{path:.*}/acl/archive")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response setArchivePermissions(@PathParam("path") String path,
+			HpcArchivePermissionsRequestDTO archivePermissionsRequest);
+
+	/**
 	 * Download a list of data objects.
 	 *
 	 * @deprecated
@@ -623,17 +638,19 @@ public interface HpcDataManagementRestService {
 	public Response getDownloadSummary(@QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount);
 
 	/**
-     * Get download summary (for the request invoker's DOC or all for system administrators).
-     *
-     * @param page       The requested results page.
-     * @param totalCount If set to true, return the total count of completed tasks.
-     *                   All active tasks are always returned.
-     * @return The REST service response w/ HpcDownloadSummaryDTO entity.
-     */
-    @GET
-    @Path("/download/all")
-    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-    public Response getAllDownloadSummary(@QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount);
+	 * Get download summary (for the request invoker's DOC or all for system
+	 * administrators).
+	 *
+	 * @param page       The requested results page.
+	 * @param totalCount If set to true, return the total count of completed tasks.
+	 *                   All active tasks are always returned.
+	 * @return The REST service response w/ HpcDownloadSummaryDTO entity.
+	 */
+	@GET
+	@Path("/download/all")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response getAllDownloadSummary(@QueryParam("page") Integer page,
+			@QueryParam("totalCount") Boolean totalCount);
 
 	/**
 	 * Get data management model. This includes all rules.
@@ -667,5 +684,5 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
-	
+
 }
