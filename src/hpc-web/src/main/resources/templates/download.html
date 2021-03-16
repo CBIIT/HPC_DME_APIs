@@ -82,10 +82,10 @@
 
 
 			<div class="pull-center" th:if="${downloadType == 'datafile'}">
-			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to a Globus endpoint location, to an S3 bucket, or to Google Drive.</p>
+			  <p>This page allows you to download the selected data file either synchronously to your computer (file system), or asynchronously to a Globus endpoint, to an S3 bucket, or to Google Drive.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-              <p>This page allows you to download the selected collection to a Globus endpoint location, to an S3 bucket, or to Google Drive.</p>    
+              <p>This page allows you to download the selected collection to a Globus endpoint, to an S3 bucket, or to Google Drive.</p>
             </div>
      
 			<div class="panel panel-default">
@@ -117,7 +117,7 @@
 										<div class="pull-left" style="margin-left: 15px" th:if="${downloadType == 'datafile'}">
 										<label class="radio-inline"><input type="radio"
 										id="searchTypeSync" name="searchType" value="sync"
-										onChange="display('sync')" checked="checked" />Synchronous</label>
+										onChange="display('sync')" checked="checked" />File System</label>
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
