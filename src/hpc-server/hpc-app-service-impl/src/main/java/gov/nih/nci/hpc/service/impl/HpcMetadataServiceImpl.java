@@ -378,10 +378,19 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 						e);
 			}
 		}
+		
 		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
 		}
-
+		
+		HpcPathPermissions sourcePermissions = new HpcPathPermissions();
+		sourcePermissions.setPermissions(metadataMap.get(SOURCE_FILE_PERMISSIONS_ATTRIBUTE));
+		sourcePermissions.setOwner(metadataMap.get(SOURCE_FILE_OWNER_ATTRIBUTE));
+		sourcePermissions.setGroup(metadataMap.get(SOURCE_FILE_GROUP_ATTRIBUTE));
+		if (sourcePermissions.getPermissions() != null || sourcePermissions.getOwner() != null || sourcePermissions.getGroup() != null) {
+			systemGeneratedMetadata.setSourcePermissions(sourcePermissions);
+		}
+		
 		return systemGeneratedMetadata;
 	}
 
