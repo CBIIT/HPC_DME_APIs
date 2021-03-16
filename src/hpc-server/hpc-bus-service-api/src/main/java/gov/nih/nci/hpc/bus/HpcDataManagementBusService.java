@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.bus;
 
 import java.io.File;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
@@ -180,7 +182,8 @@ public interface HpcDataManagementBusService {
 	 * @param page       The requested results page.
 	 * @param totalCount If set to true, return the total count of completed tasks.
 	 *                   All active tasks are always returned.
-	 * @param allUsers   group admin or system administrators requesting for all users
+	 * @param allUsers   group admin or system administrators requesting for all
+	 *                   users
 	 * @return A summary of download tasks for the request invoker
 	 */
 	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers) throws HpcException;
@@ -321,10 +324,12 @@ public interface HpcDataManagementBusService {
 	 * @param page       The requested results page.
 	 * @param totalCount If set to true, return the total count of completed tasks.
 	 *                   All active tasks are always returned.
-	 * @param allUsers   group admin or system administrators requesting for all users
+	 * @param allUsers   group admin or system administrators requesting for all
+	 *                   users
 	 * @return A summary of registration tasks for the request invoker
 	 */
-	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount, boolean allUsers) throws HpcException;
+	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount, boolean allUsers)
+			throws HpcException;
 
 	/**
 	 * Get Data Object.
@@ -432,6 +437,17 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcUserPermissionDTO getDataObjectPermission(String path, String userId) throws HpcException;
+
+	/**
+	 * Set archive permissions of data object and optionally the containing
+	 * directories.
+	 *
+	 * @param path                      The path of the data object.
+	 * @param archivePermissionsRequest The archive permissions request
+	 * @throws HpcException on service failure.
+	 */
+	public HpcArchivePermissionsResponseDTO setArchivePermissions(String path,
+			HpcArchivePermissionsRequestDTO archivePermissionsRequest) throws HpcException;
 
 	/**
 	 * Get the Data Management Models (Metadata validation rules and hierarchy
