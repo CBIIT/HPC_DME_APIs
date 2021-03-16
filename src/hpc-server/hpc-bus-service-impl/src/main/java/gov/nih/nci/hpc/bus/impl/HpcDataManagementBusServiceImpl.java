@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
@@ -85,6 +86,9 @@ import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchiveDirectoryPermissionsRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
@@ -143,6 +147,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	// A list of invalid characters in a path (not acceptable by IRODS).
 	private static final List<String> INVALID_PATH_CHARACTERS = Arrays.asList("\\", ";", "?");
+
+	// Archive permissions setting
+	private static final String ARCHIVE_FILE_PERMISSIONS = "r--r-----";
+	private static final String ARCHIVE_DIRECTORY_PERMISSIONS = "r-xr-x---";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -1482,6 +1490,45 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcSubjectPermission permission = dataManagementService.getDataObjectPermission(path, userId);
 
 		return toUserPermissionDTO(permission);
+	}
+
+	@Override
+	public HpcArchivePermissionsResponseDTO setArchivePermissions(String path,
+			HpcArchivePermissionsRequestDTO archivePermissionsRequest) throws HpcException {
+		// Request Validation.
+		HpcSystemGeneratedMetadata metadata = validateArchivePermissionsRequest(path, archivePermissionsRequest);
+
+		// Set the data file archive permissions.
+		String fileId = metadata.getArchiveLocation().getFileId();
+		HpcPathPermissions dataObjectArchivePermissions = new HpcPathPermissions();
+		dataObjectArchivePermissions.setPermissions(ARCHIVE_FILE_PERMISSIONS);
+		if (Optional.ofNullable(archivePermissionsRequest.getSetArchivePermissionsFromSource()).orElse(false)) {
+			dataObjectArchivePermissions.setOwner(metadata.getSourcePermissions().getOwner());
+			dataObjectArchivePermissions.setGroup(metadata.getSourcePermissions().getGroup());
+		} else {
+			dataObjectArchivePermissions.setOwner(archivePermissionsRequest.getDataObjectPermissions().getOwner());
+			dataObjectArchivePermissions.setGroup(archivePermissionsRequest.getDataObjectPermissions().getGroup());
+		}
+
+		dataTransferService.setArchivePermissions(metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
+				metadata.getDataTransferType(), fileId, dataObjectArchivePermissions);
+
+		// Set the directories archive permissions
+		for (HpcArchiveDirectoryPermissionsRequestDTO archiveDirectoryPermissionsRequest : archivePermissionsRequest
+				.getDirectoryPermissions()) {
+			HpcPathPermissions directoryArchivePermissions = new HpcPathPermissions();
+			directoryArchivePermissions.setPermissions(ARCHIVE_DIRECTORY_PERMISSIONS);
+			directoryArchivePermissions.setOwner(archiveDirectoryPermissionsRequest.getPermissions().getOwner());
+			directoryArchivePermissions.setGroup(archiveDirectoryPermissionsRequest.getPermissions().getGroup());
+			String directoryPath = archiveDirectoryPermissionsRequest.getPath();
+			String directoryId = fileId.substring(fileId.indexOf(directoryPath) + directoryPath.length() + 1);
+
+			dataTransferService.setArchivePermissions(metadata.getConfigurationId(),
+					metadata.getS3ArchiveConfigurationId(), metadata.getDataTransferType(), directoryId,
+					directoryArchivePermissions);
+		}
+
+		return null;
 	}
 
 	@Override
@@ -2852,6 +2899,105 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return dataObjectRegistrationResult;
+	}
+
+	/**
+	 * Validate an archive permissions request.
+	 *
+	 * @param path                      The data object path
+	 * @param archivePermissionsRequest The archive permissions request.
+	 * @return The data object system metadata
+	 * @throws HpcException if the request is invalid
+	 */
+	private HpcSystemGeneratedMetadata validateArchivePermissionsRequest(String path,
+			HpcArchivePermissionsRequestDTO archivePermissionsRequest) throws HpcException {
+		// Input Validation
+		if (StringUtils.isEmpty(path) || archivePermissionsRequest == null) {
+			throw new HpcException("Null / Empty data object path or request DTO", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the data object archive permissions request.
+		boolean setArchivePermissionsFromSource = Optional
+				.ofNullable(archivePermissionsRequest.getSetArchivePermissionsFromSource()).orElse(false);
+		HpcPathPermissions dataObjectPermissions = archivePermissionsRequest.getDataObjectPermissions();
+		if (dataObjectPermissions == null && !setArchivePermissionsFromSource) {
+			throw new HpcException("data object permissions not provided and set-from-source indicator is false",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (dataObjectPermissions != null && setArchivePermissionsFromSource) {
+			throw new HpcException("data object permissions provided and set-from-source indicator is true",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (dataObjectPermissions != null && (StringUtils.isEmpty(dataObjectPermissions.getOwner())
+				|| StringUtils.isEmpty(dataObjectPermissions.getGroup()))) {
+			throw new HpcException("data object permissions provided w/o owner or group",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the archive directories permissions request.
+		for (HpcArchiveDirectoryPermissionsRequestDTO archiveDirectoryPermissionsRequest : archivePermissionsRequest
+				.getDirectoryPermissions()) {
+			if (StringUtils.isEmpty(archiveDirectoryPermissionsRequest.getPath())) {
+				throw new HpcException("Null / Empty path in archive directory permission request",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			archiveDirectoryPermissionsRequest.setPath(toNormalizedPath(archiveDirectoryPermissionsRequest.getPath()));
+
+			HpcPathPermissions directoryPermissions = archiveDirectoryPermissionsRequest.getPermissions();
+			if (StringUtils.isEmpty(directoryPermissions.getOwner())
+					|| StringUtils.isEmpty(directoryPermissions.getGroup())) {
+				throw new HpcException("Directory permissions provided w/o owner or group for: "
+						+ archiveDirectoryPermissionsRequest.getPath(), HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (!path.startsWith(archiveDirectoryPermissionsRequest.getPath())) {
+				throw new HpcException("Directory path is not a parent of the data object:  "
+						+ archiveDirectoryPermissionsRequest.getPath(), HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+		// Validate that data object exists.
+		if (dataManagementService.getDataObject(path) == null) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			throw new HpcException("Archive permission request is not supported for soft-links",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Archive permission request supported only from POSIX archive.
+		if (metadata.getDataTransferType() == null
+				|| !metadata.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+			throw new HpcException("Archive permission request is not supported for S3 archive",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the file is archived.
+		HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
+		if (dataTransferStatus == null) {
+			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+			throw new HpcException("Object is not in archived state yet. It is in "
+					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		}
+
+		// If we set permissions from source. Validate the permissions on the source are
+		// available
+		if (setArchivePermissionsFromSource) {
+			HpcPathPermissions sourcePermissions = metadata.getSourcePermissions();
+			if (sourcePermissions == null || StringUtils.isEmpty(sourcePermissions.getOwner())
+					|| StringUtils.isEmpty(sourcePermissions.getGroup())) {
+				throw new HpcException(
+						"Request to set permissions from source, but no source permissions metadata found",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		return metadata;
 	}
 
 	private HpcPermissionForCollection fetchCollectionPermission(String path, String userId) throws HpcException {

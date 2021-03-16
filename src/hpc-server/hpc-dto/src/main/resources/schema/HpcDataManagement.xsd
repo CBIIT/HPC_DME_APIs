@@ -365,6 +365,22 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:element name="HpcArchivePermissionsResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectPermissions"
+					type="hpc-domain-datamanagement:HpcPathPermissions" />
+				<xsd:element name="setArchivePermissionsFromSource"
+					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="setDataManagementPermissions"
+					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="directoryPermissions"
+					type="hpc-dto-datamanagement:HpcArchiveDirectoryPermissionsRequestDTO"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<xsd:complexType name="HpcArchiveDirectoryPermissionsRequestDTO">
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />

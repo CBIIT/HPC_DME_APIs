@@ -784,7 +784,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public File getArchiveFile(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType, String fileId) throws HpcException {
 		// Input validation.
-		if (fileId == null) {
+		if (StringUtils.isEmpty(fileId)) {
 			throw new HpcException("Invalid file id", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -894,8 +894,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 
 			} catch (HpcException e) {
-				logger.error("Failed to cancel Globus task for user[{}], path: {}", e, downloadTask.getUserId(),
-						downloadTask.getPath());
+				logger.error("Failed to cancel Globus task for user[{}], path: {}", downloadTask.getUserId(),
+						downloadTask.getPath(), e);
 			}
 		}
 
@@ -1520,6 +1520,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return dataTransferProxies.get(dataTransferType).getDataObjectMetadata(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation);
+	}
+
+	@Override
+	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
+			HpcDataTransferType dataTransferType, String fileId, HpcPathPermissions permissions) throws HpcException {
+		// Input validation.
+		if (StringUtils.isEmpty(fileId)) {
+			throw new HpcException("Invalid file id", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the data transfer configuration.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
+		// Instantiate the file.
+		logger.info("ERAN: permissions for: {} [{}.{} []]",
+				getFilePath(fileId, dataTransferConfiguration.getBaseArchiveDestination()), permissions.getOwner(),
+				permissions.getGroup(), permissions.getPermissions());
+
 	}
 
 	// ---------------------------------------------------------------------//
