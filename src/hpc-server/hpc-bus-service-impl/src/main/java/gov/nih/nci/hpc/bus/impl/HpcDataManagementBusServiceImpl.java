@@ -1521,7 +1521,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			directoryArchivePermissions.setOwner(archiveDirectoryPermissionsRequest.getPermissions().getOwner());
 			directoryArchivePermissions.setGroup(archiveDirectoryPermissionsRequest.getPermissions().getGroup());
 			String directoryPath = archiveDirectoryPermissionsRequest.getPath();
-			String directoryId = fileId.substring(fileId.indexOf(directoryPath) + directoryPath.length() + 1);
+			String directoryId = fileId.substring(0, fileId.indexOf(directoryPath) + directoryPath.length());
 
 			dataTransferService.setArchivePermissions(metadata.getConfigurationId(),
 					metadata.getS3ArchiveConfigurationId(), metadata.getDataTransferType(), directoryId,

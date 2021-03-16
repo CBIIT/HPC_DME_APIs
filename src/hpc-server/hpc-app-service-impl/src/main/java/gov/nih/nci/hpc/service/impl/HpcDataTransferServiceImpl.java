@@ -18,9 +18,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -33,6 +36,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -1534,11 +1538,34 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
-		// Instantiate the file.
-		logger.info("ERAN: permissions for: {} [{}.{} []]",
-				getFilePath(fileId, dataTransferConfiguration.getBaseArchiveDestination()), permissions.getOwner(),
-				permissions.getGroup(), permissions.getPermissions());
+		// Get the archive path.
+		String archivePath = getFilePath(fileId, dataTransferConfiguration.getBaseArchiveDestination());
 
+		logger.info("Archive permissions request: {} [{}.{} {}]", archivePath, permissions.getOwner(), permissions.getGroup(),
+				permissions.getPermissions());
+
+		// Map the permissions to POSIX permissions
+		Set<PosixFilePermission> posixPermissions = null;
+		try {
+			posixPermissions = PosixFilePermissions.fromString(permissions.getPermissions());
+		} catch (IllegalArgumentException e) {
+			throw new HpcException("Invalid permissions", HpcErrorType.UNEXPECTED_ERROR, e);
+		}
+
+		// Set Owner, Group and Permissions on the archive path.
+		try {
+			Path path = Paths.get(archivePath);
+			PosixFileAttributeView posixFileAttributes = Files.getFileAttributeView(path, PosixFileAttributeView.class,
+					LinkOption.NOFOLLOW_LINKS);
+			posixFileAttributes.setOwner(
+					path.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(permissions.getOwner()));
+			posixFileAttributes.setGroup(path.getFileSystem().getUserPrincipalLookupService()
+					.lookupPrincipalByGroupName(permissions.getGroup()));
+			posixFileAttributes.setPermissions(posixPermissions);
+
+		} catch (IOException e) {
+			throw new HpcException(e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
 	}
 
 	// ---------------------------------------------------------------------//
