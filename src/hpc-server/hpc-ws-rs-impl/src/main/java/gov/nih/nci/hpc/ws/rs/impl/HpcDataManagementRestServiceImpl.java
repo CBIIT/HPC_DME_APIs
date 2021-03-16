@@ -36,6 +36,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -669,7 +670,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 	@Override
 	public Response setArchivePermissions(String path, HpcArchivePermissionsRequestDTO archivePermissionsRequest) {
-		return okResponse(archivePermissionsRequest, true);
+		HpcArchivePermissionsResponseDTO archivePermissionsResponse = null;
+		try {
+			archivePermissionsResponse = dataManagementBusService.setArchivePermissions(toNormalizedPath(path),
+					archivePermissionsRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(archivePermissionsResponse, false);
 	}
 
 	@Deprecated

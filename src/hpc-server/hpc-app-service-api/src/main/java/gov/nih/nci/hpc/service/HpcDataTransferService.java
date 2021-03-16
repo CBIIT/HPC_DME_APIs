@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -734,5 +735,20 @@ public interface HpcDataTransferService {
 	public HpcArchiveObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId)
 			throws HpcException;
+
+	/**
+	 * Set archive permissions.
+	 *
+	 * @param configurationId          The data management configuration ID.
+	 * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID.
+	 *                                 Used to identify the S3 archive the
+	 *                                 data-object is stored in. This is only
+	 *                                 applicable for S3 archives, not POSIX.
+	 * @param dataTransferType         The data transfer type.
+	 * @param fileId                   The file ID. (Can be a directory)
+	 * @throws HpcException on service failure.
+	 */
+	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
+			HpcDataTransferType dataTransferType, String fileId, HpcPathPermissions permissions) throws HpcException;
 
 }
