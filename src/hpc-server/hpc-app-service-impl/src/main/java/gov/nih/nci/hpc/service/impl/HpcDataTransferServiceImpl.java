@@ -25,6 +25,7 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1541,8 +1542,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Get the archive path.
 		String archivePath = getFilePath(fileId, dataTransferConfiguration.getBaseArchiveDestination());
 
-		logger.info("Archive permissions request: {} [{}.{} {}]", archivePath, permissions.getOwner(), permissions.getGroup(),
-				permissions.getPermissions());
+		logger.info("Archive permissions request: {} [{}.{} {}]", archivePath, permissions.getOwner(),
+				permissions.getGroup(), permissions.getPermissions());
 
 		// Map the permissions to POSIX permissions
 		Set<PosixFilePermission> posixPermissions = null;
@@ -1563,6 +1564,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					.lookupPrincipalByGroupName(permissions.getGroup()));
 			posixFileAttributes.setPermissions(posixPermissions);
 
+		} catch (UserPrincipalNotFoundException e) {
+			throw new HpcException("Owner or Group not found", HpcErrorType.INVALID_REQUEST_INPUT, e);
 		} catch (IOException e) {
 			throw new HpcException(e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
