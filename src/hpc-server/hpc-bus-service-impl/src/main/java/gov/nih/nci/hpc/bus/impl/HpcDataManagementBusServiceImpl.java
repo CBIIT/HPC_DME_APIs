@@ -87,6 +87,8 @@ import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchiveDirectoryPermissionsRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionResultDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -99,6 +101,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementPermissionResultDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
@@ -1498,7 +1501,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Request Validation.
 		HpcSystemGeneratedMetadata metadata = validateArchivePermissionsRequest(path, archivePermissionsRequest);
 
+		HpcArchivePermissionsResponseDTO response = new HpcArchivePermissionsResponseDTO();
+
 		// Set the data file archive permissions.
+		HpcArchivePermissionResponseDTO dataObjectResponse = new HpcArchivePermissionResponseDTO();
+		dataObjectResponse.setPath(path);
+
 		String fileId = metadata.getArchiveLocation().getFileId();
 		HpcPathPermissions dataObjectArchivePermissions = new HpcPathPermissions();
 		dataObjectArchivePermissions.setPermissions(ARCHIVE_FILE_PERMISSIONS);
@@ -1510,8 +1518,37 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataObjectArchivePermissions.setGroup(archivePermissionsRequest.getDataObjectPermissions().getGroup());
 		}
 
-		dataTransferService.setArchivePermissions(metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
-				metadata.getDataTransferType(), fileId, dataObjectArchivePermissions);
+		HpcArchivePermissionResultDTO dataObjectArchivePermissionResult = new HpcArchivePermissionResultDTO();
+		dataObjectArchivePermissionResult.setArchivePermissions(dataObjectArchivePermissions);
+		dataObjectArchivePermissionResult.setResult(true);
+
+		try {
+			dataTransferService.setArchivePermissions(metadata.getConfigurationId(),
+					metadata.getS3ArchiveConfigurationId(), metadata.getDataTransferType(), fileId,
+					dataObjectArchivePermissions);
+
+		} catch (HpcException e) {
+			logger.error("Failed to set archive permissions for {}", path, e);
+			dataObjectArchivePermissionResult.setResult(false);
+			dataObjectArchivePermissionResult.setMessage(e.getMessage());
+		}
+
+		dataObjectResponse.setArchivePermissionResult(dataObjectArchivePermissionResult);
+
+		// Set the data file data management (iRODS) permissions.
+		boolean setDataManagementPermissions = Optional
+				.ofNullable(archivePermissionsRequest.getSetDataManagementPermissions()).orElse(false);
+		if (setDataManagementPermissions) {
+			HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
+			dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(path, false,
+					dataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
+			dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(path, false,
+					dataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+
+			dataObjectResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
+		}
+
+		response.setDataObjectPermissionsStatus(dataObjectResponse);
 
 		// Set the directories archive permissions
 		for (HpcArchiveDirectoryPermissionsRequestDTO archiveDirectoryPermissionsRequest : archivePermissionsRequest
@@ -1523,9 +1560,38 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			String directoryPath = archiveDirectoryPermissionsRequest.getPath();
 			String directoryId = fileId.substring(0, fileId.indexOf(directoryPath) + directoryPath.length());
 
-			dataTransferService.setArchivePermissions(metadata.getConfigurationId(),
-					metadata.getS3ArchiveConfigurationId(), metadata.getDataTransferType(), directoryId,
-					directoryArchivePermissions);
+			HpcArchivePermissionResponseDTO directoryResponse = new HpcArchivePermissionResponseDTO();
+			directoryResponse.setPath(directoryPath);
+
+			HpcArchivePermissionResultDTO directoryArchivePermissionResult = new HpcArchivePermissionResultDTO();
+			directoryArchivePermissionResult.setArchivePermissions(directoryArchivePermissions);
+			directoryArchivePermissionResult.setResult(true);
+
+			try {
+				dataTransferService.setArchivePermissions(metadata.getConfigurationId(),
+						metadata.getS3ArchiveConfigurationId(), metadata.getDataTransferType(), directoryId,
+						directoryArchivePermissions);
+
+			} catch (HpcException e) {
+				logger.error("Failed to set archive permissions for {}", directoryPath, e);
+				directoryArchivePermissionResult.setResult(false);
+				directoryArchivePermissionResult.setMessage(e.getMessage());
+			}
+
+			directoryResponse.setArchivePermissionResult(directoryArchivePermissionResult);
+
+			// Set the directory data management (iRODS) permissions.
+			if (setDataManagementPermissions) {
+				HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
+				dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(directoryPath,
+						true, dataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
+				dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(
+						directoryPath, true, dataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+
+				directoryResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
+			}
+
+			response.getDirectoryPermissionsStatus().add(directoryResponse);
 		}
 
 		return null;
@@ -2998,6 +3064,50 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return metadata;
+	}
+
+	/**
+	 * Perform user data management (iRODS) permission request on an entity
+	 * (collection or data object)
+	 *
+	 * @param path       The entity path (collection or data object).
+	 * @param collection True if the path is a collection, False if the path is a
+	 *                   data object.
+	 * @param userId     The user ID.
+	 * @param permission The permission
+	 * @return A user permission response.
+	 */
+	private HpcUserPermissionResponseDTO setEntityPermissionForUser(String path, boolean collection, String userId,
+			HpcPermission permission) {
+		HpcUserPermission userPermission = new HpcUserPermission();
+		userPermission.setUserId(userId);
+		userPermission.setPermission(permission);
+		List<HpcUserPermission> userPermissions = new ArrayList<>();
+		userPermissions.add(userPermission);
+
+		return setEntityPermissionForUsers(path, collection, userPermissions).get(0);
+	}
+
+	/**
+	 * Perform group data management (iRODS) permission request on an entity
+	 * (collection or data object)
+	 *
+	 * @param path       The entity path (collection or data object).
+	 * @param collection True if the path is a collection, False if the path is a
+	 *                   data object.
+	 * @param groupName  The group name.
+	 * @param permission The permission
+	 * @return A group permission response.
+	 */
+	private HpcGroupPermissionResponseDTO setEntityPermissionForGroup(String path, boolean collection, String groupName,
+			HpcPermission permission) {
+		HpcGroupPermission groupPermission = new HpcGroupPermission();
+		groupPermission.setGroupName(groupName);
+		groupPermission.setPermission(permission);
+		List<HpcGroupPermission> groupPermissions = new ArrayList<>();
+		groupPermissions.add(groupPermission);
+
+		return setEntityPermissionForGroups(path, collection, groupPermissions).get(0);
 	}
 
 	private HpcPermissionForCollection fetchCollectionPermission(String path, String userId) throws HpcException {
