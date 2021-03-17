@@ -1594,7 +1594,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			response.getDirectoryPermissionsStatus().add(directoryResponse);
 		}
 
-		return null;
+		return response;
 	}
 
 	@Override
