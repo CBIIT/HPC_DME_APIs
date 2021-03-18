@@ -346,7 +346,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
 				statusReport.setPermissionDenied(true);
 				statusReport.setMessage(report.niceStatusDescription
-						+ ". Share the endpoint with the appropriate Globus group for write access");
+						+ ". Check the destination endpoint permissions for write access to the system Globus Group");
 			}
 
 		} else {
