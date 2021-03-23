@@ -179,12 +179,12 @@
 															</div>
 															</td></tr>
 															<tr class="globus drive"><td colspan="2">&nbsp;</td></tr>
-															<tr class="globus drive" th:if="${endpoint_id != null}"><td colspan="2"><div class="col-sm-12 column"><strong>Selected Data:</strong></div>
+															<tr class="globus drive" th:if="${fileNames != null OR folderNames != null}"><td colspan="2"><div class="col-sm-12 column"><strong>Selected Endpoint:</strong></div>
 															</td>
 															</tr>
 															<tr class="globus drive"><td colspan="2">
 															<div class="col-sm-12 column"
-																th:if="${endpoint_id != null}">
+																th:if="${fileNames != null OR folderNames != null}">
 																<label for="Name">Globus Endpoint ID:</label> <label
 																	for="${endpoint_id}" th:text="${endpoint_id}"></label><br />
 																<label for="Name">Globus Endpoint Path:</label> <label
