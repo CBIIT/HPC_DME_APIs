@@ -10,8 +10,10 @@
 package gov.nih.nci.hpc.dao;
 
 import java.util.List;
+
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -23,20 +25,27 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 
 public interface HpcDataManagementConfigurationDAO {
-  /**
-   * Get all supported configurations.
-   *
-   * @return A list of data management configurations.
-   * @throws HpcException on service failure.
-   */
-  public List<HpcDataManagementConfiguration> getDataManagementConfigurations() throws HpcException;
+	/**
+	 * Get all supported configurations.
+	 *
+	 * @return A list of data management configurations.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataManagementConfiguration> getDataManagementConfigurations() throws HpcException;
 
-  /**
-   * Get all S3 Archive configurations.
-   *
-   * @return A list of data management configurations.
-   * @throws HpcException on service failure.
-   */
-  public List<HpcDataTransferConfiguration> getS3ArchiveConfigurations() throws HpcException;
+	/**
+	 * Get all S3 Archive configurations.
+	 *
+	 * @return A list of data management configurations.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataTransferConfiguration> getS3ArchiveConfigurations() throws HpcException;
+
+	/**
+	 * Get all configured distinguished name searches.
+	 *
+	 * @return A list of DN searches.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDistinguishedNameSearch> getDistinguishedNameSearches() throws HpcException;
 }
-

@@ -225,10 +225,7 @@ public interface HpcMetadataService {
 	 *                                    ID.
 	 * @param registrationCompletionEvent If set to true, an event will be generated
 	 *                                    when registration is completed or failed.
-	 * @param userSearchBase              (Optional) an LDAP search base for user
-	 *                                    DN.
-	 * @param groupSearchBase             (Optional) an LDAP search base for group
-	 *                                    DN.
+	 * 
 	 * @return The system generated metadata.
 	 * @throws HpcException on service failure.
 	 */
@@ -238,8 +235,8 @@ public interface HpcMetadataService {
 			HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
 			Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize, String sourceURL,
 			HpcPathPermissions sourcePermissions, String callerObjectId, String userId, String userName,
-			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent,
-			String userSearchBase, String groupSearchBase) throws HpcException;
+			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
+			throws HpcException;
 
 	/**
 	 * Generate system metadata and attach to the data object in a registration w/
