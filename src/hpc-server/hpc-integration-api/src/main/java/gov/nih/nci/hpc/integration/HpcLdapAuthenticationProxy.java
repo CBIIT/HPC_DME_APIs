@@ -54,5 +54,5 @@ public interface HpcLdapAuthenticationProxy
      * @return The HpcDistinguishedNameSearchResult with DN found in the search base + mapping of the DN in full AD NIH search base.
      * @throws HpcException on LDAP failure.
      */
-	public HpcDistinguishedNameSearchResult getDistinguishedName(int id, String keywordPrefix, String searchBase) throws HpcException;
+	public HpcDistinguishedNameSearchResult getDistinguishedName(String id, String keywordPrefix, String searchBase) throws HpcException;
 }

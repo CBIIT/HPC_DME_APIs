@@ -93,8 +93,6 @@
 				type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="parentCollectionsBulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
-			<xsd:element name="userSearchBase" type="xsd:string" />
-			<xsd:element name="groupSearchBase" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -243,6 +241,14 @@
 			<xsd:element name="sourceURL" type="xsd:string" />
 			<xsd:element name="sourcePermissions"
 				type="hpc-domain-datamanagement:HpcPathPermissions" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcDistinguishedNameSearch">
+		<xsd:sequence>
+			<xsd:element name="basePath" type="xsd:string" />
+			<xsd:element name="userSearchBase" type="xsd:string" />
+			<xsd:element name="groupSearchBase" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

@@ -23,6 +23,8 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_RE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DME_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
@@ -32,19 +34,18 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATT
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_COMPLETION_EVENT_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_NIH_USER_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_OWNER_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_PERMISSIONS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_DN_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_DN_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_PERMISSIONS_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_DN_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_OWNER_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_NIH_USER_DN_ATTRIBUTE;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -74,6 +75,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
+
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
@@ -89,13 +91,14 @@ import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcSelfMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
-import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * HPC Data Management Application Service Implementation.
@@ -113,9 +116,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
+
 	// The Data Management Service
 	@Autowired
 	private HpcDataManagementService dataManagementService = null;
+
+	// The Security Service
+	@Autowired
+	private HpcSecurityService securityService = null;
 
 	// The Data Management Proxy instance.
 	@Autowired
@@ -136,10 +144,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// Metadata DAO.
 	@Autowired
 	private HpcMetadataDAO metadataDAO = null;
-
-	// LDAP Proxy.
-	@Autowired
-	private HpcLdapAuthenticationProxy ldapProxy = null;
 
 	// Date formatter to format metadata entries of type Calendar (like data
 	// transfer start/completion time).
@@ -378,19 +382,20 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 						e);
 			}
 		}
-		
+
 		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
 		}
-		
+
 		HpcPathPermissions sourcePermissions = new HpcPathPermissions();
 		sourcePermissions.setPermissions(metadataMap.get(SOURCE_FILE_PERMISSIONS_ATTRIBUTE));
 		sourcePermissions.setOwner(metadataMap.get(SOURCE_FILE_OWNER_ATTRIBUTE));
 		sourcePermissions.setGroup(metadataMap.get(SOURCE_FILE_GROUP_ATTRIBUTE));
-		if (sourcePermissions.getPermissions() != null || sourcePermissions.getOwner() != null || sourcePermissions.getGroup() != null) {
+		if (sourcePermissions.getPermissions() != null || sourcePermissions.getOwner() != null
+				|| sourcePermissions.getGroup() != null) {
 			systemGeneratedMetadata.setSourcePermissions(sourcePermissions);
 		}
-		
+
 		return systemGeneratedMetadata;
 	}
 
@@ -558,8 +563,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
 			Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize, String sourceURL,
 			HpcPathPermissions sourcePermissions, String callerObjectId, String userId, String userName,
-			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent,
-			String userSearchBase, String groupSearchBase) throws HpcException {
+			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
+			throws HpcException {
 		// Input validation.
 		if (path == null || dataTransferStatus == null || dataTransferType == null || dataTransferMethod == null
 				|| dataTransferStarted == null || dataObjectIdMetadataEntry == null) {
@@ -583,7 +588,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
 
 		// Create and add the source permissions metadata.
-		metadataEntries.addAll(generateSourcePermissionsMetadata(sourcePermissions, userSearchBase, groupSearchBase));
+		metadataEntries.addAll(generateSourcePermissionsMetadata(sourcePermissions, sourceLocation));
 
 		if (sourceLocation != null) {
 			// Create the source location file-container-id metadata.
@@ -942,30 +947,35 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	/**
-	 * Generate source permissions metadata
+	 * Generate source permissions metadata.
 	 *
-	 * @param userId          The user ID.
-	 * @param userName        The user name.
-	 * @param configurationId The data management configuration ID..
-	 * @return A List of the 3 metadata.
+	 * @param sourcePermissions The source permissions.
+	 * @param sourceLocation    The source location.
+	 * @return A List of the up to 7 metadata.
 	 * @throws HpcException if the service invoker is unknown.
 	 */
 	private List<HpcMetadataEntry> generateSourcePermissionsMetadata(HpcPathPermissions sourcePermissions,
-			String userSearchBase, String groupSearchBase) throws HpcException {
+			HpcFileLocation sourceLocation) throws HpcException {
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
-		if (sourcePermissions != null) {
+		if (sourcePermissions != null && sourceLocation != null) {
 			// Create the permissions metadata.
 			if (!StringUtils.isEmpty(sourcePermissions.getPermissions())) {
 				addMetadataEntry(metadataEntries,
 						toMetadataEntry(SOURCE_FILE_PERMISSIONS_ATTRIBUTE, sourcePermissions.getPermissions()));
 			}
 
+			// Find the configured DN search bases for user and group.
+			HpcDistinguishedNameSearch distinguishedNameSearch = Optional
+					.ofNullable(securityService.findDistinguishedNameSearch(sourceLocation.getFileId()))
+					.orElse(new HpcDistinguishedNameSearch());
+
 			String owner = sourcePermissions.getOwner();
-			if (sourcePermissions.getUserId() != null && !StringUtils.isEmpty(userSearchBase)) {
+			if (sourcePermissions.getUserId() != null
+					&& !StringUtils.isEmpty(distinguishedNameSearch.getUserSearchBase())) {
 				// Search LDAP for user distinguished names and create metadata if found.
-				HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
-						.getDistinguishedName(sourcePermissions.getUserId(), "uid", userSearchBase);
+				HpcDistinguishedNameSearchResult dnSearchResult = securityService.getUserDistinguishedName(
+						String.valueOf(sourcePermissions.getUserId()), distinguishedNameSearch.getUserSearchBase());
 				if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
 					addMetadataEntry(metadataEntries,
 							toMetadataEntry(SOURCE_FILE_USER_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));
@@ -985,10 +995,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			}
 
 			String group = sourcePermissions.getGroup();
-			if (sourcePermissions.getGroupId() != null && !StringUtils.isEmpty(groupSearchBase)) {
+			if (sourcePermissions.getGroupId() != null
+					&& !StringUtils.isEmpty(distinguishedNameSearch.getGroupSearchBase())) {
 				// Search LDAP for group distinguished names and create metadata if found.
-				HpcDistinguishedNameSearchResult dnSearchResult = ldapProxy
-						.getDistinguishedName(sourcePermissions.getGroupId(), "gid", groupSearchBase);
+				HpcDistinguishedNameSearchResult dnSearchResult = securityService.getGroupDistinguishedName(
+						String.valueOf(sourcePermissions.getGroupId()), distinguishedNameSearch.getGroupSearchBase());
 				if (!StringUtils.isEmpty(dnSearchResult.getDistinguishedName())) {
 					addMetadataEntry(metadataEntries,
 							toMetadataEntry(SOURCE_FILE_GROUP_DN_ATTRIBUTE, dnSearchResult.getDistinguishedName()));

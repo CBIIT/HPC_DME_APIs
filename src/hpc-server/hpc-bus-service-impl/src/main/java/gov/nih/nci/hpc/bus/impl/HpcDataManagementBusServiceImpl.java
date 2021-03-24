@@ -862,8 +862,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									userId, userName, configurationId,
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
-									registrationCompletionEvent, dataObjectRegistration.getUserSearchBase(),
-									dataObjectRegistration.getGroupSearchBase());
+									registrationCompletionEvent);
 
 					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
@@ -1028,8 +1027,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
 			dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
 					dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
-			dataObjectRegistrationRequest.setUserSearchBase(dataObjectRegistrationItem.getUserSearchBase());
-			dataObjectRegistrationRequest.setGroupSearchBase(dataObjectRegistrationItem.getGroupSearchBase());
 
 			String path = dataObjectRegistrationItem.getPath();
 			if (StringUtils.isEmpty(path)) {
@@ -2377,8 +2374,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleDriveAccessToken, directoryScanRegistrationItem.getUserSearchBase(),
-							directoryScanRegistrationItem.getGroupSearchBase())));
+							fs3Account, fgoogleDriveAccessToken)));
 		}
 
 		return dataObjectRegistrationItems;
@@ -2402,17 +2398,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                               item from S3 source, otherwise null.
 	 * @param googleDriveAccessToken (Optional) Provided if this is a registration
 	 *                               item from Google Drive source, otherwise null.
-	 * @param userDearchBase         (Optional) Provided for file-system
-	 *                               registration, LDAP base search for user DN.
-	 * @param groupDearchBase        (Optional) Provided for file-system
-	 *                               registration, LDAP base search for group DN.
 	 * @return data object registration DTO.
 	 */
 	private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem,
 			String basePath, String sourceFileContainerId, String callerObjectId,
 			HpcBulkMetadataEntries bulkMetadataEntries, HpcDirectoryScanPathMap pathMap,
-			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleDriveAccessToken,
-			String userSearchBase, String groupSearchBase) {
+			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleDriveAccessToken) {
 		// If pathMap provided - use the map to replace scanned path with user provided
 		// path (or part of
 		// path).
@@ -2447,10 +2438,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Set the metadata to create the parent collections.
 		dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
-
-		// Set the LDAP search base for user and group.
-		dataObjectRegistration.setUserSearchBase(userSearchBase);
-		dataObjectRegistration.setGroupSearchBase(groupSearchBase);
 
 		// Set the data object source to upload from.
 		HpcFileLocation source = new HpcFileLocation();
