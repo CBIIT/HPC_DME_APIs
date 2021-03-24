@@ -566,13 +566,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 								&& !transition.getStorageClassAsString().isEmpty())
 							hasTransition = true;
 					}
-					if (hasTransition && rule.getFilter() != null) {
+					if (hasTransition && rule.getFilter() != null && rule.getFilter().getPredicate() != null) {
 						LifecycleFilterPredicate predicate = rule.getFilter().getPredicate();
 						if (predicate instanceof LifecyclePrefixPredicate) {
 							LifecyclePrefixPredicate prefixPredicate = (LifecyclePrefixPredicate) predicate;
 							if (archiveLocation.getFileId().contains(prefixPredicate.getPrefix()))
 								return true;
 						}
+					} else if (hasTransition) {
+						//This is a transition without prefix applies to entire bucket.
+						return true;
 					}
 				}
 			}
