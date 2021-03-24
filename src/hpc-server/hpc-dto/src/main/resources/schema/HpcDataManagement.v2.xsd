@@ -57,8 +57,6 @@
 				<xsd:element name="parentCollectionsBulkMetadataEntries"
 					type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 				<xsd:element name="checksum" type="xsd:string" />
-				<xsd:element name="userSearchBase" type="xsd:string" />
-				<xsd:element name="groupSearchBase" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -118,8 +116,6 @@
 				type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="parentCollectionsBulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
-			<xsd:element name="userSearchBase" type="xsd:string" />
-			<xsd:element name="groupSearchBase" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -146,8 +142,6 @@
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 			<xsd:element name="pathMap"
 				type="hpc-domain-datamanagement:HpcDirectoryScanPathMap" />
-			<xsd:element name="userSearchBase" type="xsd:string" />
-			<xsd:element name="groupSearchBase" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

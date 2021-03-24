@@ -198,7 +198,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	}
 
 	@Override
-	public HpcDistinguishedNameSearchResult getDistinguishedName(int id, String keywordPrefix, String searchBase)
+	public HpcDistinguishedNameSearchResult getDistinguishedName(String id, String keywordPrefix, String searchBase)
 			throws HpcException {
 		// Connect to LDAP server.
 		DirContext dirContext = null;
