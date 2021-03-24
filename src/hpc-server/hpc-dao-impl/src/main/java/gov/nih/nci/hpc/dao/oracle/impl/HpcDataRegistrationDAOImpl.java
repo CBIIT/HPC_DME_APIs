@@ -462,12 +462,6 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			if (request.getCallerObjectId() != null) {
 				jsonRequest.put("callerObjectId", request.getCallerObjectId());
 			}
-			if (request.getUserSearchBase() != null) {
-				jsonRequest.put("userSearchBase", request.getUserSearchBase());
-			}
-			if (request.getGroupSearchBase() != null) {
-				jsonRequest.put("groupSearchBase", request.getGroupSearchBase());
-			}
 
 			if (request.getGlobusUploadSource() != null) {
 				JSONObject jsonGlobusUploadSource = new JSONObject();
@@ -765,16 +759,6 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Object createParentCollection = jsonRequest.get("createParentCollection");
 		if (createParentCollection != null) {
 			request.setCreateParentCollections(Boolean.valueOf(createParentCollection.toString()));
-		}
-
-		Object userSearchBase = jsonRequest.get("userSearchBase");
-		if (userSearchBase != null) {
-			request.setUserSearchBase(userSearchBase.toString());
-		}
-
-		Object groupSearchBase = jsonRequest.get("groupSearchBase");
-		if (groupSearchBase != null) {
-			request.setGroupSearchBase(groupSearchBase.toString());
 		}
 
 		// HpcDataObjectRegistrationRequest data structure has changed to support upload
