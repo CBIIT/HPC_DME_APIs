@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
@@ -1566,6 +1567,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} catch (UserPrincipalNotFoundException e) {
 			throw new HpcException("Owner or Group not found", HpcErrorType.INVALID_REQUEST_INPUT, e);
+		} catch (NoSuchFileException e) {
+			throw new HpcException("Archive file not found: " + archivePath, HpcErrorType.UNEXPECTED_ERROR, e);
 		} catch (IOException e) {
 			throw new HpcException(e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
