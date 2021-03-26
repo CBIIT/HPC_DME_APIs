@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -214,6 +215,8 @@ public interface HpcMetadataService {
 	 *                                    completed.
 	 * @param sourceSize                  (Optional) The data source size in bytes.
 	 * @param sourceURL                   (Optional) The data object source URL.
+	 * @param sourcePermissions           (Optional) The data object source path
+	 *                                    permissions object.
 	 * @param callerObjectId              (Optional) The caller object ID.
 	 * @param userId                      The user ID.
 	 * @param userName                    The user name.
@@ -222,6 +225,7 @@ public interface HpcMetadataService {
 	 *                                    ID.
 	 * @param registrationCompletionEvent If set to true, an event will be generated
 	 *                                    when registration is completed or failed.
+	 * 
 	 * @return The system generated metadata.
 	 * @throws HpcException on service failure.
 	 */
@@ -230,8 +234,9 @@ public interface HpcMetadataService {
 			String dataTransferRequestId, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
 			Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize, String sourceURL,
-			String callerObjectId, String userId, String userName, String configurationId,
-			String s3ArchiveConfigurationId, boolean registrationCompletionEvent) throws HpcException;
+			HpcPathPermissions sourcePermissions, String callerObjectId, String userId, String userName,
+			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
+			throws HpcException;
 
 	/**
 	 * Generate system metadata and attach to the data object in a registration w/
@@ -274,7 +279,8 @@ public interface HpcMetadataService {
 	 * @param linkSourcePath           (Optional) linkSourcePath.
 	 * @param s3ArchiveConfigurationId (Optional) The S3 archive configuration ID.
 	 * @param deepArchiveStatus        (Optional) The deep archive status.
-	 * @param deepArchiveDate          (Optional) The date deep archive was requested.
+	 * @param deepArchiveDate          (Optional) The date deep archive was
+	 *                                 requested.
 	 * @throws HpcException on service failure.
 	 */
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
