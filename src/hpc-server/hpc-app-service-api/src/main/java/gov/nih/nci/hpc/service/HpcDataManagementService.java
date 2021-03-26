@@ -524,12 +524,14 @@ public interface HpcDataManagementService {
 	 * @throws HpcException if the configuration was not found.
 	 */
 	public HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId) throws HpcException;
-	
+
 	/**
-	 * Determine if a collection has data objects (at least one) under it recursively.
+	 * Determine if a collection has data objects (at least one) under it
+	 * recursively.
 	 *
 	 * @param collection The collection to check for data objects under
-	 * @return true is the collection has at least one data object under it, or false otherwise.
+	 * @return true is the collection has at least one data object under it, or
+	 *         false otherwise.
 	 * @throws HpcException on service error
 	 */
 	public boolean hasDataObjects(HpcCollection collection) throws HpcException;
@@ -550,5 +552,4 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException;
-
 }

@@ -32,6 +32,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -48,6 +49,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	// SQL Queries.
 	private static final String GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL = "select * from HPC_DATA_MANAGEMENT_CONFIGURATION";
 	private static final String GET_S3_ARCHIVE_CONFIGURATIONS_SQL = "select * from HPC_S3_ARCHIVE_CONFIGURATION";
+	private static final String GET_DISTINGUISHED_NAME_SEARCH_SQL = "select * from HPC_DISTINGUISHED_NAME_SEARCH";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -126,6 +128,18 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		return s3Configuration;
 	};
 
+	// HpcDataTransferConfiguration Table (HPC_S3_ARCHIVE_CONFIGURATION) to Object
+	// mapper.
+	private RowMapper<HpcDistinguishedNameSearch> distinguishedNameSearchRowMapper = (rs, rowNum) -> {
+		// Map the S3 Configuration.
+		HpcDistinguishedNameSearch distinguishedNameSearch = new HpcDistinguishedNameSearch();
+		distinguishedNameSearch.setBasePath(rs.getString("BASE_PATH"));
+		distinguishedNameSearch.setUserSearchBase(rs.getString("USER_SEARCH_BASE"));
+		distinguishedNameSearch.setGroupSearchBase(rs.getString("GROUP_SEARCH_BASE"));
+
+		return distinguishedNameSearch;
+	};
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -162,6 +176,18 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get S3 Archive configurations: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcDistinguishedNameSearch> getDistinguishedNameSearches() throws HpcException {
+		try {
+			// Get all rows from HPC_DISTINGUISHED_NAME_SEARCH.
+			return jdbcTemplate.query(GET_DISTINGUISHED_NAME_SEARCH_SQL, distinguishedNameSearchRowMapper);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get distinguished name searches: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
@@ -300,7 +326,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 			metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
 			metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
 			metadataValidationRule.setDescription((String) jsonMetadataValidationRule.get("description"));
-			metadataValidationRule.setControllerAttribute((String) jsonMetadataValidationRule.get("controllerAttribute"));
+			metadataValidationRule
+					.setControllerAttribute((String) jsonMetadataValidationRule.get("controllerAttribute"));
 			metadataValidationRule.setControllerValue((String) jsonMetadataValidationRule.get("controllerValue"));
 			if (jsonMetadataValidationRule.get("encrypted") != null)
 				metadataValidationRule.setEncrypted((Boolean) jsonMetadataValidationRule.get("encrypted"));
