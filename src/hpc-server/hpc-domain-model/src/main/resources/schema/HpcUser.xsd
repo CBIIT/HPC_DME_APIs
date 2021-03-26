@@ -85,5 +85,15 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:element name="HpcDistinguishedNameSearchResult">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="distinguishedName" type="xsd:string" />
+				<xsd:element name="nihDistinguishedName" type="xsd:string" />
+				<xsd:element name="nihCommonName" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 </xsd:schema>
