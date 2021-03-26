@@ -15,6 +15,7 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	targetNamespace="http://hpc.nci.nih.gov/domain/model"
 	elementFormDefault="unqualified">
 
@@ -22,6 +23,8 @@
 		        schemaLocation="HpcMetadataTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		        schemaLocation="HpcDataTransferTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datamanagement"
+		        schemaLocation="HpcDataManagementTypes.xsd" />
 		
 	<xsd:element name="HpcSystemGeneratedMetadata">
 		<xsd:complexType>
@@ -39,16 +42,17 @@
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
 				<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
-				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" maxOccurs="1" />
+				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
 				<xsd:element name="sourceURL" type="xsd:string" />
+				<xsd:element name="sourcePermissions" type="hpc-domain-datamanagement:HpcPathPermissions" />
 				<xsd:element name="callerObjectId" type="xsd:string" />
 				<xsd:element name="checksum" type="xsd:string" />
 				<xsd:element name="metadataUpdated" type="xsd:dateTime" />
-				<xsd:element name="registrationCompletionEvent" type="xsd:boolean" minOccurs="0" maxOccurs="1" />
+				<xsd:element name="registrationCompletionEvent" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="linkSourcePath" type="xsd:string" />
 				<xsd:element name="extractedMetadataAttributes" type="xsd:string" />
-				<xsd:element name="dmeDataId" type="xsd:string"  minOccurs="0"  />
-				<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" minOccurs="0"/>
+				<xsd:element name="dmeDataId" type="xsd:string" />
+				<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" />
 				<xsd:element name="deepArchiveDate" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
