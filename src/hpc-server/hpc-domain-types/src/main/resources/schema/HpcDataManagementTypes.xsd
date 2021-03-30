@@ -171,6 +171,7 @@
 			<xsd:element name="owner" type="xsd:string" />
 			<xsd:element name="group" type="xsd:string" />
 			<xsd:element name="permissions" type="xsd:string" />
+			<xsd:element name="permissionsMode" type="xsd:int" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

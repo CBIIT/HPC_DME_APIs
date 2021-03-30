@@ -154,8 +154,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private static final List<String> INVALID_PATH_CHARACTERS = Arrays.asList("\\", ";", "?");
 
 	// Archive permissions setting
-	private static final String ARCHIVE_FILE_PERMISSIONS = "r--r-----";
-	private static final String ARCHIVE_DIRECTORY_PERMISSIONS = "r-xr-x---";
+	private static final int ARCHIVE_FILE_PERMISSIONS_MODE = 440;
+	private static final int ARCHIVE_DIRECTORY_PERMISSIONS_MODE = 550;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -1508,7 +1508,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		String fileId = metadata.getArchiveLocation().getFileId();
 		HpcPathPermissions dataObjectArchivePermissions = new HpcPathPermissions();
-		dataObjectArchivePermissions.setPermissions(ARCHIVE_FILE_PERMISSIONS);
+		dataObjectArchivePermissions.setPermissionsMode(ARCHIVE_FILE_PERMISSIONS_MODE);
 		if (Optional.ofNullable(archivePermissionsRequest.getSetArchivePermissionsFromSource()).orElse(false)) {
 			dataObjectArchivePermissions.setOwner(metadata.getSourcePermissions().getOwner());
 			dataObjectArchivePermissions.setGroup(metadata.getSourcePermissions().getGroup());
@@ -1556,7 +1556,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcArchiveDirectoryPermissionsRequestDTO archiveDirectoryPermissionsRequest : archivePermissionsRequest
 				.getDirectoryPermissions()) {
 			HpcPathPermissions directoryArchivePermissions = new HpcPathPermissions();
-			directoryArchivePermissions.setPermissions(ARCHIVE_DIRECTORY_PERMISSIONS);
+			directoryArchivePermissions.setPermissionsMode(ARCHIVE_DIRECTORY_PERMISSIONS_MODE);
 			directoryArchivePermissions.setOwner(archiveDirectoryPermissionsRequest.getPermissions().getOwner());
 			directoryArchivePermissions.setGroup(archiveDirectoryPermissionsRequest.getPermissions().getGroup());
 			String directoryPath = archiveDirectoryPermissionsRequest.getPath();
