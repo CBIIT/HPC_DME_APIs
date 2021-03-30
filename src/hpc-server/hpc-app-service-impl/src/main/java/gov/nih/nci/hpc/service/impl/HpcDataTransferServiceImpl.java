@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributes;
-import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -1532,6 +1530,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (StringUtils.isEmpty(fileId)) {
 			throw new HpcException("Invalid file id", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		if (permissions == null || StringUtils.isEmpty(permissions.getOwner())
+				|| StringUtils.isEmpty(permissions.getGroup()) || permissions.getPermissionsMode() == null) {
+			throw new HpcException("Invalid permissions object", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
@@ -1541,39 +1543,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		String archivePath = getFilePath(fileId, dataTransferConfiguration.getBaseArchiveDestination());
 
 		logger.info("Archive permissions request: {} [{}.{} {}]", archivePath, permissions.getOwner(),
-				permissions.getGroup(), permissions.getPermissions());
-
-		// Map the permissions to POSIX permissions
-		Set<PosixFilePermission> posixPermissions = null;
-		try {
-			posixPermissions = PosixFilePermissions.fromString(permissions.getPermissions());
-		} catch (IllegalArgumentException e) {
-			throw new HpcException("Invalid permissions", HpcErrorType.UNEXPECTED_ERROR, e);
-		}
+				permissions.getGroup(), permissions.getPermissionsMode());
 
 		// Set Owner, Group and Permissions on the archive path.
 		exec("chown " + permissions.getOwner() + " " + archivePath);
-		/*
-		 * try {
-		 *
-		 * Path path = Paths.get(archivePath); PosixFileAttributeView
-		 * posixFileAttributes = Files.getFileAttributeView(path,
-		 * PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
-		 * posixFileAttributes.setOwner(
-		 * path.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(
-		 * permissions.getOwner())); posixFileAttributes.setGroup(path.getFileSystem().
-		 * getUserPrincipalLookupService()
-		 * .lookupPrincipalByGroupName(permissions.getGroup()));
-		 * posixFileAttributes.setPermissions(posixPermissions);
-		 *
-		 * 
-		 * } catch (UserPrincipalNotFoundException e) { throw new
-		 * HpcException("Owner or Group not found", HpcErrorType.INVALID_REQUEST_INPUT,
-		 * e); } catch (NoSuchFileException e) { throw new
-		 * HpcException("Archive file not found: " + archivePath,
-		 * HpcErrorType.UNEXPECTED_ERROR, e); } catch (IOException e) { throw new
-		 * HpcException(e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR, e); }
-		 */
+		exec("chown :" + permissions.getGroup() + " " + archivePath);
+		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath);
 	}
 
 	// ---------------------------------------------------------------------//
