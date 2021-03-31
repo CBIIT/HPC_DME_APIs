@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
 
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
@@ -174,7 +175,9 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     if(StringUtils.isNotBlank(metadataFile)) {
       //This is a single file upload request
       destinationPath = Paths.get(destinationBasePath).getFileName().toString();
+      destinationPath = destinationPath.replace('\\', '/');
       destinationBasePath = Paths.get(destinationBasePath).getParent().toString();
+      destinationBasePath = destinationBasePath.replace('\\', '/');
     } else {
       destinationPath = getObjectPath(filePath, filePathBaseName, entity.getPath());
     }
@@ -381,7 +384,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
       try {
         logger.debug("entity.getAbsolutePath() {}", entity.getAbsolutePath());
         hash = com.google.common.io.Files.hash(file, Hashing.md5());
-        md5Checksum = hash.toString();
+        md5Checksum = BaseEncoding.base64().encode(hash.asBytes());
         logger.debug("md5Checksum {}", md5Checksum);
         hpcDataObjectRegistrationDTO.setChecksum(md5Checksum);
         System.out.println("Processing: " + basePath + objectPath + " | Checksum: " + md5Checksum);
@@ -593,7 +596,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			httpConnection.setReadTimeout(99999999);
 			
 			if(checksum != null)
-				httpConnection.addRequestProperty("md5chksum", checksum);
+				httpConnection.addRequestProperty("content-md5", checksum);
 			OutputStream out = httpConnection.getOutputStream();
 			
 
