@@ -10,20 +10,25 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -53,9 +58,12 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	// A set of all supported docs (to allow quick search).
 	private Set<String> docs = new HashSet<>();
 
-	// A map of all supported S3 archive configurations (to allow quick search by
+	// A map of all supported S3 archive configurations (to allow quick search by.
 	// ID).
 	private Map<String, HpcDataTransferConfiguration> s3ArchiveConfigurations = new HashMap<>();
+
+	// A map of all supported distinguished name searches.
+	private Map<String, HpcDistinguishedNameSearch> distinguishedNameSearches = new HashMap<>();
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -158,14 +166,19 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 		basePathConfigurations.clear();
 		docs.clear();
 		s3ArchiveConfigurations.clear();
+		distinguishedNameSearches.clear();
 
-		// Load the S3 archive configurations
-		for (HpcDataTransferConfiguration s3ArchiveConfiguration : dataManagementConfigurationDAO
-				.getS3ArchiveConfigurations()) {
-			s3ArchiveConfigurations.put(s3ArchiveConfiguration.getId(), s3ArchiveConfiguration);
-		}
+		// Load the distinguished name search bases.
+		dataManagementConfigurationDAO.getDistinguishedNameSearches()
+				.forEach(distinguishedNameSearch -> distinguishedNameSearches
+						.put(toNormalizedPath(distinguishedNameSearch.getBasePath()), distinguishedNameSearch));
 
-		// Load the data management configurations
+		// Load the S3 archive configurations.
+		dataManagementConfigurationDAO.getS3ArchiveConfigurations()
+				.forEach(s3ArchiveConfiguration -> s3ArchiveConfigurations.put(s3ArchiveConfiguration.getId(),
+						s3ArchiveConfiguration));
+
+		// Load the data management configurations.
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationDAO
 				.getDataManagementConfigurations()) {
 			// Ensure the base path is in the form of a relative path, and one level deep
@@ -187,8 +200,7 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 
 			// Determine the archive data transfer type.
 			// Note: Currently the transfer into the archive can be supported by either S3
-			// or Globus
-			// or Globus archive (Isilon file system).
+			// or Globus. We use Globus data-transfer proxy to transfer into POSIX archive.
 			HpcArchiveType globusArchiveType = dataManagementConfiguration.getGlobusConfiguration()
 					.getBaseArchiveDestination().getType();
 			boolean s3Archive = !StringUtils.isEmpty(dataManagementConfiguration.getS3UploadConfigurationId());
@@ -240,4 +252,23 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 		return s3ArchiveConfiguration;
 	}
 
+	/**
+	 * Get Distinguished Name Search.
+	 *
+	 * @param basePath The base path of the mounted disk on DME server to get the
+	 *                 search base for.
+	 * @return The distinguished name search base, or null if not found.
+	 */
+	public HpcDistinguishedNameSearch getDistinguishedNameSearch(String basePath) {
+		return distinguishedNameSearches.get(basePath);
+	}
+
+	/**
+	 * Get all supported DN search base paths.
+	 *
+	 * @return A list of all supported DN search base paths.
+	 */
+	public Set<String> getDistinguishedNameSearchBasePaths() {
+		return distinguishedNameSearches.keySet();
+	}
 }

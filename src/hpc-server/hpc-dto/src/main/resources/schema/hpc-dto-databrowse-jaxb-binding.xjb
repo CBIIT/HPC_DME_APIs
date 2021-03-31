@@ -71,6 +71,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcPathAttributes']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcPathPermissions']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectRegistrationTaskItem']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem" />
       </jxb:bindings>

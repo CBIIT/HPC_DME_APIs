@@ -35,6 +35,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -566,6 +568,33 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	public HpcNciAccount getUserFirstLastNameFromAD(String username) throws HpcException {
 
 		return ldapAuthenticationProxy.getUserFirstLastName(username);
+	}
+
+	@Override
+	public HpcDistinguishedNameSearch findDistinguishedNameSearch(String path) {
+		if (StringUtils.isEmpty(path)) {
+			return null;
+		}
+
+		for (String basePath : dataManagementConfigurationLocator.getDistinguishedNameSearchBasePaths()) {
+			if (path.startsWith(basePath)) {
+				return dataManagementConfigurationLocator.getDistinguishedNameSearch(basePath);
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public HpcDistinguishedNameSearchResult getUserDistinguishedName(String userId, String searchBase)
+			throws HpcException {
+		return ldapAuthenticationProxy.getDistinguishedName(userId, "uid", searchBase);
+	}
+
+	@Override
+	public HpcDistinguishedNameSearchResult getGroupDistinguishedName(String groupId, String searchBase)
+			throws HpcException {
+		return ldapAuthenticationProxy.getDistinguishedName(groupId, "gid", searchBase);
 	}
 
 	// ---------------------------------------------------------------------//

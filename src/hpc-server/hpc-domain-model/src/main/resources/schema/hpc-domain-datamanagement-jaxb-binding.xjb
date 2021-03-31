@@ -51,6 +51,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcPathAttributes']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcPathPermissions']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectRegistrationTaskItem']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem" />
       </jxb:bindings>
@@ -149,12 +152,6 @@
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
          <jxb:class ref="java.io.InputStream" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadRequest']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadResponse']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcMultipartUpload']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload" />
