@@ -299,28 +299,6 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="HpcUserPermOnOneCollectionDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="collectionPath" type="xsd:string" />
-				<xsd:element name="permission"
-					type="hpc-domain-datamanagement:HpcPermission" />
-				<xsd:element name="userId" type="xsd:string" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-	<xsd:element name="HpcUserPermsOnManyCollectionsDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="permissionsXCollections"
-					type="hpc-domain-datamanagement:HpcUserPermOnOneCollection"
-					minOccurs="0" maxOccurs="unbounded">
-				</xsd:element>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
 	<xsd:element name="HpcUserPermsForCollectionsDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -366,6 +344,70 @@
 					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="groupPermissionResponses"
 					type="hpc-dto-datamanagement:HpcGroupPermissionResponseDTO"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcArchivePermissionsRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectPermissions"
+					type="hpc-domain-datamanagement:HpcPathPermissions" />
+				<xsd:element name="setArchivePermissionsFromSource"
+					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="setDataManagementPermissions"
+					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="directoryPermissions"
+					type="hpc-dto-datamanagement:HpcArchiveDirectoryPermissionsRequestDTO"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:complexType name="HpcArchiveDirectoryPermissionsRequestDTO">
+		<xsd:sequence>
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="permissions"
+					type="hpc-domain-datamanagement:HpcPathPermissions" />
+		</xsd:sequence>
+	</xsd:complexType>
+		
+	<xsd:complexType name="HpcArchivePermissionResultDTO">
+		<xsd:sequence>
+			<xsd:element name="archivePermissions"
+					type="hpc-domain-datamanagement:HpcPathPermissions" />
+			<xsd:element name="result" type="xsd:boolean" />
+			<xsd:element name="message" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcDataManagementPermissionResultDTO">
+		<xsd:sequence>
+			<xsd:element name="userPermissionResult"
+					type="hpc-dto-datamanagement:HpcUserPermissionResponseDTO" />
+			<xsd:element name="groupPermissionResult"
+					type="hpc-dto-datamanagement:HpcGroupPermissionResponseDTO" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcArchivePermissionResponseDTO">
+		<xsd:sequence>
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="archivePermissionResult"
+					type="hpc-dto-datamanagement:HpcArchivePermissionResultDTO" />
+			<xsd:element name="dataManagementArchivePermissionResult"
+					type="hpc-dto-datamanagement:HpcDataManagementPermissionResultDTO" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcArchivePermissionsResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectPermissionsStatus"
+					type="hpc-dto-datamanagement:HpcArchivePermissionResponseDTO" />
+				<xsd:element name="directoryPermissionsStatus"
+					type="hpc-dto-datamanagement:HpcArchivePermissionResponseDTO" 
 					minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>

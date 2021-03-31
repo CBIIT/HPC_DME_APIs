@@ -14,13 +14,15 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -38,12 +40,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -134,8 +136,10 @@ public interface HpcDataTransferService {
 	 * @param completionEvent                If true, an event will be added when
 	 *                                       async download is complete.
 	 * @param size                           The data object's size in bytes.
-	 * @param downloadDataObject             The data transfer status of the data object
-	 * @param deepArchiveStatus              The deep archive status of the data object
+	 * @param downloadDataObject             The data transfer status of the data
+	 *                                       object
+	 * @param deepArchiveStatus              The deep archive status of the data
+	 *                                       object
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
@@ -144,8 +148,7 @@ public interface HpcDataTransferService {
 			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
-			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus)
-			throws HpcException;
+			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
 
 	/**
 	 * Generate a (pre-signed) download URL for a data object file.
@@ -183,7 +186,8 @@ public interface HpcDataTransferService {
 	 * @param objectId                 The data object id from the data management
 	 *                                 system (UUID).
 	 * @param registrarId              The user-id of the data registrar.
-	 * @return The checksum and deepArchiveStatus of the data object as HpcArchiveObjectMetadata
+	 * @return The checksum and deepArchiveStatus of the data object as
+	 *         HpcArchiveObjectMetadata
 	 * @throws HpcException on service failure.
 	 */
 	public HpcArchiveObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
@@ -289,8 +293,8 @@ public interface HpcDataTransferService {
 	/**
 	 * Get path attributes of local file (on the DME server file system)
 	 *
-	 * @param fileLocation The local file location
-	 * @return The path attributes
+	 * @param fileLocation The local file location.
+	 * @return The path attributes.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) throws HpcException;
@@ -428,7 +432,7 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
-	
+
 	/**
 	 * Reset all download tasks in-process indicator to false
 	 *
@@ -441,7 +445,7 @@ public interface HpcDataTransferService {
 	 * stamp.
 	 *
 	 * @param downloadTask The download task to mark processed.
-	 * @param inProcess Indicator whether the task is being actively processed.
+	 * @param inProcess    Indicator whether the task is being actively processed.
 	 * @throws HpcException on service failure.
 	 */
 	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
@@ -613,7 +617,7 @@ public interface HpcDataTransferService {
 	/**
 	 * Reset collection download task in-progress
 	 *
-	 * @param taskId    The collection download task ID..
+	 * @param taskId The collection download task ID..
 	 * @throws HpcException on database error.
 	 */
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException;
@@ -636,7 +640,7 @@ public interface HpcDataTransferService {
 	 * Get active download requests for a user.
 	 *
 	 * @param userId The user ID to query for.
-	 * @param doc  doc of group admin or all for system administrators
+	 * @param doc    doc of group admin or all for system administrators
 	 * @return A list of active download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -647,7 +651,7 @@ public interface HpcDataTransferService {
 	 *
 	 * @param userId The user ID to query for.
 	 * @param page   The requested results page.
-	 * @param doc  doc of group admin or all for system administrators
+	 * @param doc    doc of group admin or all for system administrators
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -657,7 +661,7 @@ public interface HpcDataTransferService {
 	 * Get download results (all completed download requests) count for a user.
 	 *
 	 * @param userId The user ID to query for.
-	 * @param doc  doc of group admin or all for system administrators
+	 * @param doc    doc of group admin or all for system administrators
 	 * @return A total count of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -716,19 +720,35 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByStatus(
-			HpcDataTransferDownloadStatus dataTransferStatus)
-			throws HpcException;
+			HpcDataTransferDownloadStatus dataTransferStatus) throws HpcException;
 
 	/**
 	 * Get data object meta data
-	 * @param fileLocation		The archive file location.
-	 * @param dataTransferType	The data transfer type.
-	 * @param configurationId	The configuration ID.
-	 * @param s3ArchiveConfigurationId	(Optional) The S3 configuration ID.
+	 * 
+	 * @param fileLocation             The archive file location.
+	 * @param dataTransferType         The data transfer type.
+	 * @param configurationId          The configuration ID.
+	 * @param s3ArchiveConfigurationId (Optional) The S3 configuration ID.
 	 * @return HpcArchiveObjectMetadata The metadata attached to the object.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public HpcArchiveObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId) throws HpcException;
+	public HpcArchiveObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId)
+			throws HpcException;
+
+	/**
+	 * Set archive permissions.
+	 *
+	 * @param configurationId          The data management configuration ID.
+	 * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID.
+	 *                                 Used to identify the S3 archive the
+	 *                                 data-object is stored in. This is only
+	 *                                 applicable for S3 archives, not POSIX.
+	 * @param dataTransferType         The data transfer type.
+	 * @param fileId                   The file ID. (Can be a directory)
+	 * @throws HpcException on service failure.
+	 */
+	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
+			HpcDataTransferType dataTransferType, String fileId, HpcPathPermissions permissions) throws HpcException;
 
 }
