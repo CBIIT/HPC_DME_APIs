@@ -185,5 +185,71 @@
 			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />	
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="HpcDataObjectUploadRequest">
+		<xsd:sequence>
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="dataObjectId" type="xsd:string" />
+			<xsd:element name="callerObjectId" type="xsd:string" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="globusUploadSource"
+				type="hpc-domain-datatransfer:HpcUploadSource" />
+			<xsd:element name="s3UploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleDriveUploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="fileSystemUploadSource"
+				type="hpc-domain-datatransfer:HpcUploadSource" />
+			<xsd:element name="sourceFile"
+				type="hpc-domain-datatransfer:HpcFile" />
+			<xsd:element name="generateUploadRequestURL"
+				type="xsd:boolean" />
+			<xsd:element name="uploadParts"
+				type="xsd:int" minOccurs="0" />
+			<xsd:element name="uploadRequestURLChecksum"
+				type="xsd:string" />
+			<xsd:element name="sourceSize" type="xsd:long"
+				minOccurs="0" />
+			<xsd:element name="sourcePermissions"
+				type="hpc-domain-datamanagement:HpcPathPermissions" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcDataObjectUploadResponse">
+		<xsd:sequence>
+			<xsd:element name="dataTransferRequestId"
+				type="xsd:string" />
+			<xsd:element name="uploadRequestURL" type="xsd:string" />
+			<xsd:element name="multipartUpload" 
+				type="hpc-domain-datatransfer:HpcMultipartUpload" />
+			<xsd:element name="uploadSource"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="archiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="dataTransferStatus"
+				type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
+			<xsd:element name="dataTransferMethod"
+				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
+			<xsd:element name="dataTransferType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="dataTransferStarted"
+				type="xsd:dateTime" />
+			<xsd:element name="dataTransferCompleted"
+				type="xsd:dateTime" />
+			<xsd:element name="sourceSize" type="xsd:long"
+				minOccurs="0" />
+			<xsd:element name="sourceURL" type="xsd:string" />
+			<xsd:element name="sourcePermissions"
+				type="hpc-domain-datamanagement:HpcPathPermissions" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcDistinguishedNameSearch">
+		<xsd:sequence>
+			<xsd:element name="basePath" type="xsd:string" />
+			<xsd:element name="userSearchBase" type="xsd:string" />
+			<xsd:element name="groupSearchBase" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 </xsd:schema>

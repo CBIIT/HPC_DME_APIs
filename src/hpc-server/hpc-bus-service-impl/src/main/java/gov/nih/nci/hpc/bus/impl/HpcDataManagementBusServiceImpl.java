@@ -42,17 +42,18 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -64,7 +65,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -81,10 +81,18 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
+import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchiveDirectoryPermissionsRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionResultDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
@@ -95,6 +103,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementPermissionResultDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
@@ -143,6 +152,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	// A list of invalid characters in a path (not acceptable by IRODS).
 	private static final List<String> INVALID_PATH_CHARACTERS = Arrays.asList("\\", ";", "?");
+
+	// Archive permissions setting
+	private static final int ARCHIVE_FILE_PERMISSIONS_MODE = 440;
+	private static final int ARCHIVE_DIRECTORY_PERMISSIONS_MODE = 550;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -298,7 +311,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcCollection collection = dataManagementService.getCollection(path, list != null ? list : false);
 		if (collection == null) {
-			return null;
+			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the metadata.
@@ -621,10 +634,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		String doc = null;
 		if (allUsers) {
-		  if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
-		    doc = "ALL";
-		  else
-		    doc = securityService.getRequestInvoker().getNciAccount().getDoc();
+			if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
+				doc = "ALL";
+			else
+				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
 		}
 
 		// Populate the DTO with active and completed download requests for this user.
@@ -847,7 +860,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									uploadResponse.getDataTransferMethod(), uploadResponse.getDataTransferType(),
 									uploadResponse.getDataTransferStarted(), uploadResponse.getDataTransferCompleted(),
 									uploadResponse.getSourceSize(), uploadResponse.getSourceURL(),
-									dataObjectRegistration.getCallerObjectId(), userId, userName, configurationId,
+									uploadResponse.getSourcePermissions(), dataObjectRegistration.getCallerObjectId(),
+									userId, userName, configurationId,
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
 									registrationCompletionEvent);
@@ -855,19 +869,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
 					if (dataObjectFile != null) {
-						HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
-								systemGeneratedMetadata.getArchiveLocation(),
-								systemGeneratedMetadata.getDataTransferType(),
-								systemGeneratedMetadata.getConfigurationId(),
-								systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-								systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+						HpcArchiveObjectMetadata objectMetadata = dataTransferService
+								.addSystemGeneratedMetadataToDataObject(systemGeneratedMetadata.getArchiveLocation(),
+										systemGeneratedMetadata.getDataTransferType(),
+										systemGeneratedMetadata.getConfigurationId(),
+										systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+										systemGeneratedMetadata.getObjectId(),
+										systemGeneratedMetadata.getRegistrarId());
 
 						// Update system-generated checksum metadata in iRODS w/ checksum value provided
 						// from
 						// the archive.
-						Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
-						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(), null, null,
-								null, null, null, null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
+						Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null
+								&& objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS)
+										? Calendar.getInstance()
+										: null;
+						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null,
+								objectMetadata.getChecksum(), null, null, null, null, null, null, null,
+								objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 
 						// Automatically extract metadata from the file itself and add to iRODs.
 						if (extractMetadata) {
@@ -1067,16 +1086,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the request invoker user-id.
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		String doc = null;
-        if (allUsers) {
-          if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
-            doc = "ALL";
-          else
-            doc = securityService.getRequestInvoker().getNciAccount().getDoc();
-        }
-        
+		if (allUsers) {
+			if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
+				doc = "ALL";
+			else
+				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
+		}
+
 		// Populate the DTO with active and completed registration requests for this
 		// user.
-        final boolean addUserId = doc == null ? false : true;
+		final boolean addUserId = doc == null ? false : true;
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
 		dataManagementService.getRegistrationTasks(userId, doc).forEach(
 				task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId)));
@@ -1139,7 +1158,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the data object.
 		HpcDataObject dataObject = dataManagementService.getDataObject(path);
 		if (dataObject == null) {
-			return null;
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the metadata for this data object.
@@ -1186,14 +1205,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getS3DownloadDestination() != null,
 				downloadRequest.getGoogleDriveDownloadDestination() != null);
 
-		
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId, completionEvent,
-				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(), metadata.getDeepArchiveStatus());
+				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
+				metadata.getDeepArchiveStatus());
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
@@ -1269,16 +1288,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (metadata.getDeepArchiveStatus() != null) {
 			// Get the data object metadata to check for restoration status
 			HpcArchiveObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
-					metadata.getArchiveLocation(), metadata.getDataTransferType(), 
-					metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId());
-			
+					metadata.getArchiveLocation(), metadata.getDataTransferType(), metadata.getConfigurationId(),
+					metadata.getS3ArchiveConfigurationId());
+
 			String restorationStatus = objectMetadata.getRestorationStatus();
-			
-			if (objectMetadata.getDeepArchiveStatus() != null && restorationStatus != null && !restorationStatus.equals("success")) {
+
+			if (objectMetadata.getDeepArchiveStatus() != null && restorationStatus != null
+					&& !restorationStatus.equals("success")) {
 				throw new HpcException("Object is in deep archived state. Download request URL cannot be generated.",
 						HpcRequestRejectReason.FILE_NOT_FOUND);
-			}	
-			
+			}
+
 		}
 
 		// Get the user requesting the download URL.
@@ -1475,6 +1495,111 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
+	public HpcArchivePermissionsResponseDTO setArchivePermissions(String path,
+			HpcArchivePermissionsRequestDTO archivePermissionsRequest) throws HpcException {
+		// Request Validation.
+		HpcSystemGeneratedMetadata metadata = validateArchivePermissionsRequest(path, archivePermissionsRequest);
+
+		HpcArchivePermissionsResponseDTO response = new HpcArchivePermissionsResponseDTO();
+
+		// Set the data file archive permissions.
+		HpcArchivePermissionResponseDTO dataObjectResponse = new HpcArchivePermissionResponseDTO();
+		dataObjectResponse.setPath(path);
+
+		String fileId = metadata.getArchiveLocation().getFileId();
+		HpcPathPermissions dataObjectArchivePermissions = new HpcPathPermissions();
+		dataObjectArchivePermissions.setPermissionsMode(ARCHIVE_FILE_PERMISSIONS_MODE);
+		if (Optional.ofNullable(archivePermissionsRequest.getSetArchivePermissionsFromSource()).orElse(false)) {
+			dataObjectArchivePermissions.setOwner(metadata.getSourcePermissions().getOwner());
+			dataObjectArchivePermissions.setGroup(metadata.getSourcePermissions().getGroup());
+		} else {
+			dataObjectArchivePermissions.setOwner(archivePermissionsRequest.getDataObjectPermissions().getOwner());
+			dataObjectArchivePermissions.setGroup(archivePermissionsRequest.getDataObjectPermissions().getGroup());
+		}
+
+		// Perform a DN search and update owner/group if found.
+		performDistinguishedNameSearch(metadata.getSourceLocation(), dataObjectArchivePermissions);
+
+		HpcArchivePermissionResultDTO dataObjectArchivePermissionResult = new HpcArchivePermissionResultDTO();
+		dataObjectArchivePermissionResult.setArchivePermissions(dataObjectArchivePermissions);
+		dataObjectArchivePermissionResult.setResult(true);
+
+		try {
+			dataTransferService.setArchivePermissions(metadata.getConfigurationId(),
+					metadata.getS3ArchiveConfigurationId(), metadata.getDataTransferType(), fileId,
+					dataObjectArchivePermissions);
+
+		} catch (HpcException e) {
+			logger.error("Failed to set archive permissions for {}", path, e);
+			dataObjectArchivePermissionResult.setResult(false);
+			dataObjectArchivePermissionResult.setMessage(e.getMessage());
+		}
+
+		dataObjectResponse.setArchivePermissionResult(dataObjectArchivePermissionResult);
+
+		// Set the data file data management (iRODS) permissions.
+		boolean setDataManagementPermissions = Optional
+				.ofNullable(archivePermissionsRequest.getSetDataManagementPermissions()).orElse(false);
+		if (setDataManagementPermissions) {
+			HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
+			dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(path, false,
+					dataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
+			dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(path, false,
+					dataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+
+			dataObjectResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
+		}
+
+		response.setDataObjectPermissionsStatus(dataObjectResponse);
+
+		// Set the directories archive permissions
+		for (HpcArchiveDirectoryPermissionsRequestDTO archiveDirectoryPermissionsRequest : archivePermissionsRequest
+				.getDirectoryPermissions()) {
+			HpcPathPermissions directoryArchivePermissions = new HpcPathPermissions();
+			directoryArchivePermissions.setPermissionsMode(ARCHIVE_DIRECTORY_PERMISSIONS_MODE);
+			directoryArchivePermissions.setOwner(archiveDirectoryPermissionsRequest.getPermissions().getOwner());
+			directoryArchivePermissions.setGroup(archiveDirectoryPermissionsRequest.getPermissions().getGroup());
+			String directoryPath = archiveDirectoryPermissionsRequest.getPath();
+			String directoryId = fileId.substring(0, fileId.indexOf(directoryPath) + directoryPath.length());
+
+			HpcArchivePermissionResponseDTO directoryResponse = new HpcArchivePermissionResponseDTO();
+			directoryResponse.setPath(directoryPath);
+
+			HpcArchivePermissionResultDTO directoryArchivePermissionResult = new HpcArchivePermissionResultDTO();
+			directoryArchivePermissionResult.setArchivePermissions(directoryArchivePermissions);
+			directoryArchivePermissionResult.setResult(true);
+
+			try {
+				dataTransferService.setArchivePermissions(metadata.getConfigurationId(),
+						metadata.getS3ArchiveConfigurationId(), metadata.getDataTransferType(), directoryId,
+						directoryArchivePermissions);
+
+			} catch (HpcException e) {
+				logger.error("Failed to set archive permissions for {}", directoryPath, e);
+				directoryArchivePermissionResult.setResult(false);
+				directoryArchivePermissionResult.setMessage(e.getMessage());
+			}
+
+			directoryResponse.setArchivePermissionResult(directoryArchivePermissionResult);
+
+			// Set the directory data management (iRODS) permissions.
+			if (setDataManagementPermissions) {
+				HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
+				dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(directoryPath,
+						true, dataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
+				dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(
+						directoryPath, true, dataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+
+				directoryResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
+			}
+
+			response.getDirectoryPermissionsStatus().add(directoryResponse);
+		}
+
+		return response;
+	}
+
+	@Override
 	public HpcDataManagementModelDTO getDataManagementModels() throws HpcException {
 		// Create a map DOC -> HpcDocDataManagementRulesDTO
 		Map<String, HpcDocDataManagementRulesDTO> docsRules = new HashMap<>();
@@ -1618,7 +1743,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return bulkMoveResponse;
 	}
 
-	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -1731,7 +1855,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return downloadResponse;
 	}
-	
+
 	/**
 	 * Construct a download response DTO object.
 	 *
@@ -1739,7 +1863,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param destinationFile     The destination file.
 	 * @param taskId              The data object download task ID.
 	 * @param downloadRequestURL  A URL to use to download the data object.
-	 * @param restoreInProgress   The flag to indicate if restoration is in progress.
+	 * @param restoreInProgress   The flag to indicate if restoration is in
+	 *                            progress.
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
@@ -1788,9 +1913,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 				// Register the parent collection.
 				registerCollection(parentCollectionPath, collectionRegistration, userId, userName, configurationId);
-				}
 			}
 		}
+	}
 
 	/**
 	 * Perform user permission requests on an entity (collection or data object)
@@ -2431,8 +2556,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
 			HpcBulkDataObjectRegistrationTask task, boolean addUserId) {
 		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
-		if(addUserId)
-		   taskDTO.setUserId(task.getUserId());
+		if (addUserId)
+			taskDTO.setUserId(task.getUserId());
 		taskDTO.setTaskId(task.getId());
 		taskDTO.setCreated(task.getCreated());
 		taskDTO.setTaskStatus(task.getStatus());
@@ -2444,15 +2569,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Return a bulk registration task DTO from a registration result domain object.
 	 *
-	 * @param result bulk registration result domain object to convert to DTO.
+	 * @param result    bulk registration result domain object to convert to DTO.
 	 * @param addUserId flag to populate userId
 	 * @return a bulk registration task DTO.
 	 */
 	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
 			HpcBulkDataObjectRegistrationResult result, boolean addUserId) {
 		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
-		if(addUserId)
-          taskDTO.setUserId(result.getUserId());
+		if (addUserId)
+			taskDTO.setUserId(result.getUserId());
 		taskDTO.setTaskId(result.getId());
 		taskDTO.setCreated(result.getCreated());
 		taskDTO.setCompleted(result.getCompleted());
@@ -2633,7 +2758,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Return 'system' default.
 		return metadataService.getDefaultCollectionMetadataEntries();
 	}
-	
+
 	/**
 	 * Check if specific path in the bulk metadata entries is exists.
 	 *
@@ -2832,6 +2957,184 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return dataObjectRegistrationResult;
+	}
+
+	/**
+	 * Validate an archive permissions request.
+	 *
+	 * @param path                      The data object path
+	 * @param archivePermissionsRequest The archive permissions request.
+	 * @return The data object system metadata
+	 * @throws HpcException if the request is invalid
+	 */
+	private HpcSystemGeneratedMetadata validateArchivePermissionsRequest(String path,
+			HpcArchivePermissionsRequestDTO archivePermissionsRequest) throws HpcException {
+		// Input Validation
+		if (StringUtils.isEmpty(path) || archivePermissionsRequest == null) {
+			throw new HpcException("Null / Empty data object path or request DTO", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the data object archive permissions request.
+		boolean setArchivePermissionsFromSource = Optional
+				.ofNullable(archivePermissionsRequest.getSetArchivePermissionsFromSource()).orElse(false);
+		HpcPathPermissions dataObjectPermissions = archivePermissionsRequest.getDataObjectPermissions();
+		if (dataObjectPermissions == null && !setArchivePermissionsFromSource) {
+			throw new HpcException("data object permissions not provided and set-from-source indicator is false",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (dataObjectPermissions != null && setArchivePermissionsFromSource) {
+			throw new HpcException("data object permissions provided and set-from-source indicator is true",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (dataObjectPermissions != null && (StringUtils.isEmpty(dataObjectPermissions.getOwner())
+				|| StringUtils.isEmpty(dataObjectPermissions.getGroup()))) {
+			throw new HpcException("data object permissions provided w/o owner or group",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the archive directories permissions request.
+		for (HpcArchiveDirectoryPermissionsRequestDTO archiveDirectoryPermissionsRequest : archivePermissionsRequest
+				.getDirectoryPermissions()) {
+			if (StringUtils.isEmpty(archiveDirectoryPermissionsRequest.getPath())) {
+				throw new HpcException("Null / Empty path in archive directory permission request",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			archiveDirectoryPermissionsRequest.setPath(toNormalizedPath(archiveDirectoryPermissionsRequest.getPath()));
+
+			HpcPathPermissions directoryPermissions = archiveDirectoryPermissionsRequest.getPermissions();
+			if (StringUtils.isEmpty(directoryPermissions.getOwner())
+					|| StringUtils.isEmpty(directoryPermissions.getGroup())) {
+				throw new HpcException("Directory permissions provided w/o owner or group for: "
+						+ archiveDirectoryPermissionsRequest.getPath(), HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (!path.startsWith(archiveDirectoryPermissionsRequest.getPath())) {
+				throw new HpcException("Directory path is not a parent of the data object:  "
+						+ archiveDirectoryPermissionsRequest.getPath(), HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+		// Validate that data object exists.
+		if (dataManagementService.getDataObject(path) == null) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			throw new HpcException("Archive permission request is not supported for soft-links",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Archive permission request supported only from POSIX archive.
+		if (metadata.getDataTransferType() == null
+				|| !metadata.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+			throw new HpcException("Archive permission request is not supported for S3 archive",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the file is archived.
+		HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
+		if (dataTransferStatus == null) {
+			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+			throw new HpcException("Object is not in archived state yet. It is in "
+					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		}
+
+		// If we set permissions from source. Validate the permissions on the source are
+		// available
+		if (setArchivePermissionsFromSource) {
+			HpcPathPermissions sourcePermissions = metadata.getSourcePermissions();
+			if (sourcePermissions == null || StringUtils.isEmpty(sourcePermissions.getOwner())
+					|| StringUtils.isEmpty(sourcePermissions.getGroup())) {
+				throw new HpcException(
+						"Request to set permissions from source, but no source permissions metadata found",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		return metadata;
+	}
+
+	/**
+	 * Perform user data management (iRODS) permission request on an entity
+	 * (collection or data object)
+	 *
+	 * @param path       The entity path (collection or data object).
+	 * @param collection True if the path is a collection, False if the path is a
+	 *                   data object.
+	 * @param userId     The user ID.
+	 * @param permission The permission
+	 * @return A user permission response.
+	 */
+	private HpcUserPermissionResponseDTO setEntityPermissionForUser(String path, boolean collection, String userId,
+			HpcPermission permission) {
+		HpcUserPermission userPermission = new HpcUserPermission();
+		userPermission.setUserId(userId);
+		userPermission.setPermission(permission);
+		List<HpcUserPermission> userPermissions = new ArrayList<>();
+		userPermissions.add(userPermission);
+
+		return setEntityPermissionForUsers(path, collection, userPermissions).get(0);
+	}
+
+	/**
+	 * Perform group data management (iRODS) permission request on an entity
+	 * (collection or data object)
+	 *
+	 * @param path       The entity path (collection or data object).
+	 * @param collection True if the path is a collection, False if the path is a
+	 *                   data object.
+	 * @param groupName  The group name.
+	 * @param permission The permission
+	 * @return A group permission response.
+	 */
+	private HpcGroupPermissionResponseDTO setEntityPermissionForGroup(String path, boolean collection, String groupName,
+			HpcPermission permission) {
+		HpcGroupPermission groupPermission = new HpcGroupPermission();
+		groupPermission.setGroupName(groupName);
+		groupPermission.setPermission(permission);
+		List<HpcGroupPermission> groupPermissions = new ArrayList<>();
+		groupPermissions.add(groupPermission);
+
+		return setEntityPermissionForGroups(path, collection, groupPermissions).get(0);
+	}
+
+	/**
+	 * Perform a distinguished name search
+	 *
+	 * @param sourceLocation The source location. Used to get the DN user/group
+	 *                       search base from configuration.
+	 * @param collection     dataObjectArchivePermissions If found, the owner/group
+	 *                       in this object are updated
+	 * @throws HpcException on DN search failure
+	 */
+	private void performDistinguishedNameSearch(HpcFileLocation sourceLocation,
+			HpcPathPermissions dataObjectArchivePermissions) throws HpcException {
+		// Perform a DN search and update owner/group if found.
+		if (sourceLocation != null) {
+			HpcDistinguishedNameSearch distinguishedSearchName = securityService
+					.findDistinguishedNameSearch(sourceLocation.getFileId());
+			if (distinguishedSearchName != null) {
+				HpcDistinguishedNameSearchResult userDistinguishedNameSearchResult = securityService
+						.getUserDistinguishedName(dataObjectArchivePermissions.getOwner(),
+								distinguishedSearchName.getUserSearchBase());
+				if (userDistinguishedNameSearchResult != null
+						&& !StringUtils.isEmpty(userDistinguishedNameSearchResult.getNihCommonName())) {
+					dataObjectArchivePermissions.setOwner((userDistinguishedNameSearchResult.getNihCommonName()));
+				}
+
+				HpcDistinguishedNameSearchResult groupDistinguishedNameSearchResult = securityService
+						.getGroupDistinguishedName(dataObjectArchivePermissions.getGroup(),
+								distinguishedSearchName.getGroupSearchBase());
+				if (groupDistinguishedNameSearchResult != null
+						&& !StringUtils.isEmpty(groupDistinguishedNameSearchResult.getNihCommonName())) {
+					dataObjectArchivePermissions.setGroup((groupDistinguishedNameSearchResult.getNihCommonName()));
+				}
+			}
+		}
 	}
 
 	private HpcPermissionForCollection fetchCollectionPermission(String path, String userId) throws HpcException {
