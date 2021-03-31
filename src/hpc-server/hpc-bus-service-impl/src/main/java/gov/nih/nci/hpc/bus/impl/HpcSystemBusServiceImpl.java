@@ -2024,7 +2024,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							+ systemGeneratedMetadata.getDataTransferStatus(), HpcErrorType.UNEXPECTED_ERROR);
 				}
 
-				// Transfer the data file from the temporary archive into the archive.
+				// Transfer the data file from the temporary archive / File system into the archive.
 				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null,
 						null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
