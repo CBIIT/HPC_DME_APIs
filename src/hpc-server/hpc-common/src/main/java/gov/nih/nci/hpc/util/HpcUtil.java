@@ -57,18 +57,26 @@ public class HpcUtil {
 	/**
 	 * Execute a (shell) command.
 	 *
-	 * @param command The command to execute.
+	 * @param command      The command to execute.
+	 * @param sudoPassword (Optional) if provided, the command will be executed w/
+	 *                     'sudo' using the provided password
 	 * @return The command's output
 	 * @throws HpcException If exec failed.
 	 */
-	public static String exec(String command) throws HpcException {
+	public static String exec(String command, String sudoPassword) throws HpcException {
 		if (StringUtils.isEmpty(command)) {
 			throw new HpcException("Null / empty command", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
+		
+		// Determine if need to exec w/ sudo.
+		String execCommand = command;
+		if(!StringUtils.isEmpty(command)) {
+			execCommand = "echo " + sudoPassword + " | sudo -S " + command;
+		}
+ 
 		Process process = null;
 		try {
-			process = Runtime.getRuntime().exec(command);
+			process = Runtime.getRuntime().exec(execCommand);
 			if (process.waitFor() > 0) {
 				String message = null;
 				if (process.getErrorStream() != null) {
@@ -87,7 +95,7 @@ public class HpcUtil {
 			Thread.currentThread().interrupt();
 			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
-			
+
 		} catch (IOException e) {
 			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
