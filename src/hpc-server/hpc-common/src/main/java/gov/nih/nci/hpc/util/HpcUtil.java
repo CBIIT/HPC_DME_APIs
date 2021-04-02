@@ -77,7 +77,7 @@ public class HpcUtil {
 		String execCommand = command;
 		if (!StringUtils.isEmpty(sudoPassword)) {
 			//execCommand = "echo " + sudoPassword + " | sudo -S " + command;
-			execCommand = "sudo -S " + command;
+			execCommand = "sudo " + command;
 		}
 
 		logger.info("ERAN: " + execCommand);
