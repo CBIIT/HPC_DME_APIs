@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -23,6 +25,9 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcUtil {
+	// The Logger instance.
+	private final static Logger logger = LoggerFactory.getLogger(new HpcUtil().getClass().getName());
+
 	// ---------------------------------------------------------------------//
 	// constructors
 	// ---------------------------------------------------------------------//
@@ -67,13 +72,15 @@ public class HpcUtil {
 		if (StringUtils.isEmpty(command)) {
 			throw new HpcException("Null / empty command", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+
 		// Determine if need to exec w/ sudo.
 		String execCommand = command;
-		if(!StringUtils.isEmpty(command)) {
+		if (!StringUtils.isEmpty(sudoPassword)) {
 			execCommand = "echo " + sudoPassword + " | sudo -S " + command;
 		}
- 
+
+		logger.info("ERAN: " + execCommand);
+
 		Process process = null;
 		try {
 			process = Runtime.getRuntime().exec(execCommand);
