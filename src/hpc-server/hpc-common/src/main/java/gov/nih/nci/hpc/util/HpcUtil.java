@@ -76,7 +76,8 @@ public class HpcUtil {
 		// Determine if need to exec w/ sudo.
 		String execCommand = command;
 		if (!StringUtils.isEmpty(sudoPassword)) {
-			execCommand = "echo " + sudoPassword + " | sudo -S " + command;
+			//execCommand = "echo " + sudoPassword + " | sudo -S " + command;
+			execCommand = "sudo -S " + command;
 		}
 
 		logger.info("ERAN: " + execCommand);
@@ -84,6 +85,8 @@ public class HpcUtil {
 		Process process = null;
 		try {
 			process = Runtime.getRuntime().exec(execCommand);
+			IOUtils.write(sudoPassword + "\n", process.getOutputStream(), StandardCharsets.UTF_8);
+			
 			if (process.waitFor() > 0) {
 				String message = null;
 				if (process.getErrorStream() != null) {
