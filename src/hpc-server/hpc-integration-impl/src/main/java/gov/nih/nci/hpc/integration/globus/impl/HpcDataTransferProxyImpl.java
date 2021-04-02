@@ -242,7 +242,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			String archiveFilePath = downloadRequest.getArchiveLocation().getFileId().replaceFirst(
 					baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 			try {
-				// Copy the file to the dowmload stage area.
+				// Copy the file to the download stage area.
 				FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getFileDestination());
 			} catch (IOException e) {
 				throw new HpcException("Failed to stage file from file system archive: " + archiveFilePath,
@@ -747,7 +747,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		try {
 			FileUtils.copyFile(sourceFile, new File(archiveFilePath));
 		} catch (IOException e) {
-			throw new HpcException("Failed to move file to file system storage: " + archiveFilePath,
+			throw new HpcException("Failed to copy file to POSIX archive: " + archiveFilePath,
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 

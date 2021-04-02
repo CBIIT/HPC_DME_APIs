@@ -68,7 +68,7 @@ public class HpcMetadataValidator {
   public static final String SOURCE_FILE_USER_DN_ATTRIBUTE = "source_file_user_dn";
   public static final String SOURCE_FILE_NIH_USER_DN_ATTRIBUTE = "source_file_nih_user_dn";
   public static final String SOURCE_FILE_NIH_GROUP_ATTRIBUTE = "source_file_nih_group";
-  public static final String SOURCE_FILE_GROUP_ATTRIBUTE = "source_file__group";
+  public static final String SOURCE_FILE_GROUP_ATTRIBUTE = "source_file_group";
   public static final String SOURCE_FILE_GROUP_DN_ATTRIBUTE = "source_file_group_dn";
   public static final String SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE = "source_file_nih_group_dn";
   public static final String SOURCE_FILE_PERMISSIONS_ATTRIBUTE = "source_file_permissions";
