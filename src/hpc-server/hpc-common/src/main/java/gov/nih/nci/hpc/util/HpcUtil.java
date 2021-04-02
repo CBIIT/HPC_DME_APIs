@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -25,9 +23,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcUtil {
-	// The Logger instance.
-	private final static Logger logger = LoggerFactory.getLogger(new HpcUtil().getClass().getName());
-
 	// ---------------------------------------------------------------------//
 	// constructors
 	// ---------------------------------------------------------------------//
@@ -76,18 +71,14 @@ public class HpcUtil {
 		// Determine if need to exec w/ sudo.
 		String execCommand = command;
 		if (!StringUtils.isEmpty(sudoPassword)) {
-			//execCommand = "echo " + sudoPassword + " | sudo -S " + command;
-			execCommand = "sudo " + command;
+			execCommand = "echo " + sudoPassword + "|sudo -S " + command;
 		}
-
-		logger.info("ERAN: " + execCommand);
 
 		Process process = null;
 		try {
 			process = Runtime.getRuntime().exec(execCommand);
-			IOUtils.write(sudoPassword + "\n", process.getOutputStream(), StandardCharsets.UTF_8);
-			
-			if (process.waitFor() > 0) {
+
+			if (process.waitFor() != 0) {
 				String message = null;
 				if (process.getErrorStream() != null) {
 					message = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
@@ -110,6 +101,7 @@ public class HpcUtil {
 			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
 		}
+		
 		return null;
 	}
 }
