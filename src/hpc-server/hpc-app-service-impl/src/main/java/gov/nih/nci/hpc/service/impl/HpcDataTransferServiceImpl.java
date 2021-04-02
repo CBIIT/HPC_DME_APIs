@@ -92,6 +92,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -1546,9 +1547,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				permissions.getGroup(), permissions.getPermissionsMode());
 
 		// Set Owner, Group and Permissions on the archive path.
-		exec("chown " + permissions.getOwner() + " " + archivePath);
-		exec("chown :" + permissions.getGroup() + " " + archivePath);
-		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath);
+		String sudoPassword = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword();
+		exec("chown " + permissions.getOwner() + " " + archivePath, sudoPassword);
+		exec("chown :" + permissions.getGroup() + " " + archivePath, sudoPassword);
+		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword);
 	}
 
 	// ---------------------------------------------------------------------//
