@@ -212,6 +212,7 @@
 				minOccurs="0" />
 			<xsd:element name="sourcePermissions"
 				type="hpc-domain-datamanagement:HpcPathPermissions" />
+			<xsd:element name="sudoPassword" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
