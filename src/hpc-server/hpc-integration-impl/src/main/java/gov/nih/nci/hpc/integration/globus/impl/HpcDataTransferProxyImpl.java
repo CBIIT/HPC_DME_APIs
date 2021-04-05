@@ -750,9 +750,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		try {
-			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
+			FileUtils.copyFile(sourceFile, new File(archiveFilePath));
+			//exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
 
-		} catch (HpcException e) {
+		} catch (IOException e) {
 			throw new HpcException(
 					"Failed to copy file to POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
