@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+import static gov.nih.nci.hpc.util.HpcUtil.exec;
 
 import java.io.File;
 import java.io.IOException;
@@ -196,7 +197,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// This is a synchronous upload request. Simply store the data to the
 			// file-system.
 			// No Globus action is required here.
-			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination);
+			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination,
+					uploadRequest.getSudoPassword());
 		}
 
 		// If the archive destination file exists, generate a new archive destination w/
@@ -731,23 +733,28 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
-	 * Save a file to the local file system archive
+	 * Save a file to the local file system (POSIX) archive
 	 *
 	 * @param sourceFile                 The source file to store.
 	 * @param archiveDestinationLocation The archive destination location.
 	 * @param baseArchiveDestination     The base archive destination.
+	 * @param sudoPassword               (Optional) a sudo password to perform the
+	 *                                   copy to the POSIX archive.
+	 * 
 	 * @return A data object upload response object.
 	 * @throws HpcException on IO exception.
 	 */
 	private HpcDataObjectUploadResponse saveFile(File sourceFile, HpcFileLocation archiveDestinationLocation,
-			HpcArchive baseArchiveDestination) throws HpcException {
+			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
 		Calendar transferStarted = Calendar.getInstance();
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		try {
-			FileUtils.copyFile(sourceFile, new File(archiveFilePath));
-		} catch (IOException e) {
-			throw new HpcException("Failed to copy file to POSIX archive: " + archiveFilePath,
+			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
+
+		} catch (HpcException e) {
+			throw new HpcException(
+					"Failed to copy file to POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 
