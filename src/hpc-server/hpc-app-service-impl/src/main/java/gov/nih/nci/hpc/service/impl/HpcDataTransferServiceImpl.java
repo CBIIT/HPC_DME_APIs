@@ -331,7 +331,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// Validate File System upload source.
-		String sudoPassword = null;
 		if (fileSystemUploadSource != null) {
 			if (sourceFile != null || generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -340,7 +339,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("Invalid File System upload source location",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			sudoPassword = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword();
 		}
 
 		// Validate source file.
@@ -375,7 +373,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setS3UploadSource(s3UploadSource);
 		uploadRequest.setGoogleDriveUploadSource(googleDriveUploadSource);
 		uploadRequest.setFileSystemUploadSource(fileSystemUploadSource);
-		uploadRequest.setSourceFile(sourceFile);
+		if (sourceFile != null) {
+			uploadRequest.setSourceFile(sourceFile);
+			uploadRequest
+					.setSudoPassword(systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+		}
 		uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
 		uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
 		uploadRequest.setUploadParts(uploadParts);
@@ -383,7 +385,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			uploadRequest.setSourceSize(pathAttributes.getSize());
 			uploadRequest.setSourcePermissions(pathAttributes.getPermissions());
 		}
-		uploadRequest.setSudoPassword(sudoPassword);
 
 		// Upload the data object file.
 		return uploadDataObject(uploadRequest, configurationId);
