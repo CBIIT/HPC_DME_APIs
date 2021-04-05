@@ -69,9 +69,11 @@ public class HpcUtil {
 		}
 
 		// Determine if need to exec w/ sudo.
-		String execCommand = command;
+		String[] execCommand = null;
 		if (!StringUtils.isEmpty(sudoPassword)) {
-			execCommand = "echo " + sudoPassword + "|sudo -S " + command;
+			execCommand = new String[] { "/bin/sh", "-c", "echo " + sudoPassword + "|sudo -S " + command };
+		} else {
+			execCommand = new String[] { command };
 		}
 
 		Process process = null;
@@ -101,7 +103,7 @@ public class HpcUtil {
 			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
 		}
-		
+
 		return null;
 	}
 }
