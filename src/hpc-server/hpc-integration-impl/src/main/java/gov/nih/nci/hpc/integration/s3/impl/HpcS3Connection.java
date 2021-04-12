@@ -17,15 +17,19 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3EncryptionClientV2Builder;
@@ -73,6 +77,9 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
+
+	// The Logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -202,6 +209,19 @@ public class HpcS3Connection {
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
+		KeyGenerator keyGenerator = null;
+		try {
+			keyGenerator = KeyGenerator.getInstance("AES");
+			keyGenerator.init(256);
+
+		} catch (NoSuchAlgorithmException e) {
+		}
+
+		// generate a symmetric encryption key for testing
+		SecretKey secretKey = keyGenerator.generateKey();
+		String enc = new String(secretKey.getEncoded());
+		logger.error("ERAN: " + enc);
+
 		KeyPair keyPair = null;
 		try {
 			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -210,10 +230,10 @@ public class HpcS3Connection {
 		} catch (NoSuchAlgorithmException e) {
 
 		}
-		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard()
-				.withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.StrictAuthenticatedEncryption))
-				.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(
-						new EncryptionMaterials(/*keyPair*/ new SecretKeySpec("secret-key".getBytes(), "AES") )))
+		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard().withRegion(Regions.DEFAULT_REGION)
+				.withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption))
+				.withEncryptionMaterialsProvider(
+						new StaticEncryptionMaterialsProvider(new EncryptionMaterials(secretKey)))
 				.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
 				.withEndpointConfiguration(endpointConfiguration).build();
 
