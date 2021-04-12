@@ -232,7 +232,7 @@ public class HpcS3Connection {
 		} catch (NoSuchAlgorithmException e) {
 
 		}
-		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard().withRegion(Regions.US_WEST_2)
+		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard().withRegion("us-east-1")
                 .withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.StrictAuthenticatedEncryption))
                 .withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(keyPair))).build();
 				//.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
