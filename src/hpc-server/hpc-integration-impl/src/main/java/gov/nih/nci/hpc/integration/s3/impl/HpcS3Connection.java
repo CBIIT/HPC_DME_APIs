@@ -234,9 +234,9 @@ public class HpcS3Connection {
 		}
 		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard().withRegion(Regions.US_WEST_2)
                 .withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.StrictAuthenticatedEncryption))
-                .withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(keyPair)))
-				.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
-				.withEndpointConfiguration(endpointConfiguration).build();
+                .withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(keyPair))).build();
+				//.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
+				//.withEndpointConfiguration(endpointConfiguration).build();
 
 		AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
 				.withPathStyleAccessEnabled(pathStyleAccessEnabled).withEndpointConfiguration(endpointConfiguration)
@@ -246,7 +246,7 @@ public class HpcS3Connection {
 		// support multipart upload,
 		// so we override the configured threshold w/ the max size of 5GB.
 		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-		s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3EncryptionClient)
+		s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
 				.withMinimumUploadPartSize(minimumUploadPartSize).withMultipartUploadThreshold(
 						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
 				.build();
