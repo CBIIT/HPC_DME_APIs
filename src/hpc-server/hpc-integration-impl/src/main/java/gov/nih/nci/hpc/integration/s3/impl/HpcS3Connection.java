@@ -233,7 +233,7 @@ public class HpcS3Connection {
 
 		}
 		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard().withRegion(Regions.US_EAST_1)
-				//.withClientConfiguration(new ClientConfiguration())
+				.withClientConfiguration(new ClientConfiguration())
 				.withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption))
 				.withEncryptionMaterialsProvider(
 						new StaticEncryptionMaterialsProvider(new EncryptionMaterials(secretKey)))
