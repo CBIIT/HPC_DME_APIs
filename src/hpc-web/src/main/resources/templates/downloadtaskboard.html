@@ -123,7 +123,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
                  { field: 'path', width:200, displayName : 'Path' },
                  { field: 'type', width:200, displayName : 'Type', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{grid.appScope.toTitleCase(row.entity.type)}}</div>'},
                  { field: 'result', width:200, displayName: 'Transfer Result'},
-                 
+                 { field: 'created', width:200, displayName : 'Created On' },
+                 { field: 'completed', width:200, displayName : 'Completed On'}
                ],
     onRegisterApi: function( gridApi ) {
       $scope.grid1Api = gridApi;
