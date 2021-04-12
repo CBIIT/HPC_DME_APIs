@@ -10,9 +10,14 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +26,13 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3EncryptionClientV2Builder;
+import com.amazonaws.services.s3.model.CryptoConfigurationV2;
+import com.amazonaws.services.s3.model.CryptoMode;
+import com.amazonaws.services.s3.model.EncryptionMaterials;
+import com.amazonaws.services.s3.model.StaticEncryptionMaterialsProvider;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 
@@ -111,7 +122,7 @@ public class HpcS3Connection {
 	}
 
 	/**
-	 * Authenticate a (user) S3 account S3 (AWS or 3rd Party Provider)
+	 * Authenticate a (user) S3 account (AWS or 3rd Party Provider)
 	 *
 	 * @param s3Account AWS S3 account.
 	 * @return TransferManager
@@ -191,14 +202,30 @@ public class HpcS3Connection {
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
+		KeyPair keyPair = null;
+		try {
+			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+			keyPairGenerator.initialize(2048);
+			keyPair = keyPairGenerator.generateKeyPair();
+		} catch (NoSuchAlgorithmException e) {
+
+		}
+		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard()
+				.withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.StrictAuthenticatedEncryption))
+				.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(
+						new EncryptionMaterials(/*keyPair*/ new SecretKeySpec("secret-key".getBytes(), "AES") )))
+				.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
+				.withEndpointConfiguration(endpointConfiguration).build();
+
+		AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
+				.withPathStyleAccessEnabled(pathStyleAccessEnabled).withEndpointConfiguration(endpointConfiguration)
+				.build();
+
 		// Create and return the S3 transfer manager. Note that Google Storage doesn't
 		// support multipart upload,
 		// so we override the configured threshold w/ the max size of 5GB.
 		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-		s3TransferManager.transferManager = TransferManagerBuilder.standard()
-				.withS3Client(AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
-						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
-						.withEndpointConfiguration(endpointConfiguration).build())
+		s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3EncryptionClient)
 				.withMinimumUploadPartSize(minimumUploadPartSize).withMultipartUploadThreshold(
 						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
 				.build();
