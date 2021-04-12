@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -231,6 +232,7 @@ public class HpcS3Connection {
 
 		}
 		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard().withRegion(Regions.DEFAULT_REGION)
+				.withClientConfiguration(new ClientConfiguration())
 				.withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption))
 				.withEncryptionMaterialsProvider(
 						new StaticEncryptionMaterialsProvider(new EncryptionMaterials(secretKey)))
