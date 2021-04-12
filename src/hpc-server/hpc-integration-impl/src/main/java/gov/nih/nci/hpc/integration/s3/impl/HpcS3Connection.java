@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.integration.s3.impl;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -220,8 +221,8 @@ public class HpcS3Connection {
 
 		// generate a symmetric encryption key for testing
 		SecretKey secretKey = keyGenerator.generateKey();
-		String enc = new String(secretKey.getEncoded());
-		logger.error("ERAN: " + enc);
+		String encodedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+		logger.error("ERAN: " + encodedKey);
 
 		KeyPair keyPair = null;
 		try {
