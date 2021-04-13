@@ -207,33 +207,12 @@ public class HpcS3Connection {
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
-		/*
-		 * KeyGenerator keyGenerator = null; try { keyGenerator =
-		 * KeyGenerator.getInstance("AES"); keyGenerator.init(256);
-		 * 
-		 * } catch (NoSuchAlgorithmException e) { }
-		 * 
-		 * // generate a symmetric encryption key for testing SecretKey secretKey =
-		 * keyGenerator.generateKey(); String encodedKey =
-		 * Base64.getEncoder().encodeToString(secretKey.getEncoded());
-		 * logger.error("ERAN: " + encodedKey);
-		 */
-
 		SecretKey secretKey = new SecretKeySpec(
 				Base64.getDecoder().decode("eZaQqQPhsUUpawan5W4TjRPhLbq95dMzJ6pHg3M09p8="), "AES");
 
-		/*
-		 * KeyPair keyPair = null; try { KeyPairGenerator keyPairGenerator =
-		 * KeyPairGenerator.getInstance("RSA"); keyPairGenerator.initialize(2048);
-		 * keyPair = keyPairGenerator.generateKeyPair(); } catch
-		 * (NoSuchAlgorithmException e) {
-		 * 
-		 * }
-		 */
-
 		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard()
-				.withCryptoConfiguration(
-						new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption).withRangeGetMode(CryptoRangeGetMode.ALL))
+				.withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
+						.withRangeGetMode(CryptoRangeGetMode.ALL))
 				.withEncryptionMaterialsProvider(
 						new StaticEncryptionMaterialsProvider(new EncryptionMaterials(secretKey)))
 				.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
