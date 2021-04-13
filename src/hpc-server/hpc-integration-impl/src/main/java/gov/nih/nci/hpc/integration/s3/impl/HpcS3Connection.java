@@ -232,7 +232,7 @@ public class HpcS3Connection {
 
 		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard()
 				.withCryptoConfiguration(
-						new CryptoConfigurationV2().withCryptoMode(CryptoMode.StrictAuthenticatedEncryption))
+						new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption))
 				.withEncryptionMaterialsProvider(
 						new StaticEncryptionMaterialsProvider(new EncryptionMaterials(secretKey)))
 				.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
