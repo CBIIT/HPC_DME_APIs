@@ -32,6 +32,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3EncryptionClientV2Builder;
 import com.amazonaws.services.s3.model.CryptoConfigurationV2;
 import com.amazonaws.services.s3.model.CryptoMode;
+import com.amazonaws.services.s3.model.CryptoRangeGetMode;
 import com.amazonaws.services.s3.model.EncryptionMaterials;
 import com.amazonaws.services.s3.model.StaticEncryptionMaterialsProvider;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -232,7 +233,7 @@ public class HpcS3Connection {
 
 		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard()
 				.withCryptoConfiguration(
-						new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption))
+						new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption).withRangeGetMode(CryptoRangeGetMode.ALL))
 				.withEncryptionMaterialsProvider(
 						new StaticEncryptionMaterialsProvider(new EncryptionMaterials(secretKey)))
 				.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
