@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+import static gov.nih.nci.hpc.util.HpcUtil.exec;
 
 import java.io.File;
 import java.io.IOException;
@@ -749,11 +750,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		try {
-			FileUtils.copyFile(sourceFile, new File(archiveFilePath));
-			// exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath,
-			// sudoPassword);
+			// FileUtils.copyFile(sourceFile, new File(archiveFilePath));
+			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
 
-		} catch (IOException e) {
+		} catch (HpcException e) {
 			throw new HpcException(
 					"Failed to copy file to POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
