@@ -10,28 +10,23 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.amazonaws.ClientConfiguration;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3EncryptionClientV2Builder;
@@ -211,30 +206,35 @@ public class HpcS3Connection {
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
-		KeyGenerator keyGenerator = null;
-		try {
-			keyGenerator = KeyGenerator.getInstance("AES");
-			keyGenerator.init(256);
+		/*
+		 * KeyGenerator keyGenerator = null; try { keyGenerator =
+		 * KeyGenerator.getInstance("AES"); keyGenerator.init(256);
+		 * 
+		 * } catch (NoSuchAlgorithmException e) { }
+		 * 
+		 * // generate a symmetric encryption key for testing SecretKey secretKey =
+		 * keyGenerator.generateKey(); String encodedKey =
+		 * Base64.getEncoder().encodeToString(secretKey.getEncoded());
+		 * logger.error("ERAN: " + encodedKey);
+		 */
 
-		} catch (NoSuchAlgorithmException e) {
-		}
+		SecretKey secretKey = new SecretKeySpec(
+				Base64.getDecoder().decode("eZaQqQPhsUUpawan5W4TjRPhLbq95dMzJ6pHg3M09p8="), "AES");
 
-		// generate a symmetric encryption key for testing
-		SecretKey secretKey = keyGenerator.generateKey();
-		String encodedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
-		logger.error("ERAN: " + encodedKey);
+		/*
+		 * KeyPair keyPair = null; try { KeyPairGenerator keyPairGenerator =
+		 * KeyPairGenerator.getInstance("RSA"); keyPairGenerator.initialize(2048);
+		 * keyPair = keyPairGenerator.generateKeyPair(); } catch
+		 * (NoSuchAlgorithmException e) {
+		 * 
+		 * }
+		 */
 
-		KeyPair keyPair = null;
-		try {
-			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-			keyPairGenerator.initialize(2048);
-			keyPair = keyPairGenerator.generateKeyPair();
-		} catch (NoSuchAlgorithmException e) {
-
-		}
 		AmazonS3 s3EncryptionClient = AmazonS3EncryptionClientV2Builder.standard()
-                .withCryptoConfiguration(new CryptoConfigurationV2().withCryptoMode(CryptoMode.StrictAuthenticatedEncryption))
-                .withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(keyPair)))
+				.withCryptoConfiguration(
+						new CryptoConfigurationV2().withCryptoMode(CryptoMode.StrictAuthenticatedEncryption))
+				.withEncryptionMaterialsProvider(
+						new StaticEncryptionMaterialsProvider(new EncryptionMaterials(secretKey)))
 				.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
 				.withEndpointConfiguration(endpointConfiguration).build();
 
