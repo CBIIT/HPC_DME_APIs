@@ -567,7 +567,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				dataManagementConfigurationLocator
 						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
 						.getBaseArchiveDestination(),
-				generateMetadata(objectId, registrarId));
+				generateMetadata(configurationId, objectId, registrarId));
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		objectMetadata.setChecksum(checksum);
@@ -1634,25 +1634,31 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * Generate metadata to attach to the data object in the archive: 1. UUID - the
 	 * data object UUID in the DM system (iRODS) 2. User ID - the user id that
 	 * registered the data object.
+	 * 
+	 * Note: creating archive metadata is configurable in
+	 * data-management-configuration.
 	 *
-	 * @param objectId    The data object UUID.
-	 * @param registrarId The user-id uploaded the data.
+	 * @param configurationId The data management configuration ID.
+	 * @param objectId        The data object UUID.
+	 * @param registrarId     The user-id uploaded the data.
 	 * @return a List of the 2 metadata.
 	 */
-	private List<HpcMetadataEntry> generateMetadata(String objectId, String registrarId) {
+	private List<HpcMetadataEntry> generateMetadata(String configurationId, String objectId, String registrarId) {
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
-		// Create the user-id metadata.
-		HpcMetadataEntry entry = new HpcMetadataEntry();
-		entry.setAttribute(REGISTRAR_ID_ATTRIBUTE);
-		entry.setValue(registrarId);
-		metadataEntries.add(entry);
+		if (dataManagementConfigurationLocator.get(configurationId).getCreateArchiveMetadata()) {
+			// Create the user-id metadata.
+			HpcMetadataEntry entry = new HpcMetadataEntry();
+			entry.setAttribute(REGISTRAR_ID_ATTRIBUTE);
+			entry.setValue(registrarId);
+			metadataEntries.add(entry);
 
-		// Create the path metadata.
-		entry = new HpcMetadataEntry();
-		entry.setAttribute(OBJECT_ID_ATTRIBUTE);
-		entry.setValue(objectId);
-		metadataEntries.add(entry);
+			// Create the path metadata.
+			entry = new HpcMetadataEntry();
+			entry.setAttribute(OBJECT_ID_ATTRIBUTE);
+			entry.setValue(objectId);
+			metadataEntries.add(entry);
+		}
 
 		return metadataEntries;
 	}
@@ -1771,7 +1777,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						: null,
 				uploadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
 				dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
-				generateMetadata(uploadRequest.getDataObjectId(), uploadRequest.getUserId()));
+				generateMetadata(configurationId, uploadRequest.getDataObjectId(), uploadRequest.getUserId()));
 	}
 
 	/**
