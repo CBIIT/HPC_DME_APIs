@@ -270,10 +270,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		try {
 			// Creating the metadata file.
-			List<String> metadata = new ArrayList<>();
-			metadataEntries.forEach(
-					metadataEntry -> metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
-			FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+			if (!metadataEntries.isEmpty()) {
+				List<String> metadata = new ArrayList<>();
+				metadataEntries.forEach(
+						metadataEntry -> metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
+				FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+			}
 
 			// Returning a calculated checksum.
 			return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
