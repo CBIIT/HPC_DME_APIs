@@ -166,12 +166,13 @@ public interface HpcDataTransferProxy {
    * @param fileLocation The file location.
    * @param baseArchiveDestination The archive's base destination location.
    * @param metadataEntries The metadata to set.
+   * @param sudoPassword Sudo password to perform the checksum. This needed on POSIX archive only.
    * @return The copied object checksum.
    * @throws HpcException on data transfer system failure.
    */
   public default String setDataObjectMetadata(Object authenticatedToken,
       HpcFileLocation fileLocation, HpcArchive baseArchiveDestination,
-      List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, String sudoPassword) throws HpcException {
     throw new HpcException("setDataObjectMetadata() is not supported",
         HpcErrorType.UNEXPECTED_ERROR);
   }

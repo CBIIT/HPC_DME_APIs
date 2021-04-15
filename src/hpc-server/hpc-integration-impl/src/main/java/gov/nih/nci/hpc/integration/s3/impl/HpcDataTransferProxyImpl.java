@@ -230,7 +230,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword)
+			throws HpcException {
 
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {
@@ -574,7 +575,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 								return true;
 						}
 					} else if (hasTransition) {
-						//This is a transition without prefix applies to entire bucket.
+						// This is a transition without prefix applies to entire bucket.
 						return true;
 					}
 				}
