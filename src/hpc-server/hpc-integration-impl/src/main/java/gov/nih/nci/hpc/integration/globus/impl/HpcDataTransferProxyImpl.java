@@ -25,9 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.support.RetryTemplate;
 
-import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -264,7 +261,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
+			String sudoPassword) throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
@@ -278,7 +276,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 
 			// Returning a calculated checksum.
-			return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
+			return exec("md5sum " + archiveFilePath, sudoPassword).split("\\s+")[0];
 
 		} catch (IOException e) {
 			throw new HpcException("Failed to calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
@@ -752,7 +750,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		try {
-			// FileUtils.copyFile(sourceFile, new File(archiveFilePath));
 			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
 
 		} catch (HpcException e) {

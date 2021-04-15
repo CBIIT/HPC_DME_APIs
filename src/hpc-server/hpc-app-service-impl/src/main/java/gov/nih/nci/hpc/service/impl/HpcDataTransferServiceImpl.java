@@ -567,7 +567,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				dataManagementConfigurationLocator
 						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
 						.getBaseArchiveDestination(),
-				generateMetadata(configurationId, objectId, registrarId));
+				generateMetadata(configurationId, objectId, registrarId),
+				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		objectMetadata.setChecksum(checksum);
