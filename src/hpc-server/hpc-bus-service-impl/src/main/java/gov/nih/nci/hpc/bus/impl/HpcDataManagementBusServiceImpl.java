@@ -1538,11 +1538,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean setDataManagementPermissions = Optional
 				.ofNullable(archivePermissionsRequest.getSetDataManagementPermissions()).orElse(false);
 		if (setDataManagementPermissions) {
+			// Perform a DN search and update owner/group if found.
+			HpcPathPermissions dnDataObjectArchivePermissions = performDistinguishedNameSearch(
+					metadata.getSourceLocation(), dataObjectArchivePermissions);
+
 			HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
 			dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(path, false,
-					dataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
+					dnDataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
 			dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(path, false,
-					dataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+					dnDataObjectArchivePermissions.getGroup(), HpcPermission.READ));
 
 			dataObjectResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
 		}
@@ -1581,11 +1585,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Set the directory data management (iRODS) permissions.
 			if (setDataManagementPermissions) {
+				// Perform a DN search and update owner/group if found.
+				HpcPathPermissions dnDirectoryArchivePermissions = performDistinguishedNameSearch(
+						metadata.getSourceLocation(), directoryArchivePermissions);
+
 				HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
 				dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(directoryPath,
-						true, dataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
+						true, dnDirectoryArchivePermissions.getOwner(), HpcPermission.OWN));
 				dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(
-						directoryPath, true, dataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+						directoryPath, true, dnDirectoryArchivePermissions.getGroup(), HpcPermission.READ));
 
 				directoryResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
 			}
@@ -3099,6 +3107,51 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return setEntityPermissionForGroups(path, collection, groupPermissions).get(0);
 	}
 
+	/**
+	 * Perform a distinguished name search.
+	 *
+	 * @param sourceLocation The source location. Used to get the DN user/group
+	 *                       search base from configuration.
+	 * @param permissions    The owner/group to search for DN and map to NIH LDAP
+	 *                       names
+	 * @return A permissions object w/ replaced DN if found. If not, same
+	 *         permissions object is returned
+	 * @throws HpcException on DN search failure
+	 */
+	private HpcPathPermissions performDistinguishedNameSearch(HpcFileLocation sourceLocation,
+			HpcPathPermissions permissions) throws HpcException {
+		HpcPathPermissions dnPermissions = new HpcPathPermissions();
+		dnPermissions.setUserId(permissions.getUserId());
+		dnPermissions.setOwner(permissions.getOwner());
+		dnPermissions.setGroupId(permissions.getGroupId());
+		dnPermissions.setGroup(permissions.getGroup());
+		dnPermissions.setPermissions(permissions.getPermissions());
+		dnPermissions.setPermissionsMode(permissions.getPermissionsMode());
+
+		// Perform a DN search and update owner/group if found.
+		if (sourceLocation != null) {
+			HpcDistinguishedNameSearch distinguishedSearchName = securityService
+					.findDistinguishedNameSearch(sourceLocation.getFileId());
+			if (distinguishedSearchName != null) {
+				HpcDistinguishedNameSearchResult userDistinguishedNameSearchResult = securityService
+						.getUserDistinguishedName(permissions.getOwner(), distinguishedSearchName.getUserSearchBase());
+				if (userDistinguishedNameSearchResult != null
+						&& !StringUtils.isEmpty(userDistinguishedNameSearchResult.getNihCommonName())) {
+					dnPermissions.setOwner((userDistinguishedNameSearchResult.getNihCommonName()));
+				}
+
+				HpcDistinguishedNameSearchResult groupDistinguishedNameSearchResult = securityService
+						.getGroupDistinguishedName(permissions.getGroup(),
+								distinguishedSearchName.getGroupSearchBase());
+				if (groupDistinguishedNameSearchResult != null
+						&& !StringUtils.isEmpty(groupDistinguishedNameSearchResult.getNihCommonName())) {
+					dnPermissions.setGroup((groupDistinguishedNameSearchResult.getNihCommonName()));
+				}
+			}
+		}
+
+		return dnPermissions;
+	}
 
 	private HpcPermissionForCollection fetchCollectionPermission(String path, String userId) throws HpcException {
 		// Input validation.
