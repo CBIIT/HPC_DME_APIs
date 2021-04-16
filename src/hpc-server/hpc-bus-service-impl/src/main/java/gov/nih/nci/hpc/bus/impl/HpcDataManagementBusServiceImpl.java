@@ -1517,9 +1517,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataObjectArchivePermissions.setGroup(archivePermissionsRequest.getDataObjectPermissions().getGroup());
 		}
 
-		// Perform a DN search and update owner/group if found.
-		//performDistinguishedNameSearch(metadata.getSourceLocation(), dataObjectArchivePermissions);
-
 		HpcArchivePermissionResultDTO dataObjectArchivePermissionResult = new HpcArchivePermissionResultDTO();
 		dataObjectArchivePermissionResult.setArchivePermissions(dataObjectArchivePermissions);
 		dataObjectArchivePermissionResult.setResult(true);
@@ -3102,40 +3099,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return setEntityPermissionForGroups(path, collection, groupPermissions).get(0);
 	}
 
-	/**
-	 * Perform a distinguished name search
-	 *
-	 * @param sourceLocation The source location. Used to get the DN user/group
-	 *                       search base from configuration.
-	 * @param collection     dataObjectArchivePermissions If found, the owner/group
-	 *                       in this object are updated
-	 * @throws HpcException on DN search failure
-	 */
-	private void performDistinguishedNameSearch(HpcFileLocation sourceLocation,
-			HpcPathPermissions dataObjectArchivePermissions) throws HpcException {
-		// Perform a DN search and update owner/group if found.
-		if (sourceLocation != null) {
-			HpcDistinguishedNameSearch distinguishedSearchName = securityService
-					.findDistinguishedNameSearch(sourceLocation.getFileId());
-			if (distinguishedSearchName != null) {
-				HpcDistinguishedNameSearchResult userDistinguishedNameSearchResult = securityService
-						.getUserDistinguishedName(dataObjectArchivePermissions.getOwner(),
-								distinguishedSearchName.getUserSearchBase());
-				if (userDistinguishedNameSearchResult != null
-						&& !StringUtils.isEmpty(userDistinguishedNameSearchResult.getNihCommonName())) {
-					dataObjectArchivePermissions.setOwner((userDistinguishedNameSearchResult.getNihCommonName()));
-				}
-
-				HpcDistinguishedNameSearchResult groupDistinguishedNameSearchResult = securityService
-						.getGroupDistinguishedName(dataObjectArchivePermissions.getGroup(),
-								distinguishedSearchName.getGroupSearchBase());
-				if (groupDistinguishedNameSearchResult != null
-						&& !StringUtils.isEmpty(groupDistinguishedNameSearchResult.getNihCommonName())) {
-					dataObjectArchivePermissions.setGroup((groupDistinguishedNameSearchResult.getNihCommonName()));
-				}
-			}
-		}
-	}
 
 	private HpcPermissionForCollection fetchCollectionPermission(String path, String userId) throws HpcException {
 		// Input validation.
