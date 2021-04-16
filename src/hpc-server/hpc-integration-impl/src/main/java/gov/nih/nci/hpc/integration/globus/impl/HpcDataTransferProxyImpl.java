@@ -749,7 +749,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		Calendar transferStarted = Calendar.getInstance();
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
+		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
+		
 		try {
+			exec("mkdir -p " + archiveDirectory, sudoPassword);
 			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
 
 		} catch (HpcException e) {
