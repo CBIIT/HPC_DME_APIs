@@ -1518,7 +1518,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Perform a DN search and update owner/group if found.
-		performDistinguishedNameSearch(metadata.getSourceLocation(), dataObjectArchivePermissions);
+		//performDistinguishedNameSearch(metadata.getSourceLocation(), dataObjectArchivePermissions);
 
 		HpcArchivePermissionResultDTO dataObjectArchivePermissionResult = new HpcArchivePermissionResultDTO();
 		dataObjectArchivePermissionResult.setArchivePermissions(dataObjectArchivePermissions);
