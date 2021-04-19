@@ -1543,10 +1543,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					metadata.getSourceLocation(), dataObjectArchivePermissions);
 
 			HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
-			dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(path, false,
-					dnDataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
-			dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(path, false,
-					dnDataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+			// if the owner group is 'root', we skip the data management permissions.
+			if (!dnDataObjectArchivePermissions.getOwner().equalsIgnoreCase("root")) {
+				dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(path, false,
+						dnDataObjectArchivePermissions.getOwner(), HpcPermission.OWN));
+			}
+			if (!dnDataObjectArchivePermissions.getGroup().equalsIgnoreCase("root")) {
+				dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(path, false,
+						dnDataObjectArchivePermissions.getGroup(), HpcPermission.READ));
+			}
 
 			dataObjectResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
 		}
@@ -1590,10 +1595,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						metadata.getSourceLocation(), directoryArchivePermissions);
 
 				HpcDataManagementPermissionResultDTO dataManagementArchivePermissionResult = new HpcDataManagementPermissionResultDTO();
-				dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(directoryPath,
-						true, dnDirectoryArchivePermissions.getOwner(), HpcPermission.OWN));
-				dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(
-						directoryPath, true, dnDirectoryArchivePermissions.getGroup(), HpcPermission.READ));
+				// if the owner group is 'root', we skip the data management permissions.
+				if (!dnDirectoryArchivePermissions.getOwner().equalsIgnoreCase("root")) {
+					dataManagementArchivePermissionResult.setUserPermissionResult(setEntityPermissionForUser(
+							directoryPath, true, dnDirectoryArchivePermissions.getOwner(), HpcPermission.OWN));
+				}
+				if (!dnDirectoryArchivePermissions.getGroup().equalsIgnoreCase("root")) {
+					dataManagementArchivePermissionResult.setGroupPermissionResult(setEntityPermissionForGroup(
+							directoryPath, true, dnDirectoryArchivePermissions.getGroup(), HpcPermission.READ));
+				}
 
 				directoryResponse.setDataManagementArchivePermissionResult(dataManagementArchivePermissionResult);
 			}
