@@ -333,6 +333,14 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDataObjectsUploadFileSystemReady() throws HpcException;
+	
+	/**
+	 * Get data objects that have their data upload in-progress from file-system.
+	 *
+	 * @return A list of data objects.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataObject> getDataObjectsUploadFileSystemInProgress() throws HpcException;
 
 	/**
 	 * Get all the links to a data object path.
