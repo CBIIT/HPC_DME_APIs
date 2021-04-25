@@ -445,9 +445,36 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the data objects that their data staged in file system for an
 		// upload.
 		List<HpcDataObject> dataObjectsInFileSystem = dataManagementService.getDataObjectsUploadFileSystemReady();
-		logger.info("{} Data Objects Upload from File System: {}", dataObjectsInFileSystem.size(),
+		logger.info("{} Data Objects Upload from File System - READY: {}", dataObjectsInFileSystem.size(),
 				dataObjectsInFileSystem);
 		uploadDataObjectsFile(dataObjectsInFileSystem, false);
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void processDataTransferUploadFileSystemInProgress() throws HpcException {
+		// Iterate through the data objects that their data transfer is in progress from
+		// file system.
+		List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsUploadFileSystemInProgress();
+		logger.info("{} Data Objects Upload from File System - IN_PROGRESS: {}", dataObjectsInProgress.size(),
+				dataObjectsInProgress);
+
+		for (HpcDataObject dataObject : dataObjectsInProgress) {
+			String path = dataObject.getAbsolutePath();
+			logger.info("Processing data object upload in-progress from file-system: {}", path);
+			try {
+
+				// Upload stopped (server shutdown). We just update the status accordingly.
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
+						HpcDataTransferUploadStatus.FILE_SYSTEM_READY, null, null, null, null, null, null, null, null);
+
+			} catch (HpcException e) {
+				logger.error("Failed to process data transfer upload in progress from file system:" + path, e);
+
+				// Process the data object registration failure.
+				processDataObjectRegistrationFailure(path, e.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -2016,7 +2043,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				if (systemGeneratedMetadata.getDataTransferStatus()
 						.equals(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE)) {
-					// Upload the file.
+					// Upload the file from the temporary archive.
 					uploadDataObjectFile(path,
 							dataTransferService.getArchiveFile(systemGeneratedMetadata.getConfigurationId(),
 									systemGeneratedMetadata.getS3ArchiveConfigurationId(),
@@ -2031,12 +2058,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							HpcDataTransferUploadStatus.FILE_SYSTEM_IN_PROGRESS, null, null, null, null, null, null,
 							null, null);
 
-					// Upload the file asynchronously.
-					CompletableFuture.runAsync(
-							() -> uploadDataObjectFile(path,
-									new File(systemGeneratedMetadata.getSourceLocation().getFileId()),
-									systemGeneratedMetadata, deleteFileAfterUpload),
-							dataObjectFileSystemUploadTaskExecutor);
+					// Upload the file from the file-system asynchronously.
+					CompletableFuture.runAsync(() -> {
+						try {
+
+							// Since this is executed in a separate thread. Need to get system-account
+							// execution again.
+							securityService.executeAsSystemAccount(Optional.empty(),
+									() -> uploadDataObjectFile(path,
+											new File(systemGeneratedMetadata.getSourceLocation().getFileId()),
+											systemGeneratedMetadata, deleteFileAfterUpload));
+
+						} catch (HpcException e) {
+							logger.error("Failed to execute file system upload task as system account", e);
+						}
+
+					}, dataObjectFileSystemUploadTaskExecutor);
 
 				} else {
 					throw new HpcException("Unexpected data object upload status for file upload task: "

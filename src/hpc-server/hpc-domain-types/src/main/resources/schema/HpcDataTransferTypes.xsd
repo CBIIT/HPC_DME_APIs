@@ -33,7 +33,6 @@
 			<xsd:enumeration value="STREAMING_STOPPED" />
 			<xsd:enumeration value="FILE_SYSTEM_READY" />
 			<xsd:enumeration value="FILE_SYSTEM_IN_PROGRESS" />
-			<xsd:enumeration value="FILE_SYSTEM_STOPPED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
