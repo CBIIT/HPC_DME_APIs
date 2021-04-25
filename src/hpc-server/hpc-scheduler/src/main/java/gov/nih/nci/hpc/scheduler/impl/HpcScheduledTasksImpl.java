@@ -107,9 +107,9 @@ public class HpcScheduledTasksImpl {
 	 * from the local DME file system (NAS) to the archive and complete data object
 	 * registration.
 	 */
-	@Scheduled(cron = "${hpc.scheduler.cron.processFileSystemUpload.delay}")
-	private void processFileSystemUploadTask() {
-		execute("processFileSystemUploadTask()", systemBusService::processFileSystemUpload, logger);
+	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadFileSystemReady.delay}")
+	private void processDataTranferUploadFileSystemReadyTask() {
+		execute("processFileSystemUploadTask()", systemBusService::processDataTranferUploadFileSystemReady, logger);
 	}
 
 	/**
