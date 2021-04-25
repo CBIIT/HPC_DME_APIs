@@ -1734,7 +1734,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			uploadResponse.setSourcePermissions(uploadRequest.getSourcePermissions());
 			uploadResponse.setUploadSource(uploadRequest.getFileSystemUploadSource().getSourceLocation());
 			uploadResponse.setDataTransferStarted(Calendar.getInstance());
-			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_FILE_SYSTEM);
+			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.FILE_SYSTEM_READY);
 			uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.FILE_SYSTEM);
 			return uploadResponse;
 		}
