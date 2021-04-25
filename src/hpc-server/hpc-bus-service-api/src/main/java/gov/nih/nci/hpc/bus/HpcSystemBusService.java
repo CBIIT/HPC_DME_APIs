@@ -77,7 +77,7 @@ public interface HpcSystemBusService {
    *
    * @throws HpcException on service failure.
    */
-  public void processFileSystemUpload() throws HpcException;
+  public void processDataTranferUploadFileSystemReady() throws HpcException;
 
   /**
    * Start all received data objects download tasks for Globus and process to make them in progress.

@@ -27,6 +27,7 @@
 		<prop key="hpc.bus.createLdapAccountOnly">true</prop>
 		<prop key="hpc.bus.collectionDownloadTaskExecutorThreadPoolSize">100</prop>
 		<prop key="hpc.bus.dataObjectDownloadTaskExecutorThreadPoolSize">100</prop>
+		<prop key="hpc.bus.dataObjectFileSystemTaskExecutorThreadPoolSize">10</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

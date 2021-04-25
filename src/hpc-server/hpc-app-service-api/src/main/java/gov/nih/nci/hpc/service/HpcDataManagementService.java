@@ -332,7 +332,7 @@ public interface HpcDataManagementService {
 	 * @return A list of data objects.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcDataObject> getDataObjectsUploadInFileSystem() throws HpcException;
+	public List<HpcDataObject> getDataObjectsUploadFileSystemReady() throws HpcException;
 
 	/**
 	 * Get all the links to a data object path.
