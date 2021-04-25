@@ -164,6 +164,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// for an upload.
 	private List<HpcMetadataQuery> dataTransferFileSystemReadyQuery = new ArrayList<>();
 
+	// Prepared query to get data objects that have their data placed in file system
+	// for an upload.
+	private List<HpcMetadataQuery> dataTransferFileSystemInProgressQuery = new ArrayList<>();
+
 	// Prepared query to get data objects that have tier deep archive in-progress
 	private List<HpcMetadataQuery> deepArchiveInProgressQuery = new ArrayList<>();
 
@@ -236,6 +240,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// upload.
 		dataTransferFileSystemReadyQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
 				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.FILE_SYSTEM_READY.value()));
+
+		// Prepare the query to get data objects with files staged in file system for
+		// upload.
+		dataTransferFileSystemInProgressQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.FILE_SYSTEM_IN_PROGRESS.value()));
 
 		// Prepare the query to get data objects in deep archive status in-progress
 		deepArchiveInProgressQuery.add(toMetadataQuery(DEEP_ARCHIVE_STATUS_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL,
@@ -653,6 +662,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	public List<HpcDataObject> getDataObjectsUploadFileSystemReady() throws HpcException {
 		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
 				dataTransferFileSystemReadyQuery);
+	}
+
+	@Override
+	public List<HpcDataObject> getDataObjectsUploadFileSystemInProgress() throws HpcException {
+		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+				dataTransferFileSystemInProgressQuery);
 	}
 
 	@Override
