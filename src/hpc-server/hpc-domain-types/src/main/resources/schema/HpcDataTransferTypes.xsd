@@ -31,7 +31,9 @@
 			<xsd:enumeration value="URL_GENERATED" />
 			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
 			<xsd:enumeration value="STREAMING_STOPPED" />
-			<xsd:enumeration value="IN_FILE_SYSTEM" />
+			<xsd:enumeration value="FILE_SYSTEM_READY" />
+			<xsd:enumeration value="FILE_SYSTEM_IN_PROGRESS" />
+			<xsd:enumeration value="FILE_SYSTEM_STOPPED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
