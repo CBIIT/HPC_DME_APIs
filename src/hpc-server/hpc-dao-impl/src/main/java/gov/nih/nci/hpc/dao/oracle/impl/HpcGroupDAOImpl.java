@@ -10,6 +10,9 @@
 
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.decodeGroupName;
+import static gov.nih.nci.hpc.util.HpcUtil.encodeGroupName;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -175,11 +178,11 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 
 		if (groupPattern != null) {
 			sqlQueryBuilder.append(GET_GROUPS_GROUP_NAME_PATTERN_FILTER);
-			args.add(groupPattern);
+			args.add(encodeGroupName(groupPattern));
 		}
 
 		try {
-			return jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args.toArray());
+			return decodeGroupNames(jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args.toArray()));
 
 		} catch (IncorrectResultSizeDataAccessException irse) {
 			return null;
@@ -200,11 +203,29 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 		args.add(userId);
 
 		try {
-			return jdbcTemplate.queryForList(sqlQueryBuilder.toString(), String.class, args.toArray());
+			return decodeGroupNames(
+					jdbcTemplate.queryForList(sqlQueryBuilder.toString(), String.class, args.toArray()));
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get groups for user: " + userId + ": " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
+	}
+
+	// ---------------------------------------------------------------------//
+	// Helper Methods
+	// ---------------------------------------------------------------------//
+
+	/**
+	 * decode a list of group names.
+	 *
+	 * @param groupNames A list of group names.
+	 * @return A list of decoded group names.
+	 */
+	private List<String> decodeGroupNames(List<String> groupNames) {
+		List<String> decodedGroupNames = new ArrayList<>();
+		groupNames.forEach(groupName -> decodedGroupNames.add(decodeGroupName(groupName)));
+
+		return decodedGroupNames;
 	}
 }
