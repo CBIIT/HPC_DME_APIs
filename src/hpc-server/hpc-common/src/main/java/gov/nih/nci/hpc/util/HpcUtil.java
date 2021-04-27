@@ -24,6 +24,13 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public class HpcUtil {
 	// ---------------------------------------------------------------------//
+	// Constants
+	// ---------------------------------------------------------------------//
+
+	// Group name space encoding.
+	private static final String GROUP_NAME_SPACE_CODE = "_SPC_";
+
+	// ---------------------------------------------------------------------//
 	// constructors
 	// ---------------------------------------------------------------------//
 
@@ -105,5 +112,26 @@ public class HpcUtil {
 		}
 
 		return null;
+	}
+
+	/**
+	 * iRODS not allowing spaces in group names. Encode group name by replacing
+	 * spaces with a sequence of characters representing 'space.
+	 *
+	 * @param groupName The group name to encode
+	 * @return The encoded group name
+	 */
+	public static String encodeGroupName(String groupName) {
+		return groupName.replace(" ", GROUP_NAME_SPACE_CODE);
+	}
+
+	/**
+	 * Decode group name.
+	 *
+	 * @param groupName The group name to encode
+	 * @return The encoded group name
+	 */
+	public static String decodeGroupName(String groupName) {
+		return groupName.replace(GROUP_NAME_SPACE_CODE, " ");
 	}
 }
