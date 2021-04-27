@@ -10,6 +10,9 @@
  */
 package gov.nih.nci.hpc.integration.irods.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.decodeGroupName;
+import static gov.nih.nci.hpc.util.HpcUtil.encodeGroupName;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -236,23 +239,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
 				if (StringUtils.isEmpty(metadataEntry.getValue())) {
 
-					//Attribute does not have value, so delete it
+					// Attribute does not have value, so delete it
 					for (MetaDataAndDomainData metadata : metadataAvus) {
-						 if(metadataEntry.getAttribute().contentEquals(metadata.getAvuAttribute())) {
-							collectionAO.deleteAVUMetadata(absolutePath,
-									AvuData.instance(metadata.getAvuAttribute(), metadata.getAvuValue(), metadata.getAvuUnit()));
+						if (metadataEntry.getAttribute().contentEquals(metadata.getAvuAttribute())) {
+							collectionAO.deleteAVUMetadata(absolutePath, AvuData.instance(metadata.getAvuAttribute(),
+									metadata.getAvuValue(), metadata.getAvuUnit()));
 							break;
-						 }
+						}
 					}
 				} else {
 
 					AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
+							!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit()
+									: DEFAULT_METADATA_UNIT);
 					try {
 						collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 
 					} catch (DataNotFoundException e) {
-					// Metadata was not found to update. Add it.
+						// Metadata was not found to update. Add it.
 						collectionAO.addAVUMetadata(absolutePath, avuData);
 					}
 				}
@@ -305,23 +309,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
 				if (StringUtils.isEmpty(metadataEntry.getValue())) {
 
-					//Attribute does not have value, so delete it
+					// Attribute does not have value, so delete it
 					for (MetaDataAndDomainData metadata : metadataAvus) {
-						 if(metadataEntry.getAttribute().contentEquals(metadata.getAvuAttribute())) {
-							dataObjectAO.deleteAVUMetadata(absolutePath,
-								AvuData.instance(metadata.getAvuAttribute(), metadata.getAvuValue(), metadata.getAvuUnit()));
+						if (metadataEntry.getAttribute().contentEquals(metadata.getAvuAttribute())) {
+							dataObjectAO.deleteAVUMetadata(absolutePath, AvuData.instance(metadata.getAvuAttribute(),
+									metadata.getAvuValue(), metadata.getAvuUnit()));
 							break;
-						 }
+						}
 					}
 				} else {
 					AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
+							!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit()
+									: DEFAULT_METADATA_UNIT);
 					try {
 						dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 
 					} catch (DataNotFoundException e) {
-					// Metadata was not found to update. Add it.
-					dataObjectAO.addAVUMetadata(absolutePath, avuData);
+						// Metadata was not found to update. Add it.
+						dataObjectAO.addAVUMetadata(absolutePath, avuData);
 					}
 				}
 			}
@@ -617,7 +622,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		// Set the permission.
 		try {
 			irodsConnection.getCollectionAO(authenticatedToken).setAccessPermission(irodsConnection.getZone(),
-					getAbsolutePath(path), permissionRequest.getSubject(), true, permission);
+					getAbsolutePath(path), encodeSubjectPermission(permissionRequest).getSubject(), true, permission);
 
 		} catch (InvalidGroupException ige) {
 			throw new HpcException(
@@ -698,7 +703,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		// Set the permission.
 		try {
 			irodsConnection.getDataObjectAO(authenticatedToken).setAccessPermission(irodsConnection.getZone(),
-					getAbsolutePath(path), permissionRequest.getSubject(), permission);
+					getAbsolutePath(path), encodeSubjectPermission(permissionRequest).getSubject(), permission);
 
 		} catch (InvalidGroupException ige) {
 			throw new HpcException(
@@ -723,7 +728,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	public void addGroup(Object authenticatedToken, String groupName) throws HpcException {
 		try {
 			UserGroup irodsUserGroup = new UserGroup();
-			irodsUserGroup.setUserGroupName(groupName);
+			irodsUserGroup.setUserGroupName(encodeGroupName(groupName));
 			irodsUserGroup.setZone(irodsConnection.getZone());
 			irodsConnection.getUserGroupAO(authenticatedToken).addUserGroup(irodsUserGroup);
 
@@ -736,7 +741,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Override
 	public void deleteGroup(Object authenticatedToken, String groupName) throws HpcException {
 		try {
-			irodsConnection.getUserGroupAO(authenticatedToken).removeUserGroup(groupName);
+			irodsConnection.getUserGroupAO(authenticatedToken).removeUserGroup(encodeGroupName(groupName));
 
 		} catch (Exception e) {
 			throw new HpcException("Failed to delete a group: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
@@ -747,8 +752,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Override
 	public boolean groupExists(Object authenticatedToken, String groupName) throws HpcException {
 		try {
-			List<String> groupNames = irodsConnection.getUserGroupAO(authenticatedToken).findUserGroupNames(groupName,
-					false);
+			List<String> groupNames = irodsConnection.getUserGroupAO(authenticatedToken)
+					.findUserGroupNames(encodeGroupName(groupName), false);
 			return groupNames != null ? !groupNames.isEmpty() : false;
 
 		} catch (Exception e) {
@@ -760,7 +765,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Override
 	public void addGroupMember(Object authenticatedToken, String groupName, String userId) throws HpcException {
 		try {
-			irodsConnection.getUserGroupAO(authenticatedToken).addUserToGroup(groupName, userId,
+			irodsConnection.getUserGroupAO(authenticatedToken).addUserToGroup(encodeGroupName(groupName), userId,
 					irodsConnection.getZone());
 
 		} catch (InvalidGroupException ige) {
@@ -780,7 +785,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Override
 	public void deleteGroupMember(Object authenticatedToken, String groupName, String userId) throws HpcException {
 		try {
-			irodsConnection.getUserGroupAO(authenticatedToken).removeUserFromGroup(groupName, userId,
+			irodsConnection.getUserGroupAO(authenticatedToken).removeUserFromGroup(encodeGroupName(groupName), userId,
 					irodsConnection.getZone());
 
 		} catch (InvalidGroupException ige) {
@@ -800,7 +805,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Override
 	public List<String> getGroupMembers(Object authenticatedToken, String groupName) throws HpcException {
 		try {
-			return toHpcUserIds(irodsConnection.getUserGroupAO(authenticatedToken).listUserGroupMembers(groupName));
+			return toHpcUserIds(irodsConnection.getUserGroupAO(authenticatedToken)
+					.listUserGroupMembers(encodeGroupName(groupName)));
 
 		} catch (Exception e) {
 			throw new HpcException("Failed to get group members: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
@@ -1181,6 +1187,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 				return null;
 			}
 			hpcSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
+			hpcSubjectPermission.setSubject(decodeGroupName(hpcSubjectPermission.getSubject()));
 
 		} else {
 			hpcSubjectPermission.setSubjectType(HpcSubjectType.USER);
@@ -1288,4 +1295,23 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		}
 	}
 
+	/**
+	 * iRODS not allowing spaces in group names. Encode group name by replacing
+	 * spaces with a sequence of characters representing 'space.
+	 *
+	 * @param subjectPermission Encode the group name in this subject permission.
+	 * @return Encoded subject permission object.
+	 */
+	private HpcSubjectPermission encodeSubjectPermission(HpcSubjectPermission subjectPermission) {
+		if (subjectPermission.getSubjectType().equals(HpcSubjectType.GROUP)) {
+			HpcSubjectPermission encodedSubjectPermission = new HpcSubjectPermission();
+			encodedSubjectPermission.setSubject(encodeGroupName(subjectPermission.getSubject()));
+			encodedSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
+			encodedSubjectPermission.setPermission(subjectPermission.getPermission());
+
+			return encodedSubjectPermission;
+		}
+
+		return subjectPermission;
+	}
 }
