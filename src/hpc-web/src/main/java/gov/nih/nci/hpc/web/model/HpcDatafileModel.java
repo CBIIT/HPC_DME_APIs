@@ -72,13 +72,13 @@ public class HpcDatafileModel {
 		Collections.sort(parentMetadataEntries, new Comparator<HpcMetadataAttrEntry>() {
 			@Override
 			public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2) {
-				if (entry1.getLevelLabel() != null && entry2.getLevelLabel() != null && entry1.getLevelLabel().compareTo(entry2.getLevelLabel()) == 0) {
+				if (entry1.getLevel() != null && entry2.getLevel() != null && entry1.getLevel().compareTo(entry2.getLevel()) == 0) {
 					if (entry1.getAttrName() != null && entry2.getAttrName() != null)
 						return entry1.getAttrName().compareTo(entry2.getAttrName());
 					else 
 						return -1;
-				} else if (entry1.getLevelLabel() != null && entry2.getLevelLabel() != null) {
-					return entry1.getLevelLabel().compareTo(entry2.getLevelLabel());
+				} else if (entry1.getLevel() != null && entry2.getLevel() != null) {
+					return entry1.getLevel().compareTo(entry2.getLevel());
 				} else 
 					return -1;
 			}
