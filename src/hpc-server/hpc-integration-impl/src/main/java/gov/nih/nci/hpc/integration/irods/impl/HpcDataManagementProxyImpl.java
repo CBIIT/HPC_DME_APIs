@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
@@ -1303,7 +1304,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	 * @return Encoded subject permission object.
 	 */
 	private HpcSubjectPermission encodeSubjectPermission(HpcSubjectPermission subjectPermission) {
-		if (subjectPermission.getSubjectType().equals(HpcSubjectType.GROUP)) {
+		if (Optional.ofNullable(subjectPermission.getSubjectType()).orElse(HpcSubjectType.USER)
+				.equals(HpcSubjectType.GROUP)) {
 			HpcSubjectPermission encodedSubjectPermission = new HpcSubjectPermission();
 			encodedSubjectPermission.setSubject(encodeGroupName(subjectPermission.getSubject()));
 			encodedSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
