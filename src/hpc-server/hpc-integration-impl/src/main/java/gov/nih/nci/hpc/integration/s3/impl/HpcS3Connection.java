@@ -11,10 +11,6 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.KeySpec;
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -25,8 +21,6 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.SdkClientException;
@@ -81,12 +75,6 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
-
-	// Random generator.
-	SecureRandom secureRandom = new SecureRandom();
-
-	// The Logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -304,12 +292,10 @@ public class HpcS3Connection {
 	 * @throws HpcException if authentication failed
 	 */
 	private SecretKey getSecretKey(String encryptionAlgorithm, String encryptionPassword) throws HpcException {
-		byte salt[] = new byte[8];
-		secureRandom.nextBytes(salt);
-
 		try {
-			return new SecretKeySpec(SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-					.generateSecret(new PBEKeySpec(encryptionPassword.toCharArray(), salt, 65536, 256)).getEncoded(),
+			return new SecretKeySpec(
+					SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+							.generateSecret(new PBEKeySpec(encryptionPassword.toCharArray())).getEncoded(),
 					encryptionAlgorithm);
 
 		} catch (GeneralSecurityException e) {
