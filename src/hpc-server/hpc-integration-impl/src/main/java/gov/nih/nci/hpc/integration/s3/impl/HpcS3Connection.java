@@ -10,14 +10,11 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
-import java.security.GeneralSecurityException;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
@@ -75,9 +72,6 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
-	
-	// Salt for encryption. Must be 8 characters.
-	private byte salt[] = "DME--SALT".getBytes();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -219,8 +213,8 @@ public class HpcS3Connection {
 		if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 			s3Client = AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new CryptoConfigurationV2()
 					.withCryptoMode(CryptoMode.AuthenticatedEncryption).withRangeGetMode(CryptoRangeGetMode.ALL))
-					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(
-							new EncryptionMaterials(getSecretKey(encryptionAlgorithm, encryptionKey))))
+					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
+							new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
 					.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
 					.withEndpointConfiguration(endpointConfiguration).build();
 		} else {
@@ -266,8 +260,8 @@ public class HpcS3Connection {
 						.withCryptoConfiguration(
 								new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
 										.withRangeGetMode(CryptoRangeGetMode.ALL))
-						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(
-								new EncryptionMaterials(getSecretKey(encryptionAlgorithm, encryptionKey))))
+						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
+								new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
 						.withRegion(region).withCredentials(awsCredentialsProvider).build();
 			} else {
 				s3Client = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(awsCredentialsProvider)
@@ -283,26 +277,6 @@ public class HpcS3Connection {
 		} catch (SdkClientException e) {
 			throw new HpcException("Failed to authenticate S3 account in region [" + region + "] - " + e.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
-		}
-	}
-
-	/**
-	 * Create a SecretKey out of password and algorithm.
-	 *
-	 * @param encryptionAlgorithm (Optional) The encryption algorithm.
-	 * @param encryptionPassword  (Optional) The encryption password.
-	 * @return SecretKey object
-	 * @throws HpcException if authentication failed
-	 */
-	private SecretKey getSecretKey(String encryptionAlgorithm, String encryptionPassword) throws HpcException {
-		try {
-			return new SecretKeySpec(
-					SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-							.generateSecret(new PBEKeySpec(encryptionPassword.toCharArray(), salt, 65536, 256)).getEncoded(),
-					encryptionAlgorithm);
-
-		} catch (GeneralSecurityException e) {
-			throw new HpcException("Failed to create encryption secret key: " + e.getMessage(), e);
 		}
 	}
 }
