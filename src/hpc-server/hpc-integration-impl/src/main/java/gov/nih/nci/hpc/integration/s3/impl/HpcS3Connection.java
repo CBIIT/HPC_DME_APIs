@@ -75,6 +75,9 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
+	
+	// Salt for encryption. Must be 8 characters.
+	private byte salt[] = "DME--SALT".getBytes();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -295,7 +298,7 @@ public class HpcS3Connection {
 		try {
 			return new SecretKeySpec(
 					SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-							.generateSecret(new PBEKeySpec(encryptionPassword.toCharArray())).getEncoded(),
+							.generateSecret(new PBEKeySpec(encryptionPassword.toCharArray(), salt, 65536, 256)).getEncoded(),
 					encryptionAlgorithm);
 
 		} catch (GeneralSecurityException e) {
