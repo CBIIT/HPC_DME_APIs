@@ -59,6 +59,10 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 
+	// Encryptor.
+	@Autowired
+	HpcEncryptor encryptor = null;
+
 	// HpcDataManagementConfiguration Table to Object mapper.
 	private RowMapper<HpcDataManagementConfiguration> dataManagementConfigurationRowMapper = (rs, rowNum) -> {
 		HpcDataManagementConfiguration dataManagementConfiguration = new HpcDataManagementConfiguration();
@@ -125,6 +129,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setUploadRequestURLExpiration(rs.getInt("UPLOAD_REQUEST_URL_EXPIRATION"));
 		s3Configuration.setTieringBucket(rs.getString("TIERING_BUCKET"));
 		s3Configuration.setTieringProtocol(rs.getString("TIERING_PROTOCOL"));
+		s3Configuration.setEncryptionAlgorithm(rs.getString("ENCRYPTION_ALGORITHM"));
+		s3Configuration.setEncryptionKey(rs.getString("ENCRYPTION_ALGORITHM"));
 
 		return s3Configuration;
 	};

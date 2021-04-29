@@ -162,9 +162,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// Obtain authenticated tokens to both source/target archives of this migration
 		// task.
 		Object fromS3ArchiveAuthToken = s3DataTransferProxy.authenticate(fromS3ArchiveDataTransferSystemAccount,
-				fromS3ArchiveDataTransferConfiguration.getUrlOrRegion());
+				fromS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
+				fromS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
+				fromS3ArchiveDataTransferConfiguration.getEncryptionKey());
 		Object toS3ArchiveAuthToken = s3DataTransferProxy.authenticate(toS3ArchiveDataTransferSystemAccount,
-				toS3ArchiveDataTransferConfiguration.getUrlOrRegion());
+				toS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
+				toS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
+				toS3ArchiveDataTransferConfiguration.getEncryptionKey());
 
 		// Get the System generated metadata of the data object in migration.
 		HpcSystemGeneratedMetadata metadata = metadataService

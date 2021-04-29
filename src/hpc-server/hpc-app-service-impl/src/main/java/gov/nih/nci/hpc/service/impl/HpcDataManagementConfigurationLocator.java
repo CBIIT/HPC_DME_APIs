@@ -249,6 +249,16 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
 
+		// Ensure encryption algorithm and key are both defined or both omitted.
+		if ((StringUtils.isEmpty(s3ArchiveConfiguration.getEncryptionAlgorithm())
+				&& !StringUtils.isEmpty(s3ArchiveConfiguration.getEncryptionKey()))
+				|| (!StringUtils.isEmpty(s3ArchiveConfiguration.getEncryptionAlgorithm())
+						&& StringUtils.isEmpty(s3ArchiveConfiguration.getEncryptionKey()))) {
+			throw new HpcException(
+					"Misconfigured encryption key/algorithm for S3 archive configuration: " + s3ArchiveConfigurationId,
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
 		return s3ArchiveConfiguration;
 	}
 
