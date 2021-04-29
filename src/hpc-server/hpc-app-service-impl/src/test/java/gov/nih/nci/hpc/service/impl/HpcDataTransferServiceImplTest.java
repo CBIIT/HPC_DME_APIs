@@ -16,8 +16,10 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.when;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +27,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -93,7 +96,6 @@ public class HpcDataTransferServiceImplTest {
 				null, null, null);
 	}
 
-
 	/**
 	 * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
 	 */
@@ -150,7 +152,8 @@ public class HpcDataTransferServiceImplTest {
 		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
 		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
-		when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
+				.thenReturn("token");
 		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(new HpcDataTransferConfiguration());
 		when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
@@ -205,7 +208,8 @@ public class HpcDataTransferServiceImplTest {
 		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
 		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
-		when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
+				.thenReturn("token");
 		when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
 				.thenReturn("https://downloadURL");
 
@@ -232,7 +236,8 @@ public class HpcDataTransferServiceImplTest {
 		expectedException.expect(HpcException.class);
 		expectedException.expectMessage("Invalid data transfer request");
 
-		dataTransferService.downloadDataObject("", null, null, null, null, null, null, "", "", "", false, 0L, HpcDataTransferUploadStatus.ARCHIVED, null);
+		dataTransferService.downloadDataObject("", null, null, null, null, null, null, "", "", "", false, 0L,
+				HpcDataTransferUploadStatus.ARCHIVED, null);
 	}
 
 	/**
@@ -250,7 +255,7 @@ public class HpcDataTransferServiceImplTest {
 		dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null,
 				HpcDataTransferType.S_3, "", "", "", false, 0L, HpcDataTransferUploadStatus.ARCHIVED, null);
 	}
-  
+
 	/**
 	 * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
 	 */
@@ -277,7 +282,8 @@ public class HpcDataTransferServiceImplTest {
 		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
 		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
-		when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
+				.thenReturn("token");
 
 		// Prepare test data.
 		HpcFileLocation archiveLocation = new HpcFileLocation();

@@ -47,6 +47,8 @@
 				type="xsd:int" minOccurs="0" />
 			<xsd:element name="tieringBucket" type="xsd:string" />
 			<xsd:element name="tieringProtocol" type="xsd:string" />
+			<xsd:element name="encryptionKey" type="xsd:string" />
+			<xsd:element name="encryptionAlgorithm" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

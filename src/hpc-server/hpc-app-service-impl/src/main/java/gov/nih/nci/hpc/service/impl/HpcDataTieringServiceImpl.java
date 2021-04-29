@@ -310,7 +310,8 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 
 		// Authenticate with the data transfer system.
 		Object token = dataTransferProxies.get(dataTransferType).authenticate(dataTransferSystemAccount,
-				dataTransferConfiguration.getUrlOrRegion());
+				dataTransferConfiguration.getUrlOrRegion(), dataTransferConfiguration.getEncryptionAlgorithm(),
+				dataTransferConfiguration.getEncryptionKey());
 		if (token == null) {
 			throw new HpcException("Invalid data transfer account credentials", HpcErrorType.DATA_TRANSFER_ERROR,
 					dataTransferSystemAccount.getIntegratedSystem());
