@@ -10,11 +10,18 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.KeySpec;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +81,9 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
+
+	// Random generator.
+	SecureRandom secureRandom = new SecureRandom();
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -201,9 +211,10 @@ public class HpcS3Connection {
 	 * @param encryptionAlgorithm    (Optional) The encryption algorithm.
 	 * @param encryptionKey          (Optional) The encryption key.
 	 * @return TransferManager
+	 * @throws HpcException if authentication failed
 	 */
 	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
-			HpcIntegratedSystem s3Provider, String encryptionAlgorithm, String encryptionKey) {
+			HpcIntegratedSystem s3Provider, String encryptionAlgorithm, String encryptionKey) throws HpcException {
 		// Create the credential provider based on the configured credentials.
 		BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(username, password);
 		AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
@@ -217,8 +228,8 @@ public class HpcS3Connection {
 		if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 			s3Client = AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new CryptoConfigurationV2()
 					.withCryptoMode(CryptoMode.AuthenticatedEncryption).withRangeGetMode(CryptoRangeGetMode.ALL))
-					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
-							new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
+					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(
+							new EncryptionMaterials(getSecretKey(encryptionAlgorithm, encryptionKey))))
 					.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
 					.withEndpointConfiguration(endpointConfiguration).build();
 		} else {
@@ -259,13 +270,13 @@ public class HpcS3Connection {
 
 			// Instantiate a S3 client.
 			AmazonS3 s3Client = null;
-			if (!StringUtils.isEmpty(encryptionKey) && !StringUtils.isEmpty(encryptionKey)) {
+			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 				s3Client = AmazonS3EncryptionClientV2Builder.standard()
 						.withCryptoConfiguration(
 								new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
 										.withRangeGetMode(CryptoRangeGetMode.ALL))
-						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
-								new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
+						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(
+								new EncryptionMaterials(getSecretKey(encryptionAlgorithm, encryptionKey))))
 						.withRegion(region).withCredentials(awsCredentialsProvider).build();
 			} else {
 				s3Client = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(awsCredentialsProvider)
@@ -281,6 +292,28 @@ public class HpcS3Connection {
 		} catch (SdkClientException e) {
 			throw new HpcException("Failed to authenticate S3 account in region [" + region + "] - " + e.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
+	}
+
+	/**
+	 * Create a SecretKey out of password and algorithm.
+	 *
+	 * @param encryptionAlgorithm (Optional) The encryption algorithm.
+	 * @param encryptionPassword  (Optional) The encryption password.
+	 * @return SecretKey object
+	 * @throws HpcException if authentication failed
+	 */
+	private SecretKey getSecretKey(String encryptionAlgorithm, String encryptionPassword) throws HpcException {
+		byte salt[] = new byte[8];
+		secureRandom.nextBytes(salt);
+
+		try {
+			return new SecretKeySpec(SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+					.generateSecret(new PBEKeySpec(encryptionPassword.toCharArray(), salt, 65536, 256)).getEncoded(),
+					encryptionAlgorithm);
+
+		} catch (GeneralSecurityException e) {
+			throw new HpcException("Failed to create encryption secret key: " + e.getMessage(), e);
 		}
 	}
 }
