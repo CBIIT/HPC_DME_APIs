@@ -131,23 +131,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String url) throws HpcException {
+	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String url, String encryptionAlgorithm,
+			String encryptionKey) throws HpcException {
 		return globusConnection.authenticate(url, dataTransferAccount);
 	}
 
 	@Override
 	public HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
 
-		logger.info(String.format("acceptsTransferRequests: entered with received authenticatedToken parameter = %s",
-				authenticatedToken.toString()));
+		logger.info("acceptsTransferRequests: entered with received authenticatedToken parameter = {}",
+				authenticatedToken);
 
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 		return retryTemplate.execute(arg0 -> {
 			try {
 				JSONObject jsonTasksLists = client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
-				logger.info(String.format(
-						"acceptsTransferRequests: Made request to Globus for transfer tasks, resulting JSON is \n[\n%s\n]\n",
-						jsonTasksLists.toString()));
+				logger.info(
+						"acceptsTransferRequests: Made request to Globus for transfer tasks, resulting JSON is \n[\n{}\n]\n",
+						jsonTasksLists);
 				final int qSize = jsonTasksLists.getInt("total");
 				final boolean underCap = qSize < globusQueueSize;
 				logger.info(String.format(
@@ -261,8 +262,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
-			String sudoPassword) throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword)
+			throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
@@ -750,7 +751,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
-		
+
 		try {
 			exec("mkdir -p " + archiveDirectory, sudoPassword);
 			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
