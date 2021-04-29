@@ -130,7 +130,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setTieringBucket(rs.getString("TIERING_BUCKET"));
 		s3Configuration.setTieringProtocol(rs.getString("TIERING_PROTOCOL"));
 		s3Configuration.setEncryptionAlgorithm(rs.getString("ENCRYPTION_ALGORITHM"));
-		s3Configuration.setEncryptionKey(rs.getString("ENCRYPTION_ALGORITHM"));
+		s3Configuration.setEncryptionKey(rs.getString("ENCRYPTION_KEY"));
 
 		return s3Configuration;
 	};
