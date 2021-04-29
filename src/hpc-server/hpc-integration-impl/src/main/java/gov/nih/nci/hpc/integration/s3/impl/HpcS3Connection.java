@@ -218,7 +218,7 @@ public class HpcS3Connection {
 			s3Client = AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new CryptoConfigurationV2()
 					.withCryptoMode(CryptoMode.AuthenticatedEncryption).withRangeGetMode(CryptoRangeGetMode.ALL))
 					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
-							new SecretKeySpec(encryptionKey.getBytes(), encryptionAlgorithm))))
+							new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
 					.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
 					.withEndpointConfiguration(endpointConfiguration).build();
 		} else {
@@ -265,7 +265,7 @@ public class HpcS3Connection {
 								new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
 										.withRangeGetMode(CryptoRangeGetMode.ALL))
 						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
-								new SecretKeySpec(encryptionKey.getBytes(), encryptionAlgorithm))))
+								new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
 						.withRegion(region).withCredentials(awsCredentialsProvider).build();
 			} else {
 				s3Client = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(awsCredentialsProvider)
