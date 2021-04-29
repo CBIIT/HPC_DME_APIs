@@ -142,8 +142,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String urlOrRegion) throws HpcException {
-		return s3Connection.authenticate(dataTransferAccount, urlOrRegion);
+	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String urlOrRegion,
+			String encryptionAlgorithm, String encryptionKey) throws HpcException {
+		return s3Connection.authenticate(dataTransferAccount, urlOrRegion, encryptionAlgorithm, encryptionKey);
 	}
 
 	@Override
