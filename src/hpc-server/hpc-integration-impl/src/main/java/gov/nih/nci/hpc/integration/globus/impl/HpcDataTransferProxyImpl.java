@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -170,7 +171,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
 		// Progress listener not supported.
 		if (progressListener != null) {
 			throw new HpcException("Globus data transfer doesn't support progress listener",
@@ -208,7 +209,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Submit a request to Globus to transfer the data.
 		String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
-				uploadRequest.getGlobusUploadSource().getSourceLocation(), archiveDestinationLocation);
+				uploadRequest.getGlobusUploadSource().getSourceLocation(), archiveDestinationLocation,
+				encryptedTransfer);
 
 		// Package and return the response.
 		HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
@@ -230,7 +232,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
-			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener) throws HpcException {
+			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
+			Boolean encryptedTransfer) throws HpcException {
 		// Progress listener not supported.
 		if (progressListener != null) {
 			throw new HpcException("Globus data transfer doesn't support progress listener",
@@ -256,7 +259,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// transfer the data.
 			return transferData(globusConnection.getTransferClient(authenticatedToken),
 					downloadRequest.getArchiveLocation(),
-					downloadRequest.getGlobusDestination().getDestinationLocation());
+					downloadRequest.getGlobusDestination().getDestinationLocation(), encryptedTransfer);
 		}
 	}
 
@@ -430,17 +433,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	/**
 	 * Submit a data transfer request.
 	 *
-	 * @param client      Client API instance.
-	 * @param source      The source endpoint.
-	 * @param destination The destination endpoint.
+	 * @param client            Client API instance.
+	 * @param source            The source endpoint.
+	 * @param destination       The destination endpoint.
+	 * @param encryptedTransfer (Optional) encrypted transfer indicator
 	 * @return The data transfer request ID.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	private String transferData(JSONTransferAPIClient client, HpcFileLocation source, HpcFileLocation destination)
-			throws HpcException {
+	private String transferData(JSONTransferAPIClient client, HpcFileLocation source, HpcFileLocation destination,
+			Boolean encryptedTransfer) throws HpcException {
 		// Activate endpoints.
 		autoActivate(source.getFileContainerId(), client);
 		autoActivate(destination.getFileContainerId(), client);
+
+		boolean encryptedDataTransfer = Optional.ofNullable(encryptedTransfer).orElse(false);
+		if (encryptedDataTransfer) {
+			logger.info("Globus encrypted transfer {}:{} -> {}:{}", source.getFileContainerId(), source.getFileId(),
+					destination.getFileContainerId(), destination.getFileId());
+		}
 
 		// Submit transfer request.
 		return retryTemplate.execute(arg0 -> {
@@ -453,7 +463,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				transfer.put("verify_checksum", true);
 				transfer.put("delete_destination_extra", false);
 				transfer.put("preserve_timestamp", false);
-				transfer.put("encrypt_data", false);
+				transfer.put("encrypt_data", encryptedDataTransfer);
 
 				JSONObject item = setJSONItem(source, destination, client);
 				transfer.append("DATA", item);
