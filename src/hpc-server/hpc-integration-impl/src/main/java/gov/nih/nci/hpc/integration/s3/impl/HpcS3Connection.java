@@ -18,8 +18,6 @@ import java.util.Set;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.SdkClientException;
@@ -74,9 +72,6 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
-	
-	// The logger instance.
-		private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -209,9 +204,6 @@ public class HpcS3Connection {
 		BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(username, password);
 		AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
 				s3ArchiveCredentials);
-
-		logger.error("ERAN {} {}", encryptionAlgorithm, encryptionKey);
-		
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
