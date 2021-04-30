@@ -49,6 +49,7 @@
 			<xsd:element name="tieringProtocol" type="xsd:string" />
 			<xsd:element name="encryptionKey" type="xsd:string" />
 			<xsd:element name="encryptionAlgorithm" type="xsd:string" />
+			<xsd:element name="encryptedTransfer" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
