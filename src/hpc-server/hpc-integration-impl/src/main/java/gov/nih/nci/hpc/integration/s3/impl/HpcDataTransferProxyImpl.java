@@ -156,7 +156,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
 		if (uploadRequest.getGlobusUploadSource() != null) {
 			throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}
@@ -197,7 +197,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
-			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener) throws HpcException {
+			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
+			Boolean encryptedTransfer) throws HpcException {
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a download request to a local file.
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
