@@ -77,7 +77,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		// Map the Globus configuration.
 		HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
 		globusConfiguration.setUrlOrRegion(rs.getString("GLOBUS_URL"));
-		globusConfiguration.setEncryptedTransfer(rs.getBoolean("GLOBUS_ENCRYPED_TRANSFER"));
+		globusConfiguration.setEncryptedTransfer(rs.getBoolean("GLOBUS_ENCRYPTED_TRANSFER"));
 
 		HpcArchive globusBaseArchiveDestination = new HpcArchive();
 		HpcFileLocation globusArchiveLocation = new HpcFileLocation();
