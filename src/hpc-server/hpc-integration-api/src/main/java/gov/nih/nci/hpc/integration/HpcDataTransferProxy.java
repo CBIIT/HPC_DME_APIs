@@ -110,13 +110,14 @@ public interface HpcDataTransferProxy {
 	 *                                   notification on transfer completion.
 	 * @param metadataEntries            The metadata entries to attach to the
 	 *                                   data-object in the archive.
+	 * @param encryptedTransfer          (Optional) encrypted transfer indicator
 	 * @return A data object upload response.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
 		throw new HpcException("uploadDataObject() is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
@@ -128,11 +129,13 @@ public interface HpcDataTransferProxy {
 	 * @param baseArchiveDestination The archive's base destination location.
 	 * @param progressListener       (Optional) a progress listener for async
 	 *                               notification on transfer completion.
+	 * @param encryptedTransfer      (Optional) encrypted transfer indicator
 	 * @return A data transfer request Id.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
-			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener) throws HpcException;
+			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
+			Boolean encryptedTransfer) throws HpcException;
 
 	/**
 	 * Generate a (pre-signed) download URL for a data object file.
