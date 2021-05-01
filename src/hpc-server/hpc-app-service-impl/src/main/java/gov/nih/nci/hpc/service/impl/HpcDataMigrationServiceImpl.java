@@ -201,11 +201,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// the task w/ new archive location.
 		HpcDataMigrationProgressListener progressListener = new HpcDataMigrationProgressListener(
 				dataObjectMigrationTask, this);
-		dataObjectMigrationTask.setToS3ArchiveLocation(s3DataTransferProxy
-				.uploadDataObject(toS3ArchiveAuthToken, uploadRequest,
-						toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
-						toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener, null)
-				.getArchiveLocation());
+		dataObjectMigrationTask
+				.setToS3ArchiveLocation(s3DataTransferProxy
+						.uploadDataObject(toS3ArchiveAuthToken, uploadRequest,
+								toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
+								toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
+								null, toS3ArchiveDataTransferConfiguration.getEncryptedTransfer())
+						.getArchiveLocation());
 
 		// Update the task and persist.
 		dataObjectMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
