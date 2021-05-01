@@ -15,9 +15,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +36,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTieringService;
-
 
 /**
  * HPC Data Tiering Application Service Implementation.
@@ -74,9 +72,6 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 	@Value("${hpc.service.dataTransfer.maxDeepArchiveInProgressDays}")
 	private Integer maxDeepArchiveInProgressDays = null;
 
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -87,7 +82,8 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 	 * @param dataTransferProxies The data transfer proxies.
 	 * @throws HpcException on spring configuration error.
 	 */
-	public HpcDataTieringServiceImpl(Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) throws HpcException {
+	public HpcDataTieringServiceImpl(Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies)
+			throws HpcException {
 		if (dataTransferProxies == null || dataTransferProxies.isEmpty()) {
 			throw new HpcException("Null or empty map of data transfer proxies",
 					HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -116,7 +112,8 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public void tierDataObject(String userId, String path, HpcFileLocation hpcFileLocation, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
+	public void tierDataObject(String userId, String path, HpcFileLocation hpcFileLocation,
+			HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
 		// Input Validation.
 		if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(path) || StringUtils.isEmpty(configurationId)
 				|| !isValidFileLocation(hpcFileLocation)) {
@@ -126,51 +123,53 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 		// Get the S3 archive configuration ID.
 		String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(configurationId)
 				.getS3UploadConfigurationId();
-			
+
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
-			
+
 		String prefix = hpcFileLocation.getFileId();
 		// Create life cycle policy with this data object
 		dataTransferProxies.get(dataTransferType).setTieringPolicy(
-				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
+				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), hpcFileLocation,
+				prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
 		// Add a record of the lifecycle rule
 		dataTieringDAO.insert(userId, HpcTieringRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
 				Calendar.getInstance(), prefix);
 	}
 
 	@Override
-	public void tierCollection(String userId, String path, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
-		
+	public void tierCollection(String userId, String path, HpcDataTransferType dataTransferType, String configurationId)
+			throws HpcException {
+
 		// Input Validation.
 		if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(path) || StringUtils.isEmpty(configurationId)) {
 			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+
 		// Get the S3 archive configuration ID.
 		String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(configurationId)
 				.getS3UploadConfigurationId();
-		
+
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
-		
+
 		HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
-				
+
 		String prefix = hpcFileLocation.getFileId() + path + "/";
 		// Create life cycle policy with this collection
 		dataTransferProxies.get(dataTransferType).setTieringPolicy(
-				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
+				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), hpcFileLocation,
+				prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
 		// Add a record of the lifecycle rule
 		dataTieringDAO.insert(userId, HpcTieringRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
 				Calendar.getInstance(), prefix);
 	}
 
 	@Override
-	public void tierDataObjects(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
+	public void tierDataObjects(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType)
+			throws HpcException {
 		// Input Validation.
 		if (StringUtils.isEmpty(userId) || !isValidTierItems(bulkTierRequest)) {
 			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -180,19 +179,21 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 			// Get the S3 archive configuration ID.
 			String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(item.getConfigurationId())
 					.getS3UploadConfigurationId();
-			
+
 			// Get the data transfer configuration.
 			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-					.getDataTransferConfiguration(item.getConfigurationId(), s3ArchiveConfigurationId, dataTransferType);
-			
+					.getDataTransferConfiguration(item.getConfigurationId(), s3ArchiveConfigurationId,
+							dataTransferType);
+
 			HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
-			
+
 			String prefix = item.getPath();
 			// Create life cycle policy with this collection
 			dataTransferProxies.get(dataTransferType).setTieringPolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
-			
+					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(),
+					dataTransferConfiguration.getTieringProtocol());
+
 			// Add a record of the lifecycle rule
 			dataTieringDAO.insert(userId, HpcTieringRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
 					Calendar.getInstance(), prefix);
@@ -200,7 +201,8 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 	}
 
 	@Override
-	public void tierCollections(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
+	public void tierCollections(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType)
+			throws HpcException {
 		// Input Validation.
 		if (StringUtils.isEmpty(userId) || !isValidTierItems(bulkTierRequest)) {
 			throw new HpcException("Invalid archive request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -210,24 +212,26 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 			// Get the S3 archive configuration ID.
 			String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(item.getConfigurationId())
 					.getS3UploadConfigurationId();
-			
+
 			// Get the data transfer configuration.
 			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-					.getDataTransferConfiguration(item.getConfigurationId(), s3ArchiveConfigurationId, dataTransferType);
-			
+					.getDataTransferConfiguration(item.getConfigurationId(), s3ArchiveConfigurationId,
+							dataTransferType);
+
 			HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
-			
+
 			String prefix = hpcFileLocation.getFileId() + item.getPath() + "/";
 			// Create life cycle policy with this collection
 			dataTransferProxies.get(dataTransferType).setTieringPolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
+					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(),
+					dataTransferConfiguration.getTieringProtocol());
 			// Add a record of the lifecycle rule
 			dataTieringDAO.insert(userId, HpcTieringRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
 					Calendar.getInstance(), prefix);
 		}
 	}
-	
+
 	@Override
 	public boolean isTieringSupported(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType) throws HpcException {
@@ -235,8 +239,8 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
-
-		return HpcIntegratedSystem.CLOUDIAN.equals(dataTransferConfiguration.getArchiveProvider()) || HpcIntegratedSystem.AWS.equals(dataTransferConfiguration.getArchiveProvider());
+		return HpcIntegratedSystem.CLOUDIAN.equals(dataTransferConfiguration.getArchiveProvider())
+				|| HpcIntegratedSystem.AWS.equals(dataTransferConfiguration.getArchiveProvider());
 	}
 
 	@Override
@@ -251,7 +255,7 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 		// If delayed, return true
 		return expiration.before(new Date());
 	}
-	
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -306,7 +310,8 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 
 		// Authenticate with the data transfer system.
 		Object token = dataTransferProxies.get(dataTransferType).authenticate(dataTransferSystemAccount,
-				dataTransferConfiguration.getUrlOrRegion());
+				dataTransferConfiguration.getUrlOrRegion(), dataTransferConfiguration.getEncryptionAlgorithm(),
+				dataTransferConfiguration.getEncryptionKey());
 		if (token == null) {
 			throw new HpcException("Invalid data transfer account credentials", HpcErrorType.DATA_TRANSFER_ERROR,
 					dataTransferSystemAccount.getIntegratedSystem());

@@ -24,6 +24,13 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public class HpcUtil {
 	// ---------------------------------------------------------------------//
+	// Constants
+	// ---------------------------------------------------------------------//
+
+	// Group name space encoding.
+	private static final String GROUP_NAME_SPACE_CODE = "_SPC_";
+
+	// ---------------------------------------------------------------------//
 	// constructors
 	// ---------------------------------------------------------------------//
 
@@ -57,19 +64,30 @@ public class HpcUtil {
 	/**
 	 * Execute a (shell) command.
 	 *
-	 * @param command The command to execute.
+	 * @param command      The command to execute.
+	 * @param sudoPassword (Optional) if provided, the command will be executed w/
+	 *                     'sudo' using the provided password
 	 * @return The command's output
 	 * @throws HpcException If exec failed.
 	 */
-	public static String exec(String command) throws HpcException {
+	public static String exec(String command, String sudoPassword) throws HpcException {
 		if (StringUtils.isEmpty(command)) {
 			throw new HpcException("Null / empty command", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		// Determine if need to exec w/ sudo.
+		String[] execCommand = null;
+		if (!StringUtils.isEmpty(sudoPassword)) {
+			execCommand = new String[] { "/bin/sh", "-c", "echo " + sudoPassword + "|sudo -S " + command };
+		} else {
+			execCommand = new String[] { command };
+		}
+
 		Process process = null;
 		try {
-			process = Runtime.getRuntime().exec(command);
-			if (process.waitFor() > 0) {
+			process = Runtime.getRuntime().exec(execCommand);
+
+			if (process.waitFor() != 0) {
 				String message = null;
 				if (process.getErrorStream() != null) {
 					message = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
@@ -87,11 +105,33 @@ public class HpcUtil {
 			Thread.currentThread().interrupt();
 			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
-			
+
 		} catch (IOException e) {
 			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
 		}
+
 		return null;
+	}
+
+	/**
+	 * iRODS not allowing spaces in group names. Encode group name by replacing
+	 * spaces with a sequence of characters representing 'space.
+	 *
+	 * @param groupName The group name to encode
+	 * @return The encoded group name
+	 */
+	public static String encodeGroupName(String groupName) {
+		return groupName.replace(" ", GROUP_NAME_SPACE_CODE);
+	}
+
+	/**
+	 * Decode group name.
+	 *
+	 * @param groupName The group name to encode
+	 * @return The encoded group name
+	 */
+	public static String decodeGroupName(String groupName) {
+		return groupName.replace(GROUP_NAME_SPACE_CODE, " ");
 	}
 }

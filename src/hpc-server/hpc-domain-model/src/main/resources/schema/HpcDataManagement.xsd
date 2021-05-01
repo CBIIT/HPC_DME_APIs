@@ -47,6 +47,9 @@
 				type="xsd:int" minOccurs="0" />
 			<xsd:element name="tieringBucket" type="xsd:string" />
 			<xsd:element name="tieringProtocol" type="xsd:string" />
+			<xsd:element name="encryptionKey" type="xsd:string" />
+			<xsd:element name="encryptionAlgorithm" type="xsd:string" />
+			<xsd:element name="encryptedTransfer" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -70,6 +73,7 @@
 					maxOccurs="unbounded" />
 				<xsd:element name="dataHierarchy"
 					type="hpc-domain-datamanagement:HpcDataHierarchy" />
+				<xsd:element name="createArchiveMetadata" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -212,6 +216,7 @@
 				minOccurs="0" />
 			<xsd:element name="sourcePermissions"
 				type="hpc-domain-datamanagement:HpcPathPermissions" />
+			<xsd:element name="sudoPassword" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
