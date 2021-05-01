@@ -300,6 +300,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
 			attrEntry.setLevelLabel(entry.getLevelLabel());
+			attrEntry.setLevel(entry.getLevel());
 			attrEntry.setSystemAttr(systemAttrs.contains(entry.getAttribute()));
             attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), null, rules));
            
