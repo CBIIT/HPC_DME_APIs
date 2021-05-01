@@ -7,6 +7,7 @@ public class HpcMetadataAttrEntry {
 	private String attrValue;
 	private String attrUnit;
 	private String levelLabel;
+	private Integer level;
 	private boolean systemAttr;
 	private boolean encrypted;
 	private boolean mandatory;
@@ -102,6 +103,14 @@ public class HpcMetadataAttrEntry {
 	 */
 	public void setMandatory(boolean mandatory) {
 		this.mandatory = mandatory;
+	}
+
+	public Integer getLevel() {
+		return level;
+	}
+
+	public void setLevel(Integer level) {
+		this.level = level;
 	}
  
 

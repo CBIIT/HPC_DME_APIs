@@ -107,9 +107,9 @@ public class HpcScheduledTasksImpl {
 	 * from the local DME file system (NAS) to the archive and complete data object
 	 * registration.
 	 */
-	@Scheduled(cron = "${hpc.scheduler.cron.processFileSystemUpload.delay}")
-	private void processFileSystemUploadTask() {
-		execute("processFileSystemUploadTask()", systemBusService::processFileSystemUpload, logger);
+	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadFileSystemReady.delay}")
+	private void processDataTranferUploadFileSystemReadyTask() {
+		execute("processFileSystemUploadTask()", systemBusService::processDataTranferUploadFileSystemReady, logger);
 	}
 
 	/**
@@ -236,6 +236,9 @@ public class HpcScheduledTasksImpl {
 		try {
 			// All active S3 upload tasks should be marked stopped (so they get restarted)
 			systemBusService.processDataTranferUploadStreamingInProgress(true);
+			
+			// All active file system uploads should be restarted.
+			systemBusService.processDataTransferUploadFileSystemInProgress();
 
 			// All active S3 download tasks needs to be restarted.
 			systemBusService.restartDataObjectDownloadTasks();
