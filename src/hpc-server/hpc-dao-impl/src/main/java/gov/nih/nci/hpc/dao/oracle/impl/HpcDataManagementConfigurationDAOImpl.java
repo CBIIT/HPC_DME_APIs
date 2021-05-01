@@ -59,6 +59,10 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 
+	// Encryptor.
+	@Autowired
+	HpcEncryptor encryptor = null;
+
 	// HpcDataManagementConfiguration Table to Object mapper.
 	private RowMapper<HpcDataManagementConfiguration> dataManagementConfigurationRowMapper = (rs, rowNum) -> {
 		HpcDataManagementConfiguration dataManagementConfiguration = new HpcDataManagementConfiguration();
@@ -68,10 +72,12 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		dataManagementConfiguration.setS3UploadConfigurationId(rs.getString("S3_UPLOAD_ARCHIVE_CONFIGURATION_ID"));
 		dataManagementConfiguration
 				.setS3DefaultDownloadConfigurationId(rs.getString("S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID"));
+		dataManagementConfiguration.setCreateArchiveMetadata(rs.getBoolean("CREATE_ARCHIVE_METADATA"));
 
 		// Map the Globus configuration.
 		HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
 		globusConfiguration.setUrlOrRegion(rs.getString("GLOBUS_URL"));
+		globusConfiguration.setEncryptedTransfer(rs.getBoolean("GLOBUS_ENCRYPTED_TRANSFER"));
 
 		HpcArchive globusBaseArchiveDestination = new HpcArchive();
 		HpcFileLocation globusArchiveLocation = new HpcFileLocation();
@@ -124,6 +130,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setUploadRequestURLExpiration(rs.getInt("UPLOAD_REQUEST_URL_EXPIRATION"));
 		s3Configuration.setTieringBucket(rs.getString("TIERING_BUCKET"));
 		s3Configuration.setTieringProtocol(rs.getString("TIERING_PROTOCOL"));
+		s3Configuration.setEncryptionAlgorithm(rs.getString("ENCRYPTION_ALGORITHM"));
+		s3Configuration.setEncryptionKey(rs.getString("ENCRYPTION_KEY"));
 
 		return s3Configuration;
 	};

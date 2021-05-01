@@ -142,8 +142,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String urlOrRegion) throws HpcException {
-		return s3Connection.authenticate(dataTransferAccount, urlOrRegion);
+	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String urlOrRegion,
+			String encryptionAlgorithm, String encryptionKey) throws HpcException {
+		return s3Connection.authenticate(dataTransferAccount, urlOrRegion, encryptionAlgorithm, encryptionKey);
 	}
 
 	@Override
@@ -155,7 +156,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
 		if (uploadRequest.getGlobusUploadSource() != null) {
 			throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}
@@ -196,7 +197,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
-			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener) throws HpcException {
+			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
+			Boolean encryptedTransfer) throws HpcException {
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a download request to a local file.
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
@@ -230,7 +232,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword)
+			throws HpcException {
 
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {
@@ -574,7 +577,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 								return true;
 						}
 					} else if (hasTransition) {
-						//This is a transition without prefix applies to entire bucket.
+						// This is a transition without prefix applies to entire bucket.
 						return true;
 					}
 				}

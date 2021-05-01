@@ -107,8 +107,13 @@
 										<!-- /.modal-content -->
 									</div>
 									<!-- /.modal-dialog -->
-								</div>								
+								</div>
 									<div class="form-group" style="word-break: break-all;">
+										<div class="col-md-12 form-group">
+										    <label for="Name">Task ID:</label> <label
+											for="${taskId}"
+											th:text="${taskId}"></label>
+										</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> 
 											<a th:href="@{/datafile(action=view,path=${hpcDataObjectDownloadStatusDTO.getPath()})}">
@@ -124,14 +129,14 @@
 										</div>
  -->
 										<div class="col-md-12 form-group">
-											<label for="Name">Transfer Request ID:</label> <label
-												for="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"
-												th:text="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"></label>
-										</div>
-										<div class="col-md-12 form-group">
 											<label for="Name">Destination Type:</label> <label
 												for="${hpcDataObjectDownloadStatusDTO.getDestinationType().value()}"
 												th:text="${hpcDataObjectDownloadStatusDTO.getDestinationType().value()}"></label>
+										</div>
+										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId() != null}">
+											<label for="Name">Globus Transfer Request ID:</label> <label
+												for="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"
+												th:text="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"></label>
 										</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Destination Endpoint:</label> <label

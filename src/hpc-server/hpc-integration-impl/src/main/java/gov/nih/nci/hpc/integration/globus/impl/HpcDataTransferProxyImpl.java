@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+import static gov.nih.nci.hpc.util.HpcUtil.exec;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,9 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.support.RetryTemplate;
-
-import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -133,23 +132,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String url) throws HpcException {
+	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String url, String encryptionAlgorithm,
+			String encryptionKey) throws HpcException {
 		return globusConnection.authenticate(url, dataTransferAccount);
 	}
 
 	@Override
 	public HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
 
-		logger.info(String.format("acceptsTransferRequests: entered with received authenticatedToken parameter = %s",
-				authenticatedToken.toString()));
+		logger.info("acceptsTransferRequests: entered with received authenticatedToken parameter = {}",
+				authenticatedToken);
 
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 		return retryTemplate.execute(arg0 -> {
 			try {
 				JSONObject jsonTasksLists = client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
-				logger.info(String.format(
-						"acceptsTransferRequests: Made request to Globus for transfer tasks, resulting JSON is \n[\n%s\n]\n",
-						jsonTasksLists.toString()));
+				logger.info(
+						"acceptsTransferRequests: Made request to Globus for transfer tasks, resulting JSON is \n[\n{}\n]\n",
+						jsonTasksLists);
 				final int qSize = jsonTasksLists.getInt("total");
 				final boolean underCap = qSize < globusQueueSize;
 				logger.info(String.format(
@@ -171,7 +171,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
 		// Progress listener not supported.
 		if (progressListener != null) {
 			throw new HpcException("Globus data transfer doesn't support progress listener",
@@ -196,7 +196,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// This is a synchronous upload request. Simply store the data to the
 			// file-system.
 			// No Globus action is required here.
-			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination);
+			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination,
+					uploadRequest.getSudoPassword());
 		}
 
 		// If the archive destination file exists, generate a new archive destination w/
@@ -208,7 +209,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Submit a request to Globus to transfer the data.
 		String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
-				uploadRequest.getGlobusUploadSource().getSourceLocation(), archiveDestinationLocation);
+				uploadRequest.getGlobusUploadSource().getSourceLocation(), archiveDestinationLocation,
+				encryptedTransfer);
 
 		// Package and return the response.
 		HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
@@ -230,7 +232,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
-			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener) throws HpcException {
+			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
+			Boolean encryptedTransfer) throws HpcException {
 		// Progress listener not supported.
 		if (progressListener != null) {
 			throw new HpcException("Globus data transfer doesn't support progress listener",
@@ -242,7 +245,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			String archiveFilePath = downloadRequest.getArchiveLocation().getFileId().replaceFirst(
 					baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 			try {
-				// Copy the file to the dowmload stage area.
+				// Copy the file to the download stage area.
 				FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getFileDestination());
 			} catch (IOException e) {
 				throw new HpcException("Failed to stage file from file system archive: " + archiveFilePath,
@@ -256,25 +259,28 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// transfer the data.
 			return transferData(globusConnection.getTransferClient(authenticatedToken),
 					downloadRequest.getArchiveLocation(),
-					downloadRequest.getGlobusDestination().getDestinationLocation());
+					downloadRequest.getGlobusDestination().getDestinationLocation(), encryptedTransfer);
 		}
 	}
 
 	@Override
 	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword)
+			throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
 		try {
 			// Creating the metadata file.
-			List<String> metadata = new ArrayList<>();
-			metadataEntries.forEach(
-					metadataEntry -> metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
-			FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+			if (!metadataEntries.isEmpty()) {
+				List<String> metadata = new ArrayList<>();
+				metadataEntries.forEach(
+						metadataEntry -> metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
+				FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+			}
 
 			// Returning a calculated checksum.
-			return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
+			return exec("md5sum " + archiveFilePath, sudoPassword).split("\\s+")[0];
 
 		} catch (IOException e) {
 			throw new HpcException("Failed to calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
@@ -427,17 +433,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	/**
 	 * Submit a data transfer request.
 	 *
-	 * @param client      Client API instance.
-	 * @param source      The source endpoint.
-	 * @param destination The destination endpoint.
+	 * @param client            Client API instance.
+	 * @param source            The source endpoint.
+	 * @param destination       The destination endpoint.
+	 * @param encryptedTransfer (Optional) encrypted transfer indicator
 	 * @return The data transfer request ID.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	private String transferData(JSONTransferAPIClient client, HpcFileLocation source, HpcFileLocation destination)
-			throws HpcException {
+	private String transferData(JSONTransferAPIClient client, HpcFileLocation source, HpcFileLocation destination,
+			Boolean encryptedTransfer) throws HpcException {
 		// Activate endpoints.
 		autoActivate(source.getFileContainerId(), client);
 		autoActivate(destination.getFileContainerId(), client);
+
+		boolean encryptedDataTransfer = Optional.ofNullable(encryptedTransfer).orElse(false);
+		if (encryptedDataTransfer) {
+			logger.info("Globus encrypted transfer {}:{} -> {}:{}", source.getFileContainerId(), source.getFileId(),
+					destination.getFileContainerId(), destination.getFileId());
+		}
 
 		// Submit transfer request.
 		return retryTemplate.execute(arg0 -> {
@@ -450,7 +463,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				transfer.put("verify_checksum", true);
 				transfer.put("delete_destination_extra", false);
 				transfer.put("preserve_timestamp", false);
-				transfer.put("encrypt_data", false);
+				transfer.put("encrypt_data", encryptedDataTransfer);
 
 				JSONObject item = setJSONItem(source, destination, client);
 				transfer.append("DATA", item);
@@ -731,23 +744,31 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
-	 * Save a file to the local file system archive
+	 * Save a file to the local file system (POSIX) archive
 	 *
 	 * @param sourceFile                 The source file to store.
 	 * @param archiveDestinationLocation The archive destination location.
 	 * @param baseArchiveDestination     The base archive destination.
+	 * @param sudoPassword               (Optional) a sudo password to perform the
+	 *                                   copy to the POSIX archive.
+	 * 
 	 * @return A data object upload response object.
 	 * @throws HpcException on IO exception.
 	 */
 	private HpcDataObjectUploadResponse saveFile(File sourceFile, HpcFileLocation archiveDestinationLocation,
-			HpcArchive baseArchiveDestination) throws HpcException {
+			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
 		Calendar transferStarted = Calendar.getInstance();
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
+		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
+
 		try {
-			FileUtils.copyFile(sourceFile, new File(archiveFilePath));
-		} catch (IOException e) {
-			throw new HpcException("Failed to move file to file system storage: " + archiveFilePath,
+			exec("mkdir -p " + archiveDirectory, sudoPassword);
+			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
+
+		} catch (HpcException e) {
+			throw new HpcException(
+					"Failed to copy file to POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 
