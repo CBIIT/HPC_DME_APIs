@@ -162,9 +162,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// Obtain authenticated tokens to both source/target archives of this migration
 		// task.
 		Object fromS3ArchiveAuthToken = s3DataTransferProxy.authenticate(fromS3ArchiveDataTransferSystemAccount,
-				fromS3ArchiveDataTransferConfiguration.getUrlOrRegion());
+				fromS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
+				fromS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
+				fromS3ArchiveDataTransferConfiguration.getEncryptionKey());
 		Object toS3ArchiveAuthToken = s3DataTransferProxy.authenticate(toS3ArchiveDataTransferSystemAccount,
-				toS3ArchiveDataTransferConfiguration.getUrlOrRegion());
+				toS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
+				toS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
+				toS3ArchiveDataTransferConfiguration.getEncryptionKey());
 
 		// Get the System generated metadata of the data object in migration.
 		HpcSystemGeneratedMetadata metadata = metadataService
@@ -197,11 +201,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// the task w/ new archive location.
 		HpcDataMigrationProgressListener progressListener = new HpcDataMigrationProgressListener(
 				dataObjectMigrationTask, this);
-		dataObjectMigrationTask.setToS3ArchiveLocation(s3DataTransferProxy
-				.uploadDataObject(toS3ArchiveAuthToken, uploadRequest,
-						toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
-						toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener, null)
-				.getArchiveLocation());
+		dataObjectMigrationTask
+				.setToS3ArchiveLocation(s3DataTransferProxy
+						.uploadDataObject(toS3ArchiveAuthToken, uploadRequest,
+								toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
+								toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
+								null, toS3ArchiveDataTransferConfiguration.getEncryptedTransfer())
+						.getArchiveLocation());
 
 		// Update the task and persist.
 		dataObjectMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);

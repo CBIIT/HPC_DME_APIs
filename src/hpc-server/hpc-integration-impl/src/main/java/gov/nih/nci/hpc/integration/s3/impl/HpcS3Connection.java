@@ -10,9 +10,12 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +24,14 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3EncryptionClientV2Builder;
+import com.amazonaws.services.s3.model.CryptoConfigurationV2;
+import com.amazonaws.services.s3.model.CryptoMode;
+import com.amazonaws.services.s3.model.CryptoRangeGetMode;
+import com.amazonaws.services.s3.model.EncryptionMaterials;
+import com.amazonaws.services.s3.model.StaticEncryptionMaterialsProvider;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 
@@ -92,26 +102,30 @@ public class HpcS3Connection {
 	 * @param s3URLorRegion       The S3 URL if authenticating with a 3rd party S3
 	 *                            Provider (Cleversafe, Cloudian, etc), or Region if
 	 *                            authenticating w/ AWS.
+	 * @param encryptionAlgorithm (Optional) The encryption algorithm.
+	 * @param encryptionKey       (Optional) The encryption key.
 	 * @return An authenticated TransferManager object, or null if authentication
 	 *         failed.
 	 * @throws HpcException if authentication failed
 	 */
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URLorRegion)
-			throws HpcException {
+	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URLorRegion,
+			String encryptionAlgorithm, String encryptionKey) throws HpcException {
 		if (dataTransferAccount.getIntegratedSystem().equals(HpcIntegratedSystem.AWS)) {
-			return authenticateAWS(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(), s3URLorRegion);
+			return authenticateAWS(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(), s3URLorRegion,
+					encryptionAlgorithm, encryptionKey);
 		} else {
 			// Determine if this S3 provider require path-style enabled.
 			boolean pathStyleAccessEnabled = pathStyleAccessEnabledProviders
 					.contains(dataTransferAccount.getIntegratedSystem());
 
 			return authenticateS3Provider(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(),
-					s3URLorRegion, pathStyleAccessEnabled, dataTransferAccount.getIntegratedSystem());
+					s3URLorRegion, pathStyleAccessEnabled, dataTransferAccount.getIntegratedSystem(),
+					encryptionAlgorithm, encryptionKey);
 		}
 	}
 
 	/**
-	 * Authenticate a (user) S3 account S3 (AWS or 3rd Party Provider)
+	 * Authenticate a (user) S3 account (AWS or 3rd Party Provider)
 	 *
 	 * @param s3Account AWS S3 account.
 	 * @return TransferManager
@@ -119,14 +133,15 @@ public class HpcS3Connection {
 	 */
 	public Object authenticate(HpcS3Account s3Account) throws HpcException {
 		if (!StringUtils.isEmpty(s3Account.getRegion())) {
-			return authenticateAWS(s3Account.getAccessKey(), s3Account.getSecretKey(), s3Account.getRegion());
+			return authenticateAWS(s3Account.getAccessKey(), s3Account.getSecretKey(), s3Account.getRegion(), null,
+					null);
 		} else {
 			// Default S3 provider require path-style enabled to true if not provided by the
 			// user.
 			boolean pathStyleAccessEnabled = Optional.ofNullable(s3Account.getPathStyleAccessEnabled()).orElse(true);
 
 			return authenticateS3Provider(s3Account.getAccessKey(), s3Account.getSecretKey(), s3Account.getUrl(),
-					pathStyleAccessEnabled, HpcIntegratedSystem.USER_S_3_PROVIDER);
+					pathStyleAccessEnabled, HpcIntegratedSystem.USER_S_3_PROVIDER, null, null);
 		}
 	}
 
@@ -138,7 +153,7 @@ public class HpcS3Connection {
 	 * @throws HpcException on invalid authentication token.
 	 */
 	public TransferManager getTransferManager(Object authenticatedToken) throws HpcException {
-		if (authenticatedToken == null || !(authenticatedToken instanceof HpcS3TransferManager)) {
+		if (!(authenticatedToken instanceof HpcS3TransferManager)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -153,7 +168,7 @@ public class HpcS3Connection {
 	 * @throws HpcException on invalid authentication token.
 	 */
 	public HpcIntegratedSystem getS3Provider(Object authenticatedToken) throws HpcException {
-		if (authenticatedToken == null || !(authenticatedToken instanceof HpcS3TransferManager)) {
+		if (!(authenticatedToken instanceof HpcS3TransferManager)) {
 			return null;
 		}
 
@@ -178,27 +193,40 @@ public class HpcS3Connection {
 	 * @param pathStyleAccessEnabled true if the S3 3rd Party provider supports path
 	 *                               style access.
 	 * @param s3Provider             The 3rd party provider.
+	 * @param encryptionAlgorithm    (Optional) The encryption algorithm.
+	 * @param encryptionKey          (Optional) The encryption key.
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
 	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
-			HpcIntegratedSystem s3Provider) throws HpcException {
+			HpcIntegratedSystem s3Provider, String encryptionAlgorithm, String encryptionKey) throws HpcException {
 		// Create the credential provider based on the configured credentials.
 		BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(username, password);
 		AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
 				s3ArchiveCredentials);
-
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
+
+		// Instantiate a S3 client.
+		AmazonS3 s3Client = null;
+		if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
+			s3Client = AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new CryptoConfigurationV2()
+					.withCryptoMode(CryptoMode.AuthenticatedEncryption).withRangeGetMode(CryptoRangeGetMode.ALL))
+					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
+							new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
+					.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
+					.withEndpointConfiguration(endpointConfiguration).build();
+		} else {
+			s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
+					.withPathStyleAccessEnabled(pathStyleAccessEnabled).withEndpointConfiguration(endpointConfiguration)
+					.build();
+		}
 
 		// Create and return the S3 transfer manager. Note that Google Storage doesn't
 		// support multipart upload,
 		// so we override the configured threshold w/ the max size of 5GB.
 		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-		s3TransferManager.transferManager = TransferManagerBuilder.standard()
-				.withS3Client(AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
-						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
-						.withEndpointConfiguration(endpointConfiguration).build())
+		s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
 				.withMinimumUploadPartSize(minimumUploadPartSize).withMultipartUploadThreshold(
 						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
 				.build();
@@ -209,23 +237,39 @@ public class HpcS3Connection {
 	/**
 	 * Authenticate an AWS S3 account.
 	 *
-	 * @param accessKey The AWS account access key.
-	 * @param secretKey The AWS account secret key.
-	 * @param region    The AWS account region.
+	 * @param accessKey           The AWS account access key.
+	 * @param secretKey           The AWS account secret key.
+	 * @param region              The AWS account region.
+	 * @param encryptionAlgorithm (Optional) The encryption algorithm.
+	 * @param encryptionKey       (Optional) The encryption key.
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
-	private Object authenticateAWS(String accessKey, String secretKey, String region) throws HpcException {
+	private Object authenticateAWS(String accessKey, String secretKey, String region, String encryptionAlgorithm,
+			String encryptionKey) throws HpcException {
 		try {
 			// Create the credential provider based on provided S3 account.
 			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
 			AWSStaticCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(awsCredentials);
 
+			// Instantiate a S3 client.
+			AmazonS3 s3Client = null;
+			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
+				s3Client = AmazonS3EncryptionClientV2Builder.standard()
+						.withCryptoConfiguration(
+								new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
+										.withRangeGetMode(CryptoRangeGetMode.ALL))
+						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
+								new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
+						.withRegion(region).withCredentials(awsCredentialsProvider).build();
+			} else {
+				s3Client = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(awsCredentialsProvider)
+						.build();
+			}
+
 			// Create and return the S3 transfer manager.
 			HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(
-					AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(awsCredentialsProvider).build())
-					.build();
+			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
 			s3TransferManager.s3Provider = HpcIntegratedSystem.AWS;
 			return s3TransferManager;
 

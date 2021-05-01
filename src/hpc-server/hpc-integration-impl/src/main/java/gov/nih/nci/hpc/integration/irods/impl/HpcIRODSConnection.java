@@ -331,13 +331,13 @@ public class HpcIRODSConnection {
 
     } catch (JargonException e) {
       throw new HpcException(
-          "Failed to authenticate an iRODS account: " + e.getMessage(),
+          "Failed to authenticate an iRODS account: " + dataManagementAccount.getUsername() + ", " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
     } catch (NoSuchAlgorithmException e) {
       throw new HpcException(
-          "Failed to authenticate an iRODS account: " + e.getMessage(),
+          "Failed to authenticate an iRODS account: " + dataManagementAccount.getUsername() + ", " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
