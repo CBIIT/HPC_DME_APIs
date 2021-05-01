@@ -37,6 +37,8 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.S3_ARCHIVE_CONFI
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_DN_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_NIH_DN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_NIH_GROUP_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_NIH_OWNER_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_NIH_USER_DN_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_OWNER_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_PERMISSIONS_ATTRIBUTE;
@@ -389,10 +391,21 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		HpcPathPermissions sourcePermissions = new HpcPathPermissions();
 		sourcePermissions.setPermissions(metadataMap.get(SOURCE_FILE_PERMISSIONS_ATTRIBUTE));
-		sourcePermissions.setOwner(metadataMap.get(SOURCE_FILE_OWNER_ATTRIBUTE));
-		sourcePermissions.setGroup(metadataMap.get(SOURCE_FILE_GROUP_ATTRIBUTE));
+		sourcePermissions.setOwner(metadataMap.get(SOURCE_FILE_NIH_OWNER_ATTRIBUTE));
+		sourcePermissions.setGroup(metadataMap.get(SOURCE_FILE_NIH_GROUP_ATTRIBUTE));
+
+		String userId = metadataMap.get(SOURCE_FILE_OWNER_ATTRIBUTE);
+		if (!StringUtils.isEmpty(userId)) {
+			sourcePermissions.setUserId(Integer.valueOf(userId));
+		}
+		String groupId = metadataMap.get(SOURCE_FILE_GROUP_ATTRIBUTE);
+		if (!StringUtils.isEmpty(groupId)) {
+			sourcePermissions.setGroupId(Integer.valueOf(groupId));
+		}
+
 		if (sourcePermissions.getPermissions() != null || sourcePermissions.getOwner() != null
-				|| sourcePermissions.getGroup() != null) {
+				|| sourcePermissions.getGroup() != null || sourcePermissions.getUserId() != null
+				|| sourcePermissions.getGroupId() != null) {
 			systemGeneratedMetadata.setSourcePermissions(sourcePermissions);
 		}
 
@@ -965,6 +978,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 						toMetadataEntry(SOURCE_FILE_PERMISSIONS_ATTRIBUTE, sourcePermissions.getPermissions()));
 			}
 
+			// Create the (numeric) source file owner metadata.
+			if (sourcePermissions.getUserId() != null) {
+				addMetadataEntry(metadataEntries,
+						toMetadataEntry(SOURCE_FILE_OWNER_ATTRIBUTE, sourcePermissions.getUserId().toString()));
+			}
+
 			// Find the configured DN search bases for user and group.
 			HpcDistinguishedNameSearch distinguishedNameSearch = Optional
 					.ofNullable(securityService.findDistinguishedNameSearch(sourceLocation.getFileId()))
@@ -991,7 +1010,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 			// Create the source owner metadata.
 			if (!StringUtils.isEmpty(owner)) {
-				addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_OWNER_ATTRIBUTE, owner));
+				addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_NIH_OWNER_ATTRIBUTE, owner));
+			}
+
+			// Create the (numeric) source file group metadata.
+			if (sourcePermissions.getGroupId() != null) {
+				addMetadataEntry(metadataEntries,
+						toMetadataEntry(SOURCE_FILE_GROUP_ATTRIBUTE, sourcePermissions.getGroupId().toString()));
 			}
 
 			String group = sourcePermissions.getGroup();
@@ -1015,7 +1040,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 			// Create the source group metadata.
 			if (!StringUtils.isEmpty(group)) {
-				addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_GROUP_ATTRIBUTE, group));
+				addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_NIH_GROUP_ATTRIBUTE, group));
 			}
 		}
 
