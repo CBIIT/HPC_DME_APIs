@@ -2232,7 +2232,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Create a task ID for this download request.
 		response.setDownloadTaskId(UUID.randomUUID().toString());
 
-		// Set Sudo Password (This is needed in the case of POSIX sync download).
+		// Set sudo Password (This is needed in the case of POSIX sync download).
 		downloadRequest.setSudoPassword(systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
 
 		// Perform the synchronous download.
