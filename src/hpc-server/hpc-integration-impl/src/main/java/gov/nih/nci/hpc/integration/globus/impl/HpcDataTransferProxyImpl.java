@@ -171,7 +171,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer, String storageClass)
+			throws HpcException {
 		// Progress listener not supported.
 		if (progressListener != null) {
 			throw new HpcException("Globus data transfer doesn't support progress listener",
