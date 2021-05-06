@@ -1780,7 +1780,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				uploadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
 				dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
 				generateMetadata(configurationId, uploadRequest.getDataObjectId(), uploadRequest.getUserId()),
-				dataTransferConfiguration.getEncryptedTransfer());
+				dataTransferConfiguration.getEncryptedTransfer(), dataTransferConfiguration.getStorageClass());
 	}
 
 	/**

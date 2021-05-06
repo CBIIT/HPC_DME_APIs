@@ -110,14 +110,18 @@ public interface HpcDataTransferProxy {
 	 *                                   notification on transfer completion.
 	 * @param metadataEntries            The metadata entries to attach to the
 	 *                                   data-object in the archive.
-	 * @param encryptedTransfer          (Optional) encrypted transfer indicator
+	 * @param encryptedTransfer          (Optional) encrypted transfer indicator.
+	 * @param storageClass               (Optional) The storage class to use when
+	 *                                   uploading the data object. Applicable for
+	 *                                   S3 archives only.
 	 * @return A data object upload response.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer, String storageClass)
+			throws HpcException {
 		throw new HpcException("uploadDataObject() is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
