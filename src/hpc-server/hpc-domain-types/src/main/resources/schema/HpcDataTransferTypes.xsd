@@ -302,6 +302,7 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="size" type="xsd:long" />
+			<xsd:element name="sudoPassword" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
