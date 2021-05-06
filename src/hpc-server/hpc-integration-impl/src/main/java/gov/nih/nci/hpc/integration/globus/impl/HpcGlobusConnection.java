@@ -10,6 +10,8 @@ package gov.nih.nci.hpc.integration.globus.impl;
 
 import java.util.Arrays;
 import org.globusonline.transfer.JSONTransferAPIClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import com.google.api.client.auth.oauth2.ClientCredentialsTokenRequest;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -34,6 +36,9 @@ public class HpcGlobusConnection {
   // Globus authentication scope.
   @Value("${hpc.integration.globus.globusAuthScope}")
   private String globusAuthScope = null;
+  
+//The Logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -70,6 +75,7 @@ public class HpcGlobusConnection {
     try {
       // Obtain a Globus access token.
       TokenResponse tokenResponse = tokenRequest.execute();
+      logger.info("Obtained Globus auth token for : {}", dataTransferAccount.getUsername());
 
       // Instantiate a transfer client w/ token authorization.
       JSONTransferAPIClient transferClient =
