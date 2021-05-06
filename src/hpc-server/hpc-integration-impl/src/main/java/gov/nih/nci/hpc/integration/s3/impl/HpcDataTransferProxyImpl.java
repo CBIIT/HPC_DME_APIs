@@ -156,7 +156,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer, String storageClass)
+			throws HpcException {
 		if (uploadRequest.getGlobusUploadSource() != null) {
 			throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}
@@ -181,17 +182,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						uploadRequestURLExpiration, uploadRequest.getUploadRequestURLChecksum());
 			} else {
 				return generateMultipartUploadRequestURLs(authenticatedToken, archiveDestinationLocation,
-						uploadRequestURLExpiration, uploadParts, metadataEntries);
+						uploadRequestURLExpiration, uploadParts, metadataEntries, storageClass);
 			}
 		} else if (uploadRequest.getSourceFile() != null) {
 			// Upload a file
 			return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(), archiveDestinationLocation,
-					progressListener, baseArchiveDestination.getType(), metadataEntries);
+					progressListener, baseArchiveDestination.getType(), metadataEntries, storageClass);
 		} else {
 			// Upload by streaming from AWS, 3rd Party S3 Provider, or Google Drive source.
 			return uploadDataObject(authenticatedToken, uploadRequest.getS3UploadSource(),
 					uploadRequest.getGoogleDriveUploadSource(), archiveDestinationLocation,
-					uploadRequest.getSourceSize(), progressListener, metadataEntries);
+					uploadRequest.getSourceSize(), progressListener, metadataEntries, storageClass);
 		}
 	}
 
@@ -606,15 +607,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param archiveType                The archive type.
 	 * @param metadataEntries            The metadata entries to attach to the
 	 *                                   data-object in S3 archive.
+	 * @param storageClass               (Optional) The storage class to upload the
+	 *                                   file.
 	 * @return A data object upload response.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken, File sourceFile,
 			HpcFileLocation archiveDestinationLocation, HpcDataTransferProgressListener progressListener,
-			HpcArchiveType archiveType, List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			HpcArchiveType archiveType, List<HpcMetadataEntry> metadataEntries, String storageClass)
+			throws HpcException {
 		// Create a S3 upload request.
 		PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
-				archiveDestinationLocation.getFileId(), sourceFile).withMetadata(toS3Metadata(metadataEntries));
+				archiveDestinationLocation.getFileId(), sourceFile).withMetadata(toS3Metadata(metadataEntries))
+						.withStorageClass(storageClass);
 
 		// Upload the data.
 		Upload s3Upload = null;
@@ -673,13 +678,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 *                                   notification on transfer completion.
 	 * @param metadataEntries            The metadata entries to attach to the
 	 *                                   data-object in S3 archive.
+	 * @param storageClass               (Optional) The storage class to upload the
+	 *                                   file.
 	 * @return A data object upload response.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcFileLocation archiveDestinationLocation, Long size, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, String storageClass) throws HpcException {
 		if (progressListener == null) {
 			throw new HpcException("[S3] No progress listener provided for a upload from AWS S3 destination",
 					HpcErrorType.UNEXPECTED_ERROR);
@@ -733,7 +740,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				ObjectMetadata metadata = toS3Metadata(metadataEntries);
 				metadata.setContentLength(size);
 				PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
-						archiveDestinationLocation.getFileId(), sourceInputStream, metadata);
+						archiveDestinationLocation.getFileId(), sourceInputStream, metadata)
+								.withStorageClass(storageClass);
 
 				// Set the read limit on the request to avoid AWSreset exceptions.
 				request.getRequestClientOptions().setReadLimit(getReadLimit(size));
@@ -839,17 +847,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param uploadParts                How many parts to generate upload URLs for.
 	 * @param metadataEntries            The metadata entries to attach to the
 	 *                                   data-object in S3 archive.
+	 * @param storageClass               (Optional) The storage class to upload the
+	 *                                   file.
 	 * @return A data object upload response containing the upload request URL.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	private HpcDataObjectUploadResponse generateMultipartUploadRequestURLs(Object authenticatedToken,
 			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, int uploadParts,
-			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, String storageClass) throws HpcException {
 		// Initiate the multipart upload.
 		HpcMultipartUpload multipartUpload = new HpcMultipartUpload();
 		InitiateMultipartUploadRequest initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(
 				archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId(),
-				toS3Metadata(metadataEntries));
+				toS3Metadata(metadataEntries)).withStorageClass(storageClass);
 
 		try {
 			multipartUpload.setId(s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
