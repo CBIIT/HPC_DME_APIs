@@ -1198,12 +1198,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to S3 destination is supported only from S3 archive.
-		// 4. Download to Google Drive destination is supported only from S3 archive.
-		// 5. Data Object is archived (i.e. registration completed).
+		// 3. Download to Google Drive destination is supported only from S3 archive.
+		// 4. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
-				downloadRequest.getS3DownloadDestination() != null,
-				downloadRequest.getGoogleDriveDownloadDestination() != null);
+				downloadRequest.getGoogleDriveDownloadDestination() != null, false);
 
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
@@ -1284,7 +1282,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// 3. Download to S3 destination is supported only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		// 5. Data Object is not in deep archive or in deep archive but restored
-		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
+		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, false, true);
 		if (metadata.getDeepArchiveStatus() != null) {
 			// Get the data object metadata to check for restoration status
 			HpcArchiveObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
@@ -2639,14 +2637,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * Validate a download request.
 	 *
 	 * @param path                           The data object path.
-	 * @param s3DownloadDestination          True if the download destination is S3.
 	 * @param googleDriveDownloadDestination True if the download destination is
 	 *                                       Google Drive.
+	 * @param generateDownloadURL            True if this is a request to generate a
+	 *                                       download URL.
 	 * @return The system generated metadata
 	 * @throws HpcException If the request is invalid.
 	 */
-	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path, boolean s3DownloadDestination,
-			boolean googleDriveDownloadDestination) throws HpcException {
+	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path,
+			boolean googleDriveDownloadDestination, boolean generateDownloadURL) throws HpcException {
 
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
@@ -2663,21 +2662,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), s3DownloadDestination,
-					googleDriveDownloadDestination);
-		}
-
-		// Download to S3 destination is supported only from S3 archive.
-		if (s3DownloadDestination && (metadata.getDataTransferType() == null
-				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
-			throw new HpcException("S3 download request is not supported for POSIX based file system archive",
-					HpcErrorType.INVALID_REQUEST_INPUT);
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDriveDownloadDestination, generateDownloadURL);
 		}
 
 		// Download to Google Drive destination is supported only from S3 archive.
 		if (googleDriveDownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
 			throw new HpcException("Google Drive download request is not supported for POSIX based file system archive",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Generate download URL is supported only from S3 archive.
+		if (generateDownloadURL && (metadata.getDataTransferType() == null
+				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
+			throw new HpcException("Download URL request is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
