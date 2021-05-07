@@ -2356,20 +2356,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
 				this);
 
+		Object authenticatedToken = null;
 		if (!dataTransferType.equals(HpcDataTransferType.S_3)) {
 			// This is a download from POSIX archive. Generate a download URL from POSIX.
 			downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
 					downloadRequest.getArchiveLocation(), dataTransferType, downloadRequest.getConfigurationId(),
 					downloadRequest.getS3ArchiveConfigurationId()));
+		} else {
+			authenticatedToken = getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+					downloadRequest.getS3ArchiveConfigurationId());
 		}
 
 		// Perform the S3 download (From S3 Archive to User's S3 bucket in AWS or 3rd
 		// party provider).
 		try {
-			dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
-					getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-							downloadRequest.getS3ArchiveConfigurationId()),
-					downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), s3Download,
+			dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(authenticatedToken, downloadRequest,
+					dataTransferConfiguration.getBaseArchiveDestination(), s3Download,
 					dataTransferConfiguration.getEncryptedTransfer());
 
 			// Populate the response object.
