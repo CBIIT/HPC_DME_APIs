@@ -6,9 +6,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1007,16 +1010,27 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// A URL to a POSIX archive file is provided, else a URL for S3 archive needs to
-		// be generated.
-		String sourceURL = StringUtils.isEmpty(archiveLocationURL)
-				? generateDownloadRequestURL(authenticatedToken, archiveLocation, baseArchiveDestination,
-						S3_STREAM_EXPIRATION)
-				: archiveLocationURL;
+		String sourceURL = null;
+		long size = 0;
+		if (StringUtils.isEmpty(archiveLocationURL)) {
+			// Downloading from S3 archive -> S3 destination.
+			sourceURL = generateDownloadRequestURL(authenticatedToken, archiveLocation, baseArchiveDestination,
+					S3_STREAM_EXPIRATION);
+			size = getPathAttributes(authenticatedToken, archiveLocation, true).getSize();
+		} else {
+			// Downloading from POSIX archive -> S3 destination.
+			sourceURL = archiveLocationURL;
+			try {
+				size = Files.size(Paths.get(URI.create(archiveLocationURL)));
+			} catch (IOException e) {
+				throw new HpcException("Failed to determine data object size in a POSIX archive: " + archiveLocationURL,
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
+		}
 
 		// Use AWS transfer manager to download the file.
-		return downloadDataObject(s3AccountAuthenticatedToken, sourceURL, s3Destination.getDestinationLocation(),
-				getPathAttributes(authenticatedToken, archiveLocation, true).getSize(), progressListener);
+		return downloadDataObject(s3AccountAuthenticatedToken, sourceURL, s3Destination.getDestinationLocation(), size,
+				progressListener);
 	}
 
 	/**
