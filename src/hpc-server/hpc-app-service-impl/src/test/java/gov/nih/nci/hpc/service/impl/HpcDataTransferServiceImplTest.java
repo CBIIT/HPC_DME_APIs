@@ -210,7 +210,7 @@ public class HpcDataTransferServiceImplTest {
 		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
 		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
-		when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
+		when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("https://downloadURL");
 
 		HpcFileLocation archiveLocation = new HpcFileLocation();
