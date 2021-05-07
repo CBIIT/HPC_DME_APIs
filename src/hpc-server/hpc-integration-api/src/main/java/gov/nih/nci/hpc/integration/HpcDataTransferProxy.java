@@ -142,17 +142,18 @@ public interface HpcDataTransferProxy {
 			Boolean encryptedTransfer) throws HpcException;
 
 	/**
-	 * Generate a (pre-signed) download URL for a data object file.
+	 * Generate a download URL for a data object file.
 	 *
 	 * @param authenticatedToken           An authenticated token.
 	 * @param archiveLocation              The data object's archive location.
+	 * @param baseArchiveDestination       The archive's base destination location.
 	 * @param downloadRequestURLExpiration The expiration period (in days) to set
 	 *                                     when generating download URL.
 	 * @return The download URL
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default String generateDownloadRequestURL(Object authenticatedToken, HpcFileLocation archiveLocation,
-			Integer downloadRequestURLExpiration) throws HpcException {
+			HpcArchive baseArchiveDestination, Integer downloadRequestURLExpiration) throws HpcException {
 		throw new HpcException("Generating download URL is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
