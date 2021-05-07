@@ -456,7 +456,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// There are 5 methods of downloading data object:
 		// 1. Data is in deep archive, restoration is required. Supported by
-		// S3(Cloudian)
+		// S3 (Cloudian)
 		// archive.
 		// 2. Synchronous download via REST API. Supported by S3 & POSIX
 		// archives.
@@ -491,7 +491,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			performSynchronousDownload(downloadRequest, response, dataTransferConfiguration, synchronousDownloadFilter);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.GLOBUS) && globusDownloadDestination != null) {
-			// This is an asynchronous download request from a file system archive to a
+			// This is an asynchronous download request from a POSIX archive to a
 			// Globus destination.
 			// Note: this can also be a 2nd hop download from temporary file-system archive
 			// to a Globus destination (after the 1st hop completed).
@@ -502,11 +502,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Globus destination. It is performed in 2-hops.
 			perform2HopDownload(downloadRequest, response, dataTransferConfiguration);
 
-		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && s3DownloadDestination != null) {
-			// This is an asynchronous download request from a S3 archive to a user provided
+		} else if (s3DownloadDestination != null) {
+			// This is an asynchronous download request from a S3 / POSIX archive to a user
+			// provided
 			// S3 destination.
 			// Note: The user S3 destination can be either AWS or 3rd Party S3 provider.
-			performS3AsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
+			performS3AsynchronousDownload(downloadRequest, dataTransferType, response, dataTransferConfiguration);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleDriveDownloadDestination != null) {
 			// This is an asynchronous download request from a S3 archive to a
@@ -2337,10 +2338,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Perform a download request to user's provided AWS S3 destination from S3
-	 * archive.
+	 * Perform a download request to user's provided AWS S3 destination from POSIX /
+	 * S3 archive.
 	 *
 	 * @param downloadRequest           The data object download request.
+	 * @param dataTransferType          The archive's data transfer type.
 	 * @param response                  The download response object. This method
 	 *                                  sets download task id and destination
 	 *                                  location on the response.
@@ -2348,11 +2350,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	private void performS3AsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
-			HpcDataObjectDownloadResponse response, HpcDataTransferConfiguration dataTransferConfiguration)
-			throws HpcException {
+			HpcDataTransferType dataTransferType, HpcDataObjectDownloadResponse response,
+			HpcDataTransferConfiguration dataTransferConfiguration) throws HpcException {
 
 		HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
 				this);
+
+		if (!dataTransferType.equals(HpcDataTransferType.S_3)) {
+			// This is a download from POSIX archive. Generate a download URL from POSIX.
+			downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+					downloadRequest.getArchiveLocation(), dataTransferType, downloadRequest.getConfigurationId(),
+					downloadRequest.getS3ArchiveConfigurationId()));
+		}
 
 		// Perform the S3 download (From S3 Archive to User's S3 bucket in AWS or 3rd
 		// party provider).
@@ -2515,7 +2524,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Generate a (pre-signed) download URL for a data object file.
+	 * Generate a download URL for a data object file.
 	 *
 	 * @param path                     The data object path.
 	 * @param archiveLocation          The archive file location.
@@ -2544,6 +2553,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Generate and return the download URL.
 		return dataTransferProxies.get(dataTransferType).generateDownloadRequestURL(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), archiveLocation,
+				dataTransferConfiguration.getBaseArchiveDestination(),
 				dataTransferConfiguration.getUploadRequestURLExpiration());
 	}
 

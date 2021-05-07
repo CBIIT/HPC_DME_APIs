@@ -5,6 +5,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -240,22 +241,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("Globus data transfer doesn't support progress listener",
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
-		
+
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a synchronous download request.
 			String archiveFilePath = downloadRequest.getArchiveLocation().getFileId().replaceFirst(
 					baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
-			
-			/*
-			try {
-				exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(), downloadRequest.getSudoPassword());
 
-			} catch (HpcException e) {
-				throw new HpcException(
-						"Failed to copy file from POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
-						HpcErrorType.DATA_TRANSFER_ERROR, e);
-			}*/
-			
+			/*
+			 * try { exec("cp " + archiveFilePath + " " +
+			 * downloadRequest.getFileDestination(), downloadRequest.getSudoPassword());
+			 * 
+			 * } catch (HpcException e) { throw new HpcException(
+			 * "Failed to copy file from POSIX archive: " + archiveFilePath + "[" +
+			 * e.getMessage() + "]", HpcErrorType.DATA_TRANSFER_ERROR, e); }
+			 */
+
 			try {
 				// Copy the file to the download stage area.
 				FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getFileDestination());
@@ -272,6 +272,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return transferData(globusConnection.getTransferClient(authenticatedToken),
 					downloadRequest.getArchiveLocation(),
 					downloadRequest.getGlobusDestination().getDestinationLocation(), encryptedTransfer);
+		}
+	}
+
+	@Override
+	public String generateDownloadRequestURL(Object authenticatedToken, HpcFileLocation archiveLocation,
+			HpcArchive baseArchiveDestination, Integer downloadRequestURLExpiration) throws HpcException {
+		try {
+			return Paths
+					.get(archiveLocation.getFileId().replaceFirst(baseArchiveDestination.getFileLocation().getFileId(),
+							baseArchiveDestination.getDirectory()))
+					.toUri().toURL().toString();
+
+		} catch (IOException e) {
+			throw new HpcException("Failed to generate download URL", HpcErrorType.UNEXPECTED_ERROR, e);
 		}
 	}
 
