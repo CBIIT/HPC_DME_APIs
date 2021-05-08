@@ -211,7 +211,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// This is a download to S3 destination (either AWS or 3rd Party Provider).
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
 					downloadRequest.getArchiveLocationURL(), baseArchiveDestination, downloadRequest.getS3Destination(),
-					progressListener);
+					progressListener, downloadRequest.getSize());
 		}
 	}
 
@@ -986,12 +986,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param s3Destination          The S3 destination.
 	 * @param progressListener       (Optional) a progress listener for async
 	 *                               notification on transfer completion.
+	 * @param fileSize               The size of the file to download.
 	 * @return A data transfer request Id.
 	 * @throws HpcException on data transfer failure.
 	 */
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			String archiveLocationURL, HpcArchive baseArchiveDestination, HpcS3DownloadDestination s3Destination,
-			HpcDataTransferProgressListener progressListener) throws HpcException {
+			HpcDataTransferProgressListener progressListener, long fileSize) throws HpcException {
 		// Authenticate the S3 account.
 		Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3Destination.getAccount());
 
@@ -1011,20 +1012,25 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		String sourceURL = null;
-		long size = 0;
+		long size = fileSize;
 		if (StringUtils.isEmpty(archiveLocationURL)) {
 			// Downloading from S3 archive -> S3 destination.
 			sourceURL = generateDownloadRequestURL(authenticatedToken, archiveLocation, baseArchiveDestination,
 					S3_STREAM_EXPIRATION);
-			size = getPathAttributes(authenticatedToken, archiveLocation, true).getSize();
+			if (size == 0) {
+				size = getPathAttributes(authenticatedToken, archiveLocation, true).getSize();
+			}
 		} else {
 			// Downloading from POSIX archive -> S3 destination.
 			sourceURL = archiveLocationURL;
-			try {
-				size = Files.size(Paths.get(URI.create(archiveLocationURL)));
-			} catch (IOException e) {
-				throw new HpcException("Failed to determine data object size in a POSIX archive: " + archiveLocationURL,
-						HpcErrorType.UNEXPECTED_ERROR);
+			if (size == 0) {
+				try {
+					size = Files.size(Paths.get(URI.create(archiveLocationURL)));
+				} catch (IOException e) {
+					throw new HpcException(
+							"Failed to determine data object size in a POSIX archive: " + archiveLocationURL,
+							HpcErrorType.UNEXPECTED_ERROR);
+				}
 			}
 		}
 
