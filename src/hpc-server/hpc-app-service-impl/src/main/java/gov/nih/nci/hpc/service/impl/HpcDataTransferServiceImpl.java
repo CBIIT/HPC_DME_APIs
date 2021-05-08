@@ -1415,8 +1415,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		return dataTransferProxies.get(dataTransferType)
-				.getFileContainerName(dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE) ? null
-						: getAuthenticatedToken(dataTransferType, configurationId, null), fileContainerId);
+				.getFileContainerName(dataTransferType.equals(HpcDataTransferType.GLOBUS)
+						? getAuthenticatedToken(dataTransferType, configurationId, null)
+						: null, fileContainerId);
 	}
 
 	/**
