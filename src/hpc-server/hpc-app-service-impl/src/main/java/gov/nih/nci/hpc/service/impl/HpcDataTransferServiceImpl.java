@@ -1019,10 +1019,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setS3Destination(downloadTask.getS3DownloadDestination());
 		downloadRequest.setGoogleDriveDestination(downloadTask.getGoogleDriveDownloadDestination());
 
-		// Get the data transfer configuration.
-		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-				.getDataTransferConfiguration(downloadRequest.getConfigurationId(),
-						downloadRequest.getS3ArchiveConfigurationId(), downloadRequest.getDataTransferType());
+		HpcArchive baseArchiveDestination = null;
+		Boolean encryptedTransfer = null;
+
+		// If this is a download from POSIX archive to S3 - we need to re-generate the
+		// URL to the POSIX archive.
+		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
+				&& StringUtils.isEmpty(downloadTask.getS3ArchiveConfigurationId())) {
+			downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+					downloadRequest.getArchiveLocation(), HpcDataTransferType.GLOBUS,
+					downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
+		} else {
+			// For any other download - get the data transfer configuration.
+			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+					.getDataTransferConfiguration(downloadRequest.getConfigurationId(),
+							downloadRequest.getS3ArchiveConfigurationId(), downloadRequest.getDataTransferType());
+			baseArchiveDestination = dataTransferConfiguration.getBaseArchiveDestination();
+			encryptedTransfer = dataTransferConfiguration.getEncryptedTransfer();
+		}
 
 		// If the destination is Globus and the data transfer is S3, then we need to
 		// restart a 2-hop download.
@@ -1072,8 +1086,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 									: getAuthenticatedToken(downloadRequest.getDataTransferType(),
 											downloadRequest.getConfigurationId(),
 											downloadRequest.getS3ArchiveConfigurationId()),
-							downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), progressListener,
-							dataTransferConfiguration.getEncryptedTransfer()));
+							downloadRequest, baseArchiveDestination, progressListener, encryptedTransfer));
 
 		} catch (HpcException e) {
 			// Failed to submit a transfer request. Cleanup the download task.
