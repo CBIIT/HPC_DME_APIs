@@ -137,7 +137,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		return s3Configuration;
 	};
 
-	// HpcDataTransferConfiguration Table (HPC_S3_ARCHIVE_CONFIGURATION) to Object
+	// HpcDistinguishedNameSearch Table (HPC_DISTINGUISHED_NAME_SEARCH) to Object
 	// mapper.
 	private RowMapper<HpcDistinguishedNameSearch> distinguishedNameSearchRowMapper = (rs, rowNum) -> {
 		// Map the S3 Configuration.
