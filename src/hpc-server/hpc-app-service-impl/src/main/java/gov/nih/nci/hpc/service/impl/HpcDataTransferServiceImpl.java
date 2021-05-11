@@ -1021,8 +1021,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		HpcArchive baseArchiveDestination = null;
 		Boolean encryptedTransfer = null;
+		Object authenticatedToken = null;
 
-		// If this is a download from POSIX archive to S3 - we need to re-generate the
+		// If this is a download from a POSIX archive to S3 destination, we need to
+		// re-generate the
 		// URL to the POSIX archive.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
 				&& StringUtils.isEmpty(downloadTask.getS3ArchiveConfigurationId())) {
@@ -1036,6 +1038,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							downloadRequest.getS3ArchiveConfigurationId(), downloadRequest.getDataTransferType());
 			baseArchiveDestination = dataTransferConfiguration.getBaseArchiveDestination();
 			encryptedTransfer = dataTransferConfiguration.getEncryptedTransfer();
+
+			// If the destination is Google Drive, we need to generate a download URL from
+			// the S3 archive.
+			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+				downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+						downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
+						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
+			} else {
+				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
+						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
+			}
 		}
 
 		// If the destination is Globus and the data transfer is S3, then we need to
@@ -1062,31 +1075,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
-		// If the destination is AWS S3 or Google Drive, we need to restart the
-		// download.
+		// If the destination is S3 (AWS or 3rd Party), or Google Drive, we need to
+		// create a progress listener.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
 				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
 			// Create a listener that will complete the download task when it is done.
 			progressListener = new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
 		}
 
-		// If the destination is Google Drive, we need to generate a download URL from
-		// the archive.
-		if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
-			downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
-					downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-					downloadRequest.getS3ArchiveConfigurationId()));
-		}
-
-		// Submit a transfer request.
+		// Submit a data object download request.
 		try {
-			downloadTask.setDataTransferRequestId(
-					dataTransferProxies.get(downloadRequest.getDataTransferType()).downloadDataObject(
-							downloadRequest.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE) ? null
-									: getAuthenticatedToken(downloadRequest.getDataTransferType(),
-											downloadRequest.getConfigurationId(),
-											downloadRequest.getS3ArchiveConfigurationId()),
-							downloadRequest, baseArchiveDestination, progressListener, encryptedTransfer));
+			downloadTask.setDataTransferRequestId(dataTransferProxies.get(downloadRequest.getDataTransferType())
+					.downloadDataObject(authenticatedToken, downloadRequest, baseArchiveDestination, progressListener,
+							encryptedTransfer));
 
 		} catch (HpcException e) {
 			// Failed to submit a transfer request. Cleanup the download task.
