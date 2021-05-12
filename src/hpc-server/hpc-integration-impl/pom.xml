@@ -108,6 +108,9 @@
     		<groupId>com.google.api-client</groupId>
     		<artifactId>google-api-client</artifactId>
 		</dependency>
-		
+		<dependency>
+    		<groupId>com.google.cloud</groupId>
+    		<artifactId>google-cloud-storage</artifactId>
+ 		 </dependency>
 	</dependencies>
 </project>
