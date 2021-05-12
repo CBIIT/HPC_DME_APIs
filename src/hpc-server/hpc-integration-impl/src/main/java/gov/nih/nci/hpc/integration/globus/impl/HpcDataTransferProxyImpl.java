@@ -247,20 +247,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			String archiveFilePath = downloadRequest.getArchiveLocation().getFileId().replaceFirst(
 					baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
-			/*
-			 * try { exec("cp " + archiveFilePath + " " +
-			 * downloadRequest.getFileDestination(), downloadRequest.getSudoPassword());
-			 * 
-			 * } catch (HpcException e) { throw new HpcException(
-			 * "Failed to copy file from POSIX archive: " + archiveFilePath + "[" +
-			 * e.getMessage() + "]", HpcErrorType.DATA_TRANSFER_ERROR, e); }
-			 */
-
 			try {
-				// Copy the file to the download stage area.
-				FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getFileDestination());
-			} catch (IOException e) {
-				throw new HpcException("Failed to stage file from file system archive: " + archiveFilePath,
+				exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(),
+						downloadRequest.getSudoPassword());
+
+			} catch (HpcException e) {
+				throw new HpcException(
+						"Failed to copy file from POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
 						HpcErrorType.DATA_TRANSFER_ERROR, e);
 			}
 
