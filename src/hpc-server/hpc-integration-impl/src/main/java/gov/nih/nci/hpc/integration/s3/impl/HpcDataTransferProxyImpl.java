@@ -237,8 +237,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword)
-			throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
+			String storageClass) throws HpcException {
 
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {
@@ -266,7 +266,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
 		CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
-						.withNewObjectMetadata(toS3Metadata(metadataEntries));
+						.withNewObjectMetadata(toS3Metadata(metadataEntries)).withStorageClass(storageClass);
 
 		try {
 			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
