@@ -560,15 +560,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Check that the data transfer system can accept transfer requests.
 		boolean globusSyncUpload = dataTransferType.equals(HpcDataTransferType.GLOBUS) && fileLocation != null;
 
+		// Get the data transfer configuration.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
+		// Set the metadata of the data-object in the archive
 		String checksum = dataTransferProxies.get(dataTransferType).setDataObjectMetadata(
 				!globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
 						: null,
-				fileLocation,
-				dataManagementConfigurationLocator
-						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
-						.getBaseArchiveDestination(),
+				fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
 				generateMetadata(configurationId, objectId, registrarId),
-				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
+				dataTransferConfiguration.getStorageClass());
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		objectMetadata.setChecksum(checksum);
