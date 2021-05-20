@@ -10,14 +10,23 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.KeySpec;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.SdkClientException;
@@ -72,6 +81,9 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -206,6 +218,22 @@ public class HpcS3Connection {
 				s3ArchiveCredentials);
 		// Setup the endpoint configuration.
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
+
+		try {
+			KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+			keyGen.init(256); // for example
+			SecretKey secretKey = keyGen.generateKey();
+			logger.error("ERAN: key 1 - {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+
+			SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+			KeySpec spec = new PBEKeySpec("hello-aes".toCharArray(), "salt".getBytes(), 65536, 256);
+			SecretKey tmp = factory.generateSecret(spec);
+			logger.error("ERAN: key 2 - {}", Base64.getEncoder().encodeToString(tmp.getEncoded()));
+			logger.error("ERAN: max allowed - {}", Cipher.getMaxAllowedKeyLength("AES"));
+
+		} catch (Exception e) {
+			int a = 0;
+		}
 
 		// Instantiate a S3 client.
 		AmazonS3 s3Client = null;
