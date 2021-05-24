@@ -593,11 +593,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		dataTransferProxies.get(dataTransferType).deleteDataObject(
-				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation,
-				dataManagementConfigurationLocator
-						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
-						.getBaseArchiveDestination());
+		dataTransferProxies.get(dataTransferType)
+				.deleteDataObject(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+						fileLocation,
+						dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
+								s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination(),
+						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
 	}
 
 	@Override

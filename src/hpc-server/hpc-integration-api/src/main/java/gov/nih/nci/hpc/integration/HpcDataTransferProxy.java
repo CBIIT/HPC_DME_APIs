@@ -197,10 +197,12 @@ public interface HpcDataTransferProxy {
 	 * @param authenticatedToken     An authenticated token.
 	 * @param fileLocation           The file location.
 	 * @param baseArchiveDestination The archive's base destination location.
+	 * @param sudoPassword           Sudo password to perform the delete. This
+	 *                               needed on POSIX archive only.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination) throws HpcException {
+			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
 		throw new HpcException("deleteDataObject is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
