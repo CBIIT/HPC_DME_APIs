@@ -316,14 +316,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			exec("rm " + archiveFilePath, sudoPassword);
 
 		} catch (HpcException e) {
-			logger.error("Failed to delete file: {}", archiveFilePath);
+			logger.error("Failed to delete file: {}", archiveFilePath, e);
 		}
 		// Delete the metadata file.
 		try {
 			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), sudoPassword);
 
 		} catch (HpcException e) {
-			logger.error("Failed to delete metadata for file: {}", archiveFilePath);
+			logger.error("Failed to delete metadata for file: {}", archiveFilePath, e);
 		}
 	}
 
