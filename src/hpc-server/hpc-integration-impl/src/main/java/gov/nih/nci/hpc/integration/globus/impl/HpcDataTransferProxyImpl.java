@@ -308,15 +308,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination) throws HpcException {
+			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		// Delete the archive file.
-		if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
+		try {
+			exec("rm " + archiveFilePath, sudoPassword);
+
+		} catch (HpcException e) {
 			logger.error("Failed to delete file: {}", archiveFilePath);
 		}
 		// Delete the metadata file.
-		if (!FileUtils.deleteQuietly(getMetadataFile(archiveFilePath))) {
+		try {
+			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), sudoPassword);
+
+		} catch (HpcException e) {
 			logger.error("Failed to delete metadata for file: {}", archiveFilePath);
 		}
 	}
