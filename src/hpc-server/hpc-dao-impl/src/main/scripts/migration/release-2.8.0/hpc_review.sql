@@ -25,6 +25,7 @@ SELECT coll.coll_id                                     as id,
        data_curator.meta_attr_value                     as data_curator,
        project_status.meta_attr_value                   as project_status,
        publications.meta_attr_value                     as publications,
+       deposition.meta_attr_value                     	as deposition,
        sunset_date.meta_attr_value                      as sunset_date,
        last_reviewed.meta_attr_value                    as last_reviewed,
        review_sent                                      as review_sent,
@@ -62,6 +63,10 @@ FROM r_coll_main coll
     JOIN r_meta_main publications ON publications.meta_id = map.meta_id AND
                                      (publications.meta_attr_name = 'publications' or
                                       publications.meta_attr_name = 'publication'))
+                   ON map.object_id = coll.coll_id
+    	LEFT JOIN (r_objt_metamap map
+    JOIN r_meta_main deposition ON deposition.meta_id = map.meta_id AND
+                                     deposition.meta_attr_name = 'deposition')
                    ON map.object_id = coll.coll_id
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main sunset_date ON sunset_date.meta_id = map.meta_id AND
