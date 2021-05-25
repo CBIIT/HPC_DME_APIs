@@ -105,6 +105,14 @@ public interface HpcUserDAO
 			String defaultConfigurationId, boolean active) throws HpcException;
 
 
+    /**
+     * Check if user is a data curator
+     * 
+     * @param nciUserId The user ID
+     * @return true if user is data curator
+     * @throws HpcException on service failure.
+     */
+    public boolean isUserDataCurator(String nciUserId) throws HpcException;
 }
 
  

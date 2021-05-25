@@ -151,6 +151,8 @@
 		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
 		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
 		<entry key="http://hpc.nci.nih.gov/dto/catalog" value="gov.nih.nci.hpc.dto.catalog" />
+		<entry key="http://hpc.nci.nih.gov/dto/review" value="gov.nih.nci.hpc.dto.review" />
+		<entry key="http://hpc.nci.nih.gov/dto/review" value="gov.nih.nci.hpc.dto.review" />
 		<entry key="http://hpc.nci.nih.gov/dto/datamigration" value="gov.nih.nci.hpc.dto.datamigration" />
 		<entry key="http://hpc.nci.nih.gov/dto/datatiering" value="gov.nih.nci.hpc.dto.datatiering" />
 		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
@@ -161,6 +163,7 @@
 		<entry key="http://hpc.nci.nih.gov/domain/report" value="gov.nih.nci.hpc.domain.report" />
 		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 		<entry key="http://hpc.nci.nih.gov/domain/catalog" value="gov.nih.nci.hpc.domain.catalog" />
+		<entry key="http://hpc.nci.nih.gov/domain/review" value="gov.nih.nci.hpc.domain.review" />
 		<entry key="http://hpc.nci.nih.gov/domain/datamigration" value="gov.nih.nci.hpc.domain.datamigration" />
 	</util:map>
 
@@ -312,6 +315,10 @@
 
 				<!-- Report Service Authorizations -->
 				<entry key="generateReport" value="${hpc.ws.rs.auth.report.generate-report}" />
+				
+				<!-- Review Service Authorizations -->
+				<entry key="queryReview" value="${hpc.ws.rs.auth.review.query-review}" />
+				<entry key="sendReminder" value="${hpc.ws.rs.auth.review.send-reminder}" />
 			</map>
 		</property>
 	</bean>
@@ -342,6 +349,7 @@
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
 	<bean id="hpcDataMigrationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataMigrationRestServiceImpl" />
 	<bean id="hpcDataTieringRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataTieringRestServiceImpl" />
+	<bean id="hpcReviewRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReviewRestServiceImpl" />
 
 	<!-- CXF JAX-RS Secured Server Config -->
 	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}"
@@ -355,6 +363,7 @@
 			<ref bean="hpcReportRestService" />
 			<ref bean="hpcDataMigrationRestService" />
 			<ref bean="hpcDataTieringRestService" />
+			<ref bean="hpcReviewRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
