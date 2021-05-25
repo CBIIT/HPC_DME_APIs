@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcReview.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+ * @version $Id$
+ -->
+
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-review="http://hpc.nci.nih.gov/domain/review"
+	xmlns:hpc-dto-review="http://hpc.nci.nih.gov/dto/review"
+	targetNamespace="http://hpc.nci.nih.gov/dto/review" 
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/review"
+		        schemaLocation="HpcReviewTypes.xsd" />
+
+	<!-- Review DTO -->
+
+	<xsd:element name="HpcReviewDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="reviewEntries"
+				             type="hpc-domain-review:HpcReviewEntry"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	
+</xsd:schema>

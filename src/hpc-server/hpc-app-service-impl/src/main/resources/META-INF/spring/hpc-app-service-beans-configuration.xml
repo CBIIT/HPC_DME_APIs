@@ -143,4 +143,6 @@
 	<bean id="hpcDataMigrationService" class="gov.nih.nci.hpc.service.impl.HpcDataMigrationServiceImpl" />
 	<bean id="hpcDataTieringService" class="gov.nih.nci.hpc.service.impl.HpcDataTieringServiceImpl" >
 		<constructor-arg ref="hpcDataTransferProxies" index="0" />
-	</bean></beans>
+	</bean>
+	<bean id="hpcReviewService" class="gov.nih.nci.hpc.service.impl.HpcReviewServiceImpl" />
+</beans>

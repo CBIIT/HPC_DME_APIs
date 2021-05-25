@@ -45,6 +45,8 @@
 		<prop key="hpc.scheduler.cron.refreshReportViews.delay">0 0/60 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeDeepArchiveInProgress.delay">15 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeRestoreRequest.delay">25 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.sendAnnualReview.delay">0 0 23 1 * ?</prop>
+		<prop key="hpc.scheduler.cron.sendAnnualReviewReminder.delay">0 0 23 15 * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -54,4 +56,6 @@
 		interface="gov.nih.nci.hpc.bus.HpcSecurityBusService" />
 	<osgi:reference id="hpcSystemBusService"
 		interface="gov.nih.nci.hpc.bus.HpcSystemBusService" />
+	<osgi:reference id="hpcReviewBusService"
+		interface="gov.nih.nci.hpc.bus.HpcReviewBusService" />
 </beans>

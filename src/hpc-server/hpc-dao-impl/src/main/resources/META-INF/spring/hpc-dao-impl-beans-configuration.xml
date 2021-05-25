@@ -61,5 +61,6 @@
 	 <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> 
 	 <bean id="hpcDataMigrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataMigrationDAOImpl" /> 
 	 <bean id="hpcDataTieringDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataTieringDAOImpl" /> 
+	 <bean id="hpcReviewDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReviewDAOImpl" /> 
 
 </beans>
