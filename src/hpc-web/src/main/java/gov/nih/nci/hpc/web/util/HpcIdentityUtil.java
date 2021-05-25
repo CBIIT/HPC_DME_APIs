@@ -22,6 +22,7 @@ public class HpcIdentityUtil {
             session.getAttribute("hpcUser") instanceof HpcUserDTO)
         {
             HpcUserDTO userDto = (HpcUserDTO) session.getAttribute("hpcUser");
+            //TODO query against data_curator metadata
             retVal = "GROUP_ADMIN".equals(userDto.getUserRole());
         }
         return retVal;
@@ -66,4 +67,20 @@ public class HpcIdentityUtil {
         return retVal;
     }
 
+    /**
+     * Check if current authenticated User is a curator of any project
+     *
+     * @param session  The HTTP session
+     * @return true if User is a curator, false otherwise
+     */
+    public static boolean isUserCurator(HttpSession session) {
+        boolean retVal = false;
+        if (null != session &&
+            session.getAttribute("hpcUser") instanceof HpcUserDTO)
+        {
+            HpcUserDTO userDto = (HpcUserDTO) session.getAttribute("hpcUser");
+            retVal = userDto.getDataCurator();
+        }
+        return retVal;
+    }
 }
