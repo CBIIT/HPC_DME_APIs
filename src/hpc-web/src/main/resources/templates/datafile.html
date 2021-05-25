@@ -290,9 +290,11 @@
 												  th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 												  th:value="${metadataItem.getAttrValue()}" th:required="required" placeholder="Required"></input></td>
 												<td th:if="${metadataItem.getValidValues() == null and not metadataItem.isMandatory()}">
-												  <input class="form-control" type="text"
+												  <div class="input-group"><input class="form-control" type="text"
 												  th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
-												  th:value="${metadataItem.getAttrValue()}"></input></td>
+												  th:value="${metadataItem.getAttrValue()}"></input>
+												  <span class="input-group-addon deleteAttribute" title="Delete Attribute">
+        											<i class="fa fa-trash"></i></span></div></td>
 												<td th:unless="${metadataItem.getValidValues() == null}">
 													<select size="1"
 													th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
@@ -454,7 +456,7 @@
 	    var cell0 = row.insertCell(0);
 	    var cell1 = row.insertCell(1);
 	    cell0.innerHTML = '<input type="text" id="addAttrName'+(rows+1)+'" name="addAttrName'+(rows+1)+'" placeholder="Value" class="form-control"/>';
-	    cell1.innerHTML = '<input type="text" id="addAttrValue'+(rows+1)+'" name="addAttrValue'+(rows+1)+'" placeholder="Value" class="form-control"/>';
+	    cell1.innerHTML = '<div class="input-group"><input type="text" id="addAttrValue'+(rows+1)+'" name="addAttrValue'+(rows+1)+'" placeholder="Value" class="form-control"/><span class="input-group-addon deleteAttribute" title="Delete Attribute"><i class="fa fa-trash"></i></span></div>';
 	    return false;
 	}	
 	
@@ -540,6 +542,10 @@
 			$('#myModal-event').modal('hide');
 		});
 	});	
+	$('body').on('click', '.deleteAttribute', function() {
+		$(this).closest("tr").find("input").val("");
+		$(this).closest("tr").addClass("hidden");
+	});
 	/*]]>*/
 </script>
 

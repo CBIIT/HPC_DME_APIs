@@ -78,7 +78,7 @@ public class HpcUtil {
 		// Determine if need to exec w/ sudo.
 		String[] execCommand = null;
 		if (!StringUtils.isEmpty(sudoPassword)) {
-			execCommand = new String[] { "/bin/sh", "-c", "echo " + sudoPassword + "|sudo -S " + command };
+			execCommand = new String[] { "/bin/sh", "-c", "echo '" + sudoPassword + "'|sudo -S " + command };
 		} else {
 			execCommand = new String[] { command };
 		}

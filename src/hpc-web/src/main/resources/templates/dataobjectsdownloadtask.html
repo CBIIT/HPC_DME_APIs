@@ -138,6 +138,11 @@
 											th:text="${hpcDataObjectsDownloadStatusDTO.getTaskStatus().value()}"></label>
 									</div>
 									<div class="col-md-12 form-group">
+										<label for="Name">Destination Type:</label> <label
+											for="$hpcDataObjectsDownloadStatusDTO.getDestinationType().value()}"
+											th:text="${#strings.replace(hpcDataObjectsDownloadStatusDTO.getDestinationType().value(),'S_3','S3')}"></label>
+									</div>
+									<div class="col-md-12 form-group">
 										<label for="Name">Destination Endpoint:</label> <label
 											for="${hpcDataObjectsDownloadStatusDTO.getDestinationLocation().getFileContainerId()}"
 											th:text="${hpcDataObjectsDownloadStatusDTO.getDestinationLocation().getFileContainerId()}"></label>
