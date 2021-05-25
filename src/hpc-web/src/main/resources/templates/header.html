@@ -100,7 +100,8 @@
 									<li><a class="" th:href="@{/subscribe}">Notifications</a></li>
 									<li><a class="" th:href="@{/downloadtasks}">Download Tasks</a></li>
 									<li><a class="" th:href="@{/uploadtasks}">Registration Tasks</a></li>
-									<li><a class="" th:href="@{/review}" th:if="${session.isCurator}">Review</a></li>
+									<li th:if="${session.env == 'Local' or session.env == 'DEV' or session.env == 'UAT'}">
+										<a class="" th:href="@{/review}" th:if="${session.isCurator}">Review</a></li>
 							</ul></li>
 						<li id="sub-menu-reports" class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
 						    <a th:href="@{/reports}" class=""> <i
@@ -117,7 +118,8 @@
 								<li><a class="" th:href="@{/user}">User</a></li>
 								<li><a class="" th:href="@{/group}">Group</a></li>
 								<li><a class="" th:href="@{/doc}" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">DOC</a></li>
-								<li><a class="" th:href="@{/review}" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">Review</a></li>
+								<li th:if="${session.env == 'Local' or session.env == 'DEV' or session.env == 'UAT'}" >
+									<a class="" th:href="@{/review}" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">Review</a></li>
 							</ul>
 						</li>
 					</ul>

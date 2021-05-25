@@ -6,7 +6,8 @@ public class HpcReviewModel {
 
 	private List<String> path;
 	private String projectStatus;
-	private String publication;
+	private String publications;
+	private String deposition;
 	private String retentionYears;
 	private String lastReviewed;
 
@@ -26,14 +27,22 @@ public class HpcReviewModel {
 		this.projectStatus = projectStatus;
 	}
 
-	public String getPublication() {
-		return publication;
+	public String getPublications() {
+		return publications;
 	}
 
-	public void setPublication(String publication) {
-		this.publication = publication;
+	public void setPublications(String publications) {
+		this.publications = publications;
 	}
 
+	public String getDeposition() {
+		return deposition;
+	}
+
+	public void setDeposition(String deposition) {
+		this.deposition = deposition;
+	}
+	
 	public String getRetentionYears() {
 		return retentionYears;
 	}
