@@ -597,6 +597,16 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		return ldapAuthenticationProxy.getDistinguishedName(groupId, "gid", searchBase);
 	}
 
+	@Override
+	public boolean isUserDataCurator(String nciUserId) throws HpcException {
+		// Input validation.
+		if (nciUserId == null) {
+			throw new HpcException("Null NCI user ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return userDAO.isUserDataCurator(nciUserId);
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
