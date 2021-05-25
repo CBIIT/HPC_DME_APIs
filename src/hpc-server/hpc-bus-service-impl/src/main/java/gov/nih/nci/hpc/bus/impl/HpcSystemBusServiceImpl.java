@@ -1966,30 +1966,23 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 */
 	private boolean updateS3UploadStatus(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata)
 			throws HpcException {
-		logger.info("Before updateS3UploadStatus(): {}", path);
-
 		// Lookup the archive for this data object.
-		logger.info("Before getPathAttributes(): {}", path);
 		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
 				systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
 				systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
-		logger.info("After getPathAttributes(): {}", path);
 
 		if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
 			// The data object is found in archive. i.e. upload was completed successfully.
 
 			// Update the archive data object's system-metadata.
-			logger.info("Before addSystemGeneratedMetadataToDataObject(): {}", path);
 			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
 					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(),
 					systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
-			logger.info("After addSystemGeneratedMetadataToDataObject(): {}", path);
 
 			// Update the data management (iRODS) data object's system-metadata.
 			Calendar dataTransferCompleted = Calendar.getInstance();
 
-			logger.info("Before updateDataObjectSystemGeneratedMetadata(): {}", path);
 			Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null
 					&& objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS)
 							? Calendar.getInstance()
@@ -1998,7 +1991,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
 					archivePathAttributes.getSize(), null, null, objectMetadata.getDeepArchiveStatus(),
 					deepArchiveDate);
-			logger.info("After updateDataObjectSystemGeneratedMetadata(): {}", path);
 
 			// Add an event if needed.
 			if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
@@ -2012,11 +2004,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
 			dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, true, null);
 
-			logger.info("After updateS3UploadStatus(): upload-completed {}", path);
 			return true;
 		}
 
-		logger.info("After updateS3UploadStatus(): upload-in-progress {}", path);
 		return false;
 	}
 
