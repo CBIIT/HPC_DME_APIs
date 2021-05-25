@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcReviewTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+ * @version $Id: $
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-review="http://hpc.nci.nih.gov/domain/review"
+	targetNamespace="http://hpc.nci.nih.gov/domain/review"
+	elementFormDefault="unqualified">
+	
+	<xsd:complexType name="HpcReviewEntry">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:int" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="projectTitle" type="xsd:string" />
+			<xsd:element name="projectDescription" type="xsd:string" />
+			<xsd:element name="projectStartDate" type="xsd:string" />
+			<xsd:element name="dataOwnerName" type="xsd:string" />
+			<xsd:element name="dataOwner" type="xsd:string" />
+			<xsd:element name="dataCurator" type="xsd:string" />
+			<xsd:element name="dataCuratorName" type="xsd:string" />
+			<xsd:element name="projectStatus" type="xsd:string" />
+			<xsd:element name="publications" type="xsd:string" />
+			<xsd:element name="sunsetDate" type="xsd:string" />
+			<xsd:element name="lastReviewed" type="xsd:string" />
+			<xsd:element name="reviewSent" type="xsd:string" />
+			<xsd:element name="reminderSent" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
