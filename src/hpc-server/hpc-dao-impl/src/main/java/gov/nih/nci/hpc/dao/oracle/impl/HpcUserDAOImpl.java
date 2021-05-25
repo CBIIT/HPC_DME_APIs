@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -76,6 +77,8 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 	private static final String GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER = " and lower(DEFAULT_CONFIGURATION_ID) = lower(?) ";
 
 	private static final String GET_USERS_ACTIVE_FILTER = " and ACTIVE = '1' ";
+	
+	private static final String GET_USER_DATA_CURATOR_SQL = "select 1 from r_meta_main where meta_attr_name = 'data_curator' and meta_attr_value = ? FETCH FIRST 1 ROWS ONLY";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -313,6 +316,19 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get users: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public boolean isUserDataCurator(String nciUserId) throws HpcException {
+		try {
+		    jdbcTemplate.queryForObject(GET_USER_DATA_CURATOR_SQL, new Object[]{nciUserId}, Integer.class);
+		    return true;
+		} catch (EmptyResultDataAccessException e) {
+		    return false;
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to check if a user is data curator: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
