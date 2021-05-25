@@ -31,6 +31,7 @@
 			<xsd:element name="dataCuratorName" type="xsd:string" />
 			<xsd:element name="projectStatus" type="xsd:string" />
 			<xsd:element name="publications" type="xsd:string" />
+			<xsd:element name="deposition" type="xsd:string" />
 			<xsd:element name="sunsetDate" type="xsd:string" />
 			<xsd:element name="lastReviewed" type="xsd:string" />
 			<xsd:element name="reviewSent" type="xsd:string" />
