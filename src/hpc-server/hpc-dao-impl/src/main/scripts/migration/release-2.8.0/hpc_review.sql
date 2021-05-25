@@ -12,8 +12,22 @@
 -- @version $Id$
 --
 
-                 
-DROP VIEW R_REVIEW_META_MAIN;
+CREATE TABLE "IRODS"."HPC_NOTIFICATION_REVIEW"
+(
+   USER_ID VARCHAR2(50) NOT NULL,
+   EVENT_TYPE VARCHAR2(50) NOT NULL,
+   DELIVERED timestamp NOT NULL
+);
+
+comment on table IRODS."HPC_NOTIFICATION_REVIEW" is 'Review Notification sent - i.e. a list of all review notifications the system sent out';
+
+comment on column IRODS."HPC_NOTIFICATION_REVIEW"."USER_ID" is 'The user ID that was notified';
+
+comment on column IRODS."HPC_NOTIFICATION_REVIEW"."EVENT_TYPE" is 'The event type that notification was sent for';
+
+comment on column IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT"."DELIVERED" is 'The data / time the notification delivery was performed';
+
+--DROP VIEW R_REVIEW_META_MAIN;
 create view R_REVIEW_META_MAIN as
 SELECT coll.coll_id                                     as id,
        coll.coll_name                                   as path,
@@ -92,17 +106,3 @@ FROM r_coll_main coll
                     group by USER_ID) reminder_event on reminder_event.USER_ID = data_curator.meta_attr_value;
                     
                     
-CREATE TABLE "IRODS"."HPC_NOTIFICATION_REVIEW"
-(
-   USER_ID VARCHAR2(50) NOT NULL,
-   EVENT_TYPE VARCHAR2(50) NOT NULL,
-   DELIVERED timestamp NOT NULL;
-)
-;
-comment on table IRODS."HPC_NOTIFICATION_REVIEW" is 'Review Notification sent - i.e. a list of all review notifications the system sent out';
-
-comment on column IRODS."HPC_NOTIFICATION_REVIEW"."USER_ID" is 'The user ID that was notified';
-
-comment on column IRODS."HPC_NOTIFICATION_REVIEW"."EVENT_TYPE" is 'The event type that notification was sent for';
-
-comment on column IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT"."DELIVERED" is 'The data / time the notification delivery was performed';
