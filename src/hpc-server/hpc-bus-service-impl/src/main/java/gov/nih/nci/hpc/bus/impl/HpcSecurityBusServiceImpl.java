@@ -325,6 +325,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
 	@Override
 	public HpcUserDTO getUser(String nciUserId) throws HpcException {
+				
 		// nciUserId is optional. If null, get the request invoker.
 		String userId = nciUserId;
 		if (userId == null) {
@@ -340,6 +341,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		if (user == null) {
 			return null;
 		}
+		
 
 		// Get the default data management configuration for this user.
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
@@ -354,6 +356,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 				dataManagementConfiguration != null ? dataManagementConfiguration.getBasePath() : null);
 		userDTO.setUserRole(dataManagementSecurityService.getUserRole(userId).value());
 		userDTO.setActive(user.getActive());
+		// Check if user is data curator
+		userDTO.setDataCurator(securityService.isUserDataCurator(userId));
 		return userDTO;
 	}
 

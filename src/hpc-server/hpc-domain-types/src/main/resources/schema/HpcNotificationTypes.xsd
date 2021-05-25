@@ -38,6 +38,8 @@
 			<xsd:enumeration value="COLLECTION_UPDATED" />
 			<xsd:enumeration value="RESTORE_REQUEST_COMPLETED" />
 			<xsd:enumeration value="RESTORE_REQUEST_FAILED" />
+			<xsd:enumeration value="REVIEW_SENT" />
+			<xsd:enumeration value="REVIEW_REMINDER_SENT" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -101,6 +103,14 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="notificationDeliveryMethod" type="hpc-domain-notification:HpcNotificationDeliveryMethod" />
 			<xsd:element name="deliveryStatus" type="xsd:boolean" />
+			<xsd:element name="delivered" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationReview">
+		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
 			<xsd:element name="delivered" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
