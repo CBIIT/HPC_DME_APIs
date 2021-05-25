@@ -54,6 +54,9 @@ table.dataTable tbody td {
 	word-break: break-word;
 	vertical-align: top;
 }
+.tooltip {
+    z-index: 100000000; 
+}
 </style>
 
 </head>
@@ -80,19 +83,19 @@ table.dataTable tbody td {
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<div>
-									<div class="col-md-3">
+									<div class="row">
 										<h2>
 											<i class="fa fa-list-alt red"></i><strong>My Projects</strong>
 										</h2>
-									</div>
-									<div class="col-md-3 col-md-offset-6">
-										<h2 style="color: rgb(121, 121, 121)">
-											<strong>Display Completed Projects</strong>
-										</h2>
-										<label class="switch"> <input type="checkbox"
-											id="allcheckbox" th:checked="${displayAll}"
-											onclick="displayAll()" /> <span class="slider round"></span>
-										</label>
+										<div class="pull-right">
+											<h2 style="color: rgb(121, 121, 121)">
+												<strong>Display Completed Projects</strong>
+											</h2>
+											<label class="switch"> <input type="checkbox"
+												id="allcheckbox" th:checked="${displayAll}"
+												onclick="displayAll()" /> <span class="slider round"></span>
+											</label>
+										</div>
 									</div>
 								</div>
 								
@@ -112,12 +115,13 @@ table.dataTable tbody td {
 												<th></th>
 												<th>Path</th>
 												<th>Project Title</th>
-												<th>Start date</th>
+												<th>Start Date</th>
 												<th>Data Owner</th>
 												<th>Data Curator</th>
 												<th>Project Status</th>
-												<th>Publication</th>
-												<th>Sunset date</th>
+												<th>Publications</th>
+												<th>Deposition</th>
+												<th>Sunset Date</th>
 												<th>Last Reviewed</th>
 											</tr>
 										</thead>
@@ -204,9 +208,17 @@ table.dataTable tbody td {
 																</select>
 															</div>
 															<div class="col-sm-12 column">
-																<label for="publication">Publication:</label> <input
-																	id="publication" name="publication" type="text" class="form-control"
-																	placeholder="Enter publication" size="80" />
+																<label for="publications">Publications:</label> <input
+																	id="publications" name="publications" type="text" class="form-control"
+																	placeholder="Enter publications" size="80" />
+															</div>
+															<div class="col-sm-12 column">
+																<label for="deposition">Deposition:</label>
+																<a href="#" data-toggle="tooltip" data-placement="right" title="Repository information">
+																<img style="width: 25px; height: 25px;" src="img/help.png"/></a>
+																<input
+																	id="deposition" name="deposition" type="text" class="form-control"
+																	placeholder="Enter deposition" size="80" />
 															</div>
 															<div class="col-sm-12 column" id="retention">
 																<label for="years">Retention Years:</label> <select
@@ -277,7 +289,7 @@ table.dataTable tbody td {
 		$(document).ready(function(){
 			var table = $('#example').DataTable({"paging": true,
 				responsive: true,
-				"order": [[6, 'asc'],[9, 'asc'],[1, 'asc']],
+				"order": [[6, 'asc'],[10, 'asc'],[1, 'asc']],
     	        "ordering": true,
     	        "info": true,
     	        "pageLength": 100,
@@ -309,7 +321,7 @@ table.dataTable tbody td {
     	             		  $(".multi-value").show();
     	             		  $("#path").hide();
     	             		 $("#status").val("");
-    	             		$("#publication").val("");
+    	             		$("#publications").val("");
     	             		$('#example').find("input[type=checkbox]:checked").each(function(index, value) {
     	             			id = this.id;
     	             			rowid = id.replace("row-", "");
@@ -328,8 +340,8 @@ table.dataTable tbody td {
   	             		     $("#path").show();
   	             		  	 $("#paths").val(data.path);
   	             		     $("#status").val(data.projectStatus);
-  	             		  	 $("#publication").val(data.publication);
-  	             		     
+  	             		  	 $("#publications").val(data.publications);
+  	             		     $("#deposition").val(data.deposition);
     	             	   }
     	             	   var today = new Date();
 	             		   var month = '' + (today.getMonth()+1);
@@ -348,6 +360,7 @@ table.dataTable tbody td {
 	             		   $('#message').hide();
 	             		   $('#wait').hide();
     	             	   $('#editModal').modal('show');
+    	             	   $('[data-toggle="tooltip"]').tooltip({container: 'body'});
     	                }
     	            }
     	        ],
@@ -371,7 +384,8 @@ table.dataTable tbody td {
     	            	return renderDataCurator(data, type, row);}
     	            },
     	            { "data": "projectStatus" },
-    	            { "data": "publication" },
+    	            { "data": "publications" },
+    	            { "data": "deposition" },
     	            { "data": "sunsetDate" },
     	            { "data": "lastReviewed" }
     	        ],

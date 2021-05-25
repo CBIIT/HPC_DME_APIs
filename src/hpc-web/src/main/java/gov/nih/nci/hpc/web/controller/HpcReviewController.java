@@ -350,10 +350,10 @@ public class HpcReviewController extends AbstractHpcController {
 			returnResult.setDataOwner(getAttributeValue("data_owner", result.getMetadataEntries()));
 			returnResult.setDataCurator(getAttributeValue("data_curator", result.getMetadataEntries()));
 			returnResult.setProjectStatus(getAttributeValue("project_status", result.getMetadataEntries()));
-			String publication = getAttributeValue("publication", result.getMetadataEntries());
-			if (publication == null)
-				publication = getAttributeValue("publications", result.getMetadataEntries());
-			returnResult.setPublication(publication);
+			String publications = getAttributeValue("publication", result.getMetadataEntries());
+			if (publications == null)
+				publications = getAttributeValue("publications", result.getMetadataEntries());
+			returnResult.setPublications(publications);
 			returnResult.setSunsetDate(getAttributeValue("sunset_date", result.getMetadataEntries()));
 			returnResult.setLastReviewed(getAttributeValue("last_reviewed", result.getMetadataEntries()));
 
@@ -384,7 +384,8 @@ public class HpcReviewController extends AbstractHpcController {
 			returnResult.setDataCuratorName(StringUtils.isNotBlank(result.getDataCuratorName())
 					? result.getDataCuratorName() : result.getDataCurator());
 			returnResult.setProjectStatus(result.getProjectStatus());
-			returnResult.setPublication(result.getPublications());
+			returnResult.setPublications(result.getPublications());
+			returnResult.setDeposition(result.getDeposition());
 			returnResult.setSunsetDate(result.getSunsetDate());
 			returnResult.setLastReviewed(result.getLastReviewed());
 			returnResult.setReviewSent(result.getReviewSent());
@@ -424,11 +425,18 @@ public class HpcReviewController extends AbstractHpcController {
 		status.setValue(hpcReviewEntry.getProjectStatus());
 		metadataEntries.add(status);
 		
-		if(StringUtils.isNotEmpty(hpcReviewEntry.getPublication())) {
+		if(StringUtils.isNotEmpty(hpcReviewEntry.getPublications())) {
 			HpcMetadataEntry publication = new HpcMetadataEntry();
-			publication.setAttribute("publication");
-			publication.setValue(hpcReviewEntry.getPublication());
+			publication.setAttribute("publications");
+			publication.setValue(hpcReviewEntry.getPublications());
 			metadataEntries.add(publication);
+		}
+		
+		if(StringUtils.isNotEmpty(hpcReviewEntry.getDeposition())) {
+			HpcMetadataEntry deposition = new HpcMetadataEntry();
+			deposition.setAttribute("deposition");
+			deposition.setValue(hpcReviewEntry.getDeposition());
+			metadataEntries.add(deposition);
 		}
 		
 		if(StringUtils.isNotEmpty(hpcReviewEntry.getRetentionYears())) {
