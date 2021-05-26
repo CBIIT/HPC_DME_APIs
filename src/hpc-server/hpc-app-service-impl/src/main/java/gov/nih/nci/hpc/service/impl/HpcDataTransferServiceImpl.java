@@ -1573,7 +1573,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Set Owner, Group and Permissions on the archive path.
 		String sudoPassword = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword();
-		exec("chown " + permissions.getOwner() + " " + archivePath, sudoPassword);
+		
+		// TODO: We no longer set the owner permissions, but keep the DME system account to own the file.
+		// With this change the 'sudo enabled exec() is no longer needed. This is a temporary fix until code cleanup
+		// exec("chown " + permissions.getOwner() + " " + archivePath, sudoPassword);
+		
 		exec("chown :" + permissions.getGroup() + " " + archivePath, sudoPassword);
 		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword);
 	}
