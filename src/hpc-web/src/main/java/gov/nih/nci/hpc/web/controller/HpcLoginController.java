@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 
@@ -124,6 +125,7 @@ public class HpcLoginController extends AbstractHpcController {
 					throw new HpcWebException("Invalid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
+				session.setAttribute("isCurator", HpcIdentityUtil.isUserCurator(session));
 				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
 				//Get DOC Models, go to server only if not available in cache
 				HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);

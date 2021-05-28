@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="HPC Data Management" />
+<meta name="author" content="SVG, Inc" />
+<link rel="shortcut icon" href="img/favicon.png" />
+
+
+<title>NCI Data Management Environment</title>
+
+
+<!-- Bootstrap CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<!-- bootstrap theme -->
+<link href="css/bootstrap-theme.css" rel="stylesheet" />
+<!-- font icon -->
+<link href="css/elegant-icons-style.css" rel="stylesheet" />
+<link href="css/font-awesome.min.css" rel="stylesheet" />
+<!-- Custom styles -->
+<link href="css/style.css" rel="stylesheet" />
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link href="DataTables/DataTables-1.10.24/css/jquery.dataTables.min.css"
+	rel="stylesheet" />
+<link
+	href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css"
+	rel="stylesheet" />
+<link
+	href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css"
+	rel="stylesheet" />
+<link href="DataTables/Select-1.3.3/css/select.dataTables.min.css"
+	rel="stylesheet" />
+<link href="DataTables/Select-1.3.3/css/select.bootstrap.min.css"
+	rel="stylesheet" />
+
+<style>
+div.multi-value span {
+	font-size: .8em;
+	line-height: 1.25em;
+	display: block;
+	color: #666;
+}
+
+div.multi-value {
+	border: 1px dotted #666;
+	border-radius: 3px;
+	padding: 5px;
+	background-color: #fafafa;
+	cursor: pointer;
+}
+
+table.dataTable tbody td {
+	word-break: break-word;
+	vertical-align: top;
+}
+.tooltip {
+    z-index: 100000000; 
+}
+</style>
+
+</head>
+<body>
+
+	<!-- container section start -->
+	<section id="container" class="">
+		<div th:include="header :: header"></div>
+		<!--main content start-->
+		<section id="main-content">
+			<section class="wrapper">
+				<!--Title start-->
+				<div class="row">
+					<div class="col-lg-12">
+						<h4>
+							<i class="fa fa-dashboard"></i> Manage Review
+						</h4>
+					</div>
+				</div>
+				<!--Title End-->
+				<!--Row start-->
+				<div class="row">
+					<div class="col-lg-12 col-md-12">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div>
+									<div class="row">
+										<h2>
+											<i class="fa fa-list-alt red"></i><strong>My Projects</strong>
+										</h2>
+										<div class="pull-right">
+											<h2 style="color: rgb(121, 121, 121)">
+												<strong>Display Completed Projects</strong>
+											</h2>
+											<label class="switch"> <input type="checkbox"
+												id="allcheckbox" th:checked="${displayAll}"
+												onclick="displayAll()" /> <span class="slider round"></span>
+											</label>
+										</div>
+									</div>
+								</div>
+								
+							</div>
+							<div th:if="${error != null}">
+								<div class="alert alert-error">
+									<a class="close" data-dismiss="alert">×</a> <label
+										for="${error}" th:text="${error}"></label>
+								</div>
+							</div>
+							<div th:if="${error == null}">
+								<!--panel-body start-->
+								<div class="panel-body">
+									<table id="example" class="display" style="width: 100%">
+										<thead>
+											<tr>
+												<th></th>
+												<th>Path</th>
+												<th>Project Title</th>
+												<th>Start Date</th>
+												<th>Data Owner</th>
+												<th>Data Curator</th>
+												<th>Project Status</th>
+												<th>Publications</th>
+												<th>Deposition</th>
+												<th>Sunset Date</th>
+												<th>Last Reviewed</th>
+											</tr>
+										</thead>
+										<tbody>
+										</tbody>
+									</table>
+									
+								</div>
+							</div>
+
+						</div>
+						<!--/col-->
+
+					</div>
+				</div>
+				<div class="row"></div>
+				<!-- popover -->
+				<div id="notifications" style="display: none;">
+					<table>
+						<thead>
+							<tr>
+								<th>Annual Review Sent</th>
+								<th>Reminder Sent</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>3/1/2021</td>
+								<td>4/1/2021, 5/1/2021</td>
+								<td><a class="resend"><i class="fa fa-repeat" title="Resend" aria-hidden="true"></i></a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!-- popover -->
+				<!-- modal -->
+				<div class="modal fade" id="editModal" tabindex="-1" role="dialog"
+					aria-labelledby="myModalLabel" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Update Project</h4>
+							</div>
+							<div class="modal-body">
+								<form class="form-horizontal" id="reviewForm" method="POST">
+									<input type="hidden" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'" id="role"/>
+									<div class="panel panel-default">
+										<div class="panel-body">
+											<table>
+												<tr>
+													<td>
+														<div class="pull-left alert-success" id="message"
+															style="display: none; float: left">
+															<p>&nbsp;</p>
+														</div>
+														<div class="pull-left alert-danger" id="wait"
+															style="display: none; float: left">
+															<p>&nbsp;</p>
+														</div>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<div class="form-group">
+															<div class="col-sm-12 column">
+																<div class="multi-value" style="display: none;">
+																	Multiple values<span class="multi-info"
+																		style="display: block;">The selected items
+																		contain different values for this input. To edit and
+																		set all items for this input to the same value, update
+																		here, otherwise select one item at a time to edit
+																		individual values.</span>
+																</div>
+															</div>
+															<div class="col-sm-12 column" id="path"></div>
+															<input type="hidden" name="path" id="paths" />
+															<div id="statusDiv" class="col-sm-12 column">
+																<label for="status">Project Status:</label> <select
+																	size="1" id="status" name="projectStatus" class="form-control">
+																	<option value="Active">Active</option>
+																	<option value="Completed">Completed</option>
+																</select>
+															</div>
+															<div class="col-sm-12 column">
+																<label for="publications">Publications:</label> <input
+																	id="publications" name="publications" type="text" class="form-control"
+																	placeholder="Enter publications" size="80" />
+															</div>
+															<div class="col-sm-12 column">
+																<label for="deposition">Deposition:</label>
+																<a href="#" data-toggle="tooltip" data-placement="right" title="Repository information">
+																<img style="width: 25px; height: 25px;" src="img/help.png"/></a>
+																<input
+																	id="deposition" name="deposition" type="text" class="form-control"
+																	placeholder="Enter deposition" size="80" />
+															</div>
+															<div class="col-sm-12 column" id="retention">
+																<label for="years">Retention Years:</label> <select
+																	size="1" id="years" name="retentionYears" class="form-control">
+																	<option value="">Select number of years</option>
+																	<option value="1">1</option>
+																	<option value="2">2</option>
+																	<option value="3">3</option>
+																	<option value="4">4</option>
+																	<option value="5">5</option>
+																	<option value="6">6</option>
+																	<option value="7">7</option>
+																	<option value="8">8</option>
+																	<option value="9">9</option>
+																	<option value="10">10</option>
+																</select>
+															</div>
+															<div class="col-sm-12 column">
+																<label for="reviewed">Review Date:</label> <input
+																	id="lastReviewed" name="lastReviewed" type="text" class="form-control"
+																	size="80" readonly="readonly" />
+															</div>
+														</div>
+														<div class="modal-footer">
+															<button type="button" class="btn btn-md btn-primary"
+																id="reviewButton">Update</button>
+															<button type="button" class="btn btn-default"
+																data-dismiss="modal" id="close">Close</button>
+														</div>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- modal -->
+			</section>
+			<div th:include="footer :: footer"></div>
+		</section>
+		<!--main content end-->
+	</section>
+	<!-- container section start -->
+	<!-- javascripts -->
+
+	<!-- bootstrap -->
+	<script src="js/jquery/3.1.1/jquery.min.js"></script>
+	<script src="js/jquery.scrollTo.min.js"></script>
+	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+	<script src="DataTables/DataTables-1.10.24/js/jquery.dataTables.min.js"></script>
+	<script src="DataTables/Buttons-1.7.0/js/dataTables.buttons.min.js"></script>
+	<script
+		src="DataTables/Responsive-2.2.7/js/dataTables.responsive.min.js"></script>
+	<script
+		src="DataTables/Responsive-2.2.7/js/responsive.bootstrap.min.js"></script>
+
+
+	<!--custome script for all page-->
+	<script src="js/scripts.js"></script>
+
+	<script>
+	//<![CDATA[
+		$(document).ready(function(){
+			var table = $('#example').DataTable({"paging": true,
+				responsive: true,
+				"order": [[6, 'asc'],[10, 'asc'],[1, 'asc']],
+    	        "ordering": true,
+    	        "info": true,
+    	        "pageLength": 100,
+    	        oLanguage: {
+    	            "sSearch": "Filter:"
+    	        },
+    	        dom: '<"row" flr><"row col-md-12" B>itip',
+    	        buttons: [
+    	        	{
+    	                text: 'Select all',
+    	                className: 'btn btn-secondary',
+    	                action: function () {
+    	                	if($('#example').find("input[type=checkbox]:checked").length > 0)
+    	                		$('#example').find("input[type=checkbox]").prop('checked', false);
+    	                	else
+    	                		$('#example').find("input[type=checkbox]").prop('checked', true);
+    	                }
+    	            },
+    	            {
+    	                text: 'Review',
+    	                className: 'btn btn-primary',
+    	                action: function ( e, dt, node, config ) {
+    	                   var len = $('#example').find("input[type=checkbox]:checked").length;
+    	                   if (len == 0) {
+    	                	   alert ("Please select at least one project.");
+    	                	   return;
+    	                   }
+    	             	   if (len > 1) {
+    	             		  $(".multi-value").show();
+    	             		  $("#path").hide();
+    	             		 $("#status").val("");
+    	             		$("#publications").val("");
+    	             		$('#example').find("input[type=checkbox]:checked").each(function(index, value) {
+    	             			id = this.id;
+    	             			rowid = id.replace("row-", "");
+    	             			var data = table.row(parseInt(rowid)).data();
+    	             			if (index == 0)
+    	             				$("#paths").val(data.path);
+    	             			else
+    	             				$("#paths").after('<input type="hidden" name="path" value="' + data.path + '"/>');
+    	             		});
+    	             	   } else {
+    	             		  id = $('#example').find("input[type=checkbox]:checked").attr('id');
+    	             		  rowid = id.replace("row-", "");
+    	             		 var data = table.row(parseInt(rowid)).data();
+    	             		 $(".multi-value").hide();
+  	             		     $("#path").html('<label for="path">Path:</label><div class="col-sm-12 row">' + data.path + '</div>');
+  	             		     $("#path").show();
+  	             		  	 $("#paths").val(data.path);
+  	             		     $("#status").val(data.projectStatus);
+  	             		  	 $("#publications").val(data.publications);
+  	             		     $("#deposition").val(data.deposition);
+    	             	   }
+    	             	   var today = new Date();
+	             		   var month = '' + (today.getMonth()+1);
+	             		   var day = '' +today.getDate();
+	             		   if (month.length < 2) 
+ 	             	        	month = '0' + month;
+ 	             	       if (day.length < 2) 
+ 	             	        	day = '0' + day;
+	             		   $("#lastReviewed").val(today.getFullYear()+'-'+month+'-'+day);
+	             		   $("#retention").hide();
+	             		   if($("#status").val() != null && $("#status").val() == "Completed")
+	             			 	$('#status').prop('disabled',true);
+	             		   else
+	             			  $('#status').prop('disabled',false);
+	             		   $("#years").val("");
+	             		   $('#message').hide();
+	             		   $('#wait').hide();
+    	             	   $('#editModal').modal('show');
+    	             	   $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+    	                }
+    	            }
+    	        ],
+    	        "columns": [
+    	        	{ "data": "path", "render": function (data, type, row, meta) {
+    	                return "<input aria-label='checkbox' type='checkbox' id=row-" + meta.row + ">";}
+    	            },
+    	        	{ "data": "path", "render": function (data, type, row) {
+    	                return "<a target='_blank' href='/collection?action=view&source=browse&path=" + data + "'>" + data + "</a>";}
+    	            },
+    	            { "data": "projectTitle", "render": function (data, type, row) {
+    	            	if(data == null)
+    	            		return "";
+    	            	if(row.projectDescription == null)
+    	            		return data;
+    	                return "<a href='#' data-toggle='tooltip' data-placement='right' data-html='true' title='" + row.projectDescription + "'>" + data + "</a>";}
+    	            },
+    	            { "data": "startDate" },
+    	            { "data": "dataOwner" },
+    	            { "data": "dataCuratorName", "render": function (data, type, row, meta) {
+    	            	return renderDataCurator(data, type, row);}
+    	            },
+    	            { "data": "projectStatus" },
+    	            { "data": "publications" },
+    	            { "data": "deposition" },
+    	            { "data": "sunsetDate" },
+    	            { "data": "lastReviewed" }
+    	        ],
+    	        "ajax": {
+    	            "url": "/review/search",
+    	            "type": "GET",
+    	            "dataSrc": "",
+    	            "error": function (xhr, error, thrown) {
+    	                console.log("Response status: " + xhr.status + " (" + xhr.statusText + ")");
+    	                console.log(error + ": " + thrown + " [" + xhr.status + " (" + xhr.statusText + ")]");
+    	                console.log(xhr.responseText);
+    	                console.log(xhr);
+    	            }
+    	        },
+    	        "language": {
+    	            "zeroRecords": "No projects to review"    	        }
+    	    });
+	    	$('[data-toggle="tooltip"]').tooltip({container: 'body'});
+	    	$("[data-toggle='popover']").each(function() {
+	    		var $this = $(this);
+	    		$this.popover({
+	    			content: $this.next().html(),
+    		   		html: true,
+    		    	title: "Notifications"
+    			});
+			});
+		});
+		$('#example').on( 'draw.dt', function () {
+    		$('[data-toggle="tooltip"]').tooltip({container: 'body'});
+    		$("[data-toggle='popover']").each(function() {
+	    		var $this = $(this);
+	    		$this.popover({
+	    			content: $this.next().html(),
+    		   		html: true,
+    		    	title: "Notifications"
+    			});
+			});
+    	} );
+		$('body').on('change', '#status', function() {
+			  if($("#status").val() != null && $("#status").val() == "Completed")
+				  $("#retention").show();
+			  else
+				  $("#retention").hide();
+		});
+		$('body').on('click', '.resend', function(event) {
+			var formData = {
+	            'userId': $(this).attr("data-id"),
+	        };
+			$.ajax({
+				type : "POST",
+				url : "/review/send",
+				data : formData,
+				success : function(msg) {
+					console.log('SUCCESS: ', msg);
+					$('#example').DataTable().ajax.reload();
+					alert(msg.message);
+				},
+				error : function(e) {
+					console.log('ERROR: ', e);
+					alert(msg.message);
+				}
+			});
+		});
+		$('body').on('click', '#reviewButton', function(event) {
+			if($("#status").val() == null) {
+				$("#statusDiv").addClass("has-error");
+				return;
+			} else
+				$("#statusDiv").removeClass("has-error");
+			if(!$("#status").disable && $("#status").val() == 'Completed' && $("#years").val() == ""){
+				$("#retention").addClass("has-error");
+				return;
+			} else {
+				$("#retention").removeClass("has-error");
+			}
+			var $form = $('#reviewForm');
+			$("#wait").html(
+					'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
+			$("#wait").show();
+			$.ajax({
+				type : "POST",
+				url : "/review/update",
+				data : $form.serialize(),
+				success : function(msg) {
+					console.log('SUCCESS: ', msg);
+					if(msg.message.startsWith("Success")) {
+						$('#message').html(msg.message);
+						$('#wait').hide();
+						$('#message').show();
+					} else {
+						$('#wait').html(msg.message);
+						$('#wait').show();
+					}
+					$('#example').DataTable().ajax.reload();
+				},
+				error : function(e) {
+					console.log('ERROR: ', e);
+					$('#wait').html(e.message);
+					$('#wait').show();
+				}
+			});
+		});
+		
+		function renderDataCurator(data, type, row){
+			
+			if($("#role").length == 0 ) {
+				return data;
+			}
+			var reviewSent = '';
+			var reminderSent = '';
+			if(row.reviewSent != null)
+				reviewSent = row.reviewSent;
+			if(row.reminderSent != null)
+				reminderSent = row.reminderSent;
+			
+			var html = "<a tabindex='0' role='button' data-toggle='popover' data-placement='right' data-trigger='focus'>" + data + "</a>";
+
+			html+= "<div class='popover-body' style='display: none;'> " +
+					"<table><thead><tr><th>Annual Review Sent</th> " + "<th>Reminder Sent</th><th></th></tr></thead>" +
+					"<tbody><tr><td>"+reviewSent+"</td><td>"+ reminderSent + "</td>" +
+					"<td><a class='resend' data-id='" + row.dataCurator + "'><i class='fa fa-repeat' title='Resend' aria-hidden='true'></i></a></td>" +
+					"</tr></tbody></table></div>";
+		    
+		    return html;	
+		 }
+		
+		function displayAll()
+		{
+			$('#example').DataTable().ajax.url("/review/search?displayAll="+$('#allcheckbox').prop('checked')).load();
+		}
+		
+		//]]>
+	</script>
+</body>
+</html>
