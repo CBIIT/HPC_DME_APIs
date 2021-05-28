@@ -179,7 +179,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		// Generate a URL to the data object in archive we are migrating from.
 		String sourceURL = s3DataTransferProxy.generateDownloadRequestURL(fromS3ArchiveAuthToken,
-				metadata.getArchiveLocation(), fromS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration());
+				metadata.getArchiveLocation(), fromS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
+				fromS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration());
 
 		// Create an S3 upload source object out of the data object in the S3 archive we
 		// are migrating from.
@@ -201,13 +202,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// the task w/ new archive location.
 		HpcDataMigrationProgressListener progressListener = new HpcDataMigrationProgressListener(
 				dataObjectMigrationTask, this);
-		dataObjectMigrationTask
-				.setToS3ArchiveLocation(s3DataTransferProxy
-						.uploadDataObject(toS3ArchiveAuthToken, uploadRequest,
-								toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
-								toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
-								null, toS3ArchiveDataTransferConfiguration.getEncryptedTransfer())
-						.getArchiveLocation());
+		dataObjectMigrationTask.setToS3ArchiveLocation(s3DataTransferProxy.uploadDataObject(toS3ArchiveAuthToken,
+				uploadRequest, toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
+				toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener, null,
+				toS3ArchiveDataTransferConfiguration.getEncryptedTransfer(),
+				toS3ArchiveDataTransferConfiguration.getStorageClass()).getArchiveLocation());
 
 		// Update the task and persist.
 		dataObjectMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
