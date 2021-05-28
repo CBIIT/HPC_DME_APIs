@@ -28,6 +28,8 @@
 		<prop key="hpc.bus.collectionDownloadTaskExecutorThreadPoolSize">100</prop>
 		<prop key="hpc.bus.dataObjectDownloadTaskExecutorThreadPoolSize">100</prop>
 		<prop key="hpc.bus.dataObjectFileSystemTaskExecutorThreadPoolSize">10</prop>
+		<prop key="hpc.bus.sendReviewNotificationToUser">false</prop>
+		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -51,6 +53,8 @@
 		          interface="gov.nih.nci.hpc.bus.HpcDataMigrationBusService" />
 	<osgi:service ref="hpcDataTieringBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcDataTieringBusService" />
+	<osgi:service ref="hpcReviewBusService"
+		          interface="gov.nih.nci.hpc.bus.HpcReviewBusService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcSecurityService"
@@ -81,5 +85,7 @@
 		            interface="gov.nih.nci.hpc.service.HpcDataMigrationService" />
 	<osgi:reference id="hpcDataTieringService"
 		            interface="gov.nih.nci.hpc.service.HpcDataTieringService" />
+	<osgi:reference id="hpcReviewService"
+		            interface="gov.nih.nci.hpc.service.HpcReviewService" />
 
 </beans>

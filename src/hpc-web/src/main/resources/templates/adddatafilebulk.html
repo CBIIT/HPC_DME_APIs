@@ -293,12 +293,12 @@
 													
 													<td th:if="${criteriaType != 'RegEx'}"><label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="Simple" checked="checked"/>Simple</label>
 														<a href="#" id="simplePopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
-													<label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="RegEx" />RegEx</label>
+													<label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType1" value="RegEx" />RegEx</label>
 													<a href="#" id="regexPopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
 													</td>
 													<td th:if="${criteriaType == 'RegEx'}"><label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="Simple" />Simple</label>
 														<a href="#" id="simplePopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
-													<label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="RegEx" checked="checked"/>RegEx</label>
+													<label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType1" value="RegEx" checked="checked"/>RegEx</label>
 													<a href="#" id="regexPopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
 													</td>
 												</tr>
@@ -408,11 +408,12 @@
 														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:value="${hpcMetadataAttrEntry.getAttrValue()}" th:required="required" placeholder="Required"></input></td>
 													<td
-														th:if="${hpcMetadataAttrEntry.getValidValues() == null and not hpcMetadataAttrEntry.isMandatory()}"><input
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null and not hpcMetadataAttrEntry.isMandatory()}"><div class="input-group"><input
 														type="text" class="form-control"
 														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
-														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input><span class="input-group-addon deleteAttribute" title="Delete Attribute">
+        												<i class="fa fa-trash"></i></span></div></td>
 													<td
 														th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
 														<select size="1"
@@ -430,15 +431,17 @@
 												</tr>
 												<tr th:each="hpcMetadataAttrEntry : ${userMetadataEntries}"
 													th:if="${userMetadataEntries != null}">
+													<div th:if="${hpcMetadataAttrEntry.getAttrName() != null}">
 													<td><input type="text" class="form-control" th:id="@{'_addAttrName'+${hpcMetadataAttrEntry.getAttrName()}}"
 													    th:name="@{'_addAttrName'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:value="${hpcMetadataAttrEntry.getAttrName()}"/></td>
 													<td
-														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><div class="input-group"><input
 														type="text" class="form-control"
 														th:id="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:name="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}"
-														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input><span class="input-group-addon deleteAttribute" title="Delete Attribute">
+        												<i class="fa fa-trash"></i></span></div></td>
 													<td
 														th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
 														<select size="1"
@@ -453,6 +456,7 @@
 																Wireframe</option>
 													</select>
 													</td>
+													</div>
 												</tr>
 												<!-- 
 												<tr
@@ -535,7 +539,7 @@
 	    var cell0 = row.insertCell(0);
 	    var cell1 = row.insertCell(1);
 	    cell0.innerHTML = '<input type="text" id="_addAttrName'+(rowId)+'" name="_addAttrName'+(rowId)+'" placeholder="Attribute Name" class="form-control"/>';
-	    cell1.innerHTML = '<input type="text" id="_addAttrValue'+(rowId)+'" name="_addAttrValue'+(rowId)+'" placeholder="Attribute Value" class="form-control"/>';
+	    cell1.innerHTML = '<div class="input-group"><input type="text" id="_addAttrValue'+(rowId)+'" name="_addAttrValue'+(rowId)+'" placeholder="Attribute Value" class="form-control"/><span class="input-group-addon deleteAttribute" title="Delete Attribute"><i class="fa fa-trash"></i></span></div>';
 	    return false;
 	}	
 
@@ -797,6 +801,10 @@
   		});
 	});
 	
+	$('body').on('click', '.deleteAttribute', function() {
+		$(this).closest("tr").find("input").val("");
+		$(this).closest("tr").addClass("hidden");
+	});
 //]]>	
 </script>
 <!-- The Google API Loader script. -->

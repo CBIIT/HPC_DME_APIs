@@ -110,14 +110,18 @@ public interface HpcDataTransferProxy {
 	 *                                   notification on transfer completion.
 	 * @param metadataEntries            The metadata entries to attach to the
 	 *                                   data-object in the archive.
-	 * @param encryptedTransfer          (Optional) encrypted transfer indicator
+	 * @param encryptedTransfer          (Optional) encrypted transfer indicator.
+	 * @param storageClass               (Optional) The storage class to use when
+	 *                                   uploading the data object. Applicable for
+	 *                                   S3 archives only.
 	 * @return A data object upload response.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer, String storageClass)
+			throws HpcException {
 		throw new HpcException("uploadDataObject() is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
@@ -138,17 +142,18 @@ public interface HpcDataTransferProxy {
 			Boolean encryptedTransfer) throws HpcException;
 
 	/**
-	 * Generate a (pre-signed) download URL for a data object file.
+	 * Generate a download URL for a data object file.
 	 *
 	 * @param authenticatedToken           An authenticated token.
 	 * @param archiveLocation              The data object's archive location.
+	 * @param baseArchiveDestination       The archive's base destination location.
 	 * @param downloadRequestURLExpiration The expiration period (in days) to set
 	 *                                     when generating download URL.
 	 * @return The download URL
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default String generateDownloadRequestURL(Object authenticatedToken, HpcFileLocation archiveLocation,
-			Integer downloadRequestURLExpiration) throws HpcException {
+			HpcArchive baseArchiveDestination, Integer downloadRequestURLExpiration) throws HpcException {
 		throw new HpcException("Generating download URL is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
@@ -174,12 +179,15 @@ public interface HpcDataTransferProxy {
 	 * @param metadataEntries        The metadata to set.
 	 * @param sudoPassword           Sudo password to perform the checksum. This
 	 *                               needed on POSIX archive only.
+	 * @param storageClass           (Optional) The storage class to use when
+	 *                               setting the data object metadata. Applicable
+	 *                               for S3 archives only.
 	 * @return The copied object checksum.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword)
-			throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
+			String storageClass) throws HpcException {
 		throw new HpcException("setDataObjectMetadata() is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
@@ -189,10 +197,12 @@ public interface HpcDataTransferProxy {
 	 * @param authenticatedToken     An authenticated token.
 	 * @param fileLocation           The file location.
 	 * @param baseArchiveDestination The archive's base destination location.
+	 * @param sudoPassword           Sudo password to perform the delete. This
+	 *                               needed on POSIX archive only.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination) throws HpcException {
+			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
 		throw new HpcException("deleteDataObject is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 

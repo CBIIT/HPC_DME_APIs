@@ -119,6 +119,9 @@
 		
 		<prop key="hpc.ws.rs.auth.report.generate-report">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		
+		<prop key="hpc.ws.rs.auth.review.query-review">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
+		<prop key="hpc.ws.rs.auth.review.send-reminder">SYSTEM_ADMIN</prop>
+		
 		<prop key="hpc.ws.rs.auth.restrictedIPAddress"></prop>
 	</osgix:cm-properties>
 
@@ -143,4 +146,6 @@
 		            interface="gov.nih.nci.hpc.bus.HpcDataMigrationBusService" />
 	<osgi:reference id="hpcDataTieringBusService"
 		            interface="gov.nih.nci.hpc.bus.HpcDataTieringBusService" />
+	<osgi:reference id="hpcReviewBusService"
+		            interface="gov.nih.nci.hpc.bus.HpcReviewBusService" />
 </beans>

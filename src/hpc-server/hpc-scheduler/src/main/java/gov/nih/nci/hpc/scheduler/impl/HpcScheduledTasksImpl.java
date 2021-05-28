@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import gov.nih.nci.hpc.bus.HpcReviewBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.exception.HpcException;
 import static gov.nih.nci.hpc.util.HpcScheduledTask.execute;
@@ -31,6 +32,10 @@ public class HpcScheduledTasksImpl {
 	@Autowired
 	private HpcSystemBusService systemBusService = null;
 
+	// The Review Business Service instance.
+	@Autowired
+	private HpcReviewBusService reviewBusService = null;
+		
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -223,6 +228,18 @@ public class HpcScheduledTasksImpl {
 				systemBusService::completeRestoreRequest, logger);
 	}
 
+	/** Send Annual review emails. */
+	@Scheduled(cron = "${hpc.scheduler.cron.sendAnnualReview.delay}")
+	private void sendAnnualReviewTask() {
+		execute("sendAnnualReviewTask()", reviewBusService::sendAnnualReview, logger);
+	}
+	
+	/** Send Annual review emails. */
+	@Scheduled(cron = "${hpc.scheduler.cron.sendAnnualReviewReminder.delay}")
+	private void sendAnnualReviewReminderTask() {
+		execute("sendAnnualReviewReminderTask()", reviewBusService::sendAnnualReviewReminder, logger);
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
