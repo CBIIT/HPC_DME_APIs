@@ -530,6 +530,50 @@
 					"index": "3"
 				}
 			]
+		},
+		{
+			"eventType": "REVIEW_REMINDER_SENT",
+			"subjectFormat": "Reminder to review your projects",
+			"subjectArguments": [
+			],
+			"textFormat": "Hello %1$s %2$s,<br/><br/>
+			This is a reminder to review your projects annually. Please visit your list of active projects through the DME <a href=\"%3$s/review\">Manage Review</a> page. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"eventType": "REVIEW_SENT",
+			"subjectFormat": "Annual review of your projects",
+			"subjectArguments": [
+			],
+			"textFormat": "Hello %1$s %2$s,<br/><br/>
+			Your projects must be reviewed annually. Please visit your list of active projects through the DME <a href=\"%3$s/review\">Manage Review</a> page. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
 		}
 	]
 }

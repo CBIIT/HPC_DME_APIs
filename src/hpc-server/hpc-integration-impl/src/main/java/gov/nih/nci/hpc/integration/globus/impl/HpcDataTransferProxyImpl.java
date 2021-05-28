@@ -5,6 +5,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -171,7 +172,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
 			Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer) throws HpcException {
+			List<HpcMetadataEntry> metadataEntries, Boolean encryptedTransfer, String storageClass)
+			throws HpcException {
 		// Progress listener not supported.
 		if (progressListener != null) {
 			throw new HpcException("Globus data transfer doesn't support progress listener",
@@ -244,11 +246,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// This is a synchronous download request.
 			String archiveFilePath = downloadRequest.getArchiveLocation().getFileId().replaceFirst(
 					baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
+
 			try {
-				// Copy the file to the download stage area.
-				FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getFileDestination());
-			} catch (IOException e) {
-				throw new HpcException("Failed to stage file from file system archive: " + archiveFilePath,
+				exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(),
+						downloadRequest.getSudoPassword());
+
+			} catch (HpcException e) {
+				throw new HpcException(
+						"Failed to copy file from POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
 						HpcErrorType.DATA_TRANSFER_ERROR, e);
 			}
 
@@ -264,9 +269,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
+	public String generateDownloadRequestURL(Object authenticatedToken, HpcFileLocation archiveLocation,
+			HpcArchive baseArchiveDestination, Integer downloadRequestURLExpiration) throws HpcException {
+		try {
+			return Paths
+					.get(archiveLocation.getFileId().replaceFirst(baseArchiveDestination.getFileLocation().getFileId(),
+							baseArchiveDestination.getDirectory()))
+					.toUri().toURL().toString();
+
+		} catch (IOException e) {
+			throw new HpcException("Failed to generate download URL", HpcErrorType.UNEXPECTED_ERROR, e);
+		}
+	}
+
+	@Override
 	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword)
-			throws HpcException {
+			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
+			String storageClass) throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
@@ -289,16 +308,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination) throws HpcException {
+			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		// Delete the archive file.
-		if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
-			logger.error("Failed to delete file: {}", archiveFilePath);
+		try {
+			exec("rm " + archiveFilePath, sudoPassword);
+
+		} catch (HpcException e) {
+			logger.error("Failed to delete file: {}", archiveFilePath, e);
 		}
 		// Delete the metadata file.
-		if (!FileUtils.deleteQuietly(getMetadataFile(archiveFilePath))) {
-			logger.error("Failed to delete metadata for file: {}", archiveFilePath);
+		try {
+			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), sudoPassword);
+
+		} catch (HpcException e) {
+			logger.error("Failed to delete metadata for file: {}", archiveFilePath, e);
 		}
 	}
 

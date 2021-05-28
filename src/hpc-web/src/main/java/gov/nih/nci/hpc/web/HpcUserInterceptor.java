@@ -20,6 +20,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -124,6 +125,7 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     	            session.setAttribute("hpcUser", user);
     	            session.setAttribute("env", env);
     	            session.setAttribute("version", version);
+    	            session.setAttribute("isCurator", HpcIdentityUtil.isUserCurator(session));
     	            
     	            if(action.equals("/")) {
     	                response.sendRedirect("/login");
