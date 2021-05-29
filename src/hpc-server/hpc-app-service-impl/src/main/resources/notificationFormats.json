@@ -537,7 +537,7 @@
 			"subjectArguments": [
 			],
 			"textFormat": "Hello %1$s %2$s,<br/><br/>
-			This is a reminder to review your projects. You can view a list of active projects through the <a href=\"%3$s/review\">DME review page</a>. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			This is a reminder to review your projects annually. Please visit your list of active projects through the DME <a href=\"%3$s/review\">Manage Review</a> page. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "FIRST_NAME",
@@ -559,7 +559,7 @@
 			"subjectArguments": [
 			],
 			"textFormat": "Hello %1$s %2$s,<br/><br/>
-			Your projects must be reviewed annually. Please visit and review the list of active projects through the <a href=\"%3$s/review\">DME review page</a>. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			Your projects must be reviewed annually. Please visit your list of active projects through the DME <a href=\"%3$s/review\">Manage Review</a> page. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "FIRST_NAME",

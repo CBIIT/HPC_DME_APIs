@@ -296,7 +296,7 @@ table.dataTable tbody td {
     	        oLanguage: {
     	            "sSearch": "Filter:"
     	        },
-    	        dom: '<"row" flr><"row col-md-12" B>tip',
+    	        dom: '<"row" flr><"row col-md-12" B>itip',
     	        buttons: [
     	        	{
     	                text: 'Select all',
@@ -399,7 +399,9 @@ table.dataTable tbody td {
     	                console.log(xhr.responseText);
     	                console.log(xhr);
     	            }
-    	        }
+    	        },
+    	        "language": {
+    	            "zeroRecords": "No projects to review"    	        }
     	    });
 	    	$('[data-toggle="tooltip"]').tooltip({container: 'body'});
 	    	$("[data-toggle='popover']").each(function() {
