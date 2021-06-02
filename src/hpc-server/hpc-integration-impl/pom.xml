@@ -36,6 +36,7 @@
 							gov.nih.nci.hpc.integration.globus.impl,
 							gov.nih.nci.hpc.integration.s3.impl,
 							gov.nih.nci.hpc.integration.googledrive.impl,
+							gov.nih.nci.hpc.integration.googlecloudstorage.impl,
 							gov.nih.nci.hpc.integration.ldap.impl,
 							gov.nih.nci.hpc.integration.irods.impl,
 							gov.nih.nci.hpc.integration.sps.impl
@@ -100,6 +101,7 @@
 		    <groupId>org.apache.cxf</groupId>
 		    <artifactId>cxf-rt-rs-client</artifactId>
 		</dependency>
+		
 		<dependency>
     		<groupId>com.google.apis</groupId>
     		<artifactId>google-api-services-drive</artifactId>
@@ -109,8 +111,13 @@
     		<artifactId>google-api-client</artifactId>
 		</dependency>
 		<dependency>
+    		<groupId>com.google.http-client</groupId>
+   			<artifactId>google-http-client-jackson2</artifactId>
+		</dependency>
+		<!-- 
+		<dependency>
     		<groupId>com.google.cloud</groupId>
     		<artifactId>google-cloud-storage</artifactId>
- 		 </dependency>
+ 		 </dependency>-->
 	</dependencies>
 </project>
