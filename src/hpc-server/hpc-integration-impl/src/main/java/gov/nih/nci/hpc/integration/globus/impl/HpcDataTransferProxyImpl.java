@@ -777,7 +777,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param sudoPassword               (Optional) a sudo password to perform the
 	 *                                   copy to the POSIX archive.
 	 * @param systemAccount              (Optional) system account to perform the
-	 *                                   copy to the POSIX archive and keep system account as owner
+	 *                                   copy to the POSIX archive and keep system
+	 *                                   account as owner
 	 * 
 	 * @return A data object upload response object.
 	 * @throws HpcException on IO exception.
@@ -791,6 +792,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		try {
 			exec("mkdir -p " + archiveDirectory, sudoPassword);
+			exec("chown -R " + systemAccount + " " + archiveDirectory, sudoPassword);
+
 			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
 			exec("chown " + systemAccount + " " + archiveFilePath, sudoPassword);
 
