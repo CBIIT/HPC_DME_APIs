@@ -199,7 +199,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// file-system.
 			// No Globus action is required here.
 			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination,
-					uploadRequest.getSudoPassword());
+					uploadRequest.getSudoPassword(), uploadRequest.getSystemAccountName());
 		}
 
 		// If the archive destination file exists, generate a new archive destination w/
@@ -776,12 +776,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param baseArchiveDestination     The base archive destination.
 	 * @param sudoPassword               (Optional) a sudo password to perform the
 	 *                                   copy to the POSIX archive.
+	 * @param systemAccount              (Optional) system account to perform the
+	 *                                   copy to the POSIX archive and keep system account as owner
 	 * 
 	 * @return A data object upload response object.
 	 * @throws HpcException on IO exception.
 	 */
 	private HpcDataObjectUploadResponse saveFile(File sourceFile, HpcFileLocation archiveDestinationLocation,
-			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
+			HpcArchive baseArchiveDestination, String sudoPassword, String systemAccount) throws HpcException {
 		Calendar transferStarted = Calendar.getInstance();
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
@@ -790,6 +792,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		try {
 			exec("mkdir -p " + archiveDirectory, sudoPassword);
 			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
+			exec("chown " + systemAccount + " " + archiveFilePath, sudoPassword);
 
 		} catch (HpcException e) {
 			throw new HpcException(
