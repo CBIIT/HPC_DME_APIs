@@ -375,8 +375,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setFileSystemUploadSource(fileSystemUploadSource);
 		if (sourceFile != null) {
 			uploadRequest.setSourceFile(sourceFile);
-			uploadRequest
-					.setSudoPassword(systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+
+			HpcIntegratedSystemAccount systemAccount = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
+			uploadRequest.setSystemAccountName(systemAccount.getUsername());
+			uploadRequest.setSudoPassword(systemAccount.getPassword());
 		}
 		uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
 		uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
@@ -1573,11 +1575,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Set Owner, Group and Permissions on the archive path.
 		String sudoPassword = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword();
-		
-		// TODO: We no longer set the owner permissions, but keep the DME system account to own the file.
-		// With this change the 'sudo enabled exec() is no longer needed. This is a temporary fix until code cleanup
+
+		// TODO: We no longer set the owner permissions, but keep the DME system account
+		// to own the file.
+		// With this change the 'sudo enabled exec() is no longer needed. This is a
+		// temporary fix until code cleanup
 		// exec("chown " + permissions.getOwner() + " " + archivePath, sudoPassword);
-		
+
 		exec("chown :" + permissions.getGroup() + " " + archivePath, sudoPassword);
 		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword);
 	}
