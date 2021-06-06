@@ -386,8 +386,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setFileSystemUploadSource(fileSystemUploadSource);
 		if (sourceFile != null) {
 			uploadRequest.setSourceFile(sourceFile);
-			uploadRequest
-					.setSudoPassword(systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+
+			HpcIntegratedSystemAccount systemAccount = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
+			uploadRequest.setSystemAccountName(systemAccount.getUsername());
+			uploadRequest.setSudoPassword(systemAccount.getPassword());
 		}
 		uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
 		uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
