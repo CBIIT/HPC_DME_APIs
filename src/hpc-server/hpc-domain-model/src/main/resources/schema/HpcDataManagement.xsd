@@ -203,6 +203,8 @@
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="googleDriveUploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleCloudStorageUploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="fileSystemUploadSource"
 				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="sourceFile"
