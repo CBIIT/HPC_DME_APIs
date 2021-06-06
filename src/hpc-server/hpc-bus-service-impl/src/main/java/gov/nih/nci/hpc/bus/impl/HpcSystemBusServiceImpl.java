@@ -178,7 +178,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Transfer the data file.
 				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
-						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null,
+						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null, null,
 						false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
@@ -410,6 +410,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						toGoogleDriveUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
 								systemGeneratedMetadata.getSourceSize()),
+						toGoogleCloudStorageUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
+								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
 						null, null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
@@ -1954,6 +1956,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	/**
+	 * Package a source location into a Google Cloud Storage upload source object.
+	 *
+	 * @param uploadMethod   The method of upload. If not GOOGLE_CLOUD_STORAGE, null
+	 *                       will be returned
+	 * @param sourceLocation The source location to package.
+	 * @param sourceSize     The source file size.
+	 * @return The packaged S3 upload source.
+	 */
+	private HpcStreamingUploadSource toGoogleCloudStorageUploadSource(HpcDataTransferUploadMethod uploadMethod,
+			HpcFileLocation sourceLocation, Long sourceSize) {
+		if (!uploadMethod.equals(HpcDataTransferUploadMethod.GOOGLE_CLOUD_STORAGE)) {
+			return null;
+		}
+
+		HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
+		googleCloudStorageUploadSource.setSourceLocation(sourceLocation);
+		googleCloudStorageUploadSource.setSourceSize(sourceSize);
+		return googleCloudStorageUploadSource;
+	}
+
+	/**
 	 * Check if an upload from S3 (either via URL upload or streaming) has
 	 * completed.
 	 *
@@ -2095,7 +2118,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Transfer the data file from the temporary archive / File system into the
 			// archive.
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
-					file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+					null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 					systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 					systemGeneratedMetadata.getConfigurationId());
 

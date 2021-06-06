@@ -841,6 +841,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					uploadResponse = dataTransferService.uploadDataObject(
 							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
 							dataObjectRegistration.getGoogleDriveUploadSource(),
+							dataObjectRegistration.getGoogleCloudStorageUploadSource(),
 							dataObjectRegistration.getFileSystemUploadSource(), dataObjectFile,
 							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
@@ -2548,7 +2549,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Re-generate the upload request URL.
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
-					null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId,
+					null, null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId,
 					callerObjectId, systemGeneratedMetadata.getConfigurationId());
 
 			// Update data-transfer-status system metadata accordingly.
@@ -2662,7 +2663,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDriveDownloadDestination, generateDownloadURL);
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDriveDownloadDestination,
+					generateDownloadURL);
 		}
 
 		// Download to Google Drive destination is supported only from S3 archive.

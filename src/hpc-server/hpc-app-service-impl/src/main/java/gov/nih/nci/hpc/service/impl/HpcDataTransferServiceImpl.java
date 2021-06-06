@@ -250,9 +250,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
-			HpcUploadSource fileSystemUploadSource, File sourceFile, boolean generateUploadRequestURL,
-			Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
-			String callerObjectId, String configurationId) throws HpcException {
+			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource, File sourceFile,
+			boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum, String path,
+			String dataObjectId, String userId, String callerObjectId, String configurationId) throws HpcException {
 		// Input Validation. One and only one of the first 5 parameters is expected to
 		// be provided.
 
@@ -263,15 +263,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate an upload source was provided.
 		if (globusUploadSource == null && s3UploadSource == null && googleDriveUploadSource == null
-				&& fileSystemUploadSource == null && sourceFile == null && !generateUploadRequestURL) {
+				&& googleCloudStorageUploadSource == null && fileSystemUploadSource == null && sourceFile == null
+				&& !generateUploadRequestURL) {
 			throw new HpcException("No data transfer source or data attachment provided or upload URL requested",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate Globus upload source.
 		if (globusUploadSource != null) {
-			if (s3UploadSource != null || googleDriveUploadSource != null || fileSystemUploadSource != null
-					|| sourceFile != null || generateUploadRequestURL) {
+			if (s3UploadSource != null || googleDriveUploadSource != null || googleCloudStorageUploadSource != null
+					|| fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(globusUploadSource.getSourceLocation())) {
@@ -281,8 +282,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate S3 upload source.
 		if (s3UploadSource != null) {
-			if (googleDriveUploadSource != null || fileSystemUploadSource != null || sourceFile != null
-					|| generateUploadRequestURL) {
+			if (googleDriveUploadSource != null || googleCloudStorageUploadSource != null
+					|| fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(s3UploadSource.getSourceLocation())) {
@@ -307,7 +308,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate Google Drive upload source.
 		if (googleDriveUploadSource != null) {
-			if (fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
+			if (googleCloudStorageUploadSource != null || fileSystemUploadSource != null || sourceFile != null
+					|| generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(googleDriveUploadSource.getSourceLocation())) {
@@ -330,6 +332,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
+		// Validate Google Cloud storage upload source.
+		if (googleCloudStorageUploadSource != null) {
+			if (fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
+				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (!isValidFileLocation(googleCloudStorageUploadSource.getSourceLocation())) {
+				throw new HpcException("Invalid Google Cloud Storage upload source location",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
 		// Validate File System upload source.
 		if (fileSystemUploadSource != null) {
 			if (sourceFile != null || generateUploadRequestURL) {
@@ -348,9 +361,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate generate upload request URL.
 		if (generateUploadRequestURL) {
-			if (globusUploadSource != null || s3UploadSource != null || sourceFile != null) {
-				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
-			}
 			if (uploadParts != null && uploadParts < 1) {
 				throw new HpcException("Invalid upload parts: " + uploadParts, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
@@ -372,6 +382,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setGlobusUploadSource(globusUploadSource);
 		uploadRequest.setS3UploadSource(s3UploadSource);
 		uploadRequest.setGoogleDriveUploadSource(googleDriveUploadSource);
+		uploadRequest.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		uploadRequest.setFileSystemUploadSource(fileSystemUploadSource);
 		if (sourceFile != null) {
 			uploadRequest.setSourceFile(sourceFile);
@@ -1573,11 +1584,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Set Owner, Group and Permissions on the archive path.
 		String sudoPassword = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword();
-		
-		// TODO: We no longer set the owner permissions, but keep the DME system account to own the file.
-		// With this change the 'sudo enabled exec() is no longer needed. This is a temporary fix until code cleanup
+
+		// TODO: We no longer set the owner permissions, but keep the DME system account
+		// to own the file.
+		// With this change the 'sudo enabled exec() is no longer needed. This is a
+		// temporary fix until code cleanup
 		// exec("chown " + permissions.getOwner() + " " + archivePath, sudoPassword);
-		
+
 		exec("chown :" + permissions.getGroup() + " " + archivePath, sudoPassword);
 		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword);
 	}

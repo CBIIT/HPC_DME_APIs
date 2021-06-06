@@ -60,32 +60,38 @@ public interface HpcDataTransferService {
 	 * file. 2. A request to generate upload URL. 3. A Globus source location. 4. An
 	 * AWS S3 source location.
 	 *
-	 * @param globusUploadSource       (Optional) The Globus upload source.
-	 * @param s3UploadSource           (Optional) The S3 upload source.
-	 * @param googleDriveUploadSource  (Optional) The Google Drive upload source.
-	 * @param fileSystemUploadSource   (Optional) The File System (DME Server NAS)
-	 *                                 upload source.
-	 * @param sourceFile               (Optional) The source file.
-	 * @param generateUploadRequestURL Generate an upload URL (so caller can
-	 *                                 directly upload file into archive).
-	 * @param uploadParts              (Optional) The number of parts when
-	 *                                 generating upload request URL.
-	 * @param uploadRequestURLChecksum A checksum provided by the caller to be
-	 *                                 attached to the upload request URL.
-	 * @param path                     The data object registration path.
-	 * @param dataObjectId             The data object ID.
-	 * @param userId                   The user-id who requested the data upload.
-	 * @param callerObjectId           The caller's provided data object ID.
-	 * @param configurationId          The configuration ID (needed to determine the
-	 *                                 archive connection config).
+	 * @param globusUploadSource             (Optional) The Globus upload source.
+	 * @param s3UploadSource                 (Optional) The S3 upload source.
+	 * @param googleDriveUploadSource        (Optional) The Google Drive upload
+	 *                                       source.
+	 * @param googleCloudStorageUploadSource (Optional) The Google Cloud Storage
+	 *                                       upload source.
+	 * @param fileSystemUploadSource         (Optional) The File System (DME Server
+	 *                                       NAS) upload source.
+	 * @param sourceFile                     (Optional) The source file.
+	 * @param generateUploadRequestURL       Generate an upload URL (so caller can
+	 *                                       directly upload file into archive).
+	 * @param uploadParts                    (Optional) The number of parts when
+	 *                                       generating upload request URL.
+	 * @param uploadRequestURLChecksum       A checksum provided by the caller to be
+	 *                                       attached to the upload request URL.
+	 * @param path                           The data object registration path.
+	 * @param dataObjectId                   The data object ID.
+	 * @param userId                         The user-id who requested the data
+	 *                                       upload.
+	 * @param callerObjectId                 The caller's provided data object ID.
+	 * @param configurationId                The configuration ID (needed to
+	 *                                       determine the archive connection
+	 *                                       config).
 	 * @return A data object upload response.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
-			HpcUploadSource fileSystemUploadSource, File sourceFile, boolean generateUploadRequestURL,
-			Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
-			String callerObjectId, String configurationId) throws HpcException;
+			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
+			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
+			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
+			throws HpcException;
 
 	/**
 	 * Complete a multipart upload.
