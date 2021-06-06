@@ -791,9 +791,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
 
 		try {
-			exec("mkdir -p " + archiveDirectory, sudoPassword);
-			exec("chown -R " + systemAccount + " " + archiveDirectory, sudoPassword);
-
+			exec("install -d -o " + systemAccount + " " + archiveDirectory, sudoPassword);
 			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
 			exec("chown " + systemAccount + " " + archiveFilePath, sudoPassword);
 
