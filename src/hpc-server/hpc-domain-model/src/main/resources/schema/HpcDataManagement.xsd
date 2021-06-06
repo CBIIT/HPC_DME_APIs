@@ -220,6 +220,7 @@
 			<xsd:element name="sourcePermissions"
 				type="hpc-domain-datamanagement:HpcPathPermissions" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
+			<xsd:element name="systemAccountName" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
