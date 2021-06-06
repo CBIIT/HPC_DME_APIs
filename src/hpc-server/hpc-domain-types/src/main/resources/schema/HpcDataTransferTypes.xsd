@@ -41,6 +41,7 @@
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="S_3" />
 			<xsd:enumeration value="GOOGLE_DRIVE" />
+			<xsd:enumeration value="GOOGLE_CLOUD_STORAGE" />
 			<xsd:enumeration value="SYNC" />
 			<xsd:enumeration value="URL_SINGLE_PART" />
 			<xsd:enumeration value="URL_MULTI_PART" />
