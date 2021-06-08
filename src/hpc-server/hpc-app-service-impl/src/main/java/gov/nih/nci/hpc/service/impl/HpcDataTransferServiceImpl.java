@@ -2467,7 +2467,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @param response                  The download response object. This method
 	 *                                  sets download task id and destination
 	 *                                  location on the response. it exists.
-	 * @param baseArchiveDestination    The base archive destination of the
 	 *                                  requested data object.
 	 * @param dataTransferConfiguration The data transfer configuration.
 	 * @throws HpcException on service failure.
