@@ -39,7 +39,7 @@ SELECT coll.coll_id                                     as id,
        data_curator.meta_attr_value                     as data_curator,
        project_status.meta_attr_value                   as project_status,
        publications.meta_attr_value                     as publications,
-       deposition.meta_attr_value                     	as deposition,
+       deposition.meta_attr_value                       as deposition,
        sunset_date.meta_attr_value                      as sunset_date,
        last_reviewed.meta_attr_value                    as last_reviewed,
        review_sent                                      as review_sent,
@@ -78,9 +78,9 @@ FROM r_coll_main coll
                                      (publications.meta_attr_name = 'publications' or
                                       publications.meta_attr_name = 'publication'))
                    ON map.object_id = coll.coll_id
-    	LEFT JOIN (r_objt_metamap map
+         LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main deposition ON deposition.meta_id = map.meta_id AND
-                                     deposition.meta_attr_name = 'deposition')
+                                   deposition.meta_attr_name = 'deposition')
                    ON map.object_id = coll.coll_id
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main sunset_date ON sunset_date.meta_id = map.meta_id AND
@@ -103,6 +103,7 @@ FROM r_coll_main coll
          LEFT JOIN (select USER_ID, LISTAGG(to_char(delivered, 'MM/DD/YY'), ', ') as reminder_sent
                     from HPC_NOTIFICATION_REVIEW
                     where event_type = 'REVIEW_REMINDER_SENT'
-                    group by USER_ID) reminder_event on reminder_event.USER_ID = data_curator.meta_attr_value;
+                    group by USER_ID) reminder_event on reminder_event.USER_ID = data_curator.meta_attr_value
+WHERE parent_coll.COLL_NAME not like '%trash/home%';
                     
                     
