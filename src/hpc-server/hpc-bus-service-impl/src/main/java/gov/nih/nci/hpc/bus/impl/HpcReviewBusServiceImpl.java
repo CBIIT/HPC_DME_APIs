@@ -106,6 +106,7 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 	@HpcExecuteAsSystemAccount
 	public void sendAnnualReview() throws HpcException {
 		// Send Annual Review emails to data curators
+		logger.info("send annual review task started");
 		List<String> curators = reviewService.getCuratorsForAnnualReview();
 		
 		// For each curator, send an annual review email if the curator have active projects 
@@ -114,6 +115,7 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 		for (String curator: curators) {
 			sendReview(curator);
 		}
+		logger.info("send annual review task completed");
 	}
 	
 	@Override
