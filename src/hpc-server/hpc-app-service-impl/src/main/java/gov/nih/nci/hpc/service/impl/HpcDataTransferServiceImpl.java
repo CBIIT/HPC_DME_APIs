@@ -497,7 +497,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Globus destination.
 			// Note: this can also be a 2nd hop download from temporary file-system archive
 			// to a Globus destination (after the 1st hop completed).
-			performGlobusAsynchronousDownload(downloadRequest, response);
+			performGlobusAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && globusDownloadDestination != null) {
 			// This is an asynchronous download request from a S3 archive to a
@@ -2326,14 +2326,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	/**
 	 * Perform a globus asynchronous download. This method submits a download task.
 	 *
-	 * @param downloadRequest The data object download request.
-	 * @param response        The download response object. This method sets
-	 *                        download task id and destination location on the
-	 *                        response.
+	 * @param downloadRequest           The data object download request.
+	 * @param response                  The download response object. This method
+	 *                                  sets download task id and destination
+	 *                                  location on the response.
+	 * @param dataTransferConfiguration The data transfer configuration.
 	 * @throws HpcException on service failure.
 	 */
 	private void performGlobusAsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
-			HpcDataObjectDownloadResponse response) throws HpcException {
+			HpcDataObjectDownloadResponse response, HpcDataTransferConfiguration dataTransferConfiguration)
+			throws HpcException {
 		// Create a download task.
 		HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 		downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
@@ -2341,7 +2343,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
 		downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 		downloadTask.setCreated(Calendar.getInstance());
-		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setDataTransferStatus(
+				Optional.ofNullable(dataTransferConfiguration.getHyperfileArchive()).orElse(false)
+						? HpcDataTransferDownloadStatus.HYPERFILE_STAGING
+						: HpcDataTransferDownloadStatus.RECEIVED);
 		downloadTask.setInProcess(false);
 		downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
 		downloadTask.setPercentComplete(0);

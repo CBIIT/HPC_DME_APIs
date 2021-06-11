@@ -59,6 +59,7 @@
 
 	<xsd:simpleType name="HpcDataTransferDownloadStatus">
 		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="HYPERFILE_STAGING" />
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="IN_PROGRESS" />
 			<xsd:enumeration value="COMPLETED" />
