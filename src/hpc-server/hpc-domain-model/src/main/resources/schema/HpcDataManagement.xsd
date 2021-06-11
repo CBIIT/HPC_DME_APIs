@@ -51,6 +51,7 @@
 			<xsd:element name="encryptionAlgorithm" type="xsd:string" />
 			<xsd:element name="storageClass" type="xsd:string" />
 			<xsd:element name="encryptedTransfer" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="hyperfileArchive" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
