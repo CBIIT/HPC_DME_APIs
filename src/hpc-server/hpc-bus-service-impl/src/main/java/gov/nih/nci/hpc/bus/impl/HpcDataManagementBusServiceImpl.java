@@ -851,6 +851,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 					responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
 
+					logger.error("ERAN: before Add system metadata. irods file found = {}", dataManagementService.getDataObject(path) != null);
+					
 					// Generate data management (iRODS) system metadata and attach to the data
 					// object.
 					HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
@@ -865,6 +867,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
 									registrationCompletionEvent);
+					
+					logger.error("ERAN: after Add system metadata. irods file found = {}", dataManagementService.getDataObject(path) != null);
 
 					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
@@ -884,9 +888,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 								&& objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS)
 										? Calendar.getInstance()
 										: null;
+						
+						logger.error("ERAN: before Update system metadata. irods file found = {}", dataManagementService.getDataObject(path) != null);
+						
 						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null,
 								objectMetadata.getChecksum(), null, null, null, null, null, null, null,
 								objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
+						
+						logger.error("ERAN: after Update system metadata. irods file found = {}", dataManagementService.getDataObject(path) != null);
 
 						// Automatically extract metadata from the file itself and add to iRODs.
 						if (extractMetadata) {
@@ -905,7 +914,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			} catch (Exception e) {
 				// Data object registration failed. Remove it from Data Management.
+				logger.error("ERAN: before delete file. irods file found = {}", dataManagementService.getDataObject(path) != null);
 				dataManagementService.delete(path, true);
+				logger.error("ERAN: after delete file. irods file found = {}", dataManagementService.getDataObject(path) != null);
 
 				// Record a data object registration result.
 				dataManagementService.addDataObjectRegistrationResult(path,
