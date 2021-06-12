@@ -788,8 +788,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Create a data object file (in the data management system).
 		HpcDataObjectRegistrationResponseDTO responseDTO = new HpcDataObjectRegistrationResponseDTO();
+		
+		logger.error("ERAN: Before creating file. irods file found = {}", dataManagementService.getDataObject(path) != null);
 		responseDTO.setRegistered(dataManagementService.createFile(path));
-
+		logger.error("ERAN: After creating file. irods file found = {}", dataManagementService.getDataObject(path) != null);
+		
 		// Get the collection type containing the data object.
 		String collectionPath = path.substring(0, path.lastIndexOf('/'));
 		String collectionType = dataManagementService.getCollectionType(collectionPath);
@@ -939,6 +942,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Update metadata and optionally re-generate upload URL (if data was not
 			// uploaded yet).
+			logger.error("ERAN: Before update user metadata. irods file found = {}", dataManagementService.getDataObject(path) != null);
+			
 			HpcDataObjectUploadResponse uploadResponse = Optional
 					.ofNullable(updateDataObject(path, dataObjectRegistration.getMetadataEntries(), collectionType,
 							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
@@ -946,6 +951,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.orElse(new HpcDataObjectUploadResponse());
 			responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 			responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
+			
+			logger.error("ERAN: After update user metadata. irods file found = {}", dataManagementService.getDataObject(path) != null);
 
 			// Update system-generated w/ archive location - this is in case the archive
 			// location changed after regeneration of the upload url(s).
