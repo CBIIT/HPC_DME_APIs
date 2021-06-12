@@ -27,6 +27,7 @@ import org.irods.jargon.core.exception.InvalidGroupException;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.packinstr.DataObjInp;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.protovalues.UserTypeEnum;
 import org.irods.jargon.core.pub.CollectionAO;
@@ -155,11 +156,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			
 			dataObjectFile = irodsConnection.getIRODSFileFactory(authenticatedToken)
 					.instanceIRODSFile(getAbsolutePath(path));
-			boolean created = dataObjectFile.createNewFile();
+			//boolean created = dataObjectFile.createNewFile();
+			
+			boolean created = dataObjectFile.createNewFileCheckNoResourceFound(DataObjInp.OpenFlags.READ_WRITE);
 			
 			logger.error("ERAN: After Jargon create file: created = {}", created);
 
-		} catch (JargonException | IOException e) {
+		} catch (JargonException /*| IOException */e) {
 			logger.error("Failed to register file " + path, e);
 			String[] exceptionMsg = e.getMessage().split("message:", 2);
 			String errorMsg = exceptionMsg.length > 1 ? exceptionMsg[1] : exceptionMsg[0];
