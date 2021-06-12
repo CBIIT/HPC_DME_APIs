@@ -151,7 +151,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	public void createDataObjectFile(Object authenticatedToken, String path) throws HpcException {
 		IRODSFile dataObjectFile = null;
 		try {
-			logger.error("ERAN: Before Jargon create file");
+			logger.error("ERAN: Before Jargon create file: " + getAbsolutePath(path));
 			
 			dataObjectFile = irodsConnection.getIRODSFileFactory(authenticatedToken)
 					.instanceIRODSFile(getAbsolutePath(path));
