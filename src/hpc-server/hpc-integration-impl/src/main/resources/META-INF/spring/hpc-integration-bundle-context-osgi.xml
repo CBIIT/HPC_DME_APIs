@@ -26,7 +26,7 @@
 	      <prop key="hpc.integration.irods.host">fsdmel-irods01d.ncifcrf.gov</prop>
 	      <prop key="hpc.integration.irods.port">1247</prop>
 	      <prop key="hpc.integration.irods.zone">tempZone</prop>
-	      <prop key="hpc.integration.irods.resource">demoResc</prop>
+	      <prop key="hpc.integration.irods.resource">ncifprodResc</prop>
 	      <prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
 	      <prop key="hpc.integration.irods.key">Configure Me</prop>
 	      <prop key="hpc.integration.irods.algorithm">Configure Me</prop>
