@@ -1149,7 +1149,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								"download task: {} - hyperfile staging [transfer-type={}, destination-type={}]",
 								downloadTask.getId(), downloadTask.getDataTransferType(),
 								downloadTask.getDestinationType());
-						//completeCanceledDataObjectDownloadTask(downloadTask);
+						dataTransferService.stageHyperfileDataObjectDownloadTask(downloadTask);
 						break;
 
 					default:
