@@ -426,6 +426,16 @@ public interface HpcDataTransferService {
 	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
 
 	/**
+	 * Stage a data object for download from Hyperfile to Globus. Once staged, set
+	 * it's status to RECEIVED.
+	 *
+	 * @param downloadTask The download task to perform staging from hyperfile
+	 *                     archive.
+	 * @throws HpcException on service failure.
+	 */
+	public void stageHyperfileDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+
+	/**
 	 * Reset a data object download task. Set it's status to RECEIVED.
 	 *
 	 * @param downloadTask The download task to reset.
