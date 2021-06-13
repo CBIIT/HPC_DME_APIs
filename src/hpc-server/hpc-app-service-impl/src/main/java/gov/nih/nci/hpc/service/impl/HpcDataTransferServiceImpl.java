@@ -1116,6 +1116,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				downloadTask.getId(), downloadRequest.getArchiveLocation().getFileId(),
 				downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 	}
+	
+	@Override
+	public void stageHyperfileDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setInProcess(false);
+
+		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+	}
 
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
