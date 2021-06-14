@@ -1121,14 +1121,46 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public void stageHyperfileDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 
 		HpcFileLocation secondHopArchiveLocation = getSecondHopDownloadSourceLocation(downloadTask.getConfigurationId(),
-				null, downloadTask.getDataTransferType());
+				downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType());
 
 		logger.error("ERAN: hyperfile staging source - {} {}", secondHopArchiveLocation.getFileContainerId(),
 				secondHopArchiveLocation.getFileId());
 
+		// Get the data transfer configuration.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(downloadTask.getConfigurationId(),
+						downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType());
+
+		// Create a download request from Hyperfile to the DME Globus endpoint.
+		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+		downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
+		downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+		downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
+		downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
+		downloadRequest.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
+		downloadRequest.setPath(downloadTask.getPath());
+		downloadRequest.setUserId(downloadTask.getUserId());
+		downloadRequest.setFileDestination(createFile(
+				getFilePath(secondHopArchiveLocation.getFileId(), dataTransferConfiguration.getBaseDownloadSource())));
+		downloadRequest.setSize(downloadTask.getSize());
+		downloadRequest.setSudoPassword(systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+
+		logger.error("ERAN: hyperfile staging path - {}", downloadRequest.getFileDestination().getAbsolutePath());
+
+		// Stage the file in DME Globus endpoint.
+		dataTransferProxies.get(downloadTask.getDataTransferType()).downloadDataObject(
+				getAuthenticatedToken(downloadTask.getDataTransferType(), downloadRequest.getConfigurationId(),
+						downloadRequest.getS3ArchiveConfigurationId()),
+				downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), null,
+				dataTransferConfiguration.getEncryptedTransfer());
+
+		// Reset the download task, so it continues to download from DME Globus endpoint
+		// to the user's Globus endpoint.
+		downloadTask.setArchiveLocation(secondHopArchiveLocation);
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		downloadTask.setInProcess(false);
 
+		// Persist the task.
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 
