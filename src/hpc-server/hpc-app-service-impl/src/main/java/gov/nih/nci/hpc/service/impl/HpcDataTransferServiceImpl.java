@@ -1123,9 +1123,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcFileLocation secondHopArchiveLocation = getSecondHopDownloadSourceLocation(downloadTask.getConfigurationId(),
 				downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType());
 
-		logger.error("ERAN: hyperfile staging source - {} {}", secondHopArchiveLocation.getFileContainerId(),
-				secondHopArchiveLocation.getFileId());
-
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(downloadTask.getConfigurationId(),
@@ -1145,8 +1142,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setSize(downloadTask.getSize());
 		downloadRequest.setSudoPassword(systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
 
-		logger.error("ERAN: hyperfile staging path - {}", downloadRequest.getFileDestination().getAbsolutePath());
-
 		// Stage the file in DME Globus endpoint.
 		dataTransferProxies.get(downloadTask.getDataTransferType()).downloadDataObject(
 				getAuthenticatedToken(downloadTask.getDataTransferType(), downloadRequest.getConfigurationId(),
@@ -1158,6 +1153,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// to the user's Globus endpoint.
 		downloadTask.setArchiveLocation(secondHopArchiveLocation);
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setDownloadFilePath(downloadRequest.getFileDestination().getAbsolutePath());
 		downloadTask.setInProcess(false);
 
 		// Persist the task.
