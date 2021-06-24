@@ -90,7 +90,7 @@ public interface HpcDataMigrationDAO {
 	 * Get result counts for items in a collection migration task
 	 *
 	 * @param collectionMigrationTaskId The collection migration task id.
-	 * @ @throws HpcException on database error.
+	 * @throws HpcException on database error.
 	 */
 	public Map<HpcDataMigrationResult, Integer> getCollectionMigrationResultCount(String collectionMigrationTaskId)
 			throws HpcException;

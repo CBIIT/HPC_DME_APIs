@@ -37,8 +37,8 @@
         <aspectj.version>1.9.6</aspectj.version>
 		<amazon-aws.version>1.11.982</amazon-aws.version>
 		<jackson.version>2.11.2</jackson.version>
-		<jargon.version>4.3.2.1-RELEASE</jargon.version>
 		<opencensus.version>0.28.3</opencensus.version>
+		<jargon.version>4.3.2.2-RELEASE</jargon.version>
 		<google-json-simple.version>1.1.1</google-json-simple.version>
 		<google-guava.version>30.1.1-jre</google-guava.version>
 		<google-api-drive.version>v3-rev197-1.25.0</google-api-drive.version>
