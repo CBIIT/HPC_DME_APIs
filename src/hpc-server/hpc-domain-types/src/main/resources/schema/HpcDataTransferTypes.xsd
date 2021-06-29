@@ -86,6 +86,7 @@
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="S_3" />
 			<xsd:enumeration value="GOOGLE_DRIVE" />
+			<xsd:enumeration value="GOOGLE_CLOUD_STORAGE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
