@@ -11,14 +11,15 @@
 package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.drive.Drive;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -29,66 +30,60 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcGoogleCloudStorageConnection {
-  // ---------------------------------------------------------------------//
-  // Instance members
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
 
-  // The (Google) HPC Application name. Users need to provide drive access to this app name.
-  @Value("${hpc.integration.googledrive.hpcApplicationName}")
-  String hpcApplicationName = null;
+	// The (Google) HPC Application name. Users need to provide drive access to this
+	// app name.
+	@Value("${hpc.integration.googledrive.hpcApplicationName}")
+	String hpcApplicationName = null;
 
-  // ---------------------------------------------------------------------//
-  // Constructors
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Constructors
+	// ---------------------------------------------------------------------//
 
-  /**
-   * Constructor for Spring Dependency Injection.
-   * 
-   */
-  private HpcGoogleCloudStorageConnection() {}
+	/**
+	 * Constructor for Spring Dependency Injection.
+	 * 
+	 */
+	private HpcGoogleCloudStorageConnection() {
+	}
 
-  // ---------------------------------------------------------------------//
-  // Methods
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
 
-  /**
-   * Authenticate a google drive.
-   *
-   * @param accessToken Google Drive Access Token.
-   * @throws HpcException if authentication failed
-   */
-  public Object authenticate(String accessToken) throws HpcException {
-    Drive drive = null;
-    try {
-      drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-          JacksonFactory.getDefaultInstance(), new GoogleCredential().setAccessToken(accessToken))
-              .setApplicationName(hpcApplicationName).build();
+	/**
+	 * Authenticate google cloud storage.
+	 *
+	 * @param accessToken Google Cloud Storage token.
+	 * @throws HpcException if authentication failed
+	 */
+	public Object authenticate(String accessToken) throws HpcException {
+		try {
+			return StorageOptions.newBuilder().setCredentials(GoogleCredentials
+					.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
+					.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform"))).build().getService();
 
-      // Confirm the drive is accessible.
-      drive.about().get().setFields("appInstalled").execute();
+		} catch (IOException e) {
+			throw new HpcException("Failed to authenticate Google Cloud Storage w/ access-token: " + e.getMessage(),
+					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
+	}
 
-      return drive;
+	/**
+	 * Get Storage from an authenticated token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return A Storage object.
+	 * @throws HpcException on invalid authentication token.
+	 */
+	public Storage getStorage(Object authenticatedToken) throws HpcException {
+		if (!(authenticatedToken instanceof Storage)) {
+			throw new HpcException("Invalid Google Cloud Storage authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
-    } catch (IOException | GeneralSecurityException e) {
-      throw new HpcException(
-          "Failed to authenticate Google Drive w/ access-token: " + e.getMessage(),
-          HpcErrorType.INVALID_REQUEST_INPUT, e);
-    }
-  }
-
-  /**
-   * Get Drive from an authenticated token.
-   *
-   * @param authenticatedToken An authenticated token.
-   * @return A Drive object.
-   * @throws HpcException on invalid authentication token.
-   */
-  public Drive getDrive(Object authenticatedToken) throws HpcException {
-    if (authenticatedToken == null || !(authenticatedToken instanceof Drive)) {
-      throw new HpcException("Invalid Google Drive authentication token",
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    return (Drive) authenticatedToken;
-  }
+		return (Storage) authenticatedToken;
+	}
 }

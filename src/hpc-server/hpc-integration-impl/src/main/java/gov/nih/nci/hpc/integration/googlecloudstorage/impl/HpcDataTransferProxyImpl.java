@@ -48,6 +48,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// Constants
 	// ---------------------------------------------------------------------//
 
+	/*
 	// Google drive folder mime-type.
 	private static final String FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
 
@@ -59,21 +60,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private static final String PATH_QUERY = "name = '%s' and '%s' in parents";
 
 	// Google drive query for all files under a folder.
-	private static final String DIRECTORY_SCAN_QUERY = "'%s' in parents";
+	private static final String DIRECTORY_SCAN_QUERY = "'%s' in parents";*/
 
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
 
+	/*
 	// The Google Drive download executor.
 	@Autowired
 	@Qualifier("hpcGoogleDriveDownloadExecutor")
-	Executor googleDriveExecutor = null;
+	Executor googleDriveExecutor = null;*/
 
 	// The Google Drive connection instance.
 	@Autowired
-	private HpcGoogleCloudStorageConnection googleDriveConnection = null;
+	private HpcGoogleCloudStorageConnection googleCloudStorageConnection = null;
 
+	/*
 	// Locks to synchronize threads executing on path.
 	private Striped<Lock> pathLocks = Striped.lock(127);
 
@@ -81,7 +84,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
 	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());*/
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -101,13 +104,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public Object authenticate(String accessToken) throws HpcException {
-		return googleDriveConnection.authenticate(accessToken);
+		return googleCloudStorageConnection.authenticate(accessToken);
 	}
 
+	
 	@Override
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
+		/*
 		// Input validation
 		if (progressListener == null) {
 			throw new HpcException(
@@ -146,15 +151,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}, googleDriveExecutor);
 
 		return String.valueOf(googleDriveDownloadFuture.hashCode());
+		*/ return "temp-id";
 	}
 
 	@Override
 	public HpcPathAttributes getPathAttributes(Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize)
 			throws HpcException {
 
-		Drive drive = googleDriveConnection.getDrive(authenticatedToken);
+		//Drive drive = googleDriveConnection.getDrive(authenticatedToken);
 
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
+		/*
 		pathAttributes.setIsAccessible(true);
 
 		try {
@@ -185,11 +192,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} catch (IOException e) {
 			throw new HpcException("[Google Drive] Failed to get file: " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
-		}
+		}*/
 
 		return pathAttributes;
 	}
-
+/*
 	@Override
 	public InputStream generateDownloadInputStream(Object authenticatedToken, HpcFileLocation fileLocation)
 			throws HpcException {
@@ -207,13 +214,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	}
-
+*/
 	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, HpcFileLocation directoryLocation)
 			throws HpcException {
-		Drive drive = googleDriveConnection.getDrive(authenticatedToken);
+		//Drive drive = googleDriveConnection.getDrive(authenticatedToken);
 		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
-
+/*
 		try {
 			// Get the id and path of the folder to be scanned.
 			// Note: directoryLocation.getFileId() can be either the Google Drive ID of the
@@ -230,7 +237,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("[Google Drive] Failed to generate download InputStream: " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
-
+*/
 		return directoryScanItems;
 	}
 
@@ -247,6 +254,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @return The folder ID or null if not found.
 	 * @throws IOException on data transfer system failure.
 	 */
+	/*
 	private String getFolderId(Drive drive, String folderPath, boolean create) throws IOException {
 		String parentFolderId = "root";
 		if (!StringUtils.isEmpty(folderPath)) {
@@ -310,6 +318,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @return A File instance or null if not found
 	 * @throws IOException on data transfer system failure.
 	 */
+	/*
 	private File getFile(Drive drive, String idOrPath) throws IOException {
 		// Search by ID.
 		try {
@@ -352,6 +361,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param folderId           The folder ID scanned.
 	 * @throws IOException on data transfer system failure.
 	 */
+	/*
 	private void scanDirectory(Drive drive, List<HpcDirectoryScanItem> directoryScanItems, String folderPath,
 			String folderId) throws IOException {
 
@@ -381,6 +391,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @return The folder path.
 	 * @throws IOException on data transfer system failure.
 	 */
+	/*
 	private String getFolderPath(Drive drive, File folder) throws IOException {
 
 		String rootId = drive.files().get("root").execute().getId();
@@ -391,5 +402,5 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		return toNormalizedPath(folderPath);
-	}
+	}*/
 }

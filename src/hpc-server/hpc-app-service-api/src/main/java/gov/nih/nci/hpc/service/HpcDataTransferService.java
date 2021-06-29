@@ -284,17 +284,20 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
-	 * Get path attributes for a given file in Google Drive (using user provided
-	 * Google Drive token).
+	 * Get path attributes for a given file in Google Drive or Google Cloud
+	 * Storage(using user provided Google Drive token).
 	 *
-	 * @param accessToken  The user provided Google Drive access token.
-	 * @param fileLocation The drive/file-id to get attributes for.
-	 * @param getSize      If set to true, the file/directory size will be returned.
+	 * @param dataTransferType The data transfer type.
+	 * @param accessToken      The user provided Google Drive access token or
+	 *                         configured token for Google cloud storage.
+	 * @param fileLocation     The file to get attributes for.
+	 * @param getSize          If set to true, the file/directory size will be
+	 *                         returned.
 	 * @return The path attributes.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcPathAttributes getPathAttributes(String accessToken, HpcFileLocation fileLocation, boolean getSize)
-			throws HpcException;
+	public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType, String accessToken,
+			HpcFileLocation fileLocation, boolean getSize) throws HpcException;
 
 	/**
 	 * Get path attributes of local file (on the DME server file system)
