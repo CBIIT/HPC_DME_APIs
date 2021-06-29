@@ -44,6 +44,7 @@
 						<Import-Package>
 							org.springframework.scheduling.config,
 							org.springframework.scheduling.concurrent,
+							org.springframework.retry.support,
 							*
 						</Import-Package>
 					</instructions>
@@ -114,10 +115,9 @@
     		<groupId>com.google.http-client</groupId>
    			<artifactId>google-http-client-jackson2</artifactId>
 		</dependency>
-		<!-- 
 		<dependency>
     		<groupId>com.google.cloud</groupId>
     		<artifactId>google-cloud-storage</artifactId>
- 		 </dependency>-->
+ 		</dependency>
 	</dependencies>
 </project>
