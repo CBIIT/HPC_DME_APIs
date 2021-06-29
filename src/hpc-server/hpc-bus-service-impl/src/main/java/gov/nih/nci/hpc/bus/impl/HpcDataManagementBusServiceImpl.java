@@ -2358,8 +2358,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				googleDriveAccessToken = directoryScanRegistrationItem.getGoogleDriveScanDirectory().getAccessToken();
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleDriveScanDirectory()
 						.getDirectoryLocation();
-				pathAttributes = dataTransferService.getPathAttributes(googleDriveAccessToken, scanDirectoryLocation,
-						false);
+				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE,
+						googleDriveAccessToken, scanDirectoryLocation, false);
 			} else {
 				// It is a request to scan a File System directory (local DME server NAS).
 				scanDirectoryLocation = directoryScanRegistrationItem.getFileSystemScanDirectory()
