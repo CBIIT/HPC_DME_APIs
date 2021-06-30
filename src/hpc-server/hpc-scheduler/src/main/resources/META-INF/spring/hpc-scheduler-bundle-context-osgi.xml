@@ -33,6 +33,7 @@
 		<prop key="hpc.scheduler.cron.processDataTranferUploadFileSystemReady.delay">22 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.stageHyperfileGlobusDataObjectDownloadTasks.delay">33 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startS3DataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
