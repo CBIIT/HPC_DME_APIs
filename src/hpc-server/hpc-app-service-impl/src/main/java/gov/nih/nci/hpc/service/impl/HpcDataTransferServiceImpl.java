@@ -2015,6 +2015,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("Invalid S3 account: " + validationResult.getMessage(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
+
+			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
+			boolean s3BucketAccessible = true;
+			try {
+				s3BucketAccessible = dataTransferProxy.getPathAttributes(dataTransferProxy.authenticate(
+						s3DownloadDestination.getAccount()), s3DownloadDestination.getDestinationLocation(), false).getIsAccessible();
+			} catch (HpcException e) {
+				throw new HpcException("Failed to locate AWS S3 bucket: " + s3DownloadDestination.getDestinationLocation().getFileContainerId(),
+						HpcErrorType.INVALID_REQUEST_INPUT, e);
+			}
+			if(!s3BucketAccessible) {
+				throw new HpcException("Failed to access AWS S3 bucket: " + s3DownloadDestination.getDestinationLocation().getFileContainerId(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 
 		// Validate the Google Drive destination.
