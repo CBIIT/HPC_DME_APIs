@@ -479,6 +479,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void stageHyperfileGlobusDataObjectDownloadTasks() throws HpcException {
+		// Iterate through all the data object download tasks that are received and type
+		// is GLOBUS.
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.HYPERFILE_STAGING, HpcDataTransferType.GLOBUS);
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void startGlobusDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are received and type
 		// is GLOBUS.
@@ -1134,6 +1142,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								downloadTask.getId(), downloadTask.getDataTransferType(),
 								downloadTask.getDestinationType());
 						completeCanceledDataObjectDownloadTask(downloadTask);
+						break;
+						
+					case HYPERFILE_STAGING:
+						logger.info(
+								"download task: {} - hyperfile staging [transfer-type={}, destination-type={}]",
+								downloadTask.getId(), downloadTask.getDataTransferType(),
+								downloadTask.getDestinationType());
+						dataTransferService.stageHyperfileDataObjectDownloadTask(downloadTask);
 						break;
 
 					default:

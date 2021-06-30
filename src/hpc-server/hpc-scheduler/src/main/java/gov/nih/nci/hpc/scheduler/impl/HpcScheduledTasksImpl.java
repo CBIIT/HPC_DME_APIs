@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.scheduler.impl;
 
+import static gov.nih.nci.hpc.util.HpcScheduledTask.execute;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import gov.nih.nci.hpc.bus.HpcReviewBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.exception.HpcException;
-import static gov.nih.nci.hpc.util.HpcScheduledTask.execute;
 
 /**
  * HPC Scheduled tasks implementation.
@@ -35,7 +36,7 @@ public class HpcScheduledTasksImpl {
 	// The Review Business Service instance.
 	@Autowired
 	private HpcReviewBusService reviewBusService = null;
-		
+
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -115,6 +116,16 @@ public class HpcScheduledTasksImpl {
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadFileSystemReady.delay}")
 	private void processDataTranferUploadFileSystemReadyTask() {
 		execute("processFileSystemUploadTask()", systemBusService::processDataTranferUploadFileSystemReady, logger);
+	}
+
+	/**
+	 * Process Data Object Download Tasks that are in HYPERFILE_STAGING state for
+	 * Globus transfer.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.cron.stageHyperfileGlobusDataObjectDownloadTasks.delay}")
+	private void stageHyperfileGlobusDataObjectDownloadTasks() {
+		execute("stageHyperfileGlobusDataObjectDownloadTasks()",
+				systemBusService::stageHyperfileGlobusDataObjectDownloadTasks, logger);
 	}
 
 	/**
@@ -213,19 +224,17 @@ public class HpcScheduledTasksImpl {
 	private void refreshReportViewsTask() {
 		execute("refreshReportViewsTask()", systemBusService::refreshReportViews, logger);
 	}
-	
+
 	/** Complete tiering request tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeDeepArchiveInProgress.delay}")
 	private void completeDeepArchiveInProgressTask() {
-		execute("completeDeepArchiveInProgressTask()",
-				systemBusService::completeDeepArchiveInProgress, logger);
+		execute("completeDeepArchiveInProgressTask()", systemBusService::completeDeepArchiveInProgress, logger);
 	}
-	
+
 	/** Complete restore request tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeRestoreRequest.delay}")
 	private void completeRestoreRequestTask() {
-		execute("completeRestoreRequestTask()",
-				systemBusService::completeRestoreRequest, logger);
+		execute("completeRestoreRequestTask()", systemBusService::completeRestoreRequest, logger);
 	}
 
 	/** Send Annual review emails. */
@@ -233,13 +242,13 @@ public class HpcScheduledTasksImpl {
 	private void sendAnnualReviewTask() {
 		execute("sendAnnualReviewTask()", reviewBusService::sendAnnualReview, logger);
 	}
-	
+
 	/** Send Annual review emails. */
 	@Scheduled(cron = "${hpc.scheduler.cron.sendAnnualReviewReminder.delay}")
 	private void sendAnnualReviewReminderTask() {
 		execute("sendAnnualReviewReminderTask()", reviewBusService::sendAnnualReviewReminder, logger);
 	}
-	
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -253,7 +262,7 @@ public class HpcScheduledTasksImpl {
 		try {
 			// All active S3 upload tasks should be marked stopped (so they get restarted)
 			systemBusService.processDataTranferUploadStreamingInProgress(true);
-			
+
 			// All active file system uploads should be restarted.
 			systemBusService.processDataTransferUploadFileSystemInProgress();
 
