@@ -2662,7 +2662,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDriveDownloadDestination, generateDownloadURL);
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDriveDownloadDestination,
+					generateDownloadURL);
 		}
 
 		// Download to Google Drive destination is supported only from S3 archive.
@@ -2798,8 +2799,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
-	 * Validate a path. 1. Not null or empty string. 2. Contains no white space. 3.
-	 * Contains no characters that are invalid (i.e. not acceptable by IRODS).
+	 * Validate a path. 1. Not null or empty string. 2. Contains no characters that
+	 * are invalid (i.e. not acceptable by IRODS).
 	 *
 	 * @param path The path to validate.
 	 * @throws HpcException if the path is invalid.
@@ -2807,10 +2808,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void validatePath(String path) throws HpcException {
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null or empty path", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		if (StringUtils.containsWhitespace(path)) {
-			throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		for (String invalidCharacter : INVALID_PATH_CHARACTERS) {
