@@ -1007,7 +1007,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 		if (!s3BucketAccessible) {
 			throw new HpcException(
-					"Failed to access AWS / S3 Provider bucket: " + s3Destination.getDestinationLocation(),
+					"Failed to access AWS S3 bucket: " + s3Destination.getDestinationLocation().getFileContainerId(),
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
