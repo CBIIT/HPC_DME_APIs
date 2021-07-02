@@ -1042,6 +1042,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
+	@HpcExecuteAsSystemAccount
+	public void removeDeletedDataObjects() throws HpcException {
+		// Get all data objects with data transfer status DELETE_REQUESTED and deleted_date is passed the retention period.
+		List<HpcDataObject> deletedDataObjects = dataManagementService
+				.getDeletedDataObjects();
+		deletedDataObjects.forEach(this::processDeletedDataObject);
+	}
+	
+	@Override
 	public void closeConnection() {
 		dataManagementService.closeConnection();
 	}
@@ -2287,6 +2296,29 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 	}
 
+	/**
+	 * Check and remove the data object that is older than the retention period
+	 *
+	 * @param dataObject The data object to process.
+	 */
+	private void processDeletedDataObject(HpcDataObject dataObject) {
+		try {
+			String path = dataObject.getAbsolutePath();
+
+			// Get the System generated metadata.
+			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+					.getDataObjectSystemGeneratedMetadata(path);
+
+			if (dataManagementService.deletedDataObjectExpired(systemGeneratedMetadata.getDeletedDate())) {
+				//Permanently remove the data object
+				dataManagementBusService.deleteDataObject(path, true);
+			}
+
+		} catch (HpcException e) {
+			logger.error("Failed to process deleted data object", e);
+		}
+	}
+	
 	// Collection download breaker. This class is used to determine if processing
 	// of collection download should be aborted because the first item in the
 	// collection had
