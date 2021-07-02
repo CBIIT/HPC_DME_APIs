@@ -240,10 +240,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response deleteCollection(String path, Boolean recursive) {
+	public Response deleteCollection(String path, Boolean recursive, Boolean force) {
 		try {
 			recursive = recursive != null ? recursive : false;
-			dataManagementBusService.deleteCollection(toNormalizedPath(path), recursive);
+			force = force != null ? force : false;
+			dataManagementBusService.deleteCollection(toNormalizedPath(path), recursive, force);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -256,6 +257,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	public Response moveCollection(String path, String destinationPath) {
 		try {
 			dataManagementBusService.movePath(toNormalizedPath(path), true, toNormalizedPath(destinationPath));
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(null, false);
+	}
+	
+	@Override
+	public Response recoverCollection(String path) {
+		try {
+			dataManagementBusService.recoverCollection(toNormalizedPath(path));
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -604,10 +617,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response deleteDataObject(String path) {
+	public Response deleteDataObject(String path, Boolean force) {
 		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = null;
 		try {
-			dataObjectDeleteResponse = dataManagementBusService.deleteDataObject(toNormalizedPath(path));
+			force = force != null ? force : false;
+			dataObjectDeleteResponse = dataManagementBusService.deleteDataObject(toNormalizedPath(path), force);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -628,6 +642,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return okResponse(null, false);
 	}
 
+	@Override
+	public Response recoverDataObject(String path) {
+		try {
+			dataManagementBusService.recoverDataObject(toNormalizedPath(path));
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(null, false);
+	}
+	
 	@Override
 	public Response setDataObjectPermissions(String path, HpcEntityPermissionsDTO dataObjectPermissionsRequest) {
 		HpcEntityPermissionsResponseDTO permissionsResponse = null;

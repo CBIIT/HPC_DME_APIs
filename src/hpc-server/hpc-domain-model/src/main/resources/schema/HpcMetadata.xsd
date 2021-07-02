@@ -54,6 +54,7 @@
 				<xsd:element name="dmeDataId" type="xsd:string" />
 				<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" />
 				<xsd:element name="deepArchiveDate" type="xsd:dateTime" />
+				<xsd:element name="deletedDate" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

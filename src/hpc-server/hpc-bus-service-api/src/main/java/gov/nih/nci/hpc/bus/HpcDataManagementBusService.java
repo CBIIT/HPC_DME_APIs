@@ -156,9 +156,10 @@ public interface HpcDataManagementBusService {
 	 * Delete collection.
 	 *
 	 * @param path The collection path.
+	 * @param force	If true, perform hard delete
 	 * @throws HpcException on service failure.
 	 */
-	public void deleteCollection(String path, Boolean recursive) throws HpcException;
+	public void deleteCollection(String path, Boolean recursive, Boolean force) throws HpcException;
 
 	/**
 	 * Get download task status of a list of data objects or a list of collections.
@@ -403,10 +404,11 @@ public interface HpcDataManagementBusService {
 	 * Delete Data Object.
 	 *
 	 * @param path The data object path.
+	 * @param force	If true, perform hard delete
 	 * @return A response DTO with detailed statuses.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path) throws HpcException;
+	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force) throws HpcException;
 
 	/**
 	 * Set data object permissions.
@@ -487,4 +489,19 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) throws HpcException;
 
+	/**
+	 * Recover a soft deleted data object.
+	 *
+	 * @param path            The path to recover.
+	 * @throws HpcException on service failure.
+	 */
+	public void recoverDataObject(String path) throws HpcException;
+	
+	/**
+	 * Recover a soft deleted collection.
+	 *
+	 * @param path            The path to recover.
+	 * @throws HpcException on service failure.
+	 */
+	public void recoverCollection(String path) throws HpcException;
 }
