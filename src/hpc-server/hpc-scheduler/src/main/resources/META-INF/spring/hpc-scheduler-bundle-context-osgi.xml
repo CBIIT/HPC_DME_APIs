@@ -48,6 +48,7 @@
 		<prop key="hpc.scheduler.cron.completeRestoreRequest.delay">25 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.sendAnnualReview.delay">0 0 0 29 2 ?</prop>
 		<prop key="hpc.scheduler.cron.sendAnnualReviewReminder.delay">0 0 0 29 2 ?</prop>
+		<prop key="hpc.scheduler.cron.removeDeletedDataObjects.delay">0 0 * * * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
