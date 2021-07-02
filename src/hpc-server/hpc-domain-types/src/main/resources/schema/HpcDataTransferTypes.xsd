@@ -28,6 +28,7 @@
 			<xsd:enumeration value="DELETE_REQUESTED" />
 			<xsd:enumeration value="DELETED" />
 			<xsd:enumeration value="DELETE_FAILED" />
+			<xsd:enumeration value="RECOVER_REQUESTED" />
 			<xsd:enumeration value="URL_GENERATED" />
 			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
 			<xsd:enumeration value="STREAMING_STOPPED" />
