@@ -83,6 +83,7 @@ public class HpcMetadataValidator {
       "extracted_metadata_attributes";
   public static final String DEEP_ARCHIVE_STATUS_ATTRIBUTE = "deep_archive_status";
   public static final String DEEP_ARCHIVE_DATE_ATTRIBUTE = "deep_archive_date";
+  public static final String DELETED_DATE_ATTRIBUTE = "deleted_date";
 
   private static final String MANDATORY_METADATA_ERROR = "mandatoryMetadataError";
   private static final String CONDITIONAL_METADATA_ERROR = "conditionalMetadataError";
@@ -116,7 +117,7 @@ public class HpcMetadataValidator {
         SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, CHECKSUM_ATTRIBUTE,
         METADATA_UPDATED_ATTRIBUTE, REGISTRATION_COMPLETION_EVENT_ATTRIBUTE,
         LINK_SOURCE_PATH_ATTRIBUTE, EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE,
-        DEEP_ARCHIVE_STATUS_ATTRIBUTE, DEEP_ARCHIVE_DATE_ATTRIBUTE);
+        DEEP_ARCHIVE_STATUS_ATTRIBUTE, DEEP_ARCHIVE_DATE_ATTRIBUTE, DELETED_DATE_ATTRIBUTE);
     List<String> collectionAttributes = Arrays.asList(ID_ATTRIBUTE, DME_ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE,
         REGISTRAR_NAME_ATTRIBUTE, CONFIGURATION_ID_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
 
