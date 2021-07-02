@@ -166,11 +166,13 @@ public interface HpcDataManagementRestService {
 	 * @param path      The collection path.
 	 * @param recursive If true, delete all sub collections and data objects in this
 	 *                  collection.
+	 * @param force		If true, perform hard delete
 	 * @return The REST service response.
 	 */
 	@DELETE
 	@Path("/collection/{path:.*}")
-	public Response deleteCollection(@PathParam("path") String path, @QueryParam("recursive") Boolean recursive);
+	public Response deleteCollection(@PathParam("path") String path, @QueryParam("recursive") Boolean recursive,
+			@QueryParam("force") Boolean force);
 
 	/**
 	 * Move a collection.
@@ -183,6 +185,16 @@ public interface HpcDataManagementRestService {
 	@Path("/collection/{path:.*}/move/{destinationPath}")
 	public Response moveCollection(@PathParam("path") String path,
 			@PathParam("destinationPath") String destinationPath);
+
+	/**
+	 * Recover a collection.
+	 *
+	 * @param path            The collection path.
+	 * @return The REST service response.
+	 */
+	@POST
+	@Path("/collection/{path:.*}/recover")
+	public Response recoverCollection(@PathParam("path") String path);
 
 	/**
 	 * Set a collection's permissions.
@@ -504,11 +516,12 @@ public interface HpcDataManagementRestService {
 	 * Delete a data object.
 	 *
 	 * @param path The data object path.
+	 * @param force If true, perform hard delete
 	 * @return The REST service response.
 	 */
 	@DELETE
 	@Path("/dataObject/{path:.*}")
-	public Response deleteDataObject(@PathParam("path") String path);
+	public Response deleteDataObject(@PathParam("path") String path, @QueryParam("force") Boolean force);
 
 	/**
 	 * Move a data object.
@@ -521,6 +534,16 @@ public interface HpcDataManagementRestService {
 	@Path("/dataObject/{path:.*}/move/{destinationPath}")
 	public Response moveDataObject(@PathParam("path") String path,
 			@PathParam("destinationPath") String destinationPath);
+
+	/**
+	 * Recover a data object.
+	 *
+	 * @param path            The data object path.
+	 * @return The REST service response.
+	 */
+	@POST
+	@Path("/dataObject/{path:.*}/recover")
+	public Response recoverDataObject(@PathParam("path") String path);
 
 	/**
 	 * Set a data object's permissions.

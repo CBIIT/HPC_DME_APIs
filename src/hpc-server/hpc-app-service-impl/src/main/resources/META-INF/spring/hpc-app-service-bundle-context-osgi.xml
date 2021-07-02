@@ -48,6 +48,8 @@
 		<prop key="hpc.service.dataManagement.defaultBulkRegistrationStatusUiDeepLink">uploadtask?taskId={task_id}&amp;type=</prop>
 		<prop key="hpc.service.dataManagement.downloadResultsPageSize">100</prop>
 		<prop key="hpc.service.dataManagement.registrationResultsPageSize">100</prop>
+		<prop key="hpc.service.dataManagement.deletedArchive">/DME_Deleted_Archive</prop>
+		<prop key="hpc.service.dataManagement.deletedDataObjectRetentionDays">730</prop>
 		<prop key="hpc.service.event.invokerCollectionUpdateNotification">false</prop>
 	</osgix:cm-properties>
 
