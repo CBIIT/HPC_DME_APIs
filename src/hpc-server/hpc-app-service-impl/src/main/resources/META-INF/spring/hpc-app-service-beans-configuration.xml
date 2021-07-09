@@ -117,7 +117,7 @@
 		<constructor-arg value="${hpc.service.dataManagement.systemAdminSubjects}" />
 		<constructor-arg value="${hpc.service.dataManagement.defaultBaseUiURL}" />
 		<constructor-arg value="${hpc.service.dataManagement.defaultBulkRegistrationStatusUiDeepLink}" />
-		<constructor-arg value="${hpc.service.dataManagement.deletedArchive}" />
+		<constructor-arg value="${hpc.service.dataManagement.deletedBasePath}" />
 		<constructor-arg value="${hpc.service.dataManagement.deletedDataObjectRetentionDays}" />
 	</bean>
 	<bean id="hpcDataManagementSecurityService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementSecurityServiceImpl" />
