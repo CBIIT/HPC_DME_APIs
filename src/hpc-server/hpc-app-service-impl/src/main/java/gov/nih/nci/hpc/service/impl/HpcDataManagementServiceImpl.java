@@ -16,6 +16,10 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -181,7 +185,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	private String defaultBulkRegistrationStatusUiURL = null;
 
 	// Archive used to support soft deleted collections and data objects.
-	private String deletedArchive = null;
+	private String deletedBasePath = null;
 	
 	//The number of days a deleted data object is retained
 	private Integer deletedDataObjectRetentionDays = 0;
@@ -208,7 +212,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	 *                                                displayed.
 	 */
 	private HpcDataManagementServiceImpl(String systemAdminSubjects, String defaultBaseUiURL,
-			String defaultBulkRegistrationStatusUiDeepLink, String deletedArchive, int deletedDataObjectRetentionDays) {
+			String defaultBulkRegistrationStatusUiDeepLink, String deletedBasePath, int deletedDataObjectRetentionDays) {
 		// Prepare the query to get data objects in data transfer status of received.
 		dataTransferReceivedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL,
 				HpcDataTransferUploadStatus.RECEIVED.value()));
@@ -269,7 +273,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		defaultBulkRegistrationStatusUiURL = defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
 		
-		this.deletedArchive = deletedArchive;
+		this.deletedBasePath = deletedBasePath;
 		
 		this.deletedDataObjectRetentionDays = deletedDataObjectRetentionDays;
 	}
@@ -486,12 +490,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		// Construct the destination path.
-		String destinationPath = deletedArchive + sourcePath;
+		String destinationPath = deletedBasePath + sourcePath;
 		// Validate the destination path doesn't exist already.
 		HpcPathAttributes destinationPathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken,
 				destinationPath);
 		if (destinationPathAttributes.getExists()) {
-			throw new HpcException("Destination path already exists", HpcErrorType.INVALID_REQUEST_INPUT);
+			// If destination path already exists, append timestamp to make the path unique.
+			String dateFormat = "yyyyMMddHHmmss";
+			LocalDateTime date = LocalDateTime.now(ZoneId.of("UTC-04:00"));
+			destinationPath = destinationPath + "_" + date.format(DateTimeFormatter.ofPattern(dateFormat));
 		}
 
 		// Validate the destination parent path exists.
@@ -535,7 +542,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		// Construct the destination path.
-		String destinationPath = sourcePath.replace(deletedArchive,"");
+		String destinationPath = sourcePath.replace(deletedBasePath,"");
 		// Validate the destination path doesn't exist already.
 		HpcPathAttributes destinationPathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken,
 				destinationPath);
