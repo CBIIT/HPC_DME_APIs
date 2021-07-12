@@ -33,11 +33,4 @@ curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/collect
 
 check_connection $RESPONSE_HEADER
 
-RETURN_CODE=`get_http_code $RESPONSE_HEADER`
-echo $RETURN_CODE 1>&2
-
-ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
-echo $ERROR_TYPE 1>&2
-
-ERROR_MSG=`get_json_value $RESPONSE_MSG message`
-echo $ERROR_MSG 1>&2
+get_http_code $RESPONSE_HEADER
