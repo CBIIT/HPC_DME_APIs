@@ -543,6 +543,18 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:element name="HpcDownloadRetryRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="destinationOverwrite"
+					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="s3Account"
+					type="hpc-domain-datatransfer:HpcS3Account" />
+				<xsd:element name="googleDriveAccessToken" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<!-- Archive DTO -->
 	
 	<xsd:element name="HpcDownloadSummaryDTO">
