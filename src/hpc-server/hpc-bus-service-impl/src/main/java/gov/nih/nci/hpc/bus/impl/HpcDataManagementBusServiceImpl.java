@@ -111,6 +111,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -521,6 +522,34 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
+	public HpcCollectionDownloadResponseDTO retryCollectionDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException {
+		// Input validation.
+		HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId,
+				HpcDownloadTaskType.COLLECTION);
+		if (taskStatus == null) {
+			throw new HpcException("Collection download task not found: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getInProgress() || taskStatus.getResult() == null) {
+			throw new HpcException("Collection download task in-progress: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Submit the download retry request.
+		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
+				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+
+		// Create and return a DTO with the request receipt.
+		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
+		responseDTO.setTaskId(collectionDownloadTask.getId());
+		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+
+		return responseDTO;
+
+	}
+
+	@Override
 	public void deleteCollection(String path, Boolean recursive) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
@@ -625,6 +654,36 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		dataTransferService.cancelCollectionDownloadTask(taskStatus.getCollectionDownloadTask());
+	}
+
+	public HpcBulkDataObjectDownloadResponseDTO retryDataObjectsOrCollectionsDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException {
+		// Input validation.
+		HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId,
+				HpcDownloadTaskType.COLLECTION_LIST);
+		if (taskStatus == null) {
+			taskStatus = dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.DATA_OBJECT_LIST);
+		}
+		if (taskStatus == null) {
+			throw new HpcException("Collection / data-object list download task not found: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getInProgress() || taskStatus.getResult() == null) {
+			throw new HpcException("Collection / data-object list download task in-progress: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Submit the download retry request.
+		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
+				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+
+		// Create and return a DTO with the request receipt.
+		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
+		responseDTO.setTaskId(collectionDownloadTask.getId());
+		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+
+		return responseDTO;
 	}
 
 	@Override
