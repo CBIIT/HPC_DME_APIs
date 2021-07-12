@@ -29,14 +29,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
@@ -167,64 +166,50 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 
       model.addAttribute("taskId", taskId);
       model.addAttribute("taskType", taskType);
-      HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
-      if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())
-          || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name())
+      if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name())
           || taskType.equals(HpcDownloadTaskType.COLLECTION_LIST.name())) {
         
-        String queryServiceURL = null;
-        if (taskType.equals(HpcDownloadTaskType.COLLECTION.name()))
-            queryServiceURL = collectionDownloadServiceURL + "?taskId=" + taskId;
-        else
-            queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
+        String queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId + "/retry";
             
         HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
-            .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
-        if (downloadTask.getFailedItems() != null && !downloadTask.getFailedItems().isEmpty()) {
-          for (HpcCollectionDownloadTaskItem item : downloadTask.getFailedItems())
-            dto.getDataObjectPaths().add(item.getPath());
-          HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
-          HpcFileLocation location = downloadTask.getDestinationLocation();
-		  globusDownloadDestination.setDestinationLocation(location);
-		  globusDownloadDestination.setDestinationOverwrite(true);
-          dto.setGlobusDownloadDestination(globusDownloadDestination);
-          if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())) {
-            dto.setAppendPathToDownloadDestination(false); 
-          }
-        }
-        if (downloadTask.getCanceledItems() != null && !downloadTask.getCanceledItems().isEmpty()) {
-          for (HpcCollectionDownloadTaskItem item : downloadTask.getCanceledItems())
-            dto.getDataObjectPaths().add(item.getPath());
-          HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
-          HpcFileLocation location = downloadTask.getDestinationLocation();
-          globusDownloadDestination.setDestinationLocation(location);
-          globusDownloadDestination.setDestinationOverwrite(true);
-          dto.setGlobusDownloadDestination(globusDownloadDestination);
-          if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())) {
-          	dto.setAppendPathToDownloadDestination(false); 
-          }
-        }
-        try {
-          HpcBulkDataObjectDownloadResponseDTO downloadDTO =
-              (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil.downloadFiles(authToken,
-            		  downloadServiceURL2, dto, sslCertPath, sslCertPassword);
-          if (downloadDTO != null)
-          {
-            result.setMessage(
-                "Download request successful. Task Id: " + downloadDTO.getTaskId());
-            model.addAttribute("message",
-                    "Download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
-          }
+                .getDataObjectsDownloadTask(authToken, dataObjectsDownloadServiceURL + "/" + taskId, sslCertPath, sslCertPassword);
+		try {
+			HpcBulkDataObjectDownloadResponseDTO downloadDTO = HpcClientUtil.retryBulkDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath,
+					sslCertPassword);
+			if (downloadDTO != null) {
+				result.setMessage("Retry bulk download request successful. Task Id: " + downloadDTO.getTaskId());
+				model.addAttribute("message", "Retry bulk download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
+			}
 
-          model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-          return "dataobjectsdownloadtask";
+			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+	        return "dataobjectsdownloadtask";
+	          
+		} catch (Exception e) {
+			result.setMessage("Retry bulk download request is not successful: " + e.getMessage());
+			model.addAttribute("message", "Retry bulk download request is not successful. Task Id: " + taskId);
+			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+	        return "dataobjectsdownloadtask";
+		}
 
-        } catch (Exception e) {
-          result.setMessage("Download request is not successful: " + e.getMessage());
-          model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-          return "dataobjectsdownloadtask";
-        }
-
+      } else if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())) {
+    	String queryServiceURL = collectionDownloadServiceURL + "/" + taskId + "/retry";
+    	HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
+                .getDataObjectsDownloadTask(authToken, collectionDownloadServiceURL + "?taskId=" + taskId, sslCertPath, sslCertPassword);
+		try {
+			HpcCollectionDownloadResponseDTO downloadDTO = HpcClientUtil.retryCollectionDownloadTask(authToken, queryServiceURL, sslCertPath,
+					sslCertPassword);
+			if (downloadDTO != null) {
+				result.setMessage("Retry request successful. Task Id: " + downloadDTO.getTaskId());
+				model.addAttribute("message", "Retry collection download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
+			}
+			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+			return "dataobjectsdownloadtask";
+		} catch (Exception e) {
+			result.setMessage("Retry request is not successful: " + e.getMessage());
+			model.addAttribute("message", "Retry request is not successful. Task Id: " + taskId);
+			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+			return "dataobjectsdownloadtask";
+		}
       } else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT.name())) {
         String queryServiceURL = dataObjectDownloadServiceURL + "?taskId=" + taskId;
         HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
