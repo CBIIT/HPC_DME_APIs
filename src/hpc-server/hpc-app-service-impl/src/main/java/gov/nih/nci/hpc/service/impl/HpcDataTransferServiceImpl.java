@@ -1346,7 +1346,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		boolean failedDownloadItemFound = false;
 		for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
-			if (!failedDownloadResult(downloadItem.getResult())) {
+			if (failedDownloadResult(downloadItem.getResult())) {
 				failedDownloadItemFound = true;
 				break;
 			}
