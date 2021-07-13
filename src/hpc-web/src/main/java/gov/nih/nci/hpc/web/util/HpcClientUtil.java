@@ -1978,6 +1978,7 @@ public class HpcClientUtil {
         client.header("Authorization", "Bearer " + token);
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
+        requestDTO.setDestinationOverwrite(true);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
@@ -2023,6 +2024,7 @@ public class HpcClientUtil {
         client.header("Authorization", "Bearer " + token);
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
+        requestDTO.setDestinationOverwrite(true);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
