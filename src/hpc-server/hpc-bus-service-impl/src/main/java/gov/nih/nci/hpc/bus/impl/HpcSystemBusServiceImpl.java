@@ -1356,11 +1356,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
 						calculateGlobusDownloadDestination(globusDownloadDestination, subCollectionPath,
-								appendPathToDownloadDestination ? null : false),
+								appendPathToDownloadDestination ? null : false, null),
 						calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath,
-								appendPathToDownloadDestination ? null : false),
+								appendPathToDownloadDestination ? null : false, null),
 						calculateGoogleDriveDownloadDestination(googleDriveDownloadDestination, subCollectionPath,
-								appendPathToDownloadDestination ? null : false),
+								appendPathToDownloadDestination ? null : false, null),
 						appendPathToDownloadDestination, userId, collectionDownloadBreaker));
 			}
 		}
@@ -1440,12 +1440,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		// Iterate through the failed download items and retry them.
 		for (HpcCollectionDownloadTaskItem failedItem : retryTaskStatus.getFailedItems()) {
-			logger.error("ERAN: retry download" + failedItem.getPath() + " -> " + failedItem.getDestinationLocation().getFileId());
-			/*
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(failedItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination, false, userId,
 					failedItem.getDestinationLocation());
-			downloadItems.add(downloadItem);*/
+			downloadItems.add(downloadItem);
 		}
 
 		return downloadItems;
@@ -1455,7 +1453,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * Download a data object.
 	 *
 	 * @param path                            The data object path.
-	 * @param globusDownloadDestination       The user requested Glopbus download
+	 * @param globusDownloadDestination       The user requested Globus download
 	 *                                        destination.
 	 * @param s3DownloadDestination           The user requested S3 download
 	 *                                        destination.
@@ -1470,7 +1468,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param retryDestinationLocation        (Optional) A retry destination
 	 *                                        location - download retry is always
 	 *                                        attempted into the original calculated
-	 *                                        download destination
+	 *                                        download destination.
 	 * @return The download task item.
 	 */
 	private HpcCollectionDownloadTaskItem downloadDataObject(String path,
@@ -1478,12 +1476,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
 			String userId, HpcFileLocation retryDestinationLocation) {
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
-		dataObjectDownloadRequest.setGlobusDownloadDestination(
-				calculateGlobusDownloadDestination(globusDownloadDestination, path, appendPathToDownloadDestination));
-		dataObjectDownloadRequest.setS3DownloadDestination(
-				calculateS3DownloadDestination(s3DownloadDestination, path, appendPathToDownloadDestination));
+		dataObjectDownloadRequest.setGlobusDownloadDestination(calculateGlobusDownloadDestination(
+				globusDownloadDestination, path, appendPathToDownloadDestination, retryDestinationLocation));
+		dataObjectDownloadRequest.setS3DownloadDestination(calculateS3DownloadDestination(s3DownloadDestination, path,
+				appendPathToDownloadDestination, retryDestinationLocation));
 		dataObjectDownloadRequest.setGoogleDriveDownloadDestination(calculateGoogleDriveDownloadDestination(
-				googleDriveDownloadDestination, path, appendPathToDownloadDestination));
+				googleDriveDownloadDestination, path, appendPathToDownloadDestination, retryDestinationLocation));
 
 		// Instantiate a download item for this data object.
 		HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -1530,18 +1528,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                        be used in the destination path,
 	 *                                        otherwise just the object name will be
 	 *                                        used. If null - not used.
+	 * @param retryDestinationLocation        (Optional) A retry destination
+	 *                                        location - download retry is always
+	 *                                        attempted into the original calculated
+	 *                                        download destination.
 	 * @return A calculated destination location.
 	 */
 	private HpcGlobusDownloadDestination calculateGlobusDownloadDestination(
 			HpcGlobusDownloadDestination collectionDestination, String collectionListingEntryPath,
-			Boolean appendPathToDownloadDestination) {
+			Boolean appendPathToDownloadDestination, HpcFileLocation retryDestinationLocation) {
 		if (collectionDestination == null) {
 			return null;
 		}
 
 		HpcGlobusDownloadDestination calcGlobusDestination = new HpcGlobusDownloadDestination();
-		calcGlobusDestination.setDestinationLocation(
-				calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
+		calcGlobusDestination.setDestinationLocation(retryDestinationLocation != null ? retryDestinationLocation
+				: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
 						collectionListingEntryPath, appendPathToDownloadDestination));
 		calcGlobusDestination.setDestinationOverwrite(collectionDestination.getDestinationOverwrite());
 
@@ -1560,18 +1562,23 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                        be used in the destination path,
 	 *                                        otherwise just the object name will be
 	 *                                        used. If null - not used.
+	 * @param retryDestinationLocation        (Optional) A retry destination
+	 *                                        location - download retry is always
+	 *                                        attempted into the original calculated
+	 *                                        download destination.
 	 * 
 	 * @return A calculated destination location.
 	 */
 	private HpcS3DownloadDestination calculateS3DownloadDestination(HpcS3DownloadDestination collectionDestination,
-			String collectionListingEntryPath, Boolean appendPathToDownloadDestination) {
+			String collectionListingEntryPath, Boolean appendPathToDownloadDestination,
+			HpcFileLocation retryDestinationLocation) {
 		if (collectionDestination == null) {
 			return null;
 		}
 
 		HpcS3DownloadDestination calcS3Destination = new HpcS3DownloadDestination();
-		calcS3Destination.setDestinationLocation(
-				calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
+		calcS3Destination.setDestinationLocation(retryDestinationLocation != null ? retryDestinationLocation
+				: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
 						collectionListingEntryPath, appendPathToDownloadDestination));
 		calcS3Destination.setAccount(collectionDestination.getAccount());
 
@@ -1591,19 +1598,23 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                        be used in the destination path,
 	 *                                        otherwise just the object name will be
 	 *                                        used. If null - not used.
+	 * @param retryDestinationLocation        (Optional) A retry destination
+	 *                                        location - download retry is always
+	 *                                        attempted into the original calculated
+	 *                                        download destination.
 	 * 
 	 * @return A calculated destination location.
 	 */
 	private HpcGoogleDriveDownloadDestination calculateGoogleDriveDownloadDestination(
 			HpcGoogleDriveDownloadDestination collectionDestination, String collectionListingEntryPath,
-			Boolean appendPathToDownloadDestination) {
+			Boolean appendPathToDownloadDestination, HpcFileLocation retryDestinationLocation) {
 		if (collectionDestination == null) {
 			return null;
 		}
 
 		HpcGoogleDriveDownloadDestination calcGoogleDriveDestination = new HpcGoogleDriveDownloadDestination();
-		calcGoogleDriveDestination.setDestinationLocation(
-				calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
+		calcGoogleDriveDestination.setDestinationLocation(retryDestinationLocation != null ? retryDestinationLocation
+				: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
 						collectionListingEntryPath, appendPathToDownloadDestination));
 		calcGoogleDriveDestination.setAccessToken(collectionDestination.getAccessToken());
 
