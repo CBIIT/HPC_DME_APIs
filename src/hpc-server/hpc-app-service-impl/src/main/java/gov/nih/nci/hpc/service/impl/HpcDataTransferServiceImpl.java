@@ -1358,10 +1358,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setRetryTaskId(downloadTaskResult.getId());
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setUserId(downloadTaskResult.getUserId());
 		downloadTask.setType(downloadTaskResult.getType());
+		downloadTask.setPath(downloadTaskResult.getPath());
+
 		switch (downloadTaskResult.getDestinationType()) {
 		case GLOBUS:
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
