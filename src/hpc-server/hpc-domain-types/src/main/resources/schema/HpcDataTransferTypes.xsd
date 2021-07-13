@@ -414,6 +414,7 @@
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="retryTaskId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
