@@ -384,6 +384,7 @@
 				minOccurs="0" />
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="retryTaskId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
