@@ -2101,14 +2101,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 								s3DownloadDestination.getDestinationLocation(), false)
 						.getIsAccessible();
 			} catch (HpcException e) {
-				throw new HpcException(
-						"Failed to locate AWS S3 bucket: "
-								+ s3DownloadDestination.getDestinationLocation().getFileContainerId(),
-						HpcErrorType.INVALID_REQUEST_INPUT, e);
+				throw new HpcException("Failed to locate S3 bucket: "
+						+ s3DownloadDestination.getDestinationLocation().getFileContainerId() + " [" + e.getMessage()
+						+ "]", HpcErrorType.INVALID_REQUEST_INPUT, e);
 			}
 			if (!s3BucketAccessible) {
 				throw new HpcException(
-						"Failed to access AWS S3 bucket: "
+						"Failed to access S3 bucket: "
 								+ s3DownloadDestination.getDestinationLocation().getFileContainerId(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
