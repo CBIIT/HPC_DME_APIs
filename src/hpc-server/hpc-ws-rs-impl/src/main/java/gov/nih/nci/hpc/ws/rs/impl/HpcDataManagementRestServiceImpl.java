@@ -62,6 +62,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -237,6 +238,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		}
 
 		return okResponse(null, false);
+	}
+
+	@Override
+	public Response retryCollectionDownloadTask(String taskId, HpcDownloadRetryRequestDTO downloadRetryRequest) {
+		HpcCollectionDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.retryCollectionDownloadTask(taskId, downloadRetryRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(downloadResponse, false);
 	}
 
 	@Override
@@ -751,6 +765,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		}
 
 		return okResponse(null, false);
+	}
+
+	@Override
+	public Response retryDataObjectsOrCollectionsDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) {
+		HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.retryDataObjectsOrCollectionsDownloadTask(taskId,
+					downloadRetryRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(downloadResponse, false);
 	}
 
 	@Override
