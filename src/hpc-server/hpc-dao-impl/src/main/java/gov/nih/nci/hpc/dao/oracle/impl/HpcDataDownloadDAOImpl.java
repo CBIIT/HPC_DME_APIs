@@ -97,7 +97,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK order by PRIORITY, CREATED";
 
 	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? ";
-	
+
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
 			+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
 
@@ -123,11 +123,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_OVERWRITE = ?, S3_ACCOUNT_ACCESS_KEY = ?, S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, "
 			+ "S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, "
-			+ "STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ? "
+			+ "STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ?, RETRY_TASK_ID = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_ID, "
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, "
-			+ "GOOGLE_DRIVE_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "GOOGLE_DRIVE_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, RETRY_TASK_ID) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ? where ID = ?";
 
@@ -344,6 +344,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setConfigurationId(rs.getString("CONFIGURATION_ID"));
 		collectionDownloadTask.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.fromValue(rs.getString(("STATUS"))));
+		collectionDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
 
@@ -606,8 +607,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	@Override
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByStatus(
-			HpcDataTransferDownloadStatus dataTransferStatus)
-			throws HpcException {
+			HpcDataTransferDownloadStatus dataTransferStatus) throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL, dataObjectDownloadTaskRowMapper,
 					dataTransferStatus.value());
@@ -617,7 +617,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
-	
+
 	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
@@ -686,8 +686,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
 					taskResult.getType().value(), taskResult.getMessage(), taskResult.getCompletionEvent(),
 					taskResult.getEffectiveTransferSpeed(), taskResult.getSize(), taskResult.getCreated(),
-					taskResult.getCompleted(),
-					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), 
+					taskResult.getCompleted(), Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false),
 					taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
 					taskResult.getDataTransferRequestId(), dataTransferType,
 					taskResult.getDestinationLocation().getFileContainerId(),
@@ -774,14 +773,15 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
-					collectionDownloadTask.getId(), collectionDownloadTask.getUserId(),
-					collectionDownloadTask.getPath(), collectionDownloadTask.getConfigurationId(),
-					destinationLocation.getFileContainerId(), destinationLocation.getFileId(), destinationOverwrite,
-					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
-					s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
+					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getId(),
+					collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
+					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
+					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
+					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
 					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
-					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated());
+					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
+					collectionDownloadTask.getRetryTaskId());
 
 			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL,
 					new Object[] { new SqlLobValue(toJSON(collectionDownloadTask.getItems()), lobHandler),
@@ -1164,7 +1164,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				if (percentComplete != null) {
 					downloadItem.setPercentComplete(Integer.valueOf(percentComplete.toString()));
 				}
-				
+
 				Object restoreInProgress = jsonDownloadItem.get("restoreInProgress");
 				if (restoreInProgress != null) {
 					downloadItem.setRestoreInProgress(restoreInProgress.toString().equals("true"));
