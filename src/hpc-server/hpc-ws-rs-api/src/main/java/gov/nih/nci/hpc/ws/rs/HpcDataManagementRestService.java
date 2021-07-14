@@ -35,6 +35,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
 /**
@@ -159,6 +160,20 @@ public interface HpcDataManagementRestService {
 	@Path("/collection/download/{taskId}/cancel")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response cancelCollectionDownloadTask(@PathParam("taskId") String taskId);
+
+	/**
+	 * Retry a collection download task.
+	 *
+	 * @param taskId               The collection download task ID.
+	 * @param downloadRetryRequest Retry download request.
+	 * @return The REST service response The REST service response w/
+	 *         HpcCollectionDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/collection/download/{taskId}/retry")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response retryCollectionDownloadTask(@PathParam("taskId") String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest);
 
 	/**
 	 * Delete a collection.
@@ -646,6 +661,19 @@ public interface HpcDataManagementRestService {
 	@Path("/download/{taskId}/cancel")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response cancelDataObjectsOrCollectionsDownloadTask(@PathParam("taskId") String taskId);
+
+	/**
+	 * Retry download task of a list of data objects or a list of collections.
+	 *
+	 * @param taskId               The download task ID.
+	 * @param downloadRetryRequest Retry download request. 
+	 * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/download/{taskId}/retry")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response retryDataObjectsOrCollectionsDownloadTask(@PathParam("taskId") String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest);
 
 	/**
 	 * Get download summary (for the request invoker).
