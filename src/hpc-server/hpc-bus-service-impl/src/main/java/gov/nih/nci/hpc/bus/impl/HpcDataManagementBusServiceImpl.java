@@ -2258,6 +2258,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
 			downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
 			downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
+			downloadStatus.setRetryTaskId(taskStatus.getCollectionDownloadTask().getRetryTaskId());
 			if (taskStatus.getCollectionDownloadTask().getS3DownloadDestination() != null) {
 				downloadStatus.setDestinationLocation(
 						taskStatus.getCollectionDownloadTask().getS3DownloadDestination().getDestinationLocation());
@@ -2284,6 +2285,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
 			downloadStatus.setMessage(taskStatus.getResult().getMessage());
 			downloadStatus.setResult(taskStatus.getResult().getResult());
+			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
 			downloadStatus.setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);
