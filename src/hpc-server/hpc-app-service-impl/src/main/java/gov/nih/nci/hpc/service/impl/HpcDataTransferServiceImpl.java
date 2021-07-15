@@ -1352,7 +1352,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 		if (!failedDownloadItemFound) {
-			throw new HpcException("No failed dowanload item found for task: " + downloadTaskResult.getId(),
+			throw new HpcException("No failed download item found for task: " + downloadTaskResult.getId(),
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -1472,6 +1472,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCreated(downloadTask.getCreated());
 		taskResult.setCompleted(completed);
 		taskResult.getItems().addAll(downloadTask.getItems());
+		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
 		// averaging the effective transfer speed
@@ -2100,14 +2101,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 								s3DownloadDestination.getDestinationLocation(), false)
 						.getIsAccessible();
 			} catch (HpcException e) {
-				throw new HpcException(
-						"Failed to locate AWS S3 bucket: "
-								+ s3DownloadDestination.getDestinationLocation().getFileContainerId(),
-						HpcErrorType.INVALID_REQUEST_INPUT, e);
+				throw new HpcException("Failed to locate S3 bucket: "
+						+ s3DownloadDestination.getDestinationLocation().getFileContainerId() + " [" + e.getMessage()
+						+ "]", HpcErrorType.INVALID_REQUEST_INPUT, e);
 			}
 			if (!s3BucketAccessible) {
 				throw new HpcException(
-						"Failed to access AWS S3 bucket: "
+						"Failed to access S3 bucket: "
 								+ s3DownloadDestination.getDestinationLocation().getFileContainerId(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
