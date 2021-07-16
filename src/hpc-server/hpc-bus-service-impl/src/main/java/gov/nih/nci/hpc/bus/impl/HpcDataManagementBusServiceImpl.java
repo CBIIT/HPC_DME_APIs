@@ -1492,8 +1492,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 					dataObjectDeleteResponse.setMessage(e.getMessage());
 				}
-			}
-			dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+			} else
+				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 		}
 
 		// Add an audit record of this deletion attempt.
