@@ -374,6 +374,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           && (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
               || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
         retry = false;
+      if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
+		   retry = false;
 	}
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
