@@ -122,6 +122,8 @@ table.dataTable tbody td {
 												<th>Publications</th>
 												<th>Deposition</th>
 												<th>Sunset Date</th>
+												<th>Retention in Years</th>
+												<th>Completed Date</th>
 												<th>Last Reviewed</th>
 											</tr>
 										</thead>
@@ -198,7 +200,7 @@ table.dataTable tbody td {
 																		individual values.</span>
 																</div>
 															</div>
-															<div class="col-sm-12 column" id="path"></div>
+															<div class="col-sm-12 column" style="word-break: break-word" id="path"></div>
 															<input type="hidden" name="path" id="paths" />
 															<div id="statusDiv" class="col-sm-12 column">
 																<label for="status">Project Status:</label> <select
@@ -221,7 +223,7 @@ table.dataTable tbody td {
 																	placeholder="Enter deposition" size="80" />
 															</div>
 															<div class="col-sm-12 column" id="retention">
-																<label for="years">Retention Years:</label> <select
+																<label for="years">Retention in Years:</label> <select
 																	size="1" id="years" name="retentionYears" class="form-control">
 																	<option value="">Select number of years</option>
 																	<option value="1">1</option>
@@ -293,13 +295,14 @@ table.dataTable tbody td {
     	        "ordering": true,
     	        "info": true,
     	        "pageLength": 100,
+    	        "pagingType": "full_numbers",
     	        oLanguage: {
     	            "sSearch": "Filter:"
     	        },
     	        dom: '<"row" flr><"row col-md-12" B>itip',
     	        buttons: [
     	        	{
-    	                text: 'Select all',
+    	                text: 'Select All',
     	                className: 'btn btn-secondary',
     	                action: function () {
     	                	if($('#example').find("input[type=checkbox]:checked").length > 0)
@@ -340,6 +343,7 @@ table.dataTable tbody td {
   	             		     $("#path").show();
   	             		  	 $("#paths").val(data.path);
   	             		     $("#status").val(data.projectStatus);
+  	             		     $("#years").val(data.retentionYears);
   	             		  	 $("#publications").val(data.publications);
   	             		     $("#deposition").val(data.deposition);
     	             	   }
@@ -351,12 +355,14 @@ table.dataTable tbody td {
  	             	       if (day.length < 2) 
  	             	        	day = '0' + day;
 	             		   $("#lastReviewed").val(today.getFullYear()+'-'+month+'-'+day);
-	             		   $("#retention").hide();
-	             		   if($("#status").val() != null && $("#status").val() == "Completed")
-	             			 	$('#status').prop('disabled',true);
-	             		   else
-	             			  $('#status').prop('disabled',false);
-	             		   $("#years").val("");
+	             		   if($("#status").val() != null && $("#status").val() == "Completed") {
+	             		     $('#status').prop('disabled',true);
+	             			 $('#years').prop('disabled',true);
+	             		   }
+	             		   else {
+	             			 $('#status').prop('disabled',false);
+	             			 $('#years').prop('disabled',false);
+	             		   }
 	             		   $('#message').hide();
 	             		   $('#wait').hide();
     	             	   $('#editModal').modal('show');
@@ -387,8 +393,14 @@ table.dataTable tbody td {
     	            { "data": "publications" },
     	            { "data": "deposition" },
     	            { "data": "sunsetDate" },
+    	            { "data": "retentionYears" },
+    	            { "data": "completedDate" },
     	            { "data": "lastReviewed" }
     	        ],
+    	        'columnDefs': [ {
+    	            'targets': [0],
+    	            'orderable': false
+    	         }],
     	        "ajax": {
     	            "url": "/review/search",
     	            "type": "GET",
@@ -424,12 +436,6 @@ table.dataTable tbody td {
     			});
 			});
     	} );
-		$('body').on('change', '#status', function() {
-			  if($("#status").val() != null && $("#status").val() == "Completed")
-				  $("#retention").show();
-			  else
-				  $("#retention").hide();
-		});
 		$('body').on('click', '.resend', function(event) {
 			var formData = {
 	            'userId': $(this).attr("data-id"),
