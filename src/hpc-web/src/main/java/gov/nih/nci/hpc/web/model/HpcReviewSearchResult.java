@@ -13,6 +13,8 @@ public class HpcReviewSearchResult {
 	private String publications;
 	private String deposition;
 	private String sunsetDate;
+	private String retentionYears;
+	private String completedDate;
 	private String lastReviewed;
 	private String reviewSent;
 	private String reminderSent;
@@ -95,6 +97,22 @@ public class HpcReviewSearchResult {
 
 	public void setSunsetDate(String sunsetDate) {
 		this.sunsetDate = sunsetDate;
+	}
+
+	public String getRetentionYears() {
+		return retentionYears;
+	}
+
+	public void setRetentionYears(String retentionYears) {
+		this.retentionYears = retentionYears;
+	}
+
+	public String getCompletedDate() {
+		return completedDate;
+	}
+
+	public void setCompletedDate(String completedDate) {
+		this.completedDate = completedDate;
 	}
 
 	public String getLastReviewed() {
