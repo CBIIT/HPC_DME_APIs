@@ -26,6 +26,8 @@ SELECT coll.coll_id                                     as id,
        publications.meta_attr_value                     as publications,
        deposition.meta_attr_value                       as deposition,
        sunset_date.meta_attr_value                      as sunset_date,
+       retention_years .meta_attr_value                 as retention_years,
+       project_completed_date.meta_attr_value           as project_completed_date,
        last_reviewed.meta_attr_value                    as last_reviewed,
        review_sent                                      as review_sent,
        reminder_sent                                    as reminder_sent
@@ -70,6 +72,14 @@ FROM r_coll_main coll
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main sunset_date ON sunset_date.meta_id = map.meta_id AND
                                     sunset_date.meta_attr_name = 'sunset_date')
+                   ON map.object_id = coll.coll_id
+         LEFT JOIN (r_objt_metamap map
+    JOIN r_meta_main retention_years ON retention_years.meta_id = map.meta_id AND
+                                    retention_years.meta_attr_name = 'retention_years')
+                   ON map.object_id = coll.coll_id
+         LEFT JOIN (r_objt_metamap map
+    JOIN r_meta_main project_completed_date ON project_completed_date.meta_id = map.meta_id AND
+                                    project_completed_date.meta_attr_name = 'project_completed_date')
                    ON map.object_id = coll.coll_id
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main last_reviewed ON last_reviewed.meta_id = map.meta_id AND
