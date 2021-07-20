@@ -515,6 +515,24 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// Perform the move request.
 		dataManagementProxy.move(authenticatedToken, sourcePath, destinationPath);
 
+		// Remove permissions
+		List<HpcSubjectPermission> permissions = getDataObjectPermissions(destinationPath);
+		HpcIntegratedSystemAccount dataManagementAccount = systemAccountLocator
+				.getSystemAccount(HpcIntegratedSystem.IRODS);
+		if (dataManagementAccount == null) {
+			throw new HpcException("System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		for(HpcSubjectPermission permission : permissions) {
+			//Exclude system accounts and system admin group
+			String subject = permission.getSubject();
+			if (!subject.equals(dataManagementAccount.getUsername()) && !subject.equals("SYSTEM_ADMIN_GROUP")
+					&& !systemAdminSubjects.contains(subject)) {
+				permission.setPermission(HpcPermission.NONE);
+				setDataObjectPermission(destinationPath, permission);
+			}
+		}
+		
 		metadataService.updateDataObjectSystemGeneratedMetadata(destinationPath, null, null, null, HpcDataTransferUploadStatus.DELETE_REQUESTED, null,
 				null, null, null, null, null, null, null);
 	}
@@ -1293,21 +1311,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				// Copy user and extracted and system metadata
 				HpcMetadataEntries metadataEntries = metadataService.getCollectionMetadataEntries(sourcePath);
 				metadataService.copyMetadataToCollection(destinationPath, metadataEntries.getSelfMetadataEntries());
-
-				// Copy permissions
-				List<HpcSubjectPermission> permissions = getCollectionPermissions(sourcePath);
-				HpcIntegratedSystemAccount dataManagementAccount = systemAccountLocator
-						.getSystemAccount(HpcIntegratedSystem.IRODS);
-				if (dataManagementAccount == null) {
-					throw new HpcException("System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
-				}
-
-				for(HpcSubjectPermission permission : permissions) {
-					//Exclude system accounts
-					String subject = permission.getSubject();
-					if (!subject.equals(dataManagementAccount.getUsername()) && !systemAdminSubjects.contains(subject))
-						setCollectionPermission(destinationPath, permission);
-				}
 				copyCompleted = true;
 			} finally {
 				if (!copyCompleted) {
