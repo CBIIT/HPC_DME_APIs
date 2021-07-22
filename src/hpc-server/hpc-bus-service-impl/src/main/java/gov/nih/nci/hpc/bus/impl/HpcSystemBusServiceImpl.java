@@ -705,7 +705,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								: null;
 
 						if (downloadItemStatus == null) {
-							throw new HpcException("Data object download task status is unknown",
+							throw new HpcException("Data object download task status is unknown. Task ID: "
+									+ downloadItem.getDataObjectDownloadTaskId() + ". Path: " + downloadItem.getPath(),
 									HpcErrorType.UNEXPECTED_ERROR);
 						}
 
@@ -1051,12 +1052,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void removeDeletedDataObjects() throws HpcException {
-		// Get all data objects with data transfer status DELETE_REQUESTED and deleted_date is passed the retention period.
-		List<HpcDataObject> deletedDataObjects = dataManagementService
-				.getDeletedDataObjects();
+		// Get all data objects with data transfer status DELETE_REQUESTED and
+		// deleted_date is passed the retention period.
+		List<HpcDataObject> deletedDataObjects = dataManagementService.getDeletedDataObjects();
 		deletedDataObjects.forEach(this::processDeletedDataObject);
 	}
-	
+
 	@Override
 	public void closeConnection() {
 		dataManagementService.closeConnection();
@@ -2384,7 +2385,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					.getDataObjectSystemGeneratedMetadata(path);
 
 			if (dataManagementService.deletedDataObjectExpired(systemGeneratedMetadata.getDeletedDate())) {
-				//Permanently remove the data object
+				// Permanently remove the data object
 				dataManagementBusService.deleteDataObject(path, true);
 			}
 
@@ -2392,7 +2393,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			logger.error("Failed to process deleted data object", e);
 		}
 	}
-	
+
 	// Collection download breaker. This class is used to determine if processing
 	// of collection download should be aborted because the first item in the
 	// collection had
