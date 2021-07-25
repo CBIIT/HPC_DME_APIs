@@ -86,6 +86,7 @@ import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchiveDirectoryPermissionsRequestDTO;
@@ -111,6 +112,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -520,8 +522,37 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataTransferService.cancelCollectionDownloadTask(taskStatus.getCollectionDownloadTask());
 	}
 
+	public HpcCollectionDownloadResponseDTO retryCollectionDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException {
+		// Input validation.
+		HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId,
+				HpcDownloadTaskType.COLLECTION);
+		if (taskStatus == null) {
+			throw new HpcException("Collection download task not found: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getInProgress() || taskStatus.getResult() == null) {
+			throw new HpcException("Collection download task in-progress: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Submit the download retry request.
+		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
+				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+
+		// Create and return a DTO with the request receipt.
+		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
+		responseDTO.setTaskId(collectionDownloadTask.getId());
+		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+
+		return responseDTO;
+
+	}
+
 	@Override
-	public void deleteCollection(String path, Boolean recursive) throws HpcException {
+	public void deleteCollection(String path, Boolean recursive, Boolean force) throws HpcException {
+
+
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -581,7 +612,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		try {
 			if (recursive) {
 				// Delete all the data objects in this hierarchy first
-				deleteDataObjectsInCollections(path);
+				deleteDataObjectsInCollections(path, force);
 			}
 
 			dataManagementService.delete(path, false);
@@ -625,6 +656,36 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		dataTransferService.cancelCollectionDownloadTask(taskStatus.getCollectionDownloadTask());
+	}
+
+	public HpcBulkDataObjectDownloadResponseDTO retryDataObjectsOrCollectionsDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException {
+		// Input validation.
+		HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId,
+				HpcDownloadTaskType.COLLECTION_LIST);
+		if (taskStatus == null) {
+			taskStatus = dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.DATA_OBJECT_LIST);
+		}
+		if (taskStatus == null) {
+			throw new HpcException("Collection / data-object list download task not found: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getInProgress() || taskStatus.getResult() == null) {
+			throw new HpcException("Collection / data-object list download task in-progress: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Submit the download retry request.
+		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
+				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+
+		// Create and return a DTO with the request receipt.
+		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
+		responseDTO.setTaskId(collectionDownloadTask.getId());
+		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+
+		return responseDTO;
 	}
 
 	@Override
@@ -1311,7 +1372,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path) throws HpcException {
+	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1334,18 +1395,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Validate the invoker is the owner of the data object.
-		HpcPermission permission = dataManagementService.getDataObjectPermission(path).getPermission();
-		if (!permission.equals(HpcPermission.OWN)) {
-			throw new HpcException(
-					"Data object can only be deleted by its owner. Your permission: " + permission.value(),
-					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT)) {
+			HpcPermission permission = dataManagementService.getDataObjectPermission(path).getPermission();
+			if (!permission.equals(HpcPermission.OWN)) {
+				throw new HpcException(
+						"Data object can only be deleted by its owner. Your permission: " + permission.value(),
+						HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+			}
 		}
 
 		// If this is a GroupAdmin, then ensure that:
 		// 1. The file is less than 90 days old
 		// 2. The invoker uploaded the data originally
 
-		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
@@ -1384,8 +1447,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataObjectDeleteResponse.setLinksDeleteStatus(true);
 		}
 
-		// Delete the file from the archive (if it's archived and not a link).
-		if (!registeredLink) {
+		// Delete the file from the archive (if it's archived and not a link and it is a hard delete).
+		if (!registeredLink && force) {
 			if (!abort) {
 				switch (systemGeneratedMetadata.getDataTransferStatus()) {
 				case ARCHIVED:
@@ -1408,7 +1471,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Remove the file from data management.
-		if (!abort) {
+		if (!abort && force) {
 			try {
 				dataManagementService.delete(path, false);
 				dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
@@ -1419,7 +1482,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				dataObjectDeleteResponse.setMessage(e.getMessage());
 			}
 		} else {
-			dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+			if (!abort) {
+				try {
+					securityService.executeAsSystemAccount(Optional.empty(),
+							() -> dataManagementService.softDelete(path, Optional.of(false)));
+					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+				} catch (HpcException e) {
+					logger.error("Failed to soft delete file from datamanagement", e);
+					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+					dataObjectDeleteResponse.setMessage(e.getMessage());
+				}
+			} else
+				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 		}
 
 		// Add an audit record of this deletion attempt.
@@ -1761,6 +1836,55 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return bulkMoveResponse;
 	}
 
+	@Override
+	public void recoverDataObject(String path) throws HpcException {
+		// Input validation.
+		if (StringUtils.isEmpty(path)) {
+			throw new HpcException("Empty path in recover request: [path: " + path
+					+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcDataObject dataObject = dataManagementService.getDataObject(path);
+
+		// Validate the data object exists.
+		if (dataObject == null) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the metadata for this data object.
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
+		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+		if (systemGeneratedMetadata.getDataTransferStatus() == null) {
+			throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		dataManagementService.recover(path, Optional.of(false));
+
+	}
+	
+	@Override
+	public void recoverCollection(String path) throws HpcException {
+		// Input validation.
+		if (StringUtils.isEmpty(path)) {
+			throw new HpcException("Empty path in recover request: [path: " + path
+					+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the collection exists.
+		HpcCollection collection = dataManagementService.getCollection(path, true);
+		if (collection == null) {
+			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Recover the collection.
+		recoverDataObjectsFromCollections(path);
+		dataManagementService.delete(path, false);
+
+
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -1985,7 +2109,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param path The path at the root of the hierarchy to delete from.
 	 * @throws HpcException if it failed to delete any object in this collection.
 	 */
-	private void deleteDataObjectsInCollections(String path) throws HpcException {
+	private void deleteDataObjectsInCollections(String path, Boolean force) throws HpcException {
 
 		HpcCollectionDTO collectionDto = getCollectionChildren(path);
 
@@ -1994,7 +2118,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (!CollectionUtils.isEmpty(dataObjects)) {
 				// Delete data objects in this collection
 				for (HpcCollectionListingEntry entry : dataObjects) {
-					deleteDataObject(entry.getPath());
+					deleteDataObject(entry.getPath(), force);
 				}
 			}
 
@@ -2003,7 +2127,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Recursively delete data objects from this sub-collection and
 				// it's sub-collections
 				for (HpcCollectionListingEntry entry : subCollections) {
-					deleteDataObjectsInCollections(entry.getPath());
+					deleteDataObjectsInCollections(entry.getPath(), force);
 				}
 			}
 		}
@@ -2135,6 +2259,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
 			downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
 			downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
+			downloadStatus.setRetryTaskId(taskStatus.getCollectionDownloadTask().getRetryTaskId());
 			if (taskStatus.getCollectionDownloadTask().getS3DownloadDestination() != null) {
 				downloadStatus.setDestinationLocation(
 						taskStatus.getCollectionDownloadTask().getS3DownloadDestination().getDestinationLocation());
@@ -2161,6 +2286,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
 			downloadStatus.setMessage(taskStatus.getResult().getMessage());
 			downloadStatus.setResult(taskStatus.getResult().getResult());
+			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
 			downloadStatus.setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);
@@ -2800,8 +2926,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
-	 * Validate a path. 1. Not null or empty string. 2. Contains no white space. 3.
-	 * Contains no characters that are invalid (i.e. not acceptable by IRODS).
+	 * Validate a path. 1. Not null or empty string. 2. Contains no characters that
+	 * are invalid (i.e. not acceptable by IRODS).
 	 *
 	 * @param path The path to validate.
 	 * @throws HpcException if the path is invalid.
@@ -2809,10 +2935,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void validatePath(String path) throws HpcException {
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null or empty path", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		if (StringUtils.containsWhitespace(path)) {
-			throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		for (String invalidCharacter : INVALID_PATH_CHARACTERS) {
@@ -3184,5 +3306,36 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		resultHpcPermForColl.setCollectionPath(path);
 		resultHpcPermForColl.setPermission(hsPerm.getPermission());
 		return resultHpcPermForColl;
+	}
+	
+	/**
+	 * Recursively recover all the data objects from the specified collection and
+	 * from it's sub-collections.
+	 *
+	 * @param path The path at the root of the hierarchy to recover from.
+	 * @throws HpcException if it failed to recover any object in this collection.
+	 */
+	private void recoverDataObjectsFromCollections(String path) throws HpcException {
+
+		HpcCollectionDTO collectionDto = getCollectionChildren(path);
+
+		if (collectionDto.getCollection() != null) {
+			List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
+			if (!CollectionUtils.isEmpty(dataObjects)) {
+				// Delete data objects in this collection
+				for (HpcCollectionListingEntry entry : dataObjects) {
+					recoverDataObject(entry.getPath());
+				}
+			}
+
+			List<HpcCollectionListingEntry> subCollections = collectionDto.getCollection().getSubCollections();
+			if (!CollectionUtils.isEmpty(subCollections)) {
+				// Recursively delete data objects from this sub-collection and
+				// it's sub-collections
+				for (HpcCollectionListingEntry entry : subCollections) {
+					recoverDataObjectsFromCollections(entry.getPath());
+				}
+			}
+		}
 	}
 }
