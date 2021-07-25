@@ -248,6 +248,12 @@ public class HpcScheduledTasksImpl {
 	private void sendAnnualReviewReminderTask() {
 		execute("sendAnnualReviewReminderTask()", reviewBusService::sendAnnualReviewReminder, logger);
 	}
+	
+	/** Permanently remove deleted objects. */
+	@Scheduled(cron = "${hpc.scheduler.cron.removeDeletedDataObjects.delay}")
+	private void removeDeletedDataObjectsTask() {
+		execute("removeDeletedDataObjectsTask()", systemBusService::removeDeletedDataObjects, logger);
+	}
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods

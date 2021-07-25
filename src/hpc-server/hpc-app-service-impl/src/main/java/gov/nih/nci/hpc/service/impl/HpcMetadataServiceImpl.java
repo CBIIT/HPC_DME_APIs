@@ -47,6 +47,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_DN_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DELETED_DATE_ATTRIBUTE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -238,6 +239,28 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
+	public void copyMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries)
+			throws HpcException {
+		// Input validation.
+		if (path == null) {
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		} else {
+			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
+			if (!validationResult.getValid()) {
+				if (StringUtils.isEmpty(validationResult.getMessage())) {
+					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+				} else {
+					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
+		}
+
+		// Add Metadata to the DM system.
+		dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(), path,
+				metadataEntries);
+	}
+	
+	@Override
 	public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(String path, String userId,
 			String userName, String configurationId) throws HpcException {
 		// Input validation.
@@ -387,6 +410,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
+		}
+		
+		if (metadataMap.get(DELETED_DATE_ATTRIBUTE) != null) {
+			systemGeneratedMetadata.setDeletedDate(toCalendar(metadataMap.get(DELETED_DATE_ATTRIBUTE)));
 		}
 
 		HpcPathPermissions sourcePermissions = new HpcPathPermissions();
@@ -743,8 +770,18 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		if (dataTransferStatus != null) {
 			// Update the Data Transfer Status metadata.
-			addMetadataEntry(metadataEntries,
-					toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
+			if (dataTransferStatus.equals(HpcDataTransferUploadStatus.RECOVER_REQUESTED)) {
+				metadataEntries.add(toMetadataEntry(DELETED_DATE_ATTRIBUTE, ""));
+				addMetadataEntry(metadataEntries,
+						toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, HpcDataTransferUploadStatus.ARCHIVED.value()));
+			} else {
+				addMetadataEntry(metadataEntries,
+						toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
+				if(dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
+						addMetadataEntry(metadataEntries,
+								toMetadataEntry(DELETED_DATE_ATTRIBUTE, dateFormat.format(Calendar.getInstance().getTime())));
+				}
+			}
 		}
 
 		if (dataTransferType != null) {

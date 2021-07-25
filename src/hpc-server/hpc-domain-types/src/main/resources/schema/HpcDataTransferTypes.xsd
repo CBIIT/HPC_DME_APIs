@@ -28,6 +28,7 @@
 			<xsd:enumeration value="DELETE_REQUESTED" />
 			<xsd:enumeration value="DELETED" />
 			<xsd:enumeration value="DELETE_FAILED" />
+			<xsd:enumeration value="RECOVER_REQUESTED" />
 			<xsd:enumeration value="URL_GENERATED" />
 			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
 			<xsd:enumeration value="STREAMING_STOPPED" />
@@ -385,6 +386,7 @@
 				minOccurs="0" />
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="retryTaskId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -416,6 +418,7 @@
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="retryTaskId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

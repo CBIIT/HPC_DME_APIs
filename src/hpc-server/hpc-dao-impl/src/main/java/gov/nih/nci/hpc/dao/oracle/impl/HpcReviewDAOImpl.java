@@ -47,7 +47,8 @@ public class HpcReviewDAOImpl implements HpcReviewDAO {
 	private static final String GET_REVIEW_END_SQL = " order by project_status, last_reviewed desc";
 
 	private static final String GET_REVIEW_SQL = "select id, path, project_title, project_description, "
-			+ "project_start_date, data_owner, data_curator, data_curator_name, project_status, publications, deposition, sunset_date, last_reviewed "
+			+ "project_start_date, data_owner, data_curator, data_curator_name, project_status, publications, "
+			+ "deposition, sunset_date, retention_years, project_completed_date, last_reviewed "
 			+ ",review_sent ,reminder_sent " + "from r_review_meta_main ";
 
 	private static final String GET_REVIEW_COUNT_SQL = "select count(id) from r_review_meta_main ";
@@ -96,9 +97,11 @@ public class HpcReviewDAOImpl implements HpcReviewDAO {
 		reviewEntry.setPublications(rs.getString(10));
 		reviewEntry.setDeposition(rs.getString(11));
 		reviewEntry.setSunsetDate(rs.getString(12));
-		reviewEntry.setLastReviewed(rs.getString(13));
-		reviewEntry.setReviewSent(rs.getString(14));
-		reviewEntry.setReminderSent(rs.getString(15));
+		reviewEntry.setRetentionYears(rs.getString(13));
+		reviewEntry.setProjectCompletedDate(rs.getString(14));
+		reviewEntry.setLastReviewed(rs.getString(15));
+		reviewEntry.setReviewSent(rs.getString(16));
+		reviewEntry.setReminderSent(rs.getString(17));
 
 		return reviewEntry;
 	};
