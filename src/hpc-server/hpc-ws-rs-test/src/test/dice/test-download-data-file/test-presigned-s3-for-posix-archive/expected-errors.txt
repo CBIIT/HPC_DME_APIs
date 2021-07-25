@@ -1,2 +1,2 @@
 400
-S3 download request is not supported for POSIX based file system archive
+Download URL request is not supported for POSIX based file system archive

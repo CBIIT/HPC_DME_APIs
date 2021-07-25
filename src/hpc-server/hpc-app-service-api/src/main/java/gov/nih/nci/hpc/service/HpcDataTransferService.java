@@ -592,6 +592,22 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
+	 * Retry a collection download task. This will retry all failed download items
+	 * on a collection download task.
+	 *
+	 * @param downloadTaskResult     The collection download task to retry
+	 * @param destinationOverwrite   (Optional) destination overwrite for Globus
+	 *                               destinations.
+	 * @param s3Account              (Optional) s3Account for S3 destinations.
+	 * @param googleDriveAccessToken (Optional) access token for Google Drive
+	 *                               destinations.
+	 * @return The submitted request download task.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleDriveAccessToken) throws HpcException;
+
+	/**
 	 * Get collection download tasks.
 	 *
 	 * @param status Get tasks in this status.

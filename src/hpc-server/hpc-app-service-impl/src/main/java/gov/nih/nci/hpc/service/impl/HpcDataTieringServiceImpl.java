@@ -250,10 +250,9 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 		}
 
 		// Check if there is a delay in toggling the status
-		Date expiration = new Date();
-		expiration.setTime(deepArchiveDate.getTimeInMillis() + 1000 * 60 * 60 * maxDeepArchiveInProgressDays * 24);
+		deepArchiveDate.add(Calendar.DAY_OF_MONTH, maxDeepArchiveInProgressDays);  
 		// If delayed, return true
-		return expiration.before(new Date());
+		return deepArchiveDate.before(Calendar.getInstance());
 	}
 
 	// ---------------------------------------------------------------------//
