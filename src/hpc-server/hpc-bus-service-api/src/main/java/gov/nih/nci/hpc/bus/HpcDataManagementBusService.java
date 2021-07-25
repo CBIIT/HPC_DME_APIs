@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -153,12 +154,24 @@ public interface HpcDataManagementBusService {
 	public void cancelCollectionDownloadTask(String taskId) throws HpcException;
 
 	/**
+	 * Retry a collection download task.
+	 *
+	 * @param taskId               The collection download task ID.
+	 * @param downloadRetryRequest Retry download request.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollectionDownloadResponseDTO retryCollectionDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException;
+
+	/**
 	 * Delete collection.
 	 *
 	 * @param path The collection path.
+	 * @param force	If true, perform hard delete
 	 * @throws HpcException on service failure.
 	 */
-	public void deleteCollection(String path, Boolean recursive) throws HpcException;
+	public void deleteCollection(String path, Boolean recursive, Boolean force) throws HpcException;
 
 	/**
 	 * Get download task status of a list of data objects or a list of collections.
@@ -166,6 +179,7 @@ public interface HpcDataManagementBusService {
 	 * @param taskId The download task ID.
 	 * @return A collection download status DTO. Null if the task could not be
 	 *         found.
+	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadStatusDTO getDataObjectsOrCollectionsDownloadStatus(String taskId) throws HpcException;
 
@@ -173,8 +187,20 @@ public interface HpcDataManagementBusService {
 	 * Cancel download task of a list of data objects or a list of collections.
 	 *
 	 * @param taskId The download task ID.
+	 * @throws HpcException on service failure.
 	 */
 	public void cancelDataObjectsOrCollectionsDownloadTask(String taskId) throws HpcException;
+
+	/**
+	 * Retry download task of a list of data objects or a list of collections.
+	 *
+	 * @param taskId               The download task ID.
+	 * @param downloadRetryRequest Retry download request.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectDownloadResponseDTO retryDataObjectsOrCollectionsDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException;
 
 	/**
 	 * Get download summary. Note: the summary is for the request invoker.
@@ -183,8 +209,9 @@ public interface HpcDataManagementBusService {
 	 * @param totalCount If set to true, return the total count of completed tasks.
 	 *                   All active tasks are always returned.
 	 * @param allUsers   group admin or system administrators requesting for all
-	 *                   users
-	 * @return A summary of download tasks for the request invoker
+	 *                   users.
+	 * @return A summary of download tasks for the request invoker.
+	 * @throws HpcException on service failure.
 	 */
 	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers) throws HpcException;
 
@@ -403,10 +430,11 @@ public interface HpcDataManagementBusService {
 	 * Delete Data Object.
 	 *
 	 * @param path The data object path.
+	 * @param force	If true, perform hard delete
 	 * @return A response DTO with detailed statuses.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path) throws HpcException;
+	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force) throws HpcException;
 
 	/**
 	 * Set data object permissions.
@@ -487,4 +515,19 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) throws HpcException;
 
+	/**
+	 * Recover a soft deleted data object.
+	 *
+	 * @param path            The path to recover.
+	 * @throws HpcException on service failure.
+	 */
+	public void recoverDataObject(String path) throws HpcException;
+	
+	/**
+	 * Recover a soft deleted collection.
+	 *
+	 * @param path            The path to recover.
+	 * @throws HpcException on service failure.
+	 */
+	public void recoverCollection(String path) throws HpcException;
 }

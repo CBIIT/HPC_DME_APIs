@@ -81,7 +81,8 @@ for system_attribute in "${METADATA_ARRAY[@]}"
 do
 	if [ $system_attribute != "extracted_metadata_attributes" ] && 
 		[ $system_attribute != "deep_archive_status" ] && 
-		[ $system_attribute != "deep_archive_date" ]
+		[ $system_attribute != "deep_archive_date" ] &&
+		[ $system_attribute != "deleted_date" ]
 	then
     	check_attribute "$RESPONSE_MSG" "\"$system_attribute\""
     fi

@@ -302,6 +302,11 @@ public class HpcDataTransferServiceImplTest {
 		HpcS3DownloadDestination s3loadDestination = new HpcS3DownloadDestination();
 		s3loadDestination.setDestinationLocation(destinationLocation);
 		s3loadDestination.setAccount(s3Account);
+		
+		HpcPathAttributes pathAttributes = new HpcPathAttributes();
+		pathAttributes.setIsAccessible(true);
+		when(dataTransferProxyMock.getPathAttributes(anyObject(), same(destinationLocation), eq(false)))
+		.thenReturn(pathAttributes);
 
 		// Run the test.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject("/test/path",
