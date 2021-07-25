@@ -217,10 +217,10 @@ public class HpcReviewController extends AbstractHpcController {
 			}
 
 			for (String path: hpcReviewModel.getPath()) {
-			HpcCollectionRegistrationDTO registrationDTO = constructRequest(hpcReviewModel);
-
-			updated &= HpcClientUtil.updateCollection(authToken, collectionServiceURL, registrationDTO,
-					path, sslCertPath, sslCertPassword);
+				HpcCollectionRegistrationDTO registrationDTO = constructRequest(hpcReviewModel);
+	
+				updated &= HpcClientUtil.updateCollection(authToken, collectionServiceURL, registrationDTO,
+						path, sslCertPath, sslCertPassword);
 			}
 			if (updated) {
 				result.setMessage("Successfully updated.");
@@ -387,6 +387,8 @@ public class HpcReviewController extends AbstractHpcController {
 			returnResult.setPublications(result.getPublications());
 			returnResult.setDeposition(result.getDeposition());
 			returnResult.setSunsetDate(result.getSunsetDate());
+			returnResult.setRetentionYears(result.getRetentionYears());
+			returnResult.setCompletedDate(result.getProjectCompletedDate());
 			returnResult.setLastReviewed(result.getLastReviewed());
 			returnResult.setReviewSent(result.getReviewSent());
 			returnResult.setReminderSent(result.getReminderSent());
@@ -420,10 +422,12 @@ public class HpcReviewController extends AbstractHpcController {
 		HpcCollectionRegistrationDTO dto = new HpcCollectionRegistrationDTO();
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
-		HpcMetadataEntry status = new HpcMetadataEntry();
-		status.setAttribute("project_status");
-		status.setValue(hpcReviewEntry.getProjectStatus());
-		metadataEntries.add(status);
+		if(StringUtils.isNotEmpty(hpcReviewEntry.getProjectStatus())) {
+			HpcMetadataEntry status = new HpcMetadataEntry();
+			status.setAttribute("project_status");
+			status.setValue(hpcReviewEntry.getProjectStatus());
+			metadataEntries.add(status);
+		}
 		
 		if(StringUtils.isNotEmpty(hpcReviewEntry.getPublications())) {
 			HpcMetadataEntry publication = new HpcMetadataEntry();
@@ -440,21 +444,34 @@ public class HpcReviewController extends AbstractHpcController {
 		}
 		
 		if(StringUtils.isNotEmpty(hpcReviewEntry.getRetentionYears())) {
-			int years = Integer.parseInt(hpcReviewEntry.getRetentionYears());
-			Calendar now = Calendar.getInstance();
-		    now.add(Calendar.YEAR, years);
-		    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			String sunsetDate = format.format(now.getTime());
-			HpcMetadataEntry sunsetDateEntry = new HpcMetadataEntry();
-			sunsetDateEntry.setAttribute("sunset_date");
-			sunsetDateEntry.setValue(sunsetDate);
-			metadataEntries.add(sunsetDateEntry);
+			HpcMetadataEntry retentionYearsEntry  = new HpcMetadataEntry();
+			retentionYearsEntry.setAttribute("retention_years");
+			retentionYearsEntry.setValue(hpcReviewEntry.getRetentionYears());
+			metadataEntries.add(retentionYearsEntry);
 		}
 		
 		HpcMetadataEntry reviewDate = new HpcMetadataEntry();
 		reviewDate.setAttribute("last_reviewed");
 		reviewDate.setValue(hpcReviewEntry.getLastReviewed());
 		metadataEntries.add(reviewDate);
+		
+		if (StringUtils.isNotEmpty(hpcReviewEntry.getProjectStatus()) && hpcReviewEntry.getProjectStatus().equals("Completed")) {
+			HpcMetadataEntry completedDateEntry = new HpcMetadataEntry();
+			Calendar now = Calendar.getInstance();
+		    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			String completedDate = format.format(now.getTime());
+			completedDateEntry.setAttribute("project_completed_date");
+			completedDateEntry.setValue(completedDate);
+			metadataEntries.add(completedDateEntry);
+			
+			int years = Integer.parseInt(hpcReviewEntry.getRetentionYears());
+		    now.add(Calendar.YEAR, years);
+			String sunsetDate = format.format(now.getTime());
+			HpcMetadataEntry sunsetDateEntry = new HpcMetadataEntry();
+			sunsetDateEntry.setAttribute("sunset_date");
+			sunsetDateEntry.setValue(sunsetDate);
+			metadataEntries.add(sunsetDateEntry);
+		}	
 
 		dto.getMetadataEntries().addAll(metadataEntries);
 		return dto;
