@@ -101,6 +101,7 @@ import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -149,6 +150,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Metadata service.
 	@Autowired
 	private HpcMetadataService metadataService = null;
+
+	// Notification Application Service.
+	@Autowired
+	private HpcNotificationService notificationService = null;
 
 	// Data management configuration locator.
 	@Autowired
@@ -3159,7 +3164,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		public void transferFailed(String message) {
 			logger.info("download task: {} - 1 Hop download Failed. Path at scratch space: {}", downloadTask.getId(),
 					sourceFile.getAbsolutePath());
-			downloadFailed("Failed to get data from archive via S3: " + message);
+			String errorMessage = "Failed to get data from archive via S3: " + message;
+			downloadFailed(errorMessage);
+			notificationService.sendNotification(new HpcException(message +
+					", task_id: " + downloadTask.getId() +
+					", user_id: " + downloadTask.getUserId() +
+					", archive_file_container_id (bucket): " + downloadTask.getArchiveLocation().getFileContainerId() +
+					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), HpcErrorType.DATA_TRANSFER_ERROR));
 		}
 
 		// ---------------------------------------------------------------------//
