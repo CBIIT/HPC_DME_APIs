@@ -107,10 +107,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, PATH = ?, DATA_TRANSFER_REQUEST_ID = ?, DATA_TRANSFER_TYPE = ?, "
+			+ "ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_NAME = ?, DESTINATION_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, COMPLETION_EVENT = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
 			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ? "
-			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
+			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE,  "
+			+ "ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
 			+ "EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
@@ -302,10 +304,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		String dataTransferType = rs.getString("DATA_TRANSFER_TYPE");
 		downloadTaskResult
 				.setDataTransferType(dataTransferType != null ? HpcDataTransferType.fromValue(dataTransferType) : null);
+
+		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
+		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
+		if (archiveLocationFileContainerId != null && archiveLocationFileId != null) {
+			HpcFileLocation archiveLocation = new HpcFileLocation();
+			archiveLocation.setFileContainerId(archiveLocationFileContainerId);
+			archiveLocation.setFileId(archiveLocationFileId);
+			downloadTaskResult.setArchiveLocation(archiveLocation);
+		}
+
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileContainerName = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_NAME");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
-
 		if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
 			HpcFileLocation destinationLocation = new HpcFileLocation();
 			destinationLocation.setFileContainerId(destinationLocationFileContainerId);
