@@ -188,9 +188,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-	// List of authenticated tokens
-	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
-	
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -1733,13 +1730,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 */
 	private Object getAuthenticatedToken(HpcDataTransferType dataTransferType, String configurationId,
 			String s3ArchiveConfigurationId) throws HpcException {
+		HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+		if (invoker == null) {
+			throw new HpcException("Unknown user", HpcErrorType.UNEXPECTED_ERROR);
+		}
 
 		// Get the data transfer configuration (Globus or S3).
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
 		// Search for an existing token.
-		for (HpcDataTransferAuthenticatedToken authenticatedToken : dataTransferAuthenticatedTokens) {
+		for (HpcDataTransferAuthenticatedToken authenticatedToken : invoker.getDataTransferAuthenticatedTokens()) {
 			if (authenticatedToken.getDataTransferType().equals(dataTransferType)
 					&& authenticatedToken.getConfigurationId().equals(configurationId)
 					&& (authenticatedToken.getS3ArchiveConfigurationId() == null || authenticatedToken
@@ -1778,7 +1779,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		authenticatedToken.setConfigurationId(configurationId);
 		authenticatedToken.setS3ArchiveConfigurationId(dataTransferConfiguration.getId());
 		authenticatedToken.setSystemAccountId(dataTransferSystemAccount.getUsername());
-		dataTransferAuthenticatedTokens.add(authenticatedToken);
+		invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
+		HpcRequestContext.setRequestInvoker(invoker);
 
 		return token;
 	}
