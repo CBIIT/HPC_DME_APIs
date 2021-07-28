@@ -1,3 +1,3 @@
 400
 INVALID_REQUEST_INPUT
-Invalid Metadata Value: collection_type = Projectxxx
+Invalid metadata value for attribute collection_type: Projectxxx. Valid values: [Project, Dataset, Run, No_metadata_folder, Folder]
