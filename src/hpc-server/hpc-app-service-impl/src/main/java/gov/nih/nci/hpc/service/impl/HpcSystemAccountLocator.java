@@ -435,7 +435,7 @@ public class HpcSystemAccountLocator {
 		// utilizationScore
 		// property. Lower score indicates the wrapped system account is being utilized
 		// less.
-		final PooledSystemAccountWrapper wrapperObj = Collections.min(theGlobusAcctsPool);
+		PooledSystemAccountWrapper wrapperObj = Collections.min(theGlobusAcctsPool);
 		if (null == wrapperObj) {
 			throw new HpcException("Unable to obtain Globus app account credentials from pool",
 					HpcErrorType.UNEXPECTED_ERROR);
