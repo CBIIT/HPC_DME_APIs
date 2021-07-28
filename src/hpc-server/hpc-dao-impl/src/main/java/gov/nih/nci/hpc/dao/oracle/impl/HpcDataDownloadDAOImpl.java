@@ -107,15 +107,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, PATH = ?, DATA_TRANSFER_REQUEST_ID = ?, DATA_TRANSFER_TYPE = ?, "
-			+ "ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_NAME = ?, DESTINATION_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, COMPLETION_EVENT = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
 			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ? "
-			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE,  "
-			+ "ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
+			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
 			+ "EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DOWNLOAD_TASK_RESULT_ITEMS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ? where ID = ?";
 
@@ -304,15 +302,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		String dataTransferType = rs.getString("DATA_TRANSFER_TYPE");
 		downloadTaskResult
 				.setDataTransferType(dataTransferType != null ? HpcDataTransferType.fromValue(dataTransferType) : null);
-
-		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
-		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
-		if (archiveLocationFileContainerId != null && archiveLocationFileId != null) {
-			HpcFileLocation archiveLocation = new HpcFileLocation();
-			archiveLocation.setFileContainerId(archiveLocationFileContainerId);
-			archiveLocation.setFileId(archiveLocationFileId);
-			downloadTaskResult.setArchiveLocation(archiveLocation);
-		}
 
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileContainerName = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_NAME");
@@ -693,8 +682,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					: null;
 			jdbcTemplate.update(UPSERT_DOWNLOAD_TASK_RESULT_SQL, taskResult.getId(), taskResult.getUserId(),
 					taskResult.getPath(), taskResult.getDataTransferRequestId(), dataTransferType,
-					taskResult.getArchiveLocation().getFileContainerId(),
-					taskResult.getArchiveLocation().getFileId(),
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
@@ -703,8 +690,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getCompleted(), Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false),
 					taskResult.getRetryTaskId(), taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
 					taskResult.getDataTransferRequestId(), dataTransferType,
-					taskResult.getArchiveLocation().getFileContainerId(),
-					taskResult.getArchiveLocation().getFileId(),
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
