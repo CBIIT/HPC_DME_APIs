@@ -546,6 +546,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		destinationLocation.setFileContainerId("Presigned Download URL");
 		destinationLocation.setFileId("");
 		taskResult.setDestinationLocation(destinationLocation);
+		taskResult.setArchiveLocation(archiveLocation);
 		taskResult.setResult(HpcDownloadResult.COMPLETED);
 		taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
 		taskResult.setCompletionEvent(false);
@@ -964,6 +965,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setSize(downloadTask.getSize());
 		taskResult.setCompleted(completed);
 		taskResult.setRestoreRequested(downloadTask.getRestoreRequested());
+		taskResult.setArchiveLocation(downloadTask.getArchiveLocation());
 
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(Math.toIntExact(bytesTransferred * 1000
@@ -2462,6 +2464,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCreated(created);
 		taskResult.setSize(downloadRequest.getSize());
 		taskResult.setCompleted(Calendar.getInstance());
+		taskResult.setArchiveLocation(downloadRequest.getArchiveLocation());
 
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
