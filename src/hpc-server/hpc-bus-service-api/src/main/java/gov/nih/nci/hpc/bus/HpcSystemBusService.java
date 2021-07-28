@@ -268,6 +268,13 @@ public interface HpcSystemBusService {
 	 */
 	public void completeRestoreRequest() throws HpcException;
 
+	/**
+	 * Permanently remove deleted objects.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void removeDeletedDataObjects() throws HpcException;
+
 	/** Close connection to Data Management system for the current service call. */
 	public void closeConnection();
 }

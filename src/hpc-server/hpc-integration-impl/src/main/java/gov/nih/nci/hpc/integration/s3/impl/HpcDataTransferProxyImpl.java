@@ -569,13 +569,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				for (Rule rule : configuration.getRules()) {
 					// Look through filter prefix applied to lifecycle policy
 					boolean hasTransition = false;
-					/*if (rule != null) {
+
+					if(rule.getTransitions() != null) {
 						for (Transition transition : rule.getTransitions()) {
-							if (transition != null && transition.getStorageClassAsString() != null
-									&& !transition.getStorageClassAsString().isEmpty())
+							if (transition.getStorageClassAsString() != null
+								&& !transition.getStorageClassAsString().isEmpty())
 								hasTransition = true;
 						}
-					}*/
+					}
+
 					if (hasTransition && rule.getFilter() != null && rule.getFilter().getPredicate() != null) {
 						LifecycleFilterPredicate predicate = rule.getFilter().getPredicate();
 						if (predicate instanceof LifecyclePrefixPredicate) {
