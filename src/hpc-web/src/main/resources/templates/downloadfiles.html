@@ -104,14 +104,7 @@
 					<table>
 						<tr>
 							<td>
-							    <div class="pull-center" th:if="${downloadType == 'datafiles'}" >
-							    <p>This page allows you to download the following selected data files to a Globus endpoint, to an S3 bucket, or to Google Drive.
-								</p> 
-							    </div>
-							    <div class="pull-center" th:if="${downloadType == 'collections'}" >
-							    <p>This page allows you to download the following selected collections to a Globus endpoint, to an S3 bucket, or to Google Drive.
-								</p> 
-							    </div>
+								<div class="pull-center" id="msgDownloadType" ></div>
 							</td>
 						</tr>
 						<tr><td>&nbsp;</td></tr>
@@ -359,6 +352,14 @@
             	$("#searchTypeDrive").prop("checked", true); 
                 display('drive');
 	        }
+		});
+
+		$(document).ready(function(){
+			if($('#downloadType').val() == 'datafiles') {
+				$("#msgDownloadType").append("This page allows you to download the following selected data files to a Globus endpoint, to an S3 bucket, or to Google Drive.");
+			} if($('#downloadType').val() == 'collections') {
+				$("#msgDownloadType").append("This page allows you to download the following selected collections to a Globus endpoint, to an S3 bucket, or to Google Drive.");
+			}
 		});
 
 

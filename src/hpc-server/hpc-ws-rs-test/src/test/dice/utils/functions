@@ -2250,16 +2250,25 @@ function async_sleep {
 #Inputs:    <path> "Should have a prefix of dataObject or collection"
 #           <response-header>
 #           <response-message>
+#           <force_flag>
 function delete_item {
 
-    USAGE="ERROR: using $FUNCNAME.\nUSAGE: $FUNCNAME <path> <response-header> <response-message>"
+    USAGE="ERROR: using $FUNCNAME.\nUSAGE: $FUNCNAME <path> <response-header> <response-message> <force_flag>"
 
-    if [ "$#" -ne  3 ] 
+
+    FORCE_FLAG="true"
+
+    if [ "$#" -lt 3 ] 
     then    
         echo "$USAGE"  >&2
         exit 1
 
     fi
+    if [ ! -z "$4" ]
+    then
+      FORCE_FLAG="$4"
+    fi
+       
 
     ITEM_PATH="$1"
     RESPONSE_HEADER="$2"
@@ -2268,7 +2277,7 @@ function delete_item {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     CONFIG="$(get_curl_config)"
 
-    curl -X DELETE ${SERVER}/$ITEM_PATH $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    curl -X DELETE ${SERVER}/$ITEM_PATH?force=$FORCE_FLAG $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
     check_connection $RESPONSE_HEADER
 }
 
