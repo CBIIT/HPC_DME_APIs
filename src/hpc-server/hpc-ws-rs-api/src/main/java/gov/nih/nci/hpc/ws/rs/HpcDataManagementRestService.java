@@ -35,6 +35,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
 /**
@@ -161,16 +162,32 @@ public interface HpcDataManagementRestService {
 	public Response cancelCollectionDownloadTask(@PathParam("taskId") String taskId);
 
 	/**
+	 * Retry a collection download task.
+	 *
+	 * @param taskId               The collection download task ID.
+	 * @param downloadRetryRequest Retry download request.
+	 * @return The REST service response The REST service response w/
+	 *         HpcCollectionDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/collection/download/{taskId}/retry")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response retryCollectionDownloadTask(@PathParam("taskId") String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest);
+
+	/**
 	 * Delete a collection.
 	 *
 	 * @param path      The collection path.
 	 * @param recursive If true, delete all sub collections and data objects in this
 	 *                  collection.
+	 * @param force		If true, perform hard delete
 	 * @return The REST service response.
 	 */
 	@DELETE
 	@Path("/collection/{path:.*}")
-	public Response deleteCollection(@PathParam("path") String path, @QueryParam("recursive") Boolean recursive);
+	public Response deleteCollection(@PathParam("path") String path, @QueryParam("recursive") Boolean recursive,
+			@QueryParam("force") Boolean force);
 
 	/**
 	 * Move a collection.
@@ -183,6 +200,16 @@ public interface HpcDataManagementRestService {
 	@Path("/collection/{path:.*}/move/{destinationPath}")
 	public Response moveCollection(@PathParam("path") String path,
 			@PathParam("destinationPath") String destinationPath);
+
+	/**
+	 * Recover a collection.
+	 *
+	 * @param path            The collection path.
+	 * @return The REST service response.
+	 */
+	@POST
+	@Path("/collection/{path:.*}/recover")
+	public Response recoverCollection(@PathParam("path") String path);
 
 	/**
 	 * Set a collection's permissions.
@@ -504,11 +531,12 @@ public interface HpcDataManagementRestService {
 	 * Delete a data object.
 	 *
 	 * @param path The data object path.
+	 * @param force If true, perform hard delete
 	 * @return The REST service response.
 	 */
 	@DELETE
 	@Path("/dataObject/{path:.*}")
-	public Response deleteDataObject(@PathParam("path") String path);
+	public Response deleteDataObject(@PathParam("path") String path, @QueryParam("force") Boolean force);
 
 	/**
 	 * Move a data object.
@@ -521,6 +549,16 @@ public interface HpcDataManagementRestService {
 	@Path("/dataObject/{path:.*}/move/{destinationPath}")
 	public Response moveDataObject(@PathParam("path") String path,
 			@PathParam("destinationPath") String destinationPath);
+
+	/**
+	 * Recover a data object.
+	 *
+	 * @param path            The data object path.
+	 * @return The REST service response.
+	 */
+	@POST
+	@Path("/dataObject/{path:.*}/recover")
+	public Response recoverDataObject(@PathParam("path") String path);
 
 	/**
 	 * Set a data object's permissions.
@@ -623,6 +661,19 @@ public interface HpcDataManagementRestService {
 	@Path("/download/{taskId}/cancel")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response cancelDataObjectsOrCollectionsDownloadTask(@PathParam("taskId") String taskId);
+
+	/**
+	 * Retry download task of a list of data objects or a list of collections.
+	 *
+	 * @param taskId               The download task ID.
+	 * @param downloadRetryRequest Retry download request. 
+	 * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/download/{taskId}/retry")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response retryDataObjectsOrCollectionsDownloadTask(@PathParam("taskId") String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest);
 
 	/**
 	 * Get download summary (for the request invoker).

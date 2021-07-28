@@ -97,6 +97,32 @@ public interface HpcDataManagementService {
 			throws HpcException;
 
 	/**
+	 * Move a path to the delete archive (soft deleted data object or collection).
+	 *
+	 * @param sourcePath         The data object or collection path to soft delete.
+	 * @param pathTypeValidation (Optional) True to validate if the path is a
+	 *                           collection, False to validate if it is a data
+	 *                           object. If null - no path type validation is
+	 *                           performed.
+	 * @throws HpcException on service failure.
+	 */
+	public void softDelete(String sourcePath, Optional<Boolean> pathTypeValidation)
+			throws HpcException;
+	
+	/**
+	 * Recover a path from the delete archive (recover soft deleted data object or collection).
+	 *
+	 * @param sourcePath         The data object or collection path to recover.
+	 * @param pathTypeValidation (Optional) True to validate if the path is a
+	 *                           collection, False to validate if it is a data
+	 *                           object. If null - no path type validation is
+	 *                           performed.
+	 * @throws HpcException on service failure.
+	 */
+	public void recover(String sourcePath, Optional<Boolean> pathTypeValidation)
+			throws HpcException;
+	
+	/**
 	 * Add an audit record in the DB Note: Currently, there is no 'audit trail'
 	 * functionality implemented. iRODS has this capability, and there is a plan to
 	 * use it. This is a temporary solution to have a record of user attempts to
@@ -560,4 +586,20 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException;
+	
+	/**
+	 * Get data objects that are in deleted status
+	 *
+	 * @return A list of data objects.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataObject> getDeletedDataObjects() throws HpcException;
+	
+	/**
+	 * Check if the deleted data object is past its retention period
+	 *
+	 * @param deletedDate          The data/time the data object was deleted
+	 * @return True if it is expired, or false otherwise.
+	 */
+	boolean deletedDataObjectExpired(Calendar deletedDate);
 }

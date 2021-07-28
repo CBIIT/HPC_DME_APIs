@@ -101,6 +101,7 @@ import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -149,6 +150,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Metadata service.
 	@Autowired
 	private HpcMetadataService metadataService = null;
+
+	// Notification Application Service.
+	@Autowired
+	private HpcNotificationService notificationService = null;
 
 	// Data management configuration locator.
 	@Autowired
@@ -1335,6 +1340,82 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleDriveAccessToken) throws HpcException {
+		// Validate the task failed with at least one failed item before submitting it
+		// for a retry.
+		if (!failedDownloadResult(downloadTaskResult.getResult())) {
+			throw new HpcException("Download task completed or canceled: " + downloadTaskResult.getId()
+					+ ". Only failed tasks can be retried", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		boolean failedDownloadItemFound = false;
+		for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
+			if (failedDownloadResult(downloadItem.getResult())) {
+				failedDownloadItemFound = true;
+				break;
+			}
+		}
+		if (!failedDownloadItemFound) {
+			throw new HpcException("No failed download item found for task: " + downloadTaskResult.getId(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Create a new collection download task.
+		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setRetryTaskId(downloadTaskResult.getId());
+		downloadTask.setCreated(Calendar.getInstance());
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		downloadTask.setUserId(downloadTaskResult.getUserId());
+		downloadTask.setType(downloadTaskResult.getType());
+		downloadTask.setPath(downloadTaskResult.getPath());
+
+		switch (downloadTaskResult.getDestinationType()) {
+		case GLOBUS:
+			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+			globusDownloadDestination.setDestinationOverwrite(Optional.ofNullable(destinationOverwrite).orElse(false));
+			globusDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+			break;
+
+		case S_3:
+			// Validate the S3 account.
+			HpcDomainValidationResult validationResult = isValidS3Account(s3Account);
+			if (!validationResult.getValid()) {
+				throw new HpcException("Invalid S3 account: " + validationResult.getMessage(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
+			s3DownloadDestination.setAccount(s3Account);
+			s3DownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadTask.setS3DownloadDestination(s3DownloadDestination);
+			break;
+
+		case GOOGLE_DRIVE:
+			// Validate the Google Drive access token.
+			if (StringUtils.isEmpty(googleDriveAccessToken)) {
+				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination = new HpcGoogleDriveDownloadDestination();
+			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
+			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+			break;
+
+		default:
+			throw new HpcException("Download retry not supported for destination type: "
+					+ downloadTaskResult.getDestinationType().value(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Persist the request.
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+
+		return downloadTask;
+	}
+
+	@Override
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status)
 			throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasks(status);
@@ -1396,6 +1477,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCreated(downloadTask.getCreated());
 		taskResult.setCompleted(completed);
 		taskResult.getItems().addAll(downloadTask.getItems());
+		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
 		// averaging the effective transfer speed
@@ -2019,14 +2101,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
 			boolean s3BucketAccessible = true;
 			try {
-				s3BucketAccessible = dataTransferProxy.getPathAttributes(dataTransferProxy.authenticate(
-						s3DownloadDestination.getAccount()), s3DownloadDestination.getDestinationLocation(), false).getIsAccessible();
+				s3BucketAccessible = dataTransferProxy
+						.getPathAttributes(dataTransferProxy.authenticate(s3DownloadDestination.getAccount()),
+								s3DownloadDestination.getDestinationLocation(), false)
+						.getIsAccessible();
 			} catch (HpcException e) {
-				throw new HpcException("Failed to locate AWS S3 bucket: " + s3DownloadDestination.getDestinationLocation().getFileContainerId(),
-						HpcErrorType.INVALID_REQUEST_INPUT, e);
+				throw new HpcException("Failed to locate S3 bucket: "
+						+ s3DownloadDestination.getDestinationLocation().getFileContainerId() + " [" + e.getMessage()
+						+ "]", HpcErrorType.INVALID_REQUEST_INPUT, e);
 			}
-			if(!s3BucketAccessible) {
-				throw new HpcException("Failed to access AWS S3 bucket: " + s3DownloadDestination.getDestinationLocation().getFileContainerId(),
+			if (!s3BucketAccessible) {
+				throw new HpcException(
+						"Failed to access S3 bucket: "
+								+ s3DownloadDestination.getDestinationLocation().getFileContainerId(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
@@ -2884,6 +2971,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return sourceLocation;
 	}
 
+	/**
+	 * Determine if a download result is 'failed' - one of 3 failure status.
+	 *
+	 * @param result the download result.
+	 * @return true if the status is one of 3 representing a failure.
+	 */
+	private boolean failedDownloadResult(HpcDownloadResult result) {
+		if (result == null) {
+			return false;
+		}
+		switch (result) {
+		case FAILED:
+		case FAILED_PERMISSION_DENIED:
+		case FAILED_CREDENTIALS_NEEDED:
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
 	// ---------------------------------------------------------------------//
 	// Setter Methods to support JUnit Testing (for injecting Mocks)
 	// ---------------------------------------------------------------------//
@@ -3056,7 +3164,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		public void transferFailed(String message) {
 			logger.info("download task: {} - 1 Hop download Failed. Path at scratch space: {}", downloadTask.getId(),
 					sourceFile.getAbsolutePath());
-			downloadFailed("Failed to get data from archive via S3: " + message);
+			String errorMessage = "Failed to get data from archive via S3: " + message;
+			downloadFailed(errorMessage);
+			notificationService.sendNotification(new HpcException(message +
+					", task_id: " + downloadTask.getId() +
+					", user_id: " + downloadTask.getUserId() +
+					", archive_file_container_id (bucket): " + downloadTask.getArchiveLocation().getFileContainerId() +
+					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), HpcErrorType.DATA_TRANSFER_ERROR));
 		}
 
 		// ---------------------------------------------------------------------//
