@@ -1753,11 +1753,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			for (HpcDataTransferAuthenticatedToken authenticatedToken : dataTransferAuthenticatedTokens) {
 				if (authenticatedToken.getDataTransferType().equals(dataTransferType)
 						&& authenticatedToken.getConfigurationId().equals(configurationId)
-						&& (authenticatedToken.getS3ArchiveConfigurationId() == null || authenticatedToken
-								.getS3ArchiveConfigurationId().equals(dataTransferConfiguration.getId()))
-						&& authenticatedToken.getSystemAccountId().equals(dataTransferSystemAccount.getUsername())
-						&& authenticatedToken.getExpiry().after(Calendar.getInstance())) {
-					return authenticatedToken.getDataTransferAuthenticatedToken();
+						&& authenticatedToken.getSystemAccountId().equals(dataTransferSystemAccount.getUsername())) {
+					if(authenticatedToken.getExpiry().after(Calendar.getInstance())) {
+						logger.info("Using stored globus access token: {}, expires: {}",
+								dataTransferSystemAccount.getUsername(),
+								dateFormat.format(authenticatedToken.getExpiry().getTime()));
+						return authenticatedToken.getDataTransferAuthenticatedToken();
+					} else {
+						// Token has expired, remove it from the list.
+						dataTransferAuthenticatedTokens.remove(authenticatedToken);
+					}
 				}
 			}
 		} else {
@@ -1802,10 +1807,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
 			// Calculate the expiration date.
 			Calendar tokenExpiration = Calendar.getInstance();
-			tokenExpiration.add(Calendar.HOUR_OF_DAY, globusTokenExpirationPeriod);
+			tokenExpiration.add(Calendar.MINUTE, globusTokenExpirationPeriod);
 			authenticatedToken.setExpiry(tokenExpiration);
 			// Store token in object
 			dataTransferAuthenticatedTokens.add(authenticatedToken);
+			logger.info("Obtained new globus access token: {}, expires: {}",
+					dataTransferSystemAccount.getUsername(),
+					dateFormat.format(authenticatedToken.getExpiry().getTime()));
 		}
 		else {
 			// Store token on the request context.
