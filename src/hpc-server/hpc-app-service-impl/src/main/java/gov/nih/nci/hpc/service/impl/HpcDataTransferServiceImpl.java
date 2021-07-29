@@ -1750,7 +1750,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Obtain the system account to be used.
 			dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
 			// Search for an existing token that is not expired for this account.
-			for (HpcDataTransferAuthenticatedToken authenticatedToken : dataTransferAuthenticatedTokens) {
+			Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator(); 
+			while(tokenItr.hasNext()){
+				HpcDataTransferAuthenticatedToken authenticatedToken = tokenItr.next();
 				if (authenticatedToken.getDataTransferType().equals(dataTransferType)
 						&& authenticatedToken.getConfigurationId().equals(configurationId)
 						&& authenticatedToken.getSystemAccountId().equals(dataTransferSystemAccount.getUsername())) {
@@ -1761,7 +1763,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						return authenticatedToken.getDataTransferAuthenticatedToken();
 					} else {
 						// Token has expired, remove it from the list.
-						dataTransferAuthenticatedTokens.remove(authenticatedToken);
+						tokenItr.remove();
 					}
 				}
 			}
