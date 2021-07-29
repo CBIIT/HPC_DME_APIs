@@ -2815,7 +2815,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		for (HpcDataTransferAuthenticatedToken someToken : dataTransferAuthenticatedTokens) {
 			if (someToken.getDataTransferType().equals(dataTransferType)
-					&& someToken.getConfigurationId().equals(configurationId)) {
+					&& someToken.getConfigurationId().equals(configurationId)
+					&& someToken.getDataTransferAuthenticatedToken().equals(theAuthToken)) {
 				globusClientId = someToken.getSystemAccountId();
 
 				logger.info(String.format(
