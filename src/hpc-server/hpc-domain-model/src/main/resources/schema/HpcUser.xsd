@@ -55,7 +55,8 @@
 			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
 			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
-      <xsd:element name="systemAccountId" type="xsd:string" />
+      		<xsd:element name="systemAccountId" type="xsd:string" />
+      		<xsd:element name="expiry" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
