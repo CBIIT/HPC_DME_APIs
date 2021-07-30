@@ -160,16 +160,16 @@ public abstract class HPCBatchClient {
         try {
         	multipartThreshold = Long.parseLong(multipartThresholdStr);
         } catch (Exception e) {
-            logger.info("Defaulting hpc.multipart.threshold value. Setting it to 52480000 (> 50MB)");
-            multipartThreshold = 52480000L;
+            logger.info("Defaulting hpc.multipart.threshold value. Setting it to 524288000 (> 500MB)");
+            multipartThreshold = 524288000L;
         }
         String multipartChunksizeStr = configProperties.getProperty("hpc.multipart.chunksize");
         logger.debug("hpc.multipart.chunksize "+multipartChunksizeStr);
         try {
         	multipartChunksize = Long.parseLong(multipartChunksizeStr);
         } catch (Exception e) {
-            logger.info("Defaulting hpc.multipart.chunksize value. Setting it to 52428800 (50MB)");
-            multipartChunksize = 52428800L;
+            logger.info("Defaulting hpc.multipart.chunksize value. Setting it to 524288000 (500MB)");
+            multipartChunksize = 524288000L;
         }
         
 		initializeLog();
