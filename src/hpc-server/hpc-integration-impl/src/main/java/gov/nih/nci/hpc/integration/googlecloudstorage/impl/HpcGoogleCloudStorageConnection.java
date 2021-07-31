@@ -24,6 +24,8 @@ import com.google.cloud.storage.StorageOptions;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import com.google.api.client.http.HttpTransport;
+
 /**
  * HPC Google Drive Connection.
  *
