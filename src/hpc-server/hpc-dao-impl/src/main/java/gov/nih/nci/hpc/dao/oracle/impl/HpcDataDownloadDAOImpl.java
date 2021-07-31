@@ -302,10 +302,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		String dataTransferType = rs.getString("DATA_TRANSFER_TYPE");
 		downloadTaskResult
 				.setDataTransferType(dataTransferType != null ? HpcDataTransferType.fromValue(dataTransferType) : null);
+
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileContainerName = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_NAME");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
-
 		if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
 			HpcFileLocation destinationLocation = new HpcFileLocation();
 			destinationLocation.setFileContainerId(destinationLocationFileContainerId);
