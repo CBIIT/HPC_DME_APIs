@@ -76,6 +76,8 @@
 		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:service ref="hpcGoogleDriveDataTransferProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+	<osgi:service ref="hpcGoogleCloudStorageDataTransferProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:service ref="hpcDataManagementProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />
 	<osgi:service ref="hpcSpsAuthorizationProxy"
