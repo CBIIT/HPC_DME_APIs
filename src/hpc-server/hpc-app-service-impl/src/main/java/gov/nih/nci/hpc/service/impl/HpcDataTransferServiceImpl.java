@@ -101,6 +101,7 @@ import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -150,6 +151,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Autowired
 	private HpcMetadataService metadataService = null;
 
+	// Notification Application Service.
+	@Autowired
+	private HpcNotificationService notificationService = null;
+
 	// Data management configuration locator.
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
@@ -177,6 +182,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// cancelCollectionDownloadTaskItems() query filter
 	private List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter = new ArrayList<>();
 
+	@Value("${hpc.service.dataTransfer.globusTokenExpirationPeriod}")
+	private int globusTokenExpirationPeriod = 0;
+	
+	// List of authenticated tokens
+	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
+	
 	// Date formatter to format files last-modified date
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
@@ -1729,8 +1740,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// ---------------------------------------------------------------------//
 
 	/**
-	 * Get the data transfer authenticated token from the request context. If it's
-	 * not in the context, get a token by authenticating.
+	 * Get the data transfer authenticated token if cached. If it's
+	 * not cached or expired, get a token by authenticating.
 	 *
 	 * @param dataTransferType         The data transfer type.
 	 * @param configurationId          The data management configuration ID.
@@ -1752,21 +1763,42 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
-		// Search for an existing token.
-		for (HpcDataTransferAuthenticatedToken authenticatedToken : invoker.getDataTransferAuthenticatedTokens()) {
-			if (authenticatedToken.getDataTransferType().equals(dataTransferType)
-					&& authenticatedToken.getConfigurationId().equals(configurationId)
-					&& (authenticatedToken.getS3ArchiveConfigurationId() == null || authenticatedToken
-							.getS3ArchiveConfigurationId().equals(dataTransferConfiguration.getId()))) {
-				return authenticatedToken.getDataTransferAuthenticatedToken();
+		HpcIntegratedSystemAccount dataTransferSystemAccount = null;
+		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+			// Obtain the system account to be used.
+			dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
+			// Search for an existing token that is not expired for this account.
+			Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator(); 
+			while(tokenItr.hasNext()){
+				HpcDataTransferAuthenticatedToken authenticatedToken = tokenItr.next();
+				if (authenticatedToken.getDataTransferType().equals(dataTransferType)
+						&& authenticatedToken.getConfigurationId().equals(configurationId)
+						&& authenticatedToken.getSystemAccountId().equals(dataTransferSystemAccount.getUsername())) {
+					if(authenticatedToken.getExpiry().after(Calendar.getInstance())) {
+						logger.info("Using stored globus access token: {}, expires: {}",
+								dataTransferSystemAccount.getUsername(),
+								dateFormat.format(authenticatedToken.getExpiry().getTime()));
+						return authenticatedToken.getDataTransferAuthenticatedToken();
+					} else {
+						// Token has expired, remove it from the list.
+						tokenItr.remove();
+					}
+				}
+			}
+		} else {
+			// Search for an existing token.
+			for (HpcDataTransferAuthenticatedToken authenticatedToken : invoker.getDataTransferAuthenticatedTokens()) {
+				if (authenticatedToken.getDataTransferType().equals(dataTransferType)
+						&& authenticatedToken.getConfigurationId().equals(configurationId)
+						&& (authenticatedToken.getS3ArchiveConfigurationId() == null || authenticatedToken
+								.getS3ArchiveConfigurationId().equals(dataTransferConfiguration.getId()))) {
+					return authenticatedToken.getDataTransferAuthenticatedToken();
+				}
 			}
 		}
 
-		// No authenticated token found for this request. Create one.
-		HpcIntegratedSystemAccount dataTransferSystemAccount = null;
-		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
-			dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
-		} else if (dataTransferType.equals(HpcDataTransferType.S_3)) {
+		// No authenticated token found for this request. Create one.	
+		if (dataTransferType.equals(HpcDataTransferType.S_3)) {
 			dataTransferSystemAccount = systemAccountLocator
 					.getSystemAccount(dataTransferConfiguration.getArchiveProvider());
 		}
@@ -1785,15 +1817,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					dataTransferSystemAccount.getIntegratedSystem());
 		}
 
-		// Store token on the request context.
+		// Store token.
 		HpcDataTransferAuthenticatedToken authenticatedToken = new HpcDataTransferAuthenticatedToken();
 		authenticatedToken.setDataTransferAuthenticatedToken(token);
 		authenticatedToken.setDataTransferType(dataTransferType);
 		authenticatedToken.setConfigurationId(configurationId);
 		authenticatedToken.setS3ArchiveConfigurationId(dataTransferConfiguration.getId());
 		authenticatedToken.setSystemAccountId(dataTransferSystemAccount.getUsername());
-		invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
-		HpcRequestContext.setRequestInvoker(invoker);
+		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+			// Calculate the expiration date.
+			Calendar tokenExpiration = Calendar.getInstance();
+			tokenExpiration.add(Calendar.MINUTE, globusTokenExpirationPeriod);
+			authenticatedToken.setExpiry(tokenExpiration);
+			// Store token in object
+			dataTransferAuthenticatedTokens.add(authenticatedToken);
+			logger.info("Obtained new globus access token: {}, expires: {}",
+					dataTransferSystemAccount.getUsername(),
+					dateFormat.format(authenticatedToken.getExpiry().getTime()));
+		}
+		else {
+			// Store token on the request context.
+			invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
+			HpcRequestContext.setRequestInvoker(invoker);
+		}
 
 		return token;
 	}
@@ -2795,15 +2841,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		final HpcTransferAcceptanceResponse transferAcceptanceResponse = this.dataTransferProxies.get(dataTransferType)
 				.acceptsTransferRequests(theAuthToken);
 
-		final List<HpcDataTransferAuthenticatedToken> invokerTokens = HpcRequestContext.getRequestInvoker()
-				.getDataTransferAuthenticatedTokens();
 		String globusClientId = null;
 
 		logger.info("checkIfTransferCanBeLaunched: searching for token within invoker state");
 
-		for (HpcDataTransferAuthenticatedToken someToken : invokerTokens) {
+		for (HpcDataTransferAuthenticatedToken someToken : dataTransferAuthenticatedTokens) {
 			if (someToken.getDataTransferType().equals(dataTransferType)
-					&& someToken.getConfigurationId().equals(configurationId)) {
+					&& someToken.getConfigurationId().equals(configurationId)
+					&& someToken.getDataTransferAuthenticatedToken().equals(theAuthToken)) {
 				globusClientId = someToken.getSystemAccountId();
 
 				logger.info(String.format(
@@ -3191,7 +3236,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		public void transferFailed(String message) {
 			logger.info("download task: {} - 1 Hop download Failed. Path at scratch space: {}", downloadTask.getId(),
 					sourceFile.getAbsolutePath());
-			downloadFailed("Failed to get data from archive via S3: " + message);
+			String errorMessage = "Failed to get data from archive via S3: " + message;
+			downloadFailed(errorMessage);
+			notificationService.sendNotification(new HpcException(message +
+					", task_id: " + downloadTask.getId() +
+					", user_id: " + downloadTask.getUserId() +
+					", archive_file_container_id (bucket): " + downloadTask.getArchiveLocation().getFileContainerId() +
+					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), HpcErrorType.DATA_TRANSFER_ERROR));
 		}
 
 		// ---------------------------------------------------------------------//
