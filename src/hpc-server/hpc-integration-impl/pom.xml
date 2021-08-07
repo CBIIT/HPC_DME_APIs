@@ -47,6 +47,25 @@
 							org.springframework.retry.support,
 							*
 						</Import-Package>
+						<Embed-Dependency>
+							com.google.api:api-common;scope=compile|runtime,
+							com.google.cloud:google-cloud-core;scope=compile|runtime,
+							com.google.cloud:google-cloud-core-http;scope=compile|runtime,
+							com.google.cloud:google-cloud-storage;scope=compile|runtime
+						</Embed-Dependency>
+						<Export-Package>
+							com.google.api,
+							com.google.api.core,
+							com.google.api.gax.*,
+							com.google.api.pathtemplate,
+							com.google.api.resourcenames,
+							com.google.cloud,
+							com.google.cloud.spi,
+							com.google.cloud.storage,
+							com.google.cloud.storage.spi,
+							com.google.cloud.storage.spi.v1,
+							com.google.cloud.http
+						</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -119,5 +138,18 @@
     		<groupId>com.google.cloud</groupId>
     		<artifactId>google-cloud-storage</artifactId>
   		</dependency>
+  		<dependency>
+    		<groupId>com.google.cloud</groupId>
+    		<artifactId>google-cloud-core</artifactId>
+  		</dependency>
+  		<dependency>
+    		<groupId>com.google.cloud</groupId>
+    		<artifactId>google-cloud-core-http</artifactId>
+  		</dependency>
+  		<dependency>
+    		<groupId>com.google.api</groupId>
+    		<artifactId>api-common</artifactId>
+		</dependency>
+  		
 	</dependencies>
 </project>
