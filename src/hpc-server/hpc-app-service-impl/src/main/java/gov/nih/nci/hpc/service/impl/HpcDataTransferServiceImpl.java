@@ -491,8 +491,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			String restorationStatus = objectMetadata.getRestorationStatus();
 
-			if (objectMetadata.getDeepArchiveStatus() != null && restorationStatus != null
-					&& !restorationStatus.equals("success")) {
+			if (objectMetadata.getDeepArchiveStatus() != null || 
+					(objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
+						&& !restorationStatus.equals("success"))) {
 				performObjectRestore(downloadRequest, response, restorationStatus);
 				return response;
 			}
