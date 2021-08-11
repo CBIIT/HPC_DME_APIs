@@ -1972,15 +1972,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// Get a source InputStream and instantiate a progress listener for upload from
-		// Google Drive.
+		// Google Drive or Google Cloud Storage.
+		boolean generateInputStream = false;
+		HpcDataTransferType inputStreamGenerator = null;
+		HpcStreamingUploadSource inputStreamSource = null; 
 		if (uploadRequest.getGoogleDriveUploadSource() != null) {
-			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE);
+			generateInputStream = true;
+			inputStreamGenerator = HpcDataTransferType.GOOGLE_DRIVE;
+			inputStreamSource = uploadRequest.getGoogleDriveUploadSource();
+		} else if(uploadRequest.getGoogleCloudStorageUploadSource() != null) {
+			generateInputStream = true;
+			inputStreamGenerator = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
+			inputStreamSource = uploadRequest.getGoogleCloudStorageUploadSource();
+		} 
+		if(generateInputStream) {
+			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(inputStreamGenerator);
 			uploadRequest.getGoogleDriveUploadSource()
 					.setSourceInputStream(dataTransferProxy.generateDownloadInputStream(
-							dataTransferProxy.authenticate(uploadRequest.getGoogleDriveUploadSource().getAccessToken()),
-							uploadRequest.getGoogleDriveUploadSource().getSourceLocation()));
+							dataTransferProxy.authenticate(inputStreamSource.getAccessToken()),
+							inputStreamSource.getSourceLocation()));
 			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
-					uploadRequest.getGoogleDriveUploadSource().getSourceLocation(), eventService);
+					inputStreamSource.getSourceLocation(), eventService);
 		}
 
 		// Upload the data object using the appropriate data transfer system proxy and
@@ -2048,7 +2060,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} else if (googleCloudStorageUploadSource != null) {
 			sourceFileLocation = googleCloudStorageUploadSource.getSourceLocation();
-			pathAttributes = getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE, "tkn", sourceFileLocation,
+			pathAttributes = getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE, "", sourceFileLocation,
 					true);
 
 		} else if (fileSystemUploadSource != null) {

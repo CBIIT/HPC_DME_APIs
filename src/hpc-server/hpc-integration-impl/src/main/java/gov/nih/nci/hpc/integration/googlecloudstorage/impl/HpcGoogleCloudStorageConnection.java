@@ -24,8 +24,6 @@ import com.google.cloud.storage.StorageOptions;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import com.google.api.client.http.HttpTransport;
-
 /**
  * HPC Google Drive Connection.
  *
@@ -64,9 +62,11 @@ public class HpcGoogleCloudStorageConnection {
 	 */
 	public Object authenticate(String accessToken) throws HpcException {
 		try {
-			return StorageOptions.newBuilder().setCredentials(GoogleCredentials
-					.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
-					.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform"))).build().getService();
+			return StorageOptions.newBuilder()
+					.setCredentials(
+							GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
+									.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform")))
+					.build().getService();
 
 		} catch (IOException e) {
 			throw new HpcException("Failed to authenticate Google Cloud Storage w/ access-token: " + e.getMessage(),
@@ -83,7 +83,8 @@ public class HpcGoogleCloudStorageConnection {
 	 */
 	public Storage getStorage(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof Storage)) {
-			throw new HpcException("Invalid Google Cloud Storage authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Invalid Google Cloud Storage authentication token",
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		return (Storage) authenticatedToken;
