@@ -352,7 +352,7 @@ public class HpcMetadataValidator {
       }
       
       //Validate if date format is valid.
-      if (metadataValidationRule.getDateFormat() != null) {
+      if (metadataValidationRule.getDateFormat() != null && !StringUtils.isEmpty(metadataEntriesMap.get(metadataValidationRule.getAttribute()))) {
     	String value = metadataEntriesMap.get(metadataValidationRule.getAttribute());
     	DateFormat ruleFormat = new SimpleDateFormat(metadataValidationRule.getDateFormat());
     	try {
