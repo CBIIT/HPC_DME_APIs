@@ -10,6 +10,9 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -100,6 +103,9 @@ public class HpcMetadataValidator {
   private Set<String> systemGeneratedMetadataAttributes = new HashSet<>();
   private List<String> collectionSystemGeneratedMetadataAttributeNames = new ArrayList<>();
   private List<String> dataObjectSystemGeneratedMetadataAttributeNames = new ArrayList<>();
+
+  //Date formatter to format user date to system date.
+  private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
   // ---------------------------------------------------------------------//
   // Constructors
@@ -253,6 +259,18 @@ public class HpcMetadataValidator {
       if (metadataEntry.getUnit() == null) {
         metadataEntry.setUnit("");
       }
+      
+      // If date format is specified, modify the format to system formatting
+      if (metadataEntry.getDateFormat() != null) {
+    	DateFormat format = new SimpleDateFormat(metadataEntry.getDateFormat());
+        try {
+			String formattedDate = dateFormat.format(format.parse(metadataEntry.getValue()));
+        	metadataEntriesMap.put(metadataEntry.getAttribute(), formattedDate);
+		} catch (ParseException e) {
+			throw new HpcException("Metadata format is invalid: " + metadataEntry.getAttribute(),
+		            HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+      }
     }
 
     // Validate the add/update metadata entries don't include reserved system generated metadata.
@@ -331,6 +349,27 @@ public class HpcMetadataValidator {
                   + ". Valid values: " + metadataValidationRule.getValidValues(),
               HpcErrorType.INVALID_REQUEST_INPUT);
         }
+      }
+      
+      //Validate if date format is valid.
+      if (metadataValidationRule.getDateFormat() != null && !StringUtils.isEmpty(metadataEntriesMap.get(metadataValidationRule.getAttribute()))) {
+    	String value = metadataEntriesMap.get(metadataValidationRule.getAttribute());
+    	DateFormat ruleFormat = new SimpleDateFormat(metadataValidationRule.getDateFormat());
+    	try {
+    		String formattedDate = ruleFormat.format(dateFormat.parse(value));
+    		HpcMetadataEntry formattedDateEntry = new HpcMetadataEntry();
+    		formattedDateEntry.setAttribute(metadataValidationRule.getAttribute());
+    		formattedDateEntry.setValue(formattedDate);
+    		formattedDateEntry.setUnit(
+    	          metadataValidationRule.getDefaultUnit() != null ? metadataValidationRule.getDefaultUnit()
+    	              : "");
+    		addUpdateMetadataEntries.removeIf(entry -> entry.getAttribute().equals(metadataValidationRule.getAttribute()));
+    		addUpdateMetadataEntries.add(formattedDateEntry);
+  		} catch (ParseException e) {
+  			throw new HpcException("Metadata format is invalid: " + metadataValidationRule.getAttribute() + ": " + value
+  				+ ". Valid format: " + metadataValidationRule.getDateFormat(),
+  		        HpcErrorType.INVALID_REQUEST_INPUT);
+  		}
       }
     }
 
