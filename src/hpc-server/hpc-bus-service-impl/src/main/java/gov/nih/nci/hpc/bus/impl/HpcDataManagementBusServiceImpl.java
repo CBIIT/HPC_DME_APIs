@@ -1352,8 +1352,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			String restorationStatus = objectMetadata.getRestorationStatus();
 
-			if (objectMetadata.getDeepArchiveStatus() != null || (objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
-					&& !restorationStatus.equals("success"))) {
+			// 1. If restoration is not requested, storage class is Glacier or deep archive for Cloudian and AWS
+			// 2. If restoration is ongoing, storage class is null for Cloudian but remains same for AWS.
+			// 3. If restoration is completed, storage class is null for Cloudian but remains same for AWS.
+			if ((objectMetadata.getDeepArchiveStatus() != null
+					&& (restorationStatus == null || !restorationStatus.equals("success")))
+					|| (objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
+							&& !restorationStatus.equals("success"))) {
 				throw new HpcException("Object is in deep archived state. Download request URL cannot be generated.",
 						HpcRequestRejectReason.FILE_NOT_FOUND);
 			}
