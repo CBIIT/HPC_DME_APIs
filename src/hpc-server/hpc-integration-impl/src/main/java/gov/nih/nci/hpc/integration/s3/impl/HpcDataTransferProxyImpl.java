@@ -427,6 +427,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcMetadataEntry entry = new HpcMetadataEntry();
 			entry.setAttribute("storage_class");
 			// x-amz-storage-class is not returned for standard S3 object
+			logger.debug("Storage class " + s3Metadata.getStorageClass());
 			if (s3Metadata.getStorageClass() != null)
 				objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.fromValue(s3Metadata.getStorageClass()));
 
@@ -451,7 +452,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 
 			if (restoreFlag != null)
-				logger.info("Restoration status: %s.\n",
+				logger.info("Restoration status: {}",
 						restoreFlag ? "in progress" : "not in progress (finished or failed)");
 
 			objectMetadata.setChecksum(s3Metadata.getETag());
