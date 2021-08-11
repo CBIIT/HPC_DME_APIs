@@ -503,9 +503,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							downloadRequest.getArchiveLocation());
 
 			String restorationStatus = objectMetadata.getRestorationStatus();
-
-			if (objectMetadata.getDeepArchiveStatus() != null && restorationStatus != null
-					&& !restorationStatus.equals("success")) {
+			
+			// 1. If restoration is not requested, storage class is Glacier or deep archive for Cloudian and AWS
+			// 2. If restoration is ongoing, storage class is null for Cloudian but remains same for AWS.
+			// 3. If restoration is completed, storage class is null for Cloudian but remains same for AWS.
+			if ((objectMetadata.getDeepArchiveStatus() != null
+					&& (restorationStatus == null || !restorationStatus.equals("success")))
+					|| (objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
+							&& !restorationStatus.equals("success"))) {
 				performObjectRestore(downloadRequest, response, restorationStatus);
 				return response;
 			}

@@ -336,6 +336,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 			metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
 			metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
 			metadataValidationRule.setDescription((String) jsonMetadataValidationRule.get("description"));
+			metadataValidationRule.setDateFormat((String) jsonMetadataValidationRule.get("dateFormat"));
 			metadataValidationRule
 					.setControllerAttribute((String) jsonMetadataValidationRule.get("controllerAttribute"));
 			metadataValidationRule.setControllerValue((String) jsonMetadataValidationRule.get("controllerValue"));
