@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
@@ -30,15 +29,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcGoogleCloudStorageConnection {
-	// ---------------------------------------------------------------------//
-	// Instance members
-	// ---------------------------------------------------------------------//
-
-	// The (Google) HPC Application name. Users need to provide drive access to this
-	// app name.
-	@Value("${hpc.integration.googledrive.hpcApplicationName}")
-	String hpcApplicationName = null;
-
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
