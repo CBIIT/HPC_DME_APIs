@@ -51,7 +51,8 @@
 							com.google.api:api-common;scope=compile|runtime,
 							com.google.cloud:google-cloud-core;scope=compile|runtime,
 							com.google.cloud:google-cloud-core-http;scope=compile|runtime,
-							com.google.cloud:google-cloud-storage;scope=compile|runtime
+							com.google.cloud:google-cloud-storage;scope=compile|runtime,
+							com.google.auth:google-auth-library-oauth2-http;scope=compile|runtime
 						</Embed-Dependency>
 						<Export-Package>
 							com.google.api,
@@ -64,7 +65,9 @@
 							com.google.cloud.storage,
 							com.google.cloud.storage.spi,
 							com.google.cloud.storage.spi.v1,
-							com.google.cloud.http
+							com.google.cloud.http,
+							com.google.auth.http,
+							com.google.auth.oauth2
 						</Export-Package>
 					</instructions>
 				</configuration>
@@ -150,6 +153,9 @@
     		<groupId>com.google.api</groupId>
     		<artifactId>api-common</artifactId>
 		</dependency>
-  		
+		<dependency>
+    		<groupId>com.google.auth</groupId>
+    		<artifactId>google-auth-library-oauth2-http</artifactId>
+		</dependency>
 	</dependencies>
 </project>

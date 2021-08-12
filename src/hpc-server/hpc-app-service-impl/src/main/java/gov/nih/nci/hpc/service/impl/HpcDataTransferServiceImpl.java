@@ -184,10 +184,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Value("${hpc.service.dataTransfer.globusTokenExpirationPeriod}")
 	private int globusTokenExpirationPeriod = 0;
-	
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
-	
+
 	// Date formatter to format files last-modified date
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
@@ -339,7 +339,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (googleDriveUploadSource.getAccount() != null) {
-				throw new HpcException("AWS S3 account provided in Google Drive upload source location",
+				throw new HpcException("S3 account provided in Google Drive upload source location",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
@@ -351,6 +351,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 			if (!isValidFileLocation(googleCloudStorageUploadSource.getSourceLocation())) {
 				throw new HpcException("Invalid Google Cloud Storage upload source location",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (StringUtils.isEmpty(googleCloudStorageUploadSource.getAccessToken())) {
+				throw new HpcException("Invalid Google Cloud Storage access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (googleCloudStorageUploadSource.getAccount() != null) {
+				throw new HpcException("S3 account provided in Google Cloud Storage upload source location",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
@@ -503,10 +510,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							downloadRequest.getArchiveLocation());
 
 			String restorationStatus = objectMetadata.getRestorationStatus();
-			
-			// 1. If restoration is not requested, storage class is Glacier or deep archive for Cloudian and AWS
-			// 2. If restoration is ongoing, storage class is null for Cloudian but remains same for AWS.
-			// 3. If restoration is completed, storage class is null for Cloudian but remains same for AWS.
+
+			// 1. If restoration is not requested, storage class is Glacier or deep archive
+			// for Cloudian and AWS
+			// 2. If restoration is ongoing, storage class is null for Cloudian but remains
+			// same for AWS.
+			// 3. If restoration is completed, storage class is null for Cloudian but
+			// remains same for AWS.
 			if ((objectMetadata.getDeepArchiveStatus() != null
 					&& (restorationStatus == null || !restorationStatus.equals("success")))
 					|| (objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
@@ -1745,8 +1755,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// ---------------------------------------------------------------------//
 
 	/**
-	 * Get the data transfer authenticated token if cached. If it's
-	 * not cached or expired, get a token by authenticating.
+	 * Get the data transfer authenticated token if cached. If it's not cached or
+	 * expired, get a token by authenticating.
 	 *
 	 * @param dataTransferType         The data transfer type.
 	 * @param configurationId          The data management configuration ID.
@@ -1773,13 +1783,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Obtain the system account to be used.
 			dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
 			// Search for an existing token that is not expired for this account.
-			Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator(); 
-			while(tokenItr.hasNext()){
+			Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator();
+			while (tokenItr.hasNext()) {
 				HpcDataTransferAuthenticatedToken authenticatedToken = tokenItr.next();
 				if (authenticatedToken.getDataTransferType().equals(dataTransferType)
 						&& authenticatedToken.getConfigurationId().equals(configurationId)
 						&& authenticatedToken.getSystemAccountId().equals(dataTransferSystemAccount.getUsername())) {
-					if(authenticatedToken.getExpiry().after(Calendar.getInstance())) {
+					if (authenticatedToken.getExpiry().after(Calendar.getInstance())) {
 						logger.info("Using stored globus access token: {}, expires: {}",
 								dataTransferSystemAccount.getUsername(),
 								dateFormat.format(authenticatedToken.getExpiry().getTime()));
@@ -1802,7 +1812,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		// No authenticated token found for this request. Create one.	
+		// No authenticated token found for this request. Create one.
 		if (dataTransferType.equals(HpcDataTransferType.S_3)) {
 			dataTransferSystemAccount = systemAccountLocator
 					.getSystemAccount(dataTransferConfiguration.getArchiveProvider());
@@ -1836,11 +1846,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			authenticatedToken.setExpiry(tokenExpiration);
 			// Store token in object
 			dataTransferAuthenticatedTokens.add(authenticatedToken);
-			logger.info("Obtained new globus access token: {}, expires: {}",
-					dataTransferSystemAccount.getUsername(),
+			logger.info("Obtained new globus access token: {}, expires: {}", dataTransferSystemAccount.getUsername(),
 					dateFormat.format(authenticatedToken.getExpiry().getTime()));
-		}
-		else {
+		} else {
 			// Store token on the request context.
 			invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
 			HpcRequestContext.setRequestInvoker(invoker);
@@ -1980,22 +1988,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Google Drive or Google Cloud Storage.
 		boolean generateInputStream = false;
 		HpcDataTransferType inputStreamGenerator = null;
-		HpcStreamingUploadSource inputStreamSource = null; 
+		HpcStreamingUploadSource inputStreamSource = null;
 		if (uploadRequest.getGoogleDriveUploadSource() != null) {
 			generateInputStream = true;
 			inputStreamGenerator = HpcDataTransferType.GOOGLE_DRIVE;
 			inputStreamSource = uploadRequest.getGoogleDriveUploadSource();
-		} else if(uploadRequest.getGoogleCloudStorageUploadSource() != null) {
+		} else if (uploadRequest.getGoogleCloudStorageUploadSource() != null) {
 			generateInputStream = true;
 			inputStreamGenerator = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 			inputStreamSource = uploadRequest.getGoogleCloudStorageUploadSource();
-		} 
-		if(generateInputStream) {
+		}
+		if (generateInputStream) {
 			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(inputStreamGenerator);
-			uploadRequest.getGoogleDriveUploadSource()
-					.setSourceInputStream(dataTransferProxy.generateDownloadInputStream(
-							dataTransferProxy.authenticate(inputStreamSource.getAccessToken()),
-							inputStreamSource.getSourceLocation()));
+			inputStreamSource.setSourceInputStream(dataTransferProxy.generateDownloadInputStream(
+					dataTransferProxy.authenticate(inputStreamSource.getAccessToken()),
+					inputStreamSource.getSourceLocation()));
 			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
 					inputStreamSource.getSourceLocation(), eventService);
 		}
@@ -2065,8 +2072,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} else if (googleCloudStorageUploadSource != null) {
 			sourceFileLocation = googleCloudStorageUploadSource.getSourceLocation();
-			pathAttributes = getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE, "", sourceFileLocation,
-					true);
+			pathAttributes = getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE,
+					googleCloudStorageUploadSource.getAccessToken(), sourceFileLocation, true);
 
 		} else if (fileSystemUploadSource != null) {
 			sourceFileLocation = fileSystemUploadSource.getSourceLocation();
@@ -3255,11 +3262,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					sourceFile.getAbsolutePath());
 			String errorMessage = "Failed to get data from archive via S3: " + message;
 			downloadFailed(errorMessage);
-			notificationService.sendNotification(new HpcException(message +
-					", task_id: " + downloadTask.getId() +
-					", user_id: " + downloadTask.getUserId() +
-					", archive_file_container_id (bucket): " + downloadTask.getArchiveLocation().getFileContainerId() +
-					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), HpcErrorType.DATA_TRANSFER_ERROR));
+			notificationService.sendNotification(new HpcException(message + ", task_id: " + downloadTask.getId()
+					+ ", user_id: " + downloadTask.getUserId() + ", archive_file_container_id (bucket): "
+					+ downloadTask.getArchiveLocation().getFileContainerId() + ", archive_file_id (key): "
+					+ downloadTask.getArchiveLocation().getFileId(), HpcErrorType.DATA_TRANSFER_ERROR));
 		}
 
 		// ---------------------------------------------------------------------//
