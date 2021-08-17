@@ -303,7 +303,7 @@ public interface HpcDataManagementBusService {
 	 * @param userId                      The registrar user-id.
 	 * @param userName                    The registrar name.
 	 * @param configurationId             The data management configuration ID.
-	 * @param registrationCompletionEvent If set to true, an event will be generated
+	 * @param registrationEventRequired If set to true, an event will be generated
 	 *                                    when registration is completed or failed.
 	 * @return A DTO with an indicator whether the data object was registered and an
 	 *         upload URL if one was requested.
@@ -311,7 +311,7 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
 			HpcDataObjectRegistrationRequestDTO dataObjectRegistration, File dataObjectFile, String userId,
-			String userName, String configurationId, boolean registrationCompletionEvent) throws HpcException;
+			String userName, String configurationId, boolean registrationEventRequired) throws HpcException;
 
 	/**
 	 * Complete S3 multipart upload for a Data Object.
