@@ -233,7 +233,7 @@ public interface HpcMetadataService {
 	 * @param configurationId             The data management configuration ID.
 	 * @param s3ArchiveConfigurationId    (Optional) The S3 archive configuration
 	 *                                    ID.
-	 * @param registrationCompletionEvent If set to true, an event will be generated
+	 * @param registrationEventRequired   If set to true, an event will be generated
 	 *                                    when registration is completed or failed.
 	 * 
 	 * @return The system generated metadata.
@@ -245,7 +245,7 @@ public interface HpcMetadataService {
 			HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
 			Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize, String sourceURL,
 			HpcPathPermissions sourcePermissions, String callerObjectId, String userId, String userName,
-			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
+			String configurationId, String s3ArchiveConfigurationId, boolean registrationEventRequired)
 			throws HpcException;
 
 	/**
