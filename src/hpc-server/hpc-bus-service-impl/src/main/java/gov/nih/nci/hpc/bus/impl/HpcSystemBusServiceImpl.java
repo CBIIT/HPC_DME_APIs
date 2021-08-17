@@ -275,7 +275,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Data transfer upload completed (successfully or failed). Add an event if
 				// needed.
-				if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+				if (systemGeneratedMetadata.getRegistrationEventRequired()) {
 					addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, dataTransferStatus,
 							systemGeneratedMetadata.getSourceLocation(), dataTransferCompleted,
 							systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
@@ -1842,7 +1842,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 
 		// Send an an event if needed.
-		if (systemGeneratedMetadata != null && systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+		if (systemGeneratedMetadata != null && systemGeneratedMetadata.getRegistrationEventRequired()) {
 			addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path,
 					systemGeneratedMetadata.getDataTransferStatus(), systemGeneratedMetadata.getSourceLocation(),
 					systemGeneratedMetadata.getDataTransferCompleted(), systemGeneratedMetadata.getDataTransferType(),
@@ -2093,7 +2093,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					deepArchiveDate);
 
 			// Add an event if needed.
-			if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+			if (systemGeneratedMetadata.getRegistrationEventRequired()) {
 				addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path,
 						HpcDataTransferUploadStatus.ARCHIVED, systemGeneratedMetadata.getSourceLocation(),
 						dataTransferCompleted, systemGeneratedMetadata.getDataTransferType(),
@@ -2222,7 +2222,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					deepArchiveDate);
 
 			// Data transfer upload completed successfully. Add an event if needed.
-			if (Boolean.TRUE.equals(systemGeneratedMetadata.getRegistrationCompletionEvent())) {
+			if (Boolean.TRUE.equals(systemGeneratedMetadata.getRegistrationEventRequired())) {
 				addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path,
 						uploadResponse.getDataTransferStatus(), systemGeneratedMetadata.getSourceLocation(),
 						uploadResponse.getDataTransferCompleted(), uploadResponse.getDataTransferType(),
