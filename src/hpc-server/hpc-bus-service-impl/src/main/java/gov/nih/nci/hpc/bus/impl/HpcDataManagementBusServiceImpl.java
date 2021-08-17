@@ -832,7 +832,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
 			HpcDataObjectRegistrationRequestDTO dataObjectRegistration, File dataObjectFile, String userId,
-			String userName, String configurationId, boolean registrationCompletionEvent) throws HpcException {
+			String userName, String configurationId, boolean registrationEventRequired) throws HpcException {
 		// Input validation.
 		validatePath(path);
 
@@ -926,7 +926,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									userId, userName, configurationId,
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
-									registrationCompletionEvent);
+									registrationEventRequired);
 
 					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
