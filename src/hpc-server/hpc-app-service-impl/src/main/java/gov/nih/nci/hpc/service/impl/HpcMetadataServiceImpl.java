@@ -32,7 +32,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_COMPLETION_EVENT_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_EVENT_REQUIRED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_GROUP_DN_ATTRIBUTE;
@@ -391,9 +391,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			systemGeneratedMetadata.setMetadataUpdated(toCalendar(metadataMap.get(METADATA_UPDATED_ATTRIBUTE)));
 		}
 
-		if (metadataMap.get(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE) != null) {
-			systemGeneratedMetadata.setRegistrationCompletionEvent(
-					Boolean.valueOf(metadataMap.get(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE)));
+		if (metadataMap.get(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE) != null) {
+			systemGeneratedMetadata.setRegistrationEventRequired(
+					Boolean.valueOf(metadataMap.get(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE)));
 		}
 
 		if (metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE) != null) {
@@ -603,7 +603,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
 			Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize, String sourceURL,
 			HpcPathPermissions sourcePermissions, String callerObjectId, String userId, String userName,
-			String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
+			String configurationId, String s3ArchiveConfigurationId, boolean registrationEventRequired)
 			throws HpcException {
 		// Input validation.
 		if (path == null || dataTransferStatus == null || dataTransferType == null || dataTransferMethod == null
@@ -680,8 +680,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		addMetadataEntry(metadataEntries, toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, callerObjectId));
 
 		// Create the Registration Completion Event Indicator metadata.
-		addMetadataEntry(metadataEntries, toMetadataEntry(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE,
-				Boolean.toString(registrationCompletionEvent)));
+		addMetadataEntry(metadataEntries, toMetadataEntry(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE,
+				Boolean.toString(registrationEventRequired)));
 
 		// Create the S3 Archive Configuration ID.
 		addMetadataEntry(metadataEntries,
