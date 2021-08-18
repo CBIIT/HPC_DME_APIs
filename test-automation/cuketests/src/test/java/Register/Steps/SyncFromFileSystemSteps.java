@@ -103,16 +103,12 @@ public class SyncFromFileSystemSteps {
 		request.header("Accept", "application/json");
 		request.header("Authorization", "Bearer "+ token);
 		request.header("Content-Type", "application/json");
-	    //Response response = RestAssured.get("http://www.example.com");
+	    
 		 Gson gson = new Gson();
 		 String registerBodyJson = gson.toJson(registerBody);
 		 System.out.println(registerBodyJson);
-	     RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov:7738";
-		 File file = new File("/Users/schintal/git/HPC_DME_APIs/test-automation/cuketests/src/test/java/Register/Steps/a.json");
-		 
-		 System.out.println("PRinting file contents");
-		 System.out.println(file);
-		Response response = request.body(file).post("");
+	     
+		Response response = request.body("").post("");
 	    System.out.println(response.asString());
 	    System.out.println(response.getBody());
 	    System.out.println(response.getStatusCode());
