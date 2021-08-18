@@ -8,8 +8,7 @@ Feature: Register from file system synchronously
     And I add a checksum of ""
     And I add data_file_path as "TestData.txt"
     And I add meta_data as
-    |key| Value|
-    |x  | y    |
-    |k | z |
+    |attribute| value|
+    |name  | Set100    |
     When I click Register
     Then I get a response of success
