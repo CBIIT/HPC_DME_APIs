@@ -501,6 +501,18 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 				}
 				jsonRequest.put("googleDriveUploadSource", jsonGoogleDriveUploadSource);
 			}
+			if (request.getGoogleCloudStorageUploadSource() != null) {
+				JSONObject jsonGoogleCloudStorageUploadSource = new JSONObject();
+				HpcStreamingUploadSource googleCloudStorageUploadSource = request.getGoogleCloudStorageUploadSource();
+				jsonGoogleCloudStorageUploadSource.put("sourceFileContainerId",
+						googleCloudStorageUploadSource.getSourceLocation().getFileContainerId());
+				jsonGoogleCloudStorageUploadSource.put("sourceFileId", googleCloudStorageUploadSource.getSourceLocation().getFileId());
+				if (googleCloudStorageUploadSource.getAccessToken() != null) {
+					jsonGoogleCloudStorageUploadSource.put("accessToken",
+							Base64.getEncoder().encodeToString(encryptor.encrypt(googleCloudStorageUploadSource.getAccessToken())));
+				}
+				jsonRequest.put("googleCloudStorageUploadSource", jsonGoogleCloudStorageUploadSource);
+			}
 			if (request.getFileSystemUploadSource() != null) {
 				JSONObject jsonFileSystemUploadSource = new JSONObject();
 				HpcUploadSource fileSystemUploadSource = request.getFileSystemUploadSource();
@@ -825,6 +837,20 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 						Base64.getDecoder().decode(jsonGoogleDriveUploadSource.get("accessToken").toString())));
 			}
 			request.setGoogleDriveUploadSource(googleDriveUploadSource);
+		}
+		
+		if (jsonRequest.get("googleCloudStorageUploadSource") != null) {
+			JSONObject jsonGoogleCloudStorageUploadSource = (JSONObject) jsonRequest.get("googleCloudStorageUploadSource");
+			HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
+			HpcFileLocation source = new HpcFileLocation();
+			source.setFileContainerId(jsonGoogleCloudStorageUploadSource.get("sourceFileContainerId").toString());
+			source.setFileId(jsonGoogleCloudStorageUploadSource.get("sourceFileId").toString());
+			googleCloudStorageUploadSource.setSourceLocation(source);
+			if (jsonGoogleCloudStorageUploadSource.get("accessToken") != null) {
+				googleCloudStorageUploadSource.setAccessToken(encryptor.decrypt(
+						Base64.getDecoder().decode(jsonGoogleCloudStorageUploadSource.get("accessToken").toString())));
+			}
+			request.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		}
 
 		if (jsonRequest.get("fileSystemUploadSource") != null) {
