@@ -552,7 +552,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public void deleteCollection(String path, Boolean recursive, Boolean force) throws HpcException {
 
-
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1085,6 +1084,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataObjectRegistrationRequest
 					.setGoogleDriveUploadSource(dataObjectRegistrationItem.getGoogleDriveUploadSource());
 			dataObjectRegistrationRequest
+					.setGoogleCloudStorageUploadSource(dataObjectRegistrationItem.getGoogleCloudStorageUploadSource());
+			dataObjectRegistrationRequest
 					.setFileSystemUploadSource(dataObjectRegistrationItem.getFileSystemUploadSource());
 			dataObjectRegistrationRequest.setLinkSourcePath(dataObjectRegistrationItem.getLinkSourcePath());
 			dataObjectRegistrationRequest.getMetadataEntries()
@@ -1353,9 +1354,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			String restorationStatus = objectMetadata.getRestorationStatus();
 
-			// 1. If restoration is not requested, storage class is Glacier or deep archive for Cloudian and AWS
-			// 2. If restoration is ongoing, storage class is null for Cloudian but remains same for AWS.
-			// 3. If restoration is completed, storage class is null for Cloudian but remains same for AWS.
+			// 1. If restoration is not requested, storage class is Glacier or deep archive
+			// for Cloudian and AWS
+			// 2. If restoration is ongoing, storage class is null for Cloudian but remains
+			// same for AWS.
+			// 3. If restoration is completed, storage class is null for Cloudian but
+			// remains same for AWS.
 			if ((objectMetadata.getDeepArchiveStatus() != null
 					&& (restorationStatus == null || !restorationStatus.equals("success")))
 					|| (objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
@@ -1401,7 +1405,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Validate the invoker is the owner of the data object.
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
-		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT)) {
+		if (!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT)) {
 			HpcPermission permission = dataManagementService.getDataObjectPermission(path).getPermission();
 			if (!permission.equals(HpcPermission.OWN)) {
 				throw new HpcException(
@@ -1452,7 +1456,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataObjectDeleteResponse.setLinksDeleteStatus(true);
 		}
 
-		// Delete the file from the archive (if it's archived and not a link and it is a hard delete).
+		// Delete the file from the archive (if it's archived and not a link and it is a
+		// hard delete).
 		if (!registeredLink && force) {
 			if (!abort) {
 				switch (systemGeneratedMetadata.getDataTransferStatus()) {
@@ -1845,8 +1850,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public void recoverDataObject(String path) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
-			throw new HpcException("Empty path in recover request: [path: " + path
-					+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Empty path in recover request: [path: " + path + "]",
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		HpcDataObject dataObject = dataManagementService.getDataObject(path);
@@ -1868,13 +1873,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataManagementService.recover(path, Optional.of(false));
 
 	}
-	
+
 	@Override
 	public void recoverCollection(String path) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
-			throw new HpcException("Empty path in recover request: [path: " + path
-					+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Empty path in recover request: [path: " + path + "]",
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate the collection exists.
@@ -1887,9 +1892,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		recoverDataObjectsFromCollections(path);
 		dataManagementService.delete(path, false);
 
-
 	}
-	
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -3312,7 +3316,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		resultHpcPermForColl.setPermission(hsPerm.getPermission());
 		return resultHpcPermForColl;
 	}
-	
+
 	/**
 	 * Recursively recover all the data objects from the specified collection and
 	 * from it's sub-collections.
