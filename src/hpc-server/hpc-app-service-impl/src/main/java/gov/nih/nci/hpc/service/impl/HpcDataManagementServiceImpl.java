@@ -1240,6 +1240,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		if (registrationRequest.getGoogleDriveUploadSource() != null) {
 			uploadSourceCount++;
 		}
+		if (registrationRequest.getGoogleCloudStorageUploadSource() != null) {
+			uploadSourceCount++;
+		}
 		if (registrationRequest.getFileSystemUploadSource() != null) {
 			uploadSourceCount++;
 		}
@@ -1248,11 +1251,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 		if (uploadSourceCount > 1) {
 			throw new HpcException(
-					"Multiple (Globus/S3/Google Drive/File System/Link) upload source provided for: " + path,
+					"Multiple (Globus/S3/Google Drive/Google Storage/File System/Link) upload source provided for: "
+							+ path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if (uploadSourceCount == 0) {
-			throw new HpcException("No Globus/S3/Google Drive/File System/Link upload source provided for: " + path,
+			throw new HpcException(
+					"No Globus/S3/Google Drive/Google Storage/File System/Link upload source provided for: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -1281,7 +1286,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (StringUtils.isEmpty(registrationRequest.getGoogleDriveUploadSource().getAccessToken())) {
-				throw new HpcException("Invalid Google Drive account in registration request for: " + path,
+				throw new HpcException("Invalid Google Drive token in registration request for: " + path,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		if (registrationRequest.getGoogleCloudStorageUploadSource() != null) {
+			if (!isValidFileLocation(registrationRequest.getGoogleCloudStorageUploadSource().getSourceLocation())) {
+				throw new HpcException(
+						"Invalid Google Cloud Storage upload source in registration request for: " + path,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (StringUtils.isEmpty(registrationRequest.getGoogleCloudStorageUploadSource().getAccessToken())) {
+				throw new HpcException("Invalid Google Cloud Storage token in registration request for: " + path,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
