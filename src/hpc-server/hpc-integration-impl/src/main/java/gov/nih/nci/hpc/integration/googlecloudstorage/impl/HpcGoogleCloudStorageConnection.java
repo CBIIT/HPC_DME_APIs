@@ -10,7 +10,6 @@
  */
 package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -58,7 +57,9 @@ public class HpcGoogleCloudStorageConnection {
 									.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform")))
 					.build().getService();
 
-		} catch (IOException e) {
+		} catch (Exception e) {
+			// Catching all as runtime exception will be thrown if the token is not a valid
+			// JSON.
 			throw new HpcException("Failed to authenticate Google Cloud Storage w/ access-token: " + e.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
