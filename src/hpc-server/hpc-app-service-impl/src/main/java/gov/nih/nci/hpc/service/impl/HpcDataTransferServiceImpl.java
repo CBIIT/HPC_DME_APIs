@@ -3206,11 +3206,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					sourceFile.getAbsolutePath());
 			String errorMessage = "Failed to get data from archive via S3: " + message;
 			downloadFailed(errorMessage);
+			//TBD - fixme - This failure can be from Cloudian, Cleversafe or any S3 archive, however we
+			//don't have a way to determine that here, so for now we hardcode IntegratedSystem to Cloudian
 			notificationService.sendNotification(new HpcException(message +
 					", task_id: " + downloadTask.getId() +
 					", user_id: " + downloadTask.getUserId() +
 					", archive_file_container_id (bucket): " + downloadTask.getArchiveLocation().getFileContainerId() +
-					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), HpcErrorType.DATA_TRANSFER_ERROR));
+					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), 
+					HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLOUDIAN));
 		}
 
 		// ---------------------------------------------------------------------//
