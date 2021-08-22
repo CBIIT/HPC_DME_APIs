@@ -315,7 +315,8 @@ public interface HpcDataTransferService {
 	 *                                 directory on the local DME server NAS is
 	 *                                 scanned.
 	 * @param s3Account                (Optional) S3 account to use.
-	 * @param googleDriveAccessToken   (Optional) Google Drive access-token to use.
+	 * @param googleAccessToken        (Optional) Google Drive/Storage access-token
+	 *                                 to use.
 	 * @param directoryLocation        The endpoint/directory to scan and get a list
 	 *                                 of files for.
 	 * @param configurationId          The configuration ID (needed to determine the
@@ -333,7 +334,7 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType, HpcS3Account s3Account,
-			String googleDriveAccessToken, HpcFileLocation directoryLocation, String configurationId,
+			String googleAccessToken, HpcFileLocation directoryLocation, String configurationId,
 			String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
 			HpcPatternType patternType) throws HpcException;
 

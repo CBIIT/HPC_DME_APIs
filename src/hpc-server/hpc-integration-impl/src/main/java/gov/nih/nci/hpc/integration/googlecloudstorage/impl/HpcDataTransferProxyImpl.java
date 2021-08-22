@@ -2,8 +2,12 @@ package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 
 import java.io.InputStream;
 import java.nio.channels.Channels;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.cloud.storage.Blob;
@@ -33,6 +37,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// The Google Drive connection instance.
 	@Autowired
 	private HpcGoogleCloudStorageConnection googleCloudStorageConnection = null;
+
+	// Date formatter to format files last-modified date
+	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -69,20 +76,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
 		pathAttributes.setIsAccessible(true);
 		try {
-			Blob file = storage.get(fileLocation.getFileContainerId(), fileLocation.getFileId(),
+			Blob blob = storage.get(fileLocation.getFileContainerId(), fileLocation.getFileId(),
 					Storage.BlobGetOption.fields(Storage.BlobField.values()));
-			if (file == null) {
+			if (blob == null) {
 				pathAttributes.setExists(false);
 			} else {
 				pathAttributes.setExists(true);
-				if (file.isDirectory()) {
+				if (blob.isDirectory() || blob.getSize() == 0) {
 					pathAttributes.setIsDirectory(true);
 					pathAttributes.setIsFile(false);
 				} else {
 					pathAttributes.setIsDirectory(false);
 					pathAttributes.setIsFile(true);
 					if (getSize) {
-						pathAttributes.setSize(file.getSize());
+						pathAttributes.setSize(blob.getSize());
 					}
 				}
 			}
@@ -112,8 +119,29 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
+	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, HpcFileLocation directoryLocation)
 			throws HpcException {
-		throw new HpcException("Directory scan on Google Cloud Storage not supported", HpcErrorType.UNEXPECTED_ERROR);
+		Storage storage = googleCloudStorageConnection.getStorage(authenticatedToken);
+		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
+
+		try {
+			storage.list(directoryLocation.getFileContainerId(),
+					Storage.BlobListOption.prefix(directoryLocation.getFileId())).iterateAll().forEach(blob -> {
+						if (blob.getSize() > 0) {
+							HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
+							directoryScanItem.setFilePath(blob.getName());
+							directoryScanItem.setFileName(FilenameUtils.getName(blob.getName()));
+							directoryScanItem.setLastModified(dateFormat.format(blob.getUpdateTime()));
+							directoryScanItems.add(directoryScanItem);
+						}
+					});
+
+			return directoryScanItems;
+
+		} catch (StorageException e) {
+			throw new HpcException("[Google Cloud Storage] Failed to list objects: " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
 	}
 }
