@@ -132,7 +132,9 @@
 			<xsd:element name="s3ScanDirectory"
 				type="hpc-domain-datatransfer:HpcS3ScanDirectory" />
 			<xsd:element name="googleDriveScanDirectory"
-				type="hpc-domain-datatransfer:HpcGoogleDriveScanDirectory" />
+				type="hpc-domain-datatransfer:HpcGoogleScanDirectory" />
+			<xsd:element name="googleCloudStorageScanDirectory"
+				type="hpc-domain-datatransfer:HpcGoogleScanDirectory" />
 			<xsd:element name="fileSystemScanDirectory"
 				type="hpc-domain-datatransfer:HpcScanDirectory" />
 			<xsd:element name="callerObjectId" type="xsd:string" />

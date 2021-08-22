@@ -2434,6 +2434,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (directoryScanRegistrationItem.getGoogleDriveScanDirectory() != null) {
 				scanDirectoryCount++;
 			}
+			if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
+				scanDirectoryCount++;
+			}
 			if (directoryScanRegistrationItem.getFileSystemScanDirectory() != null) {
 				scanDirectoryCount++;
 			}
@@ -2441,7 +2444,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw new HpcException("No scan directory provided", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (scanDirectoryCount > 1) {
-				throw new HpcException("Multiple (Globus / S3 / Google Drive / FileSystem) scan directory provided",
+				throw new HpcException(
+						"Multiple (Globus / S3 / Google Drive / Google Cloud Storage / FileSystem) scan directory provided",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
@@ -2474,7 +2478,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcFileLocation scanDirectoryLocation = null;
 			HpcDataTransferType dataTransferType = null;
 			HpcS3Account s3Account = null;
-			String googleDriveAccessToken = null;
+			String googleAccessToken = null;
 			if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
 				// It is a request to scan a Globus endpoint.
 				dataTransferType = HpcDataTransferType.GLOBUS;
@@ -2490,11 +2494,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} else if (directoryScanRegistrationItem.getGoogleDriveScanDirectory() != null) {
 				// It is a request to scan a Google Drive directory.
 				dataTransferType = HpcDataTransferType.GOOGLE_DRIVE;
-				googleDriveAccessToken = directoryScanRegistrationItem.getGoogleDriveScanDirectory().getAccessToken();
+				googleAccessToken = directoryScanRegistrationItem.getGoogleDriveScanDirectory().getAccessToken();
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleDriveScanDirectory()
 						.getDirectoryLocation();
-				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE,
-						googleDriveAccessToken, scanDirectoryLocation, false);
+				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
+						scanDirectoryLocation, false);
+			} else if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
+				// It is a request to scan a Google Drive directory.
+				dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
+				googleAccessToken = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory().getAccessToken();
+				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
+						.getDirectoryLocation();
+				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
+						scanDirectoryLocation, false);
 			} else {
 				// It is a request to scan a File System directory (local DME server NAS).
 				scanDirectoryLocation = directoryScanRegistrationItem.getFileSystemScanDirectory()
@@ -2523,16 +2535,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			final String fileContainerId = scanDirectoryLocation.getFileContainerId();
 			final HpcS3Account fs3Account = s3Account;
-			final String fgoogleDriveAccessToken = googleDriveAccessToken;
+			final String fgoogleAccessToken = googleAccessToken;
 			final HpcDataTransferType fdataTransferType = dataTransferType;
 			dataTransferService
-					.scanDirectory(dataTransferType, s3Account, googleDriveAccessToken, scanDirectoryLocation,
+					.scanDirectory(dataTransferType, s3Account, googleAccessToken, scanDirectoryLocation,
 							configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
 							directoryScanRegistrationItem.getExcludePatterns(), patternType)
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleDriveAccessToken)));
+							fs3Account, fgoogleAccessToken)));
 		}
 
 		return dataObjectRegistrationItems;
@@ -2541,27 +2553,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Create a data object registration DTO out of a directory scan item.
 	 *
-	 * @param scanItem               The scan item.
-	 * @param basePath               The base path to register the scan item with.
-	 * @param sourceFileContainerId  The container ID containing the scan item.
-	 * @param callerObjectId         The caller's object ID.
-	 * @param bulkMetadataEntries    metadata entries for this data object
-	 *                               registration and parent collections.
-	 * @param pathMap                Replace 'fromPath' (found in scanned directory)
-	 *                               with 'toPath'.
-	 * @param dataTransferType       (Optional) The data trafser type performed the
-	 *                               scan. Null means it's a DME server file system
-	 *                               scan
-	 * @param s3Account              (Optional) Provided if this is a registration
-	 *                               item from S3 source, otherwise null.
-	 * @param googleDriveAccessToken (Optional) Provided if this is a registration
-	 *                               item from Google Drive source, otherwise null.
+	 * @param scanItem              The scan item.
+	 * @param basePath              The base path to register the scan item with.
+	 * @param sourceFileContainerId The container ID containing the scan item.
+	 * @param callerObjectId        The caller's object ID.
+	 * @param bulkMetadataEntries   metadata entries for this data object
+	 *                              registration and parent collections.
+	 * @param pathMap               Replace 'fromPath' (found in scanned directory)
+	 *                              with 'toPath'.
+	 * @param dataTransferType      (Optional) The data trafser type performed the
+	 *                              scan. Null means it's a DME server file system
+	 *                              scan
+	 * @param s3Account             (Optional) Provided if this is a registration
+	 *                              item from S3 source, otherwise null.
+	 * @param googleAccessToken     (Optional) Provided if this is a registration
+	 *                              item from Google Drive or Google Cloud Storage
+	 *                              source, otherwise null.
 	 * @return data object registration DTO.
 	 */
 	private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem,
 			String basePath, String sourceFileContainerId, String callerObjectId,
 			HpcBulkMetadataEntries bulkMetadataEntries, HpcDirectoryScanPathMap pathMap,
-			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleDriveAccessToken) {
+			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken) {
 		// If pathMap provided - use the map to replace scanned path with user provided
 		// path (or part of
 		// path).
@@ -2613,8 +2626,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else if (dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)) {
 			HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
 			googleDriveUploadSource.setSourceLocation(source);
-			googleDriveUploadSource.setAccessToken(googleDriveAccessToken);
+			googleDriveUploadSource.setAccessToken(googleAccessToken);
 			dataObjectRegistration.setGoogleDriveUploadSource(googleDriveUploadSource);
+		} else if (dataTransferType.equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
+			HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
+			googleCloudStorageUploadSource.setSourceLocation(source);
+			googleCloudStorageUploadSource.setAccessToken(googleAccessToken);
+			dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		} else {
 			HpcUploadSource globusUploadSource = new HpcUploadSource();
 			globusUploadSource.setSourceLocation(source);

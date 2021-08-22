@@ -198,7 +198,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcGoogleDriveScanDirectory">
+	<xsd:complexType name="HpcGoogleScanDirectory">
 		<xsd:sequence>
 			<xsd:element name="directoryLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
