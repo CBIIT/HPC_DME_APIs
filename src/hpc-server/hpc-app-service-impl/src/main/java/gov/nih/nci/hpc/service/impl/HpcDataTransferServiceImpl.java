@@ -786,7 +786,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType, HpcS3Account s3Account,
-			String googleDriveAccessToken, HpcFileLocation directoryLocation, String configurationId,
+			String googleAccessToken, HpcFileLocation directoryLocation, String configurationId,
 			String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
 			HpcPatternType patternType) throws HpcException {
 		// Input validation.
@@ -794,9 +794,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid directory location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if (dataTransferType == null) {
-			if ((!StringUtils.isEmpty(googleDriveAccessToken) || s3Account != null
+			if ((!StringUtils.isEmpty(googleAccessToken) || s3Account != null
 					|| !StringUtils.isEmpty(s3ArchiveConfigurationId))) {
-				throw new HpcException("S3 account / Google Drive token provided File System scan",
+				throw new HpcException(
+						"S3 account / Google Drive / Google Cloud Storage token provided File System scan",
 						HpcErrorType.UNEXPECTED_ERROR);
 			}
 		} else {
@@ -804,8 +805,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("S3 account provided for Non S3 data transfer", HpcErrorType.UNEXPECTED_ERROR);
 			}
 			if (!dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)
-					&& !StringUtils.isEmpty(googleDriveAccessToken)) {
-				throw new HpcException("Google Drive access token provided for Non Google Drive data transfer",
+					&& !dataTransferType.equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !StringUtils.isEmpty(googleAccessToken)) {
+				throw new HpcException(
+						"Google access token provided for Non Google Drive  / Cloud Storagedata transfer",
 						HpcErrorType.UNEXPECTED_ERROR);
 			}
 		}
@@ -821,8 +824,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			Object authenticatedToken = null;
 			if (s3Account != null) {
 				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(s3Account);
-			} else if (!StringUtils.isEmpty(googleDriveAccessToken)) {
-				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(googleDriveAccessToken);
+			} else if (!StringUtils.isEmpty(googleAccessToken)) {
+				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(googleAccessToken);
 			} else {
 				authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
 			}
