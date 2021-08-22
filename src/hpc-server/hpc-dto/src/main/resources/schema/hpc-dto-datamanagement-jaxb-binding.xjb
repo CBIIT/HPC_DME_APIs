@@ -129,8 +129,8 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcS3ScanDirectory']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory" />
       </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcGoogleDriveScanDirectory']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveScanDirectory" />
+      <jxb:bindings node="//xsd:complexType[@name='HpcGoogleScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGoogleScanDirectory" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadRequest']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest" />
