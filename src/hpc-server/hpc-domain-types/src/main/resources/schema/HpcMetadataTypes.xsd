@@ -25,6 +25,8 @@
 			<xsd:element name="level" type="xsd:int" minOccurs="0" />
 			<xsd:element name="levelLabel" type="xsd:string" />
 			<xsd:element name="collectionId" type="xsd:int" minOccurs="0" />
+			<xsd:element name="dateFormat" type="xsd:string" 
+			             minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -218,6 +220,7 @@
 			<xsd:element name="ruleEnabled" type="xsd:boolean" />
 			<xsd:element name="description" type="xsd:string" />
 			<xsd:element name="encrypted" type="xsd:boolean" />
+			<xsd:element name="dateFormat" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
