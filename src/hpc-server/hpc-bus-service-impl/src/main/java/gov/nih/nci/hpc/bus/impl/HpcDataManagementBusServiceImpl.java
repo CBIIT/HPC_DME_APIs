@@ -832,7 +832,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
 			HpcDataObjectRegistrationRequestDTO dataObjectRegistration, File dataObjectFile, String userId,
-			String userName, String configurationId, boolean registrationCompletionEvent) throws HpcException {
+			String userName, String configurationId, boolean registrationEventRequired) throws HpcException {
 		// Input validation.
 		validatePath(path);
 
@@ -925,7 +925,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									userId, userName, configurationId,
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
-									registrationCompletionEvent);
+									registrationEventRequired);
 
 					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
@@ -1352,8 +1352,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			String restorationStatus = objectMetadata.getRestorationStatus();
 
-			if (objectMetadata.getDeepArchiveStatus() != null && restorationStatus != null
-					&& !restorationStatus.equals("success")) {
+			// 1. If restoration is not requested, storage class is Glacier or deep archive for Cloudian and AWS
+			// 2. If restoration is ongoing, storage class is null for Cloudian but remains same for AWS.
+			// 3. If restoration is completed, storage class is null for Cloudian but remains same for AWS.
+			if ((objectMetadata.getDeepArchiveStatus() != null
+					&& (restorationStatus == null || !restorationStatus.equals("success")))
+					|| (objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
+							&& !restorationStatus.equals("success"))) {
 				throw new HpcException("Object is in deep archived state. Download request URL cannot be generated.",
 						HpcRequestRejectReason.FILE_NOT_FOUND);
 			}
