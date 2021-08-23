@@ -32,7 +32,7 @@ import org.springframework.validation.ObjectError;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveScanDirectory;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
@@ -453,7 +453,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 String toPath = "/" + folderName;
                 source.setFileId(folderId);
                 folder.setBasePath(datafilePath);
-                HpcGoogleDriveScanDirectory googleDriveDirectory = new HpcGoogleDriveScanDirectory();
+                HpcGoogleScanDirectory googleDriveDirectory = new HpcGoogleScanDirectory();
                 googleDriveDirectory.setDirectoryLocation(source);
                 googleDriveDirectory.setAccessToken(accessToken);
                 folder.setGoogleDriveScanDirectory(googleDriveDirectory);
