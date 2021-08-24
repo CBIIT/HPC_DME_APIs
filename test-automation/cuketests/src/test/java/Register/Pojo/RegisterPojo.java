@@ -37,7 +37,20 @@ public class RegisterPojo {
 	Boolean extractMetadata;
 	List<Map<String, String>> metadataEntries;
 	Boolean createParentCollections;
-    Map<String, List<Map<String, String>>> parentCollectionsBulkMetadataEntries;
+    //Map<String, List<Map<String, String>>> parentCollectionsBulkMetadataEntries;
+	
+	ParentMetadataPojo parentCollectionsBulkMetadataEntries;
+    
+    public List<Map<String, String>> getDefaultCollectionMetadataEntries() {
+		return defaultCollectionMetadataEntries;
+	}
+	public void setDefaultCollectionMetadataEntries(List<Map<String, String>> defaultCollectionMetadataEntries) {
+		this.defaultCollectionMetadataEntries = defaultCollectionMetadataEntries;
+	}
+	public void setParentCollectionsBulkMetadataEntries(ParentMetadataPojo parentCollectionsBulkMetadataEntries) {
+		this.parentCollectionsBulkMetadataEntries = parentCollectionsBulkMetadataEntries;
+	}
+	List<Map<String, String>> defaultCollectionMetadataEntries;
     
 	public String getCallerObjectId() {
 		return callerObjectId;
@@ -63,19 +76,10 @@ public class RegisterPojo {
 	public void setMetadataEntries(List<Map<String, String>> metadataEntries) {
 		this.metadataEntries = metadataEntries;
 	}
-	public Boolean getCreateParentCollections() {
-		return createParentCollections;
-	}
-	public void setCreateParentCollections(Boolean createParentCollections) {
-		this.createParentCollections = createParentCollections;
-	}
-	public Map<String, List<Map<String, String>>> getParentCollectionsBulkMetadataEntries() {
+	public ParentMetadataPojo getParentCollectionsBulkMetadataEntries() {
 		return parentCollectionsBulkMetadataEntries;
 	}
-	public void setParentCollectionsBulkMetadataEntries(
-			Map<String, List<Map<String, String>>> parentCollectionsBulkMetadataEntries) {
-		this.parentCollectionsBulkMetadataEntries = parentCollectionsBulkMetadataEntries;
-	}
+	
     
 	
 	

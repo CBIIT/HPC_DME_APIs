@@ -18,6 +18,7 @@ import io.restassured.specification.RequestSpecification;
 public class AddBookmarkSteps {
 	
 	BookmarkPojo bookmark = new BookmarkPojo();
+	String bookmarkName;
 	
 	
 	@Given("I have a path of {string}")
@@ -36,15 +37,14 @@ public class AddBookmarkSteps {
 	}
 
 	@Given("bookmarkName of {string}")
-	public void bookmark_name_of(String string) {
-	    //// Write code here that turns the phrase above into concrete actions
-	    //throw new io.cucumber.java.PendingException();
+	public void bookmark_name_of(String bookmarkNameStr) {
+	    this.bookmarkName = "/hpc-server/bookmark/" + bookmarkNameStr;
 	}
 
 	@When("I add the bookmark")
 	public void i_add_the_bookmark() {
 	    String token = "xyz";
-		RestAssured.baseURI = "https://fsdmel-dsapi01t.ncifcrf.gov/";
+		RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
 	    RestAssured.port = 7738;
 	    RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
 		request.header("Accept", "application/json");
@@ -57,11 +57,10 @@ public class AddBookmarkSteps {
 
 		
 		 System.out.println("Sending request!!");
-		 await().atMost(500, TimeUnit.SECONDS).untilAsserted(
-				 () -> {
+		 //await().atMost(500, TimeUnit.SECONDS).untilAsserted(
+				// () -> {
 					 //Response response = request.get("");
-					 Response response = request.body(bookmarkJson).put("/hpc-server/bookmark/xyzc");//await().atMost(5, TimeUnit.SECONDS);
-					 	Thread.sleep(5000);
+					 Response response = request.body(bookmarkJson).put(this.bookmarkName);
 					 	System.out.println(response.asString());
 					    System.out.println(response.getBody());
 					    System.out.println(response.getStatusCode());
@@ -69,12 +68,9 @@ public class AddBookmarkSteps {
 					    int statuscode = response.getStatusCode();
 					     //assertThat(x).isEqualTo(0);
 					    //assertThat(response.statusCode().isEqualTo(200));
-				 }			 
-		);
+				// }			 
+		//);
 
-			 
-		 
-		//Response response = request.body(bookmarkJson).post("hpc-server/bookmark/xyzc");//await().atMost(5, TimeUnit.SECONDS);
 		
 	}
 
