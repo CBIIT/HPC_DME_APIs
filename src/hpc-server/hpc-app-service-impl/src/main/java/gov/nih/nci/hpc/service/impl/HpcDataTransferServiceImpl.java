@@ -3213,19 +3213,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				HpcFileLocation archiveLocation = metadataService.getDataObjectSystemGeneratedMetadata(downloadTask.getPath()).getArchiveLocation();
 				notificationService.sendNotification(new HpcException(message +
 						", task_id: " + downloadTask.getId() +
-						", \nuser_id: " + downloadTask.getUserId() +
-						", \narchive_file_container_id (bucket): " + archiveLocation.getFileContainerId() +
-						", \narchive_file_id (key): " + downloadTask.getArchiveLocation().getFileId() +
-						"\n", HpcErrorType.DATA_TRANSFER_ERROR, dataTransferConfiguration.getArchiveProvider()));
+						", user_id: " + downloadTask.getUserId() +
+						", archive_file_container_id (bucket): " + archiveLocation.getFileContainerId() +
+						", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(),
+						HpcErrorType.DATA_TRANSFER_ERROR, dataTransferConfiguration.getArchiveProvider()), true);
 
 			} catch (HpcException e) {
 				//theoretically, we should never get here
 				//Need to specify some value for IntegratedSystem, else notification will not be sent
 			    notificationService.sendNotification(new HpcException(message +
 					", task_id: " + downloadTask.getId() +
-					", \nuser_id: " + downloadTask.getUserId() +
-					", \npath: " + downloadTask.getPath() +
-					"\n", HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLOUDIAN));
+					", user_id: " + downloadTask.getUserId() +
+					", path: " + downloadTask.getPath(),
+					HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLOUDIAN));
 			}
 		}
 
