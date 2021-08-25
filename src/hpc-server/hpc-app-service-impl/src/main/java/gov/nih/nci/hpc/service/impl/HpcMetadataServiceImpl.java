@@ -491,7 +491,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Override
 	public List<HpcMetadataEntry> getDefaultDataObjectMetadataEntries(HpcDirectoryScanItem scanItem) {
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-		metadataEntries.add(toMetadataEntry("name", scanItem != null ? scanItem.getFileName() : "N/A"));
+		//Presently empty, placeholder
 
 		return metadataEntries;
 	}
