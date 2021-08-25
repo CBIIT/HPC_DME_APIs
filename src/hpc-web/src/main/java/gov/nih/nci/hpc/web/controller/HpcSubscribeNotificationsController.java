@@ -816,7 +816,11 @@ public class HpcSubscribeNotificationsController extends
               || ((type.equals(HpcEventType.USAGE_SUMMARY_REPORT)
             		|| type.equals(HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE))
             		 && !HpcIdentityUtil.isUserSystemAdmin(session)))
-    	  || type.equals(HpcEventType.USER_REGISTERED))
+    	  || type.equals(HpcEventType.USER_REGISTERED)
+    	  || type.equals(HpcEventType.RESTORE_REQUEST_COMPLETED)
+    	  || type.equals(HpcEventType.RESTORE_REQUEST_FAILED)
+    	  || type.equals(HpcEventType.REVIEW_SENT)
+    	  || type.equals(HpcEventType.REVIEW_REMINDER_SENT))
         continue;
       HpcNotificationSubscription subscription = getNotificationSubscription(
           authToken, type);
