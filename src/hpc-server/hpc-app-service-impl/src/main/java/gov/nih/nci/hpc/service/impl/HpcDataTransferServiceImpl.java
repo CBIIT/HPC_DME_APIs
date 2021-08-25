@@ -3206,14 +3206,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					sourceFile.getAbsolutePath());
 			String errorMessage = "Failed to get data from archive via S3: " + message;
 			downloadFailed(errorMessage);
-			//TBD - fixme - This failure can be from Cloudian, Cleversafe or any S3 archive, however we
-			//don't have a way to determine that here, so for now we hardcode IntegratedSystem to Cloudian
-			notificationService.sendNotification(new HpcException(message +
+
+			try {
+				HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+						.getDataTransferConfiguration(downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
+				HpcFileLocation archiveLocation = metadataService.getDataObjectSystemGeneratedMetadata(downloadTask.getPath()).getArchiveLocation();
+				notificationService.sendNotification(new HpcException(message +
+						", task_id: " + downloadTask.getId() +
+						", \nuser_id: " + downloadTask.getUserId() +
+						", \narchive_file_container_id (bucket): " + archiveLocation.getFileContainerId() +
+						", \narchive_file_id (key): " + downloadTask.getArchiveLocation().getFileId() +
+						"\n", HpcErrorType.DATA_TRANSFER_ERROR, dataTransferConfiguration.getArchiveProvider()));
+
+			} catch (HpcException e) {
+				//theoretically, we should never get here
+				//Need to specify some value for IntegratedSystem, else notification will not be sent
+			    notificationService.sendNotification(new HpcException(message +
 					", task_id: " + downloadTask.getId() +
-					", user_id: " + downloadTask.getUserId() +
-					", archive_file_container_id (bucket): " + downloadTask.getArchiveLocation().getFileContainerId() +
-					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), 
-					HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLOUDIAN));
+					", \nuser_id: " + downloadTask.getUserId() +
+					", \npath: " + downloadTask.getPath() +
+					"\n", HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLOUDIAN));
+			}
 		}
 
 		// ---------------------------------------------------------------------//
