@@ -74,6 +74,10 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   @Value("${hpc.service.notification.systemAdministratorUserId}")
   private String systemAdministratorUserId = null;
 
+  //The storage administrators' NCI user IDs.
+  @Value("${hpc.service.notification.storageAdministratorUserIds}")
+  private String storageAdministratorUserIds = null;
+
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -300,8 +304,14 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
     return notificationDAO.getDeliveryReceiptsCount(invoker.getNciAccount().getUserId());
   }
 
-  @Override
+
   public void sendNotification(HpcException exception) {
+	  sendNotification(exception, false);
+  }
+
+
+  @Override
+  public void sendNotification(HpcException exception, boolean notifyStorageAdmins) {
     if (exception.getIntegratedSystem() != null) {
       logger.info("Sending a notification to system admin: {}", exception.getMessage());
 
@@ -327,8 +337,17 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
       this.sendNotification(systemAdministratorUserId,
           HpcSystemAdminNotificationType.INTEGRATED_SYSTEM_ERROR, payloadEntries,
           HpcNotificationDeliveryMethod.EMAIL);
+
+      if(notifyStorageAdmins && storageAdministratorUserIds != null) {
+          for(String userId: storageAdministratorUserIds.split(",")) {
+              this.sendNotification(userId,
+              HpcSystemAdminNotificationType.INTEGRATED_SYSTEM_ERROR, payloadEntries,
+              HpcNotificationDeliveryMethod.EMAIL);
+          }
+      }
     }
   }
+
 
   // ---------------------------------------------------------------------//
   // Helper Methods
