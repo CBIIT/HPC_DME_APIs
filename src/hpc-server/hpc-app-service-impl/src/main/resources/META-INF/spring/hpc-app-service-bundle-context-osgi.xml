@@ -38,6 +38,7 @@
 		<prop key="hpc.service.notification.mail.port">25</prop>
 		<prop key="hpc.service.notification.notificationDeliveryReceiptsPageSize">100</prop>
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
+		<prop key="hpc.service.notification.storageAdministratorUserIds">HPC_DME_Admin</prop>
 		<prop key="hpc.service.dataSearch.searchResultsPageSize">100</prop>
 		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">5000</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
