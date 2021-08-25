@@ -156,4 +156,13 @@ public interface HpcNotificationService {
    * @param exception The exception to be notified
    */
   public void sendNotification(HpcException exception);
+
+
+  /**
+   * Notify DME system-administrator, and optionally notify the DME storage administrators of an exception
+   *
+   * @param exception The exception to be notified
+   * @param notifyStorageAdmins Notify the storage administrators also if true
+   */
+  public void sendNotification(HpcException exception, boolean notifyStorageAdmins);
 }
