@@ -3288,6 +3288,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						message + ", task_id: " + downloadTask.getId() + ", user_id: " + downloadTask.getUserId()
 								+ ", path: " + downloadTask.getPath(),
 						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLOUDIAN));
+
 			}
 		}
 
