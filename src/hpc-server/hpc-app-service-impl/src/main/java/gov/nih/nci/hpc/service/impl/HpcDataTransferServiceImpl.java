@@ -3215,7 +3215,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						", task_id: " + downloadTask.getId() +
 						", user_id: " + downloadTask.getUserId() +
 						", archive_file_container_id (bucket): " + archiveLocation.getFileContainerId() +
-						", archive_file_id (key): " + archiveLocation.getFileId() + "/" + downloadTask.getPath(),
+						", archive_file_id (key): " + archiveLocation.getFileId() + downloadTask.getPath(),
 						HpcErrorType.DATA_TRANSFER_ERROR, dataTransferConfiguration.getArchiveProvider()), true);
 
 			} catch (HpcException e) {
