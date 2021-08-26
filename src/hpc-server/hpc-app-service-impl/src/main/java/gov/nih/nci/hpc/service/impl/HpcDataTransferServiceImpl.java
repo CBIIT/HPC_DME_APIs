@@ -3219,6 +3219,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						HpcErrorType.DATA_TRANSFER_ERROR, dataTransferConfiguration.getArchiveProvider()), true);
 
 			} catch (HpcException e) {
+				logger.error("Failed to send storage admin notification w/ data", e);
 				//theoretically, we should never get here
 				//Need to specify some value for IntegratedSystem, else notification will not be sent
 			    notificationService.sendNotification(new HpcException(message +
