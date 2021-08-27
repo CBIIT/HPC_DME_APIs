@@ -28,6 +28,7 @@ import junit.framework.Assert;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import common.JsonHelper;
 
 
 public class SyncFromFileSystemSteps {
@@ -36,8 +37,8 @@ public class SyncFromFileSystemSteps {
 	String datafile;
 	String sourcePath;
 	String destinationPath;
-	String tokenStr = "eyJhbGciOiJIUzI1NiJ9.eyJEYXRhTWFuYWdlbWVudEFjY291bnQiOiJ7XCJwYXNzd29yZFwiOlwiZGVhcmRhc2hzcGFya3l0YXJzXCIsXCJpbnRlZ3JhdGVkU3lzdGVtXCI6XCJJUk9EU1wiLFwicHJvcGVydGllc1wiOntcIlBST1hZX05BTUVcIjpcIlwiLFwiUE9SVFwiOlwiMTI0N1wiLFwiREVGQVVMVF9TVE9SQUdFX1JFU09VUkNFXCI6XCJkZW1vUmVzY1wiLFwiSE9NRV9ESVJFQ1RPUllcIjpcIlwiLFwiWk9ORVwiOlwidGVtcFpvbmVcIixcIkhPU1RcIjpcImZzZG1lbC1pcm9kczAxZC5uY2lmY3JmLmdvdlwiLFwiUFJPWFlfWk9ORVwiOlwiXCJ9LFwidXNlcm5hbWVcIjpcInNjaGludGFsXCJ9IiwiVXNlck5hbWUiOiJzY2hpbnRhbCIsIkRhdGFNYW5hZ2VtZW50QWNjb3VudEV4cGlyYXRpb24iOjE2MjcwMTE2MjQyNTYsImV4cCI6MTgwNjk4MjgyNH0.fjnw6bvqcsGtHBLBhDMCF_dTOVV2F_0HCgH4pM5RjsM";
-
+	String tokenStr = "xyz";
+	
 	@Given("I am a valid user with token")
 	public void i_am_a_valid_user_with_token() {
 	    
@@ -106,14 +107,8 @@ public class SyncFromFileSystemSteps {
 	    RestAssured.port = 7738;
 	    RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
 		request.header("Accept", "application/json");
-		request.header("Authorization", "Bearer "+ token);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String registerBodyJson = gson.toJson(registerBody);
-		System.out.println("Final JSON Body");
-		System.out.println(registerBodyJson);
-		// Setting multipart fields in the request
-		System.out.println(this.sourcePath);
-		System.out.println(this.destinationPath);
+		request.header("Authorization", "Bearer "+ token);	
+		String registerBodyJson = new JsonHelper().getPrettyJson((Object)registerBody);
 		request.multiPart("dataObjectRegistration",registerBodyJson, "application/json");
 		request.multiPart("dataObject", new File(this.sourcePath), "application/octet-stream"); 
 		
