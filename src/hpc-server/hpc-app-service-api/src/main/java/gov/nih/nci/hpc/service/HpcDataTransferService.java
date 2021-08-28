@@ -17,6 +17,7 @@ import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -287,9 +288,8 @@ public interface HpcDataTransferService {
 	 * Get path attributes for a given file in Google Drive or Google Cloud
 	 * Storage(using user provided Google Drive token).
 	 *
-	 * @param dataTransferType The data transfer type.
-	 * @param accessToken      The user provided Google Drive access token or
-	 *                         configured token for Google cloud storage.
+	 * @param accessToken      Google Drive / Storage access token.
+	 * @param accessTokenToken Access token type (user account / system account).
 	 * @param fileLocation     The file to get attributes for.
 	 * @param getSize          If set to true, the file/directory size will be
 	 *                         returned.
@@ -297,7 +297,7 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType, String accessToken,
-			HpcFileLocation fileLocation, boolean getSize) throws HpcException;
+			HpcAccessTokenType accessTokenType, HpcFileLocation fileLocation, boolean getSize) throws HpcException;
 
 	/**
 	 * Get path attributes of local file (on the DME server file system)
@@ -317,6 +317,7 @@ public interface HpcDataTransferService {
 	 * @param s3Account                (Optional) S3 account to use.
 	 * @param googleAccessToken        (Optional) Google Drive/Storage access-token
 	 *                                 to use.
+	 * @param googleAccessTokenType       (Optional) Google Drive/Storage access-token type.
 	 * @param directoryLocation        The endpoint/directory to scan and get a list
 	 *                                 of files for.
 	 * @param configurationId          The configuration ID (needed to determine the
@@ -334,7 +335,7 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType, HpcS3Account s3Account,
-			String googleAccessToken, HpcFileLocation directoryLocation, String configurationId,
+			String googleAccessToken, HpcAccessTokenType googleAccessTokenType, HpcFileLocation directoryLocation, String configurationId,
 			String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
 			HpcPatternType patternType) throws HpcException;
 
