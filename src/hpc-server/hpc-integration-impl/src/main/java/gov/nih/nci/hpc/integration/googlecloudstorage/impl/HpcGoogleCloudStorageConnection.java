@@ -15,10 +15,12 @@ import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -46,15 +48,17 @@ public class HpcGoogleCloudStorageConnection {
 	/**
 	 * Authenticate google cloud storage.
 	 *
-	 * @param accessToken Google Cloud Storage token.
-	 * @throws HpcException if authentication failed
+	 * @param accessToken      Google Cloud Storage token.
+	 * @param accessTokenToken Google Cloud Storage token type.
+	 * @throws HpcException if authentication failed.
 	 */
-	public Object authenticate(String accessToken) throws HpcException {
+	public Object authenticate(String accessToken, HpcAccessTokenType accessTokenType) throws HpcException {
 		try {
 			return StorageOptions.newBuilder()
-					.setCredentials(
-							GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
-									.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform")))
+					.setCredentials(accessTokenType.equals(HpcAccessTokenType.SERVICE_ACCOUNT)
+							? GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
+									.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform"))
+							: GoogleCredentials.create(new AccessToken(accessToken, null)))
 					.build().getService();
 
 		} catch (Exception e) {

@@ -15,6 +15,7 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -58,8 +59,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(String accessToken) throws HpcException {
-		return googleCloudStorageConnection.authenticate(accessToken);
+	public Object authenticate(String accessToken, HpcAccessTokenType accessTokenType) throws HpcException {
+		return googleCloudStorageConnection.authenticate(accessToken, accessTokenType);
 	}
 
 	@Override
