@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -71,15 +72,16 @@ public interface HpcDataTransferProxy {
 	}
 
 	/**
-	 * Authenticate a Google Drive account.
+	 * Authenticate a Google Drive / Google Cloud Storage account.
 	 *
-	 * @param accessToken Google Drive access token.
+	 * @param accessToken      Google Drive / Storage access token.
+	 * @param accessTokenToken Access token type (user account / system account).
 	 * @return An authenticated token, to be used in subsequent calls to data
 	 *         transfer.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public default Object authenticate(String accessToken) throws HpcException {
-		throw new HpcException("authenticate(GoogleDrive access-token) not supported", HpcErrorType.UNEXPECTED_ERROR);
+	public default Object authenticate(String accessToken, HpcAccessTokenType accessTokenType) throws HpcException {
+		throw new HpcException("authenticate(Google access-token) not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
 	/**
