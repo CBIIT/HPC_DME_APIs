@@ -162,6 +162,9 @@
       <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferDownloadStatus']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcAccessTokenType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType" />
       </jxb:bindings>
