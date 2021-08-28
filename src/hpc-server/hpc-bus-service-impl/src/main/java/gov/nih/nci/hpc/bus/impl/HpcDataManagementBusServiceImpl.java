@@ -49,6 +49,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -981,6 +982,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (dataObjectFile != null || dataObjectRegistration.getGlobusUploadSource() != null
 					|| dataObjectRegistration.getS3UploadSource() != null
 					|| dataObjectRegistration.getGoogleDriveUploadSource() != null
+					|| dataObjectRegistration.getGoogleCloudStorageUploadSource() != null
 					|| dataObjectRegistration.getLinkSourcePath() != null) {
 				throw new HpcException(
 						"A data file by that name already exists in this collection. Only updating metadata is allowed.",
@@ -2479,6 +2481,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataTransferType dataTransferType = null;
 			HpcS3Account s3Account = null;
 			String googleAccessToken = null;
+			HpcAccessTokenType googleAccessTokenType = null;
+
 			if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
 				// It is a request to scan a Globus endpoint.
 				dataTransferType = HpcDataTransferType.GLOBUS;
@@ -2498,15 +2502,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleDriveScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
-						scanDirectoryLocation, false);
+						googleAccessTokenType, scanDirectoryLocation, false);
 			} else if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
 				// It is a request to scan a Google Drive directory.
 				dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 				googleAccessToken = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory().getAccessToken();
+				googleAccessTokenType = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
+						.getAccessTokenType();
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
-						scanDirectoryLocation, false);
+						googleAccessTokenType, scanDirectoryLocation, false);
 			} else {
 				// It is a request to scan a File System directory (local DME server NAS).
 				scanDirectoryLocation = directoryScanRegistrationItem.getFileSystemScanDirectory()
@@ -2537,10 +2543,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			final HpcS3Account fs3Account = s3Account;
 			final String fgoogleAccessToken = googleAccessToken;
 			final HpcDataTransferType fdataTransferType = dataTransferType;
-			dataTransferService
-					.scanDirectory(dataTransferType, s3Account, googleAccessToken, scanDirectoryLocation,
-							configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
-							directoryScanRegistrationItem.getExcludePatterns(), patternType)
+			dataTransferService.scanDirectory(dataTransferType, s3Account, googleAccessToken, googleAccessTokenType,
+					scanDirectoryLocation, configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
+					directoryScanRegistrationItem.getExcludePatterns(), patternType)
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
