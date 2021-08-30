@@ -3282,15 +3282,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			try {
 				HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-						.getDataTransferConfiguration(downloadTask.getConfigurationId(),
-								downloadTask.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
-				HpcFileLocation archiveLocation = metadataService
-						.getDataObjectSystemGeneratedMetadata(downloadTask.getPath()).getArchiveLocation();
-
-				notificationService.sendNotification(new HpcException(
-						message + ", task_id: " + downloadTask.getId() + ", user_id: " + downloadTask.getUserId()
-								+ ", archive_file_container_id (bucket): " + archiveLocation.getFileContainerId()
-								+ ", archive_file_id (key): " + archiveLocation.getFileId(),
+						.getDataTransferConfiguration(downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
+				HpcFileLocation archiveLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
+				notificationService.sendNotification(new HpcException(message +
+						", task_id: " + downloadTask.getId() +
+						", user_id: " + downloadTask.getUserId() +
+						", archive_file_container_id (bucket): " + archiveLocation.getFileContainerId() +
+						", archive_file_id (key): " + archiveLocation.getFileId() + downloadTask.getPath(),
 						HpcErrorType.DATA_TRANSFER_ERROR, dataTransferConfiguration.getArchiveProvider()), true);
 
 			} catch (HpcException e) {
