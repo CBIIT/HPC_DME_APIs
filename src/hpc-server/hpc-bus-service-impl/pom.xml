@@ -43,7 +43,6 @@
 							org.aopalliance.aop,
 							org.springframework.scheduling.config,
 							org.springframework.scheduling.concurrent,
-							javax.activation,
 							*
 						</Import-Package>
 					</instructions>
