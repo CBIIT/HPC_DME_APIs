@@ -76,7 +76,7 @@ public class HpcMimeMessagePreparator {
 
 		return new MimeMessagePreparator() {
 			public void prepare(MimeMessage mimeMessage) throws MessagingException {
-				MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+				MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
 				message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
 				message.setTo(userId + "@" + NIH_EMAIL_DOMAIN);
 				message.setSubject(subject);
