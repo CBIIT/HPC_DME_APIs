@@ -25,47 +25,47 @@ import org.springframework.mail.javamail.JavaMailSender;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcEmailNotificationSenderImpl implements HpcNotificationSender {
-  //---------------------------------------------------------------------//
-  // Instance members
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
 
-  // Mail Sender.
-  @Autowired JavaMailSender mailSender = null;
+	// Mail Sender.
+	@Autowired
+	JavaMailSender mailSender = null;
 
-  // MIME Message Preparator.
-  @Autowired HpcMimeMessagePreparator messagePreparator = null;
+	// MIME Message Preparator.
+	@Autowired
+	HpcMimeMessagePreparator messagePreparator = null;
 
-  //---------------------------------------------------------------------//
-  // Methods
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
 
-  //---------------------------------------------------------------------//
-  // HpcNotificationSender Interface Implementation
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// HpcNotificationSender Interface Implementation
+	// ---------------------------------------------------------------------//
 
-  @Override
-  public void sendNotification(
-      String userId, HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries)
-      throws HpcException {
-    try {
-      mailSender.send(messagePreparator.getPreparator(userId, eventType, payloadEntries));
+	@Override
+	public void sendNotification(String userId, HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries)
+			throws HpcException {
+		try {
+			// mailSender.send(messagePreparator.getPreparator(userId, eventType,
+			// payloadEntries));
+			mailSender.send(messagePreparator.getMailMessage(userId, eventType, payloadEntries));
 
-    } catch (MailException e) {
-      throw new HpcException(e.getMessage(), e);
-    }
-  }
+		} catch (MailException e) {
+			throw new HpcException(e.getMessage(), e);
+		}
+	}
 
-  @Override
-  public void sendNotification(
-      String userId,
-      HpcSystemAdminNotificationType notificationType,
-      List<HpcEventPayloadEntry> payloadEntries)
-      throws HpcException {
-    try {
-      mailSender.send(messagePreparator.getPreparator(userId, notificationType, payloadEntries));
+	@Override
+	public void sendNotification(String userId, HpcSystemAdminNotificationType notificationType,
+			List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
+		try {
+			mailSender.send(messagePreparator.getPreparator(userId, notificationType, payloadEntries));
 
-    } catch (MailException e) {
-      throw new HpcException(e.getMessage(), e);
-    }
-  }
+		} catch (MailException e) {
+			throw new HpcException(e.getMessage(), e);
+		}
+	}
 }
