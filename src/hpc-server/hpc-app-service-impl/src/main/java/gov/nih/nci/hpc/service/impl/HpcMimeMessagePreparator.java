@@ -11,14 +11,17 @@
 package gov.nih.nci.hpc.service.impl;
 
 import java.util.List;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
@@ -83,6 +86,21 @@ public class HpcMimeMessagePreparator {
 				message.setText(text, true);
 			}
 		};
+	}
+
+	public SimpleMailMessage getMailMessage(String userId, HpcEventType eventType,
+			List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
+		String subject = notificationFormatter.formatSubject(eventType, payloadEntries);
+		String text = notificationFormatter.formatText(eventType, payloadEntries);
+
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
+		message.setTo(userId + "@" + NIH_EMAIL_DOMAIN);
+		message.setSubject(subject);
+		message.setText(text);
+
+		return message;
+
 	}
 
 	/**
