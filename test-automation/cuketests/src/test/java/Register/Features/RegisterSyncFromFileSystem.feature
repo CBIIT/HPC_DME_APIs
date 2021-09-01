@@ -8,7 +8,7 @@ Feature: Register from file system synchronously
 	    Given I add base_path as "/CCR_CSB_Archive"
 	    And I add collection_type as "PI_Lab"
 	    And I add a checksum of ""
-	    And I add data_file_path as "/CCR_CSB_Archive/Udit_5_27_21/Project/Run_5_27_2021/saradatest.out"
+	    And I add data_file_path as ""
 	    And I add source_path as "/Users/schintal/Downloads/saradatest.out"
 	    And I add destination_path as "/CCR_CSB_Archive/PI_PI/Project_some_brief_description/Run_Raw_dataset_X/saradatest.out"
 	    And I add metadataEntries as
