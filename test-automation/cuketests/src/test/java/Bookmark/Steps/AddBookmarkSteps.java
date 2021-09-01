@@ -55,24 +55,14 @@ public class AddBookmarkSteps {
 		 String bookmarkJson = gson.toJson(this.bookmark);
 		 System.out.println(bookmarkJson);
 
-		
-		 System.out.println("Sending request!!");
-		 //await().atMost(500, TimeUnit.SECONDS).untilAsserted(
-				// () -> {
-					 //Response response = request.get("");
-					 Response response = request.body(bookmarkJson).put(this.bookmarkName);
-					 	System.out.println(response.asString());
-					    System.out.println(response.getBody());
-					    System.out.println(response.getStatusCode());
-					    
-					    int statuscode = response.getStatusCode();
-					     //assertThat(x).isEqualTo(0);
-					    //assertThat(response.statusCode().isEqualTo(200));
-				// }			 
-		//);
 
-		
-	}
+		 System.out.println("Sending request!!");
+		 Response response = request.body(bookmarkJson).put(this.bookmarkName);
+		 System.out.println(response.asString());
+		 System.out.println(response.getBody());
+		 System.out.println(response.getStatusCode());
+		 int statuscode = response.getStatusCode();
+}
 
 	@Then("I verify the status of {string}")
 	public void i_verify_the_status_of(String string) {

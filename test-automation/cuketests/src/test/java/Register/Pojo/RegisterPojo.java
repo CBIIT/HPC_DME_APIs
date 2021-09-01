@@ -4,35 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 public class RegisterPojo {
-
-	/**
-	 * 
-	 * 
-
-"callerObjectId" : "<user-defined-base-path-in-archive (optional) >",
-"checksum" : "<data-checksum (optional) >",
-"extractMetadata" : true|false (optional) ,
-"metadataEntries": [
-      	{
-      	 "attribute": "name",
-      	 "value": "Set100"
-   	}
-	],
-  “createParentCollections” : <true|false> (optional, false by default)>,
-  “parentCollectionsBulkMetadataEntries” :  {
-     “defaultCollectionMetadataEntries” : [
-              {
-      	    "attribute": "collection_type",
-      	    "value": "Folder"
-   	  }
-	  ]
-   }
-}
-
-	 * 
-	 */
 	
 	String callerObjectId;
+	String basePath;
+	
 	String checksum;
 	Boolean extractMetadata;
 	List<Map<String, String>> metadataEntries;
@@ -63,6 +38,18 @@ public class RegisterPojo {
 	}
 	public void setChecksum(String checksum) {
 		this.checksum = checksum;
+	}
+	public String getBasePath() {
+		return basePath;
+	}
+	public void setBasePath(String basePath) {
+		this.basePath = basePath;
+	}
+	public Boolean getCreateParentCollections() {
+		return createParentCollections;
+	}
+	public void setCreateParentCollections(Boolean createParentCollections) {
+		this.createParentCollections = createParentCollections;
 	}
 	public Boolean getExtractMetadata() {
 		return extractMetadata;
