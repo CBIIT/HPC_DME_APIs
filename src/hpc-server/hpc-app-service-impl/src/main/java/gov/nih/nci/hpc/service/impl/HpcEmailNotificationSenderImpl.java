@@ -8,16 +8,16 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcEventType;
-import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * HPC Email Notification Sender
@@ -49,9 +49,7 @@ public class HpcEmailNotificationSenderImpl implements HpcNotificationSender {
 	public void sendNotification(String userId, HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries)
 			throws HpcException {
 		try {
-			// mailSender.send(messagePreparator.getPreparator(userId, eventType,
-			// payloadEntries));
-			mailSender.send(messagePreparator.getMailMessage(userId, eventType, payloadEntries));
+			mailSender.send(messagePreparator.getPreparator(userId, eventType, payloadEntries));
 
 		} catch (MailException e) {
 			throw new HpcException(e.getMessage(), e);
