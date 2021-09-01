@@ -66,34 +66,6 @@ public class HpcMimeMessagePreparator {
 		};
 	}
 
-	/*
-	 * String subject = notificationFormatter.formatSubject(eventType,
-	 * payloadEntries); String text = notificationFormatter.formatText(eventType,
-	 * payloadEntries);
-	 * 
-	 * return new MimeMessagePreparator() { public void prepare(MimeMessage
-	 * mimeMessage) throws MessagingException { MimeMessageHelper message = new
-	 * MimeMessageHelper(mimeMessage);
-	 * message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
-	 * message.setTo(userId + "@" + NIH_EMAIL_DOMAIN); message.setSubject(subject);
-	 * message.setText(text, true); } }; }
-	 * 
-	 * public SimpleMailMessage getMailMessage(String userId, HpcEventType
-	 * eventType, List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
-	 * String subject = notificationFormatter.formatSubject(eventType,
-	 * payloadEntries); String text = notificationFormatter.formatText(eventType,
-	 * payloadEntries);
-	 * 
-	 * SimpleMailMessage message = new SimpleMailMessage();
-	 * message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
-	 * message.setTo(userId + "@" + NIH_EMAIL_DOMAIN); message.setSubject(subject);
-	 * message.setText(text);
-	 * 
-	 * return message;
-	 * 
-	 * }
-	 */
-
 	/**
 	 * Instantiate a MIME message preparator for an event.
 	 *
