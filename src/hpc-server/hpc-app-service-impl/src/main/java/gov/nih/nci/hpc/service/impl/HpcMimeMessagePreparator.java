@@ -13,19 +13,14 @@ package gov.nih.nci.hpc.service.impl;
 import java.util.List;
 
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
-import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * HPC MIME Message Preparator.
@@ -62,46 +57,42 @@ public class HpcMimeMessagePreparator {
 	 * @return MimeMessagePreparator
 	 */
 	public MimeMessagePreparator getPreparator(String userId, HpcEventType eventType,
-			List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
-		/*
-		 * return (mimeMessage) -> { mimeMessage.setRecipient(Message.RecipientType.TO,
-		 * new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
-		 * mimeMessage.setSubject(notificationFormatter.formatSubject(eventType,
-		 * payloadEntries));
-		 * mimeMessage.setText(notificationFormatter.formatText(eventType,
-		 * payloadEntries), "UTF-8", "html"); mimeMessage.setFrom(new
-		 * InternetAddress("DME Notification <dme-notification@doNotReply.nih.gov>"));
-		 * };
-		 */
-
-		String subject = notificationFormatter.formatSubject(eventType, payloadEntries);
-		String text = notificationFormatter.formatText(eventType, payloadEntries);
-
-		return new MimeMessagePreparator() {
-			public void prepare(MimeMessage mimeMessage) throws MessagingException {
-				MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
-				message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
-				message.setTo(userId + "@" + NIH_EMAIL_DOMAIN);
-				message.setSubject(subject);
-				message.setText(text, true);
-			}
+			List<HpcEventPayloadEntry> payloadEntries) {
+		return mimeMessage -> {
+			mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
+			mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, payloadEntries));
+			mimeMessage.setText(notificationFormatter.formatText(eventType, payloadEntries), "UTF-8", "html");
+			mimeMessage.setFrom(new InternetAddress("DME Notification <dme-notification@doNotReply.nih.gov>"));
 		};
 	}
 
-	public SimpleMailMessage getMailMessage(String userId, HpcEventType eventType,
-			List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
-		String subject = notificationFormatter.formatSubject(eventType, payloadEntries);
-		String text = notificationFormatter.formatText(eventType, payloadEntries);
-
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
-		message.setTo(userId + "@" + NIH_EMAIL_DOMAIN);
-		message.setSubject(subject);
-		message.setText(text);
-
-		return message;
-
-	}
+	/*
+	 * String subject = notificationFormatter.formatSubject(eventType,
+	 * payloadEntries); String text = notificationFormatter.formatText(eventType,
+	 * payloadEntries);
+	 * 
+	 * return new MimeMessagePreparator() { public void prepare(MimeMessage
+	 * mimeMessage) throws MessagingException { MimeMessageHelper message = new
+	 * MimeMessageHelper(mimeMessage);
+	 * message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
+	 * message.setTo(userId + "@" + NIH_EMAIL_DOMAIN); message.setSubject(subject);
+	 * message.setText(text, true); } }; }
+	 * 
+	 * public SimpleMailMessage getMailMessage(String userId, HpcEventType
+	 * eventType, List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
+	 * String subject = notificationFormatter.formatSubject(eventType,
+	 * payloadEntries); String text = notificationFormatter.formatText(eventType,
+	 * payloadEntries);
+	 * 
+	 * SimpleMailMessage message = new SimpleMailMessage();
+	 * message.setFrom("DME Notification <dme-notification@doNotReply.nih.gov>");
+	 * message.setTo(userId + "@" + NIH_EMAIL_DOMAIN); message.setSubject(subject);
+	 * message.setText(text);
+	 * 
+	 * return message;
+	 * 
+	 * }
+	 */
 
 	/**
 	 * Instantiate a MIME message preparator for an event.
