@@ -978,9 +978,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		// Cleanup the DB record.
-		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
-
 		// Create a task result object.
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
 		taskResult.setId(downloadTask.getId());
@@ -1025,6 +1022,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+		
+		// Cleanup the DB record.
+		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
+
 	}
 
 	@Override
