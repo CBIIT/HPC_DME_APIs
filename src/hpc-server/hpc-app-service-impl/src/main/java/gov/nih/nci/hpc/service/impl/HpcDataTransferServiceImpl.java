@@ -466,10 +466,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				synchronousDownloadFilter, configurationId, false);
 
-		if(globusDownloadDestination != null) {
-			checkForDuplicateRequests(path, globusDownloadDestination);
-		}
-
 		// Create a download request.
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setDataTransferType(dataTransferType);
@@ -1287,7 +1283,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				null, configurationId, true);
 
 		if(globusDownloadDestination != null) {
-			checkForDuplicateRequests(path, globusDownloadDestination);
+			checkForDuplicateCollectionDownloadRequests(path, globusDownloadDestination);
 		}
 
 		// Create a new collection download task.
@@ -2125,7 +2121,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 
-	private void checkForDuplicateRequests(String path, HpcGlobusDownloadDestination globusDownloadDestination)
+	private void checkForDuplicateCollectionDownloadRequests(String path, HpcGlobusDownloadDestination globusDownloadDestination)
 			throws HpcException {
 
 		if(path != null && globusDownloadDestination.getDestinationLocation() != null) {
