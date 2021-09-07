@@ -466,6 +466,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				synchronousDownloadFilter, configurationId, false);
 
+		if(globusDownloadDestination != null) {
+			checkForDuplicateRequests(path, globusDownloadDestination);
+		}
+
 		// Create a download request.
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setDataTransferType(dataTransferType);
@@ -1277,9 +1281,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId, String configurationId)
 			throws HpcException {
+
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				null, configurationId, true);
+
+		if(globusDownloadDestination != null) {
+			checkForDuplicateRequests(path, globusDownloadDestination);
+		}
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -1468,6 +1477,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
 			throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasksCount(userId, status, inProcess);
+	}
+
+	@Override
+	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint)
+			throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadRequestsCountByPathAndEndpoint(path, endpoint);
 	}
 
 	@Override
@@ -2108,6 +2123,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return pathAttributes;
 	}
+
+
+	private void checkForDuplicateRequests(String path, HpcGlobusDownloadDestination globusDownloadDestination)
+			throws HpcException {
+
+		if(path != null && globusDownloadDestination.getDestinationLocation() != null) {
+			String endpoint = globusDownloadDestination.getDestinationLocation().getFileContainerId();
+
+			//Is there an existing transaction for same endpoint and same collection, if so indicate error
+			if(endpoint != null) {
+				int tasksInProgressCount = getCollectionDownloadRequestsCountByPathAndEndpoint(path, endpoint);
+				if (tasksInProgressCount > 0) {
+					// Another download task in in-process for downloading the same collection to the same destination endpoint.
+					logger.error(
+					"collection download task: duplicate request for path {} and endpoint {}", path, endpoint);
+					throw new HpcException("A download request has already been submitted for downloading " + path + " to endpoint " + endpoint,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
+		}
+	}
+
 
 	/**
 	 * Validate download destination.
