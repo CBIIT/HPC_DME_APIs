@@ -642,6 +642,7 @@ public interface HpcDataTransferService {
 	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
 			throws HpcException;
 
+
 	/**
 	 * Get collection download requests count for a path and endpoint.
 	 *
@@ -651,6 +652,19 @@ public interface HpcDataTransferService {
 	 * @throws 			HpcException on database error.
 	 */
 	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint) throws HpcException;
+
+
+	/**
+	 * Get collection download tasks count for a specific user and path.
+	 *
+	 * @userId            The userId to query for.
+	 * @param path        The archive path to download from.
+	 * @param inProcess   True for collections that are under processing.
+	 * @return            Count of collection download tasks.
+	 * @throws            HpcException on database error.
+	 */
+	public int getCollectionDownloadTasksCountByUserAndPath(String userId, String path, boolean inProcess) throws HpcException;
+
 
 	/**
 	 * Set collection download task in-progress
