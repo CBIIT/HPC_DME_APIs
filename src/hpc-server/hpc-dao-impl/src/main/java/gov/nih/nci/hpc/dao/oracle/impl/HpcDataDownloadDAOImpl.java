@@ -885,11 +885,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public int getCollectionDownloadTasksCountByUserAndPath(String userId, String path, boolean inProcess)
 			throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_BY_PATH_AND_ENDPOINT_SQL, Integer.class,
+			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_TASKS_COUNT_BY_USER_AND_PATH_SQL, Integer.class,
 					userId, path, inProcess);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to count collection download tasks for user " + userId + "and path " + path + ": " + e.getMessage(),
+			throw new HpcException("Failed to count collection download tasks for user " + userId + " and path " + path + ": " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
