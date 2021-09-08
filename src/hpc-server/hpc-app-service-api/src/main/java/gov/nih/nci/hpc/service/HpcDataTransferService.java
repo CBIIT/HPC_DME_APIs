@@ -643,6 +643,16 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
+	 * Get collection download requests count for a path and endpoint.
+	 *
+	 * @param path		The archive path to download from.
+	 * @param status   	The destination endpoint.
+	 * @return 			Count of collection download requests.
+	 * @throws 			HpcException on database error.
+	 */
+	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint) throws HpcException;
+
+	/**
 	 * Set collection download task in-progress
 	 *
 	 * @param taskId    The collection download task ID.
