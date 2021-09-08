@@ -219,6 +219,17 @@ public interface HpcDataDownloadDAO {
 			throws HpcException;
 
 	/**
+	 * Get collection download requests count for a specific path and endpoint.
+	 *
+	 * @param path		The archive path to download from.
+	 * @param endpoint 	The destination endpoint.
+	 * @return 			Count of collection download requests.
+	 * @throws 			HpcException on database error.
+	 */
+	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint) throws HpcException;
+
+
+	/**
 	 * Set a collection download task in-process value.
 	 *
 	 * @param id        The collection download task ID.
