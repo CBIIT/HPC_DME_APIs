@@ -181,6 +181,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? and "
 			+ "STATUS = ? and IN_PROCESS = ?";
 
+	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_BY_PATH_AND_ENDPOINT_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where "
+		       + "PATH = ? AND DESTINATION_LOCATION_FILE_CONTAINER_ID = ?";
+
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set IN_PROCESS = ? where ID = ?";
 
 	private static final String RESET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set IN_PROCESS = '0', DESTINATION_OVERWRITE = '1' where ID = ?";
@@ -853,6 +856,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		try {
 			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL, Integer.class, userId,
 					status.value(), inProcess);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to count collection download requests: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint)
+			throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_BY_PATH_AND_ENDPOINT_SQL, Integer.class,
+					path, endpoint);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to count collection download requests: " + e.getMessage(),
