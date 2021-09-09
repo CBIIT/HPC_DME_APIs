@@ -729,6 +729,15 @@ public interface HpcDataTransferService {
 	public int getDownloadResultsCount(String userId, String doc) throws HpcException;
 
 	/**
+	 * Get inprocess data object download count.
+	 *
+	 * @param dtaTransferType The data tarnsfer type.
+	 * @return A total count of completed download requests.
+	 * @throws HpcException on database error.
+	 */
+	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType destinationType) throws HpcException;
+
+	/**
 	 * Get the download results page size.
 	 *
 	 * @return The download results page size.
