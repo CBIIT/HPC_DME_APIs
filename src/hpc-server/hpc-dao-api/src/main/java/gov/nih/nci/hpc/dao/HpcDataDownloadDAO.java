@@ -243,6 +243,16 @@ public interface HpcDataDownloadDAO {
 
 
 	/**
+	 * Get inprocess data object download count.
+	 *
+	 * @param dataTransferTypeType The data transfer type.
+	 * @return A total count of completed download requests.
+	 * @throws HpcException on database error.
+	 */
+	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType) throws HpcException;
+
+
+	/**
 	 * Set a collection download task in-process value.
 	 *
 	 * @param id        The collection download task ID.
