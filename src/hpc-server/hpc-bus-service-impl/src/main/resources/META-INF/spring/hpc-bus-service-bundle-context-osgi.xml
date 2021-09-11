@@ -30,7 +30,7 @@
 		<prop key="hpc.bus.dataObjectFileSystemTaskExecutorThreadPoolSize">10</prop>
 		<prop key="hpc.bus.sendReviewNotificationToUser">false</prop>
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
-		<prop key="hpc.bus.maxPermittedTransferManagerDownloads">0</prop>
+		<prop key="hpc.bus.maxPermittedS3DownloadsForGlobus">0</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
