@@ -1100,7 +1100,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through all the data object download tasks that are in-progress.
 		List<HpcDataObjectDownloadTask> downloadTasks = null;
 		//Retrieve count of active S3 object downloads (inProcess = true)
-		int inProcessS3Transactions = dataTransferService.getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3);
+		int inProcessS3DownloadsForGlobus = dataTransferService.getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
 		Date runTimestamp = new Date();
 		do {
 			downloadTasks = dataTransferService.getNextDataObjectDownloadTask(dataTransferStatus, dataTransferType,
@@ -1122,13 +1122,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						}
 						if( !downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
 							|| maxPermittedTransferManagerDownloads <= 0
-							|| inProcessS3Transactions < maxPermittedTransferManagerDownloads) {
+							|| inProcessS3DownloadsForGlobus < maxPermittedTransferManagerDownloads) {
 							// First mark the task as picked up in this run so we don't pick up the same
 							// record. For tasks in RECEIVED status (which are processed concurrently in
 							// separate threads), we set their in-process indicator to true so they are
 							//not picked up by another thread.
 							dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
-							inProcessS3Transactions++;
+							inProcessS3DownloadsForGlobus++;
 						} else {
 							//We do nothing because we have already reached the permitted max for S3 downloads
 							break;
