@@ -147,8 +147,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	Executor dataObjectFileSystemUploadTaskExecutor = null;
 
 	//Max downloads that the transfer manager can performs
-	@Value("${hpc.bus.maxPermittedTransferManagerDownloads}")
-	private Integer maxPermittedTransferManagerDownloads = null;
+	@Value("${hpc.bus.maxPermittedS3DownloadsForGlobus}")
+	private Integer maxPermittedS3DownloadsForGlobus = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -1121,8 +1121,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							break;
 						}
 						if( !downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-							|| maxPermittedTransferManagerDownloads <= 0
-							|| inProcessS3DownloadsForGlobus < maxPermittedTransferManagerDownloads) {
+							|| maxPermittedS3DownloadsForGlobus <= 0
+							|| inProcessS3DownloadsForGlobus < maxPermittedS3DownloadsForGlobus) {
 							// First mark the task as picked up in this run so we don't pick up the same
 							// record. For tasks in RECEIVED status (which are processed concurrently in
 							// separate threads), we set their in-process indicator to true so they are
