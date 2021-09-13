@@ -35,8 +35,8 @@
 		<spring.retry.version>1.3.0</spring.retry.version>
         <spring.security.version>3.2.10.RELEASE</spring.security.version>
         <aspectj.version>1.9.6</aspectj.version>
-		<amazon-aws.version>1.11.846</amazon-aws.version>
-		<jackson.version>2.11.2</jackson.version>
+		<amazon-aws.version>1.12.57</amazon-aws.version>
+		<jackson.version>2.12.3</jackson.version>
 		<jargon.version>4.3.2.2-RELEASE</jargon.version>
 		<jjwt.version>0.9.1</jjwt.version>
 		<bouncycastle.version>1.68</bouncycastle.version>
