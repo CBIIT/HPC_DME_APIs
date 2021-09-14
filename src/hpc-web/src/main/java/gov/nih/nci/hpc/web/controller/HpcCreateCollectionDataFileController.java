@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleScanDirectory;
+//import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleCloudStorageConnection;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
@@ -344,6 +345,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<String> globusEndpointFolders = (List<String>) session.getAttribute("GlobusEndpointFolders");
 		List<String> googleDriveFileIds = (List<String>) session.getAttribute("fileIds");
         List<String> googleDriveFolderIds = (List<String>) session.getAttribute("folderIds");
+        List<String> googleCloudFileIds = (List<String>) session.getAttribute("fileIds");
+        List<String> googleCloudFolderIds = (List<String>) session.getAttribute("folderIds");
         String accessToken = (String) session.getAttribute("accessToken");
 		
 		String bulkType = (String)request.getParameter("bulkType");
@@ -389,6 +392,25 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 file.setPath(path + "/" + fileName);
                 System.out.println(path + "/" + fileName);
                 files.add(file);
+            }
+            dto.getDataObjectRegistrationItems().addAll(files);
+        } else if (StringUtils.equals(bulkType, "gc") && googleDriveFileIds != null) {
+            List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
+            for (String fileId : googleCloudFileIds) {
+                /*gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
+                HpcFileLocation source = new HpcFileLocation();
+                source.setFileContainerId("GoogleCloud");
+                source.setFileId(fileId);
+                Path filePath = Paths.get(globusEndpointFiles.get(googleDriveFileIds.indexOf(fileId)));
+                String fileName = filePath.getFileName().toString();
+                HpcGoogleCloudStorageConnection googleCloudSource = new HpcGoogleCloudStorageConnection();
+                googleCloudSource.setSourceLocation(source);
+                googleCloudSource.setAccessToken(accessToken);
+                file.setGoogleCloudStorageUploadSource(googleCloudSource);
+                file.setCreateParentCollections(true);
+                file.setPath(path + "/" + fileName);
+                System.out.println(path + "/" + fileName);
+                files.add(file);*/
             }
             dto.getDataObjectRegistrationItems().addAll(files);
         }
@@ -442,6 +464,40 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			dto.getDirectoryScanRegistrationItems().addAll(folders);
 		}
 		if (StringUtils.equals(bulkType, "drive") && googleDriveFolderIds != null) {
+            List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();
+            for (String folderId : googleDriveFolderIds) {
+                gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
+                HpcFileLocation source = new HpcFileLocation();
+                source.setFileContainerId("MyDrive");
+                Path folderPath = Paths.get(globusEndpointFolders.get(googleDriveFolderIds.indexOf(folderId)));
+                String folderName = folderPath.getFileName().toString();
+                String fromPath = "/" + folderPath.toString();
+                String toPath = "/" + folderName;
+                source.setFileId(folderId);
+                folder.setBasePath(datafilePath);
+                HpcGoogleScanDirectory googleDriveDirectory = new HpcGoogleScanDirectory();
+                googleDriveDirectory.setDirectoryLocation(source);
+                googleDriveDirectory.setAccessToken(accessToken);
+                folder.setGoogleDriveScanDirectory(googleDriveDirectory);
+                folders.add(folder);
+                if(!fromPath.equals(toPath)) {
+                    HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+                    pathDTO.setFromPath(fromPath);
+                    pathDTO.setToPath(toPath);
+                    folder.setPathMap(pathDTO);
+                }
+                if(criteriaType != null && criteriaType.equals("Simple"))
+                    folder.setPatternType(HpcPatternType.SIMPLE);
+                else
+                    folder.setPatternType(HpcPatternType.REGEX);
+                if(exclude.size() > 0)
+                    folder.getExcludePatterns().addAll(exclude);
+                if(include.size() > 0)
+                    folder.getIncludePatterns().addAll(include);
+            }
+            dto.getDirectoryScanRegistrationItems().addAll(folders);
+        }
+	      if (StringUtils.equals(bulkType, "gc") && googleDriveFolderIds != null) {
             List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();
             for (String folderId : googleDriveFolderIds) {
                 gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
