@@ -337,7 +337,22 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
             e.printStackTrace();
           }
           
-        }
+        } else if (action != null && action.length > 0 && action[0].equals("GC")) {
+			session.setAttribute("datafilePath", hpcDataModel.getPath());
+			session.setAttribute("basePathSelected", basePath);
+			model.addAttribute("useraction", "gc");
+			session.setAttribute("bulkType", "gc");
+			setCriteria(model, request, session);
+			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
+					false);
+			String returnURL = this.webServerName + "/addbulk";
+			try {
+			  return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+			} catch (Exception e) {
+			  model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+			  e.printStackTrace();
+			}
+		  }
 
 		try {
 			if (hpcDataModel.getPath() == null || hpcDataModel.getPath().trim().length() == 0)
