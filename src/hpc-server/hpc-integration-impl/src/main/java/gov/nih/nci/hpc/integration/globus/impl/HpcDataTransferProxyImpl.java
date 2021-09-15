@@ -645,7 +645,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					pathAttributes.setIsFile(true);
 					pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
 				} else {
-					throw new HpcException("Error at endpoint " + fileLocation.getFileContainerId()
+					throw new HpcException("Error at Globus endpoint " + fileLocation.getFileContainerId()
 						+ ", file location: " + fileLocation.getFileId()
 						+ ": " + error.statusMessage, HpcErrorType.DATA_TRANSFER_ERROR, error);
 				}
