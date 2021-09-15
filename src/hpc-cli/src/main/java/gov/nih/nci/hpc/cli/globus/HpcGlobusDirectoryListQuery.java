@@ -106,7 +106,7 @@ public class HpcGlobusDirectoryListQuery {
 					// pathAttributes.setExists(true);
 					// pathAttributes.setIsFile(true);
 				} else {
-					throw new HpcException("Error at endpoint " + fileLocation.getFileContainerId()
+					throw new HpcException("Error at Globus endpoint " + fileLocation.getFileContainerId()
 					+ ", file location: " + fileLocation.getFileId()
 					+ ": " + error.statusMessage, HpcErrorType.DATA_TRANSFER_ERROR);
 				}
