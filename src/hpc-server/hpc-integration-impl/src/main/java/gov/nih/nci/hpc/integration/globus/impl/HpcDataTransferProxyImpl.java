@@ -647,7 +647,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				} else {
 					throw new HpcException("Error at endpoint " + fileLocation.getFileContainerId()
 						+ ", file location: " + fileLocation.getFileId()
-						+ ": " + error.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR, error);
+						+ ": " + error.statusMessage, HpcErrorType.DATA_TRANSFER_ERROR, error);
 				}
 			} else if (error.statusCode == 403) {
 				// Permission denied.
