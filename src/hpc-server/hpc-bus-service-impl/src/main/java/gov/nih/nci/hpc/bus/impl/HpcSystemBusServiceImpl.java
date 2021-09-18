@@ -146,7 +146,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Qualifier("hpcDataObjectFileSystemUploadTaskExecutor")
 	Executor dataObjectFileSystemUploadTaskExecutor = null;
 
-	//Max downloads that the transfer manager can performs
+	// Max downloads that the transfer manager can performs
 	@Value("${hpc.bus.maxPermittedS3DownloadsForGlobus}")
 	private Integer maxPermittedS3DownloadsForGlobus = null;
 
@@ -414,8 +414,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
 								systemGeneratedMetadata.getSourceSize()),
 						toGoogleDriveUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
-								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
-								systemGeneratedMetadata.getSourceSize()),
+								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
 						toGoogleCloudStorageUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
 						null, null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
@@ -586,12 +585,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				continue;
 			}
 
-			//We limit a user to one download (collection breakdown or processing) task at a time for the same collection
-			int tasksForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(downloadTask.getUserId(),
-					downloadTask.getPath(), true);
+			// We limit a user to one download (collection breakdown or processing) task at
+			// a time for the same collection
+			int tasksForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
+					downloadTask.getUserId(), downloadTask.getPath(), true);
 			if (tasksForSameCollectionCount > 0) {
-				// Another collection breakdown or processing tasks in in-process (other thread) for this
-				//same collection for this user.
+				// Another collection breakdown or processing tasks in in-process (other thread)
+				// for this
+				// same collection for this user.
 				logger.info(
 						"collection download task: {} - Not processing at this time. {} download tasks in-process for user {}",
 						downloadTask.getId(), tasksForSameCollectionCount, downloadTask.getUserId());
@@ -1099,8 +1100,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcDataTransferType dataTransferType) throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress.
 		List<HpcDataObjectDownloadTask> downloadTasks = null;
-		//Retrieve count of active S3 object downloads (inProcess = true)
-		int inProcessS3DownloadsForGlobus = dataTransferService.getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
+		// Retrieve count of active S3 object downloads (inProcess = true)
+		int inProcessS3DownloadsForGlobus = dataTransferService
+				.getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
 		Date runTimestamp = new Date();
 		do {
 			downloadTasks = dataTransferService.getNextDataObjectDownloadTask(dataTransferStatus, dataTransferType,
@@ -1120,17 +1122,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									downloadTask.getDestinationType());
 							break;
 						}
-						if( !downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-							|| maxPermittedS3DownloadsForGlobus <= 0
-							|| inProcessS3DownloadsForGlobus < maxPermittedS3DownloadsForGlobus) {
+						if (!downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
+								|| maxPermittedS3DownloadsForGlobus <= 0
+								|| inProcessS3DownloadsForGlobus < maxPermittedS3DownloadsForGlobus) {
 							// First mark the task as picked up in this run so we don't pick up the same
 							// record. For tasks in RECEIVED status (which are processed concurrently in
 							// separate threads), we set their in-process indicator to true so they are
-							//not picked up by another thread.
+							// not picked up by another thread.
 							dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
 							inProcessS3DownloadsForGlobus++;
 						} else {
-							//We do nothing because we have already reached the permitted max for S3 downloads
+							// We do nothing because we have already reached the permitted max for S3
+							// downloads
 							break;
 						}
 						CompletableFuture.runAsync(() -> {
@@ -2064,20 +2067,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param uploadMethod   The method of upload. If not GOOGLE_DRIVE, null will be
 	 *                       returned
 	 * @param sourceLocation The source location to package.
-	 * @param sourceURL      The source URL to stream from.
 	 * @param sourceSize     The source file size.
 	 * @return The packaged S3 upload source.
 	 */
 	private HpcStreamingUploadSource toGoogleDriveUploadSource(HpcDataTransferUploadMethod uploadMethod,
-			HpcFileLocation sourceLocation, String sourceURL, Long sourceSize) {
+			HpcFileLocation sourceLocation, Long sourceSize) {
 		if (!uploadMethod.equals(HpcDataTransferUploadMethod.GOOGLE_DRIVE)) {
 			return null;
 		}
 
 		HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
 		googleDriveUploadSource.setSourceLocation(sourceLocation);
-		// For Google drive, we persisted the access-token as source-url.
-		googleDriveUploadSource.setAccessToken(sourceURL);
 		googleDriveUploadSource.setSourceSize(sourceSize);
 		return googleDriveUploadSource;
 	}
