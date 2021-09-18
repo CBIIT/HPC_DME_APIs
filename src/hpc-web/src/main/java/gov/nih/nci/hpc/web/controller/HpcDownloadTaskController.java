@@ -205,8 +205,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 			return "dataobjectsdownloadtask";
 		} catch (Exception e) {
-			result.setMessage("Retry request is not successful: " + e.getMessage());
-			model.addAttribute("message", "Retry request is not successful. Task Id: " + taskId);
+		    result.setMessage(e.getMessage());
+			model.addAttribute("error", e.getMessage());
 			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 			return "dataobjectsdownloadtask";
 		}
