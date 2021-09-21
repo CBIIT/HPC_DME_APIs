@@ -2701,7 +2701,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Validate the data is not archived yet.
 			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 			if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-				throw new HpcException("Upload URL re-generation not allowed. Data object already archived",
+				throw new HpcException("Upload URL re-generation not allowed. Data object at " + path + " already archived",
 						HpcErrorType.REQUEST_REJECTED);
 			}
 
