@@ -511,6 +511,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 					jsonGoogleCloudStorageUploadSource.put("accessToken",
 							Base64.getEncoder().encodeToString(encryptor.encrypt(googleCloudStorageUploadSource.getAccessToken())));
 				}
+				if (googleCloudStorageUploadSource.getAccessTokenType() != null) {
+					jsonGoogleCloudStorageUploadSource.put("accessTokenType",
+							googleCloudStorageUploadSource.getAccessTokenType().value());
+				}
 				jsonRequest.put("googleCloudStorageUploadSource", jsonGoogleCloudStorageUploadSource);
 			}
 			if (request.getFileSystemUploadSource() != null) {
@@ -849,6 +853,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			if (jsonGoogleCloudStorageUploadSource.get("accessToken") != null) {
 				googleCloudStorageUploadSource.setAccessToken(encryptor.decrypt(
 						Base64.getDecoder().decode(jsonGoogleCloudStorageUploadSource.get("accessToken").toString())));
+			}
+			if (jsonGoogleCloudStorageUploadSource.get("accessTokenType") != null) {
+				googleCloudStorageUploadSource.setAccessTokenType(
+						HpcAccessTokenType.fromValue(jsonGoogleCloudStorageUploadSource.get("accessToken").toString()));
 			}
 			request.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		}
