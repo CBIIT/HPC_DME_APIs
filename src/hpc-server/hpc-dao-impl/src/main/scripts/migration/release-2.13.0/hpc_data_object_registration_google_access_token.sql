@@ -18,4 +18,15 @@ CREATE TABLE HPC_DATA_OBJECT_REGISTRATION_GOOGLE_ACCESS_TOKEN
 	CREATED TIMESTAMP DEFAULT sysdate NOT NULL
 	
 );
+
+BEGIN
+DBMS_SCHEDULER.CREATE_JOB (
+   job_name             => 'GOOGLE_ACCESS_TOKEN_CLEANUP',
+   job_type             => 'PLSQL_BLOCK',
+   job_action           => 'BEGIN delete from HPC_DATA_OBJECT_REGISTRATION_GOOGLE_ACCESS_TOKEN where CREATED < sysdate - 1; END;',
+   start_date           => '23-Sep-08 6.00.00AM US/Eastern',
+   repeat_interval      => 'FREQ=DAILY',
+   enabled              =>  TRUE);
+END;
+/
 	
