@@ -415,18 +415,30 @@
 														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input><span class="input-group-addon deleteAttribute" title="Delete Attribute">
         												<i class="fa fa-trash"></i></span></div></td>
 													<td
-														th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
+														th:if="${hpcMetadataAttrEntry.getValidValues() != null and hpcMetadataAttrEntry.isMandatory()}">
 														<select size="1"
 														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														class="form-control" th:required="required">
-															<option value="_select_null">----Select----</option>
+															<option value="">----Select----</option>
 															<option
 																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
 																th:value="${validValue}" th:text="${validValue}"
 																th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
 																Wireframe</option>
-													</select>
+														</select>
+													</td>
+													<td th:if="${hpcMetadataAttrEntry.getValidValues() != null and not hpcMetadataAttrEntry.isMandatory()}">
+														<select size="1"
+														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														class="form-control">
+															<option value="">----Select----</option>
+															<option
+																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
+																th:value="${validValue}" th:text="${validValue}" th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
+																Wireframe</option>
+														</select>
 													</td>
 												</tr>
 												<tr th:each="hpcMetadataAttrEntry : ${userMetadataEntries}"
