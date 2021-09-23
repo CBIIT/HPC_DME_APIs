@@ -563,6 +563,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 					jsonGoogleCloudStorageUploadSource.put("accessTokenType",
 							googleCloudStorageUploadSource.getAccessTokenType().value());
 				}
+				if (googleCloudStorageUploadSource.getAccessTokenType() != null) {
+					jsonGoogleCloudStorageUploadSource.put("accessTokenType",
+							googleCloudStorageUploadSource.getAccessTokenType().value());
+				}
 				jsonRequest.put("googleCloudStorageUploadSource", jsonGoogleCloudStorageUploadSource);
 			}
 			if (request.getFileSystemUploadSource() != null) {
