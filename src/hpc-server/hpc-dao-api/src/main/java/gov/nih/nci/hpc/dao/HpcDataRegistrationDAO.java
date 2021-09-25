@@ -197,12 +197,11 @@ public interface HpcDataRegistrationDAO {
 	 */
 	public void upsertGoogleAccessToken(String dataObjectId, String accessToken, HpcAccessTokenType accessTokenType)
 			throws HpcException;
-	
-	
+
 	/**
 	 * Get a google access token.
 	 * 
-	 * @param dataObjectId    The data object ID (uuid) to get an access token for.
+	 * @param dataObjectId The data object ID (uuid) to get an access token for.
 	 * @return HpcAccessToken if found, or null otherwise
 	 *
 	 * @throws HpcException on database error.
@@ -211,6 +210,16 @@ public interface HpcDataRegistrationDAO {
 		public String accessToken = null;
 		public HpcAccessTokenType accessTokenType = null;
 	}
-	public HpcGoogleAccessToken getGoogleAccessToken(String dataObjectId)
-			throws HpcException;
+
+	public HpcGoogleAccessToken getGoogleAccessToken(String dataObjectId) throws HpcException;
+
+	/**
+	 * Delete a google access token.
+	 * 
+	 * @param dataObjectId The data object ID (uuid) to delete the token for.
+	 * @return HpcAccessToken if found, or null otherwise
+	 *
+	 * @throws HpcException on database error.
+	 */
+	public void deleteGoogleAccessToken(String dataObjectId) throws HpcException;
 }
