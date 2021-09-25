@@ -91,13 +91,13 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 
 	@Override
 	public void transferCompleted(Long bytesTransferred) {
-		logger.info("AWS / 3rd Party S3 Provider / Google Drive upload completed for: {}", path);
+		logger.info("AWS / 3rd Party S3 Provider / Google Drive / Google Cloud Storage upload completed for: {}", path);
 		deleteGoogleAccessToken();
 	}
 
 	@Override
 	public void transferFailed(String message) {
-		logger.error("Streaming (AWS / 3rd Party S3 Provider / Google Drive) upload failed for: {} - {}", path,
+		logger.error("Streaming (AWS / 3rd Party S3 Provider / Google Drive / Google Cloud Storage) upload failed for: {} - {}", path,
 				message);
 		deleteGoogleAccessToken();
 		
