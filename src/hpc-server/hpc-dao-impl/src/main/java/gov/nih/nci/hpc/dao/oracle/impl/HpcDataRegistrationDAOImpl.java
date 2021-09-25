@@ -118,6 +118,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	private static final String GET_GOOGLE_ACCESS_TOKEN_SQL = "select * from HPC_DATA_OBJECT_REGISTRATION_GOOGLE_ACCESS_TOKEN where ID = ?";
 
+	private static final String DELETE_GOOGLE_ACCESS_TOKEN_SQL = "delete from HPC_DATA_OBJECT_REGISTRATION_GOOGLE_ACCESS_TOKEN where ID = ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -460,6 +462,17 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get Google Access Token for: [" + dataObjectId + "] " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void deleteGoogleAccessToken(String dataObjectId) throws HpcException {
+		try {
+			jdbcTemplate.update(DELETE_GOOGLE_ACCESS_TOKEN_SQL, dataObjectId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to delete a google access token: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
@@ -908,8 +921,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 						Base64.getDecoder().decode(jsonGoogleCloudStorageUploadSource.get("accessToken").toString())));
 			}
 			if (jsonGoogleCloudStorageUploadSource.get("accessTokenType") != null) {
-				googleCloudStorageUploadSource.setAccessTokenType(
-						HpcAccessTokenType.fromValue(jsonGoogleCloudStorageUploadSource.get("accessTokenType").toString()));
+				googleCloudStorageUploadSource.setAccessTokenType(HpcAccessTokenType
+						.fromValue(jsonGoogleCloudStorageUploadSource.get("accessTokenType").toString()));
 			}
 			request.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		}
