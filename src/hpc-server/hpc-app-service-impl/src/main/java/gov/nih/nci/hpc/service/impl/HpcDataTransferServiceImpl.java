@@ -2041,8 +2041,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Instantiate a progress listener for upload from AWS S3.
 		HpcDataTransferProgressListener progressListener = null;
 		if (uploadRequest.getS3UploadSource() != null) {
-			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
-					uploadRequest.getS3UploadSource().getSourceLocation(), eventService);
+			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), null, uploadRequest.getUserId(),
+					uploadRequest.getS3UploadSource().getSourceLocation(), eventService, null);
 		}
 
 		// For uploads from Google (Drive or Cloud storage), we need to generate an
@@ -2069,8 +2069,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 									dataTransferProxy.authenticate(inputStreamSource.getAccessToken(),
 											inputStreamSource.getAccessTokenType()),
 									inputStreamSource.getSourceLocation()));
-			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
-					inputStreamSource.getSourceLocation(), eventService);
+			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
+					uploadRequest.getUserId(), inputStreamSource.getSourceLocation(), eventService,
+					dataRegistrationDAO);
 			dataRegistrationDAO.upsertGoogleAccessToken(uploadRequest.getDataObjectId(),
 					inputStreamSource.getAccessToken(), inputStreamSource.getAccessTokenType());
 		}
