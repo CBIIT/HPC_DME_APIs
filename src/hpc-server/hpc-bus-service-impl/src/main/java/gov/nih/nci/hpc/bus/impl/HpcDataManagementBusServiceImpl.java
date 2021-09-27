@@ -2542,6 +2542,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			final String fileContainerId = scanDirectoryLocation.getFileContainerId();
 			final HpcS3Account fs3Account = s3Account;
 			final String fgoogleAccessToken = googleAccessToken;
+			final HpcAccessTokenType fGoogleAccessTokenType = googleAccessTokenType;
 			final HpcDataTransferType fdataTransferType = dataTransferType;
 			dataTransferService.scanDirectory(dataTransferType, s3Account, googleAccessToken, googleAccessTokenType,
 					scanDirectoryLocation, configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
@@ -2549,7 +2550,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleAccessToken)));
+							fs3Account, fgoogleAccessToken, fGoogleAccessTokenType)));
 		}
 
 		return dataObjectRegistrationItems;
@@ -2574,12 +2575,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param googleAccessToken     (Optional) Provided if this is a registration
 	 *                              item from Google Drive or Google Cloud Storage
 	 *                              source, otherwise null.
+	 * @param googleAccessToken     The Google access token type (system/user
+	 *                              account)
 	 * @return data object registration DTO.
 	 */
 	private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem,
 			String basePath, String sourceFileContainerId, String callerObjectId,
 			HpcBulkMetadataEntries bulkMetadataEntries, HpcDirectoryScanPathMap pathMap,
-			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken) {
+			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken,
+			HpcAccessTokenType googleAccessTokenType) {
 		// If pathMap provided - use the map to replace scanned path with user provided
 		// path (or part of
 		// path).
@@ -2637,6 +2641,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
 			googleCloudStorageUploadSource.setSourceLocation(source);
 			googleCloudStorageUploadSource.setAccessToken(googleAccessToken);
+			googleCloudStorageUploadSource.setAccessTokenType(googleAccessTokenType);
 			dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		} else {
 			HpcUploadSource globusUploadSource = new HpcUploadSource();
@@ -2701,7 +2706,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Validate the data is not archived yet.
 			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 			if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-				throw new HpcException("Upload URL re-generation not allowed. Data object already archived",
+				throw new HpcException("Upload URL re-generation not allowed. Data object at " + path + " already archived",
 						HpcErrorType.REQUEST_REJECTED);
 			}
 
