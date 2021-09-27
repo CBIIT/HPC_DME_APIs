@@ -5,49 +5,19 @@
 <meta http-equiv='CACHE-CONTROL' content='NO-CACHE'/>
 <title>NCI DME Auto-POST form</title>
 </head>
-<script
-	src="js/jquery/3.1.1/jquery.min.js"></script>
-<script th:inline="javascript">
-/*<![CDATA[*/
-var redirectURL = [[${redirectURL}]];
-var json = [[${json}]];
-var token = [[${jsonToken}]];
-if(json) {
-$.ajax({
-	type: "POST",
-    url: redirectURL,
-    data : token,
-    success: function (data) {
-    	console.log('Success');
-    },
-    error : function(e) {
-		console.log('ERROR: ', e);
-	},
-	dataType: "json",
-	contentType: "application/json; charset=utf-8",
-	xhrFields: {withCredentials: true}
-});
-} else {
-	$(document).ready(function() {
-		document.getElementById("form1").submit();
-	});
-	
-}
-/*]]>*/
-</script>
-<body>
+<body onLoad="document.forms[0].submit()">
 	<noscript>
 		Your browser does not support JavaScript. Please click the 'Continue'
 		button below to proceed. <br/>
 		<br/>
 	</noscript>
-	<form id="form1" th:if="${urlencoded}" th:action="${redirectURL}" method="POST">
+	<form th:if="${urlencoded}" th:action="${redirectURL}" method="POST">
 		<input type="hidden" name="token" th:value="${token}"/>
 		<noscript>
 			<input type="submit" value="Continue"/>
 		</noscript>
 	</form>
-	<form id="form1" th:if="${!urlencoded and !json}" th:action="${redirectURL}" method="POST" enctype="text/plain">
+	<form th:if="${!urlencoded}" th:action="${redirectURL}" method="POST" enctype="text/plain">
 		<div th:remove="tag" th:utext="${formattedToken}"></div>
 		<noscript>
 			<input type="submit" value="Continue"/>

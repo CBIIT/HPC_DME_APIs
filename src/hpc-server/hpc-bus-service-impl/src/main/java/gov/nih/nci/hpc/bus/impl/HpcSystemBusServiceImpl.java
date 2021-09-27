@@ -1982,6 +1982,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					registrationTask.setMessage("Data object upload failed");
 					registrationTask.setCompleted(Calendar.getInstance());
 					registrationTask.setPercentComplete(0);
+					return;
 				}
 
 				// Get the System generated metadata.
