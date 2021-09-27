@@ -106,8 +106,9 @@ public class HpcGlobusDirectoryListQuery {
 					// pathAttributes.setExists(true);
 					// pathAttributes.setIsFile(true);
 				} else {
-					throw new HpcException("Invalid file location: " + fileLocation,
-							HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException("Error at Globus endpoint " + fileLocation.getFileContainerId()
+					+ ", file location: " + fileLocation.getFileId()
+					+ ": " + error.statusMessage, HpcErrorType.DATA_TRANSFER_ERROR);
 				}
 			} else if (error.statusCode == 403) {
 				// Permission denied.
