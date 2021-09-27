@@ -16,15 +16,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
@@ -47,18 +46,14 @@ public class HpcSsoController extends AbstractHpcController {
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-	@GetMapping
+	@RequestMapping(method = RequestMethod.GET)
 	public String home(@CookieValue(value = "NIHSMSESSION", required = false) String smSession, Model model,
 			@RequestParam(value = "redirect_uri", required = true) String redirectURL,
-			@RequestParam(value = "urlencoded", required = false) Boolean urlencoded,
-			@RequestParam(value = "json", required = false) Boolean json, HttpSession session,
+			@RequestParam(value = "urlencoded", required = false) Boolean urlencoded, HttpSession session,
 			HttpServletRequest request) {
-		// Default to text/plain enctype instead of application/x-www-form-urlencoded
+		// Default to enctype application/x-www-form-urlencoded
 		if(urlencoded == null)
-			urlencoded = false;
-		// Default json to true if urlencoded is false
-		if(Boolean.FALSE.equals(urlencoded) && json == null)
-			json = true;
+			urlencoded = true;
 		String userId = (String) session.getAttribute("hpcUserId");
 		String authToken = "";
 		if (!StringUtils.isBlank(userId)) {
@@ -66,18 +61,15 @@ public class HpcSsoController extends AbstractHpcController {
 				authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession, authenticateURL);
 				session.setAttribute("hpcUserToken", authToken);
 			} catch (Exception e) {
-				logger.error("Authentication failed. {}", e.getMessage());
+				logger.error("Authentication failed. " + e.getMessage());
 			}
 		}
 		// This is to support posting the token in format, {"token": "ABC123", "ignoreme": "="} using text/plain encoding.
 		String formattedToken = "<input type='hidden' name='{\"token\": \"" + authToken + "\", \"ignoreme\": \"' value='\"}'/>";
-		String jsonToken = "{\"token\": \"" + authToken + "\"}";
 		model.addAttribute("formattedToken", formattedToken);
-		model.addAttribute("jsonToken", jsonToken);
 		model.addAttribute("redirectURL", redirectURL);
 		model.addAttribute("token", authToken);
 		model.addAttribute("urlencoded", urlencoded);
-		model.addAttribute("json", json);
 		return "sso";
 	}
 
