@@ -146,10 +146,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Qualifier("hpcDataObjectFileSystemUploadTaskExecutor")
 	Executor dataObjectFileSystemUploadTaskExecutor = null;
 
-	// Max downloads that the transfer manager can performs
-	@Value("${hpc.bus.maxPermittedS3DownloadsForGlobus}")
-	private Integer maxPermittedS3DownloadsForGlobus = null;
-
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -1100,9 +1096,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcDataTransferType dataTransferType) throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress.
 		List<HpcDataObjectDownloadTask> downloadTasks = null;
-		// Retrieve count of active S3 object downloads (inProcess = true)
-		int inProcessS3DownloadsForGlobus = dataTransferService
-				.getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
 		Date runTimestamp = new Date();
 		do {
 			downloadTasks = dataTransferService.getNextDataObjectDownloadTask(dataTransferStatus, dataTransferType,
@@ -1110,7 +1103,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			if (!CollectionUtils.isEmpty(downloadTasks)) {
 				HpcDataObjectDownloadTask downloadTask = downloadTasks.get(0);
 				try {
+					// First mark the task as picked up in this run so we don't pick up the same
+					// record. For tasks in RECEIVED status (which are processed concurrently in
+					// separate threads), we set their in-process indicator to true so they are
+					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
+					dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
 
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
@@ -1122,20 +1120,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									downloadTask.getDestinationType());
 							break;
 						}
-						if (!downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-								|| maxPermittedS3DownloadsForGlobus <= 0
-								|| inProcessS3DownloadsForGlobus < maxPermittedS3DownloadsForGlobus) {
-							// First mark the task as picked up in this run so we don't pick up the same
-							// record. For tasks in RECEIVED status (which are processed concurrently in
-							// separate threads), we set their in-process indicator to true so they are
-							// not picked up by another thread.
-							dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
-							inProcessS3DownloadsForGlobus++;
-						} else {
-							// We do nothing because we have already reached the permitted max for S3
-							// downloads
-							break;
-						}
+
 						CompletableFuture.runAsync(() -> {
 							try {
 								// Since this is executed in a separate thread. Need to get system-account
