@@ -192,6 +192,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.globusTokenExpirationPeriod}")
 	private int globusTokenExpirationPeriod = 0;
 
+	// Max downloads that the transfer manager can perform
+	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
+	private Integer maxPermittedS3DownloadsForGlobus = null;
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -2867,26 +2871,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * 
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
-	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) {
-		try {
-			long freeSpace = Files
+	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload)
+			throws HpcException {
+        // Retrieve count of active S3 object downloads (inProcess = true)
+        int inProcessS3DownloadsForGlobus =
+		    getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
+        if (maxPermittedS3DownloadsForGlobus <= 0
+				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
+            try {
+                long freeSpace = Files
 					.getFileStore(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
 					.getUsableSpace();
-			if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
-				// Not enough space disk space to perform the first hop download. Log an error
-				// and reset the
-				// task.
-				logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+                if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+					// Not enough space disk space to perform the first hop download. Log an error
+					// and reset the
+					// task.
+					logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
 						secondHopDownload.getDownloadTask().getPath(), freeSpace,
 						secondHopDownload.getDownloadTask().getSize());
-				return false;
+					return false;
+				}
+
+			} catch (IOException e) {
+				// Failed to check free disk space. We'll try the download.
+				logger.error("Failed to determine free space", e);
 			}
-
-		} catch (IOException e) {
-			// Failed to check free disk space. We'll try the download.
-			logger.error("Failed to determine free space", e);
 		}
-
 		return true;
 	}
 
