@@ -1153,8 +1153,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Validate that the 2-hop download can be performed at this time.
 			if (!canPerfom2HopDownload(secondHopDownload)) {
 				logger.info(
-						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={}]",
-						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
+				        + " path={}], or transaction limit reached ",
+						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(), downloadTask.getPath());
 				return;
 			}
 
@@ -2839,17 +2840,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
 						dataTransferConfiguration.getEncryptedTransfer());
 
-				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}]",
+				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			} else {
 				// Can't perform the 2-hop download at this time. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 
 				logger.info(
-						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={}]",
+						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={},"
+						+ " path = {}] or transaction limit reached ",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
 		} catch (HpcException e) {
@@ -2898,6 +2900,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		} else {
 			//We are over the allowed number of transactions
+			logger.info("Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
+					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus, secondHopDownload.getDownloadTask().getPath());
 			return false;
 		}
 		return true;
