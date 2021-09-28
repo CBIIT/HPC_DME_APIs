@@ -178,8 +178,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_ALL_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT where COMPLETION_EVENT = '1'";
 
-	private static final String GET_IN_PROCESS_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "DATA_TRANSFER_TYPE = ? and DESTINATION_TYPE = ? and IN_PROCESS = '1'";
+	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
+			+ "DATA_TRANSFER_TYPE = ? and DESTINATION_TYPE = ? and DATA_TRANSFER_STATUS = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? and "
 			+ "STATUS = ? and IN_PROCESS = ?";
@@ -901,7 +901,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	@Override
 	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType, HpcDataTransferType destinationType) throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_IN_PROCESS_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_SQL, Integer.class, dataTransferType.value(), destinationType.value());
+			return jdbcTemplate.queryForObject(
+				GET_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_SQL, Integer.class, dataTransferType.value(), destinationType.value(), HpcDataTransferDownloadStatus.IN_PROGRESS);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get inprocess data object download tasks count: " + e.getMessage(),
