@@ -265,8 +265,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		model.addAttribute("bucketName", bucketName);
 		String s3Path = (String)request.getParameter("s3Path");
 		model.addAttribute("s3Path", s3Path);
-		String gcPath = (String)request.getParameter("gcPath");
-		model.addAttribute("gcPath", gcPath);
 		String accessKey = (String)request.getParameter("accessKey");
 		model.addAttribute("accessKey", accessKey);
 		String secretKey = (String)request.getParameter("secretKey");
@@ -274,10 +272,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		String region = (String)request.getParameter("region");
 		model.addAttribute("region", region);
 		String s3File = (String)request.getParameter("s3File");
-		model.addAttribute("s3File", s3File != null && s3File.equals("on"));
-		String gcFile = (String)request.getParameter("gcFile");
-		model.addAttribute("gcFile", gcFile != null && gcFile.equals("on"));
-	
+		model.addAttribute("s3File", s3File != null && s3File.equals("on"));	
 		if (basePath == null)
 			basePath = (String) session.getAttribute("basePathSelected");
 
@@ -342,22 +337,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
             e.printStackTrace();
           }
           
-        } else if (action != null && action.length > 0 && action[0].equals("GC")) {
-			session.setAttribute("datafilePath", hpcDataModel.getPath());
-			session.setAttribute("basePathSelected", basePath);
-			model.addAttribute("useraction", "gc");
-			session.setAttribute("bulkType", "gc");
-			setCriteria(model, request, session);
-			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
-					false);
-			String returnURL = this.webServerName + "/addbulk";
-			try {
-			  return "redirect:" + hpcAuthorizationService.authorize(returnURL);
-			} catch (Exception e) {
-			  model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-			  e.printStackTrace();
-			}
-		  }
+        }
 
 		try {
 			if (hpcDataModel.getPath() == null || hpcDataModel.getPath().trim().length() == 0)
