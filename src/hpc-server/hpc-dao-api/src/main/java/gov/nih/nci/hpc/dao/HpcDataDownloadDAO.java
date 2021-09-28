@@ -245,12 +245,14 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Get inprocess data object download count.
 	 *
-	 * @param dataTransferTypeType The data transfer type.
-	 * @param destinationType   The destination type
+	 * @param dataTransferTypeType  The data transfer type.
+	 * @param destinationType       The destination type
+	 * @status                      The data transfer download status
 	 * @return A total count of completed download requests.
 	 * @throws HpcException on database error.
 	 */
-	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType, HpcDataTransferType destinationType) throws HpcException;
+	public int getDataObjectDownloadTasksCountByStatusAndType(HpcDataTransferType dataTransferType, HpcDataTransferType destinationType, 
+        HpcDataTransferDownloadStatus status) throws HpcException;
 
 
 	/**
