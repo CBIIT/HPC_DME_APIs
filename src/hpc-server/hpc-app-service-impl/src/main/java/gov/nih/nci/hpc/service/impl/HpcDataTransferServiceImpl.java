@@ -2896,6 +2896,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				// Failed to check free disk space. We'll try the download.
 				logger.error("Failed to determine free space", e);
 			}
+		} else {
+			//We are over the allowed number of transactions
+			return false;
 		}
 		return true;
 	}
