@@ -1152,6 +1152,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			// Validate that the 2-hop download can be performed at this time.
 			if (!canPerfom2HopDownload(secondHopDownload)) {
+				// Can’t perform the 2-hop download at this time. Reset the task
+				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
 						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
 				        + " path={}], or transaction limit reached ",
