@@ -186,6 +186,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.globusTokenExpirationPeriod}")
 	private int globusTokenExpirationPeriod = 0;
 
+	// Max S3 downloads that the transfer manager can perform
+	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
+	private Integer maxPermittedS3DownloadsForGlobus = null;
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -1125,6 +1129,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			// Validate that the 2-hop download can be performed at this time.
 			if (!canPerfom2HopDownload(secondHopDownload)) {
+				// Can’t perform the 2-hop download at this time. Reset the task
+				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
 						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={}]",
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
@@ -1502,7 +1508,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType, HpcDataTransferType destinationType)
 			throws HpcException {
-		return dataDownloadDAO.getInProcessDataObjectDownloadTasksCount(dataTransferType, destinationType);
+		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType, HpcDataTransferDownloadStatus.IN_PROGRESS);
 	}
 
 	@Override
@@ -2808,17 +2814,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
 						dataTransferConfiguration.getEncryptedTransfer());
 
-				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}]",
+				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			} else {
 				// Can't perform the 2-hop download at this time. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 
 				logger.info(
-						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={}]",
+						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={},"
+						+ " path = {}] or transaction limit reached ",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
 		} catch (HpcException e) {
@@ -2840,24 +2847,34 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * 
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
-	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) {
-		try {
-			long freeSpace = Files
+    private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
+
+        int inProcessS3DownloadsForGlobus =
+            getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
+        if (maxPermittedS3DownloadsForGlobus <= 0
+            || inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
+        try {
+                 long freeSpace = Files
 					.getFileStore(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
 					.getUsableSpace();
-			if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
-				// Not enough space disk space to perform the first hop download. Log an error
-				// and reset the
-				// task.
-				logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+                 if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+                    // Not enough space disk space to perform the first hop download. Log an error
+                    // and reset the
+                    // task.
+                    logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
 						secondHopDownload.getDownloadTask().getPath(), freeSpace,
 						secondHopDownload.getDownloadTask().getSize());
-				return false;
-			}
-
-		} catch (IOException e) {
-			// Failed to check free disk space. We'll try the download.
-			logger.error("Failed to determine free space", e);
+                    return false;
+                }
+            } catch (IOException e) {
+                // Failed to check free disk space. We'll try the download.
+                logger.error("Failed to determine free space", e);
+            }
+        } else {
+			//We are over the allowed number of transactions
+			logger.info("Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
+					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus, secondHopDownload.getDownloadTask().getPath());
+			return false;
 		}
 
 		return true;
