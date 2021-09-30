@@ -1152,9 +1152,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			// Validate that the 2-hop download can be performed at this time.
 			if (!canPerfom2HopDownload(secondHopDownload)) {
+				// Can’t perform the 2-hop download at this time. Reset the task
+				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
-						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={}]",
-						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
+				        + " path={}], or transaction limit reached ",
+						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(), downloadTask.getPath());
 				return;
 			}
 
@@ -1528,8 +1531,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
 			HpcDataTransferType destinationType) throws HpcException {
-		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType,
-				HpcDataTransferDownloadStatus.IN_PROGRESS);
+		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType, HpcDataTransferDownloadStatus.IN_PROGRESS);
 	}
 
 	@Override
@@ -2224,7 +2226,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @throws HpcException if the download destination is invalid
 	 */
 	private void validateDownloadDestination(HpcGlobusDownloadDestination globusDownloadDestination,
-			HpcS3DownloadDestination s3DownloadDestination, HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcS3DownloadDestination s3DownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, String configurationId, boolean bulkDownload)
 			throws HpcException {
 		// Validate the destination (if provided) is either Globus, S3, or Google Drive.
@@ -2839,17 +2842,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
 						dataTransferConfiguration.getEncryptedTransfer());
 
-				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}]",
+				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			} else {
 				// Can't perform the 2-hop download at this time. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 
 				logger.info(
-						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={}]",
+						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={},"
+						+ " path = {}] or transaction limit reached ",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
 		} catch (HpcException e) {
@@ -2871,24 +2875,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * 
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
-	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
-		// Retrieve count of active S3 object downloads (inProcess = true)
-		int inProcessS3DownloadsForGlobus = getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3,
-				HpcDataTransferType.GLOBUS);
-		if (maxPermittedS3DownloadsForGlobus <= 0
+	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload)
+			throws HpcException {
+        // Retrieve count of active S3 object downloads (inProcess = true)
+        int inProcessS3DownloadsForGlobus =
+		    getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
+        if (maxPermittedS3DownloadsForGlobus <= 0
 				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
-			try {
-				long freeSpace = Files
-						.getFileStore(
-								FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
-						.getUsableSpace();
-				if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+            try {
+                long freeSpace = Files
+					.getFileStore(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
+					.getUsableSpace();
+                if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
 					// Not enough space disk space to perform the first hop download. Log an error
 					// and reset the
 					// task.
 					logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
-							secondHopDownload.getDownloadTask().getPath(), freeSpace,
-							secondHopDownload.getDownloadTask().getSize());
+						secondHopDownload.getDownloadTask().getPath(), freeSpace,
+						secondHopDownload.getDownloadTask().getSize());
 					return false;
 				}
 
@@ -2897,7 +2901,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				logger.error("Failed to determine free space", e);
 			}
 		} else {
-			// We are over the allowed number of transactions
+			//We are over the allowed number of transactions
+			logger.info("Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
+					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus, secondHopDownload.getDownloadTask().getPath());
 			return false;
 		}
 		return true;
