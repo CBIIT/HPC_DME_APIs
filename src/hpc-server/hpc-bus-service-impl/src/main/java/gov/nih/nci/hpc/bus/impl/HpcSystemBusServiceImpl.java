@@ -54,7 +54,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
@@ -1353,7 +1353,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 */
 	private List<HpcCollectionDownloadTaskItem> downloadCollection(HpcCollection collection,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
 			String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
@@ -1416,7 +1416,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 */
 	private List<HpcCollectionDownloadTaskItem> downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
 			String userId) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
@@ -1453,7 +1453,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 */
 	private List<HpcCollectionDownloadTaskItem> retryDownloadTask(String retryTaskId, HpcDownloadTaskType retryTaskType,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId) throws HpcException {
+			HpcGoogleDownloadDestination googleDriveDownloadDestination, String userId) throws HpcException {
 
 		HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
 				? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
@@ -1498,7 +1498,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 */
 	private HpcCollectionDownloadTaskItem downloadDataObject(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
 			String userId, HpcFileLocation retryDestinationLocation) {
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
 		dataObjectDownloadRequest.setGlobusDownloadDestination(calculateGlobusDownloadDestination(
@@ -1630,14 +1630,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * 
 	 * @return A calculated destination location.
 	 */
-	private HpcGoogleDriveDownloadDestination calculateGoogleDriveDownloadDestination(
-			HpcGoogleDriveDownloadDestination collectionDestination, String collectionListingEntryPath,
+	private HpcGoogleDownloadDestination calculateGoogleDriveDownloadDestination(
+			HpcGoogleDownloadDestination collectionDestination, String collectionListingEntryPath,
 			Boolean appendPathToDownloadDestination, HpcFileLocation retryDestinationLocation) {
 		if (collectionDestination == null) {
 			return null;
 		}
 
-		HpcGoogleDriveDownloadDestination calcGoogleDriveDestination = new HpcGoogleDriveDownloadDestination();
+		HpcGoogleDownloadDestination calcGoogleDriveDestination = new HpcGoogleDownloadDestination();
 		calcGoogleDriveDestination.setDestinationLocation(retryDestinationLocation != null ? retryDestinationLocation
 				: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
 						collectionListingEntryPath, appendPathToDownloadDestination));

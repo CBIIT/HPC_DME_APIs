@@ -255,11 +255,12 @@
 	</xsd:complexType>
 
 	<xsd:complexType
-		name="HpcGoogleDriveDownloadDestination">
+		name="HpcGoogleDownloadDestination">
 		<xsd:sequence>
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="accessToken" type="xsd:string" />
+			<xsd:element name="accessTokenType" type="hpc-domain-datatransfer:HpcAccessTokenType" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -305,7 +306,7 @@
 			<xsd:element name="s3Destination"
 				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 			<xsd:element name="googleDriveDestination"
-				type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
+				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="fileDestination"
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="configurationId" type="xsd:string" />
@@ -353,7 +354,7 @@
 			<xsd:element name="s3DownloadDestination"
 				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 			<xsd:element name="googleDriveDownloadDestination"
-				type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
+				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
@@ -415,7 +416,7 @@
 			<xsd:element name="s3DownloadDestination"
 				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 			<xsd:element name="googleDriveDownloadDestination"
-				type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
+				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="appendPathToDownloadDestination"
 				type="xsd:boolean" />
 			<xsd:element name="status"
