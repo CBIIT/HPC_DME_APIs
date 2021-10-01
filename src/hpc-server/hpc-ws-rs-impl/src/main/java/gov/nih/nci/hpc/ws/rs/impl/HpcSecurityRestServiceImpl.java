@@ -332,4 +332,16 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
    
   }
   
+  @Override
+  public Response sendToQueue(String queueName, String taskId) {
+	
+    try {
+      securityBusService.sendToQueue(queueName, taskId);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+    return okResponse(null, false);
+   
+  }
 }

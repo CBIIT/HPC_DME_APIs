@@ -74,6 +74,11 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>hpc-jms-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>hpc-integration-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>

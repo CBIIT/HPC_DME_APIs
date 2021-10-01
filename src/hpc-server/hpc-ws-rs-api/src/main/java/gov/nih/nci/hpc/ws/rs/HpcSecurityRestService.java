@@ -288,4 +288,15 @@ public interface HpcSecurityRestService {
   @Path("/refreshDataManagementConfigurations")
   public Response refreshDataManagementConfigurations();
   
+  /**
+   * Send message to message queue
+   *
+   * @param queueName The message queue
+   * @param taskId The task ID
+   * @return The REST service response.
+   */
+  @POST
+  @Path("/sendToQueue/{queueName}/{taskId}")
+  public Response sendToQueue(@PathParam("queueName") String queueName, @PathParam("taskId") String taskId);
+  
 }

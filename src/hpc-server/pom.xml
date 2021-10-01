@@ -54,6 +54,9 @@
 		<module>hpc-domain-types</module>
 		<module>hpc-dao-api</module>
 		<module>hpc-dao-impl</module>
+		<module>hpc-jms-api</module>
+		<module>hpc-jms-impl</module>
+		<module>hpc-jms-listener</module>
 		<module>hpc-integration-api</module>
 		<module>hpc-integration-impl</module>
 		<module>hpc-app-service-api</module>
@@ -226,6 +229,11 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-core</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-jms</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
 			<dependency>

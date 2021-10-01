@@ -357,6 +357,15 @@ public interface HpcDataTransferService {
 			HpcDataTransferType dataTransferType, String fileId) throws HpcException;
 
 	/**
+	 * Get data object download task by task ID.
+	 *
+	 * @param taskId   The download task ID.
+	 * @return A data object download task.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataObjectDownloadTask getDataObjectDownloadTask(String taskId) throws HpcException;
+	
+	/**
 	 * Get all (active) data object download tasks.
 	 *
 	 * @return A list of data object download tasks.
@@ -451,9 +460,10 @@ public interface HpcDataTransferService {
 	 * Reset a data object download task. Set it's status to RECEIVED.
 	 *
 	 * @param downloadTask The download task to reset.
+	 * @param delay True if download task should wait before it restarts
 	 * @throws HpcException on service failure.
 	 */
-	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, Boolean delay) throws HpcException;
 
 	/**
 	 * Reset all download tasks in-process indicator to false
@@ -621,6 +631,16 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
+	 * Get collection download task.
+	 *
+	 * @param taskId Get task with this taskId.
+	 * @return A collection download task.
+	 * @throws HpcException on database error.
+	 */
+	public HpcCollectionDownloadTask getCollectionDownloadTask(String taskId)
+			throws HpcException;
+
+	/**
 	 * Get collection download tasks.
 	 *
 	 * @param status    Get tasks in this status.
@@ -643,24 +663,26 @@ public interface HpcDataTransferService {
 	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
 			throws HpcException;
 
+
 	/**
 	 * Get collection download requests count for a path and endpoint.
 	 *
-	 * @param path   The archive path to download from.
-	 * @param status The destination endpoint.
-	 * @return Count of collection download requests.
-	 * @throws HpcException on database error.
+	 * @param path		The archive path to download from.
+	 * @param status   	The destination endpoint.
+	 * @return 			Count of collection download requests.
+	 * @throws 			HpcException on database error.
 	 */
 	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint) throws HpcException;
+
 
 	/**
 	 * Get collection download tasks count for a specific user and path.
 	 *
-	 * @userId The userId to query for.
-	 * @param path      The archive path to download from.
-	 * @param inProcess True for collections that are under processing.
-	 * @return Count of collection download tasks.
-	 * @throws HpcException on database error.
+	 * @userId            The userId to query for.
+	 * @param path        The archive path to download from.
+	 * @param inProcess   True for collections that are under processing.
+	 * @return            Count of collection download tasks.
+	 * @throws            HpcException on database error.
 	 */
 	public int getCollectionDownloadTasksCountByUserAndPath(String userId, String path, boolean inProcess)
 			throws HpcException;
@@ -677,10 +699,11 @@ public interface HpcDataTransferService {
 	/**
 	 * Reset collection download task in-progress
 	 *
-	 * @param taskId The collection download task ID..
+	 * @param taskId The collection download task ID.
+	 * @param userId The collection download user ID.
 	 * @throws HpcException on database error.
 	 */
-	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException;
+	public void resetCollectionDownloadTaskInProgress(String taskId, String userId) throws HpcException;
 
 	/**
 	 * Complete a collection download task: 1. Update task info in DB with results
@@ -730,10 +753,10 @@ public interface HpcDataTransferService {
 	/**
 	 * Get inprocess data object download count.
 	 *
-	 * @param dataTransferType The data transfer type.
-	 * @param destinationType  The destination type.
-	 * @return A total count of completed download requests.
-	 * @throws HpcException on database error.
+	 * @param dataTransferType  The data transfer type.
+	 * @param destinationType   The destination type.
+	 * @return                  A total count of completed download requests.
+	 * @throws                  HpcException on database error.
 	 */
 	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
 			HpcDataTransferType destinationType) throws HpcException;

@@ -65,6 +65,7 @@
 		<prop key="hpc.ws.rs.auth.security.delete-group">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.security.register-system-account">SYSTEM_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.security.refresh-data-management-configurations">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.send-to-queue">SYSTEM_ADMIN</prop>
 		
 		<prop key="hpc.ws.rs.auth.data-management.register-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
