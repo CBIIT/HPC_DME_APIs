@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-jms-beans-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:jms="http://www.springframework.org/schema/jms"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+	                       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+	                       http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd">
+
+	<context:annotation-config />
+
+	<!-- a pooling based JMS provider -->
+	<bean id="hpcJmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+	  <property name="connectionFactory">
+	    <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+	      <property name="brokerURL" value="${hpc.jms.brokerURL}"/>
+	      <property name="trustedPackages">
+	        <list>
+	            <value>gov.nih.nci.hpc.domain.message</value>
+	        </list>
+	    	</property>
+	      <property name="userName" value="${hpc.jms.username}"/>
+	      <property name="password" value="${hpc.jms.password}"/>
+	    </bean>
+	  </property>
+	</bean>
+	
+	<!-- Spring JMS Template -->
+	<bean id="hpcJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+	  <property name="connectionFactory" ref="hpcJmsFactory" />
+	</bean>
+
+	<!-- HPC JMS Queue Sender Impl -->
+	<bean id="hpcJmsQueueSender" class="gov.nih.nci.hpc.jms.impl.HpcJmsQueueSenderImpl">
+		<constructor-arg ref="hpcJmsTemplate" />
+	</bean>
+	
+</beans>

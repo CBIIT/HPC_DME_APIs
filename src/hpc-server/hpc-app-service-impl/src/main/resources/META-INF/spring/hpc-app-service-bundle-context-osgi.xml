@@ -54,7 +54,6 @@
 		<prop key="hpc.service.dataManagement.deletedBasePath">/DME_Deleted_Archive</prop>
 		<prop key="hpc.service.dataManagement.deletedDataObjectRetentionDays">730</prop>
 		<prop key="hpc.service.event.invokerCollectionUpdateNotification">false</prop>
-		
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -143,4 +142,6 @@
 	                interface="gov.nih.nci.hpc.dao.HpcDataMigrationDAO" />	
 	<osgi:reference id="hpcReviewDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcReviewDAO" />	
+	<osgi:reference id="hpcJmsQueueSender" 
+	                interface="gov.nih.nci.hpc.jms.HpcJmsQueueSender" />	
 </beans>

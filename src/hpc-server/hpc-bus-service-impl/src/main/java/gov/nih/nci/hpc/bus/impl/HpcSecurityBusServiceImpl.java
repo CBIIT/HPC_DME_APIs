@@ -27,6 +27,8 @@ import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.message.HpcMessageQueue;
+import gov.nih.nci.hpc.domain.message.HpcTaskMessage;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
@@ -719,6 +721,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 	public void refreshDataManagementConfigurations() throws HpcException {
 
 		securityService.refreshDataManagementConfigurations();
+	}
+	
+	@Override
+	public void sendToQueue(String queueName, String taskId) throws HpcException {
+		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+		HpcTaskMessage message = new HpcTaskMessage();
+		message.setTaskId(taskId);
+		message.setUser(userId);
+		securityService.sendToQueue(message, HpcMessageQueue.fromValue(queueName), false);
 	}
 
 	// ---------------------------------------------------------------------//

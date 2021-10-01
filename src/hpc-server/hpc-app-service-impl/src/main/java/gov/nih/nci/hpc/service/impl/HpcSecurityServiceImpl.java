@@ -34,6 +34,8 @@ import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.message.HpcMessageQueue;
+import gov.nih.nci.hpc.domain.message.HpcTaskMessage;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
@@ -50,6 +52,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy;
+import gov.nih.nci.hpc.jms.HpcJmsQueueSender;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
@@ -121,6 +124,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
+	// The JMS Queue Sender.
+	@Autowired
+	private HpcJmsQueueSender hpcJmsQueueSender = null;
+		
 	// The authentication token signature key.
 	@Value("${hpc.service.security.authenticationTokenSignatureKey}")
 	private String authenticationTokenSignatureKey = null;
@@ -605,6 +612,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		}
 
 		return userDAO.isUserDataCurator(nciUserId);
+	}
+	
+	@Override
+	public void sendToQueue(HpcTaskMessage message, HpcMessageQueue queue, Boolean delay) throws HpcException {
+		hpcJmsQueueSender.send(message, queue, delay);
 	}
 	
 	// ---------------------------------------------------------------------//

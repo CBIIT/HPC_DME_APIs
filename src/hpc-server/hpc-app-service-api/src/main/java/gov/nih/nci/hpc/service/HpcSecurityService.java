@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.message.HpcMessageQueue;
+import gov.nih.nci.hpc.domain.message.HpcTaskMessage;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
@@ -306,4 +308,16 @@ public interface HpcSecurityService {
      * @throws HpcException on service failure.
      */
     public boolean isUserDataCurator(String nciUserId) throws HpcException;
+    
+    /**
+     * Send message to message queue.
+     *
+     * @param message The message.
+     * @param queue The queue.
+     * @param delay True if delivery needs to be delayed.
+     * @throws HpcException on service failure.
+     */
+    public void sendToQueue(HpcTaskMessage message, HpcMessageQueue queue, Boolean delay)
+        throws HpcException;
+
 }
