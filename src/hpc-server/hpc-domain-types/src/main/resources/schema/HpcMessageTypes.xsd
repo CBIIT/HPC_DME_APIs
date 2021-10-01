@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcMessageTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+ * @version $Id: $
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-message="http://hpc.nci.nih.gov/domain/message"
+	targetNamespace="http://hpc.nci.nih.gov/domain/message"
+	elementFormDefault="unqualified">
+	
+	<xsd:simpleType name="HpcMessageQueue">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="startGlobusDataObjectDownloadQueue" />
+			<xsd:enumeration value="startS3DataObjectDownloadQueue" />
+			<xsd:enumeration value="startGoogleDriveDataObjectDownloadQueue" />
+			<xsd:enumeration value="processCollectionDownloadQueue" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcTaskMessage">
+		<xsd:sequence>
+			<xsd:element name="taskId" type="xsd:string" />
+			<xsd:element name="user" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

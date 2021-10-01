@@ -225,7 +225,8 @@
 				<entry key="registerSystemAccount"
 					value="${hpc.ws.rs.auth.security.register-system-account}" />
 				<entry key="refreshDataManagementConfigurations"
-					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />	
+					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />
+				<entry key="sendToQueue" value="${hpc.ws.rs.auth.security.send-to-queue}" />	
 
 				<!-- Data Management Service Authorizations -->
 				<entry key="registerCollection"
