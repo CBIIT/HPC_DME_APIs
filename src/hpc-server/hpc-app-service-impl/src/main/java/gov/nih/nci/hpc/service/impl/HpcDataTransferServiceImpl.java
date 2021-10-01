@@ -88,6 +88,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.message.HpcMessageQueue;
+import gov.nih.nci.hpc.domain.message.HpcTaskMessage;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
@@ -101,6 +103,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
+import gov.nih.nci.hpc.jms.HpcJmsQueueSender;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -162,6 +165,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Autowired
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
 
+	// Message Queue Service
+	@Autowired
+	private HpcJmsQueueSender jmsQueueSender = null;
+	
 	// Data management configuration locator.
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
@@ -899,6 +906,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public HpcDataObjectDownloadTask getDataObjectDownloadTask(String taskId) throws HpcException {
+		return dataDownloadDAO.getDataObjectDownloadTask(taskId);
+	}
+	
+	@Override
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException {
 		return dataDownloadDAO.getDataObjectDownloadTasks();
 	}
@@ -1058,7 +1070,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
-
+		
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
@@ -1153,7 +1165,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Validate that the 2-hop download can be performed at this time.
 			if (!canPerfom2HopDownload(secondHopDownload)) {
 				// Can’t perform the 2-hop download at this time. Reset the task
-				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask(), true);
 				logger.info(
 						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
 				        + " path={}], or transaction limit reached ",
@@ -1245,10 +1257,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist the task.
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+		
+		// Insert into message queue.
+		jmsQueueSender.send(createTaskMessage(downloadTask.getId(), downloadTask.getUserId()), HpcMessageQueue.START_GLOBUS_DATA_OBJECT_DOWNLOAD_QUEUE);
 	}
 
 	@Override
-	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, Boolean delay) throws HpcException {
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		downloadTask.setInProcess(false);
 		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
@@ -1257,6 +1272,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+		// Insert into message queue.
+		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS))
+			jmsQueueSender.send(createTaskMessage(downloadTask.getId(),downloadTask.getUserId()), HpcMessageQueue.START_GLOBUS_DATA_OBJECT_DOWNLOAD_QUEUE, delay);
+		else if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3))
+			jmsQueueSender.send(createTaskMessage(downloadTask.getId(),downloadTask.getUserId()), HpcMessageQueue.START_S_3_DATA_OBJECT_DOWNLOAD_QUEUE, delay);
+		else if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE))
+			jmsQueueSender.send(createTaskMessage(downloadTask.getId(),downloadTask.getUserId()), HpcMessageQueue.START_GOOGLE_DRIVE_DATA_OBJECT_DOWNLOAD_QUEUE, delay);
 	}
 
 	@Override
@@ -1321,7 +1343,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				null, configurationId, true);
 
-		if (globusDownloadDestination != null) {
+		if(globusDownloadDestination != null) {
 			checkForDuplicateCollectionDownloadRequests(path, globusDownloadDestination);
 		}
 
@@ -1340,6 +1362,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+		
+		// Insert into message queue.
+		jmsQueueSender.send(createTaskMessage(downloadTask.getId(), downloadTask.getUserId()), HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE);
 
 		return downloadTask;
 	}
@@ -1369,6 +1394,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 
+		// Insert into message queue.
+		jmsQueueSender.send(createTaskMessage(downloadTask.getId(), downloadTask.getUserId()), HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE);
+				
 		return downloadTask;
 	}
 
@@ -1400,6 +1428,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 
+		// Insert into message queue.
+		jmsQueueSender.send(createTaskMessage(downloadTask.getId(), downloadTask.getUserId()), HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE);
+				
 		return downloadTask;
 	}
 
@@ -1462,7 +1493,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 			globusDownloadDestination.setDestinationOverwrite(Optional.ofNullable(destinationOverwrite).orElse(false));
 			globusDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
-			if (globusDownloadDestination != null) {
+			if(globusDownloadDestination != null) {
 				checkForDuplicateCollectionDownloadRequests(downloadTaskResult.getPath(), globusDownloadDestination);
 			}
 			downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
@@ -1501,6 +1532,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+		
+		// Insert into message queue.
+		jmsQueueSender.send(createTaskMessage(downloadTask.getId(), downloadTask.getUserId()), HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE);
 
 		return downloadTask;
 	}
@@ -1509,6 +1543,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status)
 			throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasks(status);
+	}
+	
+	@Override
+	public HpcCollectionDownloadTask getCollectionDownloadTask(String taskId)
+			throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadTask(taskId);
 	}
 
 	@Override
@@ -1525,7 +1565,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public int getCollectionDownloadTasksCountByUserAndPath(String userId, String path, boolean inProcess)
 			throws HpcException {
-		return dataDownloadDAO.getCollectionDownloadTasksCountByUserAndPath(userId, path, inProcess);
+	    return dataDownloadDAO.getCollectionDownloadTasksCountByUserAndPath(userId, path, inProcess);
 	}
 
 	@Override
@@ -1546,8 +1586,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException {
+	public void resetCollectionDownloadTaskInProgress(String taskId, String userId) throws HpcException {
 		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
+		// Insert into message queue.
+		jmsQueueSender.send(createTaskMessage(taskId,userId), HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE);
 	}
 
 	@Override
@@ -2186,12 +2228,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void checkForDuplicateCollectionDownloadRequests(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination) throws HpcException {
 
-		if (path != null && globusDownloadDestination.getDestinationLocation() != null) {
+		if(path != null && globusDownloadDestination.getDestinationLocation() != null) {
 			String endpoint = globusDownloadDestination.getDestinationLocation().getFileContainerId();
 
 			// Is there an existing transaction for same endpoint and same collection, if so
 			// indicate error
-			if (endpoint != null) {
+			if(endpoint != null) {
 				int tasksInProgressCount = getCollectionDownloadRequestsCountByPathAndEndpoint(path, endpoint);
 				if (tasksInProgressCount > 0) {
 					// Another download task in in-process for downloading the same collection to
@@ -2204,6 +2246,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 	}
+
 
 	/**
 	 * Validate download destination.
@@ -2708,6 +2751,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 		response.setDownloadTaskId(downloadTask.getId());
 		response.setDestinationLocation(downloadTask.getGlobusDownloadDestination().getDestinationLocation());
+		
+		// Insert into message queue.
+		jmsQueueSender.send(createTaskMessage(downloadTask.getId(), downloadTask.getUserId()), HpcMessageQueue.START_GLOBUS_DATA_OBJECT_DOWNLOAD_QUEUE);
 	}
 
 	/**
@@ -2847,7 +2893,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			} else {
 				// Can't perform the 2-hop download at this time. Reset the task
-				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask(), true);
 
 				logger.info(
 						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={},"
@@ -2882,24 +2928,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		    getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
         if (maxPermittedS3DownloadsForGlobus <= 0
 				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
-            try {
-                long freeSpace = Files
+		try {
+			long freeSpace = Files
 					.getFileStore(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
 					.getUsableSpace();
-                if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
-					// Not enough space disk space to perform the first hop download. Log an error
-					// and reset the
-					// task.
-					logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+			if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+				// Not enough space disk space to perform the first hop download. Log an error
+				// and reset the
+				// task.
+				logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
 						secondHopDownload.getDownloadTask().getPath(), freeSpace,
 						secondHopDownload.getDownloadTask().getSize());
-					return false;
-				}
-
-			} catch (IOException e) {
-				// Failed to check free disk space. We'll try the download.
-				logger.error("Failed to determine free space", e);
+				return false;
 			}
+
+		} catch (IOException e) {
+			// Failed to check free disk space. We'll try the download.
+			logger.error("Failed to determine free space", e);
+		}
 		} else {
 			//We are over the allowed number of transactions
 			logger.info("Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
@@ -3199,6 +3245,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return false;
 		}
 	}
+	
+	private HpcTaskMessage createTaskMessage(String taskId, String user) {
+		HpcTaskMessage message = new HpcTaskMessage();
+		message.setTaskId(taskId);
+		message.setUser(user);
+		return message;
+	}
+	
 
 	// ---------------------------------------------------------------------//
 	// Setter Methods to support JUnit Testing (for injecting Mocks)
@@ -3356,6 +3410,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 					// Persist the download task.
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+					
+					// Insert into message queue.
+					jmsQueueSender.send(createTaskMessage(downloadTask.getId(),downloadTask.getUserId()), HpcMessageQueue.START_GLOBUS_DATA_OBJECT_DOWNLOAD_QUEUE);
 				}
 
 				logger.info("download task: {} - 1st hop completed. Path at scratch space: {}", downloadTask.getId(),

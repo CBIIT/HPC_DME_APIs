@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.message.HpcTaskMessage;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -98,6 +99,15 @@ public interface HpcSystemBusService {
 	public void startGlobusDataObjectDownloadTasks() throws HpcException;
 
 	/**
+	 * Start all received data objects download tasks for Globus and process to make
+	 * them in progress.
+	 *
+	 * @param taskMessage The message
+	 * @throws HpcException on service failure.
+	 */
+	public void startGlobusDataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException;
+
+	/**
 	 * Stage download requests from Hyperfile to a Globus destination (Copy the file
 	 * from Hyperfile to a DME Globus endpoint).
 	 *
@@ -114,12 +124,30 @@ public interface HpcSystemBusService {
 	public void startS3DataObjectDownloadTasks() throws HpcException;
 
 	/**
+	 * Start all received data objects download tasks for S3 and process to make
+	 * them in progress.
+	 *
+	 * @param taskMessage The message
+	 * @throws HpcException on service failure.
+	 */
+	public void startS3DataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException;
+
+	/**
 	 * Start all received data objects download tasks for Google Drive and process
 	 * to make them in progress.
 	 *
 	 * @throws HpcException on service failure.
 	 */
 	public void startGoogleDriveDataObjectDownloadTasks() throws HpcException;
+
+	/**
+	 * Start all received data objects download tasks for Google Drive and process
+	 * to make them in progress.
+	 *
+	 * @param taskMessage The message
+	 * @throws HpcException on service failure.
+	 */
+	public void startGoogleDriveDataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException;
 
 	/**
 	 * Check status of all in-progress data objects download tasks and complete
@@ -158,6 +186,15 @@ public interface HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void processCollectionDownloadTasks() throws HpcException;
+
+	/**
+	 * Process collection download tasks that received. i.e. kick off the download
+	 * of individual data objects under each requested collection.
+	 *
+	 * @param taskMessage The message
+	 * @throws HpcException on service failure.
+	 */
+	public void processCollectionDownloadTasks(HpcTaskMessage taskMessage) throws HpcException;
 
 	/**
 	 * Check status of all active collection download tasks and complete these that

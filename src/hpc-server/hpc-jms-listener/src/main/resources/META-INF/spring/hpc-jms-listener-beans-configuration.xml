@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-jms-listener-beans-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:jms="http://www.springframework.org/schema/jms"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+	                       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+	                       http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd">
+
+	<context:annotation-config />
+
+	<bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+	    <property name="brokerURL" value="${hpc.jms.brokerURL}"/>
+	      <property name="trustedPackages">
+	        <list>
+	            <value>gov.nih.nci.hpc.domain.message</value>
+	        </list>
+	    	</property>
+	      <property name="userName" value="${hpc.jms.username}"/>
+	      <property name="password" value="${hpc.jms.password}"/>
+	</bean>
+	
+
+	<!-- HPC JMS Listener -->
+ 	<bean id="hpcJmsListener" class="gov.nih.nci.hpc.jms.listener.HpcJmsListener" />
+	<jms:listener-container connection-factory="connectionFactory" concurrency="5-10">
+	    <jms:listener destination="startGlobusDataObjectDownloadQueue" ref="hpcJmsListener" method="startGlobusDataObjectDownloadTasks" />
+	</jms:listener-container>
+	<jms:listener-container connection-factory="connectionFactory" concurrency="5-10">
+	    <jms:listener destination="startS3DataObjectDownloadQueue" ref="hpcJmsListener" method="startS3DataObjectDownloadTasks" />
+	</jms:listener-container>
+	<jms:listener-container connection-factory="connectionFactory" concurrency="5-10">
+	    <jms:listener destination="startGoogleDriveDataObjectDownloadQueue" ref="hpcJmsListener" method="startGoogleDriveDataObjectDownloadTasks" />
+	</jms:listener-container>
+	<jms:listener-container connection-factory="connectionFactory" concurrency="5-10">
+		<jms:listener destination="processCollectionDownloadQueue" ref="hpcJmsListener" method="processCollectionDownloadTasks" />
+	</jms:listener-container>
+	
+</beans>

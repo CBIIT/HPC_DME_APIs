@@ -59,6 +59,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.message.HpcMessageQueue;
+import gov.nih.nci.hpc.domain.message.HpcTaskMessage;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
@@ -495,6 +497,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// is GLOBUS.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GLOBUS);
 	}
+	
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void startGlobusDataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException {
+		// Process this data object download task that is received and type
+		// is GLOBUS.
+		processDataObjectDownloadTask(taskMessage);
+	}
 
 	@Override
 	@HpcExecuteAsSystemAccount
@@ -503,7 +513,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// is S3.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3);
 	}
-
+	
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void startS3DataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException {
+		// Process thise data object download tasks that is received and type
+		// is S3.
+		processDataObjectDownloadTask(taskMessage);
+	}
+	
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void startGoogleDriveDataObjectDownloadTasks() throws HpcException {
@@ -513,6 +531,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_DRIVE);
 	}
 
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void startGoogleDriveDataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException {
+		// Process this data object download task that is received and type
+		// is
+		// GOOGLE_DRIVE.
+		processDataObjectDownloadTask(taskMessage);
+	}
+	
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void completeInProgressDataObjectDownloadTasks() throws HpcException {
@@ -538,7 +565,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: {}", downloadTask.getId());
-					dataTransferService.resetDataObjectDownloadTask(downloadTask);
+					dataTransferService.resetDataObjectDownloadTask(downloadTask, false);
 				}
 
 			} catch (HpcException e) {
@@ -557,7 +584,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, true)
 				.forEach(downloadTask -> {
 					try {
-						dataTransferService.resetCollectionDownloadTaskInProgress(downloadTask.getId());
+						dataTransferService.resetCollectionDownloadTaskInProgress(downloadTask.getId(), downloadTask.getUserId());
 
 					} catch (HpcException e) {
 						logger.error("Failed to restart collection download task: " + downloadTask.getId(), e);
@@ -588,7 +615,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			if (tasksForSameCollectionCount > 0) {
 				// Another collection breakdown or processing tasks in in-process (other thread)
 				// for this
-				// same collection for this user.
+				//same collection for this user.
 				logger.info(
 						"collection download task: {} - Not processing at this time. {} download tasks in-process for user {}",
 						downloadTask.getId(), tasksForSameCollectionCount, downloadTask.getUserId());
@@ -699,6 +726,130 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 
 			}, collectionDownloadTaskExecutor);
+		}
+	}
+	
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void processCollectionDownloadTasks(HpcTaskMessage taskMessage) throws HpcException {
+		logger.info("Executing processCollectionDownloadTasks for taskId {}", taskMessage.getTaskId());
+		//Get collection download task
+		HpcCollectionDownloadTask downloadTask = dataTransferService.getCollectionDownloadTask(taskMessage.getTaskId());
+		
+		logger.info("collection download task: {} - started processing [{}]", downloadTask.getId(),
+				downloadTask.getType());
+
+		if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
+			// User requested to cancel this collection download task.
+			completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED, "Download request canceled");
+			return;
+		}
+
+		// We limit a user to one download (collection breakdown or processing) task at
+		// a time for the same collection
+		int tasksForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
+				downloadTask.getUserId(), downloadTask.getPath(), true);
+		if (tasksForSameCollectionCount > 0) {
+			// Another collection breakdown or processing tasks in in-process (other thread)
+			// for this
+			//same collection for this user.
+			logger.info(
+					"collection download task: {} - Not processing at this time. {} download tasks in-process for user {}",
+					downloadTask.getId(), tasksForSameCollectionCount, downloadTask.getUserId());
+			securityService.sendToQueue(taskMessage, HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE, true);
+		}
+
+		// We also limit a user to overall one collection breakdown task at a time.
+		int tasksInProgressCount = dataTransferService.getCollectionDownloadTasksCount(downloadTask.getUserId(),
+				HpcCollectionDownloadTaskStatus.RECEIVED, true);
+		if (tasksInProgressCount > 0) {
+			// Another collection breakdown task in in-process (other thread) for this user.
+			logger.info(
+					"collection download task: {} - Not processing at this time. {} breakdown tasks in-process for user {}",
+					downloadTask.getId(), tasksInProgressCount, downloadTask.getUserId());
+			securityService.sendToQueue(taskMessage, HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE, true);
+		}
+
+		// Mark this collection download task in-process.
+		dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
+
+		try {
+			List<HpcCollectionDownloadTaskItem> downloadItems = null;
+			HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker(
+					downloadTask.getId());
+
+			if (!StringUtils.isEmpty(downloadTask.getRetryTaskId())) {
+				downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
+						downloadTask.getGlobusDownloadDestination(),
+						downloadTask.getS3DownloadDestination(),
+						downloadTask.getGoogleDriveDownloadDestination(), downloadTask.getUserId());
+
+			} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+				// Get the collection to be downloaded.
+				HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(),
+						true);
+				if (collection == null) {
+					throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+
+				// Download all files under this collection.
+				downloadItems = downloadCollection(collection,
+						downloadTask.getGlobusDownloadDestination(),
+						downloadTask.getS3DownloadDestination(),
+						downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
+						collectionDownloadBreaker);
+
+			} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+				downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
+						downloadTask.getGlobusDownloadDestination(),
+						downloadTask.getS3DownloadDestination(),
+						downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
+
+			} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
+				downloadItems = new ArrayList<>();
+				for (String path : downloadTask.getCollectionPaths()) {
+					HpcCollection collection = dataManagementService.getCollection(path, true);
+					if (collection == null) {
+						throw new HpcException("Collection not found",
+								HpcErrorType.INVALID_REQUEST_INPUT);
+					}
+					downloadItems.addAll(
+							downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
+									downloadTask.getS3DownloadDestination(),
+									downloadTask.getGoogleDriveDownloadDestination(),
+									downloadTask.getAppendPathToDownloadDestination(),
+									downloadTask.getUserId(), collectionDownloadBreaker));
+				}
+			}
+
+			// Verify data objects found under this collection.
+			if (downloadItems == null || downloadItems.isEmpty()) {
+				// No data objects found under this collection.
+				throw new HpcException("No data objects found under collection",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			// 'Activate' the collection download request.
+			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
+			downloadTask.getItems().addAll(downloadItems);
+
+			// Persist the collection download task.
+			dataTransferService.updateCollectionDownloadTask(downloadTask);
+
+			logger.info("collection download task: {} - finished processing [{}]", downloadTask.getId(),
+					downloadTask.getType());
+
+		} catch (HpcException e) {
+			logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
+			try {
+				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
+
+			} catch (HpcException ex) {
+				logger.error("Failed to complete collection download as failed {}",
+						downloadTask.getId(), ex);
+			}
 		}
 	}
 
@@ -1198,6 +1349,98 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		} while (!CollectionUtils.isEmpty(downloadTasks));
 	}
 
+	/**
+	 * process data object download task in process or received
+	 * 
+	 * @param taskMessage The message
+	 * @throws HpcException on service failure.
+	 */
+	private void processDataObjectDownloadTask(HpcTaskMessage taskMessage) throws HpcException {
+		//Retrieve count of active S3 object downloads (inProcess = true)
+		int inProcessS3DownloadsForGlobus = dataTransferService
+				.getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
+		HpcDataObjectDownloadTask downloadTask = dataTransferService.getDataObjectDownloadTask(taskMessage.getTaskId());
+
+		try {
+			// First mark the task as picked up in this run so we don't pick up the same
+			// record. For tasks in RECEIVED status (which are processed concurrently in
+			// separate threads), we set their in-process indicator to true so they are
+			// not picked up by another thread.
+			boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
+			dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
+
+			switch (downloadTask.getDataTransferStatus()) {
+			case RECEIVED:
+				if (inProcess) {
+					// This task is in-process in another thread. Skip it
+					logger.info(
+							"download task: {} - continuing in-process in another thread [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getDataTransferType(),
+							downloadTask.getDestinationType());
+					break;
+				}
+
+				try {
+					logger.info(
+							"download task: {} - continuing [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getDataTransferType(),
+							downloadTask.getDestinationType());
+					dataTransferService.continueDataObjectDownloadTask(downloadTask);
+
+				} catch (HpcException e) {
+					logger.error(
+							"download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getDataTransferType(),
+							downloadTask.getDestinationType(), e);
+				}  finally {
+					try {
+						dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+
+					} catch (HpcException e) {
+						logger.error(
+								"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
+								downloadTask.getId(), downloadTask.getDataTransferType(),
+								downloadTask.getDestinationType(), e);
+					}
+				}
+				break;
+
+			case IN_PROGRESS:
+				logger.info(
+						"download task: {} - completing in-progress [transfer-type={}, destination-type={}]",
+						downloadTask.getId(), downloadTask.getDataTransferType(),
+						downloadTask.getDestinationType());
+				completeInProgressDataObjectDownloadTask(downloadTask);
+				break;
+
+			case CANCELED:
+				logger.info(
+						"download task: {} - completing cancelation [transfer-type={}, destination-type={}]",
+						downloadTask.getId(), downloadTask.getDataTransferType(),
+						downloadTask.getDestinationType());
+				completeCanceledDataObjectDownloadTask(downloadTask);
+				break;
+
+			case HYPERFILE_STAGING:
+				logger.info("download task: {} - hyperfile staging [transfer-type={}, destination-type={}]",
+						downloadTask.getId(), downloadTask.getDataTransferType(),
+						downloadTask.getDestinationType());
+				dataTransferService.stageHyperfileDataObjectDownloadTask(downloadTask);
+				break;
+
+			default:
+				throw new HpcException("Unexpected data transfer download status ["
+						+ downloadTask.getDataTransferStatus() + "] for task: " + downloadTask.getId(),
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
+
+		} catch (HpcException e) {
+			logger.error("download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
+					e);
+		}
+	}
+	
 	/**
 	 * add data transfer upload event.
 	 *
@@ -2361,7 +2604,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 			} else {
 				// toggle the status to RECEIVED for async download
-				dataTransferService.resetDataObjectDownloadTask(downloadTask);
+				dataTransferService.resetDataObjectDownloadTask(downloadTask, false);
 			}
 		}
 	}

@@ -224,5 +224,15 @@ public interface HpcSecurityBusService {
   public void refreshDataManagementConfigurations()
       throws HpcException;
 
+  /**
+   * Send message to message queue.
+   * 
+   * @param queueName The message queue
+   * @param taskId The task ID
+   * @throws HpcException on service failure.
+   */
+  public void sendToQueue(String queueName, String taskId)
+      throws HpcException;
+
 
 }
