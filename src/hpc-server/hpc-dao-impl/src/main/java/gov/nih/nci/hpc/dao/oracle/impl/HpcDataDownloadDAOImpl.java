@@ -47,7 +47,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -290,7 +290,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			dataObjectDownloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 
 		} else if (dataObjectDownloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination = new HpcGoogleDriveDownloadDestination();
+			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
 			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
 			dataObjectDownloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
@@ -389,7 +389,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			s3DownloadDestination.setAccount(s3Account);
 			collectionDownloadTask.setS3DownloadDestination(s3DownloadDestination);
 		} else if (googleDriveAccessToken != null) {
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination = new HpcGoogleDriveDownloadDestination();
+			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
 			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
 			collectionDownloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);

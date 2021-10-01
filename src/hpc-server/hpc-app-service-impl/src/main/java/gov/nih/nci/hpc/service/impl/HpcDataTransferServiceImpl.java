@@ -76,7 +76,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
@@ -484,7 +484,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDataObjectDownloadResponse downloadDataObject(String path, HpcFileLocation archiveLocation,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
 			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
@@ -1314,7 +1314,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadCollection(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId, String configurationId)
+			HpcGoogleDownloadDestination googleDriveDownloadDestination, String userId, String configurationId)
 			throws HpcException {
 
 		// Validate the download destination.
@@ -1347,7 +1347,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -1375,7 +1375,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
@@ -1488,7 +1488,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination = new HpcGoogleDriveDownloadDestination();
+			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
 			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
@@ -2227,7 +2227,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 */
 	private void validateDownloadDestination(HpcGlobusDownloadDestination globusDownloadDestination,
 			HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, String configurationId, boolean bulkDownload)
 			throws HpcException {
 		// Validate the destination (if provided) is either Globus, S3, or Google Drive.
