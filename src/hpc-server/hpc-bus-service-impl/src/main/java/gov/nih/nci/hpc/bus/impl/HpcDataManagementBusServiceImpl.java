@@ -1263,10 +1263,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to Google Drive destination is supported only from S3 archive.
+		// 3. Download to Google Drive / Google Cloud Storage destination is supported
+		// only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
-				downloadRequest.getGoogleDriveDownloadDestination() != null, false);
+				downloadRequest.getGoogleDriveDownloadDestination() != null
+						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null,
+				false);
 
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
@@ -2709,7 +2712,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Validate the data is not archived yet.
 			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 			if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-				throw new HpcException("Upload URL re-generation not allowed. Data object at " + path + " already archived",
+				throw new HpcException(
+						"Upload URL re-generation not allowed. Data object at " + path + " already archived",
 						HpcErrorType.REQUEST_REJECTED);
 			}
 
@@ -2803,16 +2807,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Validate a download request.
 	 *
-	 * @param path                           The data object path.
-	 * @param googleDriveDownloadDestination True if the download destination is
-	 *                                       Google Drive.
-	 * @param generateDownloadURL            True if this is a request to generate a
-	 *                                       download URL.
+	 * @param path                      The data object path.
+	 * @param googleDownloadDestination True if the download destination is Google
+	 *                                  Drive or Google Cloud Storage
+	 * @param generateDownloadURL       True if this is a request to generate a
+	 *                                  download URL.
 	 * @return The system generated metadata
 	 * @throws HpcException If the request is invalid.
 	 */
-	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path,
-			boolean googleDriveDownloadDestination, boolean generateDownloadURL) throws HpcException {
+	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path, boolean googleDownloadDestination,
+			boolean generateDownloadURL) throws HpcException {
 
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
@@ -2829,14 +2833,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDriveDownloadDestination,
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDownloadDestination,
 					generateDownloadURL);
 		}
 
-		// Download to Google Drive destination is supported only from S3 archive.
-		if (googleDriveDownloadDestination && (metadata.getDataTransferType() == null
+		// Download to Google Drive / Google Cloud Storage destination is supported only
+		// from S3 archive.
+		if (googleDownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
-			throw new HpcException("Google Drive download request is not supported for POSIX based file system archive",
+			throw new HpcException(
+					"Google Drive / Google Cloud Storage download request is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
