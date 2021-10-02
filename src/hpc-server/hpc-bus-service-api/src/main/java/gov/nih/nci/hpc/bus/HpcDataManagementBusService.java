@@ -480,11 +480,12 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Get the Data Management Models (Metadata validation rules and hierarchy
 	 * definitions for all archives)
+	 * @param rules If false do not return metadata validation rules. Default is true.
 	 *
 	 * @return Data Management Model DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataManagementModelDTO getDataManagementModels() throws HpcException;
+	public HpcDataManagementModelDTO getDataManagementModels(Boolean rules) throws HpcException;
 
 	/**
 	 * Get a Data Management Model (Metadata validation rules and hierarchy
