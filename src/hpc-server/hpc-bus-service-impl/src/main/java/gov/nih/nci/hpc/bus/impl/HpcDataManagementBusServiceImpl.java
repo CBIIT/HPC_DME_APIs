@@ -405,6 +405,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
 				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 				downloadRequest.getGoogleDriveDownloadDestination(),
+				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId());
 
 		// Create and return a DTO with the request receipt.
@@ -457,6 +458,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			collectionDownloadTask = dataTransferService.downloadDataObjects(downloadRequest.getDataObjectPaths(),
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
+					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		} else {
@@ -490,6 +492,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			collectionDownloadTask = dataTransferService.downloadCollections(downloadRequest.getCollectionPaths(),
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
+					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		}
@@ -1275,6 +1278,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
+				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId, completionEvent,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
@@ -2570,7 +2574,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                              registration and parent collections.
 	 * @param pathMap               Replace 'fromPath' (found in scanned directory)
 	 *                              with 'toPath'.
-	 * @param dataTransferType      (Optional) The data trafser type performed the
+	 * @param dataTransferType      (Optional) The data transfer type performed the
 	 *                              scan. Null means it's a DME server file system
 	 *                              scan
 	 * @param s3Account             (Optional) Provided if this is a registration
