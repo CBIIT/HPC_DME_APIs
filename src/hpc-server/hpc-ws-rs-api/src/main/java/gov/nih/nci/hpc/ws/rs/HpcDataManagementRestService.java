@@ -711,7 +711,7 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/dm/model")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataManagementModels();
+	public Response getDataManagementModels(@QueryParam("rules") Boolean rules);
 
 	/**
 	 * Get data management model. This includes all rules.
