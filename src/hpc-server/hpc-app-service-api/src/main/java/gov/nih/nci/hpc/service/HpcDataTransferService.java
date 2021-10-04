@@ -118,41 +118,47 @@ public interface HpcDataTransferService {
 	/**
 	 * Download a data object file.
 	 *
-	 * @param path                           The data object path.
-	 * @param archiveLocation                The archive file location.
-	 * @param globusDownloadDestination      The user requested Glopbus download
-	 *                                       destination.
-	 * @param s3DownloadDestination          The user requested S3 download
-	 *                                       destination.
-	 * @param googleDriveDownloadDestination The user requested Google Drive
-	 *                                       download destination.
-	 * @param synchronousDownloadFilter      (Optional) synchronous download filter
-	 *                                       to extract specific files from a data
-	 *                                       object that is 'compressed archive'
-	 *                                       such as ZIP.
-	 * @param dataTransferType               The data transfer type.
-	 * @param configurationId                The configuration ID (needed to
-	 *                                       determine the archive connection
-	 *                                       config).
-	 * @param s3ArchiveConfigurationId       (Optional) The S3 Archive configuration
-	 *                                       ID. Used to identify the S3 archive the
-	 *                                       data-object is stored in. This is only
-	 *                                       applicable for S3 archives, not POSIX.
-	 * @param userId                         The user ID submitting the download
-	 *                                       request.
-	 * @param completionEvent                If true, an event will be added when
-	 *                                       async download is complete.
-	 * @param size                           The data object's size in bytes.
-	 * @param downloadDataObject             The data transfer status of the data
-	 *                                       object
-	 * @param deepArchiveStatus              The deep archive status of the data
-	 *                                       object
+	 * @param path                                  The data object path.
+	 * @param archiveLocation                       The archive file location.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param synchronousDownloadFilter             (Optional) synchronous download
+	 *                                              filter to extract specific files
+	 *                                              from a data object that is
+	 *                                              'compressed archive' such as
+	 *                                              ZIP.
+	 * @param dataTransferType                      The data transfer type.
+	 * @param configurationId                       The configuration ID (needed to
+	 *                                              determine the archive connection
+	 *                                              config).
+	 * @param s3ArchiveConfigurationId              (Optional) The S3 Archive
+	 *                                              configuration ID. Used to
+	 *                                              identify the S3 archive the
+	 *                                              data-object is stored in. This
+	 *                                              is only applicable for S3
+	 *                                              archives, not POSIX.
+	 * @param userId                                The user ID submitting the
+	 *                                              download request.
+	 * @param completionEvent                       If true, an event will be added
+	 *                                              when async download is complete.
+	 * @param size                                  The data object's size in bytes.
+	 * @param downloadDataObject                    The data transfer status of the
+	 *                                              data object
+	 * @param deepArchiveStatus                     The deep archive status of the
+	 *                                              data object
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataObjectDownloadResponse downloadDataObject(String path, HpcFileLocation archiveLocation,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
 			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
@@ -497,82 +503,93 @@ public interface HpcDataTransferService {
 	/**
 	 * Submit a request to download a collection.
 	 *
-	 * @param path                           The collection path.
-	 * @param globusDownloadDestination      The user requested Glopbus download
-	 *                                       destination.
-	 * @param s3DownloadDestination          The user requested S3 download
-	 *                                       destination.
-	 * @param googleDriveDownloadDestination The user requested Google Drive
-	 *                                       download destination.
-	 * @param userId                         The user ID submitting the download
-	 *                                       request.
-	 * @param configurationId                The configuration ID (needed to
-	 *                                       determine the archive connection
-	 *                                       config).
+	 * @param path                                  The collection path.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param userId                                The user ID submitting the
+	 *                                              download request.
+	 * @param configurationId                       The configuration ID (needed to
+	 *                                              determine the archive connection
+	 *                                              config).
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask downloadCollection(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDownloadDestination googleDriveDownloadDestination, String userId, String configurationId)
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId)
 			throws HpcException;
 
 	/**
 	 * Submit a request to download collections.
 	 *
-	 * @param collectionPaths                 A list of collection paths.
-	 * @param globusDownloadDestination       The user requested Glopbus download
-	 *                                        destination.
-	 * @param s3DownloadDestination           The user requested S3 download
-	 *                                        destination.
-	 * @param googleDriveDownloadDestination  The user requested Google Drive
-	 *                                        download destination.
-	 * @param userId                          The user ID submitting the download
-	 *                                        request.
-	 * @param configurationId                 A configuration ID used to validate
-	 *                                        destination location. The list of data
-	 *                                        objects can be from from different
-	 *                                        configurations (DOCs) but we validate
-	 *                                        just for one.
-	 * @param appendPathToDownloadDestination If true, the (full) object path will
-	 *                                        be used in the destination path,
-	 *                                        otherwise just the object name will be
-	 *                                        used.
+	 * @param collectionPaths                       A list of collection paths.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param userId                                The user ID submitting the
+	 *                                              download request.
+	 * @param configurationId                       A configuration ID used to
+	 *                                              validate destination location.
+	 *                                              The list of data objects can be
+	 *                                              from from different
+	 *                                              configurations (DOCs) but we
+	 *                                              validate just for one.
+	 * @param appendPathToDownloadDestination       If true, the (full) object path
+	 *                                              will be used in the destination
+	 *                                              path, otherwise just the object
+	 *                                              name will be used.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
 	 * Submit a request to download data objects.
 	 *
-	 * @param dataObjectPaths                 A list of data object paths.
-	 * @param globusDownloadDestination       The user requested Glopbus download
-	 *                                        destination.
-	 * @param s3DownloadDestination           The user requested S3 download
-	 *                                        destination.
-	 * @param googleDriveDownloadDestination  The user requested Google Drive
-	 *                                        download destination.
-	 * @param userId                          The user ID submitting the download
-	 *                                        request.
-	 * @param configurationId                 A configuration ID used to validate
-	 *                                        destination location. The list of data
-	 *                                        objects can be from from different
-	 *                                        configurations (DOCs) but we validate
-	 *                                        just for one.
-	 * @param appendPathToDownloadDestination If true, the (full) object path will
-	 *                                        be used in the destination path,
-	 *                                        otherwise just the object name will be
-	 *                                        used.
+	 * @param dataObjectPaths                       A list of data object paths.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param userId                                The user ID submitting the
+	 *                                              download request.
+	 * @param configurationId                       A configuration ID used to
+	 *                                              validate destination location.
+	 *                                              The list of data objects can be
+	 *                                              from from different
+	 *                                              configurations (DOCs) but we
+	 *                                              validate just for one.
+	 * @param appendPathToDownloadDestination       If true, the (full) object path
+	 *                                              will be used in the destination
+	 *                                              path, otherwise just the object
+	 *                                              name will be used.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**

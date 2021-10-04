@@ -51,6 +51,8 @@
 		  <prop key="hpc.integration.googledrive.hpcApplicationName">NCI-HPC-DME</prop>
 		  <prop key="hpc.integration.googledrive.downloadExecutorThreadPoolSize">100</prop>
 		  
+		  <prop key="hpc.integration.googlecloudstorage.downloadExecutorThreadPoolSize">100</prop>
+		  
 	      <prop key="hpc.integration.ldap.URL">ldaps://nihdcadhub2.nih.gov</prop>
 	      <prop key="hpc.integration.ldap.username">Configure Me</prop>
 	      <prop key="hpc.integration.ldap.password">Configure Me</prop>
