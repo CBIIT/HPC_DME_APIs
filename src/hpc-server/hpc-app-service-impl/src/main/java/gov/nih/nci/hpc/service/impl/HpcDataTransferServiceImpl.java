@@ -563,7 +563,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		if (globusDownloadDestination == null && s3DownloadDestination == null
-				&& googleDriveDownloadDestination == null) {
+				&& googleDriveDownloadDestination == null && googleCloudStorageDownloadDestination == null) {
 			// This is a synchronous download request.
 			performSynchronousDownload(downloadRequest, response, dataTransferConfiguration, synchronousDownloadFilter);
 
@@ -590,6 +590,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// This is an asynchronous download request from a S3 archive to a
 			// Google Drive destination.
 			performGoogleDriveAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
+
+		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleCloudStorageDownloadDestination != null) {
+			// This is an asynchronous download request from a S3 archive to a Google Cloud
+			// Storage destination.
+			performGoogleCloudStorageAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else {
 			throw new HpcException("Invalid download request", HpcErrorType.UNEXPECTED_ERROR);
@@ -1033,7 +1038,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
-		}
+		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			taskResult
+			.setDestinationLocation(downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+}
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		taskResult.setResult(result);
 		taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
@@ -2836,10 +2844,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw (e);
 		}
 	}
-	
+
 	/**
-	 * Perform a download request to user's provided Google Cloud Storage destination from
-	 * S3 archive.
+	 * Perform a download request to user's provided Google Cloud Storage
+	 * destination from S3 archive.
 	 *
 	 * @param downloadRequest           The data object download request.
 	 * @param response                  The download response object. This method
@@ -2868,8 +2876,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			// Populate the response object.
 			response.setDownloadTaskId(googleCloudStorageDownload.getDownloadTask().getId());
-			response.setDestinationLocation(
-					googleCloudStorageDownload.getDownloadTask().getGoogleDriveDownloadDestination().getDestinationLocation());
+			response.setDestinationLocation(googleCloudStorageDownload.getDownloadTask()
+					.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 
 		} catch (HpcException e) {
 			// Cleanup the download task and rethrow.
