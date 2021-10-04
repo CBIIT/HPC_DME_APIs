@@ -150,6 +150,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
 		downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
 		downloadTask.setGoogleDriveDownloadDestination(downloadRequest.getGoogleDriveDestination());
+		downloadTask.setGoogleCloudStorageDownloadDestination(downloadRequest.getGoogleCloudStorageDestination());
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setPercentComplete(0);
 		downloadTask.setSize(downloadRequest.getSize());
