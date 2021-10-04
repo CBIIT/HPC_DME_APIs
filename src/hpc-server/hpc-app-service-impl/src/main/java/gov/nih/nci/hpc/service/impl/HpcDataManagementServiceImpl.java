@@ -529,8 +529,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		for (HpcSubjectPermission permission : permissions) {
 			// Exclude system accounts and system admin group
 			String subject = permission.getSubject();
-			if (!subject.equals(dataManagementAccount.getUsername()) && !subject.equals("SYSTEM_ADMIN_GROUP")
-					&& !systemAdminSubjects.contains(subject)) {
+			if (!subject.equals(dataManagementAccount.getUsername()) && !systemAdminSubjects.contains(subject)) {
 				permission.setPermission(HpcPermission.NONE);
 				setDataObjectPermission(destinationPath, permission);
 			}
