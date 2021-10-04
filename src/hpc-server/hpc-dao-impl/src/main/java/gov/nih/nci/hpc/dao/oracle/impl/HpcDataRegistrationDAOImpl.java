@@ -35,6 +35,7 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
@@ -511,6 +512,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 					jsonGoogleCloudStorageUploadSource.put("accessToken",
 							Base64.getEncoder().encodeToString(encryptor.encrypt(googleCloudStorageUploadSource.getAccessToken())));
 				}
+				if (googleCloudStorageUploadSource.getAccessTokenType() != null) {
+					jsonGoogleCloudStorageUploadSource.put("accessTokenType",
+							googleCloudStorageUploadSource.getAccessTokenType().value());
+				}
 				jsonRequest.put("googleCloudStorageUploadSource", jsonGoogleCloudStorageUploadSource);
 			}
 			if (request.getFileSystemUploadSource() != null) {
@@ -849,6 +854,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			if (jsonGoogleCloudStorageUploadSource.get("accessToken") != null) {
 				googleCloudStorageUploadSource.setAccessToken(encryptor.decrypt(
 						Base64.getDecoder().decode(jsonGoogleCloudStorageUploadSource.get("accessToken").toString())));
+			}
+			if (jsonGoogleCloudStorageUploadSource.get("accessTokenType") != null) {
+				googleCloudStorageUploadSource.setAccessTokenType(
+						HpcAccessTokenType.fromValue(jsonGoogleCloudStorageUploadSource.get("accessTokenType").toString()));
 			}
 			request.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		}
