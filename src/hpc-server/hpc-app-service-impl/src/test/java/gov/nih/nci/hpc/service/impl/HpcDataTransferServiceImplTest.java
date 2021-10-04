@@ -92,8 +92,8 @@ public class HpcDataTransferServiceImplTest {
 		expectedException.expect(HpcException.class);
 		expectedException.expectMessage("No data transfer source or data attachment provided or upload URL requested");
 
-		dataTransferService.uploadDataObject(null, null, null, null, null, null, false, null, null, null, "testObjectId",
-				null, null, null);
+		dataTransferService.uploadDataObject(null, null, null, null, null, null, false, null, null, null,
+				"testObjectId", null, null, null);
 	}
 
 	/**
@@ -159,8 +159,8 @@ public class HpcDataTransferServiceImplTest {
 		when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
 
 		// Run the test.
-		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null, "/test/path",
-				"testUserId", "testCallerId", "testConfigId", "testObjectId");
+		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null,
+				"/test/path", "testUserId", "testCallerId", "testConfigId", "testObjectId");
 	}
 
 	/**
@@ -236,7 +236,7 @@ public class HpcDataTransferServiceImplTest {
 		expectedException.expect(HpcException.class);
 		expectedException.expectMessage("Invalid data transfer request");
 
-		dataTransferService.downloadDataObject("", null, null, null, null, null, null, "", "", "", false, 0L,
+		dataTransferService.downloadDataObject("", null, null, null, null, null, null, null, "", "", "", false, 0L,
 				HpcDataTransferUploadStatus.ARCHIVED, null);
 	}
 
@@ -252,7 +252,7 @@ public class HpcDataTransferServiceImplTest {
 		expectedException.expect(HpcException.class);
 		expectedException.expectMessage("Invalid data transfer request");
 
-		dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null,
+		dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null, null,
 				HpcDataTransferType.S_3, "", "", "", false, 0L, HpcDataTransferUploadStatus.ARCHIVED, null);
 	}
 
@@ -302,15 +302,15 @@ public class HpcDataTransferServiceImplTest {
 		HpcS3DownloadDestination s3loadDestination = new HpcS3DownloadDestination();
 		s3loadDestination.setDestinationLocation(destinationLocation);
 		s3loadDestination.setAccount(s3Account);
-		
+
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
 		pathAttributes.setIsAccessible(true);
 		when(dataTransferProxyMock.getPathAttributes(anyObject(), same(destinationLocation), eq(false)))
-		.thenReturn(pathAttributes);
+				.thenReturn(pathAttributes);
 
 		// Run the test.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject("/test/path",
-				archiveLocation, null, s3loadDestination, null, null, HpcDataTransferType.S_3, "testConfigId", "",
+				archiveLocation, null, s3loadDestination, null, null, null, HpcDataTransferType.S_3, "testConfigId", "",
 				"testUserId", false, 0L, HpcDataTransferUploadStatus.ARCHIVED, null);
 
 		// Assert expected result.

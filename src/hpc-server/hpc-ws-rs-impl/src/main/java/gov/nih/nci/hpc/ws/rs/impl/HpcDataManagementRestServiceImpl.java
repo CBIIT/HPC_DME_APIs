@@ -817,10 +817,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getDataManagementModels() {
+	public Response getDataManagementModels(Boolean rules) {
 		HpcDataManagementModelDTO docModel = null;
 		try {
-			docModel = dataManagementBusService.getDataManagementModels();
+			docModel = dataManagementBusService.getDataManagementModels(rules != null ? rules : true);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
