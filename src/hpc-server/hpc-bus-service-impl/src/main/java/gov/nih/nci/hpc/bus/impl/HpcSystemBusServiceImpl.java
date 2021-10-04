@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
@@ -507,10 +506,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void startGoogleDriveDataObjectDownloadTasks() throws HpcException {
-		// Iterate through all the data object download tasks that are received and type
-		// is
-		// GOOGLE_DRIVE.
+		// Iterate through all the data object download tasks that are received and type is GOOGLE_DRIVE.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_DRIVE);
+	}
+	
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void startGoogleCloudStorageDataObjectDownloadTasks() throws HpcException {
+		// Iterate through all the data object download tasks that are received and type is GOOGLE_CLOUD_STORAGE.
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 	}
 
 	@Override
@@ -1712,6 +1716,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 			destinationLocation = downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
 			dataTransferType = HpcDataTransferType.GOOGLE_DRIVE;
+		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
+			dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 		}
 
 		addDataTransferDownloadEvent(downloadTask.getUserId(), path, downloadTask.getType(), downloadTask.getId(),
