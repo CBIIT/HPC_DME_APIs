@@ -542,7 +542,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getGoogleAccessTokenType());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -681,7 +682,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getGoogleAccessTokenType());
 
 		// Create and return a DTO with the request receipt.
 		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
@@ -1769,18 +1771,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return dataManagementModel;
 	}
 
-	private HpcDataManagementRulesDTO getDataManagementRules(
-			HpcDataManagementConfiguration dataManagementConfiguration, Boolean validationRules) {
+	private HpcDataManagementRulesDTO getDataManagementRules(HpcDataManagementConfiguration dataManagementConfiguration,
+			Boolean validationRules) {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
 		rules.setId(dataManagementConfiguration.getId());
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
 
-		if(validationRules) {
+		if (validationRules) {
 			rules.getCollectionMetadataValidationRules()
-				.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
+					.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
 			rules.getDataObjectMetadataValidationRules()
-				.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
+					.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
 		}
 
 		return rules;
