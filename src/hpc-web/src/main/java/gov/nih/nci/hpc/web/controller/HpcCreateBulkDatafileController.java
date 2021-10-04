@@ -117,7 +117,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	            //Return from Google Drive Authorization
 	            final String returnURL = this.webServerName + "/addbulk";
 	            try {
-	              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+	              String accessToken = hpcAuthorizationService.getToken(code, returnURL, "Drive");
 	              session.setAttribute("accessToken", accessToken);
 	              model.addAttribute("accessToken", accessToken);
 	            } catch (Exception e) {
@@ -336,7 +336,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
           
           String returnURL = this.webServerName + "/addbulk";
           try {
-            return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+            return "redirect:" + hpcAuthorizationService.authorize(returnURL, "Drive");
           } catch (Exception e) {
             model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
             e.printStackTrace();
@@ -352,7 +352,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 					false);
 			String returnURL = this.webServerName + "/addbulk";
 			try {
-			  return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+			  return "redirect:" + hpcAuthorizationService.authorize(returnURL, "GC");
 			} catch (Exception e) {
 			  model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
 			  e.printStackTrace();

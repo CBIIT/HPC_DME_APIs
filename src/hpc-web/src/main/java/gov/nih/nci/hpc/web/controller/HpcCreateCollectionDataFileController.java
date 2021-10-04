@@ -402,7 +402,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             }
             dto.getDataObjectRegistrationItems().addAll(files);
         } else if (StringUtils.equals(bulkType, "gc")) {
-            List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
+           /* List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
             
                 gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
                 HpcFileLocation source = new HpcFileLocation();
@@ -426,7 +426,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String registerBodyJson = gson.toJson(dto);
             System.out.println("JSON Body");
-            System.out.println(registerBodyJson);
+            System.out.println(registerBodyJson);*/
         }
 
 
