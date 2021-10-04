@@ -265,6 +265,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		model.addAttribute("bucketName", bucketName);
 		String s3Path = (String)request.getParameter("s3Path");
 		model.addAttribute("s3Path", s3Path);
+		String gcPath = (String)request.getParameter("gcPath");
+		model.addAttribute("gcPath", gcPath);
 		String accessKey = (String)request.getParameter("accessKey");
 		model.addAttribute("accessKey", accessKey);
 		String secretKey = (String)request.getParameter("secretKey");
@@ -272,7 +274,10 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		String region = (String)request.getParameter("region");
 		model.addAttribute("region", region);
 		String s3File = (String)request.getParameter("s3File");
-		model.addAttribute("s3File", s3File != null && s3File.equals("on"));	
+		model.addAttribute("s3File", s3File != null && s3File.equals("on"));
+		String gcFile = (String)request.getParameter("gcFile");
+		model.addAttribute("gcFile", gcFile != null && gcFile.equals("on"));
+	
 		if (basePath == null)
 			basePath = (String) session.getAttribute("basePathSelected");
 
@@ -353,7 +358,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			  e.printStackTrace();
 			}
 		  }
-        }
 
 		try {
 			if (hpcDataModel.getPath() == null || hpcDataModel.getPath().trim().length() == 0)
