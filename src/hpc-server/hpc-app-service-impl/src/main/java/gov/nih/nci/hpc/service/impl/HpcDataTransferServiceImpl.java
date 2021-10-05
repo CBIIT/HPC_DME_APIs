@@ -249,6 +249,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		filter = new HpcDataObjectDownloadTaskStatusFilter();
 		filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		filter.setDestination(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+		cancelCollectionDownloadTaskItemsFilter.add(filter);
+
+		filter = new HpcDataObjectDownloadTaskStatusFilter();
+		filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		filter.setDestination(HpcDataTransferType.S_3);
 		cancelCollectionDownloadTaskItemsFilter.add(filter);
 
@@ -569,8 +574,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		if (globusDownloadDestination == null && s3DownloadDestination == null
-				&& googleDriveDownloadDestination == null && googleCloudStorageDownloadDestination == null) {
+		if (globusDownloadDestination == null && s3DownloadDestination == null && googleDriveDownloadDestination == null
+				&& googleCloudStorageDownloadDestination == null) {
 			// This is a synchronous download request.
 			performSynchronousDownload(downloadRequest, response, dataTransferConfiguration, synchronousDownloadFilter);
 
@@ -1051,9 +1056,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
-			taskResult
-			.setDestinationLocation(downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
-}
+			taskResult.setDestinationLocation(
+					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+		}
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		taskResult.setResult(result);
 		taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
@@ -1132,6 +1137,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setGlobusDestination(downloadTask.getGlobusDownloadDestination());
 		downloadRequest.setS3Destination(downloadTask.getS3DownloadDestination());
 		downloadRequest.setGoogleDriveDestination(downloadTask.getGoogleDriveDownloadDestination());
+		downloadRequest.setGoogleCloudStorageDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 
 		HpcArchive baseArchiveDestination = null;
 		Boolean encryptedTransfer = null;
@@ -1153,9 +1159,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			baseArchiveDestination = dataTransferConfiguration.getBaseArchiveDestination();
 			encryptedTransfer = dataTransferConfiguration.getEncryptedTransfer();
 
-			// If the destination is Google Drive, we need to generate a download URL from
+			// If the destination is Google Drive / Cloud Storage, we need to generate a
+			// download URL from
 			// the S3 archive.
-			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+					|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
 				downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
 						downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
@@ -1193,10 +1201,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
-		// If the destination is S3 (AWS or 3rd Party), or Google Drive, we need to
+		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage,
+		// we need to
 		// create a progress listener.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
-				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
 			// Create a listener that will complete the download task when it is done.
 			progressListener = new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
 		}
@@ -1475,7 +1485,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleDriveAccessToken) throws HpcException {
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken,
+			HpcAccessTokenType googleAccessTokenType) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
 		if (!failedDownloadResult(downloadTaskResult.getResult())) {
@@ -1531,14 +1542,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		case GOOGLE_DRIVE:
 			// Validate the Google Drive access token.
-			if (StringUtils.isEmpty(googleDriveAccessToken)) {
+			if (StringUtils.isEmpty(googleAccessToken)) {
 				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
 			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
-			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
+			googleDriveDownloadDestination.setAccessToken(googleAccessToken);
 			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+			break;
+
+		case GOOGLE_CLOUD_STORAGE:
+			// Validate the Google Cloud access token.
+			if (StringUtils.isEmpty(googleAccessToken) || googleAccessToken == null) {
+				throw new HpcException("Invalid Google Cloud Storage access token / token type",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination = new HpcGoogleDownloadDestination();
+			googleCloudStorageDownloadDestination.setAccessToken(googleAccessToken);
+			googleCloudStorageDownloadDestination.setAccessTokenType(googleAccessTokenType);
+			googleCloudStorageDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
 			break;
 
 		default:
@@ -1635,6 +1660,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			taskResult.setDestinationLocation(
+					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
 		taskResult.setResult(result);
 		taskResult.setType(downloadTask.getType());
@@ -3254,6 +3283,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 				response.setDestinationLocation(
 						downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
+			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+				downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+				downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+				downloadTask.setId(UUID.randomUUID().toString());
+				dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+				response.setDestinationLocation(
+						downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 			} else if (downloadRequest.getGlobusDestination() != null) {
 				downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 				HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
