@@ -392,12 +392,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		String googleAccessToken = null;
 		byte[] token = rs.getBytes("GOOGLE_ACCESS_TOKEN");
-		if (token != null) {
+		if (!StringUtils.isEmpty(token)) {
 			googleAccessToken = encryptor.decrypt(token);
 		}
 		HpcAccessTokenType googleAccessTokenType = null;
 		String tokenType = rs.getString("GOOGLE_ACCESS_TOKEN_TYPE");
-		if (token != null) {
+		if (!StringUtils.isEmpty(tokenType)) {
 			googleAccessTokenType = HpcAccessTokenType.fromValue(tokenType);
 		}
 
