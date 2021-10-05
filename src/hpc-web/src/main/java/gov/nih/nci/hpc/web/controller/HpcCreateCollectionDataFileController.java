@@ -554,7 +554,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             System.out.println("Final JSON Body");
             System.out.println(registerBodyJson);
 	    }
-		if (StringUtils.equals(bulkType, "gc") && gcPath != null) {
+		if (StringUtils.equals(bulkType, "gc") && gcPath != null && !isGcFile) {
 	        List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();  
             gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
             HpcFileLocation source = new HpcFileLocation();
