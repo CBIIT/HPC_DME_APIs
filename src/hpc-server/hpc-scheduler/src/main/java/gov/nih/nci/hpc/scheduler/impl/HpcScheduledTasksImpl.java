@@ -154,6 +154,16 @@ public class HpcScheduledTasksImpl {
 		execute("startGoogleDriveDataObjectDownloadTasks()", systemBusService::startGoogleDriveDataObjectDownloadTasks,
 				logger);
 	}
+	
+	/**
+	 * Start Data Object Download Tasks that are in RECEIVED state for GOOGLE_CLOUD_STORAGE
+	 * transfer.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.cron.startGoogleCloudDataObjectDownloadTasks.delay}")
+	private void startGoogleCloudStorageDataObjectDownloadTasks() {
+		execute("startGoogleCloudStorageDataObjectDownloadTasks()", systemBusService::startGoogleCloudStorageDataObjectDownloadTasks,
+				logger);
+	}
 
 	/** Complete In-Progress Data Object Download Tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay}")
