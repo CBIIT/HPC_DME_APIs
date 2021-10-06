@@ -401,34 +401,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 files.add(file);
             }
             dto.getDataObjectRegistrationItems().addAll(files);
-        } else if (StringUtils.equals(bulkType, "gc")) {
-           /* List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
-            
-                gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
-                HpcFileLocation source = new HpcFileLocation();
-                source.setFileContainerId(bucketName); //bucket
-                source.setFileId(gcPath);
-				Path gcFilePath = Paths.get(gcPath);
-                String fileName = gcFilePath.getFileName().toString();
-                HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
-                googleCloudSource.setSourceLocation(source);
-                googleCloudSource.setAccessToken(accessToken);
-                googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT); 
-                //file.setGoogleCloudStorageUploadSource(googleCloudSource);
-              //file.setCreateParentCollections(true);
-              //file.setPath(path + "/" + fileName);
-              System.out.println("In Google Cloud Data Registration Block Update");
-              System.out.println(googleCloudSource);
-              System.out.println(path + "/" + fileName);
-              files.add(file);
-			  System.out.println("authToken=" + accessToken);
-            dto.getDataObjectRegistrationItems().addAll(files); 
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String registerBodyJson = gson.toJson(dto);
-            System.out.println("JSON Body");
-            System.out.println(registerBodyJson);*/
         }
-
 
 		List<String> include = new ArrayList<String>();
 		if(includeCriteria != null && !includeCriteria.isEmpty())
