@@ -506,15 +506,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void startGoogleDriveDataObjectDownloadTasks() throws HpcException {
-		// Iterate through all the data object download tasks that are received and type is GOOGLE_DRIVE.
+		// Iterate through all the data object download tasks that are received and type
+		// is GOOGLE_DRIVE.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_DRIVE);
 	}
-	
+
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void startGoogleCloudStorageDataObjectDownloadTasks() throws HpcException {
-		// Iterate through all the data object download tasks that are received and type is GOOGLE_CLOUD_STORAGE.
-		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+		// Iterate through all the data object download tasks that are received and type
+		// is GOOGLE_CLOUD_STORAGE.
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED,
+				HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 	}
 
 	@Override
@@ -1738,7 +1741,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	private void completeInProgressDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+		if (!downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 			// Checking transfer status is done for active Globus downloads only.
 			logger.info("download task: {} - still in-progress [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
