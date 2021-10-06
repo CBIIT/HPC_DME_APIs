@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -55,6 +56,9 @@ import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -74,6 +78,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	private String hpcModelURL;
 	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
 	private String collectionAclURL;
+
 
 	protected String login(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		// User Session validation
@@ -211,7 +216,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 
         if (folderIds != null && !folderIds.isEmpty())
             model.addAttribute("folderIds", folderIds);
-      
+        
         if (accessToken != null) {
             model.addAttribute("accessToken", accessToken);
             model.addAttribute("authorized", "true");
@@ -344,16 +349,21 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<String> globusEndpointFolders = (List<String>) session.getAttribute("GlobusEndpointFolders");
 		List<String> googleDriveFileIds = (List<String>) session.getAttribute("fileIds");
         List<String> googleDriveFolderIds = (List<String>) session.getAttribute("folderIds");
+        List<String> googleCloudFileIds = (List<String>) session.getAttribute("fileIds");
+        List<String> googleCloudFolderIds = (List<String>) session.getAttribute("folderIds");
         String accessToken = (String) session.getAttribute("accessToken");
 		
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String s3Path = (String)request.getParameter("s3Path");
+		String gcPath = (String)request.getParameter("gcPath");
 		String accessKey = (String)request.getParameter("accessKey");
 		String secretKey = (String)request.getParameter("secretKey");
 		String region = (String)request.getParameter("region");
 		String s3File = (String)request.getParameter("s3File");
 		boolean isS3File = s3File != null && s3File.equals("on");	
+		String gcFile = (String)request.getParameter("gcFile");
+		boolean isGcFile = gcFile != null && gcFile.equals("on");	
 		
 		
 		if (StringUtils.equals(bulkType, "globus") && globusEndpointFiles != null) {
@@ -392,7 +402,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             }
             dto.getDataObjectRegistrationItems().addAll(files);
         }
-
 
 		List<String> include = new ArrayList<String>();
 		if(includeCriteria != null && !includeCriteria.isEmpty())
@@ -475,6 +484,94 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             }
             dto.getDirectoryScanRegistrationItems().addAll(folders);
         }
+	      if (StringUtils.equals(bulkType, "gc") && gcPath != null && isGcFile) {
+			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
+            HpcFileLocation source = new HpcFileLocation();
+            source.setFileContainerId(bucketName);
+            source.setFileId(gcPath);
+			HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
+			googleCloudSource.setSourceLocation(source);
+			googleCloudSource.setAccessToken(accessToken);
+			googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT); 
+		//file.setGoogleDriveScanDirectory(googleCloudSource);
+            file.setGoogleCloudStorageUploadSource(googleCloudSource);
+            
+			Path gcFilePath = Paths.get(gcPath);
+			file.setPath(path + "/" + gcFilePath.getFileName());
+			System.out.println(path + "/" + gcFilePath.getFileName());
+            System.out.println("Updating DirectoryScan file=");
+            System.out.println(file.toString());
+            files.add(file);
+            
+            // Where is callerObjectId populated?
+            // Do we need PathMap for Google Cloud 
+            /*
+            "pathMap": {
+              "fromPath": "/some/path/in/globus",
+              "toPath": "/target/registration/path"
+          },*/
+
+            /*if(criteriaType != null && criteriaType.equals("Simple"))
+                folder.setPatternType(HpcPatternType.SIMPLE);
+            else
+                folder.setPatternType(HpcPatternType.REGEX);
+            if(exclude.size() > 0)
+                folder.getExcludePatterns().addAll(exclude);
+            if(include.size() > 0)
+                folder.getIncludePatterns().addAll(include);*/
+        
+			dto.getDataObjectRegistrationItems().addAll(files);
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String registerBodyJson = gson.toJson(dto);
+            System.out.println("Final JSON Body");
+            System.out.println(registerBodyJson);
+	    }
+		if (StringUtils.equals(bulkType, "gc") && gcPath != null && !isGcFile) {
+	        List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();  
+            gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
+            HpcFileLocation source = new HpcFileLocation();
+            source.setFileContainerId(bucketName);
+            source.setFileId(gcPath);
+            HpcGoogleScanDirectory googleCloudSource = new HpcGoogleScanDirectory();
+            googleCloudSource.setDirectoryLocation(source);
+            googleCloudSource.setAccessToken(accessToken);
+            googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+            //file.setGoogleDriveScanDirectory(googleCloudSource);
+            file.setGoogleCloudStorageScanDirectory(googleCloudSource);
+            if(isGcFile) {
+              Path gcFilePath = Paths.get(gcPath);
+              file.setBasePath(path + "/" + gcFilePath.getFileName());
+            } else {         
+              file.setBasePath(datafilePath);
+            }
+            System.out.println("Updating DirectoryScan file=");
+            System.out.println(file.toString());
+            files.add(file);
+            
+            // Where is callerObjectId populated?
+            // Do we need PathMap for Google Cloud 
+            /*
+            "pathMap": {
+              "fromPath": "/some/path/in/globus",
+              "toPath": "/target/registration/path"
+          },*/
+
+            if(criteriaType != null && criteriaType.equals("Simple"))
+                file.setPatternType(HpcPatternType.SIMPLE);
+            else
+				file.setPatternType(HpcPatternType.REGEX);
+            if(exclude.size() > 0)
+				file.getExcludePatterns().addAll(exclude);
+            if(include.size() > 0)
+				file.getIncludePatterns().addAll(include);
+        
+            dto.getDirectoryScanRegistrationItems().addAll(files);
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String registerBodyJson = gson.toJson(dto);
+            System.out.println("Final JSON Body");
+            System.out.println(registerBodyJson);
+	    }  
 		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
