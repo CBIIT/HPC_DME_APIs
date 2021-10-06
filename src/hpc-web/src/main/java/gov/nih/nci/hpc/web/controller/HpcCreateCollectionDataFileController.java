@@ -57,8 +57,8 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+//import com.google.gson.Gson;
+//import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -349,8 +349,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<String> globusEndpointFolders = (List<String>) session.getAttribute("GlobusEndpointFolders");
 		List<String> googleDriveFileIds = (List<String>) session.getAttribute("fileIds");
         List<String> googleDriveFolderIds = (List<String>) session.getAttribute("folderIds");
-        List<String> googleCloudFileIds = (List<String>) session.getAttribute("fileIds");
-        List<String> googleCloudFolderIds = (List<String>) session.getAttribute("folderIds");
         String accessToken = (String) session.getAttribute("accessToken");
 		
 		String bulkType = (String)request.getParameter("bulkType");
@@ -493,15 +491,11 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
 			googleCloudSource.setSourceLocation(source);
 			googleCloudSource.setAccessToken(accessToken);
-			googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT); 
-		//file.setGoogleDriveScanDirectory(googleCloudSource);
+			googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
             file.setGoogleCloudStorageUploadSource(googleCloudSource);
             
 			Path gcFilePath = Paths.get(gcPath);
 			file.setPath(path + "/" + gcFilePath.getFileName());
-			System.out.println(path + "/" + gcFilePath.getFileName());
-            System.out.println("Updating DirectoryScan file=");
-            System.out.println(file.toString());
             files.add(file);
             
             // Where is callerObjectId populated?
@@ -522,10 +516,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 folder.getIncludePatterns().addAll(include);*/
         
 			dto.getDataObjectRegistrationItems().addAll(files);
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String registerBodyJson = gson.toJson(dto);
-            System.out.println("Final JSON Body");
-            System.out.println(registerBodyJson);
+            //Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            //String registerBodyJson = gson.toJson(dto);
+            //System.out.println("Final JSON Body");
+            //System.out.println(registerBodyJson);
 	    }
 		if (StringUtils.equals(bulkType, "gc") && gcPath != null && !isGcFile) {
 	        List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();  
@@ -567,10 +561,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				file.getIncludePatterns().addAll(include);
         
             dto.getDirectoryScanRegistrationItems().addAll(files);
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String registerBodyJson = gson.toJson(dto);
-            System.out.println("Final JSON Body");
-            System.out.println(registerBodyJson);
+            //Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            //String registerBodyJson = gson.toJson(dto);
+            //System.out.println("Final JSON Body");
+            //System.out.println(registerBodyJson);
 	    }  
 		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
