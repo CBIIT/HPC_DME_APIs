@@ -22,8 +22,8 @@ public interface HpcAuthorizationService {
    * @param redirectUri The redirectUri.
    * @throws Exception on service failure.
    */
-  public String authorize(String redirectUri) throws Exception;
-  
+  public String authorize(String redirectUri, String resourceType) throws Exception;
+
   /**
    * Obtain access token using the code.
    *
@@ -31,6 +31,6 @@ public interface HpcAuthorizationService {
    * @param redirectUri The redirectUri.
    * @throws Exception on service failure.
    */
-  public String getToken(String code, String redirectUri) throws Exception;
+  public String getToken(String code, String redirectUri, String resourceType) throws Exception;
   
 }
