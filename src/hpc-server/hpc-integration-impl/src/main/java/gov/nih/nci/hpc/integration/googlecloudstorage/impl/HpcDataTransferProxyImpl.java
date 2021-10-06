@@ -108,8 +108,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						downloadRequest.getGoogleCloudStorageDestination().getDestinationLocation().getFileId()))
 						.setContentType("application/octet-stream").build();
 				try (WriteChannel writer = storage.writer(blobInfo)) {
-					writer.write(ByteBuffer.wrap(
-							ByteStreams.toByteArray(new URL(downloadRequest.getArchiveLocationURL()).openStream())));
+					progressListener.transferCompleted(Long.valueOf(writer.write(ByteBuffer.wrap(
+							ByteStreams.toByteArray(new URL(downloadRequest.getArchiveLocationURL()).openStream())))));
 				} catch (IOException e) {
 					String message = "[Google Cloud Storage] Failed to download object: " + e.getMessage();
 					logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
