@@ -46,6 +46,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private GoogleAuthorizationCodeFlow flow;
   private GoogleAuthorizationCodeFlow flowCloud;
 
+
   @PostConstruct
   public void init() throws Exception {
 
@@ -65,13 +66,13 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   }
 
   @Override
-  public String authorize(String redirectUri, String resourceType) throws Exception {
+  public String authorize(String redirectUri, ResourceType resourceType ) throws Exception {
     String redirectUrl="";
-    if(resourceType == "Drive") {
+    if(resourceType == ResourceType.DRIVE ) {
       GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
       logger.debug("Google Drive redirectUrl, " + redirectUrl);
-    } else if (resourceType == "GC") {
+    } else if (resourceType == ResourceType.GOOGLECLOUD) {
       GoogleAuthorizationCodeRequestUrl url = flowCloud.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
       logger.debug("Google Cloud redirectUrl, " + redirectUrl);
@@ -79,13 +80,13 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     return redirectUrl;
   }
     
-  public String getToken(String code, String redirectUri, String resourceType) throws Exception {
+  public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
-    if(resourceType == "Drive") {
+    if(resourceType == ResourceType.DRIVE) {
       tokenResponse =
           flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
-    } else if (resourceType == "GC") {
+    } else if (resourceType == ResourceType.GOOGLECLOUD) {
       tokenResponse =
           flowCloud.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     }
