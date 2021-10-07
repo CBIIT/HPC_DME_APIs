@@ -325,11 +325,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
 	        "action=" + percentEncodedReturnURL;
 			
-		} else if (action != null && action.length > 0 && action[0].equals("Drive")) {
+		} else if (action != null && action.length > 0 && action[0].toLowerCase().equals(GOOGLE_DRIVE_BULK_TYPE)) {
           session.setAttribute("datafilePath", hpcDataModel.getPath());
           session.setAttribute("basePathSelected", basePath);
-          model.addAttribute("useraction", "drive");
-          session.setAttribute("bulkType", "drive");
+          model.addAttribute("useraction", GOOGLE_DRIVE_BULK_TYPE);
+          session.setAttribute("bulkType", GOOGLE_DRIVE_BULK_TYPE);
           setCriteria(model, request, session);
           populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
                   false);
@@ -342,11 +342,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
             e.printStackTrace();
           }
           
-        } else if (action != null && action.length > 0 && action[0].equals("GC")) {
+        } else if (action != null && action.length > 0 && action[0].toLowerCase().equals(GOOGLE_CLOUD_BULK_TYPE)) {
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
-			model.addAttribute("useraction", "gc");
-			session.setAttribute("bulkType", "gc");
+			model.addAttribute("useraction", GOOGLE_CLOUD_BULK_TYPE);
+			session.setAttribute("bulkType", GOOGLE_CLOUD_BULK_TYPE);
 			setCriteria(model, request, session);
 			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
 					false);
