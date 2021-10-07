@@ -220,6 +220,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 				destinationLocation = downloadTask.getS3DownloadDestination().getDestinationLocation();
 			} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 				destinationLocation = downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+				destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
 			}
 
 			// Send a download completion or failed event (if requested to).
