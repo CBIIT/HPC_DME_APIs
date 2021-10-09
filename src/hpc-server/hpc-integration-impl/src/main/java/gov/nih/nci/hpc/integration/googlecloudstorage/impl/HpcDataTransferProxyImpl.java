@@ -3,7 +3,6 @@ package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -18,13 +17,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
-import com.google.common.io.ByteStreams;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
@@ -102,21 +99,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Stream the file to Google Drive.
 		CompletableFuture<Void> googleCloudStorageDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(
+				progressListener.transferCompleted(storage.createFrom(BlobInfo.newBuilder(BlobId.of(
 						downloadRequest.getGoogleCloudStorageDestination().getDestinationLocation()
 								.getFileContainerId(),
 						downloadRequest.getGoogleCloudStorageDestination().getDestinationLocation().getFileId()))
-						.setContentType("application/octet-stream").build();
-				try (WriteChannel writer = storage.writer(blobInfo)) {
-					progressListener.transferCompleted(Long.valueOf(writer.write(ByteBuffer.wrap(
-							ByteStreams.toByteArray(new URL(downloadRequest.getArchiveLocationURL()).openStream())))));
-				} catch (IOException e) {
-					String message = "[Google Cloud Storage] Failed to download object: " + e.getMessage();
-					logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
-					progressListener.transferFailed(message);
-				}
+						.setContentType("application/octet-stream").build(),
+						new URL(downloadRequest.getArchiveLocationURL()).openStream()).getSize());
 
-			} catch (StorageException e) {
+			} catch (IOException | StorageException e) {
 				String message = "[Google Cloud Storage] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
