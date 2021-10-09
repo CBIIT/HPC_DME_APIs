@@ -542,7 +542,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcDataObjectDownloadTask downloadTask : dataTransferService.getDataObjectDownloadTasks()) {
 			try {
 				if ((downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE))
+						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: {}", downloadTask.getId());
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);
