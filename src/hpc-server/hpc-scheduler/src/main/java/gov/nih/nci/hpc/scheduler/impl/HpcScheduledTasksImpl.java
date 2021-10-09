@@ -276,13 +276,13 @@ public class HpcScheduledTasksImpl {
 	@SuppressWarnings("unused")
 	private void init() {
 		try {
-			// All active S3 upload tasks should be marked stopped (so they get restarted)
+			// All active upload tasks from S3 source should be marked stopped (so they get restarted)
 			systemBusService.processDataTranferUploadStreamingInProgress(true);
 
 			// All active file system uploads should be restarted.
 			systemBusService.processDataTransferUploadFileSystemInProgress();
 
-			// All active S3 download tasks needs to be restarted.
+			// All active download tasks from S3 archive needs to be restarted.
 			systemBusService.restartDataObjectDownloadTasks();
 
 			// All in-process collection download tasks needs to be restarted.
