@@ -34,7 +34,7 @@ public interface HpcAuthorizationService {
   public String getToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType) throws Exception;
 
   public enum ResourceType {
-    DRIVE,
+    GOOGLEDRIVE,
     GOOGLECLOUD
   }
   
