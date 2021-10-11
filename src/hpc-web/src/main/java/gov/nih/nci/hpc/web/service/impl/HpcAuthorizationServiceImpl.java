@@ -68,7 +68,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   @Override
   public String authorize(String redirectUri, ResourceType resourceType ) throws Exception {
     String redirectUrl="";
-    if(resourceType == ResourceType.DRIVE ) {
+    if(resourceType == ResourceType.GOOGLEDRIVE ) {
       GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
       logger.debug("Google Drive redirectUrl, " + redirectUrl);
@@ -83,7 +83,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
-    if(resourceType == ResourceType.DRIVE) {
+    if(resourceType == ResourceType.GOOGLEDRIVE) {
       tokenResponse =
           flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     } else if (resourceType == ResourceType.GOOGLECLOUD) {
