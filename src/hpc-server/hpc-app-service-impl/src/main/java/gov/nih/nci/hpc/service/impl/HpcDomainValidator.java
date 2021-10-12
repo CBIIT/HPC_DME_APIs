@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.service.impl;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,7 +209,8 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 
-		for (HpcMetadataEntry metadataEntry : metadataEntries) {
+		for (int i = 0; i < metadataEntries.size(); i ++) {
+			HpcMetadataEntry metadataEntry = metadataEntries.get(i);
 			if(StringUtils.isEmpty(metadataEntry.getAttribute())) {
 				validationResult.setValid(false);
 				return validationResult;
@@ -223,6 +223,10 @@ public class HpcDomainValidator {
 							validationResult.setMessage(validationResult.getMessage() + ", " + metadataEntry.getAttribute());
 					}
 					validationResult.setValid(false);
+				} else {
+					metadataEntries.get(i).setAttribute(metadataEntries.get(i).getAttribute().trim());
+					metadataEntries.get(i).setValue(StringUtils.isEmpty(metadataEntry.getValue())
+							? metadataEntry.getValue() : metadataEntries.get(i).getValue().trim());
 				}
 			}
 		}
