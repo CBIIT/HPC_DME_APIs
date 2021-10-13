@@ -496,7 +496,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// is GLOBUS.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GLOBUS);
 	}
-	
+
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void startGlobusDataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException {
@@ -512,7 +512,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// is S3.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3);
 	}
-	
+
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void startS3DataObjectDownloadTasks(HpcTaskMessage taskMessage) throws HpcException {
@@ -623,7 +623,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			if (tasksForSameCollectionCount > 0) {
 				// Another collection breakdown or processing tasks in in-process (other thread)
 				// for this
-				//same collection for this user.
+				// same collection for this user.
 				logger.info(
 						"collection download task: {} - Not processing at this time. {} download tasks in-process for user {}",
 						downloadTask.getId(), tasksForSameCollectionCount, downloadTask.getUserId());
@@ -741,7 +741,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}, collectionDownloadTaskExecutor);
 		}
 	}
-	
+
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void processCollectionDownloadTasks(HpcTaskMessage taskMessage) throws HpcException {
@@ -770,6 +770,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					"collection download task: {} - Not processing at this time. {} download tasks in-process for user {}",
 					downloadTask.getId(), tasksForSameCollectionCount, downloadTask.getUserId());
 			securityService.sendToQueue(taskMessage, HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE, true);
+			return;
 		}
 
 		// We also limit a user to overall one collection breakdown task at a time.
@@ -781,6 +782,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					"collection download task: {} - Not processing at this time. {} breakdown tasks in-process for user {}",
 					downloadTask.getId(), tasksInProgressCount, downloadTask.getUserId());
 			securityService.sendToQueue(taskMessage, HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE, true);
+			return;
 		}
 
 		// Mark this collection download task in-process.
@@ -795,7 +797,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
 						downloadTask.getGlobusDownloadDestination(),
 						downloadTask.getS3DownloadDestination(),
-						downloadTask.getGoogleDriveDownloadDestination(), downloadTask.getUserId());
+						downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getGoogleCloudStorageDownloadDestination(),
+						downloadTask.getUserId());
 
 			} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 				// Get the collection to be downloaded.
@@ -810,6 +814,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						downloadTask.getGlobusDownloadDestination(),
 						downloadTask.getS3DownloadDestination(),
 						downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getGoogleCloudStorageDownloadDestination(),
 						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
 						collectionDownloadBreaker);
 
@@ -818,6 +823,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						downloadTask.getGlobusDownloadDestination(),
 						downloadTask.getS3DownloadDestination(),
 						downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getGoogleCloudStorageDownloadDestination(),
 						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
 
 			} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
@@ -832,6 +838,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
 									downloadTask.getS3DownloadDestination(),
 									downloadTask.getGoogleDriveDownloadDestination(),
+									downloadTask.getGoogleCloudStorageDownloadDestination(),
 									downloadTask.getAppendPathToDownloadDestination(),
 									downloadTask.getUserId(), collectionDownloadBreaker));
 				}
@@ -1369,9 +1376,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	private void processDataObjectDownloadTask(HpcTaskMessage taskMessage) throws HpcException {
-		//Retrieve count of active S3 object downloads (inProcess = true)
-		int inProcessS3DownloadsForGlobus = dataTransferService
-				.getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS);
 		HpcDataObjectDownloadTask downloadTask = dataTransferService.getDataObjectDownloadTask(taskMessage.getTaskId());
 
 		try {
