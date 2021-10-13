@@ -164,7 +164,12 @@
    			<groupId>com.google.api-client</groupId>
    			<artifactId>google-api-client</artifactId>
    			<version>${google-drive-sdk.version}</version>
-		</dependency>       
+		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-storage</artifactId>
+			<version>v1-rev20201112-1.30.10</version>
+		</dependency>
     </dependencies>
     <build>
         <plugins>
