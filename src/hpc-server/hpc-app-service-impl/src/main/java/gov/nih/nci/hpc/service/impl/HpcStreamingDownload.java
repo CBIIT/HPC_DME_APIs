@@ -187,6 +187,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setArchiveLocation(downloadTask.getArchiveLocation());
 		this.downloadTask.setS3DownloadDestination(downloadTask.getS3DownloadDestination());
 		this.downloadTask.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());
+		this.downloadTask.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		this.downloadTask.setCreated(downloadTask.getCreated());
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
@@ -197,6 +198,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		} else if (this.downloadTask.getGoogleDriveDownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_DRIVE);
 			this.downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+		} else if (this.downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			this.downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+			this.downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
 
 		dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
@@ -220,6 +224,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 				destinationLocation = downloadTask.getS3DownloadDestination().getDestinationLocation();
 			} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 				destinationLocation = downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+				destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
 			}
 
 			// Send a download completion or failed event (if requested to).

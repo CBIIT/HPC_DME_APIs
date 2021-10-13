@@ -181,7 +181,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
             //Return from Google Drive Authorization
             final String returnURL = this.webServerName + "/downloadfiles";
             try {
-              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+              String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
               session.setAttribute("accessToken", accessToken);
               model.addAttribute("accessToken", accessToken);
            } catch (Exception e) {
@@ -201,7 +201,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
         } else if (transferType != null && transferType.equals("drive")) {
             String returnURL = this.webServerName + "/downloadfiles";
             try {
-              return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+              return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
             } catch (Exception e) {
               model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
               e.printStackTrace();
