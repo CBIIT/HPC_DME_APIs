@@ -57,8 +57,8 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
-//import com.google.gson.Gson;
-//import com.google.gson.GsonBuilder;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -364,7 +364,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String s3Path = (String)request.getParameter("s3Path");
-		String gcPath = (String)request.getParameter("gcPath");
+		String gcPath = ((String)request.getParameter("gcPath")).trim();
 		String accessKey = (String)request.getParameter("accessKey");
 		String secretKey = (String)request.getParameter("secretKey");
 		String region = (String)request.getParameter("region");
@@ -526,7 +526,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             googleCloudSource.setDirectoryLocation(source);
             googleCloudSource.setAccessToken(accessTokenGoogleCloud);
             googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
-            //file.setGoogleDriveScanDirectory(googleCloudSource);
             file.setGoogleCloudStorageScanDirectory(googleCloudSource);
             if(isGcFile) {
               Path gcFilePath = Paths.get(gcPath);
@@ -534,9 +533,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             } else {         
               file.setBasePath(datafilePath);
             }
-            System.out.println("Updating DirectoryScan file=");
-            System.out.println(file.toString());
-            files.add(file);
             
             if(criteriaType != null && criteriaType.equals("Simple"))
                 file.setPatternType(HpcPatternType.SIMPLE);
@@ -547,7 +543,12 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             if(include.size() > 0)
 				file.getIncludePatterns().addAll(include);
         
+			files.add(file);
             dto.getDirectoryScanRegistrationItems().addAll(files);
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String registerBodyJson = gson.toJson(dto);
+            System.out.println("Final JSON Body");
+            System.out.println(registerBodyJson);
 	    }  
 		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
