@@ -198,14 +198,6 @@
 																Authorize DME to Access Your Google Cloud
 															</button>
 														</div>
-														<!-- div class="col-sm-12 column" id="gcDiv">
-															<a th:if="${authorizedGC != null}" href="" id="gcLink" onclick="window.open('https://console.cloud.google.com/storage/browser');return false;">Select
-																Data from Google Cloud</a>
-
-																authorizedGC != null &amp;&amp;
-														</div -->
-														<!-- Begin Google Cloud fields -->
-														 
 														<div th:if="${authorizedGC != null}" class="col-sm-12 column" id="gcDiv">
 															<tr class="gc">
 																<td><label for="bucketName">Google Cloud Bucket:</label></td>
@@ -230,7 +222,6 @@
 																</td>
 															</tr>
 														</div>
-														<!-- End Google Cloud fields -->
 													</td>
 												</tr>
 												<tr class="globus drive"><td colspan="2">&nbsp;</td></tr>
