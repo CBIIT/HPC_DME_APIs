@@ -71,11 +71,9 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     if(resourceType == ResourceType.GOOGLEDRIVE ) {
       GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
-      logger.debug("Google Drive redirectUrl, " + redirectUrl);
     } else if (resourceType == ResourceType.GOOGLECLOUD) {
       GoogleAuthorizationCodeRequestUrl url = flowCloud.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
-      logger.debug("Google Cloud redirectUrl, " + redirectUrl);
     }
     return redirectUrl;
   }
