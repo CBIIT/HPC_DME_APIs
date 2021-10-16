@@ -3122,6 +3122,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			destinationLocation = collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
 		} else if (collectionDownloadTask.getGoogleDriveDownloadDestination() != null) {
 			destinationLocation = collectionDownloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+		} else if (collectionDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			destinationLocation = collectionDownloadTask.getGoogleCloudStorageDownloadDestination()
+					.getDestinationLocation();
 		}
 
 		return destinationLocation;
