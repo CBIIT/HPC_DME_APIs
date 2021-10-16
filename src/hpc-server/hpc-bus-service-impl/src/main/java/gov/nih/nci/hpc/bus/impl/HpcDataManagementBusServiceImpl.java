@@ -1717,7 +1717,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModels(Boolean validationRules) throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModels(Boolean metadataRules) throws HpcException {
 		// Create a map DOC -> HpcDocDataManagementRulesDTO
 		Map<String, HpcDocDataManagementRulesDTO> docsRules = new HashMap<>();
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
@@ -1726,7 +1726,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDocDataManagementRulesDTO docRules = docsRules.containsKey(doc) ? docsRules.get(doc)
 					: new HpcDocDataManagementRulesDTO();
 
-			HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, validationRules);
+			HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, metadataRules);
 			docRules.setDoc(doc);
 			docRules.getRules().add(rules);
 			docsRules.put(doc, docRules);
@@ -1744,7 +1744,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModel(String basePath) throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModel(String basePath, Boolean metadataRules) throws HpcException {
 
 		// Construct and return the DTO
 		HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
@@ -1752,7 +1752,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
 				.getDataManagementConfigurations()) {
 			if (dataManagementConfiguration.getBasePath().equals(basePath)) {
-				HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, true);
+				HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, metadataRules);
 				HpcDocDataManagementRulesDTO docRules = new HpcDocDataManagementRulesDTO();
 				docRules.setDoc(dataManagementConfiguration.getDoc());
 				docRules.getRules().add(rules);
@@ -1775,13 +1775,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	private HpcDataManagementRulesDTO getDataManagementRules(HpcDataManagementConfiguration dataManagementConfiguration,
-			Boolean validationRules) {
+			Boolean metadataRules) {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
 		rules.setId(dataManagementConfiguration.getId());
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
 
-		if (validationRules) {
+		if (metadataRules) {
 			rules.getCollectionMetadataValidationRules()
 					.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
 			rules.getDataObjectMetadataValidationRules()
