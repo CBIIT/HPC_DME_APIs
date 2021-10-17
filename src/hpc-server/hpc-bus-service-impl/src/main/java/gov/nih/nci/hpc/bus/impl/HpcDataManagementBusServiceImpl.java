@@ -2882,7 +2882,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return The overall % complete of the collection download task.
 	 */
 	private int calculateCollectionDownloadPercentComplete(HpcCollectionDownloadTask downloadTask) {
-		if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+
 			long totalDownloadSize = 0;
 			long totalBytesTransferred = 0;
 			for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
@@ -2896,7 +2896,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
 				return Math.round(percentComplete);
 			}
-		}
 
 		return 0;
 	}
@@ -2908,7 +2907,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return The % complete of the bulk registration task..
 	 */
 	private int calculateDataObjectBulkRegistrationPercentComplete(HpcBulkDataObjectRegistrationTask task) {
-		if (task.getStatus().equals(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE)) {
+
 			long totalUploadSize = 0;
 			long totalBytesTransferred = 0;
 			for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
@@ -2922,7 +2921,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
 				return Math.round(percentComplete);
 			}
-		}
 
 		return 0;
 	}
