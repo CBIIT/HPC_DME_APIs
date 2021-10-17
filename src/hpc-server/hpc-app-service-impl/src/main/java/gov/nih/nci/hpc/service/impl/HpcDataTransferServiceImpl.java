@@ -1572,6 +1572,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess)
+			throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadTasksCountByUser(userId, inProcess);
+	}
+
+	@Override
 	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
 			HpcDataTransferType destinationType) throws HpcException {
 		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType,

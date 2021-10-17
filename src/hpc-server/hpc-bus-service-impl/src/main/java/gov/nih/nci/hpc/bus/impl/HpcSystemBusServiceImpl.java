@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
@@ -144,6 +145,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Autowired
 	@Qualifier("hpcDataObjectFileSystemUploadTaskExecutor")
 	Executor dataObjectFileSystemUploadTaskExecutor = null;
+
+	//Max download tasks that can be in-process for a user
+	@Value("${hpc.bus.maxPermittedInProcessDownloadTasksPerUser}")
+	private int maxPermittedInProcessDownloadTasksPerUser = 0;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -591,26 +596,24 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			// We limit a user to one download (collection breakdown or processing) task at
 			// a time for the same collection
-			int tasksForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
+			int tasksInProcessForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
 					downloadTask.getUserId(), downloadTask.getPath(), true);
-			if (tasksForSameCollectionCount > 0) {
-				// Another collection breakdown or processing tasks in in-process (other thread)
-				// for this
-				// same collection for this user.
+			if (tasksInProcessForSameCollectionCount > 0) {
+				// Another collection breakdown or processing task is in-process (other thread)
+				// for this same collection for this user.
 				logger.info(
-						"collection download task: {} - Not processing at this time. {} download tasks in-process for user {}",
-						downloadTask.getId(), tasksForSameCollectionCount, downloadTask.getUserId());
+						"collection download task: {} - Not processing at this time. A download task is already in-process for user {} for collection {}",
+						downloadTask.getId(), downloadTask.getUserId(),downloadTask.getPath());
 				continue;
 			}
 
-			// We also limit a user to overall one collection breakdown task at a time.
-			int tasksInProgressCount = dataTransferService.getCollectionDownloadTasksCount(downloadTask.getUserId(),
-					HpcCollectionDownloadTaskStatus.RECEIVED, true);
-			if (tasksInProgressCount > 0) {
-				// Another collection breakdown task in in-process (other thread) for this user.
+			// We also limit a user overall to a configured number of collection download tasks at a time.
+			int totalTasksInProcessCount = dataTransferService.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
+			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser) {
+				// We have reached the max collection breakdown tasks in-process for this user.
 				logger.info(
-						"collection download task: {} - Not processing at this time. {} breakdown tasks in-process for user {}",
-						downloadTask.getId(), tasksInProgressCount, downloadTask.getUserId());
+						"collection download task: {} - Not processing at this time. {} download tasks already in-process for user {}",
+						downloadTask.getId(), totalTasksInProcessCount, downloadTask.getUserId());
 				continue;
 			}
 
