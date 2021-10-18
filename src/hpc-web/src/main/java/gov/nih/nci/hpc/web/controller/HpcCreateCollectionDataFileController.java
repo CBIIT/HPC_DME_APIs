@@ -364,7 +364,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String s3Path = (String)request.getParameter("s3Path");
-		String gcPath = ((String)request.getParameter("gcPath")).trim();
+		s3Path = (s3Path != null ? s3Path.trim() : null);
+		String gcPath = (String)request.getParameter("gcPath");
+		gcPath = (gcPath != null ? gcPath.trim() : null);
 		String accessKey = (String)request.getParameter("accessKey");
 		String secretKey = (String)request.getParameter("secretKey");
 		String region = (String)request.getParameter("region");
