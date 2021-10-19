@@ -400,7 +400,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 		HpcAccessTokenType googleAccessTokenType = null;
 		String tokenType = rs.getString("GOOGLE_ACCESS_TOKEN_TYPE");
-		if (!StringUtils.isEmpty(tokenType)) {
+		if (tokenType != null) {
 			googleAccessTokenType = HpcAccessTokenType.fromValue(tokenType);
 		}
 
@@ -410,7 +410,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			s3DownloadDestination.setAccount(s3Account);
 			collectionDownloadTask.setS3DownloadDestination(s3DownloadDestination);
 		} else if (googleAccessToken != null) {
-			if (googleAccessTokenType != null) {
+			if (googleAccessTokenType == null) {
 				HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 				googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
 				googleDriveDownloadDestination.setAccessToken(googleAccessToken);
