@@ -80,7 +80,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	private String collectionAclURL;
 
 	public static final String GOOGLE_DRIVE_BULK_TYPE = "drive";
-	public static final String GOOGLE_CLOUD_BULK_TYPE = "gc";
+	public static final String GOOGLE_CLOUD_BULK_TYPE = "googleCloud";
 
 	protected String login(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		// User Session validation
