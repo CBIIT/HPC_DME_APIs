@@ -135,8 +135,8 @@
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
 											<label class="radio-inline"><input type="radio"
-											name="bulkType" id="bulkTypeGC" value="gc"
-											onChange="display('gc')"/>Google Cloud</label>
+											name="bulkType" id="bulkTypeGC" value="googleCloud"
+											onChange="display('googleCloud')"/>Google Cloud</label>
 										</div>
 									</div>
 									<div id="globus-help-links" style="display: none;">
@@ -194,7 +194,7 @@
 														<div class="form-group" style="margin-left: 13px">
 															<button type="button" class="btn btn-primary"
 																id="gcAuthlink"
-																onClick="return refreshAttributes('GC')">
+																onClick="return refreshAttributes('googleCloud')">
 																Authorize DME to Access Your Google Cloud
 															</button>
 														</div>
@@ -845,7 +845,7 @@
 				$("#primaryCreateButton").prop('disabled', true);
 				$("#dryRunButton").prop('disabled', true);
 			}
-		} else if (value == "gc"){
+		} else if (value == "googleCloud"){
 			$(".s3").addClass("hidden");
 			$(".globus").addClass("hidden");
 			globusHelpLinksDiv.style.display = "none";
@@ -871,9 +871,9 @@
 		} else if($('#bulkType').val() == 'drive') {
 	    	$("#bulkTypeDrive").prop("checked", true);
             display('drive');
-		} else if($('#bulkType').val() == 'gc') {
+		} else if($('#bulkType').val() == 'googleCloud') {
 	    	$("#bulkTypeGC").prop("checked", true);
-            display('gc');
+            display('googleCloud');
 		}
         $('#hpcMetaDatafile').change(function(){
   		  var ext = this.value.match(/\.([^\.]+)$/)[1];
