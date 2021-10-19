@@ -35,7 +35,6 @@ import com.google.common.io.Files;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
-import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -53,7 +52,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -1744,7 +1742,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModel(String basePath, Boolean metadataRules) throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModel(String basePath, Boolean metadataRules)
+			throws HpcException {
 
 		// Construct and return the DTO
 		HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
@@ -2883,19 +2882,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 */
 	private int calculateCollectionDownloadPercentComplete(HpcCollectionDownloadTask downloadTask) {
 
-			long totalDownloadSize = 0;
-			long totalBytesTransferred = 0;
-			for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-				totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
-				totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
-						? ((double) item.getPercentComplete() / 100) * item.getSize()
-						: 0;
-			}
+		long totalDownloadSize = 0;
+		long totalBytesTransferred = 0;
+		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+			totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
+			totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
+					? ((double) item.getPercentComplete() / 100) * item.getSize()
+					: 0;
+		}
 
-			if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
-				float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
-				return Math.round(percentComplete);
-			}
+		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
+			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
+			return Math.round(percentComplete);
+		}
 
 		return 0;
 	}
@@ -2908,19 +2907,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 */
 	private int calculateDataObjectBulkRegistrationPercentComplete(HpcBulkDataObjectRegistrationTask task) {
 
-			long totalUploadSize = 0;
-			long totalBytesTransferred = 0;
-			for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
-				totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
-				totalBytesTransferred += item.getTask().getPercentComplete() != null
-						? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
-						: 0;
-			}
+		long totalUploadSize = 0;
+		long totalBytesTransferred = 0;
+		for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
+			totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
+			totalBytesTransferred += item.getTask().getPercentComplete() != null
+					? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
+					: 0;
+		}
 
-			if (totalUploadSize > 0 && totalBytesTransferred <= totalUploadSize) {
-				float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
-				return Math.round(percentComplete);
-			}
+		if (totalUploadSize > 0 && totalBytesTransferred <= totalUploadSize) {
+			float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
+			return Math.round(percentComplete);
+		}
 
 		return 0;
 	}
