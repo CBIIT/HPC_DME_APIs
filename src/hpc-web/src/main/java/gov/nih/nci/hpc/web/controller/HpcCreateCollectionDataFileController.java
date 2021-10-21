@@ -367,6 +367,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		s3Path = (s3Path != null ? s3Path.trim() : null);
 		String gcPath = (String)request.getParameter("gcPath");
 		gcPath = (gcPath != null ? gcPath.trim() : null);
+		String gcToPath = (String)request.getParameter("gcToPath");
 		String accessKey = (String)request.getParameter("accessKey");
 		String secretKey = (String)request.getParameter("secretKey");
 		String region = (String)request.getParameter("region");
@@ -529,13 +530,14 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             googleCloudSource.setAccessToken(accessTokenGoogleCloud);
             googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
             file.setGoogleCloudStorageScanDirectory(googleCloudSource);
-            if(isGcFile) {
-              Path gcFilePath = Paths.get(gcPath);
-              file.setBasePath(path + "/" + gcFilePath.getFileName());
-            } else {         
-              file.setBasePath(datafilePath);
-            }
-            
+            file.setBasePath(datafilePath);
+			//Pathmap
+			HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+			pathDTO.setFromPath(gcPath);
+			gcToPath = (gcToPath == null || gcToPath.isEmpty() ? gcPath : gcToPath.trim());
+			pathDTO.setToPath(gcToPath);
+			file.setPathMap(pathDTO);
+
             if(criteriaType != null && criteriaType.equals("Simple"))
                 file.setPatternType(HpcPatternType.SIMPLE);
             else
