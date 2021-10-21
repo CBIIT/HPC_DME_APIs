@@ -534,7 +534,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			//Pathmap
 			HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
 			pathDTO.setFromPath(gcPath);
-			gcToPath = (gcToPath == null || gcToPath.isEmpty() ? gcPath : gcToPath.trim());
+			gcToPath = (gcToPath == null || gcToPath.isEmpty()) ? gcPath : gcToPath.trim();
 			pathDTO.setToPath(gcToPath);
 			file.setPathMap(pathDTO);
 
