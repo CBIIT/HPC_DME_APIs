@@ -57,7 +57,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
             .setAccessType("offline")
             .build();
     
- // Build flow and trigger user authorization request Google Cloud
+ // Build flow and trigger user authorization request for Google Cloud
     flowCloud =
           new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES_CLOUD)
               .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
