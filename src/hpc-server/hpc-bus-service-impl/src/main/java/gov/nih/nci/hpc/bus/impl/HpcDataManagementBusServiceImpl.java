@@ -2518,7 +2518,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
 						googleAccessTokenType, scanDirectoryLocation, false);
 			} else if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
-				// It is a request to scan a Google Drive directory.
+				// It is a request to scan a Google Cloud Storage directory.
 				dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 				googleAccessToken = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory().getAccessToken();
 				googleAccessTokenType = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()

@@ -394,9 +394,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void processDataTranferUploadStreamingStopped() throws HpcException {
-		// Iterate through the data objects that their data transfer (S3 / Google Drive
-		// streaming) has
-		// stopped.
+		// Iterate through the data objects that their data transfer (S3 / Google Drive / Google Cloud Storage streaming) has stopped.
 		List<HpcDataObject> dataObjectsStreamingStopped = dataManagementService.getDataTranferUploadStreamingStopped();
 		for (HpcDataObject dataObject : dataObjectsStreamingStopped) {
 			String path = dataObject.getAbsolutePath();
