@@ -37,7 +37,7 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 /**
- * HPC Data Transfer Proxy Google Drive Implementation.
+ * HPC Data Transfer Proxy Google Cloud Storage Implementation.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
@@ -140,6 +140,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				}
 			} else {
 				pathAttributes.setExists(true);
+				// In some cases, the isDirectory() is false, though it is an explicit directory, thus checking for 0 size.
 				if (blob.isDirectory() || blob.getSize() == 0) {
 					pathAttributes.setIsDirectory(true);
 					pathAttributes.setIsFile(false);

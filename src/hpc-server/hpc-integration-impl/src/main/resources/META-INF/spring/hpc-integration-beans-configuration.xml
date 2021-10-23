@@ -115,7 +115,7 @@
 	<bean id="hpcDataManagementProxy" 
 	      class="gov.nih.nci.hpc.integration.irods.impl.HpcDataManagementProxyImpl" />
 	      
-	<!--  S3 download executor (S3 -> AWS) thread pool -->
+	<!--  S3 download executor (S3 -> AWS / S3 Provider) thread pool -->
 	<task:executor id="hpcS3DownloadExecutor" pool-size="${hpc.integration.s3.downloadExecutorThreadPoolSize}"/>
 	
 	<!--  Google Drive download executor (S3 -> Google Drive) thread pool -->
