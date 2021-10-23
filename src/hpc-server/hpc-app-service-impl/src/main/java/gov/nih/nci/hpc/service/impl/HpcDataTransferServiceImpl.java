@@ -281,7 +281,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
 			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
 			throws HpcException {
-		// Input Validation. One and only one of the first 5 parameters is expected to
+		// Input Validation. One and only one of the first 6 parameters is expected to
 		// be provided.
 
 		// Validate data-object-id provided.
@@ -380,7 +380,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (StringUtils.isEmpty(googleCloudStorageUploadSource.getAccessToken())) {
 				HpcGoogleAccessToken googleAccessToken = dataRegistrationDAO.getGoogleAccessToken(dataObjectId);
 				if (googleAccessToken != null) {
-					// We are restarting an upload from Google Cloud Storage after server restarted.
+					// If we are restarting an upload from Google Cloud Storage after server restarted.
 					// Populate the access token from DB.
 					googleCloudStorageUploadSource.setAccessToken(googleAccessToken.accessToken);
 					googleCloudStorageUploadSource.setAccessTokenType(googleAccessToken.accessTokenType);
@@ -443,7 +443,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setFileSystemUploadSource(fileSystemUploadSource);
 		if (sourceFile != null) {
 			uploadRequest.setSourceFile(sourceFile);
-
 			HpcIntegratedSystemAccount systemAccount = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
 			uploadRequest.setSystemAccountName(systemAccount.getUsername());
 			uploadRequest.setSudoPassword(systemAccount.getPassword());
@@ -866,7 +865,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Scan a directory in local DME server NAS.
 			scanItems = scanDirectory(directoryLocation);
 		} else {
-			// Globus / S3 / Google Drive scan.
+			// Globus / S3 / Google Drive scan / Google Cloud Storage.
 
 			// If an S3 account or Google Drive access token was provided, then we use it to
 			// get authenticated token, otherwise, we use a system account token.
@@ -1355,6 +1354,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
 		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
