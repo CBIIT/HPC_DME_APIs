@@ -275,8 +275,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		model.addAttribute("s3Path", s3Path);
 		String gcPath = (String)request.getParameter("gcPath");
 		model.addAttribute("gcPath", gcPath);
-		String gcToPath = (String)request.getParameter("gcToPath");
-		model.addAttribute("gcToPath", gcToPath);
 		String accessKey = (String)request.getParameter("accessKey");
 		model.addAttribute("accessKey", accessKey);
 		String secretKey = (String)request.getParameter("secretKey");
