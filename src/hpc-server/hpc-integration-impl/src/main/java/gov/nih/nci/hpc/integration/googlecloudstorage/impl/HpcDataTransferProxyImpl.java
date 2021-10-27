@@ -1,5 +1,7 @@
 package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -35,7 +37,7 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 /**
- * HPC Data Transfer Proxy Google Drive Implementation.
+ * HPC Data Transfer Proxy Google Cloud Storage Implementation.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
@@ -127,9 +129,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			Blob blob = storage.get(fileLocation.getFileContainerId(), fileLocation.getFileId(),
 					Storage.BlobGetOption.fields(Storage.BlobField.values()));
 			if (blob == null) {
-				pathAttributes.setExists(false);
+				// Detect an implicit folder on Google Cloud by listing a files that include the
+				// folder path.
+				if (!scanDirectory(authenticatedToken, fileLocation).isEmpty()) {
+					pathAttributes.setExists(true);
+					pathAttributes.setIsDirectory(true);
+					pathAttributes.setIsFile(false);
+				} else {
+					pathAttributes.setExists(false);
+				}
 			} else {
 				pathAttributes.setExists(true);
+				// In some cases, the isDirectory() is false, though it is an explicit directory, thus checking for 0 size.
 				if (blob.isDirectory() || blob.getSize() == 0) {
 					pathAttributes.setIsDirectory(true);
 					pathAttributes.setIsFile(false);
@@ -174,8 +185,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
 
 		try {
+			// Folder name in Google drive begin w/o '/', end w/ '/' and has no repeating '/'.
+			String folder = toNormalizedPath(directoryLocation.getFileId()).substring(1) + '/';
 			storage.list(directoryLocation.getFileContainerId(),
-					Storage.BlobListOption.prefix(directoryLocation.getFileId())).iterateAll().forEach(blob -> {
+					Storage.BlobListOption.prefix(folder)).iterateAll().forEach(blob -> {
 						if (blob.getSize() > 0) {
 							HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
 							directoryScanItem.setFilePath(blob.getName());

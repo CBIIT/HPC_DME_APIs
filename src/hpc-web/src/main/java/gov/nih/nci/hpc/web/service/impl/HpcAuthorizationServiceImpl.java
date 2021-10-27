@@ -57,7 +57,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
             .setAccessType("offline")
             .build();
     
- // Build flow and trigger user authorization request Google Cloud
+ // Build flow and trigger user authorization request for Google Cloud
     flowCloud =
           new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES_CLOUD)
               .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
@@ -71,11 +71,9 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     if(resourceType == ResourceType.GOOGLEDRIVE ) {
       GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
-      logger.debug("Google Drive redirectUrl, " + redirectUrl);
     } else if (resourceType == ResourceType.GOOGLECLOUD) {
       GoogleAuthorizationCodeRequestUrl url = flowCloud.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
-      logger.debug("Google Cloud redirectUrl, " + redirectUrl);
     }
     return redirectUrl;
   }

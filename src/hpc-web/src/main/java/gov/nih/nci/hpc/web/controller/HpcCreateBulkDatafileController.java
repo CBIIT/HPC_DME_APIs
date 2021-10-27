@@ -350,7 +350,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
             e.printStackTrace();
           }
           
-        } else if (action != null && action.length > 0 && action[0].toLowerCase().equals(GOOGLE_CLOUD_BULK_TYPE)) {
+        } else if (action != null && action.length > 0 && action[0].equals(GOOGLE_CLOUD_BULK_TYPE)) {
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
 			model.addAttribute("useraction", GOOGLE_CLOUD_BULK_TYPE);

@@ -191,6 +191,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_COLLECTION_DOWNLOAD_TASKS_COUNT_BY_USER_AND_PATH_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where "
 			+ "USER_ID = ? AND PATH = ? and IN_PROCESS = ?";
 
+	private static final String GET_COLLECTION_DOWNLOAD_TASKS_COUNT_BY_USER_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where "
+			+ "USER_ID = ? and IN_PROCESS = ?";
+
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set IN_PROCESS = ? where ID = ?";
 
 	private static final String RESET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set IN_PROCESS = '0', DESTINATION_OVERWRITE = '1' where ID = ?";
@@ -397,7 +400,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 		HpcAccessTokenType googleAccessTokenType = null;
 		String tokenType = rs.getString("GOOGLE_ACCESS_TOKEN_TYPE");
-		if (!StringUtils.isEmpty(tokenType)) {
+		if (tokenType != null) {
 			googleAccessTokenType = HpcAccessTokenType.fromValue(tokenType);
 		}
 
@@ -407,7 +410,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			s3DownloadDestination.setAccount(s3Account);
 			collectionDownloadTask.setS3DownloadDestination(s3DownloadDestination);
 		} else if (googleAccessToken != null) {
-			if (googleAccessTokenType != null) {
+			if (googleAccessTokenType == null) {
 				HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 				googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
 				googleDriveDownloadDestination.setAccessToken(googleAccessToken);
@@ -932,6 +935,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to count collection download tasks for user " + userId + " and path " + path
+					+ ": " + e.getMessage(), HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess)
+			throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_TASKS_COUNT_BY_USER_SQL, Integer.class,
+					userId, inProcess);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to count collection download tasks for user " + userId
 					+ ": " + e.getMessage(), HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
