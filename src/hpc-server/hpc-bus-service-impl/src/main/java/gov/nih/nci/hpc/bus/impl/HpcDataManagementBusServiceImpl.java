@@ -35,7 +35,6 @@ import com.google.common.io.Files;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
-import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -53,7 +52,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -1717,7 +1715,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModels(Boolean validationRules) throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModels(Boolean metadataRules) throws HpcException {
 		// Create a map DOC -> HpcDocDataManagementRulesDTO
 		Map<String, HpcDocDataManagementRulesDTO> docsRules = new HashMap<>();
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
@@ -1726,7 +1724,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDocDataManagementRulesDTO docRules = docsRules.containsKey(doc) ? docsRules.get(doc)
 					: new HpcDocDataManagementRulesDTO();
 
-			HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, validationRules);
+			HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, metadataRules);
 			docRules.setDoc(doc);
 			docRules.getRules().add(rules);
 			docsRules.put(doc, docRules);
@@ -1744,7 +1742,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModel(String basePath) throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModel(String basePath, Boolean metadataRules)
+			throws HpcException {
 
 		// Construct and return the DTO
 		HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
@@ -1752,7 +1751,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
 				.getDataManagementConfigurations()) {
 			if (dataManagementConfiguration.getBasePath().equals(basePath)) {
-				HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, true);
+				HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, metadataRules);
 				HpcDocDataManagementRulesDTO docRules = new HpcDocDataManagementRulesDTO();
 				docRules.setDoc(dataManagementConfiguration.getDoc());
 				docRules.getRules().add(rules);
@@ -1775,13 +1774,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	private HpcDataManagementRulesDTO getDataManagementRules(HpcDataManagementConfiguration dataManagementConfiguration,
-			Boolean validationRules) {
+			Boolean metadataRules) {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
 		rules.setId(dataManagementConfiguration.getId());
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
 
-		if (validationRules) {
+		if (metadataRules) {
 			rules.getCollectionMetadataValidationRules()
 					.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
 			rules.getDataObjectMetadataValidationRules()
@@ -2474,10 +2473,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
-				if (directoryScanRegistrationItem.getS3ScanDirectory() != null) {
-					// The 'path' in S3 (which are really object key) don't start with a '/', so
-					// need to
-					// remove it after normalization.
+				if (directoryScanRegistrationItem.getS3ScanDirectory() != null
+						|| directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
+					// The 'path' in S3 and Google Cloud Storage(which is really object key) don't
+					// start with a '/', so need to remove it after normalization.
 					pathMap.setFromPath(pathMap.getFromPath().substring(1));
 				}
 				pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
@@ -2519,7 +2518,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
 						googleAccessTokenType, scanDirectoryLocation, false);
 			} else if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
-				// It is a request to scan a Google Drive directory.
+				// It is a request to scan a Google Cloud Storage directory.
 				dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 				googleAccessToken = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory().getAccessToken();
 				googleAccessTokenType = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
@@ -2882,20 +2881,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return The overall % complete of the collection download task.
 	 */
 	private int calculateCollectionDownloadPercentComplete(HpcCollectionDownloadTask downloadTask) {
-		if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
-			long totalDownloadSize = 0;
-			long totalBytesTransferred = 0;
-			for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-				totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
-				totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
-						? ((double) item.getPercentComplete() / 100) * item.getSize()
-						: 0;
-			}
 
-			if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
-				float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
-				return Math.round(percentComplete);
-			}
+		long totalDownloadSize = 0;
+		long totalBytesTransferred = 0;
+		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+			totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
+			totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
+					? ((double) item.getPercentComplete() / 100) * item.getSize()
+					: 0;
+		}
+
+		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
+			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
+			return Math.round(percentComplete);
 		}
 
 		return 0;
@@ -2908,20 +2906,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return The % complete of the bulk registration task..
 	 */
 	private int calculateDataObjectBulkRegistrationPercentComplete(HpcBulkDataObjectRegistrationTask task) {
-		if (task.getStatus().equals(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE)) {
-			long totalUploadSize = 0;
-			long totalBytesTransferred = 0;
-			for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
-				totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
-				totalBytesTransferred += item.getTask().getPercentComplete() != null
-						? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
-						: 0;
-			}
 
-			if (totalUploadSize > 0 && totalBytesTransferred <= totalUploadSize) {
-				float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
-				return Math.round(percentComplete);
-			}
+		long totalUploadSize = 0;
+		long totalBytesTransferred = 0;
+		for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
+			totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
+			totalBytesTransferred += item.getTask().getPercentComplete() != null
+					? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
+					: 0;
+		}
+
+		if (totalUploadSize > 0 && totalBytesTransferred <= totalUploadSize) {
+			float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
+			return Math.round(percentComplete);
 		}
 
 		return 0;
@@ -3122,6 +3119,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			destinationLocation = collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
 		} else if (collectionDownloadTask.getGoogleDriveDownloadDestination() != null) {
 			destinationLocation = collectionDownloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+		} else if (collectionDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			destinationLocation = collectionDownloadTask.getGoogleCloudStorageDownloadDestination()
+					.getDestinationLocation();
 		}
 
 		return destinationLocation;

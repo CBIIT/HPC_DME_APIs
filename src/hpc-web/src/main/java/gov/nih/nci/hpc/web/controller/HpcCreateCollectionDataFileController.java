@@ -57,8 +57,8 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
-//import com.google.gson.Gson;
-//import com.google.gson.GsonBuilder;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -80,7 +80,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	private String collectionAclURL;
 
 	public static final String GOOGLE_DRIVE_BULK_TYPE = "drive";
-	public static final String GOOGLE_CLOUD_BULK_TYPE = "gc";
+	public static final String GOOGLE_CLOUD_BULK_TYPE = "googleCloud";
 
 	protected String login(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		// User Session validation
@@ -364,7 +364,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String s3Path = (String)request.getParameter("s3Path");
+		s3Path = (s3Path != null ? s3Path.trim() : null);
 		String gcPath = (String)request.getParameter("gcPath");
+		gcPath = (gcPath != null ? gcPath.trim() : null);
 		String accessKey = (String)request.getParameter("accessKey");
 		String secretKey = (String)request.getParameter("secretKey");
 		String region = (String)request.getParameter("region");
@@ -510,15 +512,11 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			file.setPath(path + "/" + gcFilePath.getFileName());
             files.add(file);
 			dto.getDataObjectRegistrationItems().addAll(files);
-            //Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            //String registerBodyJson = gson.toJson(dto);
-            //System.out.println("Final JSON Body");
-            //System.out.println(registerBodyJson);
 	    }
 		if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) && gcPath != null && !isGcFile) {
 			// Upload Directory/Folder from Google Cloud Storage
-	        List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();  
-            gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
+	        List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();  
+            gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
             HpcFileLocation source = new HpcFileLocation();
             source.setFileContainerId(bucketName);
             source.setFileId(gcPath);
@@ -526,28 +524,30 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             googleCloudSource.setDirectoryLocation(source);
             googleCloudSource.setAccessToken(accessTokenGoogleCloud);
             googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
-            //file.setGoogleDriveScanDirectory(googleCloudSource);
-            file.setGoogleCloudStorageScanDirectory(googleCloudSource);
-            if(isGcFile) {
-              Path gcFilePath = Paths.get(gcPath);
-              file.setBasePath(path + "/" + gcFilePath.getFileName());
-            } else {         
-              file.setBasePath(datafilePath);
-            }
-            System.out.println("Updating DirectoryScan file=");
-            System.out.println(file.toString());
-            files.add(file);
-            
+            folder.setGoogleCloudStorageScanDirectory(googleCloudSource);
+            folder.setBasePath(datafilePath);
+			//Pathmap
+			HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+			pathDTO.setFromPath(gcPath);
+			//Extract the last subdirectory. If there are no subdirectories, FromPath and ToPath will be the same
+			String tempPath = gcPath;
+            if (gcPath.endsWith("/"))
+              tempPath = gcPath.substring(0, gcPath.length() - 1);
+            String gcToPath = tempPath.substring(tempPath.lastIndexOf("/")+1, tempPath.length());
+            pathDTO.setToPath(gcToPath);
+            folder.setPathMap(pathDTO);
+
             if(criteriaType != null && criteriaType.equals("Simple"))
-                file.setPatternType(HpcPatternType.SIMPLE);
+				folder.setPatternType(HpcPatternType.SIMPLE);
             else
-				file.setPatternType(HpcPatternType.REGEX);
+				folder.setPatternType(HpcPatternType.REGEX);
             if(exclude.size() > 0)
-				file.getExcludePatterns().addAll(exclude);
+				folder.getExcludePatterns().addAll(exclude);
             if(include.size() > 0)
-				file.getIncludePatterns().addAll(include);
+				folder.getIncludePatterns().addAll(include);
         
-            dto.getDirectoryScanRegistrationItems().addAll(files);
+			folders.add(folder);
+            dto.getDirectoryScanRegistrationItems().addAll(folders);
 	    }  
 		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
@@ -586,6 +586,16 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			s3Directory.setAccount(s3Account);
 			folder.setS3ScanDirectory(s3Directory);
 			folders.add(folder);
+			Path folderPath = Paths.get(s3Path);
+			String folderName = folderPath.getFileName().toString();
+            String fromPath = "/" + s3Path;
+            String toPath = "/" + folderName;
+			if(!fromPath.equals(toPath)) {
+                HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+                pathDTO.setFromPath(fromPath);
+                pathDTO.setToPath(toPath);
+                folder.setPathMap(pathDTO);
+            }
 			if(criteriaType != null && criteriaType.equals("Simple"))
 				folder.setPatternType(HpcPatternType.SIMPLE);
 			else
