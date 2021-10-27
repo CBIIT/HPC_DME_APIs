@@ -708,6 +708,16 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
+	 * Get collection download tasks count for a specific user.
+	 *
+	 * @userId The userId to query for.
+	 * @param inProcess True for collections that are under processing.
+	 * @return Count of collection download tasks.
+	 * @throws HpcException on database error.
+	 */
+	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException;
+
+	/**
 	 * Set collection download task in-progress
 	 *
 	 * @param taskId    The collection download task ID.
