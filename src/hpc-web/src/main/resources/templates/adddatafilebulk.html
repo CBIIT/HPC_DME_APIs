@@ -135,8 +135,8 @@
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
 											<label class="radio-inline"><input type="radio"
-											name="bulkType" id="bulkTypeGC" value="gc"
-											onChange="display('gc')"/>Google Cloud</label>
+											name="bulkType" id="bulkTypeGC" value="googleCloud"
+											onChange="display('googleCloud')"/>Google Cloud</label>
 										</div>
 									</div>
 									<div id="globus-help-links" style="display: none;">
@@ -194,18 +194,10 @@
 														<div class="form-group" style="margin-left: 13px">
 															<button type="button" class="btn btn-primary"
 																id="gcAuthlink"
-																onClick="return refreshAttributes('GC')">
+																onClick="return refreshAttributes('googleCloud')">
 																Authorize DME to Access Your Google Cloud
 															</button>
 														</div>
-														<!-- div class="col-sm-12 column" id="gcDiv">
-															<a th:if="${authorizedGC != null}" href="" id="gcLink" onclick="window.open('https://console.cloud.google.com/storage/browser');return false;">Select
-																Data from Google Cloud</a>
-
-																authorizedGC != null &amp;&amp;
-														</div -->
-														<!-- Begin Google Cloud fields -->
-														 
 														<div th:if="${authorizedGC != null}" class="col-sm-12 column" id="gcDiv">
 															<tr class="gc">
 																<td><label for="bucketName">Google Cloud Bucket:</label></td>
@@ -214,12 +206,12 @@
 																</td>
 															</tr>
 															<tr class="gc">
-																<td><label for="gcPath">Google Cloud (Source) Path:</label></td>
+																<td><label for="gcPath">Google Cloud Source Path:</label></td>
 																<td><input
 																	type="text" class="form-control"
 																	th:value="${gcPath}"
 																	name="gcPath" id="gcPath"
-																	placeholder="Enter Google Cloud (Source) Path" size="40" />
+																	placeholder="Enter Google Cloud Source Path" size="40" />
 																</td>
 															</tr>
 															<tr class="gc">
@@ -230,7 +222,6 @@
 																</td>
 															</tr>
 														</div>
-														<!-- End Google Cloud fields -->
 													</td>
 												</tr>
 												<tr class="globus drive"><td colspan="2">&nbsp;</td></tr>
@@ -854,7 +845,7 @@
 				$("#primaryCreateButton").prop('disabled', true);
 				$("#dryRunButton").prop('disabled', true);
 			}
-		} else if (value == "gc"){
+		} else if (value == "googleCloud"){
 			$(".s3").addClass("hidden");
 			$(".globus").addClass("hidden");
 			globusHelpLinksDiv.style.display = "none";
@@ -880,9 +871,9 @@
 		} else if($('#bulkType').val() == 'drive') {
 	    	$("#bulkTypeDrive").prop("checked", true);
             display('drive');
-		} else if($('#bulkType').val() == 'gc') {
+		} else if($('#bulkType').val() == 'googleCloud') {
 	    	$("#bulkTypeGC").prop("checked", true);
-            display('gc');
+            display('googleCloud');
 		}
         $('#hpcMetaDatafile').change(function(){
   		  var ext = this.value.match(/\.([^\.]+)$/)[1];
