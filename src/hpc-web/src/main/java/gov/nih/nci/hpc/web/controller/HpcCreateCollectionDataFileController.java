@@ -530,7 +530,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
 			pathDTO.setFromPath(gcPath);
 			//Extract the last subdirectory. If there are no subdirectories, FromPath and ToPath will be the same
-            String gcToPath = gcPath.substring(gcPath.lastIndexOf("/")+1, gcPath.length());
+			String tempPath = gcPath;
+            if (gcPath.endsWith("/"))
+              tempPath = gcPath.substring(0, gcPath.length() - 1);
+            String gcToPath = tempPath.substring(tempPath.lastIndexOf("/")+1, tempPath.length());
             pathDTO.setToPath(gcToPath);
             folder.setPathMap(pathDTO);
 
