@@ -761,27 +761,25 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		// We limit a user to one download (collection breakdown or processing) task at
 		// a time for the same collection
-		int tasksForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
+		int tasksInProcessForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
 				downloadTask.getUserId(), downloadTask.getPath(), true);
-		if (tasksForSameCollectionCount > 0) {
-			// Another collection breakdown or processing tasks in in-process (other thread)
-			// for this
-			//same collection for this user.
+		if (tasksInProcessForSameCollectionCount > 0) {
+			// Another collection breakdown or processing task is in-process (other thread)
+			// for this same collection for this user.
 			logger.info(
-					"collection download task: {} - Not processing at this time. {} download tasks in-process for user {}",
-					downloadTask.getId(), tasksForSameCollectionCount, downloadTask.getUserId());
+					"collection download task: {} - Not processing at this time. A download task is already in-process for user {} for collection {}",
+					downloadTask.getId(), downloadTask.getUserId(),downloadTask.getPath());
 			securityService.sendToQueue(taskMessage, HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE, true);
 			return;
 		}
 
-		// We also limit a user to overall one collection breakdown task at a time.
-		int tasksInProgressCount = dataTransferService.getCollectionDownloadTasksCount(downloadTask.getUserId(),
-				HpcCollectionDownloadTaskStatus.RECEIVED, true);
-		if (tasksInProgressCount > 0) {
-			// Another collection breakdown task in in-process (other thread) for this user.
+		// We also limit a user overall to a configured number of collection download tasks at a time.
+		int totalTasksInProcessCount = dataTransferService.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
+		if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser) {
+			// We have reached the max collection breakdown tasks in-process for this user.
 			logger.info(
-					"collection download task: {} - Not processing at this time. {} breakdown tasks in-process for user {}",
-					downloadTask.getId(), tasksInProgressCount, downloadTask.getUserId());
+					"collection download task: {} - Not processing at this time. {} download tasks already in-process for user {}",
+					downloadTask.getId(), totalTasksInProcessCount, downloadTask.getUserId());
 			securityService.sendToQueue(taskMessage, HpcMessageQueue.PROCESS_COLLECTION_DOWNLOAD_QUEUE, true);
 			return;
 		}
