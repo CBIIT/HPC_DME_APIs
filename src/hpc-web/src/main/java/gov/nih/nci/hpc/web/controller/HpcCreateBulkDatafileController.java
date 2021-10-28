@@ -110,6 +110,12 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				session.setAttribute("bulkType", "globus");
 			} else
 				model.addAttribute("create", true);
+
+			String bulkType = request.getParameter("bulkType");
+			if (StringUtils.isBlank(bulkType))
+				bulkType = (String) session.getAttribute("bulkType");
+			model.addAttribute("bulkType", bulkType);
+
 			String path = request.getParameter("path");
 			String endPoint = request.getParameter("endpoint_id");
 			String code = request.getParameter("code");
@@ -117,14 +123,21 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	            //Return from Google Drive Authorization
 	            final String returnURL = this.webServerName + "/addbulk";
 	            try {
-	              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
-	              session.setAttribute("accessToken", accessToken);
-	              model.addAttribute("accessToken", accessToken);
+				  if(StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) ){
+					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
+					session.setAttribute("accessToken", accessToken);
+					model.addAttribute("accessToken", accessToken);
+					model.addAttribute("authorized", "true");
+				  } else if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) ) {
+					String accessTokenGoogleCloud = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD);
+					session.setAttribute("accessTokenGoogleCloud", accessTokenGoogleCloud);
+					model.addAttribute("accessTokenGoogleCloud", accessTokenGoogleCloud);
+					model.addAttribute("authorizedGC", "true");
+				  }
 	            } catch (Exception e) {
 	              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
 	              e.printStackTrace();
-	            }
-	            model.addAttribute("authorized", "true");            
+	            } 
 	        }
 			String parent = request.getParameter("parent");
 			if (parent == null || parent.isEmpty())
@@ -172,11 +185,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			else
 				session.setAttribute("basePathSelected", basePath);
 
-			String bulkType = request.getParameter("bulkType");
-			if (StringUtils.isBlank(bulkType))
-				bulkType = (String) session.getAttribute("bulkType");
-			model.addAttribute("bulkType", bulkType);
-			
 			if (parent == null || basePath == null)
 				populateBasePaths(request, session, model, path);
 			else
@@ -265,6 +273,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		model.addAttribute("bucketName", bucketName);
 		String s3Path = (String)request.getParameter("s3Path");
 		model.addAttribute("s3Path", s3Path);
+		String gcPath = (String)request.getParameter("gcPath");
+		model.addAttribute("gcPath", gcPath);
 		String accessKey = (String)request.getParameter("accessKey");
 		model.addAttribute("accessKey", accessKey);
 		String secretKey = (String)request.getParameter("secretKey");
@@ -272,7 +282,10 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		String region = (String)request.getParameter("region");
 		model.addAttribute("region", region);
 		String s3File = (String)request.getParameter("s3File");
-		model.addAttribute("s3File", s3File != null && s3File.equals("on"));	
+		model.addAttribute("s3File", s3File != null && s3File.equals("on"));
+		String gcFile = (String)request.getParameter("gcFile");
+		model.addAttribute("gcFile", gcFile != null && gcFile.equals("on"));
+	
 		if (basePath == null)
 			basePath = (String) session.getAttribute("basePathSelected");
 
@@ -320,24 +333,40 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
 	        "action=" + percentEncodedReturnURL;
 			
-		} else if (action != null && action.length > 0 && action[0].equals("Drive")) {
+		} else if (action != null && action.length > 0 && action[0].toLowerCase().equals(GOOGLE_DRIVE_BULK_TYPE)) {
           session.setAttribute("datafilePath", hpcDataModel.getPath());
           session.setAttribute("basePathSelected", basePath);
-          model.addAttribute("useraction", "drive");
-          session.setAttribute("bulkType", "drive");
+          model.addAttribute("useraction", GOOGLE_DRIVE_BULK_TYPE);
+          session.setAttribute("bulkType", GOOGLE_DRIVE_BULK_TYPE);
           setCriteria(model, request, session);
           populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
                   false);
           
           String returnURL = this.webServerName + "/addbulk";
           try {
-            return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+            return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
           } catch (Exception e) {
             model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
             e.printStackTrace();
           }
           
-        }
+        } else if (action != null && action.length > 0 && action[0].equals(GOOGLE_CLOUD_BULK_TYPE)) {
+			session.setAttribute("datafilePath", hpcDataModel.getPath());
+			session.setAttribute("basePathSelected", basePath);
+			model.addAttribute("useraction", GOOGLE_CLOUD_BULK_TYPE);
+			session.setAttribute("bulkType", GOOGLE_CLOUD_BULK_TYPE);
+			setCriteria(model, request, session);
+			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
+					false);
+			String returnURL = this.webServerName + "/addbulk";
+
+			try {
+			  return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD);
+			} catch (Exception e) {
+			  model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+			  e.printStackTrace();
+			}
+		  }
 
 		try {
 			if (hpcDataModel.getPath() == null || hpcDataModel.getPath().trim().length() == 0)

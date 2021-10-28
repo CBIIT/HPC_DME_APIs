@@ -25,6 +25,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.storage.StorageScopes;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 
 @Service
@@ -33,6 +34,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
   private static final String TOKENS_DIRECTORY_PATH = "tokens";
   private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
+  private static final List<String> SCOPES_CLOUD = Collections.singletonList(StorageScopes.DEVSTORAGE_READ_ONLY);
   private static HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
   @Value("${gov.nih.nci.hpc.drive.clientid}")
@@ -42,30 +44,50 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 
   private Logger logger = LoggerFactory.getLogger(HpcAuthorizationServiceImpl.class);
   private GoogleAuthorizationCodeFlow flow;
+  private GoogleAuthorizationCodeFlow flowCloud;
+
 
   @PostConstruct
   public void init() throws Exception {
 
-    // Build flow and trigger user authorization request.
+    // Build flow and trigger user authorization request for Google Drive
     flow =
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES)
             .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
             .setAccessType("offline")
             .build();
+    
+ // Build flow and trigger user authorization request for Google Cloud
+    flowCloud =
+          new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES_CLOUD)
+              .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+              .setAccessType("offline")
+              .build();
   }
 
   @Override
-  public String authorize(String redirectUri) throws Exception {
-    GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
-    String redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
-    logger.debug("redirectUrl, " + redirectUrl);
+  public String authorize(String redirectUri, ResourceType resourceType ) throws Exception {
+    String redirectUrl="";
+    if(resourceType == ResourceType.GOOGLEDRIVE ) {
+      GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
+      redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
+    } else if (resourceType == ResourceType.GOOGLECLOUD) {
+      GoogleAuthorizationCodeRequestUrl url = flowCloud.newAuthorizationUrl();
+      redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
+    }
     return redirectUrl;
   }
-
-  public String getToken(String code, String redirectUri) throws Exception {
+    
+  public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
+    GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
-    GoogleTokenResponse tokenResponse =
-        flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
+    if(resourceType == ResourceType.GOOGLEDRIVE) {
+      tokenResponse =
+          flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
+    } else if (resourceType == ResourceType.GOOGLECLOUD) {
+      tokenResponse =
+          flowCloud.newTokenRequest(code).setRedirectUri(redirectUri).execute();
+    }
     return tokenResponse.getAccessToken();
   }
 }
