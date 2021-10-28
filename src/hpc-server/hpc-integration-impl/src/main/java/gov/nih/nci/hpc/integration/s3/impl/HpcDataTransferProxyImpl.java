@@ -734,16 +734,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// Upload by streaming from Google Drive.
 			uploadMethod = HpcDataTransferUploadMethod.GOOGLE_DRIVE;
 			sourceLocation = googleDriveUploadSource.getSourceLocation();
-
-			// We set the sourceURL to be the access-token, so it's persisted in case we
-			// need it to
-			// restart
-			// the upload following a server restart.
-			sourceURL = googleDriveUploadSource.getAccessToken();
+	
 		} else if (googleCloudStorageUploadSource != null) {
 			// Upload by streaming from Google Drive.
 			uploadMethod = HpcDataTransferUploadMethod.GOOGLE_CLOUD_STORAGE;
 			sourceLocation = googleCloudStorageUploadSource.getSourceLocation();
+			
 		} else {
 			throw new HpcException("Unexpected upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}

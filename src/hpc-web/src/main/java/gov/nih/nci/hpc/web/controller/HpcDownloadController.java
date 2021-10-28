@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -27,11 +28,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.fasterxml.jackson.annotation.JsonView;
+
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -47,8 +51,6 @@ import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
-
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -108,7 +110,7 @@ public class HpcDownloadController extends AbstractHpcController {
             source = (String)session.getAttribute("downloadSource");
             final String returnURL = this.webServerName + "/download";
             try {
-              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+              String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
               session.setAttribute("accessToken", accessToken);
               model.addAttribute("accessToken", accessToken);
             } catch (Exception e) {
@@ -186,7 +188,7 @@ public class HpcDownloadController extends AbstractHpcController {
   	        downloadFilePath = request.getParameter("downloadFilePath");
   	        String returnURL = this.webServerName + "/download";
   	        try {
-              return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+              return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
             } catch (Exception e) {
               model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
               e.printStackTrace();
@@ -294,7 +296,7 @@ public class HpcDownloadController extends AbstractHpcController {
 				dto.setS3DownloadDestination(destination);
 			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("drive")) {
   			    String accessToken = (String)session.getAttribute("accessToken");
-  			    HpcGoogleDriveDownloadDestination destination = new HpcGoogleDriveDownloadDestination();
+  			    HpcGoogleDownloadDestination destination = new HpcGoogleDownloadDestination();
                 HpcFileLocation location = new HpcFileLocation();
                 location.setFileContainerId("MyDrive");
                 location.setFileId(downloadFile.getDrivePath().trim());

@@ -35,7 +35,6 @@ import com.google.common.io.Files;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
-import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -53,7 +52,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -405,6 +403,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
 				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 				downloadRequest.getGoogleDriveDownloadDestination(),
+				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId());
 
 		// Create and return a DTO with the request receipt.
@@ -457,6 +456,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			collectionDownloadTask = dataTransferService.downloadDataObjects(downloadRequest.getDataObjectPaths(),
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
+					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		} else {
@@ -490,6 +490,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			collectionDownloadTask = dataTransferService.downloadCollections(downloadRequest.getCollectionPaths(),
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
+					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		}
@@ -539,7 +540,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getGoogleAccessTokenType());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -678,7 +680,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleDriveAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getGoogleAccessTokenType());
 
 		// Create and return a DTO with the request receipt.
 		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
@@ -1263,15 +1266,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to Google Drive destination is supported only from S3 archive.
+		// 3. Download to Google Drive / Google Cloud Storage destination is supported
+		// only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
-				downloadRequest.getGoogleDriveDownloadDestination() != null, false);
+				downloadRequest.getGoogleDriveDownloadDestination() != null
+						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null,
+				false);
 
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
+				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId, completionEvent,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
@@ -1313,6 +1320,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} else if (taskStatus.getDataObjectDownloadTask().getGoogleDriveDownloadDestination() != null) {
 				downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
 						.getGoogleDriveDownloadDestination().getDestinationLocation());
+			} else if (taskStatus.getDataObjectDownloadTask().getGoogleCloudStorageDownloadDestination() != null) {
+				downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
+						.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 			}
 			downloadStatus.setDestinationType(taskStatus.getDataObjectDownloadTask().getDestinationType());
 			downloadStatus.setPercentComplete(taskStatus.getDataObjectDownloadTask().getPercentComplete());
@@ -1705,7 +1715,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModels() throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModels(Boolean metadataRules) throws HpcException {
 		// Create a map DOC -> HpcDocDataManagementRulesDTO
 		Map<String, HpcDocDataManagementRulesDTO> docsRules = new HashMap<>();
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
@@ -1714,7 +1724,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDocDataManagementRulesDTO docRules = docsRules.containsKey(doc) ? docsRules.get(doc)
 					: new HpcDocDataManagementRulesDTO();
 
-			HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration);
+			HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, metadataRules);
 			docRules.setDoc(doc);
 			docRules.getRules().add(rules);
 			docsRules.put(doc, docRules);
@@ -1732,7 +1742,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModel(String basePath) throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModel(String basePath, Boolean metadataRules)
+			throws HpcException {
 
 		// Construct and return the DTO
 		HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
@@ -1740,7 +1751,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
 				.getDataManagementConfigurations()) {
 			if (dataManagementConfiguration.getBasePath().equals(basePath)) {
-				HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration);
+				HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration, metadataRules);
 				HpcDocDataManagementRulesDTO docRules = new HpcDocDataManagementRulesDTO();
 				docRules.setDoc(dataManagementConfiguration.getDoc());
 				docRules.getRules().add(rules);
@@ -1762,16 +1773,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return dataManagementModel;
 	}
 
-	private HpcDataManagementRulesDTO getDataManagementRules(
-			HpcDataManagementConfiguration dataManagementConfiguration) {
+	private HpcDataManagementRulesDTO getDataManagementRules(HpcDataManagementConfiguration dataManagementConfiguration,
+			Boolean metadataRules) {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
 		rules.setId(dataManagementConfiguration.getId());
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
-		rules.getCollectionMetadataValidationRules()
-				.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
-		rules.getDataObjectMetadataValidationRules()
-				.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
+
+		if (metadataRules) {
+			rules.getCollectionMetadataValidationRules()
+					.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
+			rules.getDataObjectMetadataValidationRules()
+					.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
+		}
 
 		return rules;
 	}
@@ -2459,10 +2473,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
-				if (directoryScanRegistrationItem.getS3ScanDirectory() != null) {
-					// The 'path' in S3 (which are really object key) don't start with a '/', so
-					// need to
-					// remove it after normalization.
+				if (directoryScanRegistrationItem.getS3ScanDirectory() != null
+						|| directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
+					// The 'path' in S3 and Google Cloud Storage(which is really object key) don't
+					// start with a '/', so need to remove it after normalization.
 					pathMap.setFromPath(pathMap.getFromPath().substring(1));
 				}
 				pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
@@ -2504,7 +2518,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
 						googleAccessTokenType, scanDirectoryLocation, false);
 			} else if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
-				// It is a request to scan a Google Drive directory.
+				// It is a request to scan a Google Cloud Storage directory.
 				dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 				googleAccessToken = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory().getAccessToken();
 				googleAccessTokenType = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
@@ -2567,7 +2581,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                              registration and parent collections.
 	 * @param pathMap               Replace 'fromPath' (found in scanned directory)
 	 *                              with 'toPath'.
-	 * @param dataTransferType      (Optional) The data trafser type performed the
+	 * @param dataTransferType      (Optional) The data transfer type performed the
 	 *                              scan. Null means it's a DME server file system
 	 *                              scan
 	 * @param s3Account             (Optional) Provided if this is a registration
@@ -2706,7 +2720,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Validate the data is not archived yet.
 			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 			if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-				throw new HpcException("Upload URL re-generation not allowed. Data object at " + path + " already archived",
+				throw new HpcException(
+						"Upload URL re-generation not allowed. Data object at " + path + " already archived",
 						HpcErrorType.REQUEST_REJECTED);
 			}
 
@@ -2800,16 +2815,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Validate a download request.
 	 *
-	 * @param path                           The data object path.
-	 * @param googleDriveDownloadDestination True if the download destination is
-	 *                                       Google Drive.
-	 * @param generateDownloadURL            True if this is a request to generate a
-	 *                                       download URL.
+	 * @param path                      The data object path.
+	 * @param googleDownloadDestination True if the download destination is Google
+	 *                                  Drive or Google Cloud Storage
+	 * @param generateDownloadURL       True if this is a request to generate a
+	 *                                  download URL.
 	 * @return The system generated metadata
 	 * @throws HpcException If the request is invalid.
 	 */
-	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path,
-			boolean googleDriveDownloadDestination, boolean generateDownloadURL) throws HpcException {
+	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path, boolean googleDownloadDestination,
+			boolean generateDownloadURL) throws HpcException {
 
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
@@ -2826,14 +2841,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDriveDownloadDestination,
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDownloadDestination,
 					generateDownloadURL);
 		}
 
-		// Download to Google Drive destination is supported only from S3 archive.
-		if (googleDriveDownloadDestination && (metadata.getDataTransferType() == null
+		// Download to Google Drive / Google Cloud Storage destination is supported only
+		// from S3 archive.
+		if (googleDownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
-			throw new HpcException("Google Drive download request is not supported for POSIX based file system archive",
+			throw new HpcException(
+					"Google Drive / Google Cloud Storage download request is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -2864,20 +2881,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return The overall % complete of the collection download task.
 	 */
 	private int calculateCollectionDownloadPercentComplete(HpcCollectionDownloadTask downloadTask) {
-		if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
-			long totalDownloadSize = 0;
-			long totalBytesTransferred = 0;
-			for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-				totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
-				totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
-						? ((double) item.getPercentComplete() / 100) * item.getSize()
-						: 0;
-			}
 
-			if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
-				float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
-				return Math.round(percentComplete);
-			}
+		long totalDownloadSize = 0;
+		long totalBytesTransferred = 0;
+		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+			totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
+			totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
+					? ((double) item.getPercentComplete() / 100) * item.getSize()
+					: 0;
+		}
+
+		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
+			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
+			return Math.round(percentComplete);
 		}
 
 		return 0;
@@ -2890,20 +2906,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return The % complete of the bulk registration task..
 	 */
 	private int calculateDataObjectBulkRegistrationPercentComplete(HpcBulkDataObjectRegistrationTask task) {
-		if (task.getStatus().equals(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE)) {
-			long totalUploadSize = 0;
-			long totalBytesTransferred = 0;
-			for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
-				totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
-				totalBytesTransferred += item.getTask().getPercentComplete() != null
-						? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
-						: 0;
-			}
 
-			if (totalUploadSize > 0 && totalBytesTransferred <= totalUploadSize) {
-				float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
-				return Math.round(percentComplete);
-			}
+		long totalUploadSize = 0;
+		long totalBytesTransferred = 0;
+		for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
+			totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
+			totalBytesTransferred += item.getTask().getPercentComplete() != null
+					? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
+					: 0;
+		}
+
+		if (totalUploadSize > 0 && totalBytesTransferred <= totalUploadSize) {
+			float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
+			return Math.round(percentComplete);
 		}
 
 		return 0;
@@ -3104,6 +3119,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			destinationLocation = collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
 		} else if (collectionDownloadTask.getGoogleDriveDownloadDestination() != null) {
 			destinationLocation = collectionDownloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+		} else if (collectionDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			destinationLocation = collectionDownloadTask.getGoogleCloudStorageDownloadDestination()
+					.getDestinationLocation();
 		}
 
 		return destinationLocation;

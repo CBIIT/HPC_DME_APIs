@@ -480,20 +480,22 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Get the Data Management Models (Metadata validation rules and hierarchy
 	 * definitions for all archives)
+	 * @param metadataRules If false do not return metadata validation rules. Default is true.
 	 *
 	 * @return Data Management Model DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataManagementModelDTO getDataManagementModels() throws HpcException;
+	public HpcDataManagementModelDTO getDataManagementModels(Boolean metadataRules) throws HpcException;
 
 	/**
 	 * Get a Data Management Model (Metadata validation rules and hierarchy
 	 * definitions) for a specific archive (basePath)
+	 * @param metadataRules If false do not return metadata validation rules. Default is true.
 	 *
 	 * @return Data Management Model DTO.
 	 * @throws HpcException on service failure.
 	 */
-	HpcDataManagementModelDTO getDataManagementModel(String basePath) throws HpcException;
+	HpcDataManagementModelDTO getDataManagementModel(String basePath, Boolean metadataRules) throws HpcException;
 
 	/**
 	 * Move a path of either a data object or a collection.
@@ -530,4 +532,5 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void recoverCollection(String path) throws HpcException;
+
 }

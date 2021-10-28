@@ -1,16 +1,27 @@
 package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 
@@ -26,7 +37,7 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 /**
- * HPC Data Transfer Proxy Google Drive Implementation.
+ * HPC Data Transfer Proxy Google Cloud Storage Implementation.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
@@ -39,8 +50,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Autowired
 	private HpcGoogleCloudStorageConnection googleCloudStorageConnection = null;
 
+	// The Google Drive download executor.
+	@Autowired
+	@Qualifier("hpcGoogleCloudStorageDownloadExecutor")
+	Executor googleCloudStorageExecutor = null;
+
 	// Date formatter to format files last-modified date
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -67,7 +86,37 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
-		throw new HpcException("Download from Google Cloud Storage not supported", HpcErrorType.UNEXPECTED_ERROR);
+		// Input validation
+		if (progressListener == null) {
+			throw new HpcException(
+					"[Google Cloud Storage] No progress listener provided for a download to Google Cloud Storage destination",
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		// Authenticate the Google Cloud Storage access token.
+		Storage storage = googleCloudStorageConnection.getStorage(googleCloudStorageConnection.authenticate(
+				downloadRequest.getGoogleCloudStorageDestination().getAccessToken(),
+				downloadRequest.getGoogleCloudStorageDestination().getAccessTokenType()));
+
+		// Stream the file to Google Drive.
+		CompletableFuture<Void> googleCloudStorageDownloadFuture = CompletableFuture.runAsync(() -> {
+			try {
+				progressListener.transferCompleted(storage.createFrom(BlobInfo.newBuilder(BlobId.of(
+						downloadRequest.getGoogleCloudStorageDestination().getDestinationLocation()
+								.getFileContainerId(),
+						downloadRequest.getGoogleCloudStorageDestination().getDestinationLocation().getFileId()))
+						.setContentType("application/octet-stream").build(),
+						new URL(downloadRequest.getArchiveLocationURL()).openStream()).getSize());
+
+			} catch (IOException | StorageException e) {
+				String message = "[Google Cloud Storage] Failed to download object: " + e.getMessage();
+				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
+				progressListener.transferFailed(message);
+			}
+
+		}, googleCloudStorageExecutor);
+
+		return String.valueOf(googleCloudStorageDownloadFuture.hashCode());
 	}
 
 	@Override
@@ -80,9 +129,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			Blob blob = storage.get(fileLocation.getFileContainerId(), fileLocation.getFileId(),
 					Storage.BlobGetOption.fields(Storage.BlobField.values()));
 			if (blob == null) {
-				pathAttributes.setExists(false);
+				// Detect an implicit folder on Google Cloud by listing a files that include the
+				// folder path.
+				if (!scanDirectory(authenticatedToken, fileLocation).isEmpty()) {
+					pathAttributes.setExists(true);
+					pathAttributes.setIsDirectory(true);
+					pathAttributes.setIsFile(false);
+				} else {
+					pathAttributes.setExists(false);
+				}
 			} else {
 				pathAttributes.setExists(true);
+				// In some cases, the isDirectory() is false, though it is an explicit directory, thus checking for 0 size.
 				if (blob.isDirectory() || blob.getSize() == 0) {
 					pathAttributes.setIsDirectory(true);
 					pathAttributes.setIsFile(false);
@@ -127,8 +185,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
 
 		try {
+			// Folder name in Google drive begin w/o '/', end w/ '/' and has no repeating '/'.
+			String folder = toNormalizedPath(directoryLocation.getFileId()).substring(1) + '/';
 			storage.list(directoryLocation.getFileContainerId(),
-					Storage.BlobListOption.prefix(directoryLocation.getFileId())).iterateAll().forEach(blob -> {
+					Storage.BlobListOption.prefix(folder)).iterateAll().forEach(blob -> {
 						if (blob.getSize() > 0) {
 							HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
 							directoryScanItem.setFilePath(blob.getName());

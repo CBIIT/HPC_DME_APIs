@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -55,6 +56,9 @@ import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -74,6 +78,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	private String hpcModelURL;
 	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
 	private String collectionAclURL;
+
+	public static final String GOOGLE_DRIVE_BULK_TYPE = "drive";
+	public static final String GOOGLE_CLOUD_BULK_TYPE = "googleCloud";
 
 	protected String login(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		// User Session validation
@@ -108,7 +115,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		session.removeAttribute("fileIds");
 		session.removeAttribute("folderIds");
 		session.removeAttribute("accessToken");
+		session.removeAttribute("accessTokenGoogleCloud");
 		session.removeAttribute("authorized");
+		session.removeAttribute("authorizedGC");
 	}
 
 	protected void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path)
@@ -143,6 +152,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		String endPoint = request.getParameter("endpoint_id");
 		String globusPath = request.getParameter("path");
 		String accessToken = (String) session.getAttribute("accessToken");
+		String accessTokenGoogleCloud = (String) session.getAttribute("accessTokenGoogleCloud");
 		List<String> fileNames = new ArrayList<String>();
 		List<String> folderNames = new ArrayList<String>();
 		List<String> fileIds = new ArrayList<String>();
@@ -211,10 +221,14 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 
         if (folderIds != null && !folderIds.isEmpty())
             model.addAttribute("folderIds", folderIds);
-      
+        
         if (accessToken != null) {
             model.addAttribute("accessToken", accessToken);
             model.addAttribute("authorized", "true");
+        }
+		if (accessTokenGoogleCloud != null) {
+            model.addAttribute("accessTokenGoogleCloud", accessTokenGoogleCloud);
+            model.addAttribute("authorizedGC", "true");
         }
 		setCriteria(model, request, session);
 		if (source == null)
@@ -345,15 +359,21 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<String> googleDriveFileIds = (List<String>) session.getAttribute("fileIds");
         List<String> googleDriveFolderIds = (List<String>) session.getAttribute("folderIds");
         String accessToken = (String) session.getAttribute("accessToken");
+		String accessTokenGoogleCloud = (String) session.getAttribute("accessTokenGoogleCloud");
 		
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String s3Path = (String)request.getParameter("s3Path");
+		s3Path = (s3Path != null ? s3Path.trim() : null);
+		String gcPath = (String)request.getParameter("gcPath");
+		gcPath = (gcPath != null ? gcPath.trim() : null);
 		String accessKey = (String)request.getParameter("accessKey");
 		String secretKey = (String)request.getParameter("secretKey");
 		String region = (String)request.getParameter("region");
 		String s3File = (String)request.getParameter("s3File");
 		boolean isS3File = s3File != null && s3File.equals("on");	
+		String gcFile = (String)request.getParameter("gcFile");
+		boolean isGcFile = gcFile != null && gcFile.equals("on");	
 		
 		
 		if (StringUtils.equals(bulkType, "globus") && globusEndpointFiles != null) {
@@ -372,7 +392,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				files.add(file);
 			}
 			dto.getDataObjectRegistrationItems().addAll(files);
-		} else if (StringUtils.equals(bulkType, "drive") && googleDriveFileIds != null) {
+		} else if (StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) && googleDriveFileIds != null) {
+			//Upload File(s) From Google Drive
             List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
             for (String fileId : googleDriveFileIds) {
                 gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
@@ -392,7 +413,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             }
             dto.getDataObjectRegistrationItems().addAll(files);
         }
-
 
 		List<String> include = new ArrayList<String>();
 		if(includeCriteria != null && !includeCriteria.isEmpty())
@@ -441,7 +461,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			}
 			dto.getDirectoryScanRegistrationItems().addAll(folders);
 		}
-		if (StringUtils.equals(bulkType, "drive") && googleDriveFolderIds != null) {
+		if (StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) && googleDriveFolderIds != null) {
+			// Upload Directory/Folder from Google Cloud Storage
             List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();
             for (String folderId : googleDriveFolderIds) {
                 gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
@@ -475,6 +496,59 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             }
             dto.getDirectoryScanRegistrationItems().addAll(folders);
         }
+	      if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) && gcPath != null && isGcFile) {
+			//Upload File From Google Cloud Storage
+			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
+            HpcFileLocation source = new HpcFileLocation();
+            source.setFileContainerId(bucketName);
+            source.setFileId(gcPath);
+			HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
+			googleCloudSource.setSourceLocation(source);
+			googleCloudSource.setAccessToken(accessTokenGoogleCloud);
+			googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+            file.setGoogleCloudStorageUploadSource(googleCloudSource);
+			Path gcFilePath = Paths.get(gcPath);
+			file.setPath(path + "/" + gcFilePath.getFileName());
+            files.add(file);
+			dto.getDataObjectRegistrationItems().addAll(files);
+	    }
+		if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) && gcPath != null && !isGcFile) {
+			// Upload Directory/Folder from Google Cloud Storage
+	        List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();  
+            gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
+            HpcFileLocation source = new HpcFileLocation();
+            source.setFileContainerId(bucketName);
+            source.setFileId(gcPath);
+            HpcGoogleScanDirectory googleCloudSource = new HpcGoogleScanDirectory();
+            googleCloudSource.setDirectoryLocation(source);
+            googleCloudSource.setAccessToken(accessTokenGoogleCloud);
+            googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+            folder.setGoogleCloudStorageScanDirectory(googleCloudSource);
+            folder.setBasePath(datafilePath);
+			//Pathmap
+			HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+			pathDTO.setFromPath(gcPath);
+			//Extract the last subdirectory. If there are no subdirectories, FromPath and ToPath will be the same
+			String tempPath = gcPath;
+            if (gcPath.endsWith("/"))
+              tempPath = gcPath.substring(0, gcPath.length() - 1);
+            String gcToPath = tempPath.substring(tempPath.lastIndexOf("/")+1, tempPath.length());
+            pathDTO.setToPath(gcToPath);
+            folder.setPathMap(pathDTO);
+
+            if(criteriaType != null && criteriaType.equals("Simple"))
+				folder.setPatternType(HpcPatternType.SIMPLE);
+            else
+				folder.setPatternType(HpcPatternType.REGEX);
+            if(exclude.size() > 0)
+				folder.getExcludePatterns().addAll(exclude);
+            if(include.size() > 0)
+				folder.getIncludePatterns().addAll(include);
+        
+			folders.add(folder);
+            dto.getDirectoryScanRegistrationItems().addAll(folders);
+	    }  
 		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
@@ -512,6 +586,16 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			s3Directory.setAccount(s3Account);
 			folder.setS3ScanDirectory(s3Directory);
 			folders.add(folder);
+			Path folderPath = Paths.get(s3Path);
+			String folderName = folderPath.getFileName().toString();
+            String fromPath = "/" + s3Path;
+            String toPath = "/" + folderName;
+			if(!fromPath.equals(toPath)) {
+                HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+                pathDTO.setFromPath(fromPath);
+                pathDTO.setToPath(toPath);
+                folder.setPathMap(pathDTO);
+            }
 			if(criteriaType != null && criteriaType.equals("Simple"))
 				folder.setPatternType(HpcPatternType.SIMPLE);
 			else

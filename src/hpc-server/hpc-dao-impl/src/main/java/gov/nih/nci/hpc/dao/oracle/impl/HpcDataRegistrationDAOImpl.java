@@ -112,6 +112,14 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL = "select count(*) from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT ";
 
+	private static final String UPSERT_GOOGLE_ACCESS_TOKEN_SQL = "merge into HPC_DATA_OBJECT_REGISTRATION_GOOGLE_ACCESS_TOKEN using dual on (ID = ?) "
+			+ "when matched then update set ACCESS_TOKEN = ?, ACCESS_TOKEN_TYPE = ? "
+			+ "when not matched then insert (ID, ACCESS_TOKEN, ACCESS_TOKEN_TYPE) " + "values (?, ?, ?)";
+
+	private static final String GET_GOOGLE_ACCESS_TOKEN_SQL = "select * from HPC_DATA_OBJECT_REGISTRATION_GOOGLE_ACCESS_TOKEN where ID = ?";
+
+	private static final String DELETE_GOOGLE_ACCESS_TOKEN_SQL = "delete from HPC_DATA_OBJECT_REGISTRATION_GOOGLE_ACCESS_TOKEN where ID = ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -144,7 +152,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		return bulkDataObjectRegistrationTask;
 	};
 
-	// HpcBulkDataObjectRegistrationResulr table to object mapper.
+	// HpcBulkDataObjectRegistrationResult table to object mapper.
 	private RowMapper<HpcBulkDataObjectRegistrationResult> bulkDataObjectRegistrationResultRowMapper = (rs, rowNum) -> {
 		HpcBulkDataObjectRegistrationResult bulkDdataObjectRegistrationResult = new HpcBulkDataObjectRegistrationResult();
 		bulkDdataObjectRegistrationResult.setId(rs.getString("ID"));
@@ -163,6 +171,17 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		bulkDdataObjectRegistrationResult.setCompleted(completed);
 
 		return bulkDdataObjectRegistrationResult;
+	};
+
+	// HpcAccessToken table to object mapper.
+	private RowMapper<HpcGoogleAccessToken> googleAccessTokenRowMapper = (rs, rowNum) -> {
+		HpcGoogleAccessToken googleAccessToken = new HpcGoogleAccessToken();
+		googleAccessToken.accessToken = encryptor.decrypt(rs.getBytes("ACCESS_TOKEN"));
+		if (rs.getString("ACCESS_TOKEN_TYPE") != null) {
+			googleAccessToken.accessTokenType = HpcAccessTokenType.fromValue(rs.getString("ACCESS_TOKEN_TYPE"));
+		}
+
+		return googleAccessToken;
 	};
 
 	// ---------------------------------------------------------------------//
@@ -418,6 +437,46 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		}
 	}
 
+	@Override
+	public void upsertGoogleAccessToken(String dataObjectId, String accessToken, HpcAccessTokenType accessTokenType)
+			throws HpcException {
+		String accessTokenTypeStr = accessTokenType != null ? accessTokenType.value() : null;
+		byte[] encryptedAccessToken = encryptor.encrypt(accessToken);
+		try {
+			jdbcTemplate.update(UPSERT_GOOGLE_ACCESS_TOKEN_SQL, dataObjectId, encryptedAccessToken, accessTokenTypeStr,
+					dataObjectId, encryptedAccessToken, accessTokenTypeStr);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to upsert a bulk data object registration request: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public HpcGoogleAccessToken getGoogleAccessToken(String dataObjectId) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_GOOGLE_ACCESS_TOKEN_SQL, googleAccessTokenRowMapper, dataObjectId);
+
+		} catch (IncorrectResultSizeDataAccessException irse) {
+			return null;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get Google Access Token for: [" + dataObjectId + "] " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void deleteGoogleAccessToken(String dataObjectId) throws HpcException {
+		try {
+			jdbcTemplate.update(DELETE_GOOGLE_ACCESS_TOKEN_SQL, dataObjectId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to delete a google access token: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -507,10 +566,15 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 				HpcStreamingUploadSource googleCloudStorageUploadSource = request.getGoogleCloudStorageUploadSource();
 				jsonGoogleCloudStorageUploadSource.put("sourceFileContainerId",
 						googleCloudStorageUploadSource.getSourceLocation().getFileContainerId());
-				jsonGoogleCloudStorageUploadSource.put("sourceFileId", googleCloudStorageUploadSource.getSourceLocation().getFileId());
+				jsonGoogleCloudStorageUploadSource.put("sourceFileId",
+						googleCloudStorageUploadSource.getSourceLocation().getFileId());
 				if (googleCloudStorageUploadSource.getAccessToken() != null) {
-					jsonGoogleCloudStorageUploadSource.put("accessToken",
-							Base64.getEncoder().encodeToString(encryptor.encrypt(googleCloudStorageUploadSource.getAccessToken())));
+					jsonGoogleCloudStorageUploadSource.put("accessToken", Base64.getEncoder()
+							.encodeToString(encryptor.encrypt(googleCloudStorageUploadSource.getAccessToken())));
+				}
+				if (googleCloudStorageUploadSource.getAccessTokenType() != null) {
+					jsonGoogleCloudStorageUploadSource.put("accessTokenType",
+							googleCloudStorageUploadSource.getAccessTokenType().value());
 				}
 				if (googleCloudStorageUploadSource.getAccessTokenType() != null) {
 					jsonGoogleCloudStorageUploadSource.put("accessTokenType",
@@ -843,9 +907,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			}
 			request.setGoogleDriveUploadSource(googleDriveUploadSource);
 		}
-		
+
 		if (jsonRequest.get("googleCloudStorageUploadSource") != null) {
-			JSONObject jsonGoogleCloudStorageUploadSource = (JSONObject) jsonRequest.get("googleCloudStorageUploadSource");
+			JSONObject jsonGoogleCloudStorageUploadSource = (JSONObject) jsonRequest
+					.get("googleCloudStorageUploadSource");
 			HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
 			HpcFileLocation source = new HpcFileLocation();
 			source.setFileContainerId(jsonGoogleCloudStorageUploadSource.get("sourceFileContainerId").toString());
@@ -856,8 +921,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 						Base64.getDecoder().decode(jsonGoogleCloudStorageUploadSource.get("accessToken").toString())));
 			}
 			if (jsonGoogleCloudStorageUploadSource.get("accessTokenType") != null) {
-				googleCloudStorageUploadSource.setAccessTokenType(
-						HpcAccessTokenType.fromValue(jsonGoogleCloudStorageUploadSource.get("accessTokenType").toString()));
+				googleCloudStorageUploadSource.setAccessTokenType(HpcAccessTokenType
+						.fromValue(jsonGoogleCloudStorageUploadSource.get("accessTokenType").toString()));
 			}
 			request.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		}
