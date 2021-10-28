@@ -122,6 +122,14 @@ public interface HpcSystemBusService {
 	public void startGoogleDriveDataObjectDownloadTasks() throws HpcException;
 
 	/**
+	 * Start all received data objects download tasks for Google Cloud Storage and
+	 * process to make them in progress.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void startGoogleCloudStorageDataObjectDownloadTasks() throws HpcException;
+
+	/**
 	 * Check status of all in-progress data objects download tasks and complete
 	 * these that are no longer in progress.
 	 *
