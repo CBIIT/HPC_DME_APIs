@@ -147,6 +147,10 @@ public interface HpcDataTransferService {
 	 *                                              download request.
 	 * @param completionEvent                       If true, an event will be added
 	 *                                              when async download is complete.
+	 * @param collectionDownloadTaskId              (Optional) The collection
+	 *                                              download task ID if this request
+	 *                                              is part of a collection download
+	 *                                              task
 	 * @param size                                  The data object's size in bytes.
 	 * @param downloadDataObject                    The data transfer status of the
 	 *                                              data object
@@ -160,8 +164,9 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
-			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
+			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
+			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus downloadDataObject,
+			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
 
 	/**
 	 * Generate a (pre-signed) download URL for a data object file.
