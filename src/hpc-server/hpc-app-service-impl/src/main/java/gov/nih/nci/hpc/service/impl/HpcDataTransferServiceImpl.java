@@ -491,7 +491,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
+			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, String collectionDownloadTaskId, long size,
 			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
 			throws HpcException {
 		// Input Validation.
@@ -516,6 +516,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
 		downloadRequest.setUserId(userId);
 		downloadRequest.setCompletionEvent(completionEvent);
+		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
 
 		// Create a download response.
@@ -1051,6 +1052,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
 		taskResult.setMessage(message);
 		taskResult.setCompletionEvent(downloadTask.getCompletionEvent());
+		taskResult.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 		taskResult.setCreated(downloadTask.getCreated());
 		taskResult.setSize(downloadTask.getSize());
 		taskResult.setCompleted(completed);
@@ -1116,6 +1118,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
 		downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+		downloadRequest.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 		downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
 		downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
 		downloadRequest.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
@@ -1241,6 +1244,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
 		downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+		downloadRequest.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 		downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
 		downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
 		downloadRequest.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
@@ -2759,6 +2763,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 		downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
 		downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
+		downloadTask.setCollectionDownloadTaskId(downloadRequest.getCollectionDownloadTaskId());
 		downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
 		downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 		downloadTask.setCreated(Calendar.getInstance());
@@ -3217,6 +3222,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 			downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
 			downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
+			downloadTask.setCollectionDownloadTaskId(downloadRequest.getCollectionDownloadTaskId());
 			downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
 			downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 			downloadTask.setCreated(Calendar.getInstance());
@@ -3557,6 +3563,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setConfigurationId(firstHopDownloadRequest.getConfigurationId());
 			downloadTask.setS3ArchiveConfigurationId(firstHopDownloadRequest.getS3ArchiveConfigurationId());
 			downloadTask.setCompletionEvent(firstHopDownloadRequest.getCompletionEvent());
+			downloadTask.setCollectionDownloadTaskId(firstHopDownloadRequest.getCollectionDownloadTaskId());
 			downloadTask.setArchiveLocation(secondHopArchiveLocation);
 			downloadTask.setGlobusDownloadDestination(secondHopGlobusDestination);
 			downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
@@ -3591,6 +3598,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setGlobusDownloadDestination(downloadTask.getGlobusDownloadDestination());
 			this.downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 			this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
+			this.downloadTask.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 			this.downloadTask.setCreated(downloadTask.getCreated());
 			this.downloadTask.setPercentComplete(0);
 			this.downloadTask.setSize(downloadTask.getSize());
