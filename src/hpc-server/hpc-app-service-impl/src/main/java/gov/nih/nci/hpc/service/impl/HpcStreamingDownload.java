@@ -147,6 +147,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
 		downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 		downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
+		downloadTask.setCollectionDownloadTaskId(downloadRequest.getCollectionDownloadTaskId());
 		downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
 		downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
 		downloadTask.setGoogleDriveDownloadDestination(downloadRequest.getGoogleDriveDestination());
@@ -184,10 +185,12 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());
 		this.downloadTask.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
 		this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
+		this.downloadTask.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 		this.downloadTask.setArchiveLocation(downloadTask.getArchiveLocation());
 		this.downloadTask.setS3DownloadDestination(downloadTask.getS3DownloadDestination());
 		this.downloadTask.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());
-		this.downloadTask.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
+		this.downloadTask
+				.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		this.downloadTask.setCreated(downloadTask.getCreated());
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
