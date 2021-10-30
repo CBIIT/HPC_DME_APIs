@@ -166,6 +166,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 			downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
+		
+		logger.error("ERAN: " + downloadTask.getId() + " - " + downloadTask.getCollectionDownloadTaskId());
 
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
