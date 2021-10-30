@@ -1274,6 +1274,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null,
 				false);
 
+		logger.error("ERAN: " + path + " - " + collectionDownloadTaskId);
+
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
