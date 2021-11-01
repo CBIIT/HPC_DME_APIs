@@ -34,7 +34,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
   private static final String TOKENS_DIRECTORY_PATH = "tokens";
   private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
-  private static final List<String> SCOPES_CLOUD = Collections.singletonList(StorageScopes.DEVSTORAGE_READ_ONLY);
+  private static final List<String> SCOPES_CLOUD = Collections.singletonList(StorageScopes.DEVSTORAGE_READ_WRITE);
   private static HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
   @Value("${gov.nih.nci.hpc.drive.clientid}")
