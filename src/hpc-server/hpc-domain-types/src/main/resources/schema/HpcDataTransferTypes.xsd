@@ -68,6 +68,7 @@
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="CANCELED" />
 			<xsd:enumeration value="RESTORE_REQUESTED" />
+			<xsd:enumeration value="GLOBUS_BUNCHING_RECEIVED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
