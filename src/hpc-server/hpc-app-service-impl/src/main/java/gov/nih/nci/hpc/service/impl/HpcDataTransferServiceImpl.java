@@ -380,7 +380,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (StringUtils.isEmpty(googleCloudStorageUploadSource.getAccessToken())) {
 				HpcGoogleAccessToken googleAccessToken = dataRegistrationDAO.getGoogleAccessToken(dataObjectId);
 				if (googleAccessToken != null) {
-					// If we are restarting an upload from Google Cloud Storage after server restarted.
+					// If we are restarting an upload from Google Cloud Storage after server
+					// restarted.
 					// Populate the access token from DB.
 					googleCloudStorageUploadSource.setAccessToken(googleAccessToken.accessToken);
 					googleCloudStorageUploadSource.setAccessTokenType(googleAccessToken.accessTokenType);
@@ -491,9 +492,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
-			throws HpcException {
+			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
+			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus dataTransferStatus,
+			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1576,8 +1577,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess)
-			throws HpcException {
+	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasksCountByUser(userId, inProcess);
 	}
 
@@ -3484,10 +3484,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							downloadTask.getDestinationType());
 
 				} else {
-					// Update the download task to reflect 1st hop transfer completed, and second
-					// received.
+					// Update the download task to reflect 1st hop transfer completed. The transfer
+					// type is updated to Globus to perform the second hop
+					// For single file download, the status is set to received, and for bulk
+					// download, status is set to bunching-received, so we wait for all the files
+					// in the bulk request to finish first hop, and then submit a single Globus
+					// request for the second hop.
 					downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
-					downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+					downloadTask.setDataTransferStatus(StringUtils.isEmpty(downloadTask.getCollectionDownloadTaskId())
+							? HpcDataTransferDownloadStatus.RECEIVED
+							: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING_RECEIVED);
 					downloadTask.setInProcess(false);
 
 					// Persist the download task.
