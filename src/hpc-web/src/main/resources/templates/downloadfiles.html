@@ -64,6 +64,7 @@
 /*<![CDATA[*/
     var searchType = [[${hpcSearch.getSearchType()}]];
     var authorized = [[${authorized}]];
+	var authorizedGC = [[${authorizedGC}]];
     var oauthToken = [[${accessToken}]];
 /*]]>*/
 </script>
@@ -130,21 +131,27 @@
 							<td>
 								<div class="form-group">
 										<div class="pull-left" style="margin-left: 15px">
-										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchTypeAsync" value="async"
-										onChange="display('async')"/>Globus</label>
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeAsync" value="async"
+											onChange="display('async')"/>Globus</label>
 										</div>
 										
 										<div class="pull-left" style="margin-left: 15px">
-										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchTypeS3" value="s3"
-										onChange="display('s3')"/>AWS S3</label>
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeS3" value="s3"
+											onChange="display('s3')"/>AWS S3</label>
 										</div>
 										
 										<div class="pull-left" style="margin-left: 15px">
-										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchTypeDrive" value="drive"
-										onChange="display('drive')"/>Google Drive</label>
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeDrive" value="drive"
+											onChange="display('drive')"/>Google Drive</label>
+										</div>
+
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeGoogleCloud" value="googleCloud"
+											onChange="display('googleCloud')"/>Google Cloud</label>
 										</div>
 								</div>
 								
@@ -217,13 +224,36 @@
 									<br/>
 									<div class="col-sm-12 column">
 										<label for="drivePath">Google Drive (Destination) Path:</label>
-										<a th:if="${authorized != null}" id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">                                  
-                                            Select from Google Drive (Optional)</a>
+										<a th:if="${authorized != null}" id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">
+											Select from Google Drive (Optional)</a>
 										<input
 											type="text" class="form-control"
 											th:value="${drivePath}"
 											name="drivePath" id="drivePath"
 											placeholder="Enter Google Drive (Destination) Path" size="40" />
+									</div>
+								</div>
+								<div class="form-group" id="googleCloudDiv" style="display: none">
+									<div class="col-sm-12 column">
+										<a class="btn btn-primary" id="googleCloudAuthlink"
+                                            th:href="@{../downloadfiles(transferType=googleCloud)}">
+                                            Authorize DME to Access Your Google Cloud</a>
+									</div>
+									<div th:if="${authorizedGC != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+									<br/>
+									<div class="col-sm-12 column">
+										<label for="googleCloudBucketName">Google Cloud Bucket</label>
+										<input
+											type="text" class="form-control" name="googleCloudBucketName" th:value="${googleCloudBucketName}"
+											id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="googleCloudPath">Google Cloud (Destination) Path:</label>
+										<input
+											type="text" class="form-control"
+											th:value="${googleCloudPath}"
+											name="googleCloudPath" id="googleCloudPath"
+											placeholder="Enter Google Cloud (Destination) Path" size="40" />
 									</div>
 								</div>
 								<div class="modal-footer">
@@ -351,6 +381,9 @@
 		    } if($('#transferType').val() == 'drive') {
             	$("#searchTypeDrive").prop("checked", true); 
                 display('drive');
+	        } if($('#transferType').val() == 'googleCloud') {
+				$("#searchTypeGoogleCloud").prop("checked", true);
+                display('googleCloud');
 	        }
 		});
 
@@ -426,12 +459,15 @@
 			var s3Div = document.getElementById("s3Div");
 			var asyncTextDiv = document.getElementById("AsyncTextDiv");
 			var driveDiv = document.getElementById("driveDiv");
+			var googleCloudDiv = document.getElementById("googleCloudDiv");
 			if (value == "async") {
 				asyncDiv.style.display = "block";
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "block";
 				if(driveDiv)
 					driveDiv.style.display = "none";
+				if(googleCloudDiv)
+					googleCloudDiv.style.display = "none";
 				$("#submit").prop('disabled', false);
 			} else if (value == 's3') {
 				asyncDiv.style.display = "none";
@@ -439,8 +475,10 @@
 				asyncTextDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
+				if(googleCloudDiv)
+					googleCloudDiv.style.display = "none";
 				$("#submit").prop('disabled', false);
-			} else {
+			} else if (value == 'drive') {
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "none";
@@ -450,6 +488,21 @@
 				if(authorized != null) {
 					$("#submit").prop('disabled', false);
 					$("#driveAuthlink").addClass('disabled');
+				} else {
+					$("#submit").prop('disabled', true);
+				}
+			} else if (value == 'googleCloud') {
+				asyncDiv.style.display = "none";
+				s3Div.style.display = "none";
+				asyncTextDiv.style.display = "none";
+				if(driveDiv)
+					driveDiv.style.display = "none";
+				if(googleCloudDiv) {
+					googleCloudDiv.style.display = "block";
+				}
+				if(authorizedGC != null) {
+					$("#submit").prop('disabled', false);
+					$("#googleCloudAuthlink").addClass('disabled');
 				} else {
 					$("#submit").prop('disabled', true);
 				}
