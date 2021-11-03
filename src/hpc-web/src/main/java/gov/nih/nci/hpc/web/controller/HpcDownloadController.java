@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
@@ -51,6 +52,8 @@ import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -330,13 +333,17 @@ public class HpcDownloadController extends AbstractHpcController {
                 dto.setGoogleDriveDownloadDestination(destination);
             } else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(GOOGLE_CLOUD_TYPE)) {
 				String accessToken = (String)session.getAttribute("accessToken");
-				HpcGoogleDownloadDestination destination = new HpcGoogleDownloadDestination();
+				HpcGoogleDownloadDestination googleCloudDestination = new HpcGoogleDownloadDestination();
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getGoogleCloudBucketName());
 				location.setFileId(downloadFile.getGoogleCloudPath().trim());
-				destination.setDestinationLocation(location);
-				destination.setAccessToken(accessToken);
-				dto.setGoogleDriveDownloadDestination(destination);
+				googleCloudDestination.setDestinationLocation(location);
+				googleCloudDestination.setAccessToken(accessToken);
+				googleCloudDestination.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				String json = gson.toJson(dto);
+        		System.out.println(json);
 			}
             final String downloadTaskType = "collection".equals(downloadFile.
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :
