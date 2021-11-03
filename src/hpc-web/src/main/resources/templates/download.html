@@ -378,6 +378,14 @@
 					alert("Please enter asynchronous download values");
 					return false;
 				}
+			} else if (radioValue == 'googleCloud') {
+				var googleCloudPath = document
+						.getElementById("googleCloudPath").value;
+				if (googleCloudPath == null
+						|| googleCloudPath.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
 			} else {
 				var downloadFileName = document
 						.getElementById("downloadFileName").value;
@@ -506,7 +514,7 @@
 								e.preventDefault();
 								
 								var radioValue = document.querySelector('input[name="searchType"]:checked').value
-								if (radioValue == 'async' || radioValue == 's3' || radioValue == 'drive') {
+								if (radioValue == 'async' || radioValue == 's3' || radioValue == 'drive' || radioValue == 'googleCloud') {
 									$("#wait")
 											.html(
 													'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
