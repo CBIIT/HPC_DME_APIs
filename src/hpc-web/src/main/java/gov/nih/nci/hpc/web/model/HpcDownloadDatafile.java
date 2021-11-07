@@ -12,6 +12,8 @@ public class HpcDownloadDatafile {
 	private String bucketName;
 	private String s3Path;
 	private String drivePath;
+	private String googleCloudBucketName;
+	private String googleCloudPath;
 	private String accessKey;
 	private String secretKey;
 	private String region;
@@ -97,11 +99,27 @@ public class HpcDownloadDatafile {
 	public String getDrivePath() {
       return drivePath;
     }
-  
+
     public void setDrivePath(String drivePath) {
         this.drivePath = drivePath;
     }
-    
+
+	public String getGoogleCloudPath() {
+		return googleCloudPath;
+	}
+
+	public void setGoogleCloudPath(String googleCloudPath) {
+		this.googleCloudPath = googleCloudPath;
+	}
+
+	public String getGoogleCloudBucketName() {
+		return googleCloudBucketName;
+	}
+
+	public void setGoogleCloudBucketName(String googleCloudBucketName) {
+		this.googleCloudBucketName = googleCloudBucketName;
+	}
+
 	public String getAccessKey() {
 		return accessKey;
 	}

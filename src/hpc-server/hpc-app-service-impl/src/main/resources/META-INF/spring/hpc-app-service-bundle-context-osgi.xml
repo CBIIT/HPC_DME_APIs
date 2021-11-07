@@ -27,6 +27,7 @@
 		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
 		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">0</prop>
 		<prop key="hpc.service.dataTransfer.globusTokenExpirationPeriod">120</prop>
+		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">0</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriodSso">120</prop>
