@@ -526,7 +526,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param destination The destination endpoint.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	private JSONObject toTransferItemJson(HpcFileLocation source, HpcFileLocation destination) throws HpcException {
+	private JSONArray toTransferItemJson(HpcFileLocation source, HpcFileLocation destination) throws HpcException {
+		JSONArray items = new JSONArray();
 		JSONObject item = new JSONObject();
 		try {
 			item.put("DATA_TYPE", "transfer_item");
@@ -535,7 +536,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// item.put("destination_endpoint", destination.getFileContainerId());
 			item.put("destination_path", destination.getFileId());
 			item.put("recursive", false /* getPathAttributes(source, client, false).getIsDirectory() */);
-			return item;
+			items.put(item);
+			return items;
 
 		} catch (JSONException e) {
 			throw new HpcException("[GLOBUS] Failed to create JSON: " + source + ", " + destination,
