@@ -1441,6 +1441,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 	}
 
+	public void processCollectionDownloadTaskSecondHopBunch(HpcCollectionDownloadTask downloadTask,
+			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks) throws HpcException {
+		logger.error("ERAN: task {} ready for bunching. {} items", downloadTask.getId(),
+				dataObjectDownloadTasks.size());
+	}
+
 	@Override
 	public void cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException {
 		if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.RECEIVED)) {
