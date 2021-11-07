@@ -261,6 +261,13 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcSynchronousDownloadFilter']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusTransferItem']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferItem" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusTransferRequest']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest" />
+      </jxb:bindings>
+      
    </jxb:bindings>
    
  	<jxb:bindings schemaLocation="HpcUserTypes.xsd">

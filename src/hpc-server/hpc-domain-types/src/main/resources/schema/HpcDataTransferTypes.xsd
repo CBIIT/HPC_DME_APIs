@@ -518,5 +518,21 @@
 			<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="HpcGlobusTransferItem">
+		<xsd:sequence>
+			<xsd:element name="sourcePath" type="xsd:string" />
+			<xsd:element name="destinationPath" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcGlobusTransferRequest">
+		<xsd:sequence>
+			<xsd:element name="sourceEndpoint" type="xsd:string" />
+			<xsd:element name="destinationEndpoint" type="xsd:string" />
+			<xsd:element name="items" type="hpc-domain-datatransfer:HpcGlobusTransferItem" 
+				minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 </xsd:schema>
