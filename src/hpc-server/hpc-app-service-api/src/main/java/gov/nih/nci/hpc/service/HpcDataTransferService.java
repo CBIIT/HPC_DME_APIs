@@ -596,6 +596,19 @@ public interface HpcDataTransferService {
 	public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException;
 
 	/**
+	 * Process the second hop download to Globus of a collection, by submitting a
+	 * single transfer request for the entire bunch.
+	 *
+	 * @param downloadTask            The collection download task to process.
+	 * @param dataObjectDownloadTasks The individual data object download tasks that
+	 *                                are to be included in the bunch request to
+	 *                                Globus.
+	 * @throws HpcException on service failure.
+	 */
+	public void processCollectionDownloadTaskSecondHopBunch(HpcCollectionDownloadTask downloadTask,
+			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks) throws HpcException;
+
+	/**
 	 * Cancel a collection download task. This will mark any pending download items
 	 * (i.e. items in RECEIVED state) in this collection download task for
 	 * cancellation.

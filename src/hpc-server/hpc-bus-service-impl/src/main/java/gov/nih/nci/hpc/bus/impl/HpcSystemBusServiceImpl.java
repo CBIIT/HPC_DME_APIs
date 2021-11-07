@@ -727,6 +727,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.ACTIVE)) {
 			boolean downloadCompleted = true;
+			int inProgressItemsCount = 0;
+			List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
 
 			// Update status of individual download items in this collection download task.
 			for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
@@ -780,6 +782,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							// This item still in progress, so overall download not completed just yet.
 							downloadCompleted = false;
+
+							// We count how many items in progress, and how many completed Globus first hop
+							// (if this is a collection download to Globus).
+							// These counts are used to determine when to trigger a Globus 2nd hop request
+							// for the entire collection.
+							inProgressItemsCount++;
+							if (downloadItemStatus.getDataObjectDownloadTask().getDataTransferStatus()
+									.equals(HpcDataTransferDownloadStatus.GLOBUS_BUNCHING_RECEIVED)) {
+								globusBunchingReceivedDownloadTasks.add(downloadItemStatus.getDataObjectDownloadTask());
+							}
 						}
 					}
 
@@ -826,6 +838,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				completeCollectionDownloadTask(downloadTask, result, message);
 
 			} else {
+				if (inProgressItemsCount == globusBunchingReceivedDownloadTasks.size()) {
+					// A collection download to Globus destination completed first hop of all files. Submit the transfer request (second hop) as a bunch.
+					dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask, globusBunchingReceivedDownloadTasks);
+				}
+				
 				dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
 		}
