@@ -490,8 +490,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				transfer.put("preserve_timestamp", false);
 				transfer.put("encrypt_data", encryptedDataTransfer);
 
-				JSONObject item = setJSONItem(source, destination, client);
-				transfer.append("DATA", item);
+				// JSONObject item = setJSONItem(source, destination, client);
+				// transfer.append("DATA", item);
+				transfer.put("source_endpoint", source.getFileContainerId());
+				transfer.put("destination_endpoint", destination.getFileContainerId());
+				transfer.put("DATA", toTransferItemJson(source, destination));
 
 				result = client.postResult("/transfer", transfer, null);
 				String taskId = result.document.getString("task_id");
@@ -516,16 +519,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		});
 	}
 
-	private JSONObject setJSONItem(HpcFileLocation source, HpcFileLocation destination, JSONTransferAPIClient client)
-			throws HpcException {
+	/**
+	 * Create a 'transfer item' JSON
+	 *
+	 * @param source      The source endpoint.
+	 * @param destination The destination endpoint.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	private JSONObject toTransferItemJson(HpcFileLocation source, HpcFileLocation destination) throws HpcException {
 		JSONObject item = new JSONObject();
 		try {
 			item.put("DATA_TYPE", "transfer_item");
-			item.put("source_endpoint", source.getFileContainerId());
+			// item.put("source_endpoint", source.getFileContainerId());
 			item.put("source_path", source.getFileId());
-			item.put("destination_endpoint", destination.getFileContainerId());
+			// item.put("destination_endpoint", destination.getFileContainerId());
 			item.put("destination_path", destination.getFileId());
-			item.put("recursive", getPathAttributes(source, client, false).getIsDirectory());
+			item.put("recursive", false /* getPathAttributes(source, client, false).getIsDirectory() */);
 			return item;
 
 		} catch (JSONException e) {
@@ -645,9 +654,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					pathAttributes.setIsFile(true);
 					pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
 				} else {
-					throw new HpcException("Error at Globus endpoint " + fileLocation.getFileContainerId()
-						+ ", file location: " + fileLocation.getFileId()
-						+ ": " + error.statusMessage, HpcErrorType.DATA_TRANSFER_ERROR, error);
+					throw new HpcException(
+							"Error at Globus endpoint " + fileLocation.getFileContainerId() + ", file location: "
+									+ fileLocation.getFileId() + ": " + error.statusMessage,
+							HpcErrorType.DATA_TRANSFER_ERROR, error);
 				}
 			} else if (error.statusCode == 403) {
 				// Permission denied.
