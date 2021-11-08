@@ -333,6 +333,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
           if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
+            || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
               || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE))
             retry = false;
 		}
@@ -353,6 +354,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
         if (downloadTask.getDestinationType() != null
             && (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
+              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
                 || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
            retry = false;
 		if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
@@ -372,6 +374,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
       if (downloadTask.getDestinationType() != null
           && (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
+            || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
               || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
         retry = false;
       if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
@@ -391,6 +394,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		{
             if (downloadTask.getDestinationType() != null
                 && (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
+                  || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
                     || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
                retry = false;
 			if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
