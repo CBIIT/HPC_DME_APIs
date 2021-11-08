@@ -363,6 +363,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
+		String gcbucketName = (String)request.getParameter("gcbucketName");
 		String s3Path = (String)request.getParameter("s3Path");
 		s3Path = (s3Path != null ? s3Path.trim() : null);
 		String gcPath = (String)request.getParameter("gcPath");
@@ -501,7 +502,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
             HpcFileLocation source = new HpcFileLocation();
-            source.setFileContainerId(bucketName);
+            source.setFileContainerId(gcbucketName);
             source.setFileId(gcPath);
 			HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
 			googleCloudSource.setSourceLocation(source);
@@ -518,7 +519,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	        List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();  
             gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
             HpcFileLocation source = new HpcFileLocation();
-            source.setFileContainerId(bucketName);
+            source.setFileContainerId(gcbucketName);
             source.setFileId(gcPath);
             HpcGoogleScanDirectory googleCloudSource = new HpcGoogleScanDirectory();
             googleCloudSource.setDirectoryLocation(source);
