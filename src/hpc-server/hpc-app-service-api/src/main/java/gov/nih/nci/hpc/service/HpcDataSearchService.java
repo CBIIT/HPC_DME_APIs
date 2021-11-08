@@ -83,6 +83,26 @@ public interface HpcDataSearchService {
   public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery, 
 			int page, int pageSize) throws HpcException;
 
+  /**
+   * Get all data object and user attributes under the specified path.
+   * 
+   * @param path The path in search in if specified.
+   * @param page The requested results page.
+   * @param pageSize The page size specified by the user or 0 for default.
+   * @return A list of HpcSearchMetadataEntry.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String path, int page, int pageSize) throws HpcException;
+
+  /**
+   * Get count of all data object under a specified path.
+   *
+   * @param path The path
+   * @return The count of data objects under the path.
+   * @throws HpcException on service failure.
+   */
+  public int getAllDataObjectCount(String path) throws HpcException;
+
 
   /**
    * Get parent collection paths of data objects searched by compound metadata query.
@@ -115,11 +135,12 @@ public interface HpcDataSearchService {
   /**
    * Get count of data object matching a compound metadata query.
    *
+   * @param path The path (Optional)
    * @param compoundMetadataQuery The compound metadata query.
    * @return The count of data objects matching the query.
    * @throws HpcException on service failure.
    */
-  public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery) throws HpcException;
+  public int getDataObjectCount(String path, HpcCompoundMetadataQuery compoundMetadataQuery) throws HpcException;
 
   /**
    * Get the search results page size.

@@ -30,6 +30,7 @@
 		<prop key="hpc.dao.oracle.url">jdbc:oracle:thin:@${hpc.dao.oracle.host}:${hpc.dao.oracle.port}:${hpc.dao.oracle.dbName}</prop>
 		<prop key="hpc.dao.oracle.maxActive">20</prop>
 		<prop key="hpc.dao.oracle.encryptor.key">***128-bit-key**</prop>
+		<prop key="hpc.dao.jdbc.template.fetchSize">1000</prop>
 		
 		<prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
 	</osgix:cm-properties>
