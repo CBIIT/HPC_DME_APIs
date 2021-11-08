@@ -124,6 +124,23 @@ public interface HpcMetadataDAO
     		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
     		                              throws HpcException;
 
+    
+    /**
+     * Get all data object Paths by path.
+     * Only data object Paths accessible to the user are returned. 
+     *
+     * @param path The path specified.
+      * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
+     * @return List of HpcSearchMetadataEntry
+     * @throws HpcException on database error.
+     */
+    public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String path,
+    		                               String dataManagementUsername,
+    		                               int offset, int limit) 
+    		                              throws HpcException;
+
 
     /**
      * Get parent collection paths of data objects searched by compound metadata query.
@@ -167,17 +184,30 @@ public interface HpcMetadataDAO
      * Get a count of data objects matching a compound metadata query. 
      * Only data object accessible to the user are included in the count. 
      *
+     * @param path The path (Optional)
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
      * @return Count of data objects matching the count.
      * @throws HpcException on database error.
      */
-    public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery,
+    public int getDataObjectCount(String path, HpcCompoundMetadataQuery compoundMetadataQuery,
     		                      String dataManagementUsername,
                                   HpcMetadataQueryLevelFilter defaultLevelFilter) 
                                  throws HpcException;
     
+	 /**
+     * Get a count of data objects matching a path. 
+     * Only data object accessible to the user are included in the count. 
+     *
+     * @param path The path
+     * @param dataManagementUsername The Data Management user name. 
+     * @return Count of data objects matching the count.
+     * @throws HpcException on database error.
+     */
+    public int getAllDataObjectCount(String path, String dataManagementUsername) 
+                                 throws HpcException;
+   
     /**
      * Get collection hierarchical metadata entries.
      *

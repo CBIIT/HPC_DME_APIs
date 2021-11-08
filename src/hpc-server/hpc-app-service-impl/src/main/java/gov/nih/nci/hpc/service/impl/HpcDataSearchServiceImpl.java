@@ -264,10 +264,10 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     }
     return hpcSearchMetadataEntries;
   }
-
-
+  
+  
   @Override
-  public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery)
+  public int getDataObjectCount(String path, HpcCompoundMetadataQuery compoundMetadataQuery)
       throws HpcException {
     // Input Validation.
     HpcDomainValidationResult validationResult =
@@ -281,11 +281,55 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     // Use the hierarchical metadata views to perform the search.
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-    return metadataDAO.getDataObjectCount(
+    return metadataDAO.getDataObjectCount(path, 
         compoundMetadataQuery, dataManagementUsername, defaultDataObjectLevelFilter);
   }
+  
 
+  @Override
+  public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String path,
+		  int page, int pageSize)
+      throws HpcException {
+    if (path == null) {
+      throw new HpcException(
+          "Path is not specified: ",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
+    }
+    
+    // Use the hierarchical metadata views to perform the search.
+    String dataManagementUsername =
+        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    List<HpcSearchMetadataEntry> hpcSearchMetadataEntries = metadataDAO.getAllDataObjectPaths(
+            path,
+            dataManagementUsername,
+            finalOffset,
+            finalPageSize);
+    for(HpcSearchMetadataEntry hpcSearchMetadataEntry: hpcSearchMetadataEntries) {
+       hpcSearchMetadataEntry.setCollectionName(toRelativePath(hpcSearchMetadataEntry.getCollectionName()));
+       hpcSearchMetadataEntry.setAbsolutePath(toRelativePath(hpcSearchMetadataEntry.getAbsolutePath()));
+    }
+    return hpcSearchMetadataEntries;
+  }
+  
+  
+  @Override
+  public int getAllDataObjectCount(String path)
+      throws HpcException {
+
+    // Doesn't use the hierarchical metadata views to perform the search.
+    String dataManagementUsername =
+        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    return metadataDAO.getAllDataObjectCount(path, dataManagementUsername);
+  }
+  
   @Override
   public List<String> getDataObjectParentPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
