@@ -171,7 +171,39 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		if (totalCount) {
 			dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count
-					: dataSearchService.getDataObjectCount(compoundMetadataQueryDTO.getCompoundQuery()));
+					: dataSearchService.getDataObjectCount(path, compoundMetadataQueryDTO.getCompoundQuery()));
+		}
+
+		return dataObjectsDTO;
+
+	}
+	
+	@Override
+	public HpcDataObjectListDTO getAllDataObjects(String path, Integer page, Integer pageSize, Boolean totalCount)
+			throws HpcException {
+
+		// Set the defaults.
+		page = page == null ? 1 : page;
+		pageSize = pageSize == null? 0 : pageSize;
+		totalCount = totalCount == null || totalCount;
+		
+		// Execute the query and package the results into a DTO.
+		int count = 0;
+		HpcDataObjectListDTO dataObjectsDTO = null;
+
+		List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService.getAllDataObjectPaths(path, page, pageSize);
+		dataObjectsDTO = toDetailedDataObjectListDTO(dataObjectPaths);
+		count = dataObjectsDTO.getDataObjects().size();
+
+
+		// Set page, limit and total count.
+		dataObjectsDTO.setPage(page);
+		int limit = dataSearchService.getSearchResultsPageSize(pageSize);
+		dataObjectsDTO.setLimit(limit);
+
+		if (totalCount) {
+			dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count
+					: dataSearchService.getAllDataObjectCount(path));
 		}
 
 		return dataObjectsDTO;
