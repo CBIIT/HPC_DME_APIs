@@ -287,7 +287,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   
 
   @Override
-  public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String path,
+  public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String dataManagementUsername, String path,
 		  int page, int pageSize)
       throws HpcException {
     if (path == null) {
@@ -305,8 +305,6 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     }
     
     // Use the hierarchical metadata views to perform the search.
-    String dataManagementUsername =
-        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     List<HpcSearchMetadataEntry> hpcSearchMetadataEntries = metadataDAO.getAllDataObjectPaths(
             path,
             dataManagementUsername,
