@@ -48,9 +48,9 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 	
 	private final String path;
 	
-	private final int page;
+	private final int offset;
 	
-	private final int limit;
+	private final int pageSize;
 	
 	// The logger instance.
 	private final Logger logger = 
@@ -65,13 +65,13 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
      * Default Constructor.
      * 
      */
-    HpcSearchRequest(HpcDataSearchService dataSearchService, String dataManagementUsername, String path, int page, int limit) 
+    HpcSearchRequest(HpcDataSearchService dataSearchService, String dataManagementUsername, String path, int offset, int pageSize) 
     {
     	this.dataSearchService = dataSearchService;
     	this.dataManagementUsername = dataManagementUsername;
     	this.path = path;
-    	this.page = page;
-    	this.limit = limit;
+    	this.offset = offset;
+    	this.pageSize = pageSize;
     }
     
     //---------------------------------------------------------------------//
@@ -81,7 +81,7 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 	@Override
 	public HpcDataObjectListDTO call() throws Exception {
 		
-		return toDetailedDataObjectListDTO(dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, page, limit));
+		return toDetailedDataObjectListDTO(dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize));
 	}
 	
 	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {
