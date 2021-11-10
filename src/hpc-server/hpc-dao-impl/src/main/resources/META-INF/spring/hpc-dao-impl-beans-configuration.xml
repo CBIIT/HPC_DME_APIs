@@ -27,7 +27,6 @@
         <property name="url" value="${hpc.dao.oracle.url}" />
         <property name="username" value="${hpc.dao.oracle.username}" />
         <property name="password" value="${hpc.dao.oracle.password}" />
-        <property name="initialSize" value="${hpc.dao.oracle.initialSize}" />
         <property name="maxActive" value="${hpc.dao.oracle.maxActive}" />
     </bean>
     
