@@ -88,12 +88,12 @@ public interface HpcDataSearchService {
    * 
    * @param dataManagementUsername The user who requested the search
    * @param path The path in search in if specified.
-   * @param page The requested results page.
+   * @param offset The offset to retrieve the data.
    * @param pageSize The page size specified by the user or 0 for default.
    * @return A list of HpcSearchMetadataEntry.
    * @throws HpcException on service failure.
    */
-  public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String dataManagementUsername, String path, int page, int pageSize) throws HpcException;
+  public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String dataManagementUsername, String path, int offset, int pageSize) throws HpcException;
 
   /**
    * Get count of all data object under a specified path.
