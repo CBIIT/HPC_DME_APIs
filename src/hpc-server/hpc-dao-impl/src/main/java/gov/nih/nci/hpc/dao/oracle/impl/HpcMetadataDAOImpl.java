@@ -17,6 +17,9 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -204,6 +207,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private JdbcTemplate jdbcTemplate = null;
 
 	private int fetchSize = 1000;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// Row mappers.
 	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
