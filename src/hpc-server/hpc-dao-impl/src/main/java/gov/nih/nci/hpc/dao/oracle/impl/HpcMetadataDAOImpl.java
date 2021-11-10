@@ -711,6 +711,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
 		preparedQuery.sql = sqlQueryBuilder.toString();
 		preparedQuery.args = args.toArray();
+
+		logger.debug("Generated prepared query for {} ", path);
 		return preparedQuery;
 	}
 	
