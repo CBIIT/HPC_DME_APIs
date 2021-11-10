@@ -170,6 +170,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DATA_OBJECT_COUNT_SQL = "select count(distinct object_id) from r_data_hierarchy_meta_main main1 where ";
 
 	private static final String GET_ALL_DATA_OBJECT_COUNT_SQL = "select count(data_id) from R_DATA_MAIN where ";
+	
+	private static final String GET_ALL_DATA_OBJECT_COUNT2_SQL = " and exists(select 1 from r_data_hierarchy_user_meta_main where OBJECT_ID=data_id) ";
 
 	private static final String GET_COLLECTION_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_coll_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
@@ -468,7 +470,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	@Override
 	public int getAllDataObjectCount(String path,String dataManagementUsername) throws HpcException {
-		return getCount(prepareAllQuery(GET_ALL_DATA_OBJECT_COUNT_SQL, null, path, dataManagementUsername, null, null));
+		return getCount(prepareAllQuery(GET_ALL_DATA_OBJECT_COUNT_SQL, GET_ALL_DATA_OBJECT_COUNT2_SQL, path, dataManagementUsername, null, null));
 	}
 
 	@Override
