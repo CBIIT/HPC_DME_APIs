@@ -288,7 +288,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
 
   @Override
   public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String dataManagementUsername, String path,
-		  int page, int pageSize)
+		  int offset, int pageSize)
       throws HpcException {
     if (path == null) {
       throw new HpcException(
@@ -298,10 +298,9 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
 
     //If pageSize is specified, replace the default defined
     int finalPageSize = pagination.getPageSize();
-    int finalOffset = pagination.getOffset(page);
+    int finalOffset = offset;
     if(pageSize != 0) {
       finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
-      finalOffset = (page - 1) * finalPageSize;
     }
     
     // Use the hierarchical metadata views to perform the search.

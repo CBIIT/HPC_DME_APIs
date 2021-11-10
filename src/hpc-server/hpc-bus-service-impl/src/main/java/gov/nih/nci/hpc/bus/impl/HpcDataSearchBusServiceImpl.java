@@ -203,20 +203,27 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	public HpcDataObjectListDTO getAllDataObjects(String path, Integer page, Integer pageSize, Boolean totalCount)
 			throws HpcException {
 
+		// Default page to 1 if user didn't request it
+		page = page == null ? 1 : page;
+		// input validation
+		if (page < 1 || pageSize != null && pageSize < 1) {
+		      throw new HpcException(
+		          "Invalid search results page or pageSize requested", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
 		
 		// Get the user-id of the request invoker.
 		String dataManagementUsername = securityService.getRequestInvoker().getDataManagementAccount().getUsername();
 				
-		// Set the defaults.
 		if (pageSize != null && pageSize <= getAllDataObjectsDefaultPageSize) {
-			// Return user requested pageSize or the limit
-			page = page == null ? 1 : page;
+			// Compute the offset
+			int offset = (page - 1) * pageSize;
 			totalCount = totalCount == null || totalCount;
 			
 			// Execute the query and package the results into a DTO.
 			int count = 0;
-			List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, page, pageSize);
+			List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize);
 			dataObjectsDTO = toDetailedDataObjectListDTO(dataObjectPaths);
 			count = dataObjectsDTO.getDataObjects().size();
 
@@ -239,21 +246,17 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			int limit = dataSearchService.getSearchResultsPageSize(100000);
 			// If the user requested a page size that is smaller than the max, set limit to user page size
 			limit = pageSize = pageSize != null && pageSize < limit ? pageSize : limit;
-			// Default page to 1 if user didn't request
-			page = page == null ? 1 : page;
-			// If it is page 1 or requested page size is divisible by default page size, use the default, else use the requested page size
-			int dbPageSize = pageSize % getAllDataObjectsDefaultPageSize == 0 || page == 1 ? getAllDataObjectsDefaultPageSize : pageSize;
-			// From the user requested page, compute the database page number based on the page size we are using
-			int dbPage = limit / dbPageSize * (page -1) + 1;
-			// If the count is less than the limit, then set the limit to count
-			limit = (count - (page -1) * limit) < limit ? (count - (page -1) * limit) : limit;
-			
-			
-						
+			// Compute the initial offset
+			int offset = (page - 1) * pageSize;
+			// If the count minus offset is less than the limit, then set the limit to count minus offset
+			limit = (count - offset) < limit ? (count - offset) : limit;
+								
 			List<Callable<HpcDataObjectListDTO>> callableTasks = new ArrayList<>();
 			
-			for (int i = 0; i < limit; i += dbPageSize) {
-				callableTasks.add(new HpcSearchRequest(dataSearchService, dataManagementUsername, path, dbPage++, dbPageSize));
+			for (int i = 0; i < limit; i += getAllDataObjectsDefaultPageSize) {
+				callableTasks.add(new HpcSearchRequest(dataSearchService, dataManagementUsername, path,
+						offset, limit - i < getAllDataObjectsDefaultPageSize ? limit - i : getAllDataObjectsDefaultPageSize));
+				offset += getAllDataObjectsDefaultPageSize;
 			}
 			
 			List<Future<HpcDataObjectListDTO>> futures = null;
