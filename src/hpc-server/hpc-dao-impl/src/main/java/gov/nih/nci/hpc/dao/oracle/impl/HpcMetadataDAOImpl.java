@@ -161,8 +161,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "main1.meta_attr_value, main1.data_level, main1.level_label "
 			+ "from (select data_id,coll_id,data_size,data_path,data_owner_name,create_ts from R_DATA_MAIN where ";
 
-	private static final String GET_ALL_DATA_OBJECT_PATHS2_SQL = ") data left join r_coll_main coll on data.coll_id=coll.coll_id "
-			+ "left join r_data_hierarchy_user_meta_main main1 on main1.object_id=data.data_id ";
+	private static final String GET_ALL_DATA_OBJECT_PATHS2_SQL = ") data join r_coll_main coll on data.coll_id=coll.coll_id "
+			+ "join r_data_hierarchy_user_meta_main main1 on main1.object_id=data.data_id ";
 
 	private static final String GET_DATA_OBJECT_COUNT_SQL = "select count(distinct object_id) from r_data_hierarchy_meta_main main1 where ";
 

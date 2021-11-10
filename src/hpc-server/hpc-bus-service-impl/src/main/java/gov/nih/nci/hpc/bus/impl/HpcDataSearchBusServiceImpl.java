@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -83,6 +84,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	@Qualifier("hpcGetAllDataObjectsExecutorService")
 	ExecutorService hpcGetAllDataObjectsExecutorService = null;
 			
+	@Value("${hpc.bus.getAllDataObjectsDefaultPageSize}")
+	private int getAllDataObjectsDefaultPageSize = 0;
+	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 		
@@ -205,7 +209,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		String dataManagementUsername = securityService.getRequestInvoker().getDataManagementAccount().getUsername();
 				
 		// Set the defaults.
-		if (pageSize != null) {
+		if (pageSize != null && pageSize <= getAllDataObjectsDefaultPageSize) {
 			// Return user requested pageSize or the limit
 			page = page == null ? 1 : page;
 			totalCount = totalCount == null || totalCount;
@@ -231,14 +235,25 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			// Return all pages and include totalCount
 			// Get total count first
 			int count = dataSearchService.getAllDataObjectCount(path);
-			pageSize = dataSearchService.getSearchResultsPageSize(0);
+			// Get the max limit
 			int limit = dataSearchService.getSearchResultsPageSize(100000);
-			limit = count < limit ? count : limit;
+			// If the user requested a page size that is smaller than the max, set limit to user page size
+			limit = pageSize = pageSize != null && pageSize < limit ? pageSize : limit;
+			// Default page to 1 if user didn't request
+			page = page == null ? 1 : page;
+			// If it is page 1 or requested page size is divisible by default page size, use the default, else use the requested page size
+			int dbPageSize = pageSize % getAllDataObjectsDefaultPageSize == 0 || page == 1 ? getAllDataObjectsDefaultPageSize : pageSize;
+			// From the user requested page, compute the database page number based on the page size we are using
+			int dbPage = limit / dbPageSize * (page -1) + 1;
+			// If the count is less than the limit, then set the limit to count
+			limit = (count - (page -1) * limit) < limit ? (count - (page -1) * limit) : limit;
+			
+			
 						
 			List<Callable<HpcDataObjectListDTO>> callableTasks = new ArrayList<>();
-			page = 1;
-			for (int i = 0; i < limit; i += pageSize) {
-				callableTasks.add(new HpcSearchRequest(dataSearchService, dataManagementUsername, path, page++, pageSize));
+			
+			for (int i = 0; i < limit; i += dbPageSize) {
+				callableTasks.add(new HpcSearchRequest(dataSearchService, dataManagementUsername, path, dbPage++, dbPageSize));
 			}
 			
 			List<Future<HpcDataObjectListDTO>> futures = null;
@@ -254,7 +269,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			}
 			
 			// Set page, limit and total count.
-			dataObjectsDTO.setPage(1);
+			dataObjectsDTO.setPage(page);
 			dataObjectsDTO.setLimit(limit);
 			dataObjectsDTO.setTotalCount(count);
 		}
