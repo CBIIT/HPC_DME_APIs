@@ -42,7 +42,7 @@
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 		<prop key="hpc.service.notification.storageAdministratorUserIds">HPC_DME_Admin</prop>
 		<prop key="hpc.service.dataSearch.searchResultsPageSize">100</prop>
-		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">5000</prop>
+		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">10000</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
