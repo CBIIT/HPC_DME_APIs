@@ -843,7 +843,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Submit the transfer request (second hop) as a bunch.
 					dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask,
 							globusBunchingReceivedDownloadTasks);
-					logger.error("ERAN: DTID: " + downloadTask.getDataTransferRequestId());
 				}
 
 				dataTransferService.updateCollectionDownloadTask(downloadTask);
