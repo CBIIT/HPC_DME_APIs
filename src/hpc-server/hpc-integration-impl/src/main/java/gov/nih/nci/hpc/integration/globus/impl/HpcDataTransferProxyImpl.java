@@ -499,10 +499,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				transfer.put("DATA", toTransferItemsJson(transferRequest.getItems()));
 
 				result = client.postResult("/transfer", transfer, null);
-				String taskId = result.document.getString("task_id");
-				logger.debug("Transfer task id : {}", taskId);
-
-				return taskId;
+				return result.document.getString("task_id");
 
 			} catch (APIError error) {
 				logger.error("Error while submitting transfer request to Globus for" + " Source "
