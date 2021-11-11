@@ -1454,14 +1454,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataObjectDownloadTasks) {
 			String sourceEndpoint = dataObjectDownloadTask.getArchiveLocation().getFileContainerId();
 			String destinationEndpoint = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation()
-					.getFileId();
-			String sourcePath = dataObjectDownloadTask.getArchiveLocation().getFileContainerId();
+					.getFileContainerId();
+			String sourcePath = dataObjectDownloadTask.getArchiveLocation().getFileId();
 			String destinationPath = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation()
 					.getFileId();
 
 			if (StringUtils.isEmpty(globusTransferRequest.getSourceEndpoint())) {
 				globusTransferRequest.setSourceEndpoint(sourceEndpoint);
 				globusTransferRequest.setDestinationEndpoint(destinationEndpoint);
+				configurationId = dataObjectDownloadTask.getConfigurationId();
+				s3ArchiveConfigurationId = dataObjectDownloadTask.getS3ArchiveConfigurationId();
 			} else if (!globusTransferRequest.getSourceEndpoint().equals(sourceEndpoint)
 					|| (!globusTransferRequest.getDestinationEndpoint().equals(destinationEndpoint))) {
 				throw new HpcException("Invalid bulk download to Globus, Can't bunch", HpcErrorType.UNEXPECTED_ERROR);
