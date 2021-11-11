@@ -839,10 +839,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			} else {
 				if (inProgressItemsCount == globusBunchingReceivedDownloadTasks.size()) {
-					// A collection download to Globus destination completed first hop of all files. Submit the transfer request (second hop) as a bunch.
-					dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask, globusBunchingReceivedDownloadTasks);
+					// A collection download to Globus destination completed first hop of all files.
+					// Submit the transfer request (second hop) as a bunch.
+					dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask,
+							globusBunchingReceivedDownloadTasks);
+					logger.error("ERAN: DTID: " + downloadTask.getDataTransferRequestId());
 				}
-				
+
 				dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
 		}
