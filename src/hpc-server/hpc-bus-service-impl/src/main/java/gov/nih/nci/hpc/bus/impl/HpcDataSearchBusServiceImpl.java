@@ -50,6 +50,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -215,41 +216,30 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		
 		// Get the user-id of the request invoker.
 		String dataManagementUsername = securityService.getRequestInvoker().getDataManagementAccount().getUsername();
-				
+
+		totalCount = totalCount == null || totalCount;
+		int limit = 0;
 		if (pageSize != null && pageSize <= getAllDataObjectsDefaultPageSize) {
 			// Compute the offset
 			int offset = (page - 1) * pageSize;
-			totalCount = totalCount == null || totalCount;
 			
 			// Execute the query and package the results into a DTO.
 			int count = 0;
 			List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize);
 			dataObjectsDTO = toDetailedDataObjectListDTO(dataObjectPaths);
-			count = dataObjectsDTO.getDataObjects().size();
-
 
 			// Set page, limit and total count.
 			dataObjectsDTO.setPage(page);
-			int limit = dataSearchService.getSearchResultsPageSize(pageSize);
+			limit = dataSearchService.getSearchResultsPageSize(pageSize);
 			dataObjectsDTO.setLimit(limit);
-
-			if (totalCount) {
-				dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count
-						: dataSearchService.getAllDataObjectCount(path));
-			}
 			
 		} else {
-			// Return all pages and include totalCount
-			// Get total count first
-			int count = dataSearchService.getAllDataObjectCount(path);
-			// Get the max limit
-			int limit = dataSearchService.getSearchResultsPageSize(100000);
+			// Get the max limit, we will return that many records
+			limit = dataSearchService.getSearchResultsPageSize(100000);
 			// If the user requested a page size that is smaller than the max, set limit to user page size
 			limit = pageSize = pageSize != null && pageSize < limit ? pageSize : limit;
 			// Compute the initial offset
 			int offset = (page - 1) * pageSize;
-			// If the count minus offset is less than the limit, then set the limit to count minus offset
-			limit = (count - offset) < limit ? (count - offset) : limit;
 								
 			List<Callable<HpcDataObjectListDTO>> callableTasks = new ArrayList<>();
 			
@@ -274,9 +264,13 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			// Set page, limit and total count.
 			dataObjectsDTO.setPage(page);
 			dataObjectsDTO.setLimit(limit);
-			dataObjectsDTO.setTotalCount(count);
 		}
 		
+		if (totalCount) {
+			int count = dataObjectsDTO.getDataObjects().size();
+			dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count
+					: dataSearchService.getAllDataObjectCount(path));
+		}
 		
 		return dataObjectsDTO;
 
