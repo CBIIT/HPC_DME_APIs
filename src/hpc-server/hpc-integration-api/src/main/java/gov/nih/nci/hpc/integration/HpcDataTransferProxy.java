@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -406,4 +407,17 @@ public interface HpcDataTransferProxy {
 		throw new HpcException("existsTieringPolicy() not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
+	/**
+	 * Submit a data transfer request to Globus.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @param transferRequest    The Globus transfer request
+	 * @param encryptedTransfer  (Optional) encrypted transfer indicator
+	 * @return The data transfer request ID.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default String transferData(Object authenticatedToken, HpcGlobusTransferRequest transferRequest,
+			Boolean encryptedTransfer) throws HpcException {
+		throw new HpcException("transferData() not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
 }
