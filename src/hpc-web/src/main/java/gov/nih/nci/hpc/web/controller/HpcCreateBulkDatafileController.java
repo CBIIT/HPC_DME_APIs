@@ -271,6 +271,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		model.addAttribute("bulkType", bulkType);
 		String bucketName = (String)request.getParameter("bucketName");
 		model.addAttribute("bucketName", bucketName);
+		String gcbucketName = (String)request.getParameter("gcbucketName");
+		model.addAttribute("gcbucketName", gcbucketName);
 		String s3Path = (String)request.getParameter("s3Path");
 		model.addAttribute("s3Path", s3Path);
 		String gcPath = (String)request.getParameter("gcPath");
