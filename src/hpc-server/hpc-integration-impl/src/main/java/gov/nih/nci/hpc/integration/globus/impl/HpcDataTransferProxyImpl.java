@@ -473,21 +473,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		});
 	}
 
-	// ---------------------------------------------------------------------//
-	// Helper Methods
-	// ---------------------------------------------------------------------//
-
-	/**
-	 * Submit a data transfer request.
-	 *
-	 * @param client            Client API instance.
-	 * @param transferRequest   The transfer request
-	 * @param encryptedTransfer (Optional) encrypted transfer indicator
-	 * @return The data transfer request ID.
-	 * @throws HpcException on data transfer system failure.
-	 */
-	private String transferData(JSONTransferAPIClient client, HpcGlobusTransferRequest transferRequest,
+	@Override
+	public String transferData(Object authenticatedToken, HpcGlobusTransferRequest transferRequest,
 			Boolean encryptedTransfer) throws HpcException {
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+
 		// Activate endpoints.
 		autoActivate(transferRequest.getSourceEndpoint(), client);
 		autoActivate(transferRequest.getDestinationEndpoint(), client);
@@ -536,6 +526,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 		});
 	}
+
+	// ---------------------------------------------------------------------//
+	// Helper Methods
+	// ---------------------------------------------------------------------//
 
 	/**
 	 * Create a 'transfer item' JSON
