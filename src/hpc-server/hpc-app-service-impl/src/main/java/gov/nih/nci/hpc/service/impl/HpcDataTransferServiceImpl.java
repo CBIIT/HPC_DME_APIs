@@ -76,6 +76,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -1441,10 +1443,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 	}
 
-	public void processCollectionDownloadTaskSecondHopBunch(HpcCollectionDownloadTask downloadTask,
+	public void processCollectionDownloadTaskSecondHopBunch(HpcCollectionDownloadTask collectionDownloadTask,
 			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks) throws HpcException {
-		logger.error("ERAN: task {} ready for bunching. {} items", downloadTask.getId(),
-				dataObjectDownloadTasks.size());
+
+		// Create a Globus transfer request for the bunch.
+		String configurationId = null;
+		String s3ArchiveConfigurationId = null;
+		HpcGlobusTransferRequest globusTransferRequest = new HpcGlobusTransferRequest();
+
+		for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataObjectDownloadTasks) {
+			String sourceEndpoint = dataObjectDownloadTask.getArchiveLocation().getFileContainerId();
+			String destinationEndpoint = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation()
+					.getFileId();
+			String sourcePath = dataObjectDownloadTask.getArchiveLocation().getFileContainerId();
+			String destinationPath = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation()
+					.getFileId();
+
+			if (StringUtils.isEmpty(globusTransferRequest.getSourceEndpoint())) {
+				globusTransferRequest.setSourceEndpoint(sourceEndpoint);
+				globusTransferRequest.setDestinationEndpoint(destinationEndpoint);
+			} else if (!globusTransferRequest.getSourceEndpoint().equals(sourceEndpoint)
+					|| (!globusTransferRequest.getDestinationEndpoint().equals(destinationEndpoint))) {
+				throw new HpcException("Invalid bulk download to Globus, Can't bunch", HpcErrorType.UNEXPECTED_ERROR);
+			}
+			HpcGlobusTransferItem item = new HpcGlobusTransferItem();
+			item.setSourcePath(sourcePath);
+			item.setDestinationPath(destinationPath);
+			globusTransferRequest.getItems().add(item);
+		}
+
+		// Get the base archive destination.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, HpcDataTransferType.S_3);
+
+		// Submit the transfer request to Globus.
+		collectionDownloadTask
+				.setDataTransferRequestId(dataTransferProxies.get(HpcDataTransferType.GLOBUS).transferData(
+						getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId, s3ArchiveConfigurationId),
+						globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer()));
+
 	}
 
 	@Override
