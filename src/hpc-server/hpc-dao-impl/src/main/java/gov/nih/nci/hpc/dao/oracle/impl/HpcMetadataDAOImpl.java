@@ -159,8 +159,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "where mv.object_id = data.data_id and data.coll_id = coll.coll_id and ( exists (select 1 from ("
 			+ "select distinct object_id from r_data_hierarchy_meta_main main1 where ";
 	
-	private static final String GET_ALL_DATA_OBJECT_PATHS_SQL = "select main1.object_id, coll.coll_id, coll.coll_name, main1.object_path, data.data_size, "
-			+ "data.data_path, data.data_owner_name, data.create_ts, main1.meta_attr_name, "
+	private static final String GET_ALL_DATA_OBJECT_PATHS_SQL = "select main1.object_id, coll.coll_name, main1.object_path, "
+			+ "data.data_owner_name, data.create_ts, main1.meta_attr_name, "
 			+ "main1.meta_attr_value, main1.data_level, main1.level_label "
 			+ "from (select data_id,coll_id,data_size,data_path,data_owner_name,create_ts from R_DATA_MAIN where ";
 
@@ -244,6 +244,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		return metadataEntry;
 	};
+
 	private RowMapper<HpcSearchMetadataEntry> searchMetadataEntryRowMapper = (rs, rowNum) -> {
 		HpcSearchMetadataEntry searchMetadataEntry = new HpcSearchMetadataEntry();
 		Long id = rs.getLong(1);
@@ -253,7 +254,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setCollectionName(rs.getString(3));
 		searchMetadataEntry.setAbsolutePath(rs.getString(4));
 		Long dataSize = rs.getLong(5);
-		searchMetadataEntry.setDataSize(dataSize != null ? dataSize.intValue() : null);
+		searchMetadataEntry.setDataSize(dataSize != null ? dataSize.longValue() : null);
 		searchMetadataEntry.setDataPath(rs.getString(6));
 		searchMetadataEntry.setDataOwnerName(rs.getString(7));
 		String createTs = rs.getString(8);
@@ -268,6 +269,29 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		return searchMetadataEntry;
 	};
+
+
+	private RowMapper<HpcSearchMetadataEntry> searchExtMetadataEntryRowMapper = (rs, rowNum) -> {
+		HpcSearchMetadataEntry searchMetadataEntry = new HpcSearchMetadataEntry();
+		Long id = rs.getLong(1);
+		searchMetadataEntry.setId(id != null ? id.intValue() : null);
+		searchMetadataEntry.setCollectionName(rs.getString(2));
+		searchMetadataEntry.setAbsolutePath(rs.getString(3));
+		searchMetadataEntry.setDataOwnerName(rs.getString(4));
+		String createTs = rs.getString(5);
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(Long.parseLong(createTs) * 1000);
+		searchMetadataEntry.setCreatedAt(cal);
+		searchMetadataEntry.setAttribute(rs.getString(6));
+		searchMetadataEntry.setValue(rs.getString(7));
+		Long level = rs.getLong(8);
+		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
+		searchMetadataEntry.setLevelLabel(rs.getString(9));
+
+		return searchMetadataEntry;
+	};
+
+
 	private RowMapper<HpcSearchMetadataEntryForCollection> searchMetadataEntryForCollRowMapper = (rs, rowNum) -> {
 		HpcSearchMetadataEntryForCollection searchMetadataEntry = new HpcSearchMetadataEntryForCollection();
 		Long collId = rs.getLong(1);
@@ -456,11 +480,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String path,
 			String dataManagementUsername, int offset, int limit) throws HpcException {
-		return getDetailedPaths(prepareAllQuery(GET_ALL_DATA_OBJECT_PATHS_SQL, GET_ALL_DATA_OBJECT_PATHS2_SQL, path,
+		return getExtDetailedPaths(prepareAllQuery(GET_ALL_DATA_OBJECT_PATHS_SQL, GET_ALL_DATA_OBJECT_PATHS2_SQL, path,
 				dataManagementUsername, offset,
 				limit));
 	}
-	
+
 	@Override
 	public int getDataObjectCount(String path, HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername,
 			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
@@ -909,6 +933,25 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
+
+
+	/**
+	 * Execute a SQL query to get data object detailed paths for external use.
+	 *
+	 * @param preparedQuery The prepared query to execute.
+	 * @return A list of paths.
+	 * @throws HpcException on database error.
+	 */
+	private List<HpcSearchMetadataEntry> getExtDetailedPaths(HpcPreparedQuery preparedQuery) throws HpcException {
+		try {
+			return jdbcTemplate.query(preparedQuery.sql, searchExtMetadataEntryRowMapper, preparedQuery.args);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get data-object Detailed Paths: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
 
 	/**
 	 * Execute a SQL query to get collection detailed paths.
