@@ -789,7 +789,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							// for the entire collection.
 							inProgressItemsCount++;
 							if (downloadItemStatus.getDataObjectDownloadTask().getDataTransferStatus()
-									.equals(HpcDataTransferDownloadStatus.GLOBUS_BUNCHING_RECEIVED)) {
+									.equals(HpcDataTransferDownloadStatus.GLOBUS_BUNCHING)) {
 								globusBunchingReceivedDownloadTasks.add(downloadItemStatus.getDataObjectDownloadTask());
 							}
 						}
@@ -845,6 +845,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							globusBunchingReceivedDownloadTasks);
 				}
 
+				logger.error("ERAN: " + downloadTask.getStatus() + " " + downloadTask.getDataTransferRequestId());
 				dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
 		}
