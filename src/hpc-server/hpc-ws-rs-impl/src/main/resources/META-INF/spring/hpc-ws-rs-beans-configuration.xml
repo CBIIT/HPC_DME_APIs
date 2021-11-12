@@ -384,7 +384,6 @@
 			<ref bean="hpcAuthorizationInterceptor" />
 		</jaxrs:inInterceptors>
 		<jaxrs:outInterceptors>
-			<ref bean="hpcAPIVersionInterceptor" />
 			<ref bean="hpcCleanupInterceptor" />
 			<ref bean="hpcCleanupFaultInterceptor" />
 			<ref bean="hpcProfileOutInterceptor" />
