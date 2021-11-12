@@ -221,13 +221,16 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (pageSize != null && pageSize <= getAllDataObjectsDefaultPageSize) {
 			// Compute the offset
 			int offset = (page - 1) * pageSize;
-			
+
 			// Execute the query and package the results into a DTO.
-			int count = 0;
+			logger.debug("Retrieving objects from DB for path {}", path);
 			List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize);
+
+			logger.debug("Generating DTO list for objects from {}", path);
 			dataObjectsDTO = toDetailedDataObjectListDTO(dataObjectPaths);
 
 			// Set page, limit and total count.
+			logger.debug("Setting page and limit for DTOList for {}", path);
 			dataObjectsDTO.setPage(page);
 			limit = dataSearchService.getSearchResultsPageSize(pageSize);
 			dataObjectsDTO.setLimit(limit);
@@ -239,9 +242,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			limit = pageSize = pageSize != null && pageSize < limit ? pageSize : limit;
 			// Compute the initial offset
 			int offset = (page - 1) * pageSize;
-								
+
 			List<Callable<HpcDataObjectListDTO>> callableTasks = new ArrayList<>();
-			
+
 			for (int i = 0; i < limit; i += getAllDataObjectsDefaultPageSize) {
 				callableTasks.add(new HpcSearchRequest(dataSearchService, dataManagementUsername, path,
 						offset, limit - i < getAllDataObjectsDefaultPageSize ? limit - i : getAllDataObjectsDefaultPageSize));
@@ -575,6 +578,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
+
 		if (!CollectionUtils.isEmpty(dataObjectPaths)) {
 			dataObjectPaths
 					.sort(Comparator.comparing(HpcSearchMetadataEntry::getAbsolutePath, String::compareToIgnoreCase)
