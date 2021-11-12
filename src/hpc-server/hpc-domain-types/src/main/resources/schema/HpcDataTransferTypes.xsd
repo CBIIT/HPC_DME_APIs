@@ -87,6 +87,8 @@
 			<xsd:element name="bytesTransferred" type="xsd:long" />
 			<xsd:element name="permissionDenied" type="xsd:boolean"
 				minOccurs="0" />
+			<xsd:element name="successfulItems" type="hpc-domain-datatransfer:HpcGlobusTransferItem" 
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 

@@ -392,10 +392,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (report.status.equals(SUCCEEDED_STATUS)) {
 			// Download completed successfully.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
+			statusReport.getSuccessfulItems()
+					.addAll(this.getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
 
 		} else if (transferFailed(authenticatedToken, dataTransferRequestId, report)) {
 			// Download failed.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
+			statusReport.getSuccessfulItems()
+					.addAll(this.getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
 			if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
 				statusReport.setPermissionDenied(true);
 				statusReport.setMessage(report.niceStatusDescription
@@ -628,6 +632,54 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			} catch (Exception e) {
 				throw new HpcException("[GLOBUS] Failed to get task report for task: " + dataTransferRequestId,
+						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		});
+	}
+
+	/**
+	 * Get a data transfer report.
+	 *
+	 * @param authenticatedToken    An authenticated token.
+	 * @param dataTransferRequestId The data transfer request ID.
+	 * @return The data transfer report for the request.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	private List<HpcGlobusTransferItem> getSuccessfulTransfers(Object authenticatedToken, String dataTransferRequestId,
+			Integer nextMarker) throws HpcException {
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+		List<HpcGlobusTransferItem> items = new ArrayList<>();
+
+		return retryTemplate.execute(arg0 -> {
+			try {
+				JSONObject jsonSuccessfulTransfers = client
+						.getResult("/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
+								? "?marker=" + nextMarker
+								: "").document;
+
+				JSONArray jsonItems = jsonSuccessfulTransfers.getJSONArray("DATA");
+				if (jsonItems != null) {
+					// Iterate through the directory files, and locate the file we look for.
+					int itemsNum = jsonItems.length();
+					for (int i = 0; i < itemsNum; i++) {
+						JSONObject jsonItem = jsonItems.getJSONObject(i);
+						HpcGlobusTransferItem item = new HpcGlobusTransferItem();
+						item.setSourcePath(jsonItem.getString("source_path"));
+						item.setDestinationPath(jsonItem.getString("destination_path"));
+						items.add(item);
+					}
+				}
+
+				// Check if there additional results to page.
+				if (jsonSuccessfulTransfers.get("next_marker") != null) {
+					items.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId,
+							jsonSuccessfulTransfers.getInt("next_marker")));
+				}
+
+				return items;
+
+			} catch (Exception e) {
+				throw new HpcException("[GLOBUS] Failed to get task successful transfers: " + dataTransferRequestId,
 						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 			}
 		});
