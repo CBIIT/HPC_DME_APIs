@@ -845,7 +845,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							globusBunchingReceivedDownloadTasks);
 				}
 
-				logger.error("ERAN: " + downloadTask.getStatus() + " " + downloadTask.getDataTransferRequestId());
 				dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
 		}
@@ -1856,6 +1855,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService.getDataTransferDownloadStatus(
 				downloadTask.getDataTransferType(), downloadTask.getDataTransferRequestId(),
 				downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
+		
+		logger.error("ERAN: " + dataTransferDownloadReport.getSuccessfulItems().toString());
 
 		// Check the status of the data transfer.
 		HpcDataTransferDownloadStatus dataTransferDownloadStatus = dataTransferDownloadReport.getStatus();
