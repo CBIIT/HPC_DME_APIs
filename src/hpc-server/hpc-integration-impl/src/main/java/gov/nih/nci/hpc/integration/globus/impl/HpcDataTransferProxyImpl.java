@@ -393,13 +393,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// Download completed successfully.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
 			statusReport.getSuccessfulItems()
-					.addAll(this.getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
+					.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
 
 		} else if (transferFailed(authenticatedToken, dataTransferRequestId, report)) {
 			// Download failed.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
 			statusReport.getSuccessfulItems()
-					.addAll(this.getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
+					.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
 			if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
 				statusReport.setPermissionDenied(true);
 				statusReport.setMessage(report.niceStatusDescription
@@ -653,10 +653,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return retryTemplate.execute(arg0 -> {
 			try {
 				JSONObject jsonSuccessfulTransfers = client
-						.getResult("/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
+						.getResult("/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
 								? "?marker=" + nextMarker
 								: "").document;
 
+				logger.error("ERAN: " + "/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
+								? "?marker=" + nextMarker
+								: "");
+				
 				JSONArray jsonItems = jsonSuccessfulTransfers.getJSONArray("DATA");
 				if (jsonItems != null) {
 					// Iterate through the directory files, and locate the file we look for.
