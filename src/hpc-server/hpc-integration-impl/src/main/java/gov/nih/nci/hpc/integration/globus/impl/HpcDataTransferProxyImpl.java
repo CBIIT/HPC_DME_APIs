@@ -655,8 +655,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				JSONObject jsonSuccessfulTransfers = client.getResult("/endpoint_manager/task/" + dataTransferRequestId
 						+ "/successful_transfers" + (nextMarker != null ? "?marker=" + nextMarker : "")).document;
 
-				logger.error("ERAN: res: {}", jsonSuccessfulTransfers);
-
 				JSONArray jsonItems = jsonSuccessfulTransfers.getJSONArray("DATA");
 				if (jsonItems != null) {
 					// Iterate through the directory files, and locate the file we look for.
@@ -672,7 +670,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				// Check if there additional results to page.
 				if (!jsonSuccessfulTransfers.isNull("next_marker")) {
-					logger.error("ERAN next marker not null");
 					items.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId,
 							jsonSuccessfulTransfers.getInt("next_marker")));
 				}
