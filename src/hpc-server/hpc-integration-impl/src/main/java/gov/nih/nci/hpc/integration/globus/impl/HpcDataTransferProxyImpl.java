@@ -650,18 +650,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 		List<HpcGlobusTransferItem> items = new ArrayList<>();
 
-		logger.error("ERAN: " + "/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
+		logger.error("ERAN: STAM");
+		String glUrl = "/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
 				? "?marker=" + nextMarker
-				: "");
+				: "";
+		logger.error("ERAN: {}", glUrl);
 		
 		return retryTemplate.execute(arg0 -> {
 			try {
 				
 				
 				JSONObject jsonSuccessfulTransfers = client
-						.getResult("/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
-								? "?marker=" + nextMarker
-								: "").document;
+						.getResult(glUrl).document;
 
 				
 				
