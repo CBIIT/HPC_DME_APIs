@@ -651,9 +651,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		List<HpcGlobusTransferItem> items = new ArrayList<>();
 
 		logger.error("ERAN: STAM");
-		String glUrl = "/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
+		String glUrl = "/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + (nextMarker != null
 				? "?marker=" + nextMarker
-				: "";
+				: "");
 		logger.error("ERAN: {}", glUrl);
 		
 		return retryTemplate.execute(arg0 -> {
