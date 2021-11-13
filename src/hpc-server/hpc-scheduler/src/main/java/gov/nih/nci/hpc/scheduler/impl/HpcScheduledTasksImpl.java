@@ -190,6 +190,12 @@ public class HpcScheduledTasksImpl {
 	private void completeCollectionDownloadTasksTask() {
 		execute("completeCollectionDownloadTasksTask()", systemBusService::completeCollectionDownloadTasks, logger);
 	}
+	
+	/** Complete Globus bunching of collection download tasks **/
+	@Scheduled(cron = "${hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay}")
+	private void completeGlobusBunchingCollectionDownloadTasksTask() {
+		execute("completeGlobusBunchingCollectionDownloadTasksTask()", systemBusService::completeGlobusBunchingCollectionDownloadTasks, logger);
+	}
 
 	/** Process bulk data object registration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.processBulkDataObjectRegistrationTasks.delay}")
