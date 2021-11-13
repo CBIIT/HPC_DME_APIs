@@ -900,7 +900,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									dataObjectDownloadResult.getResult().equals(HpcDownloadResult.COMPLETED) ? 100 : 0);
 							downloadItem
 									.setEffectiveTransferSpeed(dataObjectDownloadResult.getEffectiveTransferSpeed() > 0
-											? downloadItemStatus.getResult().getEffectiveTransferSpeed()
+											? dataObjectDownloadResult.getEffectiveTransferSpeed()
 											: null);
 						}
 
