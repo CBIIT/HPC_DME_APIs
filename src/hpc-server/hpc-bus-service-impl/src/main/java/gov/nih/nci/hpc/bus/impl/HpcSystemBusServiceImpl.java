@@ -863,7 +863,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS, downloadTask.getDataTransferRequestId(),
 							downloadTask.getConfigurationId(), null);
 
-			logger.error("ERAN: succefful items: {}", dataTransferDownloadReport.getSuccessfulItems());
+			logger.error("ERAN: status: {} = {}", dataTransferDownloadReport.getStatus(), dataTransferDownloadReport.getSuccessfulItems());
 		}
 	}
 
