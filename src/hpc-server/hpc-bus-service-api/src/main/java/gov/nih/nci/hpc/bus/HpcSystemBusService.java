@@ -174,6 +174,14 @@ public interface HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void completeCollectionDownloadTasks() throws HpcException;
+	
+	/**
+	 * Check status of all active collection download tasks that submitted a 2nd Hop Globus bunching and complete these that
+	 * are no longer in progress.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void completeGlobusBunchingCollectionDownloadTasks() throws HpcException;
 
 	/**
 	 * Process bulk data object registration tasks that received.
