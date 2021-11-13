@@ -188,6 +188,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
 	private Long maxSyncDownloadFileSize = null;
 
+	// The max sync download file size.
+	@Value("${hpc.service.dataTransfer.globusCollectionDownloadBunching}")
+	boolean globusCollectionDownloadBunching = true;
+
 	// cancelCollectionDownloadTaskItems() query filter
 	private List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter = new ArrayList<>();
 
@@ -982,8 +986,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, HpcDownloadResult result,
-			String message, Calendar completed, long bytesTransferred) throws HpcException {
+	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
 		// Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1082,7 +1086,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
-		
+
 		return taskResult;
 	}
 
@@ -3538,8 +3542,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					// request for the second hop.
 					downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
 					downloadTask.setDataTransferStatus(StringUtils.isEmpty(downloadTask.getCollectionDownloadTaskId())
-							? HpcDataTransferDownloadStatus.RECEIVED
-							: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
+							|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
+									: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
 					downloadTask.setInProcess(false);
 
 					// Persist the download task.
