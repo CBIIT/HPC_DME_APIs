@@ -424,9 +424,10 @@ public interface HpcDataTransferService {
 	 *                         the failure.
 	 * @param completed        (Optional) The download task completion timestamp.
 	 * @param bytesTransferred The total bytes transfered.
+	 * @return The data-object download result object
 	 * @throws HpcException on service failure.
 	 */
-	public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, HpcDownloadResult result,
+	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, HpcDownloadResult result,
 			String message, Calendar completed, long bytesTransferred) throws HpcException;
 
 	/**
