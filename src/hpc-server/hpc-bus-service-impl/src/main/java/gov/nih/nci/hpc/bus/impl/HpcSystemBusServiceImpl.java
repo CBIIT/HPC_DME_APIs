@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -861,7 +862,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
 					try {
 						if (downloadItem.getResult() == null) {
-							// This download item is included in the bunch. Update the download result
+							// This download item is included in the bunch. Update the download result.
 							HpcDownloadTaskStatus downloadItemStatus = downloadItem
 									.getDataObjectDownloadTaskId() != null ? dataTransferService.getDownloadTaskStatus(
 											downloadItem.getDataObjectDownloadTaskId(), HpcDownloadTaskType.DATA_OBJECT)
@@ -888,8 +889,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									: "Globus transfer failed within a bunch request ["
 											+ dataTransferDownloadReport.getMessage() + "].";
 							Calendar completed = Calendar.getInstance();
-							dataTransferService.completeDataObjectDownloadTask(dataObjectDownloadTask, result, message,
-									completed, dataTransferDownloadReport.getBytesTransferred());
+							HpcDownloadTaskResult dataObjectDownloadResult = dataTransferService
+									.completeDataObjectDownloadTask(dataObjectDownloadTask, result, message, completed,
+											dataTransferDownloadReport.getBytesTransferred());
+
+							// Update the download item.
+							downloadItem.setResult(dataObjectDownloadResult.getResult());
+							downloadItem.setMessage(dataObjectDownloadResult.getMessage());
+							downloadItem.setPercentComplete(
+									dataObjectDownloadResult.getResult().equals(HpcDownloadResult.COMPLETED) ? 100 : 0);
+							downloadItem
+									.setEffectiveTransferSpeed(dataObjectDownloadResult.getEffectiveTransferSpeed() > 0
+											? downloadItemStatus.getResult().getEffectiveTransferSpeed()
+											: null);
 						}
 
 					} catch (HpcException e) {
