@@ -671,7 +671,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				}
 
 				// Check if there additional results to page.
-				if (jsonSuccessfulTransfers.isNull("next_marker")) {
+				if (!jsonSuccessfulTransfers.isNull("next_marker")) {
 					logger.error("ERAN next marker not null");
 					items.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId,
 							jsonSuccessfulTransfers.getInt("next_marker")));
