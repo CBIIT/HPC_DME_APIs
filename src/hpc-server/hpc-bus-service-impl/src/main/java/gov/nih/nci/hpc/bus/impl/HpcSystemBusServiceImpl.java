@@ -857,6 +857,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING)) {
 			logger.error("ERAN: coll download in bunching: {}", downloadTask.getId());
+
+			// Get the data transfer download status.
+			HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService
+					.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS, downloadTask.getDataTransferRequestId(),
+							downloadTask.getConfigurationId(), null);
+
+			logger.error("ERAN: succefful items: {}", dataTransferDownloadReport.getSuccessfulItems());
 		}
 	}
 
@@ -1865,8 +1872,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService.getDataTransferDownloadStatus(
 				downloadTask.getDataTransferType(), downloadTask.getDataTransferRequestId(),
 				downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
-
-		logger.error("ERAN: " + dataTransferDownloadReport.getSuccessfulItems().toString());
 
 		// Check the status of the data transfer.
 		HpcDataTransferDownloadStatus dataTransferDownloadStatus = dataTransferDownloadReport.getStatus();
