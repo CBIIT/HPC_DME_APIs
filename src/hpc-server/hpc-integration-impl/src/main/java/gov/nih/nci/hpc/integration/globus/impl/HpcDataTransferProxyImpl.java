@@ -652,14 +652,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		return retryTemplate.execute(arg0 -> {
 			try {
+				logger.error("ERAN: " + "/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
+						? "?marker=" + nextMarker
+						: "");
+				
 				JSONObject jsonSuccessfulTransfers = client
 						.getResult("/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
 								? "?marker=" + nextMarker
 								: "").document;
 
-				logger.error("ERAN: " + "/endpoint_manager/task/" + dataTransferRequestId + "/successful_transfers" + nextMarker != null
-								? "?marker=" + nextMarker
-								: "");
+				
 				
 				JSONArray jsonItems = jsonSuccessfulTransfers.getJSONArray("DATA");
 				if (jsonItems != null) {
