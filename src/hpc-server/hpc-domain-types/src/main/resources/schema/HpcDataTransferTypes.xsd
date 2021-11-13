@@ -128,8 +128,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="ACTIVE" />
-			<xsd:enumeration value="GLOBUS_BUNCHING_SUBMITTED" />
-			<xsd:enumeration value="GLOBUS_BUNCHING_COMPLETED" />
+			<xsd:enumeration value="GLOBUS_BUNCHING" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
