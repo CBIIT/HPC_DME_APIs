@@ -663,6 +663,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				JSONObject jsonSuccessfulTransfers = client
 						.getResult(glUrl).document;
 
+				logger.error("ERAN: res: {}", jsonSuccessfulTransfers.toString());
 				
 				
 				JSONArray jsonItems = jsonSuccessfulTransfers.getJSONArray("DATA");
@@ -680,6 +681,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				// Check if there additional results to page.
 				if (jsonSuccessfulTransfers.get("next_marker") != null) {
+					logger.error("ERAN next marker {}", jsonSuccessfulTransfers.get("next_marker").toString());
 					items.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId,
 							jsonSuccessfulTransfers.getInt("next_marker")));
 				}
