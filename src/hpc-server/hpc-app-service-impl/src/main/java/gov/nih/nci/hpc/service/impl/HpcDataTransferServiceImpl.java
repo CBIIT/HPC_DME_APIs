@@ -1483,8 +1483,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.setDataTransferRequestId(dataTransferProxies.get(HpcDataTransferType.GLOBUS).transferData(
 						getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId, s3ArchiveConfigurationId),
 						globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer()));
-		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING);
-
+		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING_SUBMITTED);
 	}
 
 	@Override
