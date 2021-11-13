@@ -188,7 +188,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
 	private Long maxSyncDownloadFileSize = null;
 
-	// The max sync download file size.
+	// The Globus collection download using bunching - on/off toggle.
 	@Value("${hpc.service.dataTransfer.globusCollectionDownloadBunching}")
 	boolean globusCollectionDownloadBunching = true;
 
