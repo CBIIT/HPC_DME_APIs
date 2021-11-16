@@ -676,7 +676,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		// Add query to limit results to within the path if specified
 		if (path != null) {
 			sqlQueryBuilder.append("object_path LIKE ?");
-			args.add("%" + path + "%");
+			args.add(path + "%");
 		}
 
 		// Add query to search for requested metadata
