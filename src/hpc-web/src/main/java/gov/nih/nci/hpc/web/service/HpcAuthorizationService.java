@@ -38,4 +38,7 @@ public interface HpcAuthorizationService {
     GOOGLECLOUD
   }
   
+  public static final String GOOGLE_CLOUD_TYPE = "googleCloud";
+	public static final String GOOGLE_DRIVE_TYPE = "drive";
+
 }
