@@ -52,8 +52,6 @@ import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -79,10 +77,6 @@ public class HpcDownloadController extends AbstractHpcController {
 	private String collectionServiceURL;
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
-
-	public static final String GOOGLE_CLOUD_TYPE = "googleCloud";
-	public static final String GOOGLE_DRIVE_TYPE = "drive";
-
 
 	/**
 	 * Get action to prepare download page. This is invoked when:
@@ -118,19 +112,19 @@ public class HpcDownloadController extends AbstractHpcController {
 			String googleAction =(String)session.getAttribute("googleAction");
             final String returnURL = this.webServerName + "/download";
             try {
-				if(googleAction.equals(GOOGLE_DRIVE_TYPE)){
+				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
-					model.addAttribute("searchType", GOOGLE_DRIVE_TYPE);
-		            model.addAttribute("transferType", GOOGLE_DRIVE_TYPE);
+					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
+		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("authorized", "true");
-				} else if(googleAction.equals(GOOGLE_CLOUD_TYPE)) {
+				} else if(googleAction.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
 					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
-					model.addAttribute("searchType", GOOGLE_CLOUD_TYPE);
-		            model.addAttribute("transferType", GOOGLE_CLOUD_TYPE);
+					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
+		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 		            model.addAttribute("authorizedGC", "true");
 				}
             } catch (Exception e) {
@@ -192,12 +186,12 @@ public class HpcDownloadController extends AbstractHpcController {
 	        "action=" + percentEncodedReturnURL;
 		}
 		
-		if (action != null && action.toLowerCase().equals(GOOGLE_DRIVE_TYPE)) {
+		if (action != null && action.toLowerCase().equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("downloadSource", source);
 			downloadFilePath = request.getParameter("downloadFilePath");
 			session.setAttribute("downloadFilePath", downloadFilePath);
-			session.setAttribute("googleAction", GOOGLE_DRIVE_TYPE);
+			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 			downloadFilePath = request.getParameter("downloadFilePath");
 			String returnURL = this.webServerName + "/download";
 			try {
@@ -208,12 +202,12 @@ public class HpcDownloadController extends AbstractHpcController {
 			}
 	   }
 
-		if (action != null && action.equals(GOOGLE_CLOUD_TYPE)) {
+		if (action != null && action.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
   		    session.setAttribute("downloadType", downloadType);
             session.setAttribute("downloadSource", source);
             downloadFilePath = request.getParameter("downloadFilePath");
             session.setAttribute("downloadFilePath", downloadFilePath);
-			session.setAttribute("googleAction", GOOGLE_CLOUD_TYPE);
+			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
   	        downloadFilePath = request.getParameter("downloadFilePath");
   	        String returnURL = this.webServerName + "/download";
   	        try {
@@ -322,7 +316,7 @@ public class HpcDownloadController extends AbstractHpcController {
 				account.setRegion(downloadFile.getRegion());
 				destination.setAccount(account);
 				dto.setS3DownloadDestination(destination);
-			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(GOOGLE_DRIVE_TYPE)) {
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
   			    String accessToken = (String)session.getAttribute("accessToken");
   			    HpcGoogleDownloadDestination destination = new HpcGoogleDownloadDestination();
                 HpcFileLocation location = new HpcFileLocation();
@@ -331,7 +325,7 @@ public class HpcDownloadController extends AbstractHpcController {
                 destination.setDestinationLocation(location);
                 destination.setAccessToken(accessToken);
                 dto.setGoogleDriveDownloadDestination(destination);
-            } else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(GOOGLE_CLOUD_TYPE)) {
+            } else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
 				String accessToken = (String)session.getAttribute("accessToken");
 				HpcGoogleDownloadDestination googleCloudDestination = new HpcGoogleDownloadDestination();
 				HpcFileLocation location = new HpcFileLocation();
@@ -341,9 +335,6 @@ public class HpcDownloadController extends AbstractHpcController {
 				googleCloudDestination.setAccessToken(accessToken);
 				googleCloudDestination.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
-				Gson gson = new GsonBuilder().setPrettyPrinting().create();
-				String json = gson.toJson(dto);
-        		System.out.println(json);
 			}
             final String downloadTaskType = "collection".equals(downloadFile.
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :
