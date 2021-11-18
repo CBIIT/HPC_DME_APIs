@@ -33,7 +33,7 @@
 	      <prop key="hpc.integration.irods.pamAuthentication">false</prop>
 	      
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
-	      <prop key="hpc.integration.globus.queueSize">90</prop>
+	      <prop key="hpc.integration.globus.queueSize">3</prop>
 	      <prop key="hpc.integration.globus.excludeFromTransferFailureStatuses">OK,QUEUED,TIME_OUT,ENDPOINT_ERROR,TIMEOUT,UNKNOWN</prop>
 	      
 		  <prop key="hpc.integration.globus.retry.maxAttempts">4</prop>
@@ -47,7 +47,7 @@
 		  <prop key="hpc.integration.s3.multipartUploadThreshold">52428800</prop>
 		  <prop key="hpc.integration.s3.restoreNumDays">2</prop>
 		  <prop key="hpc.integration.s3.tieringEndpoint">https://s3.amazonaws.com</prop>
-		  <prop key="hpc.integration.s3.socketTimeout">50000</prop>
+		  <prop key="hpc.integration.s3.socketTimeout">120000</prop>
 		  
 		  <prop key="hpc.integration.googledrive.hpcApplicationName">NCI-HPC-DME</prop>
 		  <prop key="hpc.integration.googledrive.downloadExecutorThreadPoolSize">100</prop>
