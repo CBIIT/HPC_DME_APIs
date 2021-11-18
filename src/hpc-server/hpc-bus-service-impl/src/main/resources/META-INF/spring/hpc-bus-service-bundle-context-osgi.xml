@@ -31,7 +31,7 @@
 		<prop key="hpc.bus.getAllDataObjectsExecutorThreadPoolSize">20</prop>
 		<prop key="hpc.bus.getAllDataObjectsDefaultPageSize">1000</prop>
 		<prop key="hpc.bus.sendReviewNotificationToUser">false</prop>
-		<prop key="hpc.bus.maxPermittedInProcessDownloadTasksPerUser">2</prop>
+		<prop key="hpc.bus.maxPermittedInProcessDownloadTasksPerUser">1</prop>
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 	</osgix:cm-properties>
 
