@@ -41,6 +41,8 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private String clientId;
   @Value("${gov.nih.nci.hpc.drive.clientsecret}")
   private String clientSecret;
+  @Value("${google.token.expiration.period}")
+  private int tokenExpirationTimeInHours;
 
   private Logger logger = LoggerFactory.getLogger(HpcAuthorizationServiceImpl.class);
   private GoogleAuthorizationCodeFlow flow;
@@ -88,6 +90,10 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
       tokenResponse =
           flowCloud.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     }
+
+    Long tokenExpirationInSeconds = new Long(tokenExpirationTimeInHours * 60 * 60);
+    tokenResponse.setExpiresInSeconds(tokenExpirationInSeconds);
+
     return tokenResponse.getAccessToken();
   }
 }
