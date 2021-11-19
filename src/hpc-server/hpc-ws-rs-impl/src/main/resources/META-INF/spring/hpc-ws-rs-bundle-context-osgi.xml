@@ -67,7 +67,7 @@
 		<prop key="hpc.ws.rs.auth.security.refresh-data-management-configurations">SYSTEM_ADMIN</prop>
 		
 		<prop key="hpc.ws.rs.auth.data-management.register-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.data-management.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED METADATA_ONLY</prop>
+		<prop key="hpc.ws.rs.auth.data-management.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.download-collection">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-collection-download-status">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.delete-collection">SYSTEM_ADMIN GROUP_ADMIN</prop>
@@ -76,7 +76,7 @@
 		<prop key="hpc.ws.rs.auth.data-management.register-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-management.register-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-data-objects-registration-status">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.data-management.get-data-object">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED METADATA_ONLY</prop>
+		<prop key="hpc.ws.rs.auth.data-management.get-data-object">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.download-data-object">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-data-object-download-status">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.delete-data-object">SYSTEM_ADMIN GROUP_ADMIN</prop>
