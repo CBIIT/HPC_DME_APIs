@@ -93,10 +93,10 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 
     Long tokenExpirationInSeconds = new Long(tokenExpirationTimeInHours * 60 * 60);
     tokenResponse.setExpiresInSeconds(tokenExpirationInSeconds);
-
-    System.out.println("Setting the Access Token Expiration time in hours:" + tokenExpirationTimeInHours);
-    System.out.println("Access Token Expiration time set in seconds: ");
-    System.out.println(tokenResponse.getExpiresInSeconds());
+    
+    logger.info("Setting the Access Token Expiration time in hours:" + tokenExpirationTimeInHours);
+    logger.info("Access Token Expiration time set in seconds: ");
+    logger.info(tokenResponse.getExpiresInSeconds() + "");
 
     return tokenResponse.getAccessToken();
   }
