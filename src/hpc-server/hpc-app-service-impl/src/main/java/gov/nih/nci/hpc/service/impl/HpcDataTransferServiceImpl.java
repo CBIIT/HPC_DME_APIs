@@ -380,7 +380,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (StringUtils.isEmpty(googleCloudStorageUploadSource.getAccessToken())) {
 				HpcGoogleAccessToken googleAccessToken = dataRegistrationDAO.getGoogleAccessToken(dataObjectId);
 				if (googleAccessToken != null) {
-					// If we are restarting an upload from Google Cloud Storage after server restarted.
+					// If we are restarting an upload from Google Cloud Storage after server
+					// restarted.
 					// Populate the access token from DB.
 					googleCloudStorageUploadSource.setAccessToken(googleAccessToken.accessToken);
 					googleCloudStorageUploadSource.setAccessTokenType(googleAccessToken.accessTokenType);
@@ -1572,8 +1573,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess)
-			throws HpcException {
+	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasksCountByUser(userId, inProcess);
 	}
 
@@ -2956,7 +2956,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (canPerfom2HopDownload(secondHopDownload)) {
+			if (false /*
+						 * TODO: replace this temp change w/ check if it's part of a bulk download
+						 * request
+						 */ && canPerfom2HopDownload(secondHopDownload)) {
 				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
 						getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 								downloadRequest.getS3ArchiveConfigurationId()),
