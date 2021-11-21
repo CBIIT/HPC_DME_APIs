@@ -77,6 +77,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
       GoogleAuthorizationCodeRequestUrl url = flowCloud.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
     }
+    logger.info("redirectUrl:" + redirectUrl);
     return redirectUrl;
   }
     
@@ -95,8 +96,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     tokenResponse.setExpiresInSeconds(tokenExpirationInSeconds);
     
     logger.info("Setting the Access Token Expiration time in hours:" + tokenExpirationTimeInHours);
-    logger.info("Access Token Expiration time set in seconds: ");
-    logger.info(tokenResponse.getExpiresInSeconds() + "");
+    logger.info("Access Token Expiration time set in seconds: " + Long.toString(tokenResponse.getExpiresInSeconds()));
 
     return tokenResponse.getAccessToken();
   }
