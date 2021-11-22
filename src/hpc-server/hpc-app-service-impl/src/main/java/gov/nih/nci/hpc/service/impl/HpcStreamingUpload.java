@@ -10,17 +10,18 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
-import java.util.Calendar;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
-import gov.nih.nci.hpc.service.HpcEventService;
+import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * A data transfer listener for async streaming uploads. The streaming is done
@@ -37,17 +38,14 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 	// The data object path that is being uploaded.
 	private String path = null;
 
-	// The user id registering the data object.
-	private String userId = null;
-
-	// The upload source location.
-	private HpcFileLocation sourceLocation = null;
-
 	// The data object ID that is being uploaded.
 	private String dataObjectId = null;
 
-	// Event service.
-	private HpcEventService eventService = null;
+	// Metadata service.
+	private HpcMetadataService metadataService = null;
+
+	// Security service.
+	private HpcSecurityService securityService = null;
 
 	// Data object registration DAO
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
@@ -66,18 +64,16 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 	 * @param path                The data object path that is being uploaded.
 	 * @param dataObjectId        (Optional) The data object ID that is being
 	 *                            uploaded.
-	 * @param userId              The user ID requested the upload.
-	 * @param sourceLocation      The upload file location.
-	 * @param eventService        event service.
+	 * @param metadataService     Metadata service.
+	 * @param securityService     Security service.
 	 * @param dataRegistrationDAO (Optional) Data object registration DAO.
 	 */
-	public HpcStreamingUpload(String path, String dataObjectId, String userId, HpcFileLocation sourceLocation,
-			HpcEventService eventService, HpcDataRegistrationDAO dataRegistrationDAO) {
+	public HpcStreamingUpload(String path, String dataObjectId, HpcMetadataService metadataService,
+			HpcSecurityService securityService, HpcDataRegistrationDAO dataRegistrationDAO) {
 		this.path = path;
 		this.dataObjectId = dataObjectId;
-		this.userId = userId;
-		this.sourceLocation = sourceLocation;
-		this.eventService = eventService;
+		this.metadataService = metadataService;
+		this.securityService = securityService;
 		this.dataRegistrationDAO = dataRegistrationDAO;
 	}
 
@@ -93,22 +89,36 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 	public void transferCompleted(Long bytesTransferred) {
 		logger.info("AWS / 3rd Party S3 Provider / Google Drive / Google Cloud Storage upload completed for: {}", path);
 		deleteGoogleAccessToken();
+
+		// Note: Completing the upload process is handled by
+		// processDataTranferUploadStreamingInProgress() scheduled task.
 	}
 
 	@Override
 	public void transferFailed(String message) {
-		logger.error("Streaming (AWS / 3rd Party S3 Provider / Google Drive / Google Cloud Storage) upload failed for: {} - {}", path,
-				message);
+		logger.error(
+				"Streaming (AWS / 3rd Party S3 Provider / Google Drive / Google Cloud Storage) upload failed for: {} - {}",
+				path, message);
 		deleteGoogleAccessToken();
-		
+
 		try {
-			eventService.addDataTransferUploadFailedEvent(userId, path, sourceLocation, Calendar.getInstance(),
-					message);
+			securityService.executeAsSystemAccount(Optional.empty(),
+					() -> metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
+							HpcDataTransferUploadStatus.STREAMING_FAILED, null, null, null, null, null, null, null,
+							null));
+
 		} catch (HpcException e) {
-			logger.error("Failed to send upload failed event for AWS / 3rd Party S3 Provider / Google Drive streaming",
+			logger.error("Failed to update metadata for AWS / 3rd Party S3 Provider / Google Drive streaming failure",
 					e);
 		}
+
+		// Note: Completing the upload process is handled by
+		// processDataTranferUploadStreamingFailed() scheduled task.
 	}
+
+	// ---------------------------------------------------------------------//
+	// Helper Methods
+	// ---------------------------------------------------------------------//
 
 	/**
 	 * Delete a google access token, if one was persisted.
