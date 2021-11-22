@@ -23,12 +23,10 @@
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.dataTransfer.downloadDirectory">/mnt/IRODsScratch/data/S3</prop>
-		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize"></prop>
+		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize">5368709120</prop>
 		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
-		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">0</prop>
+		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">30</prop>
 		<prop key="hpc.service.dataTransfer.globusTokenExpirationPeriod">120</prop>
-		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">0</prop>
-		<prop key="hpc.service.dataTransfer.globusCollectionDownloadBunching">true</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriodSso">120</prop>
@@ -43,7 +41,7 @@
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 		<prop key="hpc.service.notification.storageAdministratorUserIds">HPC_DME_Admin</prop>
 		<prop key="hpc.service.dataSearch.searchResultsPageSize">100</prop>
-		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">5000</prop>
+		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">10000</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>

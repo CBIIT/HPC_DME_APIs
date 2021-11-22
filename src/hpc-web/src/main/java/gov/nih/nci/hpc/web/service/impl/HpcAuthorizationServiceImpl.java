@@ -77,6 +77,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
       GoogleAuthorizationCodeRequestUrl url = flowCloud.newAuthorizationUrl();
       redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
     }
+    logger.info("redirectUrl:" + redirectUrl);
     return redirectUrl;
   }
     
