@@ -725,7 +725,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.error("ERAN: 2: {} = {}", dataTransferRequestId, configurationId);
+		logger.error("ERAN: 2: {}", configurationId);
 		
 		return dataTransferProxies.get(dataTransferType).getDataTransferDownloadStatus(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
