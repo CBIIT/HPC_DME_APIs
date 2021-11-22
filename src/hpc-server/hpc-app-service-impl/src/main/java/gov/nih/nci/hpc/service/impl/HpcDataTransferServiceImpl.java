@@ -105,6 +105,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -153,6 +154,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Metadata service.
 	@Autowired
 	private HpcMetadataService metadataService = null;
+
+	// Security service.
+	@Autowired
+	private HpcSecurityService securityService = null;
 
 	// Notification Application Service.
 	@Autowired
@@ -380,7 +385,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (StringUtils.isEmpty(googleCloudStorageUploadSource.getAccessToken())) {
 				HpcGoogleAccessToken googleAccessToken = dataRegistrationDAO.getGoogleAccessToken(dataObjectId);
 				if (googleAccessToken != null) {
-					// If we are restarting an upload from Google Cloud Storage after server restarted.
+					// If we are restarting an upload from Google Cloud Storage after server
+					// restarted.
 					// Populate the access token from DB.
 					googleCloudStorageUploadSource.setAccessToken(googleAccessToken.accessToken);
 					googleCloudStorageUploadSource.setAccessTokenType(googleAccessToken.accessTokenType);
@@ -1572,8 +1578,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess)
-			throws HpcException {
+	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasksCountByUser(userId, inProcess);
 	}
 
@@ -2102,8 +2107,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Instantiate a progress listener for upload from AWS S3.
 		HpcDataTransferProgressListener progressListener = null;
 		if (uploadRequest.getS3UploadSource() != null) {
-			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), null, uploadRequest.getUserId(),
-					uploadRequest.getS3UploadSource().getSourceLocation(), eventService, null);
+			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), null, metadataService, securityService,
+					null);
 		}
 
 		// For uploads from Google (Drive or Cloud storage), we need to generate an
@@ -2131,8 +2136,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 											inputStreamSource.getAccessTokenType()),
 									inputStreamSource.getSourceLocation()));
 			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
-					uploadRequest.getUserId(), inputStreamSource.getSourceLocation(), eventService,
-					dataRegistrationDAO);
+					metadataService, securityService, dataRegistrationDAO);
 			dataRegistrationDAO.upsertGoogleAccessToken(uploadRequest.getDataObjectId(),
 					inputStreamSource.getAccessToken(), inputStreamSource.getAccessTokenType());
 		}
