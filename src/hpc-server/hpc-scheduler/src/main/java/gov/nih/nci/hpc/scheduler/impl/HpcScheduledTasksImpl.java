@@ -80,7 +80,7 @@ public class HpcScheduledTasksImpl {
 
 	/**
 	 * Update the data transfer upload status of all data objects that are streamed
-	 * from AWS S3.
+	 * from AWS S3 / Google Drive / Google Cloud Storage.
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingInProgress.delay}")
 	private void processDataTranferUploadStreamingInProgress() {
@@ -89,13 +89,23 @@ public class HpcScheduledTasksImpl {
 	}
 
 	/**
-	 * Update the data transfer upload status of all data objects that are streamed
-	 * from AWS S3.
+	 * Restart the data transfer upload for data objects that have streaming stopped
+	 * from from AWS S3 / Google Drive / Google Cloud Storage.
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingStopped.delay}")
 	private void processDataTranferUploadStreamingStopped() {
 		execute("processDataTranferUploadStreamingStopped()",
 				systemBusService::processDataTranferUploadStreamingStopped, logger);
+	}
+
+	/**
+	 * Complete the data transfer upload for data objects that have streaming failed
+	 * from from AWS S3 / Google Drive / Google Cloud Storage.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingFailed.delay}")
+	private void processDataTranferUploadStreamingFailed() {
+		execute("processDataTranferUploadStreamingFailed()", systemBusService::processDataTranferUploadStreamingFailed,
+				logger);
 	}
 
 	/**
@@ -154,15 +164,15 @@ public class HpcScheduledTasksImpl {
 		execute("startGoogleDriveDataObjectDownloadTasks()", systemBusService::startGoogleDriveDataObjectDownloadTasks,
 				logger);
 	}
-	
+
 	/**
-	 * Start Data Object Download Tasks that are in RECEIVED state for GOOGLE_CLOUD_STORAGE
-	 * transfer.
+	 * Start Data Object Download Tasks that are in RECEIVED state for
+	 * GOOGLE_CLOUD_STORAGE transfer.
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.startGoogleCloudStorageDataObjectDownloadTasks.delay}")
 	private void startGoogleCloudStorageDataObjectDownloadTasks() {
-		execute("startGoogleCloudStorageDataObjectDownloadTasks()", systemBusService::startGoogleCloudStorageDataObjectDownloadTasks,
-				logger);
+		execute("startGoogleCloudStorageDataObjectDownloadTasks()",
+				systemBusService::startGoogleCloudStorageDataObjectDownloadTasks, logger);
 	}
 
 	/** Complete In-Progress Data Object Download Tasks. */
@@ -258,7 +268,7 @@ public class HpcScheduledTasksImpl {
 	private void sendAnnualReviewReminderTask() {
 		execute("sendAnnualReviewReminderTask()", reviewBusService::sendAnnualReviewReminder, logger);
 	}
-	
+
 	/** Permanently remove deleted objects. */
 	@Scheduled(cron = "${hpc.scheduler.cron.removeDeletedDataObjects.delay}")
 	private void removeDeletedDataObjectsTask() {
@@ -276,7 +286,8 @@ public class HpcScheduledTasksImpl {
 	@SuppressWarnings("unused")
 	private void init() {
 		try {
-			// All active upload tasks from S3 source should be marked stopped (so they get restarted)
+			// All active upload tasks from S3 source should be marked stopped (so they get
+			// restarted)
 			systemBusService.processDataTranferUploadStreamingInProgress(true);
 
 			// All active file system uploads should be restarted.
