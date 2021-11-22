@@ -292,6 +292,8 @@
 				<!-- Data Search Service Authorizations -->
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />
 				<entry key="queryDataObjects" value="${hpc.ws.rs.auth.data-search.query-data-objects}" />
+				<entry key="queryDataObjectsInPath" value="${hpc.ws.rs.auth.data-search.query-data-objects-in-path}" />
+				<entry key="queryAllDataObjectsInPath" value="${hpc.ws.rs.auth.data-search.query-all-data-objects-in-path}" />
 				<entry key="addQuery" value="${hpc.ws.rs.auth.data-search.add-query}" />
 				<entry key="addQueryByUser" value="${hpc.ws.rs.auth.data-search.add-query-by-user}" />
 				<entry key="updateQuery" value="${hpc.ws.rs.auth.data-search.update-query}" />
@@ -384,7 +386,6 @@
 			<ref bean="hpcAuthorizationInterceptor" />
 		</jaxrs:inInterceptors>
 		<jaxrs:outInterceptors>
-			<ref bean="hpcAPIVersionInterceptor" />
 			<ref bean="hpcCleanupInterceptor" />
 			<ref bean="hpcCleanupFaultInterceptor" />
 			<ref bean="hpcProfileOutInterceptor" />
