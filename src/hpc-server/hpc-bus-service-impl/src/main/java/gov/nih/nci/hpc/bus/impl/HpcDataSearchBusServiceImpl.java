@@ -35,11 +35,21 @@ import gov.nih.nci.hpc.service.HpcCatalogService;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -69,6 +79,17 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	@Autowired
 	private HpcDataManagementBusService dataManagementBusService = null;
 
+	// The collection download task executor.
+	@Autowired
+	@Qualifier("hpcGetAllDataObjectsExecutorService")
+	ExecutorService hpcGetAllDataObjectsExecutorService = null;
+			
+	@Value("${hpc.bus.getAllDataObjectsDefaultPageSize}")
+	private int getAllDataObjectsDefaultPageSize = 0;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+		
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -171,9 +192,88 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		if (totalCount) {
 			dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count
-					: dataSearchService.getDataObjectCount(compoundMetadataQueryDTO.getCompoundQuery()));
+					: dataSearchService.getDataObjectCount(path, compoundMetadataQueryDTO.getCompoundQuery()));
 		}
 
+		return dataObjectsDTO;
+
+	}
+	
+	@Override
+	public HpcDataObjectListDTO getAllDataObjects(String path, Integer page, Integer pageSize, Boolean totalCount)
+			throws HpcException {
+
+		// Default page to 1 if user didn't request it
+		page = page == null ? 1 : page;
+		// input validation
+		if (page < 1 || pageSize != null && pageSize < 1) {
+		      throw new HpcException(
+		          "Invalid search results page or pageSize requested", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
+		
+		// Get the user-id of the request invoker.
+		String dataManagementUsername = securityService.getRequestInvoker().getDataManagementAccount().getUsername();
+
+		totalCount = totalCount == null || totalCount;
+		int limit = 0;
+		if (pageSize != null && pageSize <= getAllDataObjectsDefaultPageSize) {
+			// Compute the offset
+			int offset = (page - 1) * pageSize;
+
+			// Execute the query and package the results into a DTO.
+			logger.debug("Retrieving objects from DB for path {}", path);
+			List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize);
+
+			logger.debug("Generating DTO list for objects from {}", path);
+			dataObjectsDTO = toDetailedDataObjectListDTO(dataObjectPaths);
+
+			// Set page, limit and total count.
+			logger.debug("Setting page and limit for DTOList for {}", path);
+			dataObjectsDTO.setPage(page);
+			limit = dataSearchService.getSearchResultsPageSize(pageSize);
+			dataObjectsDTO.setLimit(limit);
+			
+		} else {
+			// Get the max limit, we will return that many records
+			limit = dataSearchService.getSearchResultsPageSize(100000);
+			// If the user requested a page size that is smaller than the max, set limit to user page size
+			limit = pageSize = pageSize != null && pageSize < limit ? pageSize : limit;
+			// Compute the initial offset
+			int offset = (page - 1) * pageSize;
+
+			List<Callable<HpcDataObjectListDTO>> callableTasks = new ArrayList<>();
+
+			for (int i = 0; i < limit; i += getAllDataObjectsDefaultPageSize) {
+				callableTasks.add(new HpcSearchRequest(dataSearchService, dataManagementUsername, path,
+						offset, limit - i < getAllDataObjectsDefaultPageSize ? limit - i : getAllDataObjectsDefaultPageSize));
+				offset += getAllDataObjectsDefaultPageSize;
+			}
+			
+			List<Future<HpcDataObjectListDTO>> futures = null;
+			try {
+				futures = hpcGetAllDataObjectsExecutorService.invokeAll(callableTasks);
+				for (Future<HpcDataObjectListDTO> future : futures) {
+					HpcDataObjectListDTO result = future.get();
+					if(result.getDataObjects() != null)
+						dataObjectsDTO.getDataObjects().addAll(result.getDataObjects());
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				throw new HpcException(e.getMessage(), HpcErrorType.DATABASE_ERROR);
+			}
+			
+			// Set page, limit and total count.
+			dataObjectsDTO.setPage(page);
+			dataObjectsDTO.setLimit(limit);
+		}
+		
+		if (totalCount) {
+			int count = dataObjectsDTO.getDataObjects().size();
+			dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count
+					: dataSearchService.getAllDataObjectCount(path));
+		}
+		
 		return dataObjectsDTO;
 
 	}
@@ -478,6 +578,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
+
 		if (!CollectionUtils.isEmpty(dataObjectPaths)) {
 			dataObjectPaths
 					.sort(Comparator.comparing(HpcSearchMetadataEntry::getAbsolutePath, String::compareToIgnoreCase)
