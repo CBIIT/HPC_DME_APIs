@@ -734,12 +734,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// Upload by streaming from Google Drive.
 			uploadMethod = HpcDataTransferUploadMethod.GOOGLE_DRIVE;
 			sourceLocation = googleDriveUploadSource.getSourceLocation();
-	
+
 		} else if (googleCloudStorageUploadSource != null) {
 			// Upload by streaming from Google Drive.
 			uploadMethod = HpcDataTransferUploadMethod.GOOGLE_CLOUD_STORAGE;
 			sourceLocation = googleCloudStorageUploadSource.getSourceLocation();
-			
+
 		} else {
 			throw new HpcException("Unexpected upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}

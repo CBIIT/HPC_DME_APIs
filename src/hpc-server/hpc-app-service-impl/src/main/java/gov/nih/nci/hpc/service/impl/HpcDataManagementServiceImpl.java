@@ -155,6 +155,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// streaming.
 	private List<HpcMetadataQuery> dataTransferStreamingInProgressQuery = new ArrayList<>();
 
+	// Prepared query to get data objects that have their data transfer upload
+	// failed via streaming.
+	private List<HpcMetadataQuery> dataTransferStreamingFailedQuery = new ArrayList<>();
+
 	// Prepared query to get data objects that have their data transfer upload via
 	// streaming has
 	// stopped.
@@ -239,6 +243,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// streaming
 		dataTransferStreamingInProgressQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
 				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS.value()));
+
+		// Prepared query to get data objects that have their data transfer upload
+		// failed via streaming
+		dataTransferStreamingFailedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.STREAMING_FAILED.value()));
 
 		// Prepared query to get data objects that have their data transfer upload via
 		// streaming
@@ -785,6 +794,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException {
 		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
 				dataTransferStreamingInProgressQuery);
+	}
+
+	@Override
+	public List<HpcDataObject> getDataTranferUploadStreamingFailed() throws HpcException {
+		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+				dataTransferStreamingFailedQuery);
 	}
 
 	@Override
