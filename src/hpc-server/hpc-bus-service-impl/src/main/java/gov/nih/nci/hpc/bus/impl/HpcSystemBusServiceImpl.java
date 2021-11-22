@@ -1239,6 +1239,33 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							break;
 						}
 
+						if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+							try {
+								logger.info(
+										"download task: {} - continuing [transfer-type={}, destination-type={}]",
+										downloadTask.getId(), downloadTask.getDataTransferType(),
+										downloadTask.getDestinationType());
+								dataTransferService.continueDataObjectDownloadTask(downloadTask);
+
+							} catch (HpcException e) {
+								logger.error(
+										"download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+										downloadTask.getId(), downloadTask.getDataTransferType(),
+										downloadTask.getDestinationType(), e);
+							} finally {
+								try {
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+
+								} catch (HpcException e) {
+									logger.error(
+											"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
+											downloadTask.getId(), downloadTask.getDataTransferType(),
+											downloadTask.getDestinationType(), e);
+								}
+							}
+							break;
+						}
+						
 						CompletableFuture.runAsync(() -> {
 							try {
 								// Since this is executed in a separate thread. Need to get system-account
