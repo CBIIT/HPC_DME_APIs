@@ -45,17 +45,25 @@ public interface HpcSystemBusService {
 
 	/**
 	 * Update the data transfer upload status of all data objects that are currently
-	 * streamed (S3).
+	 * streamed (S3 / Google Drive / Google Cloud Storage).
 	 *
-	 * @param streamingStopped If true, S3 streaming stopped (because API server
-	 *                         shutdown). In this case we set the upload status to
-	 *                         STREAMING_STOPPED. Otherwise, we check if the upload
-	 *                         completed and update status accordingly.
+	 * @param streamingStopped If true, streaming to S3 archive stopped (because API
+	 *                         server shutdown). In this case we set the upload
+	 *                         status to STREAMING_STOPPED. Otherwise, we check if
+	 *                         the upload completed and update status accordingly.
 	 * @throws HpcException on service failure.
 	 */
 	public void processDataTranferUploadStreamingInProgress(boolean streamingStopped) throws HpcException;
 
 	public void processDataTranferUploadStreamingInProgress() throws HpcException;
+
+	/**
+	 * Complete the data transfer upload of all data objects that streaming failed
+	 * (S3 / Google Drive / Google Cloud Storage).
+	 * 
+	 * @throws HpcException on service failure.
+	 */
+	public void processDataTranferUploadStreamingFailed() throws HpcException;
 
 	/**
 	 * Restart data transfer upload for all streaming from AWS S3 that has stopped

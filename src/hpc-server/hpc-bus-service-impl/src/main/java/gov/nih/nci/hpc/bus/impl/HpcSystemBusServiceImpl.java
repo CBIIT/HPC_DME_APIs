@@ -396,6 +396,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void processDataTranferUploadStreamingFailed() throws HpcException {
+		// Iterate through the data objects that their data transfer is in-progress.
+		List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadStreamingFailed();
+		for (HpcDataObject dataObject : dataObjectsInProgress) {
+			String path = dataObject.getAbsolutePath();
+			logger.info("Processing data object upload failed via Streaming: {}", path);
+
+			// Process the data object registration failure.
+			processDataObjectRegistrationFailure(path,
+					"Streaming from S3 / Google Drive / Google Cloud Storage to S3 archive failed");
+		}
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void processDataTranferUploadStreamingStopped() throws HpcException {
 		// Iterate through the data objects that their data transfer (S3 / Google Drive
 		// / Google Cloud Storage streaming) has stopped.
