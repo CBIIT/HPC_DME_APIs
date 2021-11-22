@@ -20,6 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -72,6 +73,10 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
+	
+	// The socket timeout
+	@Value("${hpc.integration.s3.socketTimeout}")
+	private Integer socketTimeout = null;
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -208,6 +213,8 @@ public class HpcS3Connection {
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
 		// Instantiate a S3 client.
+		ClientConfiguration config = new ClientConfiguration(); 
+		config.setSocketTimeout(socketTimeout); 
 		AmazonS3 s3Client = null;
 		if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 			s3Client = AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new CryptoConfigurationV2()
@@ -215,11 +222,12 @@ public class HpcS3Connection {
 					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
 							new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
 					.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
-					.withEndpointConfiguration(endpointConfiguration).build();
+					.withEndpointConfiguration(endpointConfiguration)
+					.withClientConfiguration(config).build();
 		} else {
 			s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
 					.withPathStyleAccessEnabled(pathStyleAccessEnabled).withEndpointConfiguration(endpointConfiguration)
-					.build();
+					.withClientConfiguration(config).build();
 		}
 
 		// Create and return the S3 transfer manager. Note that Google Storage doesn't
