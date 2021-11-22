@@ -1506,7 +1506,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else {
 			if (!abort) {
 				try {
-					securityService.executeAsSystemAccount(Optional.empty(),
+					securityService
+							.executeAsSystemAccount(Optional.empty(),
 							() -> dataManagementService.softDelete(path, Optional.of(false)));
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
