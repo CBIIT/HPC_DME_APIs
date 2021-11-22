@@ -3016,7 +3016,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (canPerfom2HopDownload(secondHopDownload)) {
+			if (false /*
+						 * TODO: replace this temp change w/ check if it's part of a bulk download
+						 * request
+						 */ && canPerfom2HopDownload(secondHopDownload)) {
 				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
 						getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 								downloadRequest.getS3ArchiveConfigurationId()),
