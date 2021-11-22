@@ -203,6 +203,24 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
   }
 
+  @Override
+  public Response queryAllDataObjectsInPath(String path, Integer page,
+		  Integer pageSize, Boolean totalCount) {
+
+    try {
+        HpcDataObjectListDTO dataObjects = null;
+        dataObjects =
+            dataSearchBusService.getAllDataObjects(toNormalizedPath(path), page, pageSize, totalCount);
+
+        return okResponse(
+            !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
+            ? dataObjects
+            : null,
+            true);
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+  }
 
   @Override
   public Response addQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
