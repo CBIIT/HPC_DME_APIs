@@ -843,13 +843,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through all the active collection download requests.
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING)) {
+			
+			logger.error("ERAN: 1: {} = {}", downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId());
+			
 			// Get the data transfer download status.
 			HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService
 					.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS, downloadTask.getDataTransferRequestId(),
 							downloadTask.getConfigurationId(), null);
-
-			logger.error("ERAN: status: {} = {}", dataTransferDownloadReport.getStatus(),
-					dataTransferDownloadReport.getSuccessfulItems());
 
 			// Check the status of the data transfer.
 			HpcDataTransferDownloadStatus globusBunchingDownloadStatus = dataTransferDownloadReport.getStatus();
