@@ -146,7 +146,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Qualifier("hpcDataObjectFileSystemUploadTaskExecutor")
 	Executor dataObjectFileSystemUploadTaskExecutor = null;
 
-	//Max download tasks that can be in-process for a user
+	// Max download tasks that can be in-process for a user
 	@Value("${hpc.bus.maxPermittedInProcessDownloadTasksPerUser}")
 	private int maxPermittedInProcessDownloadTasksPerUser = 0;
 
@@ -393,8 +393,24 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void processDataTranferUploadStreamingFailed() throws HpcException {
+		// Iterate through the data objects that their data transfer is in-progress.
+		List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadStreamingFailed();
+		for (HpcDataObject dataObject : dataObjectsInProgress) {
+			String path = dataObject.getAbsolutePath();
+			logger.info("Processing data object upload failed via Streaming: {}", path);
+
+			// Process the data object registration failure.
+			processDataObjectRegistrationFailure(path,
+					"Streaming from S3 / Google Drive / Google Cloud Storage to S3 archive failed");
+		}
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void processDataTranferUploadStreamingStopped() throws HpcException {
-		// Iterate through the data objects that their data transfer (S3 / Google Drive / Google Cloud Storage streaming) has stopped.
+		// Iterate through the data objects that their data transfer (S3 / Google Drive
+		// / Google Cloud Storage streaming) has stopped.
 		List<HpcDataObject> dataObjectsStreamingStopped = dataManagementService.getDataTranferUploadStreamingStopped();
 		for (HpcDataObject dataObject : dataObjectsStreamingStopped) {
 			String path = dataObject.getAbsolutePath();
@@ -601,12 +617,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// for this same collection for this user.
 				logger.info(
 						"collection download task: {} - Not processing at this time. A download task is already in-process for user {} for collection {}",
-						downloadTask.getId(), downloadTask.getUserId(),downloadTask.getPath());
+						downloadTask.getId(), downloadTask.getUserId(), downloadTask.getPath());
 				continue;
 			}
 
-			// We also limit a user overall to a configured number of collection download tasks at a time.
-			int totalTasksInProcessCount = dataTransferService.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
+			// We also limit a user overall to a configured number of collection download
+			// tasks at a time.
+			int totalTasksInProcessCount = dataTransferService
+					.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
 			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser) {
 				// We have reached the max collection breakdown tasks in-process for this user.
 				logger.info(
