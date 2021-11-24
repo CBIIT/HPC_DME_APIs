@@ -762,7 +762,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 
-		return toEntityPermissionsDTO(dataManagementService.getCollectionPermissions(path));
+		boolean excludeSysAdminGroup =
+			securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.METADATA_ONLY)
+			|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
+
+		return toEntityPermissionsDTO(dataManagementService.getCollectionPermissions(path), excludeSysAdminGroup);
 	}
 
 	@Override
@@ -1567,7 +1571,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 
-		return toEntityPermissionsDTO(dataManagementService.getDataObjectPermissions(path));
+		boolean excludeSysAdminGroup =
+				securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.METADATA_ONLY)
+				|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
+
+		return toEntityPermissionsDTO(dataManagementService.getDataObjectPermissions(path), excludeSysAdminGroup);
 	}
 
 	@Override
@@ -2207,7 +2215,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param subjectPermissions A list of subject permissions.
 	 * @return Entity permissions DTO
 	 */
-	private HpcEntityPermissionsDTO toEntityPermissionsDTO(List<HpcSubjectPermission> subjectPermissions) {
+	private HpcEntityPermissionsDTO toEntityPermissionsDTO(
+			List<HpcSubjectPermission> subjectPermissions, boolean excludeSysAdmins) {
 		if (subjectPermissions == null) {
 			return null;
 		}
@@ -2215,15 +2224,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcEntityPermissionsDTO entityPermissions = new HpcEntityPermissionsDTO();
 		for (HpcSubjectPermission subjectPermission : subjectPermissions) {
 			if (subjectPermission.getSubjectType().equals(HpcSubjectType.USER)) {
-				HpcUserPermission userPermission = new HpcUserPermission();
-				userPermission.setPermission(subjectPermission.getPermission());
-				userPermission.setUserId(subjectPermission.getSubject());
-				entityPermissions.getUserPermissions().add(userPermission);
+				if(!(excludeSysAdmins && (
+						subjectPermission.getSubject().contentEquals("ncifhpcdmsvcp")
+						 || subjectPermission.getSubject().contentEquals("rods")))) {
+					HpcUserPermission userPermission = new HpcUserPermission();
+					userPermission.setPermission(subjectPermission.getPermission());
+					userPermission.setUserId(subjectPermission.getSubject());
+					entityPermissions.getUserPermissions().add(userPermission);
+				}
 			} else {
-				HpcGroupPermission groupPermission = new HpcGroupPermission();
-				groupPermission.setPermission(subjectPermission.getPermission());
-				groupPermission.setGroupName(subjectPermission.getSubject());
-				entityPermissions.getGroupPermissions().add(groupPermission);
+				if(!(excludeSysAdmins && 
+					subjectPermission.getSubject().contentEquals("SYSTEM_ADMIN_GROUP"))) {
+					HpcGroupPermission groupPermission = new HpcGroupPermission();
+					groupPermission.setPermission(subjectPermission.getPermission());
+					groupPermission.setGroupName(subjectPermission.getSubject());
+					entityPermissions.getGroupPermissions().add(groupPermission);
+				}
 			}
 		}
 
