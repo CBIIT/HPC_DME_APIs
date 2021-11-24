@@ -501,6 +501,13 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		// Refresh the system accounts cache.
 		systemAccountLocator.reload();
 	}
+	
+	
+	@Override
+	public  HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) throws HpcException {
+		return systemAccountLocator.getSystemAccount(system);
+		
+	}
 
 	@Override
 	public String createAuthenticationToken(HpcAuthenticationType authenticationType,
