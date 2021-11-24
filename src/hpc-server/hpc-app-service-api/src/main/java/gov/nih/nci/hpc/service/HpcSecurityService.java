@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -233,6 +234,17 @@ public interface HpcSecurityService {
 	public void addSystemAccount(HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType,
 			String classifier) throws HpcException;
 
+	
+	/**
+	 * Get a singular system account.
+	 *
+	 * @param account          The system account to be retrieved.
+	 * 
+	 * @throws HpcException on service failure.
+	 */
+	public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+			throws HpcException;
+	
 	/**
 	 * Create an authentication token, so the caller can use it in subsequent calls.
 	 *
@@ -306,4 +318,5 @@ public interface HpcSecurityService {
      * @throws HpcException on service failure.
      */
     public boolean isUserDataCurator(String nciUserId) throws HpcException;
+
 }
