@@ -86,6 +86,7 @@ import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchiveDirectoryPermissionsRequestDTO;
@@ -2215,9 +2216,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *
 	 * @param subjectPermissions A list of subject permissions.
 	 * @return Entity permissions DTO
+	 * @throws HpcException 
 	 */
 	private HpcEntityPermissionsDTO toEntityPermissionsDTO(
-			List<HpcSubjectPermission> subjectPermissions, boolean excludeSysAdmins) {
+			List<HpcSubjectPermission> subjectPermissions, boolean excludeSysAdmins) 
+					throws HpcException {
 		if (subjectPermissions == null) {
 			return null;
 		}
@@ -2226,7 +2229,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcSubjectPermission subjectPermission : subjectPermissions) {
 			if (subjectPermission.getSubjectType().equals(HpcSubjectType.USER)) {
 				if(!(excludeSysAdmins && (
-						subjectPermission.getSubject().contentEquals("ncifhpcdmsvcp")
+						subjectPermission.getSubject().contentEquals(
+								securityService.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername())
 						 || subjectPermission.getSubject().contentEquals("rods")))) {
 					HpcUserPermission userPermission = new HpcUserPermission();
 					userPermission.setPermission(subjectPermission.getPermission());
