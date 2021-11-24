@@ -467,6 +467,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return objectMetadata;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public synchronized void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
 			String tieringBucket, String tieringProtocol) throws HpcException {
