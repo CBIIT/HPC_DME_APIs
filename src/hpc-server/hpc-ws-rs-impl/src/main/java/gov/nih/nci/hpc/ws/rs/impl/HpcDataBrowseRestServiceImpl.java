@@ -170,7 +170,8 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     return okResponse(!bookmarks.getBookmarks().isEmpty() ? bookmarks : null, true);
   }
 
-  @PUT
+  @SuppressWarnings("deprecation")
+@PUT
   @Path("/s3")
   @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
   @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
@@ -213,7 +214,7 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     } catch (Exception e) {
       return errorResponse(new HpcException(e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR));
     } finally {
-      IOUtils.closeQuietly(inputStream);
+		IOUtils.closeQuietly(inputStream);
     }
     return null;
   }
