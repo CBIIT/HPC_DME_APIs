@@ -10,6 +10,13 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -18,72 +25,58 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
-
 /**
  * <p>
- * HPC HpcSearchRequest. 
+ * HPC HpcSearchRequest.
  * </p>
  *
  * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
  */
 
-public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
-{ 
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
+public class HpcSearchRequest implements Callable<HpcDataObjectListDTO> {
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
+
 	// Data Search Application Service instance.
 	private HpcDataSearchService dataSearchService = null;
-	
+
 	private final String dataManagementUsername;
-	
+
 	private final String path;
-	
+
 	private final int offset;
-	
+
 	private final int pageSize;
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
-    //---------------------------------------------------------------------//
-    // Constructors
-    //---------------------------------------------------------------------//
-	
-	
-    /**
-     * Default Constructor.
-     * 
-     */
-    HpcSearchRequest(HpcDataSearchService dataSearchService, String dataManagementUsername, String path, int offset, int pageSize) 
-    {
-    	this.dataSearchService = dataSearchService;
-    	this.dataManagementUsername = dataManagementUsername;
-    	this.path = path;
-    	this.offset = offset;
-    	this.pageSize = pageSize;
-    }
-    
-    //---------------------------------------------------------------------//
-    // Methods
-    //---------------------------------------------------------------------//
-    
+
+	// ---------------------------------------------------------------------//
+	// Constructors
+	// ---------------------------------------------------------------------//
+
+	/**
+	 * Default Constructor.
+	 * 
+	 */
+	HpcSearchRequest(HpcDataSearchService dataSearchService, String dataManagementUsername, String path, int offset,
+			int pageSize) {
+		this.dataSearchService = dataSearchService;
+		this.dataManagementUsername = dataManagementUsername;
+		this.path = path;
+		this.offset = offset;
+		this.pageSize = pageSize;
+	}
+
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
+
 	@Override
 	public HpcDataObjectListDTO call() throws Exception {
-		
-		return toDetailedDataObjectListDTO(dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize));
+
+		return toDetailedDataObjectListDTO(
+				dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize));
 	}
-	
+
 	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
 		if (!CollectionUtils.isEmpty(dataObjectPaths)) {
@@ -119,5 +112,3 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 		return dataObjectsDTO;
 	}
 }
-
- 

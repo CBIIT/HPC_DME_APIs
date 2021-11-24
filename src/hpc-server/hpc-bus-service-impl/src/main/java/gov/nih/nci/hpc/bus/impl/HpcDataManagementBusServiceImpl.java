@@ -2421,6 +2421,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @throws HpcException If the calculated checksum doesn't match the provided
 	 *                      value.
 	 */
+	@SuppressWarnings("deprecation")
 	private void validateChecksum(File file, String checksum) throws HpcException {
 		if (file == null || StringUtils.isEmpty(checksum)) {
 			return;
