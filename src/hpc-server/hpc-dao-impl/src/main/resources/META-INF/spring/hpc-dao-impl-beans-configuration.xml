@@ -51,7 +51,10 @@
 	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
 	</bean>
-	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl" />
+	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl"
+		 init-method="init">
+		<constructor-arg value="${hpc.dao.jdbc.template.fetchSize}" index="0" />
+	</bean>
 	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl" />
 	<bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserBookmarkDAOImpl" />
 	<bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGroupDAOImpl" /> 

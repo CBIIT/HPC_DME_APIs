@@ -33,7 +33,8 @@ BEGIN
                         R_COLL_HIERARCHY_META_MAIN,
                         R_CATALOG_META_MAIN,
                         R_DATA_HIERARCHY_METAMAP,
-                        R_DATA_HIERARCHY_META_MAIN',
+                        R_DATA_HIERARCHY_META_MAIN,
+                        R_DATA_HIERARCHY_USER_META_MAIN',
                         METHOD => 'C',  ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
 
 
