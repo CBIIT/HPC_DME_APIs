@@ -725,8 +725,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.error("ERAN: 2: {}", configurationId);
-		
 		return dataTransferProxies.get(dataTransferType).getDataTransferDownloadStatus(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 				dataTransferRequestId);
@@ -1958,8 +1956,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Unknown user", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		logger.error("ERAN: 3: {}", configurationId);
-		
 		// Get the data transfer configuration (Globus or S3).
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
@@ -3020,10 +3016,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (false /*
-						 * TODO: replace this temp change w/ check if it's part of a bulk download
-						 * request
-						 */ && canPerfom2HopDownload(secondHopDownload)) {
+			if (StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())
+					&& canPerfom2HopDownload(secondHopDownload)) {
+				// We start the 1st hop here for a single file download request. For collection
+				// download task, the 1st hop will get kicked off by a scheduled task.
 				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
 						getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 								downloadRequest.getS3ArchiveConfigurationId()),
@@ -3034,7 +3030,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			} else {
-				// Can't perform the 2-hop download at this time. Reset the task
+				// Can't perform the 2-hop download at this time, or this data-object download
+				// is part of a collection. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 
 				logger.info(

@@ -24,8 +24,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -220,9 +218,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// Encryptor.
 	@Autowired
 	private HpcEncryptor encryptor = null;
-	
-	// The logger instance.
-		private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// HpcDataObjectDownloadTask table to object mapper.
 	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> {
@@ -375,9 +370,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setUserId(rs.getString("USER_ID"));
 		collectionDownloadTask.setPath(rs.getString("PATH"));
 		collectionDownloadTask.setConfigurationId(rs.getString("CONFIGURATION_ID"));
-		
-		logger.error("ERAN: -2: {} {}", collectionDownloadTask.getConfigurationId(), rs.getString("CONFIGURATION_ID"));
-		
 		collectionDownloadTask.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.fromValue(rs.getString(("STATUS"))));
 		collectionDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
@@ -449,8 +441,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		collectionDownloadTask.getDataObjectPaths().addAll(fromPathsString(rs.getString("DATA_OBJECT_PATHS")));
 		collectionDownloadTask.getCollectionPaths().addAll(fromPathsString(rs.getString("COLLECTION_PATHS")));
-		
-		logger.error("ERAN: -1: {} {}", collectionDownloadTask.getConfigurationId(), collectionDownloadTask.getId());
 
 		return collectionDownloadTask;
 	};

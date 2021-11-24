@@ -843,90 +843,99 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through all the active collection download requests.
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING)) {
-			
-			logger.error("ERAN: 1: {}", downloadTask.getConfigurationId());
-			
-			// Get the data transfer download status.
-			HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService
-					.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS, downloadTask.getDataTransferRequestId(),
-							downloadTask.getConfigurationId(), null);
+			try {
+				logger.info("Checking completion of bulk download task submitted to Globus in a bunch: {}",
+						downloadTask.getId());
 
-			// Check the status of the data transfer.
-			HpcDataTransferDownloadStatus globusBunchingDownloadStatus = dataTransferDownloadReport.getStatus();
-			if (!globusBunchingDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-				// This Globus bunching download task is no longer in-progress - complete it.
+				// Get the data transfer download status.
+				HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService
+						.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS,
+								downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId(), null);
 
-				// Determine the download result.
-				HpcDownloadResult globusBunchingResult = null;
-				if (globusBunchingDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED)) {
-					globusBunchingResult = HpcDownloadResult.COMPLETED;
-				} else {
-					if (Boolean.TRUE.equals(dataTransferDownloadReport.getPermissionDenied())) {
-						globusBunchingResult = HpcDownloadResult.FAILED_PERMISSION_DENIED;
+				// Check the status of the data transfer.
+				HpcDataTransferDownloadStatus globusBunchingDownloadStatus = dataTransferDownloadReport.getStatus();
+				if (!globusBunchingDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+					// This Globus bunching download task is no longer in-progress - complete it.
+
+					// Determine the download result.
+					HpcDownloadResult globusBunchingResult = null;
+					if (globusBunchingDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED)) {
+						globusBunchingResult = HpcDownloadResult.COMPLETED;
 					} else {
-						globusBunchingResult = HpcDownloadResult.FAILED;
+						if (Boolean.TRUE.equals(dataTransferDownloadReport.getPermissionDenied())) {
+							globusBunchingResult = HpcDownloadResult.FAILED_PERMISSION_DENIED;
+						} else {
+							globusBunchingResult = HpcDownloadResult.FAILED;
+						}
 					}
-				}
 
-				// Create a set of all successful download source paths in this bunch request.
-				HashSet<String> successfulDownloadSourcePaths = new LinkedHashSet<>();
-				dataTransferDownloadReport.getSuccessfulItems()
-						.forEach(item -> successfulDownloadSourcePaths.add(item.getSourcePath()));
+					// Create a set of all successful download source paths in this bunch request.
+					HashSet<String> successfulDownloadSourcePaths = new LinkedHashSet<>();
+					dataTransferDownloadReport.getSuccessfulItems()
+							.forEach(item -> successfulDownloadSourcePaths.add(item.getSourcePath()));
 
-				// Update status of individual download items in this collection download task.
-				for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
-					try {
-						if (downloadItem.getResult() == null) {
-							// This download item is included in the bunch. Update the download result.
-							HpcDownloadTaskStatus downloadItemStatus = downloadItem
-									.getDataObjectDownloadTaskId() != null ? dataTransferService.getDownloadTaskStatus(
-											downloadItem.getDataObjectDownloadTaskId(), HpcDownloadTaskType.DATA_OBJECT)
-											: null;
+					// Update status of individual download items in this collection download task.
+					for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+						try {
+							if (downloadItem.getResult() == null) {
+								// This download item is included in the bunch. Update the download result.
+								HpcDownloadTaskStatus downloadItemStatus = downloadItem
+										.getDataObjectDownloadTaskId() != null
+												? dataTransferService.getDownloadTaskStatus(
+														downloadItem.getDataObjectDownloadTaskId(),
+														HpcDownloadTaskType.DATA_OBJECT)
+												: null;
 
-							if (downloadItemStatus == null || downloadItemStatus.getDataObjectDownloadTask() == null) {
-								throw new HpcException("Data object download task status is unknown. Task ID: "
-										+ downloadItem.getDataObjectDownloadTaskId() + ". Path: "
-										+ downloadItem.getPath(), HpcErrorType.UNEXPECTED_ERROR);
+								if (downloadItemStatus == null
+										|| downloadItemStatus.getDataObjectDownloadTask() == null) {
+									throw new HpcException("Data object download task status is unknown. Task ID: "
+											+ downloadItem.getDataObjectDownloadTaskId() + ". Path: "
+											+ downloadItem.getPath(), HpcErrorType.UNEXPECTED_ERROR);
+								}
+
+								// Complete the individual file download task.
+								HpcDataObjectDownloadTask dataObjectDownloadTask = downloadItemStatus
+										.getDataObjectDownloadTask();
+
+								// Calculate the individual download item download result. If it's found in the
+								// list of successful downloads, it's COMPLETED, otherwise we default to the
+								// status of the entire bunch.
+								HpcDownloadResult result = successfulDownloadSourcePaths
+										.contains(dataObjectDownloadTask.getArchiveLocation().getFileId())
+												? HpcDownloadResult.COMPLETED
+												: globusBunchingResult;
+								String message = result.equals(HpcDownloadResult.COMPLETED) ? null
+										: "Globus transfer failed within a bunch request ["
+												+ dataTransferDownloadReport.getMessage() + "].";
+								Calendar completed = Calendar.getInstance();
+								HpcDownloadTaskResult dataObjectDownloadResult = dataTransferService
+										.completeDataObjectDownloadTask(dataObjectDownloadTask, result, message,
+												completed, dataTransferDownloadReport.getBytesTransferred());
+
+								// Update the download item.
+								downloadItem.setResult(dataObjectDownloadResult.getResult());
+								downloadItem.setMessage(dataObjectDownloadResult.getMessage());
+								downloadItem.setPercentComplete(
+										dataObjectDownloadResult.getResult().equals(HpcDownloadResult.COMPLETED) ? 100
+												: 0);
+								downloadItem.setEffectiveTransferSpeed(
+										dataObjectDownloadResult.getEffectiveTransferSpeed() > 0
+												? dataObjectDownloadResult.getEffectiveTransferSpeed()
+												: null);
 							}
 
-							// Complete the individual file download task.
-							HpcDataObjectDownloadTask dataObjectDownloadTask = downloadItemStatus
-									.getDataObjectDownloadTask();
-
-							// Calculate the individual download item download result. If it's found in the
-							// list of successful downloads, it's COMPLETED, otherwise we default to the
-							// status of the entire bunch.
-							HpcDownloadResult result = successfulDownloadSourcePaths
-									.contains(dataObjectDownloadTask.getArchiveLocation().getFileId())
-											? HpcDownloadResult.COMPLETED
-											: globusBunchingResult;
-							String message = result.equals(HpcDownloadResult.COMPLETED) ? null
-									: "Globus transfer failed within a bunch request ["
-											+ dataTransferDownloadReport.getMessage() + "].";
-							Calendar completed = Calendar.getInstance();
-							HpcDownloadTaskResult dataObjectDownloadResult = dataTransferService
-									.completeDataObjectDownloadTask(dataObjectDownloadTask, result, message, completed,
-											dataTransferDownloadReport.getBytesTransferred());
-
-							// Update the download item.
-							downloadItem.setResult(dataObjectDownloadResult.getResult());
-							downloadItem.setMessage(dataObjectDownloadResult.getMessage());
-							downloadItem.setPercentComplete(
-									dataObjectDownloadResult.getResult().equals(HpcDownloadResult.COMPLETED) ? 100 : 0);
-							downloadItem
-									.setEffectiveTransferSpeed(dataObjectDownloadResult.getEffectiveTransferSpeed() > 0
-											? dataObjectDownloadResult.getEffectiveTransferSpeed()
-											: null);
+						} catch (HpcException e) {
+							logger.error("Failed to check collection download item status", e);
+							downloadItem.setResult(HpcDownloadResult.FAILED);
+							downloadItem.setMessage(e.getMessage());
 						}
-
-					} catch (HpcException e) {
-						logger.error("Failed to check collection download item status", e);
-						downloadItem.setResult(HpcDownloadResult.FAILED);
-						downloadItem.setMessage(e.getMessage());
 					}
-				}
 
-				completeCollectionDownloadTask(downloadTask);
+					completeCollectionDownloadTask(downloadTask);
+				}
+			} catch (HpcException e) {
+				logger.error("Failed to complete bulk download task submitted to Globus in a bunch: {}",
+						downloadTask.getId());
 			}
 		}
 	}
@@ -1241,8 +1250,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 						if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 							try {
-								logger.info(
-										"download task: {} - continuing [transfer-type={}, destination-type={}]",
+								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType());
 								dataTransferService.continueDataObjectDownloadTask(downloadTask);
@@ -1265,7 +1273,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							}
 							break;
 						}
-						
+
 						CompletableFuture.runAsync(() -> {
 							try {
 								// Since this is executed in a separate thread. Need to get system-account

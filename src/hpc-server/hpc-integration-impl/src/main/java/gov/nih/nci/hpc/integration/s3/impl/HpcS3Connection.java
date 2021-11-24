@@ -203,6 +203,7 @@ public class HpcS3Connection {
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
+	@SuppressWarnings("deprecation")
 	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
 			HpcIntegratedSystem s3Provider, String encryptionAlgorithm, String encryptionKey) throws HpcException {
 		// Create the credential provider based on the configured credentials.
@@ -254,6 +255,7 @@ public class HpcS3Connection {
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
+	@SuppressWarnings("deprecation")
 	private Object authenticateAWS(String accessKey, String secretKey, String region, String encryptionAlgorithm,
 			String encryptionKey) throws HpcException {
 		try {
