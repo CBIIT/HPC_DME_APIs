@@ -12,7 +12,6 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidTierItems;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -250,7 +249,7 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 		}
 
 		// Check if there is a delay in toggling the status
-		deepArchiveDate.add(Calendar.DAY_OF_MONTH, maxDeepArchiveInProgressDays);  
+		deepArchiveDate.add(Calendar.DAY_OF_MONTH, maxDeepArchiveInProgressDays);
 		// If delayed, return true
 		return deepArchiveDate.before(Calendar.getInstance());
 	}

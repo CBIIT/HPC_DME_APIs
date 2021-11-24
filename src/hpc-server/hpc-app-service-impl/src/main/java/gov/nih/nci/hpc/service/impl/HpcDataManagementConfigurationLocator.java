@@ -123,7 +123,6 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	 */
 	public HpcDataTransferConfiguration getDataTransferConfiguration(String configurationId,
 			String s3ArchiveConfigurationId, HpcDataTransferType dataTransferType) throws HpcException {
-		logger.error("ERAN: 4: {}", configurationId);
 		HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
 		if (dataManagementConfiguration != null) {
 			return dataTransferType.equals(HpcDataTransferType.S_3)
