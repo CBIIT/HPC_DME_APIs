@@ -395,7 +395,7 @@
 					return false;
 				}
 			}
-
+			alert(radioValue);
 			if (radioValue == 'sync') {
 				var downloadFileName = document.getElementById("downloadForm").elements
 						.namedItem("downloadFileName").value;
@@ -574,6 +574,8 @@
 				s3Div.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
+				if(googleCloudDiv)
+					googleCloudDiv.style.display = "none";
 				if(downloadType == "datafile") {
 					var endPointLocation = $("#endPointLocation").val();
 					if(endPointLocation.endsWith("/"))
