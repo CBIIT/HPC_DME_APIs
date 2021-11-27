@@ -121,11 +121,21 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>
-								<div class="form-group" style="word-break: break-all;">
-									<div class="col-md-12 form-group">
+								<div class="form-group" style="word-break: break-all;}">
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
 										<label for="Name">Task ID:</label> <label
 											for="${taskId}"
 											th:text="${taskId}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
+										<label for="Name">Re-initiated Task ID:</label> <label
+											for="${taskId}"
+											th:text="${taskId}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
+										<label for="Name">Original Task ID:</label> <label
+											for="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId()}"
+											th:text="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getPath() != null}">
 										<label for="Name">Path:</label> <label
@@ -232,9 +242,14 @@
 								</div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0}">
-								<div class="col-md-3">
+								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
 									<h2>
 										<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
+									</h2>
+								</div>
+								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Re-initiated: In Progress</strong>
 									</h2>
 								</div>
 							</div>
@@ -271,9 +286,14 @@
 								</div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
-								<div class="col-md-3">
+								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
 									<h2>
 										<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+									</h2>
+								</div>
+								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Re-initiated: Failed</strong>
 									</h2>
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
@@ -319,9 +339,16 @@
 							  </div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
+							  <div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Completed</strong>
 								</h2>
+							  </div>
+							   <div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
+								<h2>
+									<i class="fa fa-list-alt red"></i><strong>Re-initiated: Completed</strong>
+								</h2>
+							  </div>
 							</div>
 							<div class="panel-body"
 								th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
