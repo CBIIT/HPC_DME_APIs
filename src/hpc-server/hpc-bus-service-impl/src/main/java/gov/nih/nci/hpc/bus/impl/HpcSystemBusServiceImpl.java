@@ -935,7 +935,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 			} catch (HpcException e) {
 				logger.error("Failed to complete bulk download task submitted to Globus in a bunch: {}",
-						downloadTask.getId());
+						downloadTask.getId(), e);
 			}
 		}
 	}
