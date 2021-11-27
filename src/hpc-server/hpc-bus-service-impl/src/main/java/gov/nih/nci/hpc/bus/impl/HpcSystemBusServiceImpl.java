@@ -576,7 +576,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 		}
 
-		// Set all in-process indicator to false;
+		// Set all in-process indicator to false.
 		dataTransferService.resetDataObjectDownloadTasksInProcess();
 	}
 
