@@ -1494,6 +1494,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId, s3ArchiveConfigurationId),
 						globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer()));
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING);
+		collectionDownloadTask.setConfigurationId(configurationId);
 	}
 
 	@Override
@@ -1551,9 +1552,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 			globusDownloadDestination.setDestinationOverwrite(Optional.ofNullable(destinationOverwrite).orElse(false));
 			globusDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
-			if (globusDownloadDestination != null) {
-				checkForDuplicateCollectionDownloadRequests(downloadTaskResult.getPath(), globusDownloadDestination);
-			}
+			checkForDuplicateCollectionDownloadRequests(downloadTaskResult.getPath(), globusDownloadDestination);
 			downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 			break;
 
@@ -1657,6 +1656,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException {
 		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
+		
+		// Cancel any data object that got started, as the collection download will get re-processed.
+		for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataDownloadDAO
+				.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId)) {
+			completeDataObjectDownloadTask(dataObjectDownloadTask, HpcDownloadResult.CANCELED,
+					"Collection download restarted", Calendar.getInstance(), 0);
+		}
 	}
 
 	@Override
