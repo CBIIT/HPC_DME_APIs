@@ -970,25 +970,33 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		GetObjectRequest request = new GetObjectRequest(archiveLocation.getFileContainerId(),
 				archiveLocation.getFileId());
 
+		logger.error("ERAN 11");
 		// Download the file via S3.
 		Download s3Download = null;
 		try {
 			s3Download = s3Connection.getTransferManager(authenticatedToken).download(request, destinationLocation);
+			logger.error("ERAN 12");
 			if (progressListener == null) {
 				// Download synchronously.
 				s3Download.waitForCompletion();
+				logger.error("ERAN 13");
+				
 			} else {
+				logger.error("ERAN 14");
 				// Download asynchronously.
 				s3Download.addProgressListener(new HpcS3ProgressListener(progressListener,
 						"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
 			}
-
+			logger.error("ERAN 15");
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to download file: [" + ace.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), ace);
 
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
+			logger.error("ERAN 16", ie);
+		} catch(Exception ge) {
+			logger.error("ERAN 17}", ge);
 		}
 
 		return String.valueOf(s3Download.hashCode());
