@@ -205,6 +205,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
+		logger.error("ERAN 10 {}", downloadRequest.getFileDestination());
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a download request to a local file.
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
