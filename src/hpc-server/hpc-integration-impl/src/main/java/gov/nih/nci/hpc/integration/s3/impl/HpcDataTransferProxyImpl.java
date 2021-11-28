@@ -968,10 +968,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			File destinationLocation, HpcDataTransferProgressListener progressListener) throws HpcException {
 		// Create a S3 download request.
+		logger.error("ERAN 11 {}", archiveLocation);
 		GetObjectRequest request = new GetObjectRequest(archiveLocation.getFileContainerId(),
 				archiveLocation.getFileId());
 
-		logger.error("ERAN 11");
+		
 		// Download the file via S3.
 		Download s3Download = null;
 		try {
