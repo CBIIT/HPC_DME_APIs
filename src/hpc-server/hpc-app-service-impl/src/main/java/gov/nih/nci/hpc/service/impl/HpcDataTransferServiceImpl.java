@@ -1125,7 +1125,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 			return;
 		}
-		logger.error("ERAN 1 {}", downloadTask.getId());
+		
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -1155,8 +1155,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadRequest.getArchiveLocation(), HpcDataTransferType.GLOBUS,
 					downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
 		} else {
-			logger.error("ERAN 2 {}", downloadTask.getId());
-			
 			// For any other download - get the data transfer configuration.
 			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 					.getDataTransferConfiguration(downloadRequest.getConfigurationId(),
@@ -1177,7 +1175,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
 			}
 		}
-		logger.error("ERAN 3 {}", downloadTask.getId());
+
 		// If the destination is Globus and the data transfer is S3, then we need to
 		// restart a 2-hop download.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
@@ -1186,7 +1184,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// and update the download task accordingly.
 			HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadTask);
 			progressListener = secondHopDownload;
-			logger.error("ERAN 4 {}", downloadTask.getId());
+
 			// Validate that the 2-hop download can be performed at this time.
 			if (!canPerfom2HopDownload(secondHopDownload)) {
 				// Can’t perform the 2-hop download at this time. Reset the task
@@ -1204,7 +1202,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadRequest.setArchiveLocation(metadataService
 					.getDataObjectSystemGeneratedMetadata(downloadRequest.getPath()).getArchiveLocation());
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
-			logger.error("ERAN 6 {}", downloadTask.getId());
 		}
 
 		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage,
@@ -1216,18 +1213,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Create a listener that will complete the download task when it is done.
 			progressListener = new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
 		}
-		logger.error("ERAN 7 {}", downloadTask.getId());
+
 		// Submit a data object download request.
 		try {
 			downloadTask.setDataTransferRequestId(dataTransferProxies.get(downloadRequest.getDataTransferType())
 					.downloadDataObject(authenticatedToken, downloadRequest, baseArchiveDestination, progressListener,
 							encryptedTransfer));
-			
-			logger.error("ERAN 8 {}", downloadTask.getId());
 
 		} catch (HpcException e) {
-			logger.error("ERAN 9 {} {}", downloadTask.getId(), e);
-			
 			// Failed to submit a transfer request. Cleanup the download task.
 			completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage(),
 					Calendar.getInstance(), 0);
