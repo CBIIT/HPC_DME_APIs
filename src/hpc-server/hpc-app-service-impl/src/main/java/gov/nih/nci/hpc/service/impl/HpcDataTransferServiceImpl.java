@@ -1189,8 +1189,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
-			downloadRequest.setArchiveLocation(metadataService
-					.getDataObjectSystemGeneratedMetadata(downloadRequest.getPath()).getArchiveLocation());
+			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
@@ -3335,6 +3334,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		default:
 			return false;
 		}
+	}
+
+	/**
+	 * Get archive location of a data object.
+	 *
+	 * @param path the data object path.
+	 * @return The archive location of a data object.
+	 * @throws HpcException on metadata service error.
+	 */
+	HpcFileLocation getArchiveLocation(String path) throws HpcException {
+
+		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+		if (StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			return metadata.getArchiveLocation();
+		}
+
+		// It's a link - follow it to get the archive location.
+		return getArchiveLocation(metadata.getLinkSourcePath());
 	}
 
 	// ---------------------------------------------------------------------//
