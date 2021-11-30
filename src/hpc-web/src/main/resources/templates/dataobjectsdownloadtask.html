@@ -133,9 +133,12 @@
 											th:text="${taskId}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
-										<label for="Name">Original Task ID:</label> <label
+										<label for="Name">Original Task ID:</label>
+										<a th:href="@{/downloadtask(type=${taskType},taskId=${hpcDataObjectsDownloadStatusDTO.getRetryTaskId()})}">
+										  <label
 											for="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId()}"
 											th:text="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId()}"></label>
+										</a>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getPath() != null}">
 										<label for="Name">Path:</label> <label
