@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.dao.HpcGroupDAO;
+import gov.nih.nci.hpc.dao.HpcQueryConfigDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -38,6 +39,7 @@ import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcQueryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
@@ -90,13 +92,17 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	@Autowired
 	private HpcUserDAO userDAO = null;
 
-//The User DAO instance.
+	//The User DAO instance.
 	@Autowired
 	private HpcGroupDAO groupDAO = null;
 
 	// The System Account DAO instance.
 	@Autowired
 	private HpcSystemAccountDAO systemAccountDAO = null;
+	
+	// The Query Config DAO instance.
+	@Autowired
+	private HpcQueryConfigDAO queryConfigDAO = null;
 
 	// The LDAP authenticator instance.
 	@Autowired
@@ -121,6 +127,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
+	// Query configuration locator.
+	@Autowired
+	private HpcQueryConfigurationLocator queryConfigurationLocator = null;
+		
 	// The authentication token signature key.
 	@Value("${hpc.service.security.authenticationTokenSignatureKey}")
 	private String authenticationTokenSignatureKey = null;
@@ -501,8 +511,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		// Refresh the system accounts cache.
 		systemAccountLocator.reload();
 	}
-	
-	
+
 	@Override
 	public  HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) throws HpcException {
 		return systemAccountLocator.getSystemAccount(system);
@@ -612,6 +621,19 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		}
 
 		return userDAO.isUserDataCurator(nciUserId);
+	}
+	
+	@Override
+	public void updateQueryConfig(String basePath, String encryptionKey) throws HpcException {
+		
+		queryConfigDAO.upsert(basePath, encryptionKey);
+		queryConfigurationLocator.reload();
+	}
+	
+	@Override
+	public HpcQueryConfiguration getQueryConfig(String basePath) throws HpcException {
+		
+		return queryConfigurationLocator.getConfig(basePath);
 	}
 	
 	// ---------------------------------------------------------------------//
