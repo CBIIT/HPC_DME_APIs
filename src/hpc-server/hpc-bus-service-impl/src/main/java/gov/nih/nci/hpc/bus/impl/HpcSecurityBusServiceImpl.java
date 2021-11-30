@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcQueryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
@@ -47,6 +48,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMemberResponse;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcQueryConfigDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
@@ -715,6 +717,42 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		securityService.updateGroup(groupName, false);
 	}
 
+	@Override
+	public void updateQueryConfig(HpcQueryConfigDTO queryConfig) throws HpcException {
+		// Input validation.
+		if (queryConfig == null || queryConfig.getBasePath() == null || queryConfig.getEncryptionKey() == null) {
+			throw new HpcException("Null configuration", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		securityService.updateQueryConfig(queryConfig.getBasePath(), queryConfig.getEncryptionKey());
+	}
+	
+	@Override
+	public HpcQueryConfigDTO getQueryConfig(String basePath) throws HpcException {
+		// Input validation.
+		if (basePath == null) {
+			throw new HpcException("Null base path", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		HpcQueryConfiguration queryConfig = securityService.getQueryConfig(basePath);
+		HpcQueryConfigDTO queryConfigDTO = new HpcQueryConfigDTO();
+		queryConfigDTO.setBasePath(queryConfig.getBasePath());
+		queryConfigDTO.setEncryptionKey(queryConfig.getEncryptionKey());
+		
+		return queryConfigDTO;
+	}
+
+	/**
+	 * Set the Request invoker metadata only (in thread local).
+	 *
+	 * @param metadataOnly          True if user is metadata only user.
+	 * @throws HpcException on service failure.
+	 */
+	public void setMetadataOnlyUser(Boolean metadataOnly) throws HpcException {
+		// Set whether user is metadata only user
+		securityService.getRequestInvoker().setMetadataOnly(metadataOnly);
+	}
+	
 	@Override
 	public void refreshDataManagementConfigurations() throws HpcException {
 
