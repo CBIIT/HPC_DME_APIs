@@ -162,4 +162,12 @@
 		</xsd:complexType>
 	</xsd:element>
 
+	<xsd:element name="HpcQueryConfigDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="basePath" type="xsd:string" />
+				<xsd:element name="encryptionKey" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>

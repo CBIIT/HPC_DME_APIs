@@ -225,7 +225,11 @@
 				<entry key="registerSystemAccount"
 					value="${hpc.ws.rs.auth.security.register-system-account}" />
 				<entry key="refreshDataManagementConfigurations"
-					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />	
+					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />
+				<entry key="updateQueryConfiguration"
+					value="${hpc.ws.rs.auth.security.update-query-configuration}" />
+				<entry key="getQueryConfiguration"
+					value="${hpc.ws.rs.auth.security.get-query-configuration}" />
 
 				<!-- Data Management Service Authorizations -->
 				<entry key="registerCollection"
