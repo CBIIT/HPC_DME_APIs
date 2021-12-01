@@ -1108,14 +1108,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		// Check if transfer requests can be acceptable at this time.
-		if (!acceptsTransferRequests(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(),
-				downloadTask.getS3ArchiveConfigurationId())) {
-			logger.info(
-					"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
-					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
-			return;
-		}
+		
 
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
@@ -1135,7 +1128,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcArchive baseArchiveDestination = null;
 		Boolean encryptedTransfer = null;
 		Object authenticatedToken = null;
-
+		
 		// If this is a download from a POSIX archive to S3 destination, we need to
 		// re-generate the
 		// URL to the POSIX archive.
@@ -1161,8 +1154,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
 			} else {
+				// Check if transfer requests can be acceptable at this time (Globus only)
+				
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
+				// Check if transfer requests can be acceptable at this time.
+				if (!acceptsTransferRequests(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(),
+						authenticatedToken)) {
+					logger.info(
+							"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+					return;
+				}
 			}
 		}
 
@@ -3100,6 +3103,74 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		final Object theAuthToken = getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
+
+		logger.info(String.format("checkIfTransferCanBeLaunched: got auth token of %s", token2String(theAuthToken)));
+
+		final HpcTransferAcceptanceResponse transferAcceptanceResponse = this.dataTransferProxies.get(dataTransferType)
+				.acceptsTransferRequests(theAuthToken);
+
+		String globusClientId = null;
+
+		logger.info("checkIfTransferCanBeLaunched: searching for token within invoker state");
+
+		for (HpcDataTransferAuthenticatedToken someToken : dataTransferAuthenticatedTokens) {
+			if (someToken.getDataTransferType().equals(dataTransferType)
+					&& someToken.getConfigurationId().equals(configurationId)
+					&& someToken.getDataTransferAuthenticatedToken().equals(theAuthToken)) {
+				globusClientId = someToken.getSystemAccountId();
+
+				logger.info(String.format(
+						"checkIfTransferCanBeLaunched: found matching token and its system account ID (Globus client ID) is %s",
+						globusClientId));
+
+				break;
+			}
+		}
+		if (null == globusClientId) {
+
+			logger.error("checkIfTransferCanBeLaunched: About to throw HpcException");
+
+			final String msg = String.format(
+					"Could not find Globus app account client ID for this request, transfer type is %s and data management configuration ID is %s.",
+					dataTransferType.toString(), configurationId);
+			throw new HpcException(msg, HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		logger.info(String.format(
+				"checkIfTransferCanBeLaunched: Update to call system account locator's setGlobusAccountQueueSize passing in (%s, %s)",
+				globusClientId, Integer.toString(transferAcceptanceResponse.getQueueSize())));
+
+		this.systemAccountLocator.setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
+
+		logger.info("checkIfTransferCanBeLaunched: About to return");
+
+		return transferAcceptanceResponse.canAcceptTransfer();
+	}
+
+	/*
+	 * Determine whether a data transfer request can be initiated at current time given a token.
+	 *
+	 * @param dataTransferType The type of data transfer.
+	 * 
+	 * @param configurationId The data management configuration ID.
+	 * 
+	 * @param theAuthToken The authToken to check
+	 * 
+	 * @return boolean that is true if request can be initiated, false otherwise
+	 * 
+	 * @throw HpcException On internal error
+	 */
+	private boolean acceptsTransferRequests(HpcDataTransferType dataTransferType, String configurationId,
+			final Object theAuthToken) throws HpcException {
+
+		logger.info(String.format(
+				"checkIfTransferCanBeLaunched: Entered with parameters of transferType = %s, dataMgmtConfigId = %s",
+				dataTransferType.toString(), configurationId));
+
+		if (!dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+			// The 'data transfer acceptance' check is applicable for Globus transfer only.
+			return true;
+		}
 
 		logger.info(String.format("checkIfTransferCanBeLaunched: got auth token of %s", token2String(theAuthToken)));
 
