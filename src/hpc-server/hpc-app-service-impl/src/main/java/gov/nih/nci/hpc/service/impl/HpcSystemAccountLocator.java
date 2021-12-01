@@ -66,7 +66,6 @@ public class HpcSystemAccountLocator {
 		}
 
 		protected HpcIntegratedSystemAccount getSystemAccount() {
-			lastUsed = new Date();
 			return systemAccount;
 		}
 
