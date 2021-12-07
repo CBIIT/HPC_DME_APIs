@@ -225,7 +225,11 @@
 				<entry key="registerSystemAccount"
 					value="${hpc.ws.rs.auth.security.register-system-account}" />
 				<entry key="refreshDataManagementConfigurations"
-					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />	
+					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />
+				<entry key="updateQueryConfiguration"
+					value="${hpc.ws.rs.auth.security.update-query-configuration}" />
+				<entry key="getQueryConfiguration"
+					value="${hpc.ws.rs.auth.security.get-query-configuration}" />
 
 				<!-- Data Management Service Authorizations -->
 				<entry key="registerCollection"
@@ -294,6 +298,7 @@
 				<entry key="queryDataObjects" value="${hpc.ws.rs.auth.data-search.query-data-objects}" />
 				<entry key="queryDataObjectsInPath" value="${hpc.ws.rs.auth.data-search.query-data-objects-in-path}" />
 				<entry key="queryAllDataObjectsInPath" value="${hpc.ws.rs.auth.data-search.query-all-data-objects-in-path}" />
+				<entry key="queryAllDataObjects" value="${hpc.ws.rs.auth.data-search.query-all-data-objects}" />
 				<entry key="addQuery" value="${hpc.ws.rs.auth.data-search.add-query}" />
 				<entry key="addQueryByUser" value="${hpc.ws.rs.auth.data-search.add-query-by-user}" />
 				<entry key="updateQuery" value="${hpc.ws.rs.auth.data-search.update-query}" />

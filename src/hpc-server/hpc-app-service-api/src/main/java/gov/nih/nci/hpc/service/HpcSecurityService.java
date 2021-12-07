@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcQueryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
@@ -234,7 +235,6 @@ public interface HpcSecurityService {
 	public void addSystemAccount(HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType,
 			String classifier) throws HpcException;
 
-	
 	/**
 	 * Get a singular system account.
 	 *
@@ -318,5 +318,22 @@ public interface HpcSecurityService {
      * @throws HpcException on service failure.
      */
     public boolean isUserDataCurator(String nciUserId) throws HpcException;
-
+    
+    /**
+     * Update Query Configuration
+     * 
+     * @param basePath The basePath
+     * @param encryptionKey The encryption key
+     * @throws HpcException on service failure.
+     */
+    public void updateQueryConfig(String basePath, String encryptionKey) throws HpcException;
+    
+    /**
+     * Get Query Configuration
+     * 
+     * @param basePath The basePath
+     * @return the HpcQueryConfiguration.
+     * @throws HpcException on service failure.
+     */
+    public HpcQueryConfiguration getQueryConfig(String basePath) throws HpcException;
 }

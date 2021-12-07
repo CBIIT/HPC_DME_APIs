@@ -14,10 +14,14 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcQueryConfiguration;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -44,6 +48,9 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 	// Data Search Application Service instance.
 	private HpcDataSearchService dataSearchService = null;
 	
+	// Security Application Service instance.
+	private HpcSecurityService securityService = null;
+		
 	private final String dataManagementUsername;
 	
 	private final String path;
@@ -51,6 +58,8 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 	private final int offset;
 	
 	private final int pageSize;
+	
+	private final boolean encrypt;
 	
 	// The logger instance.
 	private final Logger logger = 
@@ -65,13 +74,15 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
      * Default Constructor.
      * 
      */
-    HpcSearchRequest(HpcDataSearchService dataSearchService, String dataManagementUsername, String path, int offset, int pageSize) 
+    HpcSearchRequest(HpcDataSearchService dataSearchService, HpcSecurityService securityService, String dataManagementUsername, String path, int offset, int pageSize, boolean encrypt) 
     {
     	this.dataSearchService = dataSearchService;
+    	this.securityService = securityService;
     	this.dataManagementUsername = dataManagementUsername;
     	this.path = path;
     	this.offset = offset;
     	this.pageSize = pageSize;
+    	this.encrypt = encrypt;
     }
     
     //---------------------------------------------------------------------//
@@ -84,7 +95,8 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 		return toDetailedDataObjectListDTO(dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize));
 	}
 	
-	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {
+	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {	
+		
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
 		if (!CollectionUtils.isEmpty(dataObjectPaths)) {
 			dataObjectPaths
@@ -94,6 +106,21 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 		int prevId = 0;
 		HpcDataObjectDTO dataObject = null;
 		for (HpcSearchMetadataEntry dataObjectPath : dataObjectPaths) {
+			HpcMetadataEntry entry = new HpcMetadataEntry();
+			BeanUtils.copyProperties(dataObjectPath, entry);
+			HpcQueryConfiguration queryConfig = null;
+			HpcEncryptor encryptor = null;
+			if (encrypt) {
+				try {
+					String basePath = dataObjectPath.getAbsolutePath().substring(0, dataObjectPath.getAbsolutePath().indexOf('/', 1));
+					queryConfig = securityService.getQueryConfig(basePath);
+					if(queryConfig != null)
+						encryptor = new HpcEncryptor(queryConfig.getEncryptionKey());
+				} catch (HpcException e) {
+					// Failed to get encryptor so don't return the value
+					entry.setValue("");
+				}
+			}
 			if (dataObject == null || dataObjectPath.getId() != prevId) {
 				dataObject = new HpcDataObjectDTO();
 				HpcDataObject dataObj = new HpcDataObject();
@@ -106,12 +133,12 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 				dataObject.setMetadataEntries(entries);
 			}
 			if (dataObjectPath.getLevel().intValue() == 1) {
-				HpcMetadataEntry entry = new HpcMetadataEntry();
-				BeanUtils.copyProperties(dataObjectPath, entry);
+				if(encryptor != null)
+					entry.setValue(Base64.getEncoder().encodeToString(encryptor.encrypt(entry.getValue())));
 				dataObject.getMetadataEntries().getSelfMetadataEntries().add(entry);
 			} else {
-				HpcMetadataEntry entry = new HpcMetadataEntry();
-				BeanUtils.copyProperties(dataObjectPath, entry);
+				if(encryptor != null)
+					entry.setValue(Base64.getEncoder().encodeToString(encryptor.encrypt(entry.getValue())));
 				dataObject.getMetadataEntries().getParentMetadataEntries().add(entry);
 			}
 			prevId = dataObjectPath.getId();

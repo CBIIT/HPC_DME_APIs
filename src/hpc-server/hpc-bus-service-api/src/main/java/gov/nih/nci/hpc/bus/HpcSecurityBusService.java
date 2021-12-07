@@ -13,6 +13,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcQueryConfigDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
@@ -215,7 +216,33 @@ public interface HpcSecurityBusService {
   public void registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)
       throws HpcException;
   
+  /**
+   * Update query configuration.
+   *
+   * @param queryConfig The query config DTO to update.
+   * @throws HpcException on service failure.
+   */
+  public void updateQueryConfig(HpcQueryConfigDTO queryConfig)
+      throws HpcException;
   
+  /**
+   * Get query configuration.
+   *
+   * @param basePath The base path of query config to get.
+   * @throws HpcException on service failure.
+   */
+  public HpcQueryConfigDTO getQueryConfig(String basePath)
+      throws HpcException;
+  
+  /**
+   * Set the Request invoker metadata only (in thread local).
+   *
+   * @param metadataOnly True if user is metadata only user.
+   * @throws HpcException on service failure.
+   */
+  public void setMetadataOnlyUser(Boolean metadataOnly) 
+		  throws HpcException;
+
   /**
    * Refresh data management configurations.
    *
