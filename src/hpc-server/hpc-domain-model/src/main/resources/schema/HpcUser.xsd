@@ -73,6 +73,7 @@
 				<xsd:element name="authenticationType" type="hpc-domain-user:HpcAuthenticationType" />
 				<xsd:element name="ldapAuthentication" type="xsd:boolean" />
 				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
+				<xsd:element name="metadataOnly" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
