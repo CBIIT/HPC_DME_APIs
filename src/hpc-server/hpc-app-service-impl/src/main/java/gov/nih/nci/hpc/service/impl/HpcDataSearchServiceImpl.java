@@ -290,11 +290,6 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String dataManagementUsername, String path,
 		  int offset, int pageSize)
       throws HpcException {
-    if (path == null) {
-      throw new HpcException(
-          "Path is not specified: ",
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
 
     //If pageSize is specified, replace the default defined
     int finalPageSize = pagination.getPageSize();
