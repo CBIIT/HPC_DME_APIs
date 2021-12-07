@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.net.URLDecoder;
 
 import javax.ws.rs.core.Response;
@@ -20,6 +22,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcQueryConfigDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
@@ -317,6 +320,31 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     }
 
     return createdResponse(systemAccountRegistration.getAccount().getIntegratedSystem().value());
+  }
+  
+  @Override
+  public Response updateQueryConfiguration(HpcQueryConfigDTO queryConfig) {
+    try {
+      securityBusService.updateQueryConfig(queryConfig);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+  }
+  
+  @Override
+  public Response getQueryConfiguration(String basePath) {
+	HpcQueryConfigDTO queryConfig = null;
+    try {
+    	queryConfig = securityBusService.getQueryConfig(toNormalizedPath(basePath));
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(queryConfig, true);
   }
   
   @Override
