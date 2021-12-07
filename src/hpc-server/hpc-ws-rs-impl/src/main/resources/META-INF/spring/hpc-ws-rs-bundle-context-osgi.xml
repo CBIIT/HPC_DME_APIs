@@ -65,6 +65,8 @@
 		<prop key="hpc.ws.rs.auth.security.delete-group">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.security.register-system-account">SYSTEM_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.security.refresh-data-management-configurations">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.update-query-configuration">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.get-query-configuration">SYSTEM_ADMIN</prop>
 		
 		<prop key="hpc.ws.rs.auth.data-management.register-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
@@ -102,6 +104,7 @@
 		<prop key="hpc.ws.rs.auth.data-search.query-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED METADATA_ONLY</prop>
 		<prop key="hpc.ws.rs.auth.data-search.query-data-objects-in-path">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED METADATA_ONLY</prop>
 		<prop key="hpc.ws.rs.auth.data-search.query-all-data-objects-in-path">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED METADATA_ONLY</prop>
+		<prop key="hpc.ws.rs.auth.data-search.query-all-data-objects">SYSTEM_ADMIN METADATA_ONLY</prop>
 		<prop key="hpc.ws.rs.auth.data-search.add-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-search.add-query-by-user">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.data-search.update-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>

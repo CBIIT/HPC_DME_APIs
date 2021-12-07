@@ -99,6 +99,11 @@
 	<bean id="hpcDataManagementConfigurationLocator" 
 	      class="gov.nih.nci.hpc.service.impl.HpcDataManagementConfigurationLocator" 
 	      init-method="reload" />
+	      
+	<!--  The query config base path map -->
+	<bean id="hpcQueryConfigurationLocator" 
+	      class="gov.nih.nci.hpc.service.impl.HpcQueryConfigurationLocator" 
+	      init-method="reload" />
 	
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl" />

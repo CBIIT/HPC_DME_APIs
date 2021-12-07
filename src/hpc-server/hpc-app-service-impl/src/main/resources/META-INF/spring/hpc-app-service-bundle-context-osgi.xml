@@ -143,4 +143,6 @@
 	                interface="gov.nih.nci.hpc.dao.HpcDataMigrationDAO" />	
 	<osgi:reference id="hpcReviewDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcReviewDAO" />	
+	<osgi:reference id="hpcQueryConfigDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcQueryConfigDAO" />	
 </beans>
