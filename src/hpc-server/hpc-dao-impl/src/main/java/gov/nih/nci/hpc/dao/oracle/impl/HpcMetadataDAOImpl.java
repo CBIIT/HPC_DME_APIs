@@ -726,7 +726,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		
 		// Add a query to only include entities the user can access.
 		if (dataManagementUsername != null) {
-			sqlQueryBuilder.append(" and exists ");
+			if (path == null)
+				sqlQueryBuilder.append(" exists ");
+			else
+				sqlQueryBuilder.append(" and exists ");
 			sqlQueryBuilder.append(USER_ACCESS_ALL_SQL);
 			args.add(dataManagementUsername);
 		}
