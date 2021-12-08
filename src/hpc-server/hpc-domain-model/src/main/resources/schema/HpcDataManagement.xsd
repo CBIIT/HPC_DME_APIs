@@ -264,4 +264,13 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
+	<xsd:element name="HpcQueryConfiguration">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="basePath" type="xsd:string" />
+				<xsd:element name="encryptionKey" type="xsd:string" />
+				<xsd:element name="encrypt" type="xsd:boolean" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>
