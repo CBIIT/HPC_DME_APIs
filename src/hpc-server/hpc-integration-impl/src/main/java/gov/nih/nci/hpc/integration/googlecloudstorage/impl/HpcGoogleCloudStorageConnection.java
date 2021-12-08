@@ -14,9 +14,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.UserCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
@@ -30,6 +32,11 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcGoogleCloudStorageConnection {
+
+	// Temp toggle to use refresh-token
+	@Value("${hpc.integration.googlecloudstorage.refreshToken}")
+	boolean refreshToken = false;
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -58,7 +65,8 @@ public class HpcGoogleCloudStorageConnection {
 					.setCredentials(accessTokenType.equals(HpcAccessTokenType.SERVICE_ACCOUNT)
 							? GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
 									.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform"))
-							: GoogleCredentials.create(new AccessToken(accessToken, null)))
+							: refreshToken ? UserCredentials.newBuilder().setRefreshToken(accessToken).build()
+									: GoogleCredentials.create(new AccessToken(accessToken, null)))
 					.build().getService();
 
 		} catch (Exception e) {
