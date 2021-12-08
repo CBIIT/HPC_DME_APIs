@@ -54,7 +54,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
 	@Autowired
 	private HpcSecurityBusService securityBusService = null;
 
-	// Restricted list of IP address.
+	// Restricted list of metadata only users.
 	@Value("#{'${hpc.ws.rs.auth.metadataOnlyUsers}'.split(',')}")
 	private List<String> metadataOnlyUsers = null;
 
@@ -99,6 +99,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
 				HpcSecurityContext sc = new HpcSecurityContext(response.getUserRole().value());
 				message.put(SecurityContext.class, sc);
 			}
+			securityBusService.setMetadataOnlyUser(isMetadataOnlyUser(response.getUserId()));
 
 		} catch (HpcException e) {
 			throw new HpcAuthenticationException(e.getMessage(), e);
