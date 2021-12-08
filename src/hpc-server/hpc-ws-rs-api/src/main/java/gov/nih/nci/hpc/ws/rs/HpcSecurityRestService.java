@@ -19,6 +19,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcQueryConfigDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 
@@ -278,6 +279,28 @@ public interface HpcSecurityRestService {
   @Path("/systemAccount")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration);
+  
+  /**
+   * Update query configuration.
+   *
+   * @param queryConfig The query config DTO to update.
+   * @return The REST service response.
+   */
+  @POST
+  @Path("/queryConfig")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response updateQueryConfiguration(HpcQueryConfigDTO queryConfig);
+
+  /**
+   * Get query configuration.
+   *
+   * @param basePath The base path of query config to get.
+   * @return The REST service response.
+   */
+  @GET
+  @Path("/queryConfig/{path:.*}")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response getQueryConfiguration(@PathParam("path") String basePath);
   
   /**
    * Refresh data management configurations
