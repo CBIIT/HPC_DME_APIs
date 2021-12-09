@@ -1278,7 +1278,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		try {
 			switch (dataTransferStatus) {
 			case ARCHIVED:
-				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted);
+				// Generate the download URL.
+				HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
+				try {
+					downloadRequestURL = dataManagementBusService.generateDownloadRequestURL(path);
+				} catch (HpcException e){
+					logger.error(
+							"addDataTransferUploadEvent: {} - Failed to generate presigned download URL [transfer-type={}, transfer-status={}]",
+							path, dataTransferType,
+							dataTransferStatus, e);
+				}
+				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
+						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
+						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
 				break;
 
 			case IN_TEMPORARY_ARCHIVE:

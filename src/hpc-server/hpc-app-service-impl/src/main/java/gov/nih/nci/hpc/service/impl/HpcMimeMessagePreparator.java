@@ -52,16 +52,17 @@ public class HpcMimeMessagePreparator {
 	 *
 	 * @param userId         The recipient user ID
 	 * @param eventType      The event type to generate the message for.
+	 * @param doc			 The doc specific template to be used for this user. (Optional)
 	 * @param payloadEntries The payload entries to use for the message text and
 	 *                       subject arguments.
 	 * @return MimeMessagePreparator
 	 */
-	public MimeMessagePreparator getPreparator(String userId, HpcEventType eventType,
+	public MimeMessagePreparator getPreparator(String userId, HpcEventType eventType, String doc,
 			List<HpcEventPayloadEntry> payloadEntries) {
 		return mimeMessage -> {
 			mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
-			mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, payloadEntries));
-			mimeMessage.setText(notificationFormatter.formatText(eventType, payloadEntries), "UTF-8", "html");
+			mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, doc, payloadEntries));
+			mimeMessage.setText(notificationFormatter.formatText(eventType, doc, payloadEntries), "UTF-8", "html");
 			mimeMessage.setFrom(new InternetAddress("DME Notification <dme-notification@doNotReply.nih.gov>"));
 		};
 	}
