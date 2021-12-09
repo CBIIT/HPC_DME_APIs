@@ -427,6 +427,44 @@
 			]
 		},
 		{
+			"eventType": "COLLECTION_UPDATED_DATA_OBJECT_REGISTRATION",
+			"doc": "GAU",
+			"subjectFormat": "DME New Dataset Available for Download",
+			"subjectArguments": [
+			],
+			"textFormat": "Dear %6$s %7$s,<br/><br/>We are pleased to inform you that sequencing and primary analysis of your dataset %1$s has been completed and the results have been uploaded to the NCI Data Vault. <br/><br/>Download size is %5$s bytes.<br/><br/>You can use the following URL to access the data:<br/><br/><a href=\"%4$s\">%4$s</a><br/><br/>Alternatively, cut and paste the following command in a terminal window: <br/><br/>wget -O outputfile \"%4$s\"<br/><br/>You can use the above means to access the data for two weeks only. You can download this data at any time by navigating to the below URL and clicking the download icon from the icon bar.<br/><br/><a href=\"%3$s/datafile?action=view&path=%1$s\">%3$s/datafile?action=view&path=%1$s</a><br/><br/>For questions, contact <a ref=\"mailto:ncidatavault@mail.nih.gov\">ncidatavault@mail.nih.gov</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "UPDATE_DESCRIPTION",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "PRESIGNED_URL",
+					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_SIZE",
+					"index": "4"
+				},
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "5"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "6"
+				}
+			]
+		},
+		{
 			"eventType": "USER_REGISTERED",
 			"subjectFormat": "Welcome to DME",
 			"subjectArguments": [
