@@ -1108,7 +1108,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		
 
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
@@ -1128,7 +1127,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcArchive baseArchiveDestination = null;
 		Boolean encryptedTransfer = null;
 		Object authenticatedToken = null;
-		
+
 		// If this is a download from a POSIX archive to S3 destination, we need to
 		// re-generate the
 		// URL to the POSIX archive.
@@ -1155,7 +1154,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
 			} else {
 				// Check if transfer requests can be acceptable at this time (Globus only)
-				
+
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
 				// Check if transfer requests can be acceptable at this time.
@@ -1163,7 +1162,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						authenticatedToken)) {
 					logger.info(
 							"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
-							downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+							downloadTask.getId(), downloadTask.getDataTransferType(),
+							downloadTask.getDestinationType());
 					return;
 				}
 			}
@@ -1314,28 +1314,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, long bytesTransferred)
 			throws HpcException {
-		// Input validation. Note: we only expect this to be called while Globus
-		// transfer is in-progress
-		// Currently, bytesTransferred are not available while S3 download is in
-		// progress.
+		// Input validation.
 		if (downloadTask == null || downloadTask.getSize() <= 0 || bytesTransferred <= 0
-				|| bytesTransferred > downloadTask.getSize()
-				|| downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+				|| bytesTransferred > downloadTask.getSize()) {
 			return;
 		}
 
 		// Calculate the percent complete.
 		float percentComplete = 100 * (float) bytesTransferred / downloadTask.getSize();
-		if (dataManagementConfigurationLocator
-				.getDataTransferConfiguration(downloadTask.getConfigurationId(),
-						downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType())
-				.getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
-			// This is a 2-hop download, and S_3 is complete. Our base % complete is 50%.
-			downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
+
+		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+			if (dataManagementConfigurationLocator
+					.getDataTransferConfiguration(downloadTask.getConfigurationId(),
+							downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType())
+					.getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+				// This is a 2-hop download, performing the 2nd Hop. Our base % complete is 50%.
+				downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
+			} else {
+				// This is a one-hop Globus download from archive to user destination (currently
+				// only supported by file system archive).
+				downloadTask.setPercentComplete(Math.round(percentComplete));
+			}
+
+		} else if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
+				// This is a 2-hop download, performing the 1nd Hop.
+				downloadTask.setPercentComplete(Math.round(percentComplete) / 2);
+			} else {
+				// This is a streaming download to S3 destination.
+				downloadTask.setPercentComplete(Math.round(percentComplete));
+			}
+
 		} else {
-			// This is a one-hop Globus download from archive to user destination (currently
-			// only supported by file system archive).
-			downloadTask.setPercentComplete(Math.round(percentComplete));
+			return;
 		}
 
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
@@ -3148,7 +3159,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/*
-	 * Determine whether a data transfer request can be initiated at current time given a token.
+	 * Determine whether a data transfer request can be initiated at current time
+	 * given a token.
 	 *
 	 * @param dataTransferType The type of data transfer.
 	 * 
