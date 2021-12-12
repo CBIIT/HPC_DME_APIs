@@ -130,7 +130,13 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	
 	@Override
 	public void transferProgressed(long bytesTransferred) {
-		logger.error("ERAN: transfer progress event: {}", bytesTransferred);
+		try {
+			
+			dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred);
+
+		} catch (HpcException e) {
+			logger.error("Failed to update Streaming download task progress", e);
+		}
 	}
 
 	// ---------------------------------------------------------------------//
