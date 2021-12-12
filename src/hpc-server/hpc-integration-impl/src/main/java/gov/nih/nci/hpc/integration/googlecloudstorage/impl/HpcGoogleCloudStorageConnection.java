@@ -65,7 +65,7 @@ public class HpcGoogleCloudStorageConnection {
 					.setCredentials(accessTokenType.equals(HpcAccessTokenType.SERVICE_ACCOUNT)
 							? GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
 									.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform"))
-							: refreshToken ? UserCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
+							: refreshToken ? GoogleCredentials/*UserCredentials*/.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
 									: GoogleCredentials.create(new AccessToken(accessToken, null)))
 					.build().getService();
 
