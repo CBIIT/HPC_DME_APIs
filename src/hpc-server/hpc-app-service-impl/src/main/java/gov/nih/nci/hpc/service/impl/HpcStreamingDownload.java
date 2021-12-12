@@ -127,6 +127,11 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		// This callback method is called when streaming download failed.
 		completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
 	}
+	
+	@Override
+	public void transferProgressed(long bytesTransferred) {
+		logger.error("ERAN: transfer progress event: {}", bytesTransferred);
+	}
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods
