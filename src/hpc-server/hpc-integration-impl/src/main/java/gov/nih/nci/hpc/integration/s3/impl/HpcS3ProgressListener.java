@@ -24,112 +24,106 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcS3ProgressListener implements ProgressListener {
-  //---------------------------------------------------------------------//
-  // Constants
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Constants
+	// ---------------------------------------------------------------------//
 
-  // The transfer progress logging rate (in bytes). Log transfer progress every 100MB.
-  private static final long TRANSFER_LOGGING_RATE = 1024L * 1024 * 100;
-  private static final long MB = 1024L * 1024;
+	// The transfer progress report rate (in bytes). Log and send transfer progress
+	// notifications every 100MB.
+	private static final long TRANSFER_PROGRESS_REPORTING_RATE = 1024L * 1024 * 100;
+	private static final long MB = 1024L * 1024;
 
-  //---------------------------------------------------------------------//
-  // Instance members
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
 
-  // HPC progress listener
-  HpcDataTransferProgressListener progressListener = null;
+	// HPC progress listener
+	HpcDataTransferProgressListener progressListener = null;
 
-  // Bytes transferred and logged.
-  AtomicLong bytesTransferred = new AtomicLong(0);
-  long bytesTransferredLogged = 0;
+	// Bytes transferred and logged.
+	AtomicLong bytesTransferred = new AtomicLong(0);
+	long bytesTransferredReported = 0;
 
-  // Transfer source and/or destination (for logging purposed)
-  String transferSourceDestination = null;
+	// Transfer source and/or destination (for logging purposed)
+	String transferSourceDestination = null;
 
-  // Keep track if we reported a failure.
-  AtomicBoolean transferFailedReported = new AtomicBoolean(false);
+	// Keep track if we reported a failure.
+	AtomicBoolean transferFailedReported = new AtomicBoolean(false);
 
-  // Logger
-  private final Logger logger = LoggerFactory.getLogger(getClass().getName());
+	// Logger
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
-  //---------------------------------------------------------------------//
-  // Constructors
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Constructors
+	// ---------------------------------------------------------------------//
 
-  /**
-   * Constructor.
-   *
-   * @param progressListener The HPC progress listener.
-   * @param transferSourceDestination The transfer source and destination (for logging progress).
-   * @throws HpcException if no progress listener provided.
-   */
-  public HpcS3ProgressListener(
-      HpcDataTransferProgressListener progressListener, String transferSourceDestination)
-      throws HpcException {
-    if (progressListener == null) {
-      throw new HpcException("Null progress listener", HpcErrorType.UNEXPECTED_ERROR);
-    }
-    this.progressListener = progressListener;
-    this.transferSourceDestination = transferSourceDestination;
-  }
+	/**
+	 * Constructor.
+	 *
+	 * @param progressListener          The HPC progress listener.
+	 * @param transferSourceDestination The transfer source and destination (for
+	 *                                  logging progress).
+	 * @throws HpcException if no progress listener provided.
+	 */
+	public HpcS3ProgressListener(HpcDataTransferProgressListener progressListener, String transferSourceDestination)
+			throws HpcException {
+		if (progressListener == null) {
+			throw new HpcException("Null progress listener", HpcErrorType.UNEXPECTED_ERROR);
+		}
+		this.progressListener = progressListener;
+		this.transferSourceDestination = transferSourceDestination;
+	}
 
-  /**
-   * Default Constructor.
-   *
-   * @throws HpcException Constructor is disabled.
-   */
-  @SuppressWarnings("unused")
-  private HpcS3ProgressListener() throws HpcException {
-    throw new HpcException("Constructor Disabled", HpcErrorType.UNEXPECTED_ERROR);
-  }
+	/**
+	 * Default Constructor.
+	 *
+	 * @throws HpcException Constructor is disabled.
+	 */
+	@SuppressWarnings("unused")
+	private HpcS3ProgressListener() throws HpcException {
+		throw new HpcException("Constructor Disabled", HpcErrorType.UNEXPECTED_ERROR);
+	}
 
-  //---------------------------------------------------------------------//
-  // Methods
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
 
-  @Override
-  public void progressChanged(ProgressEvent event) {
-    if (event.getBytesTransferred() > 0) {
-      bytesTransferred.getAndAdd(event.getBytesTransferred());
-      if (bytesTransferredLogged == 0) {
-        bytesTransferredLogged = bytesTransferred.get();
-        logger.info(
-            "S3 transfer [{}] started. {} bytes transferred so far",
-            transferSourceDestination,
-            bytesTransferredLogged);
-      } else if (bytesTransferred.get() - bytesTransferredLogged >= TRANSFER_LOGGING_RATE) {
-        bytesTransferredLogged = bytesTransferred.get();
-        logger.info(
-            "S3 transfer [{}] in progress. {}MB transferred so far",
-            transferSourceDestination,
-            bytesTransferredLogged / MB);
-      }
-    }
+	@Override
+	public void progressChanged(ProgressEvent event) {
+		if (event.getBytesTransferred() > 0) {
+			bytesTransferred.getAndAdd(event.getBytesTransferred());
+			if (bytesTransferredReported == 0) {
+				bytesTransferredReported = bytesTransferred.get();
+				logger.info("S3 transfer [{}] started. {} bytes transferred so far", transferSourceDestination,
+						bytesTransferredReported);
+			} else if (bytesTransferred.get() - bytesTransferredReported >= TRANSFER_PROGRESS_REPORTING_RATE) {
+				bytesTransferredReported = bytesTransferred.get();
+				logger.info("S3 transfer [{}] in progress. {}MB transferred so far", transferSourceDestination,
+						bytesTransferredReported / MB);
+				
+				progressListener.transferProgressed(bytesTransferredReported);
+			}
+		}
 
-    switch (event.getEventType()) {
-      case TRANSFER_COMPLETED_EVENT:
-        logger.info(
-            "S3 transfer [{}] completed. {} bytes transferred",
-            transferSourceDestination,
-            bytesTransferred);
-        progressListener.transferCompleted(bytesTransferred.get());
-        break;
+		switch (event.getEventType()) {
+		case TRANSFER_COMPLETED_EVENT:
+			logger.info("S3 transfer [{}] completed. {} bytes transferred", transferSourceDestination,
+					bytesTransferred);
+			progressListener.transferCompleted(bytesTransferred.get());
+			break;
 
-      case TRANSFER_FAILED_EVENT:
-      case TRANSFER_CANCELED_EVENT:
-        if (!transferFailedReported.getAndSet(true)) {
-          progressListener.transferFailed("S3 event - " + event.toString());
-        }
+		case TRANSFER_FAILED_EVENT:
+		case TRANSFER_CANCELED_EVENT:
+			if (!transferFailedReported.getAndSet(true)) {
+				progressListener.transferFailed("S3 event - " + event.toString());
+			}
 
-        logger.error(
-            "S3 transfer [{}] failed. {}MB transferred. progress event = {}",
-            transferSourceDestination,
-            bytesTransferred.get() / MB,
-            event.getEventType());
-        break;
+			logger.error("S3 transfer [{}] failed. {}MB transferred. progress event = {}", transferSourceDestination,
+					bytesTransferred.get() / MB, event.getEventType());
+			break;
 
-      default:
-        break;
-    }
-  }
+		default:
+			break;
+		}
+	}
 }
