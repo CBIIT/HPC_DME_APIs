@@ -127,11 +127,10 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		// This callback method is called when streaming download failed.
 		completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
 	}
-	
+
 	@Override
 	public void transferProgressed(long bytesTransferred) {
 		try {
-			
 			dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred);
 
 		} catch (HpcException e) {
@@ -198,7 +197,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setArchiveLocation(downloadTask.getArchiveLocation());
 		this.downloadTask.setS3DownloadDestination(downloadTask.getS3DownloadDestination());
 		this.downloadTask.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());
-		this.downloadTask.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
+		this.downloadTask
+				.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		this.downloadTask.setCreated(downloadTask.getCreated());
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
