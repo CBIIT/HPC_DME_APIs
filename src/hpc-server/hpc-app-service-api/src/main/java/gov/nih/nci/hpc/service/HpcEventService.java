@@ -107,10 +107,13 @@ public interface HpcEventService {
    * @param path The data object path.
    * @param sourceLocation The data transfer source location.
    * @param dataTransferCompleted The time the data upload completed.
+   * @param presignURL The presigned download URL.
+   * @param size The data size.
    * @throws HpcException on service failure.
    */
   public void addDataTransferUploadArchivedEvent(
-      String userId, String path, HpcFileLocation sourceLocation, Calendar dataTransferCompleted)
+      String userId, String path, HpcFileLocation sourceLocation, Calendar dataTransferCompleted,
+      String presignURL, String size)
       throws HpcException;
 
   /**
@@ -202,9 +205,13 @@ public interface HpcEventService {
    *
    * @param collectionPath The collection path to which the data object was registered under.
    * @param userId The user ID who initiated the action resulted in data object registration event.
+   * @param presignURL The presigned download URL.(Optional)
+     @param size The data size.(Optional)
+     @param dataObjectPath The data object path.
    * @throws HpcException on service failure.
    */
-  public void addDataObjectRegistrationEvent(String collectionPath, String userId)
+  public void addDataObjectRegistrationEvent(String collectionPath, String userId,
+		  String presignURL, String size, String dataObjectPath)
       throws HpcException;
   
   /**
