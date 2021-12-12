@@ -262,7 +262,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						() -> dataManagementService.validateHierarchy(path, configurationId, false));
 
 				// Add collection update event.
-				addCollectionUpdatedEvent(path, true, false, userId);
+				addCollectionUpdatedEvent(path, true, false, userId, null, null);
 
 				registrationCompleted = true;
 
@@ -298,7 +298,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
 			}
 
-			addCollectionUpdatedEvent(path, false, false, userId);
+			addCollectionUpdatedEvent(path, false, false, userId, null, null);
 		}
 
 		return created;
@@ -970,8 +970,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					}
 				}
 
-				// Add collection update event.
-				addCollectionUpdatedEvent(path, false, true, userId);
+				// Add collection update event. (Only if sync-upload was performed.)
+				if(dataObjectFile != null) {
+					// Generate the download URL.
+					HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
+					try {
+						downloadRequestURL = generateDownloadRequestURL(path);
+					} catch (HpcException e){
+						logger.error(
+								"registerDataObject: {} - Failed to generate presigned download URL for {}",
+								path, e);
+					}
+					addCollectionUpdatedEvent(path, false, true, userId, downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
+							downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
+				}
 
 			} catch (Exception e) {
 				// Data object registration failed. Remove it from Data Management.
@@ -1291,7 +1303,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
-				downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress());
+				downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress(), metadata.getSourceSize());
 	}
 
 	@Override
@@ -1392,9 +1404,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Generate a download URL for the data object, and return it in a DTO.
 		return toDownloadResponseDTO(null, null, null,
-				dataTransferService.generateDownloadRequestURL(path, invokerNciAccount.getUserId(),
+				dataTransferService.generateDownloadRequestURL(path, invokerNciAccount != null ? invokerNciAccount.getUserId() : metadata.getRegistrarId(),
 						metadata.getArchiveLocation(), metadata.getDataTransferType(), metadata.getSourceSize(),
-						metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()));
+						metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()), metadata.getSourceSize());
 	}
 
 	@Override
@@ -1985,9 +1997,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param dataObjectRegistered An indicator if a data object was registered.
 	 * @param userId               The user ID who initiated the action resulted in
 	 *                             collection update event.
+	 * @param presignURL 		   The presigned download URL.(Optional)
+     * @param size 				   The data size.(Optional)
 	 */
 	private void addCollectionUpdatedEvent(String path, boolean collectionRegistered, boolean dataObjectRegistered,
-			String userId) {
+			String userId, String presignURL, String size) {
 		try {
 			if (!collectionRegistered && !dataObjectRegistered) {
 				// Add collection metadata updated event.
@@ -2004,7 +2018,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (collectionRegistered) {
 				eventService.addCollectionRegistrationEvent(parentCollection, userId);
 			} else {
-				eventService.addDataObjectRegistrationEvent(parentCollection, userId);
+				eventService.addDataObjectRegistrationEvent(parentCollection, userId, presignURL, size, path);
 			}
 
 		} catch (HpcException e) {
@@ -2019,17 +2033,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param destinationFile     The destination file.
 	 * @param taskId              The data object download task ID.
 	 * @param downloadRequestURL  A URL to use to download the data object.
+	 * @param sourceSize		  The size of the file.
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
-			File destinationFile, String taskId, String downloadRequestURL) {
+			File destinationFile, String taskId, String downloadRequestURL, Long sourceSize) {
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		downloadResponse.setDestinationFile(destinationFile);
 		downloadResponse.setDestinationLocation(destinationLocation);
 		downloadResponse.setTaskId(taskId);
 		downloadResponse.setDownloadRequestURL(downloadRequestURL);
-
+		downloadResponse.setSize(sourceSize);
+		
 		return downloadResponse;
 	}
 
@@ -2042,10 +2058,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param downloadRequestURL  A URL to use to download the data object.
 	 * @param restoreInProgress   The flag to indicate if restoration is in
 	 *                            progress.
+	 * @param sourceSize		  The size of the file.
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
-			File destinationFile, String taskId, String downloadRequestURL, Boolean restoreInProgress) {
+			File destinationFile, String taskId, String downloadRequestURL, Boolean restoreInProgress, Long sourceSize) {
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		downloadResponse.setDestinationFile(destinationFile);
@@ -2053,6 +2070,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		downloadResponse.setTaskId(taskId);
 		downloadResponse.setDownloadRequestURL(downloadRequestURL);
 		downloadResponse.setRestoreInProgress(restoreInProgress);
+		downloadResponse.setSize(sourceSize);
 
 		return downloadResponse;
 	}
