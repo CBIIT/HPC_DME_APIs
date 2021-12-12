@@ -3637,6 +3637,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
+		// This callback method is called when the first hop download progressed.
+		@Override
+		public void transferProgressed(long bytesTransferred) {
+			try {
+				updateDataObjectDownloadTask(downloadTask, bytesTransferred);
+
+			} catch (HpcException e) {
+				logger.error("Failed to update 1st hop download task progress", e);
+			}
+		}
+
 		// ---------------------------------------------------------------------//
 		// Helper Methods
 		// ---------------------------------------------------------------------//
