@@ -437,6 +437,7 @@
 					type="hpc-domain-datatransfer:HpcFile" />
 				<xsd:element name="downloadRequestURL" type="xsd:string" />
 				<xsd:element name="restoreInProgress" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
