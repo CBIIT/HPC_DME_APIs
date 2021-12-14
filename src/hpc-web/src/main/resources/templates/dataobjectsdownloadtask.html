@@ -364,7 +364,7 @@
 								  </div>
 							    </div>
 							    <div th:if="${!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty()}">
-							      <div th:each="hpcDataObjectsDownloadStatusDTO : ${hpcOrigDataObjectsDownloadStatusDTOs.sublist(0, hpcOrigDataObjectsDownloadStatusDTO.size() - 1)}">
+							      <div th:each="hpcDataObjectsDownloadStatusDTO : ${hpcOrigDataObjectsDownloadStatusDTOs.sublist(0, hpcOrigDataObjectsDownloadStatusDTOs.size() - 1)}">
 							        <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
 								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcOrigDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
 									    <div class="col-md-12 form-group" style="word-break: break-all;">
