@@ -245,14 +245,9 @@
 								</div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0}">
-								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
+								<div class="col-md-3">
 									<h2>
 										<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
-									</h2>
-								</div>
-								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
-									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Re-initiated: In Progress</strong>
 									</h2>
 								</div>
 							</div>
@@ -289,21 +284,16 @@
 								</div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
-								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
-									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Failed</strong>
-									</h2>
-								</div>
-								<div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
-									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Re-initiated: Failed</strong>
-									</h2>
-								</div>
-								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
+							  <div class="col-md-3">	
 								<h2>
-								<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
 								</h2>
 								</div>
+								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
+								  <h2>
+								    <strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								  </h2>
+							   </div>
 							</div>
 							<div class="panel-body">
 							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
@@ -342,21 +332,18 @@
 							  </div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
-							  <div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
+							  <div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Completed</strong>
 								</h2>
 							  </div>
-							   <div class="col-md-3" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
-								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Re-initiated: Completed</strong>
-								</h2>
-							  </div>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
-								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
+								th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
+								or  (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
+							  <div class="panel panel-default">
+							    <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
+								  <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
 									<div class="col-md-12 form-group" style="word-break: break-all;">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
@@ -374,8 +361,35 @@
 											for="${hpcCollectionDownloadTaskItem.getMessage()}"
 											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
 									</div>
-								</div>
-							</div>
+								  </div>
+							    </div>
+							    <div th:if="${!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty()}">
+							      <div th:each="hpcDataObjectsDownloadStatusDTO : ${hpcOrigDataObjectsDownloadStatusDTOs.sublist(0, hpcOrigDataObjectsDownloadStatusDTO.size() - 1}">
+							        <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
+								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcOrigDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
+									    <div class="col-md-12 form-group" style="word-break: break-all;">
+										  <label for="Name">Path:</label> 
+										  <a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
+                      					    <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
+                     					   </label>
+                    				      </a>
+									    </div>
+									    <div class="col-md-12 form-group">
+										  <label for="Name">Task ID:</label> <label
+											for="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"
+											th:text="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"></label>
+									    </div>
+									    <div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getMessage() != null}">
+										  <label for="Name">Message:</label> <label
+											for="${hpcCollectionDownloadTaskItem.getMessage()}"
+											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
+									    </div>
+								      </div>
+							        </div>
+							      </div>
+							    </div>
+							  </div>
+						    </div>
 						</div>
 						<!--/col-->
 
