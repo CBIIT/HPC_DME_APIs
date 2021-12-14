@@ -198,6 +198,11 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     	String queryServiceURL = collectionDownloadServiceURL + "/" + taskId + "/retry";
     	HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
                 .getDataObjectsDownloadTask(authToken, collectionDownloadServiceURL + "?taskId=" + taskId, sslCertPath, sslCertPassword);
+    	
+    	//Get the list of items from the original task which is being retried.
+    	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
+    			new ArrayList<HpcCollectionDownloadStatusDTO>());
+    	
 		try {
 			HpcCollectionDownloadResponseDTO downloadDTO = HpcClientUtil.retryCollectionDownloadTask(authToken, queryServiceURL, sslCertPath,
 					sslCertPassword);
@@ -206,6 +211,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 				model.addAttribute("message", "Retry collection download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
 			}
 			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+			model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
 			return "dataobjectsdownloadtask";
 		} catch (Exception e) {
 			result.setMessage(e.getMessage());
@@ -373,6 +379,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		retry = false;
 	}
 
+	//Retrieve the list of items from the original request, if we are displaying a retry transaction.
 	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
 			new ArrayList<HpcCollectionDownloadStatusDTO>());
 
