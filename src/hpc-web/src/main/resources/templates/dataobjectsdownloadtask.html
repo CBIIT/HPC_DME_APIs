@@ -366,7 +366,7 @@
 							    <div th:if="${!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty()}">
 							      <div th:each="hpcDataObjectsDownloadStatusDTO : ${hpcOrigDataObjectsDownloadStatusDTOs.subList(0, hpcOrigDataObjectsDownloadStatusDTOs.size())}">
 							        <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
-								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcOrigDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
+								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
 									    <div class="col-md-12 form-group" style="word-break: break-all;">
 										  <label for="Name">Path:</label> 
 										  <a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
