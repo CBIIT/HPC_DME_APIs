@@ -331,7 +331,8 @@
 								</div>
 							  </div>
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
+							<div class="panel-heading" th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
+								or (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Completed</strong>
