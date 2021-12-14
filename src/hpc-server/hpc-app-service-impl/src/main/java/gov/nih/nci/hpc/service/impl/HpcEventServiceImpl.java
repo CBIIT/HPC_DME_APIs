@@ -73,7 +73,7 @@ public class HpcEventServiceImpl implements HpcEventService {
       "Collection metadata updated";
   public static final String COLLECTION_REGISTRATION_PAYLOAD_VALUE = "COLLECTION_REGISTRATION";
   public static final String COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE =
-      "Sub collection registerd";
+      "Sub collection registered";
   public static final String DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE = "DATA_OBJECT_REGISTRATION";
   public static final String DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE =
       "Data object registered";
