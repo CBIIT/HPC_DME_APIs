@@ -90,15 +90,19 @@ public class HPCCommands implements CommandMarker {
 	}
 	
 	
-	@CliCommand(value = "deleteCollection", help = "Delete Collection from HPC Archive. Usage: deleteCollection --path <data file path --recursive <true|false>")
+	@CliCommand(value = "deleteCollection", help = "Delete Collection from HPC Archive. Usage: deleteCollection --path <data file path --recursive <true|false> --force <true|false>")
 	public String deleteCollection(
 			@CliOption(key = {
-					"path" }, mandatory = true, help = "Please provide collection path. Usage: deleteCollection --path <data file path> --recursive <true|false>") final String path,
+					"path" }, mandatory = true, help = "Please provide collection path. Usage: deleteCollection --path <data file path> --recursive <true|false> --force <true|false>") final String path,
 			@CliOption(key = {
-			"recursive" }, mandatory = false, help = "Please provide recursion option. Usage: deleteCollection --path <data file path>  --recursive <true|false>") final String recursive) {
+			        "recursive" }, mandatory = false, help = "Please provide recursion option. Usage: deleteCollection --path <data file path>  --recursive <true|false> --force <true|false>") final String recursive,
+			@CliOption(key = {
+			        "force" }, mandatory = false, help = "Please provide force option. Usage: deleteCollection --path <data file path> --recursive <true|false> --force <true|false> ") final String force) {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
-		criteriaMap.put(path, path);
-		return getCollections.process("deleteCollection", criteriaMap, null, null, recursive);
+		criteriaMap.put("path", path);
+		criteriaMap.put("recursive", recursive);
+		criteriaMap.put("force", force);
+		return getCollections.process("deleteCollection", criteriaMap, null, null, null);
 	}
 
 	@CliCommand(value = "getDatafile", help = "Get Collection from HPC Archive. Usage: getDatafile --path <data file path> --outputfile <output file full path> --format <json|csv>")
@@ -147,12 +151,15 @@ public class HPCCommands implements CommandMarker {
 		return putDatafile.process("putDatafile", criteriaMap, null, null, null);
 	}
 	
-	@CliCommand(value = "deleteDatafile", help = "Delete data object from HPC Archive. Usage: deleteDatafile --path <data file path>")
+	@CliCommand(value = "deleteDatafile", help = "Delete data object from HPC Archive. Usage: deleteDatafile --path <data file path> --force <true|false>")
 	public String deleteDatafile(
 			@CliOption(key = {
-					"path" }, mandatory = true, help = "Please provide data file path. Usage: deleteDatafile --path <data file path>") final String path) {
+					"path" }, mandatory = true, help = "Please provide data file path. Usage: deleteDatafile --path <data file path> --force <true|false>") final String path,
+			@CliOption(key = {
+				"force" }, mandatory = false, help = "Please provide recursion option. Usage: deleteDatafile --path <data file path>  --force <true|false>") final String force){
 		Map<String, String> criteriaMap = new HashMap<String, String>();
-		criteriaMap.put(path, path);
+		criteriaMap.put("path", path);
+		criteriaMap.put("force", force);
 		return getDatafiles.process("deleteDatafile", criteriaMap, null, null, null);
 	}
 
