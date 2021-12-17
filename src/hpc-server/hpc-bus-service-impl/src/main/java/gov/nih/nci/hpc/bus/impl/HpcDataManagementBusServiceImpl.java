@@ -85,6 +85,12 @@ import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.report.HpcReport;
+import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
+import gov.nih.nci.hpc.domain.report.HpcReportEntry;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -133,12 +139,15 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
+import gov.nih.nci.hpc.dto.report.HpcReportDTO;
+import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
@@ -185,6 +194,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// TheEvent Application Service Instance.
 	@Autowired
 	private HpcEventService eventService = null;
+
+	// Report Application Service Instance.
+	@Autowired
+	private HpcReportService reportService = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -324,6 +337,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (metadataEntries != null && (!metadataEntries.getParentMetadataEntries().isEmpty()
 				|| !metadataEntries.getSelfMetadataEntries().isEmpty())) {
 			collectionDTO.setMetadataEntries(metadataEntries);
+		}
+
+		//Get the total size
+		HpcReportCriteria criteria = new HpcReportCriteria();
+		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+		criteria.setPath(path);
+		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+		List<HpcReport> reports = reportService.generateReport(criteria);
+		if(!CollectionUtils.isEmpty(reports)) {
+			collectionDTO.getReports().addAll(reports);
 		}
 
 		// Set the permission if requested
