@@ -46,6 +46,10 @@ import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.report.HpcReport;
+import gov.nih.nci.hpc.domain.report.HpcReportEntry;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
@@ -185,6 +189,21 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 				boolean canDeleteFlag = determineIfCollectionCanBeDelete(session, collection);
 				model.addAttribute(ATTR_CAN_DELETE, Boolean.toString(canDeleteFlag));
 				
+				//Get the collection size if present
+				List<HpcReport> reports = collection.getReports();
+				if(!CollectionUtils.isEmpty(reports)) {
+					for(HpcReport report: reports) {
+						if(report.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+							for(HpcReportEntry reportEntry: report.getReportEntries()) {
+								if(reportEntry.getAttribute().equals(HpcReportEntryAttribute.TOTAL_DATA_SIZE)) {
+									model.addAttribute("collectionSize", reportEntry.getValue());
+									break;
+								}
+							}
+						}
+					}
+				}
+
 				if (action != null && action.equals("edit")) {
 					if (collection.getPermission() == null || collection.getPermission().equals(HpcPermission.NONE)
 							|| collection.getPermission().equals(HpcPermission.READ)) {
