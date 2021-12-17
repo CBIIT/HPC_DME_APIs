@@ -141,9 +141,12 @@
 										</a>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getPath() != null}">
-										<label for="Name">Path:</label> <label
+										<label for="Name">Path:</label>
+										<a th:href="@{/collection(action=view,path=${hpcDataObjectsDownloadStatusDTO.getPath()})}">
+										  <label
 											for="${hpcDataObjectsDownloadStatusDTO.getPath()}"
 											th:text="${hpcDataObjectsDownloadStatusDTO.getPath()}"></label>
+										</a>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getTaskStatus() != null}">
 										<label for="Name">Task Status:</label> <label
