@@ -257,4 +257,22 @@
       </jxb:bindings>
    </jxb:bindings>
    
+   <jxb:bindings schemaLocation="HpcReportTypes.xsd">
+			<jxb:bindings node="//xsd:simpleType[@name='HpcReportType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.report.HpcReportType"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcReportCriteria']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.report.HpcReportCriteria"/>
+            </jxb:bindings>
+		    <jxb:bindings node="//xsd:complexType[@name='HpcReport']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.report.HpcReport"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcReportEntry']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.report.HpcReportEntry"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:simpleType[@name='HpcReportEntryAttribute']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute"/>
+            </jxb:bindings>
+    </jxb:bindings>
+
 </jxb:bindings>

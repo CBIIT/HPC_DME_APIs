@@ -216,6 +216,11 @@
 												for="${collection.getCollection().getCollectionParentName()}"
 												th:text="${collection.getCollection().getCollectionParentName()}"></label>
 										</div>
+										<div class="col-md-12 form-group" th:if="${collectionSize != null}">
+											<label for="Name">Collection Size:</label> <label
+												for="${collectionSize}"
+												th:text="${collectionSize}"></label>
+										</div>
 									</div>
 								</div>
 								<div class="panel-heading">
