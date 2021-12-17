@@ -498,14 +498,17 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 
   private int getTotalItemsCount(HpcCollectionDownloadStatusDTO downloadTask, List<HpcCollectionDownloadStatusDTO> previousTasks) {
 	  int totalDownloadTaskItemsCount = 0;
+	  List<HpcCollectionDownloadStatusDTO> parentPreviousTasks = null;
 	  if(!previousTasks.isEmpty()) {
 		  HpcCollectionDownloadStatusDTO previousTask = previousTasks.get(0);
 		  totalDownloadTaskItemsCount +=
-				  + (previousTask.getCanceledItems() != null ? previousTask.getCanceledItems().size() : 0)
-				  + (previousTask.getFailedItems() != null ? previousTask.getFailedItems().size() : 0)
-		          + (previousTask.getCompletedItems() != null ? previousTask.getCompletedItems().size() : 0);
+				  (previousTask.getCanceledItems() != null ? previousTask.getCanceledItems().size() : 0)
+				  + (previousTask.getFailedItems() != null ? previousTask.getFailedItems().size() : 0);
+		  parentPreviousTasks = new ArrayList<>(previousTasks);
+		  parentPreviousTasks.remove(0);
 	  }
-	  return totalDownloadTaskItemsCount;
+
+	  return totalDownloadTaskItemsCount + getCompletedItemsCount(previousTasks.get(0), parentPreviousTasks);
   }
 
 
