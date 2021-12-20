@@ -126,15 +126,22 @@ public class HPCCmdDatafile extends HPCCmdClient {
 
 				Response restResponse = null;
 				if (cmd.equals("deleteDatafile")) {
-					Iterator iterator = criteria.keySet().iterator();
-					String path = (String) iterator.next();
-					serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
-            "/{dme-archive-path}").buildAndExpand(path).encode().toUri().toURL()
-						.toExternalForm();
+					String path = criteria.get("path");
+					String force = criteria.get("force");
+					force = force != null ? force : "false";
+					serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL)
+						      .path("/{dme-archive-path}")
+						      .queryParam("force", force)
+						      .buildAndExpand(path)
+						      .encode().toUri().toURL().toExternalForm();
 					jline.console.ConsoleReader reader;
 					reader = new jline.console.ConsoleReader();
 					reader.setExpandEvents(false);
-					System.out.println("The file " + path + " will be deleted. Are you sure you want to proceed ? (Y/N):");
+					if(force.equalsIgnoreCase("true")) {
+						System.out.println("The file " + path + " will be permanently deleted. Are you sure you want to proceed ? (Y/N):");
+					} else {
+						System.out.println("The file " + path + " will be deleted. Are you sure you want to proceed ? (Y/N):");
+					}
 					String confirm = reader.readLine();
 					if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
 						System.out.println("Skipped deleting file");
@@ -257,7 +264,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 
                     MappingJsonFactory factory = new MappingJsonFactory(mapper);
                     JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
                     HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
                     throw new HpcCmdException(exception.getMessage());
                 }
