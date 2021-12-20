@@ -10,7 +10,11 @@
 package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.util.MiscUtil;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -195,6 +199,11 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     	String queryServiceURL = collectionDownloadServiceURL + "/" + taskId + "/retry";
     	HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
                 .getDataObjectsDownloadTask(authToken, collectionDownloadServiceURL + "?taskId=" + taskId, sslCertPath, sslCertPassword);
+    	
+    	//Get the list of items from the original task which is being retried.
+    	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
+    			new ArrayList<HpcCollectionDownloadStatusDTO>());
+    	
 		try {
 			HpcCollectionDownloadResponseDTO downloadDTO = HpcClientUtil.retryCollectionDownloadTask(authToken, queryServiceURL, sslCertPath,
 					sslCertPassword);
@@ -203,6 +212,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 				model.addAttribute("message", "Retry collection download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
 			}
 			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+			model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
 			return "dataobjectsdownloadtask";
 		} catch (Exception e) {
 			result.setMessage(e.getMessage());
@@ -321,7 +331,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     }
     return "redirect:/downloadtasks";
   }
-  
+
+
   private String displayDataObjectTask(String authToken, String taskId, Model model) {
     String queryServiceURL = dataObjectDownloadServiceURL + "?taskId=" + taskId;
     HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil.getDataObjectDownloadTask(authToken,
@@ -338,19 +349,24 @@ public class HpcDownloadTaskController extends AbstractHpcController {
             retry = false;
 		}
 	}
-	else
+	else {
+		//No retry button if download is in progress or successfully completed
 		retry = false;
+	}
 	
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     return "dataobjectdownloadtask";
   }
 
+
   private String displayCollectionTask(String authToken, String taskId, Model model) {
     String queryServiceURL = collectionDownloadServiceURL + "?taskId=" + taskId;
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
+
+    //Indicates whether retry icon should be set or not.
 	boolean retry = true;
-	if(downloadTask != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
+	if(downloadTask.getResult() != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 	{
         if (downloadTask.getDestinationType() != null
             && (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
@@ -359,11 +375,47 @@ public class HpcDownloadTaskController extends AbstractHpcController {
            retry = false;
 		if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
 		   retry = false;
+	} else {
+		//No retry button if download is in progress or has no failed or cancelled items
+		retry = false;
 	}
+
+	//Retrieve the list of items from the original request, if we are displaying a retry transaction.
+	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
+			new ArrayList<HpcCollectionDownloadStatusDTO>());
+
+	//If previousTasks is not empty, update the message to include the items in it
+	if(!previousTasks.isEmpty()) {
+		int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
+		int totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+		//Override the server message
+		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
+		downloadTask.setMessage(message);
+	}
+
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+    model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+
     return "dataobjectsdownloadtask";
   }
+
+
+  private List<HpcCollectionDownloadStatusDTO> retrieveOrigCollectionTaskItems(String authToken, String taskId, Model model,
+		  HpcCollectionDownloadStatusDTO downloadTask, List<HpcCollectionDownloadStatusDTO> previousTasks) {
+
+	  if(downloadTask!= null && downloadTask.getRetryTaskId() != null) {
+		    String queryServiceURL = collectionDownloadServiceURL + "?taskId=" + downloadTask.getRetryTaskId();
+			HpcCollectionDownloadStatusDTO origDownloadTask = HpcClientUtil
+			        .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
+			if(origDownloadTask.getCompletedItems() != null && origDownloadTask.getCompletedItems().size() > 0) {
+				previousTasks.add(origDownloadTask);
+			}
+			retrieveOrigCollectionTaskItems(authToken, taskId, model, origDownloadTask, previousTasks);
+	  }
+	  return previousTasks;
+  }
+
 
   private String diplayDataObjectListTask(String authToken, String taskId, Model model) {
     String queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
@@ -379,18 +431,38 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         retry = false;
       if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
 		   retry = false;
+	} else {
+		//No retry button if download is in progress or has no failed or cancelled items
+		retry = false;
 	}
+
+
+	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
+			new ArrayList<HpcCollectionDownloadStatusDTO>());
+
+	//If previousTasks is not empty, update the message to include the items in it
+	if(!previousTasks.isEmpty()) {
+		int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
+		int totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+		//Override the server message
+		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
+		downloadTask.setMessage(message);
+	}
+
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+    model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+
     return "dataobjectsdownloadtask";
   }
-  
+
+
   private String displayCollectionListTask(String authToken, String taskId, Model model) {
 	    String queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
 	    HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
 	        .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
 		boolean retry = true;
-		if(downloadTask != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
+		if(downloadTask.getResult() != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 		{
             if (downloadTask.getDestinationType() != null
                 && (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
@@ -399,9 +471,59 @@ public class HpcDownloadTaskController extends AbstractHpcController {
                retry = false;
 			if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
 	           retry = false;
+		} else {
+			//No retry button if download is in progress or has no failed or cancelled items
+			retry = false;
 		}
+
+		List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
+				new ArrayList<HpcCollectionDownloadStatusDTO>());
+
+		//If previousTasks is not empty, update the message to include the items in it
+		if(!previousTasks.isEmpty()) {
+			int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
+			int totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+			//Override the server message
+			String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
+			downloadTask.setMessage(message);
+		}
+
 		model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
 	    model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+	    model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+
 	    return "dataobjectsdownloadtask";
   }
+
+
+  private int getTotalItemsCount(HpcCollectionDownloadStatusDTO downloadTask, List<HpcCollectionDownloadStatusDTO> previousTasks) {
+	  int totalDownloadTaskItemsCount = 0;
+	  List<HpcCollectionDownloadStatusDTO> parentPreviousTasks = null;
+	  if(!previousTasks.isEmpty()) {
+		  HpcCollectionDownloadStatusDTO previousTask = previousTasks.get(0);
+		  totalDownloadTaskItemsCount +=
+				  (previousTask.getCanceledItems() != null ? previousTask.getCanceledItems().size() : 0)
+				  + (previousTask.getFailedItems() != null ? previousTask.getFailedItems().size() : 0);
+		  parentPreviousTasks = new ArrayList<>(previousTasks);
+		  parentPreviousTasks.remove(0);
+	  }
+
+	  return totalDownloadTaskItemsCount + getCompletedItemsCount(previousTasks.get(0), parentPreviousTasks);
+  }
+
+
+  private int getCompletedItemsCount(HpcCollectionDownloadStatusDTO downloadTask, List<HpcCollectionDownloadStatusDTO> previousTasks) {
+	  int completedItemsCount = 0;
+	  if(downloadTask != null) {
+		  completedItemsCount = downloadTask.getCompletedItems() != null ? downloadTask.getCompletedItems().size() : 0;
+		  if(!previousTasks.isEmpty()) {
+			  for(HpcCollectionDownloadStatusDTO previousTask: previousTasks) {
+				  completedItemsCount += previousTask.getCompletedItems() != null ? previousTask.getCompletedItems().size() : 0;
+			  }
+		  }
+	  }
+	  return completedItemsCount;
+  }
+
+
 }
