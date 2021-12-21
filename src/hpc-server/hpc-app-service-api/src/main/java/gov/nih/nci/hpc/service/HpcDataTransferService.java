@@ -114,6 +114,14 @@ public interface HpcDataTransferService {
 	public String completeMultipartUpload(HpcFileLocation archiveLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String multipartUploadId,
 			List<HpcUploadPartETag> uploadPartETags) throws HpcException;
+	
+	/**
+	 * Update a data object upload progress. 
+	 *
+	 * @param dataObjectId The data object ID.
+	 * @param percentComplete The upload com
+	 */
+	public void updateDataObjectUploadProgress(String dataObjectId, int percentComplete);
 
 	/**
 	 * Download a data object file.
