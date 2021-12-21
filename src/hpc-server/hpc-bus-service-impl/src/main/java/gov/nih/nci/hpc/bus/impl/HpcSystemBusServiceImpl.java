@@ -269,12 +269,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				case FAILED:
 					// Data transfer failed.
-
 					throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
 							HpcErrorType.DATA_TRANSFER_ERROR);
 
 				default:
 					// Transfer is still in progress.
+					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(),
+							Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
+									/ systemGeneratedMetadata.getSourceSize()));
 					continue;
 				}
 
@@ -1155,8 +1157,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 						if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 							try {
-								logger.info(
-										"download task: {} - continuing [transfer-type={}, destination-type={}]",
+								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType());
 								dataTransferService.continueDataObjectDownloadTask(downloadTask);
@@ -1179,7 +1180,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							}
 							break;
 						}
-						
+
 						CompletableFuture.runAsync(() -> {
 							try {
 								// Since this is executed in a separate thread. Need to get system-account
@@ -1282,11 +1283,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
 				try {
 					downloadRequestURL = dataManagementBusService.generateDownloadRequestURL(path);
-				} catch (HpcException e){
+				} catch (HpcException e) {
 					logger.error(
 							"addDataTransferUploadEvent: {} - Failed to generate presigned download URL [transfer-type={}, transfer-status={}]",
-							path, dataTransferType,
-							dataTransferStatus, e);
+							path, dataTransferType, dataTransferStatus, e);
 				}
 				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
 						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
