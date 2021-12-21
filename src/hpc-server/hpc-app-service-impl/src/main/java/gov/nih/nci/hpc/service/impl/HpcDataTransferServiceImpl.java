@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -138,6 +139,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Map data transfer type to its proxy impl.
 	private Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new EnumMap<>(
 			HpcDataTransferType.class);
+
+	// Map data object IDs to completion %.
+	private Map<String, Integer> dataObjectUploadPercentComplete = new HashMap<>();
 
 	// System Accounts locator.
 	@Autowired
@@ -489,6 +493,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return dataTransferProxies.get(dataTransferType).completeMultipartUpload(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), archiveLocation,
 				multipartUploadId, uploadPartETags);
+	}
+
+	@Override
+	public void updateDataObjectUploadProgress(String dataObjectId, int percentComplete) {
+		if (!StringUtils.isEmpty(dataObjectId) && percentComplete >= 0 && percentComplete <= 100) {
+			dataObjectUploadPercentComplete.put(dataObjectId, percentComplete);
+			logger.error("ERAN: upload {}:{}", dataObjectId, percentComplete);
+		}
+
 	}
 
 	@Override
