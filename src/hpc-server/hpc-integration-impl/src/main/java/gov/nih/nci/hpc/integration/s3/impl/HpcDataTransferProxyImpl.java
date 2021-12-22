@@ -704,7 +704,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcArchive baseArchiveDestination, Long size, HpcDataTransferProgressListener progressListener,
 			List<HpcMetadataEntry> metadataEntries, String storageClass) throws HpcException {
 		if (progressListener == null) {
-			throw new HpcException("[S3] No progress listener provided for a upload from AWS S3 destination",
+			throw new HpcException("[S3] No progress listener provided for a upload from AWS S3 / S3 Provider / Google Drive / Google Cloud Storage",
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
 		if (size == null) {
