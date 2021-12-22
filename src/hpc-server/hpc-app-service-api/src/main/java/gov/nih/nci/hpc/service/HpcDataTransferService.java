@@ -46,6 +46,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -124,10 +125,10 @@ public interface HpcDataTransferService {
 	/**
 	 * Get a data object upload progress.
 	 *
-	 * @param dataObjectId The data object ID.
-	 * @return The upload completion %
+	 * @param systemGeneratedMetadata The system generated metadata for the data object to check upload progress
+	 * @return The upload completion % if upload in progress, otherwise null.
 	 */
-	public Integer getDataObjectUploadProgress(String dataObjectId);
+	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata);
 
 	/**
 	 * Download a data object file.
