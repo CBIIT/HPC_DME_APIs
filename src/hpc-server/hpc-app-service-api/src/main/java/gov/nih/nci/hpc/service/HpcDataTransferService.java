@@ -47,7 +47,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -114,14 +113,22 @@ public interface HpcDataTransferService {
 	public String completeMultipartUpload(HpcFileLocation archiveLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String multipartUploadId,
 			List<HpcUploadPartETag> uploadPartETags) throws HpcException;
-	
+
 	/**
-	 * Update a data object upload progress. 
+	 * Update a data object upload progress.
 	 *
-	 * @param dataObjectId The data object ID.
-	 * @param percentComplete The upload com
+	 * @param dataObjectId    The data object ID.
+	 * @param percentComplete The upload completion %
 	 */
 	public void updateDataObjectUploadProgress(String dataObjectId, int percentComplete);
+
+	/**
+	 * Get a data object upload progress.
+	 *
+	 * @param dataObjectId The data object ID.
+	 * @return The upload completion %
+	 */
+	public Integer getDataObjectUploadProgress(String dataObjectId);
 
 	/**
 	 * Download a data object file.
@@ -795,17 +802,6 @@ public interface HpcDataTransferService {
 	 */
 	public String getFileContainerName(HpcDataTransferType dataTransferType, String configurationId,
 			String fileContainerId) throws HpcException;
-
-	/**
-	 * Calculate a data object upload % complete. Note: if upload not in progress,
-	 * null is returned.
-	 *
-	 * @param systemGeneratedMetadata The system generated metadata of the data
-	 *                                object.
-	 * @return The transfer % completion if transfer is in progress, or null
-	 *         otherwise.
-	 */
-	public Integer calculateDataObjectUploadPercentComplete(HpcSystemGeneratedMetadata systemGeneratedMetadata);
 
 	/**
 	 * Check if an upload URL expired.
