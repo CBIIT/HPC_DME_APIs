@@ -1243,7 +1243,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
 		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(
-				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries()).getObjectId()));
+				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
 
 		if (includeAcl) {
 			// Set the permission.
@@ -1276,8 +1276,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
 		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadataService
-				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())
-				.getObjectId()));
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())));
 
 		if (includeAcl) {
 			// Set the permission.
