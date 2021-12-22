@@ -172,6 +172,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		return bulkDdataObjectRegistrationResult;
 	};
 
+	// HpcAccessToken table to object mapper.
+	private RowMapper<String> googleAccessTokenRowMapper = (rs, rowNum) -> {
+		return encryptor.decrypt(rs.getBytes("ACCESS_TOKEN"));
+	};
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -441,7 +446,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	@Override
 	public String getGoogleAccessToken(String dataObjectId) throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_GOOGLE_ACCESS_TOKEN_SQL, String.class, dataObjectId);
+			return jdbcTemplate.queryForObject(GET_GOOGLE_ACCESS_TOKEN_SQL, googleAccessTokenRowMapper, dataObjectId);
 
 		} catch (IncorrectResultSizeDataAccessException irse) {
 			return null;
