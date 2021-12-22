@@ -2129,8 +2129,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				} else {
 					// Registration still in progress. Update % complete.
-					registrationTask
-							.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadata));
+					registrationTask.setPercentComplete(
+							dataTransferService.getDataObjectUploadProgress(metadata.getObjectId()));
 				}
 			}
 
