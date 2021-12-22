@@ -503,8 +503,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public Integer getDataObjectUploadProgress(String dataObjectId) {
-		return dataObjectUploadPercentComplete.get(dataObjectId);
+	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
+		return systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) ? null
+				: Optional.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
+						.orElse(0);
 	}
 
 	@Override
@@ -2066,8 +2068,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Instantiate a progress listener for upload from AWS S3.
 		HpcDataTransferProgressListener progressListener = null;
 		if (uploadRequest.getS3UploadSource() != null) {
-			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), null, metadataService, securityService,
-					null);
+			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
+					uploadRequest.getSourceSize(), metadataService, securityService, dataRegistrationDAO, this, false);
 		}
 
 		// For uploads from Google (Drive or Cloud storage), we need to generate an
@@ -2095,7 +2097,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 											inputStreamSource.getAccessTokenType()),
 									inputStreamSource.getSourceLocation()));
 			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
-					metadataService, securityService, dataRegistrationDAO);
+					uploadRequest.getSourceSize(), metadataService, securityService, dataRegistrationDAO, this, true);
 			dataRegistrationDAO.upsertGoogleAccessToken(uploadRequest.getDataObjectId(),
 					inputStreamSource.getAccessToken(), inputStreamSource.getAccessTokenType());
 		}

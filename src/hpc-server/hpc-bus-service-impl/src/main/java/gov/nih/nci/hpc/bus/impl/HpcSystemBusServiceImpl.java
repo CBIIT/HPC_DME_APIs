@@ -265,6 +265,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Update data transfer status.
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
 							null, null, null, null, null, null, null, null);
+					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
+							
 					break;
 
 				case FAILED:
@@ -2130,7 +2132,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				} else {
 					// Registration still in progress. Update % complete.
 					registrationTask.setPercentComplete(
-							dataTransferService.getDataObjectUploadProgress(metadata.getObjectId()));
+							dataTransferService.getDataObjectUploadProgress(metadata));
 				}
 			}
 
