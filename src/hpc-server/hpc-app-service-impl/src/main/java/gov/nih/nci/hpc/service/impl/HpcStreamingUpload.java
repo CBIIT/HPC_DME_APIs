@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.service.impl;
 
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +19,7 @@ import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
@@ -41,6 +41,9 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 	// The data object ID that is being uploaded.
 	private String dataObjectId = null;
 
+	// The data object size that is being uploaded.
+	private long size = -1;
+
 	// Metadata service.
 	private HpcMetadataService metadataService = null;
 
@@ -49,6 +52,12 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 
 	// Data object registration DAO
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
+
+	// Data Transfer service.
+	private HpcDataTransferService dataTransferService = null;
+
+	// Indicator whether this is an upload from Google Drive / Cloud Storage.
+	private boolean googleUpload = false;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -62,19 +71,26 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 	 * upload)
 	 *
 	 * @param path                The data object path that is being uploaded.
-	 * @param dataObjectId        (Optional) The data object ID that is being
-	 *                            uploaded.
+	 * @param dataObjectId        The data object ID that is being uploaded.
+	 * @param size                The size of the data object being uploaded
 	 * @param metadataService     Metadata service.
 	 * @param securityService     Security service.
-	 * @param dataRegistrationDAO (Optional) Data object registration DAO.
+	 * @param dataTransferService Data transfer service.
+	 * @param googleUpload        An indicator whether this is an upload from Google
+	 *                            Drive / Cloud Storage
+	 * @param dataRegistrationDAO Data object registration DAO.
 	 */
-	public HpcStreamingUpload(String path, String dataObjectId, HpcMetadataService metadataService,
-			HpcSecurityService securityService, HpcDataRegistrationDAO dataRegistrationDAO) {
+	public HpcStreamingUpload(String path, String dataObjectId, long size, HpcMetadataService metadataService,
+			HpcSecurityService securityService, HpcDataRegistrationDAO dataRegistrationDAO,
+			HpcDataTransferService dataTransferService, boolean googleUpload) {
 		this.path = path;
 		this.dataObjectId = dataObjectId;
+		this.size = size;
 		this.metadataService = metadataService;
 		this.securityService = securityService;
 		this.dataRegistrationDAO = dataRegistrationDAO;
+		this.dataTransferService = dataTransferService;
+		this.googleUpload = googleUpload;
 	}
 
 	// ---------------------------------------------------------------------//
@@ -116,6 +132,12 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 		// processDataTranferUploadStreamingFailed() scheduled task.
 	}
 
+	@Override
+	public void transferProgressed(long bytesTransferred) {
+		dataTransferService.updateDataObjectUploadProgress(dataObjectId,
+				Math.round(100 * (float) bytesTransferred / size));
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -124,7 +146,7 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 	 * Delete a google access token, if one was persisted.
 	 */
 	private void deleteGoogleAccessToken() {
-		if (!StringUtils.isEmpty(dataObjectId) && dataRegistrationDAO != null) {
+		if (googleUpload) {
 			try {
 				dataRegistrationDAO.deleteGoogleAccessToken(dataObjectId);
 
