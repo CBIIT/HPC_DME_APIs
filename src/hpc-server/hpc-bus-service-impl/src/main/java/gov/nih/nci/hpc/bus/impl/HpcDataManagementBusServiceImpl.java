@@ -338,13 +338,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			collectionDTO.setMetadataEntries(metadataEntries);
 		}
 
-		//Get the total size
+		// Get the total size
 		HpcReportCriteria criteria = new HpcReportCriteria();
 		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
 		criteria.setPath(path);
 		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
 		List<HpcReport> reports = reportService.generateReport(criteria);
-		if(!CollectionUtils.isEmpty(reports)) {
+		if (!CollectionUtils.isEmpty(reports)) {
 			collectionDTO.getReports().addAll(reports);
 		}
 
@@ -1239,8 +1239,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
-		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(
-				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
+		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(
+				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries()).getObjectId()));
 
 		if (includeAcl) {
 			// Set the permission.
@@ -1272,8 +1272,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
-		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadataService
-				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())));
+		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadataService
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())
+				.getObjectId()));
 
 		if (includeAcl) {
 			// Set the permission.
