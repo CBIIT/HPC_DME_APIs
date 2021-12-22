@@ -269,12 +269,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				case FAILED:
 					// Data transfer failed.
-
 					throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
 							HpcErrorType.DATA_TRANSFER_ERROR);
 
 				default:
 					// Transfer is still in progress.
+					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(),
+							Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
+									/ systemGeneratedMetadata.getSourceSize()));
 					continue;
 				}
 
@@ -2126,8 +2128,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				} else {
 					// Registration still in progress. Update % complete.
-					registrationTask
-							.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadata));
+					registrationTask.setPercentComplete(
+							dataTransferService.getDataObjectUploadProgress(metadata.getObjectId()));
 				}
 			}
 
