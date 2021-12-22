@@ -339,13 +339,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			collectionDTO.setMetadataEntries(metadataEntries);
 		}
 
-		//Get the total size
+		// Get the total size
 		HpcReportCriteria criteria = new HpcReportCriteria();
 		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
 		criteria.setPath(path);
 		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
 		List<HpcReport> reports = reportService.generateReport(criteria);
-		if(!CollectionUtils.isEmpty(reports)) {
+		if (!CollectionUtils.isEmpty(reports)) {
 			collectionDTO.getReports().addAll(reports);
 		}
 
@@ -786,9 +786,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 
-		boolean excludeSysAdminGroup =
-			securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.METADATA_ONLY)
-			|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
+		boolean excludeSysAdminGroup = securityService.getRequestInvoker().getUserRole()
+				.equals(HpcUserRole.METADATA_ONLY)
+				|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
 
 		return toEntityPermissionsDTO(dataManagementService.getCollectionPermissions(path), excludeSysAdminGroup);
 	}
@@ -994,17 +994,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				}
 
 				// Add collection update event. (Only if sync-upload was performed.)
-				if(dataObjectFile != null) {
+				if (dataObjectFile != null) {
 					// Generate the download URL.
 					HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
 					try {
 						downloadRequestURL = generateDownloadRequestURL(path);
-					} catch (HpcException e){
-						logger.error(
-								"registerDataObject: {} - Failed to generate presigned download URL for {}",
-								path, e);
+					} catch (HpcException e) {
+						logger.error("registerDataObject: {} - Failed to generate presigned download URL for {}", path,
+								e);
 					}
-					addCollectionUpdatedEvent(path, false, true, userId, downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
+					addCollectionUpdatedEvent(path, false, true, userId,
+							downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
 							downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
 				}
 
@@ -1242,8 +1242,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
-		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(
-				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
+		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(
+				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries()).getObjectId()));
 
 		if (includeAcl) {
 			// Set the permission.
@@ -1275,8 +1275,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
-		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadataService
-				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())));
+		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadataService
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())
+				.getObjectId()));
 
 		if (includeAcl) {
 			// Set the permission.
@@ -1326,7 +1327,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
-				downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress(), metadata.getSourceSize());
+				downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress(),
+				metadata.getSourceSize());
 	}
 
 	@Override
@@ -1427,9 +1429,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Generate a download URL for the data object, and return it in a DTO.
 		return toDownloadResponseDTO(null, null, null,
-				dataTransferService.generateDownloadRequestURL(path, invokerNciAccount != null ? invokerNciAccount.getUserId() : metadata.getRegistrarId(),
+				dataTransferService.generateDownloadRequestURL(path,
+						invokerNciAccount != null ? invokerNciAccount.getUserId() : metadata.getRegistrarId(),
 						metadata.getArchiveLocation(), metadata.getDataTransferType(), metadata.getSourceSize(),
-						metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()), metadata.getSourceSize());
+						metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()),
+				metadata.getSourceSize());
 	}
 
 	@Override
@@ -1546,8 +1550,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else {
 			if (!abort) {
 				try {
-					securityService
-							.executeAsSystemAccount(Optional.empty(),
+					securityService.executeAsSystemAccount(Optional.empty(),
 							() -> dataManagementService.softDelete(path, Optional.of(false)));
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
@@ -1608,8 +1611,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 
-		boolean excludeSysAdminGroup =
-				securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.METADATA_ONLY)
+		boolean excludeSysAdminGroup = securityService.getRequestInvoker().getUserRole()
+				.equals(HpcUserRole.METADATA_ONLY)
 				|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
 
 		return toEntityPermissionsDTO(dataManagementService.getDataObjectPermissions(path), excludeSysAdminGroup);
@@ -2020,8 +2023,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param dataObjectRegistered An indicator if a data object was registered.
 	 * @param userId               The user ID who initiated the action resulted in
 	 *                             collection update event.
-	 * @param presignURL 		   The presigned download URL.(Optional)
-     * @param size 				   The data size.(Optional)
+	 * @param presignURL           The presigned download URL.(Optional)
+	 * @param size                 The data size.(Optional)
 	 */
 	private void addCollectionUpdatedEvent(String path, boolean collectionRegistered, boolean dataObjectRegistered,
 			String userId, String presignURL, String size) {
@@ -2056,7 +2059,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param destinationFile     The destination file.
 	 * @param taskId              The data object download task ID.
 	 * @param downloadRequestURL  A URL to use to download the data object.
-	 * @param sourceSize		  The size of the file.
+	 * @param sourceSize          The size of the file.
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
@@ -2068,7 +2071,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		downloadResponse.setTaskId(taskId);
 		downloadResponse.setDownloadRequestURL(downloadRequestURL);
 		downloadResponse.setSize(sourceSize);
-		
+
 		return downloadResponse;
 	}
 
@@ -2081,11 +2084,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param downloadRequestURL  A URL to use to download the data object.
 	 * @param restoreInProgress   The flag to indicate if restoration is in
 	 *                            progress.
-	 * @param sourceSize		  The size of the file.
+	 * @param sourceSize          The size of the file.
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
-			File destinationFile, String taskId, String downloadRequestURL, Boolean restoreInProgress, Long sourceSize) {
+			File destinationFile, String taskId, String downloadRequestURL, Boolean restoreInProgress,
+			Long sourceSize) {
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		downloadResponse.setDestinationFile(destinationFile);
@@ -2257,11 +2261,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *
 	 * @param subjectPermissions A list of subject permissions.
 	 * @return Entity permissions DTO
-	 * @throws HpcException 
+	 * @throws HpcException
 	 */
-	private HpcEntityPermissionsDTO toEntityPermissionsDTO(
-			List<HpcSubjectPermission> subjectPermissions, boolean excludeSysAdmins) 
-					throws HpcException {
+	private HpcEntityPermissionsDTO toEntityPermissionsDTO(List<HpcSubjectPermission> subjectPermissions,
+			boolean excludeSysAdmins) throws HpcException {
 		if (subjectPermissions == null) {
 			return null;
 		}
@@ -2269,18 +2272,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcEntityPermissionsDTO entityPermissions = new HpcEntityPermissionsDTO();
 		for (HpcSubjectPermission subjectPermission : subjectPermissions) {
 			if (subjectPermission.getSubjectType().equals(HpcSubjectType.USER)) {
-				if(!(excludeSysAdmins && (
-						subjectPermission.getSubject().contentEquals(
-								securityService.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername())
-						 || subjectPermission.getSubject().contentEquals("rods")))) {
+				if (!(excludeSysAdmins && (subjectPermission.getSubject()
+						.contentEquals(securityService.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername())
+						|| subjectPermission.getSubject().contentEquals("rods")))) {
 					HpcUserPermission userPermission = new HpcUserPermission();
 					userPermission.setPermission(subjectPermission.getPermission());
 					userPermission.setUserId(subjectPermission.getSubject());
 					entityPermissions.getUserPermissions().add(userPermission);
 				}
 			} else {
-				if(!(excludeSysAdmins && 
-					subjectPermission.getSubject().contentEquals("SYSTEM_ADMIN_GROUP"))) {
+				if (!(excludeSysAdmins && subjectPermission.getSubject().contentEquals("SYSTEM_ADMIN_GROUP"))) {
 					HpcGroupPermission groupPermission = new HpcGroupPermission();
 					groupPermission.setPermission(subjectPermission.getPermission());
 					groupPermission.setGroupName(subjectPermission.getSubject());
