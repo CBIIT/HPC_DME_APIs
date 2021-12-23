@@ -29,6 +29,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -39,7 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
+//import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -78,6 +81,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	private String hpcModelURL;
 	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
 	private String collectionAclURL;
+
+	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
+	private Gson gson = new Gson();
 
 	public static final String GOOGLE_DRIVE_BULK_TYPE = "drive";
 	public static final String GOOGLE_CLOUD_BULK_TYPE = "googleCloud";
@@ -360,7 +366,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
         List<String> googleDriveFolderIds = (List<String>) session.getAttribute("folderIds");
         String accessToken = (String) session.getAttribute("accessToken");
 		String accessTokenGoogleCloud = (String) session.getAttribute("accessTokenGoogleCloud");
-		
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String gcbucketName = (String)request.getParameter("gcbucketName");
@@ -507,12 +512,12 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
 			googleCloudSource.setSourceLocation(source);
 			googleCloudSource.setAccessToken(accessTokenGoogleCloud);
-			googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
             file.setGoogleCloudStorageUploadSource(googleCloudSource);
 			Path gcFilePath = Paths.get(gcPath);
 			file.setPath(path + "/" + gcFilePath.getFileName());
             files.add(file);
 			dto.getDataObjectRegistrationItems().addAll(files);
+			logger.info("GoogleCloud file upload json: " + gson.toJson(dto));
 	    }
 		if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) && gcPath != null && !isGcFile) {
 			// Upload Directory/Folder from Google Cloud Storage
@@ -524,7 +529,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             HpcGoogleScanDirectory googleCloudSource = new HpcGoogleScanDirectory();
             googleCloudSource.setDirectoryLocation(source);
             googleCloudSource.setAccessToken(accessTokenGoogleCloud);
-            googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+            //googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
             folder.setGoogleCloudStorageScanDirectory(googleCloudSource);
             folder.setBasePath(datafilePath);
 			//Pathmap
@@ -549,6 +554,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
         
 			folders.add(folder);
             dto.getDirectoryScanRegistrationItems().addAll(folders);
+			logger.info("GoogleCloud folder upload json: " + gson.toJson(dto));
 	    }  
 		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
