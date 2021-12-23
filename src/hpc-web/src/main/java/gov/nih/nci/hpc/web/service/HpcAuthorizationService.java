@@ -22,7 +22,7 @@ public interface HpcAuthorizationService {
    * @param redirectUri The redirectUri.
    * @throws Exception on service failure.
    */
-  public String authorize(String redirectUri, HpcAuthorizationService.ResourceType resourceType) throws Exception;
+  public String authorize(String redirectUri, HpcAuthorizationService.ResourceType resourceType, String userId) throws Exception;
 
   /**
    * Obtain access token using the code.
@@ -31,7 +31,17 @@ public interface HpcAuthorizationService {
    * @param redirectUri The redirectUri.
    * @throws Exception on service failure.
    */
-  public String getToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType) throws Exception;
+  public String getToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType, String userId) throws Exception;
+
+/**
+   * Obtain access token using the code.
+   *
+   * @param code The code.
+   * @param redirectUri The redirectUri.
+   * @throws Exception on service failure.
+   */
+  public String getRefreshToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType, String userId) throws Exception;
+
 
   public enum ResourceType {
     GOOGLEDRIVE,
