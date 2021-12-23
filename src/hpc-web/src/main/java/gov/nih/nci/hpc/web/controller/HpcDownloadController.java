@@ -38,7 +38,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
+//import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
@@ -97,6 +97,9 @@ public class HpcDownloadController extends AbstractHpcController {
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String userId = (String) session.getAttribute("hpcUserId");
+
 		String action = request.getParameter("actionType");
 		String endPointName = request.getParameter("endpoint_id");
 		String downloadType = request.getParameter("type");
@@ -113,14 +116,14 @@ public class HpcDownloadController extends AbstractHpcController {
             final String returnURL = this.webServerName + "/download";
             try {
 				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
-					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
+					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("authorized", "true");
 				} else if(googleAction.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
-					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD);
+					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
@@ -158,7 +161,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			model.addAttribute("downloadFilePathName", fileName);
 		}
 
-		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		//HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -195,7 +198,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			downloadFilePath = request.getParameter("downloadFilePath");
 			String returnURL = this.webServerName + "/download";
 			try {
-			return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
+			return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
 			} catch (Exception e) {
 				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
 				e.printStackTrace();
@@ -211,7 +214,7 @@ public class HpcDownloadController extends AbstractHpcController {
   	        downloadFilePath = request.getParameter("downloadFilePath");
   	        String returnURL = this.webServerName + "/download";
   	        try {
-              return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD);
+              return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
             } catch (Exception e) {
               model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
               e.printStackTrace();
@@ -333,7 +336,7 @@ public class HpcDownloadController extends AbstractHpcController {
 				location.setFileId(downloadFile.getGoogleCloudPath().trim());
 				googleCloudDestination.setDestinationLocation(location);
 				googleCloudDestination.setAccessToken(accessToken);
-				googleCloudDestination.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+				//googleCloudDestination.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
 			}
             final String downloadTaskType = "collection".equals(downloadFile.
