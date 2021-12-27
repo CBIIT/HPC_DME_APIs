@@ -2072,6 +2072,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					uploadRequest.getSourceSize(), metadataService, securityService, dataRegistrationDAO, this, false);
 		}
 
+		// // Instantiate a progress listener for uploading a file staged on DME server
+		// (Sync, Globus 2nd Hop, FileSystem).
+		if (uploadRequest.getSourceFile() != null) {
+			progressListener = new HpcStagedFileUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
+					uploadRequest.getSourceSize(), this);
+		}
+
 		// For uploads from Google (Drive or Cloud storage), we need to generate an
 		// input stream to the source file,
 		// create a progress listener and persist the access token in case the upload
