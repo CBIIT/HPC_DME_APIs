@@ -52,7 +52,6 @@ public class HpcGoogleCloudStorageConnection {
 	 * Authenticate google cloud storage.
 	 *
 	 * @param accessToken      Google Cloud Storage token.
-	 * @param accessTokenToken Google Cloud Storage token type.
 	 * @throws HpcException if authentication failed.
 	 */
 	public Object authenticate(String accessToken) throws HpcException {
@@ -65,7 +64,7 @@ public class HpcGoogleCloudStorageConnection {
 		} catch (Exception e) {
 			// Catching all as runtime exception will be thrown if the token is not a valid
 			// JSON.
-			throw new HpcException("Failed to authenticate Google Cloud Storage w/ access-token: " + e.getMessage(),
+			throw new HpcException("Failed to authenticate Google Cloud Storage: " + e.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
 	}
