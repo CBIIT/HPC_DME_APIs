@@ -38,7 +38,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-//import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
@@ -52,6 +51,12 @@ import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -77,6 +82,9 @@ public class HpcDownloadController extends AbstractHpcController {
 	private String collectionServiceURL;
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
+
+	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
+	private Gson gson = new Gson();
 
 	/**
 	 * Get action to prepare download page. This is invoked when:
@@ -116,16 +124,16 @@ public class HpcDownloadController extends AbstractHpcController {
             final String returnURL = this.webServerName + "/download";
             try {
 				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
-					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
+					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("authorized", "true");
 				} else if(googleAction.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
-					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
-					session.setAttribute("accessToken", accessToken);
-					model.addAttribute("accessToken", accessToken);
+					String refreshTokenDetailsGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+					session.setAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
+					model.addAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 		            model.addAttribute("authorizedGC", "true");
@@ -329,15 +337,15 @@ public class HpcDownloadController extends AbstractHpcController {
                 destination.setAccessToken(accessToken);
                 dto.setGoogleDriveDownloadDestination(destination);
             } else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
-				String accessToken = (String)session.getAttribute("accessToken");
+				String refreshTokenDetailsGoogleCloud = (String)session.getAttribute("refreshTokenDetailsGoogleCloud");
 				HpcGoogleDownloadDestination googleCloudDestination = new HpcGoogleDownloadDestination();
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getGoogleCloudBucketName());
 				location.setFileId(downloadFile.getGoogleCloudPath().trim());
 				googleCloudDestination.setDestinationLocation(location);
-				googleCloudDestination.setAccessToken(accessToken);
-				//googleCloudDestination.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+				googleCloudDestination.setAccessToken(refreshTokenDetailsGoogleCloud);
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
+				logger.info("GoogleCloud file download json: " + gson.toJson(dto));
 			}
             final String downloadTaskType = "collection".equals(downloadFile.
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :
