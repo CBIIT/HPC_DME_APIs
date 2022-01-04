@@ -135,20 +135,20 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	            final String returnURL = this.webServerName + "/addbulk";
 	            try {
 				  if(StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) ){
-					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
+					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
 					model.addAttribute("authorized", "true");
 				  } else if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) ) {
-					String accessTokenGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
+					String refreshTokenDetailsGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
 					//hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD);
 					// If the Refresh token is null
-					if (accessTokenGoogleCloud == null) {
+					if (refreshTokenDetailsGoogleCloud == null) {
 						throw new HpcAuthorizationException("Please Logout of your Google Account and Login again.");
 					} else {
-						session.setAttribute("accessTokenGoogleCloud", accessTokenGoogleCloud);
-						logger.info("JSON with Refresh Token: " + accessTokenGoogleCloud);
-						model.addAttribute("accessTokenGoogleCloud", accessTokenGoogleCloud);
+						session.setAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
+						logger.info("JSON with Refresh Token: " + refreshTokenDetailsGoogleCloud);
+						model.addAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
 						model.addAttribute("authorizedGC", "true");
 					}
 				  }
