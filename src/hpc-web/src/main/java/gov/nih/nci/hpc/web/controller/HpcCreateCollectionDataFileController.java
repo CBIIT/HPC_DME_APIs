@@ -121,7 +121,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		session.removeAttribute("fileIds");
 		session.removeAttribute("folderIds");
 		session.removeAttribute("accessToken");
-		session.removeAttribute("accessTokenGoogleCloud");
+		session.removeAttribute("refreshTokenDetailsGoogleCloud");
 		session.removeAttribute("authorized");
 		session.removeAttribute("authorizedGC");
 	}
@@ -158,7 +158,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		String endPoint = request.getParameter("endpoint_id");
 		String globusPath = request.getParameter("path");
 		String accessToken = (String) session.getAttribute("accessToken");
-		String accessTokenGoogleCloud = (String) session.getAttribute("accessTokenGoogleCloud");
+		String refreshTokenDetailsGoogleCloud = (String) session.getAttribute("refreshTokenDetailsGoogleCloud");
 		List<String> fileNames = new ArrayList<String>();
 		List<String> folderNames = new ArrayList<String>();
 		List<String> fileIds = new ArrayList<String>();
@@ -232,8 +232,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             model.addAttribute("accessToken", accessToken);
             model.addAttribute("authorized", "true");
         }
-		if (accessTokenGoogleCloud != null) {
-            model.addAttribute("accessTokenGoogleCloud", accessTokenGoogleCloud);
+		if (refreshTokenDetailsGoogleCloud != null) {
+            model.addAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
             model.addAttribute("authorizedGC", "true");
         }
 		setCriteria(model, request, session);
@@ -365,7 +365,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<String> googleDriveFileIds = (List<String>) session.getAttribute("fileIds");
         List<String> googleDriveFolderIds = (List<String>) session.getAttribute("folderIds");
         String accessToken = (String) session.getAttribute("accessToken");
-		String accessTokenGoogleCloud = (String) session.getAttribute("accessTokenGoogleCloud");
+		String refreshTokenDetailsGoogleCloud = (String) session.getAttribute("refreshTokenDetailsGoogleCloud");
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String gcbucketName = (String)request.getParameter("gcbucketName");
@@ -511,7 +511,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             source.setFileId(gcPath);
 			HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
 			googleCloudSource.setSourceLocation(source);
-			googleCloudSource.setAccessToken(accessTokenGoogleCloud);
+			googleCloudSource.setAccessToken(refreshTokenDetailsGoogleCloud);
             file.setGoogleCloudStorageUploadSource(googleCloudSource);
 			Path gcFilePath = Paths.get(gcPath);
 			file.setPath(path + "/" + gcFilePath.getFileName());
@@ -528,7 +528,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             source.setFileId(gcPath);
             HpcGoogleScanDirectory googleCloudSource = new HpcGoogleScanDirectory();
             googleCloudSource.setDirectoryLocation(source);
-            googleCloudSource.setAccessToken(accessTokenGoogleCloud);
+            googleCloudSource.setAccessToken(refreshTokenDetailsGoogleCloud);
             //googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
             folder.setGoogleCloudStorageScanDirectory(googleCloudSource);
             folder.setBasePath(datafilePath);

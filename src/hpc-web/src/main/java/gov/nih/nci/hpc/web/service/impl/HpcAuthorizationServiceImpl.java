@@ -52,9 +52,9 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private int tokenExpirationTimeInHours;
 
   private Logger logger = LoggerFactory.getLogger(HpcAuthorizationServiceImpl.class);
-  private GoogleAuthorizationCodeFlow flowGoogle;
-  private GoogleAuthorizationCodeFlow flowCloud;
-  private GoogleAuthorizationCodeFlow flowCloudForcedGoogleLogin;
+  private GoogleAuthorizationCodeFlow flowGoogleDrive;
+  private GoogleAuthorizationCodeFlow flowGoogleCloud;
+  private GoogleAuthorizationCodeFlow flowGoogleCloudWithForcedGoogleLogin;
   private GoogleAuthorizationCodeFlow flow;
   private String refreshToken;
   private Gson gson = new Gson();
@@ -66,7 +66,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     Long tokenExpirationInSeconds = new Long(tokenExpirationTimeInHours * 60 * 60);
    
     // Build flow and trigger user authorization request for Google Drive
-    flowGoogle =
+    flowGoogleDrive =
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES)
             //.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
             .setAccessType("offline")
@@ -74,7 +74,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     
     // Build flow and trigger user authorization request for Google Cloud
     //new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)
-     flowCloud =
+     flowGoogleCloud =
           new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES_CLOUD)
               .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
               .setAccessType("offline")
@@ -83,7 +83,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
               .build(); 
 
       // Build flow and trigger user authorization request for Google Cloud with a forced login
-      flowCloudForcedGoogleLogin =
+      flowGoogleCloudWithForcedGoogleLogin =
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES_CLOUD)
           .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
           .setAccessType("offline")
@@ -95,19 +95,21 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   @Override
   public String authorize(String redirectUri, ResourceType resourceType, String userId ) throws Exception {
     String redirectUrl="";
-    refreshToken = getRefreshTokenInStore(resourceType, userId);
-    flow = getFlow(resourceType, userId, refreshToken);
+    if((userId != null) && (!userId.isEmpty())){
+      refreshToken = getRefreshTokenInStore(userId);
+    } 
+    flow = getFlow(resourceType, refreshToken);
     GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
     redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
     logger.info("HpcAuthorizationServiceImpl::authorize:redirectUrl=" + redirectUrl);
     return redirectUrl;
   }
     
-  public String getToken(String code, String redirectUri, ResourceType resourceType, String userId) throws Exception {
+  public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
     logger.info("HpcAuthorizationServiceImpl::getToken: refreshToken: " + refreshToken);
-    flow = getFlow(resourceType, userId, refreshToken);
+    flow = getFlow(resourceType, refreshToken);
     tokenResponse =
           flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     logger.info("HpcAuthorizationServiceImpl::getToken: tokenResponse: " + gson.toJson(tokenResponse));
@@ -117,9 +119,9 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   public String getRefreshToken(String code, String redirectUri, ResourceType resourceType, String userId) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     logger.info("HpcAuthorizationServiceImpl::getRefreshToken: refreshToken before executing newTokenRequest: " + refreshToken);
-    flow = getFlow(resourceType, userId, refreshToken);
+    flow = getFlow(resourceType, refreshToken);
     // exchange the code against the access token and refresh token
-    logger.info("HpcAuthorizationServiceImpl::getRefreshToken: Invoking flowCloud.newTokenRequest to get tokens from Google");
+    logger.info("HpcAuthorizationServiceImpl::getRefreshToken: Invoking flowGoogleCloud.newTokenRequest to get tokens from Google");
     tokenResponse = flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     
     logger.info("getRefreshToken: tokenResponse: " + gson.toJson(tokenResponse));
@@ -127,10 +129,10 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     String newRefreshToken = tokenResponse.getRefreshToken();
 
     if (newRefreshToken != null)   {
-      // The credential is always saved to the Store using flowCloud
-      flowCloud.createAndStoreCredential(tokenResponse, userId);
+      // The credential is always saved to the Store using flowGoogleCloud
+      flowGoogleCloud.createAndStoreCredential(tokenResponse, userId);
       // Checking value saved or not
-      String storeCredentialJsonForUser = gson.toJson(flowCloud.loadCredential(userId));
+      String storeCredentialJsonForUser = gson.toJson(flowGoogleCloud.loadCredential(userId));
       logger.info("HpcAuthorizationServiceImpl::getRefreshToken: storeCredentialJsonForUser: " + storeCredentialJsonForUser);
       refreshToken = newRefreshToken;
     }
@@ -160,14 +162,14 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   }
 
 
-  private GoogleAuthorizationCodeFlow getFlow(ResourceType resourceType, String userId, String refreshToken) throws Exception  {
+  private GoogleAuthorizationCodeFlow getFlow(ResourceType resourceType, String refreshToken) throws Exception  {
     if(resourceType == ResourceType.GOOGLEDRIVE) {
-      return flowGoogle;
+      return flowGoogleDrive;
     } else if(resourceType == ResourceType.GOOGLECLOUD) {
       if (refreshToken == null || refreshToken.isEmpty()) {
-        return flowCloudForcedGoogleLogin;
+        return flowGoogleCloudWithForcedGoogleLogin;
       } else {
-        return flowCloud;
+        return flowGoogleCloud;
       }
     } else {
       logger.error("HpcAuthorizationServiceImpl::getRefreshToken: resourceType cannot be null");
@@ -175,15 +177,15 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     }
   }
 
-  private String getRefreshTokenInStore(ResourceType resourceType, String userId) throws Exception  {
-    // The credential is always retrieved from the Store using flowCloud
-    Credential savedAndRetrievedCredential = flowCloud.loadCredential(userId);
-    String refreshTokenInStore = null;
-    if (refreshToken == null || refreshToken.isEmpty()) {
+  private String getRefreshTokenInStore(String userId) throws Exception  {
+    // The credential is always retrieved from the Store using flowGoogleCloud
+    logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token being retrieved for: ", userId);
+    Credential savedAndRetrievedCredential = flowGoogleCloud.loadCredential(userId);
+    String refreshTokenInStore = savedAndRetrievedCredential.getRefreshToken();
+    if (refreshTokenInStore == null || refreshTokenInStore.isEmpty()) {
       logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: No refreshToken token available in Store");
     } else {
-      refreshTokenInStore = savedAndRetrievedCredential.getRefreshToken();
-      logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token saved in Store: ", refreshTokenInStore);
+      logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token previously saved in Store: ", refreshTokenInStore);
     }
     return refreshTokenInStore;
   }
