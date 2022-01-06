@@ -252,6 +252,7 @@
 				<entry key="getDataObjectsRegistrationDownloadStatus"
 					value="${hpc.ws.rs.auth.data-management.get-data-objects-registration-status}" />
 				<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}" />
+				<entry key="getDataObjectV1" value="${hpc.ws.rs.auth.data-management.get-data-object}" />
 				<entry key="downloadDataObject"
 					value="${hpc.ws.rs.auth.data-management.download-data-object}" />
 				<entry key="getDataObjectDownloadStatus"

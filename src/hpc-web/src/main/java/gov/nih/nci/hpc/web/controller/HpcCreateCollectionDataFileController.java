@@ -29,6 +29,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -39,7 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
+//import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -79,6 +82,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
 	private String collectionAclURL;
 
+	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
+	private Gson gson = new Gson();
+
 	public static final String GOOGLE_DRIVE_BULK_TYPE = "drive";
 	public static final String GOOGLE_CLOUD_BULK_TYPE = "googleCloud";
 
@@ -115,7 +121,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		session.removeAttribute("fileIds");
 		session.removeAttribute("folderIds");
 		session.removeAttribute("accessToken");
-		session.removeAttribute("accessTokenGoogleCloud");
+		session.removeAttribute("refreshTokenDetailsGoogleCloud");
 		session.removeAttribute("authorized");
 		session.removeAttribute("authorizedGC");
 	}
@@ -152,7 +158,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		String endPoint = request.getParameter("endpoint_id");
 		String globusPath = request.getParameter("path");
 		String accessToken = (String) session.getAttribute("accessToken");
-		String accessTokenGoogleCloud = (String) session.getAttribute("accessTokenGoogleCloud");
+		String refreshTokenDetailsGoogleCloud = (String) session.getAttribute("refreshTokenDetailsGoogleCloud");
 		List<String> fileNames = new ArrayList<String>();
 		List<String> folderNames = new ArrayList<String>();
 		List<String> fileIds = new ArrayList<String>();
@@ -226,8 +232,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             model.addAttribute("accessToken", accessToken);
             model.addAttribute("authorized", "true");
         }
-		if (accessTokenGoogleCloud != null) {
-            model.addAttribute("accessTokenGoogleCloud", accessTokenGoogleCloud);
+		if (refreshTokenDetailsGoogleCloud != null) {
+            model.addAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
             model.addAttribute("authorizedGC", "true");
         }
 		setCriteria(model, request, session);
@@ -359,8 +365,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<String> googleDriveFileIds = (List<String>) session.getAttribute("fileIds");
         List<String> googleDriveFolderIds = (List<String>) session.getAttribute("folderIds");
         String accessToken = (String) session.getAttribute("accessToken");
-		String accessTokenGoogleCloud = (String) session.getAttribute("accessTokenGoogleCloud");
-		
+		String refreshTokenDetailsGoogleCloud = (String) session.getAttribute("refreshTokenDetailsGoogleCloud");
 		String bulkType = (String)request.getParameter("bulkType");
 		String bucketName = (String)request.getParameter("bucketName");
 		String gcbucketName = (String)request.getParameter("gcbucketName");
@@ -506,13 +511,13 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             source.setFileId(gcPath);
 			HpcStreamingUploadSource googleCloudSource = new HpcStreamingUploadSource();
 			googleCloudSource.setSourceLocation(source);
-			googleCloudSource.setAccessToken(accessTokenGoogleCloud);
-			googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+			googleCloudSource.setAccessToken(refreshTokenDetailsGoogleCloud);
             file.setGoogleCloudStorageUploadSource(googleCloudSource);
 			Path gcFilePath = Paths.get(gcPath);
 			file.setPath(path + "/" + gcFilePath.getFileName());
             files.add(file);
 			dto.getDataObjectRegistrationItems().addAll(files);
+			logger.info("GoogleCloud file upload json: " + gson.toJson(dto));
 	    }
 		if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) && gcPath != null && !isGcFile) {
 			// Upload Directory/Folder from Google Cloud Storage
@@ -523,8 +528,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
             source.setFileId(gcPath);
             HpcGoogleScanDirectory googleCloudSource = new HpcGoogleScanDirectory();
             googleCloudSource.setDirectoryLocation(source);
-            googleCloudSource.setAccessToken(accessTokenGoogleCloud);
-            googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
+            googleCloudSource.setAccessToken(refreshTokenDetailsGoogleCloud);
+            //googleCloudSource.setAccessTokenType(HpcAccessTokenType.USER_ACCOUNT);
             folder.setGoogleCloudStorageScanDirectory(googleCloudSource);
             folder.setBasePath(datafilePath);
 			//Pathmap
@@ -549,6 +554,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
         
 			folders.add(folder);
             dto.getDirectoryScanRegistrationItems().addAll(folders);
+			logger.info("GoogleCloud folder upload json: " + gson.toJson(dto));
 	    }  
 		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
