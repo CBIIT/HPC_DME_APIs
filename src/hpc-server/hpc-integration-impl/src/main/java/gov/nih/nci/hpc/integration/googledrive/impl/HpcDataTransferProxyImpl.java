@@ -29,7 +29,6 @@ import com.google.api.services.drive.model.FileList;
 import com.google.common.util.concurrent.Striped;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -101,7 +100,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(String accessToken, HpcAccessTokenType accessTokenType) throws HpcException {
+	public Object authenticate(String accessToken) throws HpcException {
 		return googleDriveConnection.authenticate(accessToken);
 	}
 
