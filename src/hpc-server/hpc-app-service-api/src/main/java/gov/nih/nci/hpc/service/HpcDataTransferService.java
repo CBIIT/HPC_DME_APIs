@@ -17,7 +17,6 @@ import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -114,6 +113,22 @@ public interface HpcDataTransferService {
 	public String completeMultipartUpload(HpcFileLocation archiveLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String multipartUploadId,
 			List<HpcUploadPartETag> uploadPartETags) throws HpcException;
+
+	/**
+	 * Update a data object upload progress.
+	 *
+	 * @param dataObjectId    The data object ID.
+	 * @param percentComplete The upload completion %
+	 */
+	public void updateDataObjectUploadProgress(String dataObjectId, int percentComplete);
+
+	/**
+	 * Get a data object upload progress.
+	 *
+	 * @param systemGeneratedMetadata The system generated metadata for the data object to check upload progress
+	 * @return The upload completion % if upload in progress, otherwise null.
+	 */
+	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata);
 
 	/**
 	 * Download a data object file.
@@ -299,16 +314,14 @@ public interface HpcDataTransferService {
 	 * Get path attributes for a given file in Google Drive or Google Cloud
 	 * Storage(using user provided Google Drive token).
 	 *
-	 * @param accessToken      Google Drive / Storage access token.
-	 * @param accessTokenToken Access token type (user account / system account).
-	 * @param fileLocation     The file to get attributes for.
-	 * @param getSize          If set to true, the file/directory size will be
-	 *                         returned.
+	 * @param accessToken  Google Drive / Storage access token.
+	 * @param fileLocation The file to get attributes for.
+	 * @param getSize      If set to true, the file/directory size will be returned.
 	 * @return The path attributes.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType, String accessToken,
-			HpcAccessTokenType accessTokenType, HpcFileLocation fileLocation, boolean getSize) throws HpcException;
+			HpcFileLocation fileLocation, boolean getSize) throws HpcException;
 
 	/**
 	 * Get path attributes of local file (on the DME server file system)
@@ -328,8 +341,6 @@ public interface HpcDataTransferService {
 	 * @param s3Account                (Optional) S3 account to use.
 	 * @param googleAccessToken        (Optional) Google Drive/Storage access-token
 	 *                                 to use.
-	 * @param googleAccessTokenType    (Optional) Google Drive/Storage access-token
-	 *                                 type.
 	 * @param directoryLocation        The endpoint/directory to scan and get a list
 	 *                                 of files for.
 	 * @param configurationId          The configuration ID (needed to determine the
@@ -347,9 +358,9 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType, HpcS3Account s3Account,
-			String googleAccessToken, HpcAccessTokenType googleAccessTokenType, HpcFileLocation directoryLocation,
-			String configurationId, String s3ArchiveConfigurationId, List<String> includePatterns,
-			List<String> excludePatterns, HpcPatternType patternType) throws HpcException;
+			String googleAccessToken, HpcFileLocation directoryLocation, String configurationId,
+			String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
+			HpcPatternType patternType) throws HpcException;
 
 	/**
 	 * Get a file from the archive.
@@ -639,15 +650,12 @@ public interface HpcDataTransferService {
 	 *                             destinations.
 	 * @param s3Account            (Optional) s3Account for S3 destinations.
 	 * @param googleAccessToken    (Optional) access token for Google Drive / Cloud
-	 *                             storage destinations. * @param
-	 *                             googleAccessTokenType (Optional) access token for
-	 *                             Google Cloud storage destinations.
+	 *                             storage destinations.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken,
-			HpcAccessTokenType googleAccessTokenType) throws HpcException;
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException;
 
 	/**
 	 * Get collection download tasks.
@@ -806,17 +814,6 @@ public interface HpcDataTransferService {
 	 */
 	public String getFileContainerName(HpcDataTransferType dataTransferType, String configurationId,
 			String fileContainerId) throws HpcException;
-
-	/**
-	 * Calculate a data object upload % complete. Note: if upload not in progress,
-	 * null is returned.
-	 *
-	 * @param systemGeneratedMetadata The system generated metadata of the data
-	 *                                object.
-	 * @return The transfer % completion if transfer is in progress, or null
-	 *         otherwise.
-	 */
-	public Integer calculateDataObjectUploadPercentComplete(HpcSystemGeneratedMetadata systemGeneratedMetadata);
 
 	/**
 	 * Check if an upload URL expired.

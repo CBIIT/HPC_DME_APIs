@@ -46,10 +46,10 @@ public class HpcEmailNotificationSenderImpl implements HpcNotificationSender {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public void sendNotification(String userId, HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries)
+	public void sendNotification(String userId, HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries)
 			throws HpcException {
 		try {
-			mailSender.send(messagePreparator.getPreparator(userId, eventType, payloadEntries));
+			mailSender.send(messagePreparator.getPreparator(userId, eventType, doc, payloadEntries));
 
 		} catch (MailException e) {
 			throw new HpcException(e.getMessage(), e);
