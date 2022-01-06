@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.dao;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
@@ -189,14 +188,12 @@ public interface HpcDataRegistrationDAO {
 	/**
 	 * Upsert a google access token.
 	 * 
-	 * @param dataObjectId    The data object ID (uuid).
-	 * @param accessToken     The Google access token.
-	 * @param accessTokenType The access token type
+	 * @param dataObjectId The data object ID (uuid).
+	 * @param accessToken  The Google access token.
 	 *
 	 * @throws HpcException on database error.
 	 */
-	public void upsertGoogleAccessToken(String dataObjectId, String accessToken, HpcAccessTokenType accessTokenType)
-			throws HpcException;
+	public void upsertGoogleAccessToken(String dataObjectId, String accessToken) throws HpcException;
 
 	/**
 	 * Get a google access token.
@@ -206,12 +203,7 @@ public interface HpcDataRegistrationDAO {
 	 *
 	 * @throws HpcException on database error.
 	 */
-	class HpcGoogleAccessToken {
-		public String accessToken = null;
-		public HpcAccessTokenType accessTokenType = null;
-	}
-
-	public HpcGoogleAccessToken getGoogleAccessToken(String dataObjectId) throws HpcException;
+	public String getGoogleAccessToken(String dataObjectId) throws HpcException;
 
 	/**
 	 * Delete a google access token.

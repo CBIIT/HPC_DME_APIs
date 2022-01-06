@@ -128,6 +128,16 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
 	}
 
+	@Override
+	public void transferProgressed(long bytesTransferred) {
+		try {
+			dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred);
+
+		} catch (HpcException e) {
+			logger.error("Failed to update Streaming download task progress", e);
+		}
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
