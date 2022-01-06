@@ -11,16 +11,14 @@
 package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 
-import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -30,6 +28,11 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcGoogleCloudStorageConnection {
+
+	// Temp toggle to use refresh-token
+	@Value("${hpc.integration.googlecloudstorage.refreshToken}")
+	boolean refreshToken = false;
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -49,22 +52,19 @@ public class HpcGoogleCloudStorageConnection {
 	 * Authenticate google cloud storage.
 	 *
 	 * @param accessToken      Google Cloud Storage token.
-	 * @param accessTokenToken Google Cloud Storage token type.
 	 * @throws HpcException if authentication failed.
 	 */
-	public Object authenticate(String accessToken, HpcAccessTokenType accessTokenType) throws HpcException {
+	public Object authenticate(String accessToken) throws HpcException {
 		try {
 			return StorageOptions.newBuilder()
-					.setCredentials(accessTokenType.equals(HpcAccessTokenType.SERVICE_ACCOUNT)
-							? GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8))
-									.createScoped(Arrays.asList("https://www.googleapis.com/auth/cloud-platform"))
-							: GoogleCredentials.create(new AccessToken(accessToken, null)))
+					.setCredentials(
+							GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8)))
 					.build().getService();
 
 		} catch (Exception e) {
 			// Catching all as runtime exception will be thrown if the token is not a valid
 			// JSON.
-			throw new HpcException("Failed to authenticate Google Cloud Storage w/ access-token: " + e.getMessage(),
+			throw new HpcException("Failed to authenticate Google Cloud Storage: " + e.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
 	}
