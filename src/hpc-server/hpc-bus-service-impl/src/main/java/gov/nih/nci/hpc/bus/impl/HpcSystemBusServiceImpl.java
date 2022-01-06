@@ -1771,7 +1771,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
 								collectionListingEntryPath, appendPathToDownloadDestination));
 		calcGoogleCloudStorageDestination.setAccessToken(collectionDestination.getAccessToken());
-		calcGoogleCloudStorageDestination.setAccessTokenType(collectionDestination.getAccessTokenType());
 
 		return calcGoogleCloudStorageDestination;
 	}
