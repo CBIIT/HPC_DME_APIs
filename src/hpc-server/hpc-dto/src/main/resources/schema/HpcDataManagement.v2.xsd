@@ -15,6 +15,7 @@
 	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-domain-report="http://hpc.nci.nih.gov/domain/report"
 	xmlns:hpc-dto-datamanagement="http://hpc.nci.nih.gov/dto/datamanagement/v2"
 	targetNamespace="http://hpc.nci.nih.gov/dto/datamanagement/v2"
 	elementFormDefault="unqualified">
@@ -28,6 +29,9 @@
 	<xsd:import
 		namespace="http://hpc.nci.nih.gov/domain/metadata"
 		schemaLocation="HpcMetadataTypes.xsd" />
+	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/report"
+		schemaLocation="HpcReportTypes.xsd" />
 
 	<!-- Data Object Registration DTO -->
 	<xsd:element name="HpcDataObjectRegistrationRequestDTO">
