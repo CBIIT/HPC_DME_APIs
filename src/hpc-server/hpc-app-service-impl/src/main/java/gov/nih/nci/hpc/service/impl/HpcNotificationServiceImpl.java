@@ -14,9 +14,11 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificatio
 import static gov.nih.nci.hpc.service.impl.HpcEventServiceImpl.COLLECTION_PATH_PAYLOAD_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcEventServiceImpl.DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
+import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
@@ -57,6 +59,10 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   @Autowired
   private HpcNotificationDAO notificationDAO = null;
 
+  //The User DAO instance.
+   @Autowired
+  private HpcUserDAO userDAO = null;
+	
   // The Data Management Proxy instance.
   @Autowired
   private HpcDataManagementProxy dataManagementProxy = null;
@@ -201,10 +207,22 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
       logger.error("Could not locate notification sender for: " + deliveryMethod);
       return false;
     }
-
+    
+    
     // Send the notification.
     try {
-      notificationSender.sendNotification(userId, eventType, payloadEntries);
+      // Get user's doc to see if specific template should be used.
+      HpcUser user = userDAO.getUser(userId);
+      HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
+      payloadEntry.setAttribute("FIRST_NAME");
+      payloadEntry.setValue(user.getNciAccount().getFirstName());
+      payloadEntries.add(payloadEntry);
+
+      payloadEntry = new HpcEventPayloadEntry();
+      payloadEntry.setAttribute("LAST_NAME");
+      payloadEntry.setValue(user.getNciAccount().getLastName());
+      payloadEntries.add(payloadEntry);
+      notificationSender.sendNotification(userId, eventType, user.getNciAccount().getDoc(), payloadEntries);
 
     } catch (HpcException e) {
       logger.error("failed to send user notification", e);
