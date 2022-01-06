@@ -48,7 +48,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -85,6 +84,10 @@ import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.report.HpcReport;
+import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -139,6 +142,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
@@ -185,6 +189,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// TheEvent Application Service Instance.
 	@Autowired
 	private HpcEventService eventService = null;
+
+	// Report Application Service Instance.
+	@Autowired
+	private HpcReportService reportService = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -262,7 +270,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						() -> dataManagementService.validateHierarchy(path, configurationId, false));
 
 				// Add collection update event.
-				addCollectionUpdatedEvent(path, true, false, userId);
+				addCollectionUpdatedEvent(path, true, false, userId, null, null);
 
 				registrationCompleted = true;
 
@@ -298,7 +306,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
 			}
 
-			addCollectionUpdatedEvent(path, false, false, userId);
+			addCollectionUpdatedEvent(path, false, false, userId, null, null);
 		}
 
 		return created;
@@ -324,6 +332,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (metadataEntries != null && (!metadataEntries.getParentMetadataEntries().isEmpty()
 				|| !metadataEntries.getSelfMetadataEntries().isEmpty())) {
 			collectionDTO.setMetadataEntries(metadataEntries);
+		}
+
+		// Get the total size
+		HpcReportCriteria criteria = new HpcReportCriteria();
+		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+		criteria.setPath(path);
+		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+		List<HpcReport> reports = reportService.generateReport(criteria);
+		if (!CollectionUtils.isEmpty(reports)) {
+			collectionDTO.getReports().addAll(reports);
 		}
 
 		// Set the permission if requested
@@ -541,8 +559,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
-				downloadRetryRequest.getGoogleAccessTokenType());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -681,8 +698,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
-				downloadRetryRequest.getGoogleAccessTokenType());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
 
 		// Create and return a DTO with the request receipt.
 		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
@@ -763,9 +779,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 
-		boolean excludeSysAdminGroup =
-			securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.METADATA_ONLY)
-			|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
+		boolean excludeSysAdminGroup = securityService.getRequestInvoker().getUserRole()
+				.equals(HpcUserRole.METADATA_ONLY)
+				|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
 
 		return toEntityPermissionsDTO(dataManagementService.getCollectionPermissions(path), excludeSysAdminGroup);
 	}
@@ -970,8 +986,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					}
 				}
 
-				// Add collection update event.
-				addCollectionUpdatedEvent(path, false, true, userId);
+				// Add collection update event. (Only if sync-upload was performed.)
+				if (dataObjectFile != null) {
+					// Generate the download URL.
+					HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
+					try {
+						downloadRequestURL = generateDownloadRequestURL(path);
+					} catch (HpcException e) {
+						logger.error("registerDataObject: {} - Failed to generate presigned download URL for {}", path,
+								e);
+					}
+					addCollectionUpdatedEvent(path, false, true, userId,
+							downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
+							downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
+				}
 
 			} catch (Exception e) {
 				// Data object registration failed. Remove it from Data Management.
@@ -1207,7 +1235,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
-		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(
+		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(
 				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
 
 		if (includeAcl) {
@@ -1240,7 +1268,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
-		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadataService
+		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())));
 
 		if (includeAcl) {
@@ -1291,7 +1319,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
-				downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress());
+				downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress(),
+				metadata.getSourceSize());
 	}
 
 	@Override
@@ -1392,9 +1421,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Generate a download URL for the data object, and return it in a DTO.
 		return toDownloadResponseDTO(null, null, null,
-				dataTransferService.generateDownloadRequestURL(path, invokerNciAccount.getUserId(),
+				dataTransferService.generateDownloadRequestURL(path,
+						invokerNciAccount != null ? invokerNciAccount.getUserId() : metadata.getRegistrarId(),
 						metadata.getArchiveLocation(), metadata.getDataTransferType(), metadata.getSourceSize(),
-						metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()));
+						metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()),
+				metadata.getSourceSize());
 	}
 
 	@Override
@@ -1511,8 +1542,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else {
 			if (!abort) {
 				try {
-					securityService
-							.executeAsSystemAccount(Optional.empty(),
+					securityService.executeAsSystemAccount(Optional.empty(),
 							() -> dataManagementService.softDelete(path, Optional.of(false)));
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
@@ -1573,8 +1603,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 
-		boolean excludeSysAdminGroup =
-				securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.METADATA_ONLY)
+		boolean excludeSysAdminGroup = securityService.getRequestInvoker().getUserRole()
+				.equals(HpcUserRole.METADATA_ONLY)
 				|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
 
 		return toEntityPermissionsDTO(dataManagementService.getDataObjectPermissions(path), excludeSysAdminGroup);
@@ -1985,9 +2015,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param dataObjectRegistered An indicator if a data object was registered.
 	 * @param userId               The user ID who initiated the action resulted in
 	 *                             collection update event.
+	 * @param presignURL           The presigned download URL.(Optional)
+	 * @param size                 The data size.(Optional)
 	 */
 	private void addCollectionUpdatedEvent(String path, boolean collectionRegistered, boolean dataObjectRegistered,
-			String userId) {
+			String userId, String presignURL, String size) {
 		try {
 			if (!collectionRegistered && !dataObjectRegistered) {
 				// Add collection metadata updated event.
@@ -2004,7 +2036,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (collectionRegistered) {
 				eventService.addCollectionRegistrationEvent(parentCollection, userId);
 			} else {
-				eventService.addDataObjectRegistrationEvent(parentCollection, userId);
+				eventService.addDataObjectRegistrationEvent(parentCollection, userId, presignURL, size, path);
 			}
 
 		} catch (HpcException e) {
@@ -2019,16 +2051,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param destinationFile     The destination file.
 	 * @param taskId              The data object download task ID.
 	 * @param downloadRequestURL  A URL to use to download the data object.
+	 * @param sourceSize          The size of the file.
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
-			File destinationFile, String taskId, String downloadRequestURL) {
+			File destinationFile, String taskId, String downloadRequestURL, Long sourceSize) {
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		downloadResponse.setDestinationFile(destinationFile);
 		downloadResponse.setDestinationLocation(destinationLocation);
 		downloadResponse.setTaskId(taskId);
 		downloadResponse.setDownloadRequestURL(downloadRequestURL);
+		downloadResponse.setSize(sourceSize);
 
 		return downloadResponse;
 	}
@@ -2042,10 +2076,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param downloadRequestURL  A URL to use to download the data object.
 	 * @param restoreInProgress   The flag to indicate if restoration is in
 	 *                            progress.
+	 * @param sourceSize          The size of the file.
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
-			File destinationFile, String taskId, String downloadRequestURL, Boolean restoreInProgress) {
+			File destinationFile, String taskId, String downloadRequestURL, Boolean restoreInProgress,
+			Long sourceSize) {
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		downloadResponse.setDestinationFile(destinationFile);
@@ -2053,6 +2089,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		downloadResponse.setTaskId(taskId);
 		downloadResponse.setDownloadRequestURL(downloadRequestURL);
 		downloadResponse.setRestoreInProgress(restoreInProgress);
+		downloadResponse.setSize(sourceSize);
 
 		return downloadResponse;
 	}
@@ -2216,11 +2253,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *
 	 * @param subjectPermissions A list of subject permissions.
 	 * @return Entity permissions DTO
-	 * @throws HpcException 
+	 * @throws HpcException
 	 */
-	private HpcEntityPermissionsDTO toEntityPermissionsDTO(
-			List<HpcSubjectPermission> subjectPermissions, boolean excludeSysAdmins) 
-					throws HpcException {
+	private HpcEntityPermissionsDTO toEntityPermissionsDTO(List<HpcSubjectPermission> subjectPermissions,
+			boolean excludeSysAdmins) throws HpcException {
 		if (subjectPermissions == null) {
 			return null;
 		}
@@ -2228,18 +2264,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcEntityPermissionsDTO entityPermissions = new HpcEntityPermissionsDTO();
 		for (HpcSubjectPermission subjectPermission : subjectPermissions) {
 			if (subjectPermission.getSubjectType().equals(HpcSubjectType.USER)) {
-				if(!(excludeSysAdmins && (
-						subjectPermission.getSubject().contentEquals(
-								securityService.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername())
-						 || subjectPermission.getSubject().contentEquals("rods")))) {
+				if (!(excludeSysAdmins && (subjectPermission.getSubject()
+						.contentEquals(securityService.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername())
+						|| subjectPermission.getSubject().contentEquals("rods")))) {
 					HpcUserPermission userPermission = new HpcUserPermission();
 					userPermission.setPermission(subjectPermission.getPermission());
 					userPermission.setUserId(subjectPermission.getSubject());
 					entityPermissions.getUserPermissions().add(userPermission);
 				}
 			} else {
-				if(!(excludeSysAdmins && 
-					subjectPermission.getSubject().contentEquals("SYSTEM_ADMIN_GROUP"))) {
+				if (!(excludeSysAdmins && subjectPermission.getSubject().contentEquals("SYSTEM_ADMIN_GROUP"))) {
 					HpcGroupPermission groupPermission = new HpcGroupPermission();
 					groupPermission.setPermission(subjectPermission.getPermission());
 					groupPermission.setGroupName(subjectPermission.getSubject());
@@ -2517,7 +2551,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataTransferType dataTransferType = null;
 			HpcS3Account s3Account = null;
 			String googleAccessToken = null;
-			HpcAccessTokenType googleAccessTokenType = null;
 
 			if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
 				// It is a request to scan a Globus endpoint.
@@ -2538,17 +2571,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleDriveScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
-						googleAccessTokenType, scanDirectoryLocation, false);
+						scanDirectoryLocation, false);
 			} else if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
 				// It is a request to scan a Google Cloud Storage directory.
 				dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 				googleAccessToken = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory().getAccessToken();
-				googleAccessTokenType = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
-						.getAccessTokenType();
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
-						googleAccessTokenType, scanDirectoryLocation, false);
+						scanDirectoryLocation, false);
 			} else {
 				// It is a request to scan a File System directory (local DME server NAS).
 				scanDirectoryLocation = directoryScanRegistrationItem.getFileSystemScanDirectory()
@@ -2578,15 +2609,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			final String fileContainerId = scanDirectoryLocation.getFileContainerId();
 			final HpcS3Account fs3Account = s3Account;
 			final String fgoogleAccessToken = googleAccessToken;
-			final HpcAccessTokenType fGoogleAccessTokenType = googleAccessTokenType;
 			final HpcDataTransferType fdataTransferType = dataTransferType;
-			dataTransferService.scanDirectory(dataTransferType, s3Account, googleAccessToken, googleAccessTokenType,
-					scanDirectoryLocation, configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
-					directoryScanRegistrationItem.getExcludePatterns(), patternType)
+			dataTransferService
+					.scanDirectory(dataTransferType, s3Account, googleAccessToken, scanDirectoryLocation,
+							configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
+							directoryScanRegistrationItem.getExcludePatterns(), patternType)
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleAccessToken, fGoogleAccessTokenType)));
+							fs3Account, fgoogleAccessToken)));
 		}
 
 		return dataObjectRegistrationItems;
@@ -2611,15 +2642,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param googleAccessToken     (Optional) Provided if this is a registration
 	 *                              item from Google Drive or Google Cloud Storage
 	 *                              source, otherwise null.
-	 * @param googleAccessToken     The Google access token type (system/user
-	 *                              account)
 	 * @return data object registration DTO.
 	 */
 	private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem,
 			String basePath, String sourceFileContainerId, String callerObjectId,
 			HpcBulkMetadataEntries bulkMetadataEntries, HpcDirectoryScanPathMap pathMap,
-			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken,
-			HpcAccessTokenType googleAccessTokenType) {
+			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken) {
 		// If pathMap provided - use the map to replace scanned path with user provided
 		// path (or part of
 		// path).
@@ -2677,7 +2705,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
 			googleCloudStorageUploadSource.setSourceLocation(source);
 			googleCloudStorageUploadSource.setAccessToken(googleAccessToken);
-			googleCloudStorageUploadSource.setAccessTokenType(googleAccessTokenType);
 			dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		} else {
 			HpcUploadSource globusUploadSource = new HpcUploadSource();

@@ -2,7 +2,7 @@ package gov.nih.nci.hpc.web.model;
 
 public class HpcNotificationTriggerModelEntry {
 	private String path;
-	private String metadata;
+	private String update;
 
 	public String getPath() {
 		return path;
@@ -12,11 +12,11 @@ public class HpcNotificationTriggerModelEntry {
 		this.path = path;
 	}
 
-	public String getMetadata() {
-		return metadata;
+	public String getUpdate() {
+		return update;
 	}
 
-	public void setMetadata(String metadata) {
-		this.metadata = metadata;
+	public void setUpdate(String update) {
+		this.update = update;
 	}
 }

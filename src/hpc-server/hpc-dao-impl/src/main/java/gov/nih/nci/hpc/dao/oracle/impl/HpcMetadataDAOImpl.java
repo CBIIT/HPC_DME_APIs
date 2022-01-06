@@ -173,7 +173,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	
 	private static final String GET_ALL_DATA_OBJECT_COUNT2_SQL = " and exists(select 1 from r_data_hierarchy_user_meta_main where OBJECT_ID=data_id) ";
 
-	private static final String GET_COLLECTION_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
+	private static final String GET_COLLECTION_METADATA_SQL = "select coll_id, meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_coll_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
 	private static final String GET_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
@@ -233,6 +233,22 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	};
 	private RowMapper<HpcMetadataEntry> metadataEntryRowMapper = (rs, rowNum) -> {
 		HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+		metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
+		metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
+		String unit = rs.getString("META_ATTR_UNIT");
+		metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
+
+		Long level = rs.getLong("DATA_LEVEL");
+		metadataEntry.setLevel(level != null ? level.intValue() : null);
+		metadataEntry.setLevelLabel(rs.getString("LEVEL_LABEL"));
+
+		return metadataEntry;
+	};
+	
+	private RowMapper<HpcMetadataEntry> collectionMetadataEntryRowMapper = (rs, rowNum) -> {
+		HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+		Long collId = rs.getLong("COLL_ID");
+		metadataEntry.setCollectionId(collId != null ? collId.intValue() : null);
 		metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
 		metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
 		String unit = rs.getString("META_ATTR_UNIT");
@@ -549,7 +565,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public List<HpcMetadataEntry> getCollectionMetadata(String path, int minLevel) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, metadataEntryRowMapper, path, minLevel);
+			return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, collectionMetadataEntryRowMapper, path, minLevel);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection hierarchical metadata: " + e.getMessage(),
