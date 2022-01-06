@@ -48,7 +48,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -87,10 +86,8 @@ import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
-import gov.nih.nci.hpc.domain.report.HpcReportEntry;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
-import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -139,8 +136,6 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
-import gov.nih.nci.hpc.dto.report.HpcReportDTO;
-import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -564,8 +559,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
-				downloadRetryRequest.getGoogleAccessTokenType());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -704,8 +698,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
-				downloadRetryRequest.getGoogleAccessTokenType());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
 
 		// Create and return a DTO with the request receipt.
 		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
@@ -2557,7 +2550,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataTransferType dataTransferType = null;
 			HpcS3Account s3Account = null;
 			String googleAccessToken = null;
-			HpcAccessTokenType googleAccessTokenType = null;
 
 			if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
 				// It is a request to scan a Globus endpoint.
@@ -2578,17 +2570,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleDriveScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
-						googleAccessTokenType, scanDirectoryLocation, false);
+						scanDirectoryLocation, false);
 			} else if (directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
 				// It is a request to scan a Google Cloud Storage directory.
 				dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 				googleAccessToken = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory().getAccessToken();
-				googleAccessTokenType = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
-						.getAccessTokenType();
 				scanDirectoryLocation = directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(dataTransferType, googleAccessToken,
-						googleAccessTokenType, scanDirectoryLocation, false);
+						scanDirectoryLocation, false);
 			} else {
 				// It is a request to scan a File System directory (local DME server NAS).
 				scanDirectoryLocation = directoryScanRegistrationItem.getFileSystemScanDirectory()
@@ -2618,15 +2608,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			final String fileContainerId = scanDirectoryLocation.getFileContainerId();
 			final HpcS3Account fs3Account = s3Account;
 			final String fgoogleAccessToken = googleAccessToken;
-			final HpcAccessTokenType fGoogleAccessTokenType = googleAccessTokenType;
 			final HpcDataTransferType fdataTransferType = dataTransferType;
-			dataTransferService.scanDirectory(dataTransferType, s3Account, googleAccessToken, googleAccessTokenType,
-					scanDirectoryLocation, configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
-					directoryScanRegistrationItem.getExcludePatterns(), patternType)
+			dataTransferService
+					.scanDirectory(dataTransferType, s3Account, googleAccessToken, scanDirectoryLocation,
+							configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
+							directoryScanRegistrationItem.getExcludePatterns(), patternType)
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleAccessToken, fGoogleAccessTokenType)));
+							fs3Account, fgoogleAccessToken)));
 		}
 
 		return dataObjectRegistrationItems;
@@ -2651,15 +2641,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param googleAccessToken     (Optional) Provided if this is a registration
 	 *                              item from Google Drive or Google Cloud Storage
 	 *                              source, otherwise null.
-	 * @param googleAccessToken     The Google access token type (system/user
-	 *                              account)
 	 * @return data object registration DTO.
 	 */
 	private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem,
 			String basePath, String sourceFileContainerId, String callerObjectId,
 			HpcBulkMetadataEntries bulkMetadataEntries, HpcDirectoryScanPathMap pathMap,
-			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken,
-			HpcAccessTokenType googleAccessTokenType) {
+			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken) {
 		// If pathMap provided - use the map to replace scanned path with user provided
 		// path (or part of
 		// path).
@@ -2717,7 +2704,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
 			googleCloudStorageUploadSource.setSourceLocation(source);
 			googleCloudStorageUploadSource.setAccessToken(googleAccessToken);
-			googleCloudStorageUploadSource.setAccessTokenType(googleAccessTokenType);
 			dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		} else {
 			HpcUploadSource globusUploadSource = new HpcUploadSource();

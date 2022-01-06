@@ -26,7 +26,6 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcAccessTokenType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -78,8 +77,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(String accessToken, HpcAccessTokenType accessTokenType) throws HpcException {
-		return googleCloudStorageConnection.authenticate(accessToken, accessTokenType);
+	public Object authenticate(String accessToken) throws HpcException {
+		return googleCloudStorageConnection.authenticate(accessToken);
 	}
 
 	@Override
@@ -94,9 +93,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		// Authenticate the Google Cloud Storage access token.
-		Storage storage = googleCloudStorageConnection.getStorage(googleCloudStorageConnection.authenticate(
-				downloadRequest.getGoogleCloudStorageDestination().getAccessToken(),
-				downloadRequest.getGoogleCloudStorageDestination().getAccessTokenType()));
+		Storage storage = googleCloudStorageConnection.getStorage(googleCloudStorageConnection
+				.authenticate(downloadRequest.getGoogleCloudStorageDestination().getAccessToken()));
 
 		// Stream the file to Google Drive.
 		CompletableFuture<Void> googleCloudStorageDownloadFuture = CompletableFuture.runAsync(() -> {
@@ -140,7 +138,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				}
 			} else {
 				pathAttributes.setExists(true);
-				// In some cases, the isDirectory() is false, though it is an explicit directory, thus checking for 0 size.
+				// In some cases, the isDirectory() is false, though it is an explicit
+				// directory, thus checking for 0 size.
 				if (blob.isDirectory() || blob.getSize() == 0) {
 					pathAttributes.setIsDirectory(true);
 					pathAttributes.setIsFile(false);
@@ -185,10 +184,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
 
 		try {
-			// Folder name in Google drive begin w/o '/', end w/ '/' and has no repeating '/'.
+			// Folder name in Google drive begin w/o '/', end w/ '/' and has no repeating
+			// '/'.
 			String folder = toNormalizedPath(directoryLocation.getFileId()).substring(1) + '/';
-			storage.list(directoryLocation.getFileContainerId(),
-					Storage.BlobListOption.prefix(folder)).iterateAll().forEach(blob -> {
+			storage.list(directoryLocation.getFileContainerId(), Storage.BlobListOption.prefix(folder)).iterateAll()
+					.forEach(blob -> {
 						if (blob.getSize() > 0) {
 							HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
 							directoryScanItem.setFilePath(blob.getName());
