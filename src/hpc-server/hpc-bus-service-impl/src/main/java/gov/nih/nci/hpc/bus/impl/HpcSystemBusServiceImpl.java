@@ -268,16 +268,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Update data transfer status.
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
 							null, null, null, null, null, null, null, null);
+					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
+							
 					break;
 
 				case FAILED:
 					// Data transfer failed.
-
 					throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
 							HpcErrorType.DATA_TRANSFER_ERROR);
 
 				default:
 					// Transfer is still in progress.
+					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(),
+							Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
+									/ systemGeneratedMetadata.getSourceSize()));
 					continue;
 				}
 
@@ -1372,7 +1376,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		try {
 			switch (dataTransferStatus) {
 			case ARCHIVED:
-				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted);
+				// Generate the download URL.
+				HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
+				try {
+					downloadRequestURL = dataManagementBusService.generateDownloadRequestURL(path);
+				} catch (HpcException e) {
+					logger.error(
+							"addDataTransferUploadEvent: {} - Failed to generate presigned download URL [transfer-type={}, transfer-status={}]",
+							path, dataTransferType, dataTransferStatus, e);
+				}
+				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
+						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
+						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
 				break;
 
 			case IN_TEMPORARY_ARCHIVE:
@@ -1867,7 +1882,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
 								collectionListingEntryPath, appendPathToDownloadDestination));
 		calcGoogleCloudStorageDestination.setAccessToken(collectionDestination.getAccessToken());
-		calcGoogleCloudStorageDestination.setAccessTokenType(collectionDestination.getAccessTokenType());
 
 		return calcGoogleCloudStorageDestination;
 	}
@@ -2271,8 +2285,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				} else {
 					// Registration still in progress. Update % complete.
-					registrationTask
-							.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadata));
+					registrationTask.setPercentComplete(
+							dataTransferService.getDataObjectUploadProgress(metadata));
 				}
 			}
 

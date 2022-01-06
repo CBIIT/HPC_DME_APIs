@@ -73,13 +73,6 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 	
-	<xsd:simpleType name="HpcAccessTokenType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="USER_ACCOUNT" />
-			<xsd:enumeration value="SERVICE_ACCOUNT" />
-		</xsd:restriction>
-	</xsd:simpleType>
-
 	<xsd:complexType name="HpcDataTransferDownloadReport">
 		<xsd:sequence>
 			<xsd:element name="status"
@@ -187,7 +180,6 @@
 			<xsd:element name="account"
 				type="hpc-domain-datatransfer:HpcS3Account" />
 			<xsd:element name="accessToken" type="xsd:string" />
-			<xsd:element name="accessTokenType" type="hpc-domain-datatransfer:HpcAccessTokenType" />
 			<xsd:element name="sourceURL" type="xsd:string" />
 			<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
 			<xsd:element name="sourceInputStream" type="hpc-domain-datatransfer:HpcInputStream" />
@@ -215,7 +207,6 @@
 			<xsd:element name="directoryLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="accessToken" type="xsd:string" />
-			<xsd:element name="accessTokenType" type="hpc-domain-datatransfer:HpcAccessTokenType" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -265,7 +256,6 @@
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="accessToken" type="xsd:string" />
-			<xsd:element name="accessTokenType" type="hpc-domain-datatransfer:HpcAccessTokenType" />
 		</xsd:sequence>
 	</xsd:complexType>
 

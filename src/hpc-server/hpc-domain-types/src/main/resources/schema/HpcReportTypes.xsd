@@ -17,7 +17,7 @@
 	xmlns:hpc-domain-report="http://hpc.nci.nih.gov/domain/report"
 	targetNamespace="http://hpc.nci.nih.gov/domain/report"
 	elementFormDefault="unqualified">
-	
+
 	<xsd:simpleType name="HpcReportType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="USAGE_SUMMARY" />
@@ -32,22 +32,25 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:complexType name="HpcReportCriteria">
 		<xsd:sequence>
 			<xsd:element name="type" type="hpc-domain-report:HpcReportType" />
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="docs" 
-			             type="xsd:string" 
+			<xsd:element name="docs"
+			             type="xsd:string"
 			             minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="users" 
-			             type="xsd:string" 
+			<xsd:element name="users"
+			             type="xsd:string"
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="attributes"
+			             type="hpc-domain-report:HpcReportEntryAttribute"
 			             minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="fromDate" type="xsd:date" />
 			<xsd:element name="ToDate" type="xsd:date" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcReport">
 		<xsd:sequence>
 			<xsd:element name="type" type="hpc-domain-report:HpcReportType" />
@@ -62,14 +65,14 @@
 			             minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcReportEntry">
 		<xsd:sequence>
 			<xsd:element name="attribute" type="hpc-domain-report:HpcReportEntryAttribute" />
 			<xsd:element name="value" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="HpcReportEntryAttribute">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="REPORT_GENERATED_ON" />
@@ -86,6 +89,7 @@
 			<xsd:enumeration value="LARGEST_FILE_SIZE" />
 			<xsd:enumeration value="AVERAGE_FILE_SIZE" />
 			<xsd:enumeration value="SMALLEST_FILE_SIZE" />
+			<xsd:enumeration value="FILE_SIZES" />
 			<xsd:enumeration value="FILE_SIZE_BELOW_1MB" />
 			<xsd:enumeration value="FILE_SIZE_1MB_10MB" />
 			<xsd:enumeration value="FILE_SIZE_10MB_50MB" />
