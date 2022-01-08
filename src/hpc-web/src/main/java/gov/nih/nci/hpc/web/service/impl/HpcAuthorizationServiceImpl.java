@@ -180,8 +180,11 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private String getRefreshTokenInStore(String userId) throws Exception  {
     // The credential is always retrieved from the Store using flowGoogleCloud
     logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token being retrieved for: ", userId);
+    String refreshTokenInStore = null;
     Credential savedAndRetrievedCredential = flowGoogleCloud.loadCredential(userId);
-    String refreshTokenInStore = savedAndRetrievedCredential.getRefreshToken();
+    if (savedAndRetrievedCredential != null) {
+      refreshTokenInStore = savedAndRetrievedCredential.getRefreshToken();
+    }
     if (refreshTokenInStore == null || refreshTokenInStore.isEmpty()) {
       logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: No refreshToken token available in Store");
     } else {
