@@ -203,6 +203,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
 	private Integer maxPermittedS3DownloadsForGlobus = null;
 
+	//The ID of the S3 download task
+	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
+	private String s3DataObjectDownloadTaskServerId = null;
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -1308,7 +1312,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// in-process not already true.
 		if (!inProcess || (inProcess && !downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess);
+			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, inProcess ? s3DataObjectDownloadTaskServerId : null);
 		}
 
 		Calendar processed = Calendar.getInstance();
@@ -1602,9 +1606,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType) throws HpcException {
+			HpcDataTransferType destinationType, String s3DownloadTaskServerId) throws HpcException {
 		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType,
-				HpcDataTransferDownloadStatus.IN_PROGRESS);
+				HpcDataTransferDownloadStatus.IN_PROGRESS, s3DownloadTaskServerId);
 	}
 
 	@Override
@@ -2951,7 +2955,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
 		// Retrieve count of active S3 object downloads (inProcess = true)
 		int inProcessS3DownloadsForGlobus = getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3,
-				HpcDataTransferType.GLOBUS);
+				HpcDataTransferType.GLOBUS, s3DataObjectDownloadTaskServerId);
+
 		if (maxPermittedS3DownloadsForGlobus <= 0
 				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
 			try {
