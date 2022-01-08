@@ -210,7 +210,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private Integer maxPermittedS3DownloadsForGlobus = null;
 
 	//The ID of the S3 download task
-	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTasksServerId}")
+	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
 	private String s3DataObjectDownloadTaskServerId = null;
 
 	// List of authenticated tokens
