@@ -359,6 +359,7 @@
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="s3DownloadTaskServerId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
