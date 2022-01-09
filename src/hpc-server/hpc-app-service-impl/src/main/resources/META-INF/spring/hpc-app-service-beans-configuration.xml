@@ -45,6 +45,7 @@
   		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
   		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
   		<entry key="GOOGLE_DRIVE" value-ref="hpcGoogleDriveDataTransferProxy" />
+  		<entry key="GOOGLE_CLOUD_STORAGE" value-ref="hpcGoogleCloudStorageDataTransferProxy" />
 	</util:map>
 	
 	<!--  HPC System Accounts Locator -->
@@ -97,6 +98,11 @@
 	<!--  The DOC to base path map -->
 	<bean id="hpcDataManagementConfigurationLocator" 
 	      class="gov.nih.nci.hpc.service.impl.HpcDataManagementConfigurationLocator" 
+	      init-method="reload" />
+	      
+	<!--  The query config base path map -->
+	<bean id="hpcQueryConfigurationLocator" 
+	      class="gov.nih.nci.hpc.service.impl.HpcQueryConfigurationLocator" 
 	      init-method="reload" />
 	
 	<!-- HPC Application Services Beans -->

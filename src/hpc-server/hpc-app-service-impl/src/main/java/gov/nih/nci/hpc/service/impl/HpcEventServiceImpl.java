@@ -61,6 +61,8 @@ public class HpcEventServiceImpl implements HpcEventService {
   public static final String COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE = "UPDATE_DESCRIPTION";
   public static final String SOURCE_LOCATION_PAYLOAD_ATTRIBUTE = "SOURCE_LOCATION";
   public static final String DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE = "DESTINATION_LOCATION";
+  public static final String COLLECTION_UPDATE_PRESIGNED_URL_PAYLOAD_ATTRIBUTE = "PRESIGNED_URL";
+  public static final String COLLECTION_UPDATE_DATA_OBJECT_SIZE_PAYLOAD_ATTRIBUTE = "DATA_OBJECT_SIZE";
   public static final String DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_COMPLETED";
   public static final String ERROR_MESSAGE_PAYLOAD_ATTRIBUTE = "ERROR_MESSAGE";
   public static final String REGISTRATION_ITEMS_PAYLOAD_ATTRIBUTE = "REGISTRATION_ITEMS";
@@ -71,7 +73,7 @@ public class HpcEventServiceImpl implements HpcEventService {
       "Collection metadata updated";
   public static final String COLLECTION_REGISTRATION_PAYLOAD_VALUE = "COLLECTION_REGISTRATION";
   public static final String COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE =
-      "Sub collection registerd";
+      "Sub collection registered";
   public static final String DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE = "DATA_OBJECT_REGISTRATION";
   public static final String DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE =
       "Data object registered";
@@ -173,9 +175,16 @@ public class HpcEventServiceImpl implements HpcEventService {
 
   @Override
   public void addDataTransferUploadArchivedEvent(String userId, String path,
-      HpcFileLocation sourceLocation, Calendar dataTransferCompleted) throws HpcException {
+      HpcFileLocation sourceLocation, Calendar dataTransferCompleted, String presignURL,
+      String size) throws HpcException {
     addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED, null, null, path, null,
         dataTransferCompleted, sourceLocation, null, null, null);
+    // A data object registered, so we add an event for the parent collection.
+ 	String parentCollection = StringUtils.trimTrailingCharacter(path, '/');
+ 	int parentCollectionIndex = parentCollection.lastIndexOf('/');
+ 	parentCollection = parentCollectionIndex <= 0 ? "/" : parentCollection.substring(0, parentCollectionIndex);
+    addCollectionUpdatedEvent(parentCollection, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
+            DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE, userId, presignURL, size, path);
   }
 
   @Override
@@ -260,19 +269,19 @@ public class HpcEventServiceImpl implements HpcEventService {
   @Override
   public void addCollectionUpdatedEvent(String path, String userId) throws HpcException {
     addCollectionUpdatedEvent(path, COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE,
-        COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE, userId);
+        COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE, userId, null, null, null);
   }
 
   @Override
   public void addCollectionRegistrationEvent(String path, String userId) throws HpcException {
     addCollectionUpdatedEvent(path, COLLECTION_REGISTRATION_PAYLOAD_VALUE,
-        COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE, userId);
+        COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE, userId, null, null, null);
   }
 
   @Override
-  public void addDataObjectRegistrationEvent(String path, String userId) throws HpcException {
+  public void addDataObjectRegistrationEvent(String path, String userId, String presignURL, String size, String dataObjectPath) throws HpcException {
     addCollectionUpdatedEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
-        DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE, userId);
+        DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE, userId, presignURL, size, dataObjectPath);
   }
   
   @Override
@@ -438,10 +447,13 @@ public class HpcEventServiceImpl implements HpcEventService {
    * @param updateDescriptionPayloadValue The value to set on
    *        COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
    * @param userId The user ID who initiated the action resulted in collection update event.
+   * @param presignURL (Optional) The presigned download URL.
+   * @param size (Optional) The data size.
    * @throws HpcException on service failure.
    */
   private void addCollectionUpdatedEvent(String path, String updatePayloadValue,
-      String updateDescriptionPayloadValue, String userId) throws HpcException {
+      String updateDescriptionPayloadValue, String userId,
+      String presignURL, String size, String dataObjectPath) throws HpcException {
     // Input Validation.
     if (path == null || path.isEmpty()) {
       throw new HpcException("Null or empty collection path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -452,6 +464,18 @@ public class HpcEventServiceImpl implements HpcEventService {
     event.setType(HpcEventType.COLLECTION_UPDATED);
     event.getPayloadEntries().addAll(
         toCollectionUpdatedPayloadEntries(path, updatePayloadValue, updateDescriptionPayloadValue));
+    if (presignURL != null) {
+        event.getPayloadEntries().add(
+            toPayloadEntry(COLLECTION_UPDATE_PRESIGNED_URL_PAYLOAD_ATTRIBUTE, presignURL));
+    }
+    if (size != null) {
+        event.getPayloadEntries().add(
+            toPayloadEntry(COLLECTION_UPDATE_DATA_OBJECT_SIZE_PAYLOAD_ATTRIBUTE, size));
+    }
+    if (dataObjectPath != null) {
+        event.getPayloadEntries().add(
+            toPayloadEntry(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE, dataObjectPath));
+    }
     event.getUserIds().addAll(getCollectionUpdatedEventSubscribedUsers(path, updatePayloadValue,
         updateDescriptionPayloadValue, userId));
 

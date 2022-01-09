@@ -217,7 +217,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     return toRelativePaths(
     	metadataDAO.getDataObjectPaths(
-    	   path,
+    	   toAbsolutePath(path),
            compoundMetadataQuery,
            dataManagementUsername,
            finalOffset,
@@ -252,7 +252,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     List<HpcSearchMetadataEntry> hpcSearchMetadataEntries = metadataDAO.getDetailedDataObjectPaths(
-            path,
+    		toAbsolutePath(path),
     		compoundMetadataQuery,
             dataManagementUsername,
             finalOffset,
@@ -264,10 +264,10 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     }
     return hpcSearchMetadataEntries;
   }
-
-
+  
+  
   @Override
-  public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery)
+  public int getDataObjectCount(String path, HpcCompoundMetadataQuery compoundMetadataQuery)
       throws HpcException {
     // Input Validation.
     HpcDomainValidationResult validationResult =
@@ -281,11 +281,47 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     // Use the hierarchical metadata views to perform the search.
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-    return metadataDAO.getDataObjectCount(
+    return metadataDAO.getDataObjectCount(toAbsolutePath(path), 
         compoundMetadataQuery, dataManagementUsername, defaultDataObjectLevelFilter);
   }
+  
 
+  @Override
+  public List<HpcSearchMetadataEntry> getAllDataObjectPaths(String dataManagementUsername, String path,
+		  int offset, int pageSize)
+      throws HpcException {
 
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = offset;
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+    }
+    
+    // Use the hierarchical metadata views to perform the search.
+    List<HpcSearchMetadataEntry> hpcSearchMetadataEntries = metadataDAO.getAllDataObjectPaths(
+            path,
+            dataManagementUsername,
+            finalOffset,
+            finalPageSize);
+    for(HpcSearchMetadataEntry hpcSearchMetadataEntry: hpcSearchMetadataEntries) {
+       hpcSearchMetadataEntry.setCollectionName(toRelativePath(hpcSearchMetadataEntry.getCollectionName()));
+       hpcSearchMetadataEntry.setAbsolutePath(toRelativePath(hpcSearchMetadataEntry.getAbsolutePath()));
+    }
+    return hpcSearchMetadataEntries;
+  }
+  
+  
+  @Override
+  public int getAllDataObjectCount(String path)
+      throws HpcException {
+
+    // Doesn't use the hierarchical metadata views to perform the search.
+    String dataManagementUsername =
+        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    return metadataDAO.getAllDataObjectCount(path, dataManagementUsername);
+  }
+  
   @Override
   public List<String> getDataObjectParentPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
@@ -311,7 +347,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     return toRelativePaths(
         metadataDAO.getDataObjectParentPaths(
-            path,compoundMetadataQuery,
+        	toAbsolutePath(path),compoundMetadataQuery,
             dataManagementUsername,
             finalOffset,
             finalPageSize,
@@ -344,7 +380,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     List<HpcSearchMetadataEntryForCollection> hpcSearchMetadataEntries = metadataDAO.getDetailedDataObjectParentPaths(
-            path,
+    		toAbsolutePath(path),
             compoundMetadataQuery,
             dataManagementUsername,
             finalOffset,
@@ -456,5 +492,15 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
    */
   public String toRelativePath(String path) {
     return dataManagementProxy.getRelativePath(path);
+  }
+  
+  /**
+   * Convert a relative path, to an absolute path.
+   *
+   * @param path The relative path.
+   * @return The absolute path.
+   */
+  public String toAbsolutePath(String path) {
+    return dataManagementProxy.getAbsolutePath(path);
   }
 }
