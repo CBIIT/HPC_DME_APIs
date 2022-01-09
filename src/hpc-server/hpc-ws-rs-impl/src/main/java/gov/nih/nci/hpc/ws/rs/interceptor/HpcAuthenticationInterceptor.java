@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,8 +21,11 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.security.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -49,6 +53,10 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
 	// The Security Business Service instance.
 	@Autowired
 	private HpcSecurityBusService securityBusService = null;
+
+	// Restricted list of metadata only users.
+	@Value("#{'${hpc.ws.rs.auth.metadataOnlyUsers}'.split(',')}")
+	private List<String> metadataOnlyUsers = null;
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -80,10 +88,18 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
 		try {
 			authenticate(message);
 
-			// Set a security context with the user's role.
-			HpcSecurityContext sc = new HpcSecurityContext(
-					securityBusService.getAuthenticationResponse(false).getUserRole().value());
-			message.put(SecurityContext.class, sc);
+			HpcAuthenticationResponseDTO response = securityBusService.getAuthenticationResponse(false);
+			
+			if (isMetadataOnlyUser(response.getUserId())) {
+				// Set a security context with the restricted user's role.
+				HpcSecurityContext sc = new HpcSecurityContext(HpcUserRole.METADATA_ONLY.value());
+				message.put(SecurityContext.class, sc);
+			} else {
+				// Set a security context with the user's role.
+				HpcSecurityContext sc = new HpcSecurityContext(response.getUserRole().value());
+				message.put(SecurityContext.class, sc);
+			}
+			securityBusService.setMetadataOnlyUser(isMetadataOnlyUser(response.getUserId()));
 
 		} catch (HpcException e) {
 			throw new HpcAuthenticationException(e.getMessage(), e);
@@ -240,5 +256,10 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
 		}
 
 		return header.get(0);
+	}
+	
+	private boolean isMetadataOnlyUser(String user) {
+		
+		return (metadataOnlyUsers != null && metadataOnlyUsers.contains(user));
 	}
 }

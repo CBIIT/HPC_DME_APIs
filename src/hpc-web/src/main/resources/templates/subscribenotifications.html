@@ -132,14 +132,12 @@
 																			<label id="existingCollectionPathAdded" th:text="${entry.getPath()}"></label>
 																			<input type="hidden" th:id="'existingCollectionPath'+${iterationStatus.count}" th:name="'existingCollectionPath'+${iterationStatus.count}" th:attr="value = ${entry.getPath()}"/>
 																		</td>
-																		<!-- 
-																		<td th:if="${entry.getMetadata()} != null">
-																			<label><input type="checkbox" th:name="'existingMetadataCheck'+${iterationStatus.count}" th:id="'existingMetadataCheck'+${iterationStatus.count}" checked="checked"  onClick="enableSave()"/>Metadata Updates only</label> 
+																		<td th:if="${entry.getUpdate()} != null">
+																			<label><input type="checkbox" th:name="'existingUpdateCheck'+${iterationStatus.count}" th:id="'existingUpdateCheck'+${iterationStatus.count}" checked="checked"  onClick="enableSave()"/>&nbsp;Data Registered Updates Only</label> 
 																		</td>																		
-																		<td th:unless="${entry.getMetadata()} != null">
-																			<label><input type="checkbox" th:name="'existingMetadataCheck'+${iterationStatus.count}" th:id="'existingMetadataCheck'+${iterationStatus.count}"  onClick="enableSave()"/>Metadata Updates only</label> 
-																		</td>
-																		 -->																		
+																		<td th:unless="${entry.getUpdate()} != null">
+																			<label><input type="checkbox" th:name="'existingUpdateCheck'+${iterationStatus.count}" th:id="'existingUpdateCheck'+${iterationStatus.count}"  onClick="enableSave()"/>&nbsp;Data Registered Updates Only</label> 
+																		</td>																		
 																		</div>
 																	</tr>
 																	</tbody>
@@ -149,8 +147,9 @@
 																<tbody>
 																	<tr id='collRow0'><td>
 																	<input type="text" id='collectionPath' name="collectionPath" placeholder='Collection Path' class="form-control" /><br/>
-																	<!-- 
-																	<label><input type="checkbox" name="metadata" id="metadata" />Metadata Updates only</label> --> 
+																	<label><input type="checkbox" name="update" id="update" />&nbsp;Data Registered Updates Only</label>
+																	<a href="#" data-toggle="tooltip" data-placement="right" title="Collection Update Notification includes: Collection metadata updated; Sub collection registered; Data object registered. Click this checkbox to subscribe only to Data object registered updates.">
+																	<img style="width: 25px; height: 25px;vertical-align: top;" src="img/help.png"/></a>
 																	</td><td>
 																	<a id="addAttr" class="btn btn-default pull-left" onClick="addRow()">Add</a>
 																	</td></tr>
@@ -189,9 +188,8 @@
 
 	<!-- javascripts -->
 	<!-- bootstrap -->
-	<script src="js/bootstrap.min.js"></script>
-
 	<script src="js/jquery-ui-1.10.4.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
 	<script src="js/jquery.scrollTo.min.js"></script>
 	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
 	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
@@ -205,6 +203,7 @@
 
 $(document).ready(function(){
 	$('#sub-menu-manage').addClass("active");
+	$('[data-toggle="tooltip"]').tooltip();
 });
 
 function showalert(message,alerttype) {
@@ -242,7 +241,7 @@ function addRow() {
 	rowId++;
     var table = document.getElementById("collectionTable");
     
-   // var metadata = document.getElementById("metadata").checked;
+    var update = document.getElementById("update").checked;
     
     var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
     rows = rows - 1;
@@ -250,15 +249,15 @@ function addRow() {
     row.id = "collRow"+(rows+1);
     var cell0 = row.insertCell(0);
     var cell1 = row.insertCell(1);
-    cell0.innerHTML = '<td><input type="checkbox" id="collection'+(rows+1)+'" name="collection'+(rows+1)+'" checked="checked"/></td><td><label id="collectionPathAdded'+ (rowId) +'">'+ (path) + '</label><input type="hidden" id="collectionPathAdded'+(rows+1)+'" name="collectionPathAdded'+(rows+1)+'" value="'+ (path) +'"/></td>';
+    cell0.innerHTML = '<td><input type="checkbox" id="collection'+(rows+1)+'" name="collection'+(rows+1)+'" checked="checked"/></td><td><label id="collectionPathAdded'+ (rowId) +'">&nbsp;'+ (path) + '</label><input type="hidden" id="collectionPathAdded'+(rows+1)+'" name="collectionPathAdded'+(rows+1)+'" value="'+ (path) +'"/></td>';
   
-    //if(metadata)
-    //	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'" checked="checked"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
-   	//else
-    //   	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
+    if(update)
+    	cell1.innerHTML = '<input type="checkbox" id="update'+(rows+1)+'" name="update'+(rows+1)+'" checked="checked"/><label id="update'+ (rowId) +'">&nbsp;Data Registered Updates Only</label>';
+   	else
+       	cell1.innerHTML = '<input type="checkbox" id="update'+(rows+1)+'" name="update'+(rows+1)+'"/><label id="update'+ (rowId) +'">&nbsp;Data Registered Updates Only</label>';
 
     document.getElementById("collectionPath").value = "";
-    //document.getElementById("metadata").checked = false;
+    document.getElementById("update").checked = false;
     
 }
 //]]>

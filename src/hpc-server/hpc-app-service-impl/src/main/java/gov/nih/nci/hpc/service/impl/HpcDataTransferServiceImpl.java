@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -47,6 +48,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
+import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -73,7 +75,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
@@ -102,6 +104,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -135,6 +138,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new EnumMap<>(
 			HpcDataTransferType.class);
 
+	// Map data object IDs to completion %.
+	private Map<String, Integer> dataObjectUploadPercentComplete = new HashMap<>();
+
 	// System Accounts locator.
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
@@ -151,9 +157,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Autowired
 	private HpcMetadataService metadataService = null;
 
+	// Security service.
+	@Autowired
+	private HpcSecurityService securityService = null;
+
 	// Notification Application Service.
 	@Autowired
 	private HpcNotificationService notificationService = null;
+
+	// Data Registration DAO.
+	@Autowired
+	private HpcDataRegistrationDAO dataRegistrationDAO = null;
 
 	// Data management configuration locator.
 	@Autowired
@@ -184,10 +198,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Value("${hpc.service.dataTransfer.globusTokenExpirationPeriod}")
 	private int globusTokenExpirationPeriod = 0;
-	
+
+	// Max downloads that the transfer manager can perform
+	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
+	private Integer maxPermittedS3DownloadsForGlobus = null;
+
+	//The ID of the S3 download task
+	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
+	private String s3DataObjectDownloadTaskServerId = null;
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
-	
+
 	// Date formatter to format files last-modified date
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
@@ -231,6 +253,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		filter = new HpcDataObjectDownloadTaskStatusFilter();
 		filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		filter.setDestination(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+		cancelCollectionDownloadTaskItemsFilter.add(filter);
+
+		filter = new HpcDataObjectDownloadTaskStatusFilter();
+		filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		filter.setDestination(HpcDataTransferType.S_3);
 		cancelCollectionDownloadTaskItemsFilter.add(filter);
 
@@ -261,10 +288,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
-			HpcUploadSource fileSystemUploadSource, File sourceFile, boolean generateUploadRequestURL,
-			Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
-			String callerObjectId, String configurationId) throws HpcException {
-		// Input Validation. One and only one of the first 5 parameters is expected to
+			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
+			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
+			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
+			throws HpcException {
+		// Input Validation. One and only one of the first 6 parameters is expected to
 		// be provided.
 
 		// Validate data-object-id provided.
@@ -274,15 +302,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate an upload source was provided.
 		if (globusUploadSource == null && s3UploadSource == null && googleDriveUploadSource == null
-				&& fileSystemUploadSource == null && sourceFile == null && !generateUploadRequestURL) {
+				&& googleCloudStorageUploadSource == null && fileSystemUploadSource == null && sourceFile == null
+				&& !generateUploadRequestURL) {
 			throw new HpcException("No data transfer source or data attachment provided or upload URL requested",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate Globus upload source.
 		if (globusUploadSource != null) {
-			if (s3UploadSource != null || googleDriveUploadSource != null || fileSystemUploadSource != null
-					|| sourceFile != null || generateUploadRequestURL) {
+			if (s3UploadSource != null || googleDriveUploadSource != null || googleCloudStorageUploadSource != null
+					|| fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(globusUploadSource.getSourceLocation())) {
@@ -292,8 +321,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate S3 upload source.
 		if (s3UploadSource != null) {
-			if (googleDriveUploadSource != null || fileSystemUploadSource != null || sourceFile != null
-					|| generateUploadRequestURL) {
+			if (googleDriveUploadSource != null || googleCloudStorageUploadSource != null
+					|| fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(s3UploadSource.getSourceLocation())) {
@@ -318,7 +347,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate Google Drive upload source.
 		if (googleDriveUploadSource != null) {
-			if (fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
+			if (googleCloudStorageUploadSource != null || fileSystemUploadSource != null || sourceFile != null
+					|| generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(googleDriveUploadSource.getSourceLocation())) {
@@ -333,10 +363,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (StringUtils.isEmpty(googleDriveUploadSource.getAccessToken())) {
+				String googleAccessToken = dataRegistrationDAO.getGoogleAccessToken(dataObjectId);
+				if (googleAccessToken != null) {
+					// We are restarting an upload from Google Drive after server restarted.
+					// Populate the access token from DB.
+					googleDriveUploadSource.setAccessToken(googleAccessToken);
+				}
+			}
+			if (StringUtils.isEmpty(googleDriveUploadSource.getAccessToken())) {
 				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (googleDriveUploadSource.getAccount() != null) {
-				throw new HpcException("AWS S3 account provided in Google Drive upload source location",
+				throw new HpcException("S3 account provided in Google Drive upload source location",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		// Validate Google Cloud storage upload source.
+		if (googleCloudStorageUploadSource != null) {
+			if (fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
+				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (!isValidFileLocation(googleCloudStorageUploadSource.getSourceLocation())) {
+				throw new HpcException("Invalid Google Cloud Storage upload source location",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (StringUtils.isEmpty(googleCloudStorageUploadSource.getAccessToken())) {
+				String googleAccessToken = dataRegistrationDAO.getGoogleAccessToken(dataObjectId);
+				if (googleAccessToken != null) {
+					// If we are restarting an upload from Google Cloud Storage after server
+					// restarted.
+					// Populate the access token from DB.
+					googleCloudStorageUploadSource.setAccessToken(googleAccessToken);
+				}
+			}
+			if (StringUtils.isEmpty(googleCloudStorageUploadSource.getAccessToken())) {
+				throw new HpcException("Invalid Google Cloud Storage access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (googleCloudStorageUploadSource.getAccount() != null) {
+				throw new HpcException("S3 account provided in Google Cloud Storage upload source location",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
@@ -359,9 +424,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate generate upload request URL.
 		if (generateUploadRequestURL) {
-			if (globusUploadSource != null || s3UploadSource != null || sourceFile != null) {
-				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
-			}
 			if (uploadParts != null && uploadParts < 1) {
 				throw new HpcException("Invalid upload parts: " + uploadParts, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
@@ -372,7 +434,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate source location exists and accessible.
 		HpcPathAttributes pathAttributes = validateUploadSourceFileLocation(globusUploadSource, s3UploadSource,
-				googleDriveUploadSource, fileSystemUploadSource, sourceFile, configurationId);
+				googleDriveUploadSource, googleCloudStorageUploadSource, fileSystemUploadSource, sourceFile,
+				configurationId);
 
 		// Create an upload request.
 		HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
@@ -383,10 +446,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setGlobusUploadSource(globusUploadSource);
 		uploadRequest.setS3UploadSource(s3UploadSource);
 		uploadRequest.setGoogleDriveUploadSource(googleDriveUploadSource);
+		uploadRequest.setGoogleCloudStorageUploadSource(googleCloudStorageUploadSource);
 		uploadRequest.setFileSystemUploadSource(fileSystemUploadSource);
 		if (sourceFile != null) {
 			uploadRequest.setSourceFile(sourceFile);
-
 			HpcIntegratedSystemAccount systemAccount = systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
 			uploadRequest.setSystemAccountName(systemAccount.getUsername());
 			uploadRequest.setSudoPassword(systemAccount.getPassword());
@@ -430,9 +493,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public void updateDataObjectUploadProgress(String dataObjectId, int percentComplete) {
+		if (!StringUtils.isEmpty(dataObjectId) && percentComplete >= 0 && percentComplete <= 100) {
+			dataObjectUploadPercentComplete.put(dataObjectId, percentComplete);
+		}
+	}
+
+	@Override
+	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
+		return systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) ? null
+				: Optional.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
+						.orElse(0);
+	}
+
+	@Override
 	public HpcDataObjectDownloadResponse downloadDataObject(String path, HpcFileLocation archiveLocation,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
 			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
@@ -444,7 +522,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate the destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				synchronousDownloadFilter, configurationId, false);
+				googleCloudStorageDownloadDestination, synchronousDownloadFilter, configurationId, false);
 
 		// Create a download request.
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -453,6 +531,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setGlobusDestination(globusDownloadDestination);
 		downloadRequest.setS3Destination(s3DownloadDestination);
 		downloadRequest.setGoogleDriveDestination(googleDriveDownloadDestination);
+		downloadRequest.setGoogleCloudStorageDestination(googleCloudStorageDownloadDestination);
 		downloadRequest.setPath(path);
 		downloadRequest.setConfigurationId(configurationId);
 		downloadRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
@@ -467,7 +546,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
-		// There are 5 methods of downloading data object:
+		// There are 6 methods of downloading data object:
 		// 1. Data is in deep archive, restoration is required. Supported by
 		// S3 (Cloudian)
 		// archive.
@@ -479,6 +558,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// provided S3 bucket. Supported by S3 archive only.
 		// 5. Asynchronous download via streaming data object from S3 Archive to user
 		// provided Google Drive. Supported by S3 archive only.
+		// 6. Asynchronous download via streaming data object from S3 Archive to user
+		// provided Google Cloud Storage. Supported by S3 archive only.
 		if (deepArchiveStatus != null) {
 			// If status is DEEP_ARCHIVE, and object is not restored, submit a restore
 			// request
@@ -490,10 +571,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							downloadRequest.getArchiveLocation());
 
 			String restorationStatus = objectMetadata.getRestorationStatus();
-			
-			// 1. If restoration is not requested, storage class is Glacier or deep archive for Cloudian and AWS
-			// 2. If restoration is ongoing, storage class is null for Cloudian but remains same for AWS.
-			// 3. If restoration is completed, storage class is null for Cloudian but remains same for AWS.
+
+			// 1. If restoration is not requested, storage class is Glacier or deep archive
+			// for Cloudian and AWS
+			// 2. If restoration is ongoing, storage class is null for Cloudian but remains
+			// same for AWS.
+			// 3. If restoration is completed, storage class is null for Cloudian but
+			// remains same for AWS.
 			if ((objectMetadata.getDeepArchiveStatus() != null
 					&& (restorationStatus == null || !restorationStatus.equals("success")))
 					|| (objectMetadata.getDeepArchiveStatus() == null && restorationStatus != null
@@ -503,8 +587,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		if (globusDownloadDestination == null && s3DownloadDestination == null
-				&& googleDriveDownloadDestination == null) {
+		if (globusDownloadDestination == null && s3DownloadDestination == null && googleDriveDownloadDestination == null
+				&& googleCloudStorageDownloadDestination == null) {
 			// This is a synchronous download request.
 			performSynchronousDownload(downloadRequest, response, dataTransferConfiguration, synchronousDownloadFilter);
 
@@ -531,6 +615,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// This is an asynchronous download request from a S3 archive to a
 			// Google Drive destination.
 			performGoogleDriveAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
+
+		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleCloudStorageDownloadDestination != null) {
+			// This is an asynchronous download request from a S3 archive to a Google Cloud
+			// Storage destination.
+			performGoogleCloudStorageAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else {
 			throw new HpcException("Invalid download request", HpcErrorType.UNEXPECTED_ERROR);
@@ -689,25 +778,30 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcPathAttributes getPathAttributes(String accessToken, HpcFileLocation fileLocation, boolean getSize)
-			throws HpcException {
+	public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType, String accessToken,
+			HpcFileLocation fileLocation, boolean getSize) throws HpcException {
 		// Input validation.
+		if (!dataTransferType.equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+				&& !dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+			throw new HpcException("Unexpected data transfer type: " + dataTransferType.value(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
 		if (!isValidFileLocation(fileLocation)) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if (StringUtils.isEmpty(accessToken)) {
-			throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Invalid Google Drive / Google Cloud storage access token",
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// This is Google Drive only functionality, so we get the Google Drive
-		// data-transfer-proxy.
-		HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE);
+		HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(dataTransferType);
 		try {
 			return dataTransferProxy.getPathAttributes(dataTransferProxy.authenticate(accessToken), fileLocation,
 					getSize);
 
 		} catch (HpcException e) {
-			throw new HpcException("Failed to access Google Drive: [" + e.getMessage() + "] " + fileLocation,
+			throw new HpcException(
+					"Failed to access " + dataTransferType.value() + ": [" + e.getMessage() + "] " + fileLocation,
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
 	}
@@ -758,7 +852,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType, HpcS3Account s3Account,
-			String googleDriveAccessToken, HpcFileLocation directoryLocation, String configurationId,
+			String googleAccessToken, HpcFileLocation directoryLocation, String configurationId,
 			String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
 			HpcPatternType patternType) throws HpcException {
 		// Input validation.
@@ -766,9 +860,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid directory location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if (dataTransferType == null) {
-			if ((!StringUtils.isEmpty(googleDriveAccessToken) || s3Account != null
+			if ((!StringUtils.isEmpty(googleAccessToken) || s3Account != null
 					|| !StringUtils.isEmpty(s3ArchiveConfigurationId))) {
-				throw new HpcException("S3 account / Google Drive token provided File System scan",
+				throw new HpcException(
+						"S3 account / Google Drive / Google Cloud Storage token provided File System scan",
 						HpcErrorType.UNEXPECTED_ERROR);
 			}
 		} else {
@@ -776,8 +871,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("S3 account provided for Non S3 data transfer", HpcErrorType.UNEXPECTED_ERROR);
 			}
 			if (!dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)
-					&& !StringUtils.isEmpty(googleDriveAccessToken)) {
-				throw new HpcException("Google Drive access token provided for Non Google Drive data transfer",
+					&& !dataTransferType.equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !StringUtils.isEmpty(googleAccessToken)) {
+				throw new HpcException(
+						"Google access token provided for Non Google Drive  / Cloud Storagedata transfer",
 						HpcErrorType.UNEXPECTED_ERROR);
 			}
 		}
@@ -786,15 +883,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Scan a directory in local DME server NAS.
 			scanItems = scanDirectory(directoryLocation);
 		} else {
-			// Globus / S3 / Google Drive scan.
+			// Globus / S3 / Google Drive scan / Google Cloud Storage.
 
 			// If an S3 account or Google Drive access token was provided, then we use it to
 			// get authenticated token, otherwise, we use a system account token.
 			Object authenticatedToken = null;
 			if (s3Account != null) {
 				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(s3Account);
-			} else if (!StringUtils.isEmpty(googleDriveAccessToken)) {
-				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(googleDriveAccessToken);
+			} else if (!StringUtils.isEmpty(googleAccessToken)) {
+				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(googleAccessToken);
 			} else {
 				authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
 			}
@@ -947,9 +1044,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		// Cleanup the DB record.
-		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
-
 		// Create a task result object.
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
 		taskResult.setId(downloadTask.getId());
@@ -965,6 +1059,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
+		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			taskResult.setDestinationLocation(
+					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 		}
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		taskResult.setResult(result);
@@ -994,6 +1091,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+
+		// Cleanup the DB record.
+		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
+
 	}
 
 	@Override
@@ -1018,14 +1119,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		// Check if transfer requests can be acceptable at this time.
-		if (!acceptsTransferRequests(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(),
-				downloadTask.getS3ArchiveConfigurationId())) {
-			logger.info(
-					"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
-					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
-			return;
-		}
 
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
@@ -1040,6 +1133,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setGlobusDestination(downloadTask.getGlobusDownloadDestination());
 		downloadRequest.setS3Destination(downloadTask.getS3DownloadDestination());
 		downloadRequest.setGoogleDriveDestination(downloadTask.getGoogleDriveDownloadDestination());
+		downloadRequest.setGoogleCloudStorageDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 
 		HpcArchive baseArchiveDestination = null;
 		Boolean encryptedTransfer = null;
@@ -1061,15 +1155,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			baseArchiveDestination = dataTransferConfiguration.getBaseArchiveDestination();
 			encryptedTransfer = dataTransferConfiguration.getEncryptedTransfer();
 
-			// If the destination is Google Drive, we need to generate a download URL from
+			// If the destination is Google Drive / Cloud Storage, we need to generate a
+			// download URL from
 			// the S3 archive.
-			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+					|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
 				downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
 						downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
 			} else {
+				// Check if transfer requests can be acceptable at this time (Globus only)
+
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
+				// Check if transfer requests can be acceptable at this time.
+				if (!acceptsTransferRequests(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(),
+						authenticatedToken)) {
+					logger.info(
+							"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getDataTransferType(),
+							downloadTask.getDestinationType());
+					return;
+				}
 			}
 		}
 
@@ -1084,23 +1191,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			// Validate that the 2-hop download can be performed at this time.
 			if (!canPerfom2HopDownload(secondHopDownload)) {
+				// Can’t perform the 2-hop download at this time. Reset the task
+				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
-						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={}]",
-						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
+								+ " path={}], or transaction limit reached ",
+						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
+						downloadTask.getPath());
 				return;
 			}
 
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
-			downloadRequest.setArchiveLocation(metadataService
-					.getDataObjectSystemGeneratedMetadata(downloadRequest.getPath()).getArchiveLocation());
+			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
-		// If the destination is S3 (AWS or 3rd Party), or Google Drive, we need to
+		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage,
+		// we need to
 		// create a progress listener.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
-				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
 			// Create a listener that will complete the download task when it is done.
 			progressListener = new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
 		}
@@ -1200,7 +1312,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// in-process not already true.
 		if (!inProcess || (inProcess && !downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess);
+			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, inProcess ? s3DataObjectDownloadTaskServerId : null);
 		}
 
 		Calendar processed = Calendar.getInstance();
@@ -1213,28 +1325,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, long bytesTransferred)
 			throws HpcException {
-		// Input validation. Note: we only expect this to be called while Globus
-		// transfer is in-progress
-		// Currently, bytesTransferred are not available while S3 download is in
-		// progress.
+		// Input validation.
 		if (downloadTask == null || downloadTask.getSize() <= 0 || bytesTransferred <= 0
-				|| bytesTransferred > downloadTask.getSize()
-				|| downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+				|| bytesTransferred > downloadTask.getSize()) {
 			return;
 		}
 
 		// Calculate the percent complete.
 		float percentComplete = 100 * (float) bytesTransferred / downloadTask.getSize();
-		if (dataManagementConfigurationLocator
-				.getDataTransferConfiguration(downloadTask.getConfigurationId(),
-						downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType())
-				.getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
-			// This is a 2-hop download, and S_3 is complete. Our base % complete is 50%.
-			downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
+
+		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+			if (dataManagementConfigurationLocator
+					.getDataTransferConfiguration(downloadTask.getConfigurationId(),
+							downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType())
+					.getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+				// This is a 2-hop download, performing the 2nd Hop. Our base % complete is 50%.
+				downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
+			} else {
+				// This is a one-hop Globus download from archive to user destination (currently
+				// only supported by file system archive).
+				downloadTask.setPercentComplete(Math.round(percentComplete));
+			}
+
+		} else if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
+				// This is a 2-hop download, performing the 1nd Hop.
+				downloadTask.setPercentComplete(Math.round(percentComplete) / 2);
+			} else {
+				// This is a streaming download to S3 destination.
+				downloadTask.setPercentComplete(Math.round(percentComplete));
+			}
+
 		} else {
-			// This is a one-hop Globus download from archive to user destination (currently
-			// only supported by file system archive).
-			downloadTask.setPercentComplete(Math.round(percentComplete));
+			return;
 		}
 
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
@@ -1243,11 +1366,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadCollection(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId, String configurationId)
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId)
 			throws HpcException {
+
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				null, configurationId, true);
+				googleCloudStorageDownloadDestination, null, configurationId, true);
+
+		if (globusDownloadDestination != null) {
+			checkForDuplicateCollectionDownloadRequests(path, globusDownloadDestination);
+		}
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -1255,6 +1384,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
 		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
@@ -1271,11 +1401,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				null, configurationId, true);
+				googleCloudStorageDownloadDestination, null, configurationId, true);
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -1283,6 +1414,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
 		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
 		downloadTask.getCollectionPaths().addAll(collectionPaths);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
@@ -1299,14 +1431,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
 		// configuration IDs.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				null, configurationId, true);
+				googleCloudStorageDownloadDestination, null, configurationId, true);
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -1314,6 +1447,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
 		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
 		downloadTask.getDataObjectPaths().addAll(dataObjectPaths);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
@@ -1352,7 +1486,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleDriveAccessToken) throws HpcException {
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
 		if (!failedDownloadResult(downloadTaskResult.getResult())) {
@@ -1386,6 +1520,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 			globusDownloadDestination.setDestinationOverwrite(Optional.ofNullable(destinationOverwrite).orElse(false));
 			globusDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			if (globusDownloadDestination != null) {
+				checkForDuplicateCollectionDownloadRequests(downloadTaskResult.getPath(), globusDownloadDestination);
+			}
 			downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 			break;
 
@@ -1405,14 +1542,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		case GOOGLE_DRIVE:
 			// Validate the Google Drive access token.
-			if (StringUtils.isEmpty(googleDriveAccessToken)) {
+			if (StringUtils.isEmpty(googleAccessToken)) {
 				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination = new HpcGoogleDriveDownloadDestination();
-			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
+			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
+			googleDriveDownloadDestination.setAccessToken(googleAccessToken);
 			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+			break;
+
+		case GOOGLE_CLOUD_STORAGE:
+			// Validate the Google Cloud access token.
+			if (StringUtils.isEmpty(googleAccessToken) || googleAccessToken == null) {
+				throw new HpcException("Invalid Google Cloud Storage access token / token type",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination = new HpcGoogleDownloadDestination();
+			googleCloudStorageDownloadDestination.setAccessToken(googleAccessToken);
+			googleCloudStorageDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
 			break;
 
 		default:
@@ -1436,6 +1586,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
 			throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasksCount(userId, status, inProcess);
+	}
+
+	@Override
+	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint) throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadRequestsCountByPathAndEndpoint(path, endpoint);
+	}
+
+	@Override
+	public int getCollectionDownloadTasksCountByUserAndPath(String userId, String path, boolean inProcess)
+			throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadTasksCountByUserAndPath(userId, path, inProcess);
+	}
+
+	@Override
+	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadTasksCountByUser(userId, inProcess);
+	}
+
+	@Override
+	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
+			HpcDataTransferType destinationType, String s3DownloadTaskServerId) throws HpcException {
+		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType,
+				HpcDataTransferDownloadStatus.IN_PROGRESS, s3DownloadTaskServerId);
 	}
 
 	@Override
@@ -1480,6 +1653,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			taskResult.setDestinationLocation(
+					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
 		taskResult.setResult(result);
 		taskResult.setType(downloadTask.getType());
@@ -1576,76 +1753,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						: null, fileContainerId);
 	}
 
-	/**
-	 * Calculate a data object upload % complete. Note: if upload not in progress,
-	 * null is returned.
-	 *
-	 * @param systemGeneratedMetadata The system generated metadata of the data
-	 *                                object.
-	 * @return The transfer % completion if transfer is in progress, or null
-	 *         otherwise.
-	 */
-	@Override
-	public Integer calculateDataObjectUploadPercentComplete(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
-		// Get the data transfer info from the metadata entries.
-		HpcDataTransferUploadStatus dataTransferStatus = systemGeneratedMetadata.getDataTransferStatus();
-		HpcDataTransferType dataTransferType = systemGeneratedMetadata.getDataTransferType();
-		if (dataTransferStatus == null || dataTransferType == null) {
-			return null;
-		}
-
-		if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE)) {
-			// Transfer is exactly half way in a 2-hop upload.
-			return 50;
-		}
-
-		if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE)
-				|| dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE)) {
-			// Data transfer is in progress.
-			if (dataTransferType.equals(HpcDataTransferType.S_3)) {
-				// We don't have visibility into S3 transfer. Return a 50.
-				return 50;
-			}
-
-			String dataTransferRequestId = systemGeneratedMetadata.getDataTransferRequestId();
-			String configurationId = systemGeneratedMetadata.getConfigurationId();
-			String s3ArchiveConfigurationId = systemGeneratedMetadata.getS3ArchiveConfigurationId();
-			Long sourceSize = systemGeneratedMetadata.getSourceSize();
-			if (configurationId == null || dataTransferRequestId == null || sourceSize == null || sourceSize <= 0) {
-				return null;
-			}
-
-			// Get the size of the data transferred so far.
-			long transferSize = 0;
-			try {
-				// Get the data transfer configuration.
-				HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
-
-				transferSize = dataTransferProxies.get(dataTransferType)
-						.getDataTransferUploadStatus(
-								getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-								dataTransferRequestId, dataTransferConfiguration.getBaseArchiveDestination())
-						.getBytesTransferred();
-
-			} catch (HpcException e) {
-				logger.error("Failed to get data transfer upload status: " + dataTransferRequestId, e);
-				return null;
-			}
-
-			float percentComplete = (float) 100 * transferSize / sourceSize;
-			if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE)) {
-				// Transfer is in 1st hop of 2-hop upload. The Globus % complete is half of the
-				// overall upload.
-				percentComplete /= 2;
-			}
-
-			return Math.round(percentComplete);
-		}
-
-		return null;
-	}
-
 	@Override
 	public boolean uploadURLExpired(Calendar urlCreated, String configurationId, String s3ArchiveConfigurationId) {
 		if (urlCreated == null || StringUtils.isEmpty(configurationId)) {
@@ -1727,8 +1834,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// ---------------------------------------------------------------------//
 
 	/**
-	 * Get the data transfer authenticated token if cached. If it's
-	 * not cached or expired, get a token by authenticating.
+	 * Get the data transfer authenticated token if cached. If it's not cached or
+	 * expired, get a token by authenticating.
 	 *
 	 * @param dataTransferType         The data transfer type.
 	 * @param configurationId          The data management configuration ID.
@@ -1755,13 +1862,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Obtain the system account to be used.
 			dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
 			// Search for an existing token that is not expired for this account.
-			Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator(); 
-			while(tokenItr.hasNext()){
+			Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator();
+			while (tokenItr.hasNext()) {
 				HpcDataTransferAuthenticatedToken authenticatedToken = tokenItr.next();
 				if (authenticatedToken.getDataTransferType().equals(dataTransferType)
 						&& authenticatedToken.getConfigurationId().equals(configurationId)
 						&& authenticatedToken.getSystemAccountId().equals(dataTransferSystemAccount.getUsername())) {
-					if(authenticatedToken.getExpiry().after(Calendar.getInstance())) {
+					if (authenticatedToken.getExpiry().after(Calendar.getInstance())) {
 						logger.info("Using stored globus access token: {}, expires: {}",
 								dataTransferSystemAccount.getUsername(),
 								dateFormat.format(authenticatedToken.getExpiry().getTime()));
@@ -1784,7 +1891,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		// No authenticated token found for this request. Create one.	
+		// No authenticated token found for this request. Create one.
 		if (dataTransferType.equals(HpcDataTransferType.S_3)) {
 			dataTransferSystemAccount = systemAccountLocator
 					.getSystemAccount(dataTransferConfiguration.getArchiveProvider());
@@ -1818,11 +1925,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			authenticatedToken.setExpiry(tokenExpiration);
 			// Store token in object
 			dataTransferAuthenticatedTokens.add(authenticatedToken);
-			logger.info("Obtained new globus access token: {}, expires: {}",
-					dataTransferSystemAccount.getUsername(),
+			logger.info("Obtained new globus access token: {}, expires: {}", dataTransferSystemAccount.getUsername(),
 					dateFormat.format(authenticatedToken.getExpiry().getTime()));
-		}
-		else {
+		} else {
 			// Store token on the request context.
 			invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
 			HpcRequestContext.setRequestInvoker(invoker);
@@ -1954,20 +2059,42 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Instantiate a progress listener for upload from AWS S3.
 		HpcDataTransferProgressListener progressListener = null;
 		if (uploadRequest.getS3UploadSource() != null) {
-			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
-					uploadRequest.getS3UploadSource().getSourceLocation(), eventService);
+			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
+					uploadRequest.getSourceSize(), metadataService, securityService, dataRegistrationDAO, this, false);
 		}
 
-		// Get a source InputStream and instantiate a progress listener for upload from
-		// Google Drive.
+		// // Instantiate a progress listener for uploading a file staged on DME server
+		// (Sync, Globus 2nd Hop, FileSystem).
+		if (uploadRequest.getSourceFile() != null) {
+			progressListener = new HpcStagedFileUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
+					uploadRequest.getSourceSize(), this);
+		}
+
+		// For uploads from Google (Drive or Cloud storage), we need to generate an
+		// input stream to the source file,
+		// create a progress listener and persist the access token in case the upload
+		// needs to be restarted following a server restart.
+		boolean googleUpload = false;
+		HpcDataTransferType inputStreamGenerator = null;
+		HpcStreamingUploadSource inputStreamSource = null;
 		if (uploadRequest.getGoogleDriveUploadSource() != null) {
-			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE);
-			uploadRequest.getGoogleDriveUploadSource()
-					.setSourceInputStream(dataTransferProxy.generateDownloadInputStream(
-							dataTransferProxy.authenticate(uploadRequest.getGoogleDriveUploadSource().getAccessToken()),
-							uploadRequest.getGoogleDriveUploadSource().getSourceLocation()));
-			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
-					uploadRequest.getGoogleDriveUploadSource().getSourceLocation(), eventService);
+			googleUpload = true;
+			inputStreamGenerator = HpcDataTransferType.GOOGLE_DRIVE;
+			inputStreamSource = uploadRequest.getGoogleDriveUploadSource();
+		} else if (uploadRequest.getGoogleCloudStorageUploadSource() != null) {
+			googleUpload = true;
+			inputStreamGenerator = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
+			inputStreamSource = uploadRequest.getGoogleCloudStorageUploadSource();
+		}
+		if (googleUpload) {
+			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(inputStreamGenerator);
+			inputStreamSource.setSourceInputStream(dataTransferProxy.generateDownloadInputStream(
+					dataTransferProxy.authenticate(inputStreamSource.getAccessToken()),
+					inputStreamSource.getSourceLocation()));
+			progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
+					uploadRequest.getSourceSize(), metadataService, securityService, dataRegistrationDAO, this, true);
+			dataRegistrationDAO.upsertGoogleAccessToken(uploadRequest.getDataObjectId(),
+					inputStreamSource.getAccessToken());
 		}
 
 		// Upload the data object using the appropriate data transfer system proxy and
@@ -1985,21 +2112,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	/**
 	 * Validate upload source file location.
 	 *
-	 * @param globusUploadSource      The Globus source to validate.
-	 * @param s3UploadSource          The S3 source to validate.
-	 * @param googleDriveUploadSource The Google Drive source to validate.
-	 * @param fileSystemUploadSource  The File System (DME server NAS) source to
-	 *                                validate.
-	 * @param sourceFile              The source file to validate.
-	 * @param configurationId         The configuration ID (needed to determine the
-	 *                                archive connection config).
+	 * @param globusUploadSource             The Globus source to validate.
+	 * @param s3UploadSource                 The S3 source to validate.
+	 * @param googleDriveUploadSource        The Google Drive source to validate.
+	 * @param googleCloudStorageUploadSource The Google Cloud Storage source to
+	 *                                       validate.
+	 * @param fileSystemUploadSource         The File System (DME server NAS) source
+	 *                                       to validate.
+	 * @param sourceFile                     The source file to validate.
+	 * @param configurationId                The configuration ID (needed to
+	 *                                       determine the archive connection
+	 *                                       config).
 	 * @return the upload source attributes.
 	 * @throws HpcException if the upload source location doesn't exist, or not
 	 *                      accessible, or it's a directory.
 	 */
 	private HpcPathAttributes validateUploadSourceFileLocation(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
-			HpcUploadSource fileSystemUploadSource, File sourceFile, String configurationId) throws HpcException {
+			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
+			File sourceFile, String configurationId) throws HpcException {
 		HpcPathAttributes pathAttributes = null;
 		if (sourceFile != null) {
 			pathAttributes = new HpcPathAttributes();
@@ -2026,7 +2157,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} else if (googleDriveUploadSource != null) {
 			sourceFileLocation = googleDriveUploadSource.getSourceLocation();
-			pathAttributes = getPathAttributes(googleDriveUploadSource.getAccessToken(), sourceFileLocation, true);
+			pathAttributes = getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE,
+					googleDriveUploadSource.getAccessToken(), sourceFileLocation, true);
+
+		} else if (googleCloudStorageUploadSource != null) {
+			sourceFileLocation = googleCloudStorageUploadSource.getSourceLocation();
+			pathAttributes = getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE,
+					googleCloudStorageUploadSource.getAccessToken(), sourceFileLocation, true);
 
 		} else if (fileSystemUploadSource != null) {
 			sourceFileLocation = fileSystemUploadSource.getSourceLocation();
@@ -2058,29 +2195,55 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return pathAttributes;
 	}
 
+	private void checkForDuplicateCollectionDownloadRequests(String path,
+			HpcGlobusDownloadDestination globusDownloadDestination) throws HpcException {
+
+		if (path != null && globusDownloadDestination.getDestinationLocation() != null) {
+			String endpoint = globusDownloadDestination.getDestinationLocation().getFileContainerId();
+
+			// Is there an existing transaction for same endpoint and same collection, if so
+			// indicate error
+			if (endpoint != null) {
+				int tasksInProgressCount = getCollectionDownloadRequestsCountByPathAndEndpoint(path, endpoint);
+				if (tasksInProgressCount > 0) {
+					// Another download task in in-process for downloading the same collection to
+					// the same destination endpoint.
+					logger.error("collection download task: duplicate request for path {} and endpoint {}", path,
+							endpoint);
+					throw new HpcException("A download request has already been submitted for downloading " + path
+							+ " to endpoint " + endpoint, HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Validate download destination.
 	 *
-	 * @param globusDownloadDestination      The user requested Glopbus download
-	 *                                       destination.
-	 * @param s3DownloadDestination          The user requested S3 download
-	 *                                       destination.
-	 * @param googleDriveDownloadDestination The user requested Google Drive
-	 *                                       download destination.
-	 * @param synchronousDownloadFilter      (Optional) synchronous download filter
-	 *                                       to extract specific files from a data
-	 *                                       object that is 'compressed archive'
-	 *                                       such as ZIP.
-	 * @param configurationId                The configuration ID.
-	 * @param bulkDownload                   True if this is a request to download a
-	 *                                       list of files or a collection, or false
-	 *                                       if this is a request to download a
-	 *                                       single data object.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param synchronousDownloadFilter             (Optional) synchronous download
+	 *                                              filter to extract specific files
+	 *                                              from a data object that is
+	 *                                              'compressed archive' such as
+	 *                                              ZIP.
+	 * @param configurationId                       The configuration ID.
+	 * @param bulkDownload                          True if this is a request to
+	 *                                              download a list of files or a
+	 *                                              collection, or false if this is
+	 *                                              a request to download a single
+	 *                                              data object.
 	 * @throws HpcException if the download destination is invalid
 	 */
 	private void validateDownloadDestination(HpcGlobusDownloadDestination globusDownloadDestination,
-			HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+			HpcS3DownloadDestination s3DownloadDestination, HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, String configurationId, boolean bulkDownload)
 			throws HpcException {
 		// Validate the destination (if provided) is either Globus, S3, or Google Drive.
@@ -2094,8 +2257,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (googleDriveDownloadDestination != null) {
 			destinations++;
 		}
+		if (googleCloudStorageDownloadDestination != null) {
+			destinations++;
+		}
 		if (destinations > 1) {
-			throw new HpcException("Multiple download destinations provided (Globus, S3, Google Drive)",
+			throw new HpcException("Multiple download destinations provided (Globus, S3, Google Drive / Cloud Storage)",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -2109,7 +2275,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate the destination for collection/bulk download is provided.
 		if (bulkDownload && destinations == 0) {
-			throw new HpcException("No download destination provided (Globus, S3, Google Drive)",
+			throw new HpcException("No download destination provided (Globus, S3, Google Drive / Cloud Storage)",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -2182,6 +2348,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			if (StringUtils.isEmpty(googleDriveDownloadDestination.getAccessToken())) {
 				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		// Validate the Google Cloud Storage destination.
+		if (googleCloudStorageDownloadDestination != null) {
+			if (!isValidFileLocation(googleCloudStorageDownloadDestination.getDestinationLocation())) {
+				throw new HpcException("Invalid Google Cloud Storage download destination location",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (StringUtils.isEmpty(googleCloudStorageDownloadDestination.getAccessToken())) {
+				throw new HpcException("Invalid Google Cloud Storage access token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
 
@@ -2344,15 +2522,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return HpcDataTransferType.S_3;
 		}
 
-		if (uploadRequest.getGoogleDriveUploadSource() != null) {
-			// It's an asynchronous upload request from Google Drive. This is only supported
+		if (uploadRequest.getGoogleDriveUploadSource() != null
+				|| uploadRequest.getGoogleCloudStorageUploadSource() != null) {
+			// It's an asynchronous upload request from Google Drive or Google Cloud
+			// Storage. This is only supported
 			// S3 archive.
 			if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
-				throw new HpcException("Google Drive upload source not supported by POSIX archive",
+				throw new HpcException(
+						"Google Drive / Google Cloud Storage upload source not supported by POSIX archive",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
-			// We use the S_3 data transfer proxy to stream files from Google Drive to an S3
+			// We use the S_3 data transfer proxy to stream files from Google Drive / Google
+			// Cloud Storage to an S3
 			// archive.
 			return HpcDataTransferType.S_3;
 		}
@@ -2654,6 +2836,49 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
+	 * Perform a download request to user's provided Google Cloud Storage
+	 * destination from S3 archive.
+	 *
+	 * @param downloadRequest           The data object download request.
+	 * @param response                  The download response object. This method
+	 *                                  sets download task id and destination
+	 *                                  location on the response.
+	 * @param dataTransferConfiguration The data transfer configuration.
+	 * @throws HpcException on service failure.
+	 */
+	private void performGoogleCloudStorageAsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
+			HpcDataObjectDownloadResponse response, HpcDataTransferConfiguration dataTransferConfiguration)
+			throws HpcException {
+
+		HpcStreamingDownload googleCloudStorageDownload = new HpcStreamingDownload(downloadRequest, dataDownloadDAO,
+				eventService, this);
+
+		// Generate a download URL from the S3 archive.
+		downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+				downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+				downloadRequest.getS3ArchiveConfigurationId()));
+
+		// Perform the download (From S3 Archive to User's Google Cloud Storage).
+		try {
+			dataTransferProxies.get(HpcDataTransferType.GOOGLE_CLOUD_STORAGE).downloadDataObject(null, downloadRequest,
+					dataTransferConfiguration.getBaseArchiveDestination(), googleCloudStorageDownload,
+					dataTransferConfiguration.getEncryptedTransfer());
+
+			// Populate the response object.
+			response.setDownloadTaskId(googleCloudStorageDownload.getDownloadTask().getId());
+			response.setDestinationLocation(googleCloudStorageDownload.getDownloadTask()
+					.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+
+		} catch (HpcException e) {
+			// Cleanup the download task and rethrow.
+			completeDataObjectDownloadTask(googleCloudStorageDownload.getDownloadTask(), HpcDownloadResult.FAILED,
+					e.getMessage(), Calendar.getInstance(), 0);
+
+			throw (e);
+		}
+	}
+
+	/**
 	 * Perform a 2 hop download. i.e. store the data to a local GLOBUS endpoint, and
 	 * submit a transfer request to the caller's GLOBUS destination. Both first and
 	 * second hop downloads are performed asynchronously.
@@ -2684,24 +2909,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (canPerfom2HopDownload(secondHopDownload)) {
+			if (false /*
+						 * TODO: replace this temp change w/ check if it's part of a bulk download
+						 * request
+						 */ && canPerfom2HopDownload(secondHopDownload)) {
 				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
 						getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 								downloadRequest.getS3ArchiveConfigurationId()),
 						downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
 						dataTransferConfiguration.getEncryptedTransfer());
 
-				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}]",
+				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			} else {
 				// Can't perform the 2-hop download at this time. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 
 				logger.info(
-						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={}]",
+						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={},"
+								+ " path = {}] or transaction limit reached ",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
 		} catch (HpcException e) {
@@ -2723,26 +2952,40 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * 
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
-	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) {
-		try {
-			long freeSpace = Files
-					.getFileStore(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
-					.getUsableSpace();
-			if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
-				// Not enough space disk space to perform the first hop download. Log an error
-				// and reset the
-				// task.
-				logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
-						secondHopDownload.getDownloadTask().getPath(), freeSpace,
-						secondHopDownload.getDownloadTask().getSize());
-				return false;
+	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
+		// Retrieve count of active S3 object downloads (inProcess = true)
+		int inProcessS3DownloadsForGlobus = getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3,
+				HpcDataTransferType.GLOBUS, s3DataObjectDownloadTaskServerId);
+
+		if (maxPermittedS3DownloadsForGlobus <= 0
+				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
+			try {
+				long freeSpace = Files
+						.getFileStore(
+								FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
+						.getUsableSpace();
+				if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+					// Not enough space disk space to perform the first hop download. Log an error
+					// and reset the
+					// task.
+					logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+							secondHopDownload.getDownloadTask().getPath(), freeSpace,
+							secondHopDownload.getDownloadTask().getSize());
+					return false;
+				}
+
+			} catch (IOException e) {
+				// Failed to check free disk space. We'll try the download.
+				logger.error("Failed to determine free space", e);
 			}
-
-		} catch (IOException e) {
-			// Failed to check free disk space. We'll try the download.
-			logger.error("Failed to determine free space", e);
+		} else {
+			// We are over the allowed number of transactions
+			logger.info(
+					"Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
+					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus,
+					secondHopDownload.getDownloadTask().getPath());
+			return false;
 		}
-
 		return true;
 	}
 
@@ -2808,6 +3051,75 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		final Object theAuthToken = getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
+
+		logger.info(String.format("checkIfTransferCanBeLaunched: got auth token of %s", token2String(theAuthToken)));
+
+		final HpcTransferAcceptanceResponse transferAcceptanceResponse = this.dataTransferProxies.get(dataTransferType)
+				.acceptsTransferRequests(theAuthToken);
+
+		String globusClientId = null;
+
+		logger.info("checkIfTransferCanBeLaunched: searching for token within invoker state");
+
+		for (HpcDataTransferAuthenticatedToken someToken : dataTransferAuthenticatedTokens) {
+			if (someToken.getDataTransferType().equals(dataTransferType)
+					&& someToken.getConfigurationId().equals(configurationId)
+					&& someToken.getDataTransferAuthenticatedToken().equals(theAuthToken)) {
+				globusClientId = someToken.getSystemAccountId();
+
+				logger.info(String.format(
+						"checkIfTransferCanBeLaunched: found matching token and its system account ID (Globus client ID) is %s",
+						globusClientId));
+
+				break;
+			}
+		}
+		if (null == globusClientId) {
+
+			logger.error("checkIfTransferCanBeLaunched: About to throw HpcException");
+
+			final String msg = String.format(
+					"Could not find Globus app account client ID for this request, transfer type is %s and data management configuration ID is %s.",
+					dataTransferType.toString(), configurationId);
+			throw new HpcException(msg, HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		logger.info(String.format(
+				"checkIfTransferCanBeLaunched: Update to call system account locator's setGlobusAccountQueueSize passing in (%s, %s)",
+				globusClientId, Integer.toString(transferAcceptanceResponse.getQueueSize())));
+
+		this.systemAccountLocator.setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
+
+		logger.info("checkIfTransferCanBeLaunched: About to return");
+
+		return transferAcceptanceResponse.canAcceptTransfer();
+	}
+
+	/*
+	 * Determine whether a data transfer request can be initiated at current time
+	 * given a token.
+	 *
+	 * @param dataTransferType The type of data transfer.
+	 * 
+	 * @param configurationId The data management configuration ID.
+	 * 
+	 * @param theAuthToken The authToken to check
+	 * 
+	 * @return boolean that is true if request can be initiated, false otherwise
+	 * 
+	 * @throw HpcException On internal error
+	 */
+	private boolean acceptsTransferRequests(HpcDataTransferType dataTransferType, String configurationId,
+			final Object theAuthToken) throws HpcException {
+
+		logger.info(String.format(
+				"checkIfTransferCanBeLaunched: Entered with parameters of transferType = %s, dataMgmtConfigId = %s",
+				dataTransferType.toString(), configurationId));
+
+		if (!dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+			// The 'data transfer acceptance' check is applicable for Globus transfer only.
+			return true;
+		}
 
 		logger.info(String.format("checkIfTransferCanBeLaunched: got auth token of %s", token2String(theAuthToken)));
 
@@ -2959,6 +3271,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 				response.setDestinationLocation(
 						downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
+			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+				downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+				downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+				downloadTask.setId(UUID.randomUUID().toString());
+				dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+				response.setDestinationLocation(
+						downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 			} else if (downloadRequest.getGlobusDestination() != null) {
 				downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 				HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
@@ -3035,6 +3354,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		default:
 			return false;
 		}
+	}
+
+	/**
+	 * Get archive location of a data object.
+	 *
+	 * @param path the data object path.
+	 * @return The archive location of a data object.
+	 * @throws HpcException on metadata service error.
+	 */
+	HpcFileLocation getArchiveLocation(String path) throws HpcException {
+
+		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+		if (StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			return metadata.getArchiveLocation();
+		}
+
+		// It's a link - follow it to get the archive location.
+		return getArchiveLocation(metadata.getLinkSourcePath());
 	}
 
 	// ---------------------------------------------------------------------//
@@ -3211,11 +3548,41 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					sourceFile.getAbsolutePath());
 			String errorMessage = "Failed to get data from archive via S3: " + message;
 			downloadFailed(errorMessage);
-			notificationService.sendNotification(new HpcException(message +
-					", task_id: " + downloadTask.getId() +
-					", user_id: " + downloadTask.getUserId() +
-					", archive_file_container_id (bucket): " + downloadTask.getArchiveLocation().getFileContainerId() +
-					", archive_file_id (key): " + downloadTask.getArchiveLocation().getFileId(), HpcErrorType.DATA_TRANSFER_ERROR));
+
+			try {
+				HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+						.getDataTransferConfiguration(downloadTask.getConfigurationId(),
+								downloadTask.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
+				HpcFileLocation archiveLocation = dataTransferConfiguration.getBaseArchiveDestination()
+						.getFileLocation();
+				notificationService.sendNotification(new HpcException(
+						message + ", task_id: " + downloadTask.getId() + ", user_id: " + downloadTask.getUserId()
+								+ ", archive_file_container_id (bucket): " + archiveLocation.getFileContainerId()
+								+ ", archive_file_id (key): " + archiveLocation.getFileId() + downloadTask.getPath(),
+						HpcErrorType.DATA_TRANSFER_ERROR, dataTransferConfiguration.getArchiveProvider()), true);
+
+			} catch (HpcException e) {
+				logger.error("Failed to send storage admin notification w/ data", e);
+				// theoretically, we should never get here
+				// Need to specify some value for IntegratedSystem, else notification will not
+				// be sent
+				notificationService.sendNotification(new HpcException(
+						message + ", task_id: " + downloadTask.getId() + ", user_id: " + downloadTask.getUserId()
+								+ ", path: " + downloadTask.getPath(),
+						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLOUDIAN));
+
+			}
+		}
+
+		// This callback method is called when the first hop download progressed.
+		@Override
+		public void transferProgressed(long bytesTransferred) {
+			try {
+				updateDataObjectDownloadTask(downloadTask, bytesTransferred);
+
+			} catch (HpcException e) {
+				logger.error("Failed to update 1st hop download task progress", e);
+			}
 		}
 
 		// ---------------------------------------------------------------------//

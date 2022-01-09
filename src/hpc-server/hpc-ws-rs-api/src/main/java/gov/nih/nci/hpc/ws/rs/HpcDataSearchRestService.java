@@ -96,6 +96,42 @@ public interface HpcDataSearchRestService {
 	  @QueryParam("returnParent") Boolean returnParent,
       HpcCompoundMetadataQueryDTO compoundMetadataQuery);
   
+  /**
+   * Get all data objects.
+   *
+   * @param page The requested results page.
+   * @param pageSize The requested results page size.
+   * @param totalCount If set to true, return the total count.
+   * @return The REST service response w/ HpcDataObjectListDTO entity.
+   */
+  @GET
+  @Path("/dataObject/query/all")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response queryAllDataObjects(
+	  @QueryParam("page") Integer page,
+	  @QueryParam("pageSize") Integer pageSize,
+	  @QueryParam("totalCount") Boolean totalCount);
+  
+  /**
+   * Get all data objects within the requested path.
+   *
+   * @param path The path to search in.
+   * @param page The requested results page.
+   * @param pageSize The requested results page size.
+   * @param totalCount If set to true, return the total count.
+   * @return The REST service response w/ HpcDataObjectListDTO entity.
+   */
+  @GET
+  @Path("/dataObject/query/all/{path:.*}")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response queryAllDataObjectsInPath(
+	  @PathParam("path") String path,
+	  @QueryParam("page") Integer page,
+	  @QueryParam("pageSize") Integer pageSize,
+	  @QueryParam("totalCount") Boolean totalCount);
+  
 
   /**
    * Get data objects by named query.

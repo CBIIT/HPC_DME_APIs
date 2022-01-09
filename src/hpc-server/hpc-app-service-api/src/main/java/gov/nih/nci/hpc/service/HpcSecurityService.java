@@ -16,9 +16,11 @@ import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcQueryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -234,6 +236,16 @@ public interface HpcSecurityService {
 			String classifier) throws HpcException;
 
 	/**
+	 * Get a singular system account.
+	 *
+	 * @param account          The system account to be retrieved.
+	 * 
+	 * @throws HpcException on service failure.
+	 */
+	public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+			throws HpcException;
+	
+	/**
 	 * Create an authentication token, so the caller can use it in subsequent calls.
 	 *
 	 * @param authenticationType        The authentication type.
@@ -306,4 +318,22 @@ public interface HpcSecurityService {
      * @throws HpcException on service failure.
      */
     public boolean isUserDataCurator(String nciUserId) throws HpcException;
+    
+    /**
+     * Update Query Configuration
+     * 
+     * @param basePath The basePath
+     * @param encryptionKey The encryption key
+     * @throws HpcException on service failure.
+     */
+    public void updateQueryConfig(String basePath, String encryptionKey) throws HpcException;
+    
+    /**
+     * Get Query Configuration
+     * 
+     * @param basePath The basePath
+     * @return the HpcQueryConfiguration.
+     * @throws HpcException on service failure.
+     */
+    public HpcQueryConfiguration getQueryConfig(String basePath) throws HpcException;
 }

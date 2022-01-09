@@ -18,18 +18,27 @@ package gov.nih.nci.hpc.integration;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 
-public interface HpcDataTransferProgressListener 
-{    
-    /**
-     * Called when data transfer request (upload or download) completed.
-     * @param bytesTransferred If known, total bytes transferred provided, otherwise null.
-     */
-    public void transferCompleted(Long bytesTransferred);
-    
-    /**
-     * Called when data transfer request (upload or download) failed.
-     * 
-     * @param message An (optional) error message describing the transfer failure.
-     */
-    public void transferFailed(String message);
+public interface HpcDataTransferProgressListener {
+	/**
+	 * Called when data transfer request (upload or download) completed.
+	 * 
+	 * @param bytesTransferred If known, total bytes transferred provided, otherwise
+	 *                         null.
+	 */
+	public void transferCompleted(Long bytesTransferred);
+
+	/**
+	 * Called when data transfer request (upload or download) failed.
+	 * 
+	 * @param message An (optional) error message describing the transfer failure.
+	 */
+	public void transferFailed(String message);
+
+	/**
+	 * Called when data transfer (upload or download) progressed.
+	 * 
+	 * @param bytesTransferred total bytes transferred so far.
+	 */
+	public default void transferProgressed(long bytesTransferred) {
+	}
 }

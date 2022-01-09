@@ -89,6 +89,8 @@
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="googleDriveUploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleCloudStorageUploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="fileSystemUploadSource"
 				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="linkSourcePath" type="xsd:string" />
@@ -204,6 +206,8 @@
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="googleDriveUploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleCloudStorageUploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="fileSystemUploadSource"
 				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="sourceFile"
@@ -260,4 +264,13 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
+	<xsd:element name="HpcQueryConfiguration">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="basePath" type="xsd:string" />
+				<xsd:element name="encryptionKey" type="xsd:string" />
+				<xsd:element name="encrypt" type="xsd:boolean" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>

@@ -425,14 +425,28 @@ public class HpcSubscribeNotificationsController extends
    * @param pathVal - desired triggering value for COLLECTION_PATH attribute
    */
   private void captureAddedCollPathTrigger(
-      List<HpcNotificationTrigger> triggers, String pathVal) {
+      List<HpcNotificationTrigger> triggers, String paramName,
+      HttpServletRequest request) {
+	String[] value = request.getParameterValues(paramName);
+	String pathVal = value[0];
     HpcEventPayloadEntry pathEntry = new HpcEventPayloadEntry();
     pathEntry.setAttribute("COLLECTION_PATH");
     pathEntry.setValue(pathVal);
-
+    
     List<HpcEventPayloadEntry> entries = new ArrayList<HpcEventPayloadEntry>();
     entries.add(pathEntry);
-
+    
+    String counter = paramName.substring("collectionPathAdded".length());
+    String[] updateCheck = request.getParameterValues(
+            "update" + counter);
+    if (null != updateCheck && 0 < updateCheck.length &&
+        checkIfTrueOrOn(updateCheck[0])) {
+      HpcEventPayloadEntry updateEntry = new HpcEventPayloadEntry();
+      updateEntry.setAttribute("UPDATE");
+      updateEntry.setValue("DATA_OBJECT_REGISTRATION");
+      entries.add(updateEntry);
+    }
+    
     HpcNotificationTrigger trigger = new HpcNotificationTrigger();
     trigger.getPayloadEntries().addAll(entries);
     triggers.add(trigger);
@@ -463,14 +477,14 @@ public class HpcSubscribeNotificationsController extends
 
     List<HpcEventPayloadEntry> entries = new ArrayList<HpcEventPayloadEntry>();
     entries.add(pathEntry);
-    String[] existingMetadataCheck = request.getParameterValues(
-        "existingMetadataCheck" + counter);
-    if (null != existingMetadataCheck && 0 < existingMetadataCheck.length &&
-        checkIfTrueOrOn(existingMetadataCheck[0])) {
-      HpcEventPayloadEntry metadataEntry = new HpcEventPayloadEntry();
-      metadataEntry.setAttribute("UPDATE");
-      metadataEntry.setValue("METADATA");
-      entries.add(metadataEntry);
+    String[] existingUpdateCheck = request.getParameterValues(
+        "existingUpdateCheck" + counter);
+    if (null != existingUpdateCheck && 0 < existingUpdateCheck.length &&
+        checkIfTrueOrOn(existingUpdateCheck[0])) {
+      HpcEventPayloadEntry updateEntry = new HpcEventPayloadEntry();
+      updateEntry.setAttribute("UPDATE");
+      updateEntry.setValue("DATA_OBJECT_REGISTRATION");
+      entries.add(updateEntry);
     }
 
     HpcNotificationTrigger trigger = new HpcNotificationTrigger();
@@ -587,7 +601,7 @@ public class HpcSubscribeNotificationsController extends
       if (paramName.startsWith("collectionPathAdded")) {
         String[] value = request.getParameterValues(paramName);
         if (value != null && !value[0].isEmpty()) {
-          captureAddedCollPathTrigger(accumTriggers, value[0]);
+          captureAddedCollPathTrigger(accumTriggers, paramName, request);
         }
       } else if (paramName.startsWith("existingCollectionCheck")) {
         String[] value = request.getParameterValues(paramName);
@@ -816,7 +830,11 @@ public class HpcSubscribeNotificationsController extends
               || ((type.equals(HpcEventType.USAGE_SUMMARY_REPORT)
             		|| type.equals(HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE))
             		 && !HpcIdentityUtil.isUserSystemAdmin(session)))
-    	  || type.equals(HpcEventType.USER_REGISTERED))
+    	  || type.equals(HpcEventType.USER_REGISTERED)
+    	  || type.equals(HpcEventType.RESTORE_REQUEST_COMPLETED)
+    	  || type.equals(HpcEventType.RESTORE_REQUEST_FAILED)
+    	  || type.equals(HpcEventType.REVIEW_SENT)
+    	  || type.equals(HpcEventType.REVIEW_REMINDER_SENT))
         continue;
       HpcNotificationSubscription subscription = getNotificationSubscription(
           authToken, type);
@@ -876,9 +894,10 @@ public class HpcSubscribeNotificationsController extends
           if ("COLLECTION_PATH".equals(entry.getAttribute())) {
             modelEntry.setPath(entry.getValue());
           }
-          // else
-          // if(entry.getAttribute().equals("UPDATE"))
-          // modelEntry.setMetadata(entry.getValue());
+          else {
+           if(entry.getAttribute().equals("UPDATE"))
+            modelEntry.setUpdate(entry.getValue());
+          }
         }
         triggerModel.getEntries().add(modelEntry);
       }

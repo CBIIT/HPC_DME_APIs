@@ -16,6 +16,7 @@
 	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-domain-report="http://hpc.nci.nih.gov/domain/report"
 	xmlns:hpc-dto-datamanagement="http://hpc.nci.nih.gov/dto/datamanagement"
 	targetNamespace="http://hpc.nci.nih.gov/dto/datamanagement"
 	elementFormDefault="unqualified">
@@ -29,6 +30,9 @@
 	<xsd:import
 		namespace="http://hpc.nci.nih.gov/domain/metadata"
 		schemaLocation="HpcMetadataTypes.xsd" />
+ 	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/report"
+		schemaLocation="HpcReportTypes.xsd" />
 
 	<!-- Collection DTO -->
 	<xsd:element name="HpcCollectionRegistrationDTO">
@@ -52,6 +56,9 @@
 				type="hpc-domain-metadata:HpcMetadataEntries" />
 			<xsd:element name="permission"
 				type="hpc-domain-datamanagement:HpcPermission" />
+	        <xsd:element name="reports"
+				type="hpc-domain-report:HpcReport" 
+				 minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -437,6 +444,7 @@
 					type="hpc-domain-datatransfer:HpcFile" />
 				<xsd:element name="downloadRequestURL" type="xsd:string" />
 				<xsd:element name="restoreInProgress" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -551,7 +559,7 @@
 					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="s3Account"
 					type="hpc-domain-datatransfer:HpcS3Account" />
-				<xsd:element name="googleDriveAccessToken" type="xsd:string" />
+				<xsd:element name="googleAccessToken" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
