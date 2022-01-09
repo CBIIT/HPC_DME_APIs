@@ -817,10 +817,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getDataManagementModels() {
+	public Response getDataManagementModels(Boolean metadataRules) {
 		HpcDataManagementModelDTO docModel = null;
 		try {
-			docModel = dataManagementBusService.getDataManagementModels();
+			docModel = dataManagementBusService.getDataManagementModels(metadataRules != null ? metadataRules : true);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -830,10 +830,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getDataManagementModel(String basePath) {
+	public Response getDataManagementModel(String basePath, Boolean metadataRules) {
 		HpcDataManagementModelDTO docModel = null;
 		try {
-			docModel = dataManagementBusService.getDataManagementModel(toNormalizedPath(basePath));
+			docModel = dataManagementBusService.getDataManagementModel(toNormalizedPath(basePath), metadataRules != null ? metadataRules : true);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
