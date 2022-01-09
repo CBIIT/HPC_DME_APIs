@@ -36,6 +36,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -47,12 +50,16 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcExcelUtil;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -84,6 +91,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	@Value("${dme.archive.naming.forbidden.chararacters}")
 	private String forbiddenChars;
 
+	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
+	private Gson gson = new Gson();
+
 	/**
 	 * Get selected collection details from its path
 	 * 
@@ -110,21 +120,42 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				session.setAttribute("bulkType", "globus");
 			} else
 				model.addAttribute("create", true);
+
+			String bulkType = request.getParameter("bulkType");
+			if (StringUtils.isBlank(bulkType))
+				bulkType = (String) session.getAttribute("bulkType");
+			model.addAttribute("bulkType", bulkType);
+
 			String path = request.getParameter("path");
 			String endPoint = request.getParameter("endpoint_id");
 			String code = request.getParameter("code");
+			String userId = (String) session.getAttribute("hpcUserId");
 	        if (code != null) {
 	            //Return from Google Drive Authorization
 	            final String returnURL = this.webServerName + "/addbulk";
 	            try {
-	              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
-	              session.setAttribute("accessToken", accessToken);
-	              model.addAttribute("accessToken", accessToken);
+				  if(StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) ){
+					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
+					session.setAttribute("accessToken", accessToken);
+					model.addAttribute("accessToken", accessToken);
+					model.addAttribute("authorized", "true");
+				  } else if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) ) {
+					String refreshTokenDetailsGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
+					//hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD);
+					// If the Refresh token is null
+					if (refreshTokenDetailsGoogleCloud == null) {
+						throw new HpcAuthorizationException("Please Logout of your Google Account and Login again.");
+					} else {
+						session.setAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
+						logger.info("JSON with Refresh Token: " + refreshTokenDetailsGoogleCloud);
+						model.addAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
+						model.addAttribute("authorizedGC", "true");
+					}
+				  }
 	            } catch (Exception e) {
 	              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
 	              e.printStackTrace();
-	            }
-	            model.addAttribute("authorized", "true");            
+	            } 
 	        }
 			String parent = request.getParameter("parent");
 			if (parent == null || parent.isEmpty())
@@ -172,11 +203,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			else
 				session.setAttribute("basePathSelected", basePath);
 
-			String bulkType = request.getParameter("bulkType");
-			if (StringUtils.isBlank(bulkType))
-				bulkType = (String) session.getAttribute("bulkType");
-			model.addAttribute("bulkType", bulkType);
-			
 			if (parent == null || basePath == null)
 				populateBasePaths(request, session, model, path);
 			else
@@ -263,8 +289,12 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		model.addAttribute("bulkType", bulkType);
 		String bucketName = (String)request.getParameter("bucketName");
 		model.addAttribute("bucketName", bucketName);
+		String gcbucketName = (String)request.getParameter("gcbucketName");
+		model.addAttribute("gcbucketName", gcbucketName);
 		String s3Path = (String)request.getParameter("s3Path");
 		model.addAttribute("s3Path", s3Path);
+		String gcPath = (String)request.getParameter("gcPath");
+		model.addAttribute("gcPath", gcPath);
 		String accessKey = (String)request.getParameter("accessKey");
 		model.addAttribute("accessKey", accessKey);
 		String secretKey = (String)request.getParameter("secretKey");
@@ -272,7 +302,12 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		String region = (String)request.getParameter("region");
 		model.addAttribute("region", region);
 		String s3File = (String)request.getParameter("s3File");
-		model.addAttribute("s3File", s3File != null && s3File.equals("on"));	
+		model.addAttribute("s3File", s3File != null && s3File.equals("on"));
+		String gcFile = (String)request.getParameter("gcFile");
+		model.addAttribute("gcFile", gcFile != null && gcFile.equals("on"));
+
+		String userId = (String) session.getAttribute("hpcUserId");
+	
 		if (basePath == null)
 			basePath = (String) session.getAttribute("basePathSelected");
 
@@ -320,24 +355,40 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
 	        "action=" + percentEncodedReturnURL;
 			
-		} else if (action != null && action.length > 0 && action[0].equals("Drive")) {
+		} else if (action != null && action.length > 0 && action[0].toLowerCase().equals(GOOGLE_DRIVE_BULK_TYPE)) {
           session.setAttribute("datafilePath", hpcDataModel.getPath());
           session.setAttribute("basePathSelected", basePath);
-          model.addAttribute("useraction", "drive");
-          session.setAttribute("bulkType", "drive");
+          model.addAttribute("useraction", GOOGLE_DRIVE_BULK_TYPE);
+          session.setAttribute("bulkType", GOOGLE_DRIVE_BULK_TYPE);
           setCriteria(model, request, session);
           populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
                   false);
           
           String returnURL = this.webServerName + "/addbulk";
           try {
-            return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+            return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
           } catch (Exception e) {
             model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
             e.printStackTrace();
           }
           
-        }
+        } else if (action != null && action.length > 0 && action[0].equals(GOOGLE_CLOUD_BULK_TYPE)) {
+            session.setAttribute("datafilePath", hpcDataModel.getPath());
+			session.setAttribute("basePathSelected", basePath);
+			model.addAttribute("useraction", GOOGLE_CLOUD_BULK_TYPE);
+			session.setAttribute("bulkType", GOOGLE_CLOUD_BULK_TYPE);
+			setCriteria(model, request, session);
+			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
+					false);
+			String returnURL = this.webServerName + "/addbulk";
+
+			try {
+			  return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+			} catch (Exception e) {
+			  model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+			  e.printStackTrace();
+			}
+		  }
 
 		try {
 			if (hpcDataModel.getPath() == null || hpcDataModel.getPath().trim().length() == 0)
@@ -381,7 +432,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 					session.setAttribute("userDOCModel", modelDTO);
 				}
-				String userId = (String) session.getAttribute("hpcUserId");
 				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, serviceURL, sslCertPath,
 						sslCertPassword);
 				basePaths = (Set<String>) session.getAttribute("basePaths");

@@ -71,15 +71,15 @@ public interface HpcDataTransferProxy {
 	}
 
 	/**
-	 * Authenticate a Google Drive account.
+	 * Authenticate a Google Drive / Google Cloud Storage account.
 	 *
-	 * @param accessToken Google Drive access token.
+	 * @param accessToken      Google Drive / Storage access token.
 	 * @return An authenticated token, to be used in subsequent calls to data
 	 *         transfer.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default Object authenticate(String accessToken) throws HpcException {
-		throw new HpcException("authenticate(GoogleDrive access-token) not supported", HpcErrorType.UNEXPECTED_ERROR);
+		throw new HpcException("authenticate(Google access-token) not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
 	/**

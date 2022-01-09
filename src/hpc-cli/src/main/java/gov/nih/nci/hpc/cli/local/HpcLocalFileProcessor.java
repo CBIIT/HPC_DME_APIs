@@ -379,15 +379,22 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
       objectPath = "/" + objectPath;
     }
     String md5Checksum = null;
-    if (checksum && !multipartUpload) {
+    if (checksum) {
       HashCode hash;
       try {
         logger.debug("entity.getAbsolutePath() {}", entity.getAbsolutePath());
         hash = com.google.common.io.Files.hash(file, Hashing.md5());
         md5Checksum = BaseEncoding.base64().encode(hash.asBytes());
         logger.debug("md5Checksum {}", md5Checksum);
-        hpcDataObjectRegistrationDTO.setChecksum(md5Checksum);
-        System.out.println("Processing: " + basePath + objectPath + " | Checksum: " + md5Checksum);
+        if (!multipartUpload)
+        	hpcDataObjectRegistrationDTO.setChecksum(md5Checksum);
+        else {
+        	HpcMetadataEntry objectEntry = new HpcMetadataEntry();
+      	  	objectEntry.setAttribute("source_checksum");
+     	  	objectEntry.setValue(hash.toString());
+     	  	hpcDataObjectRegistrationDTO.getMetadataEntries().add(objectEntry);
+        }	
+        System.out.println("Processing: " + basePath + objectPath + " | Checksum: " + hash.toString());
       } catch (IOException e) {
         String message = "Failed to calculate checksum due to: " + e.getMessage();
         HpcClientUtil.writeException(e, message, null, logFile);
