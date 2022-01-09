@@ -12,12 +12,14 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.security.SecurityContext;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -36,7 +38,9 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
       "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceInvokeTime";
   private static String SERVICE_URI_MC_ATTRIBUTE =
       "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceURI";
-
+  //The invoker attribue name to saved in HpcAuthenticationInterceptor
+  private static String USER_ID_MC_ATTRIBUTE =
+		      "gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor.userId";
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
@@ -114,15 +118,6 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
       message.getExchange().put(SERVICE_URI_MC_ATTRIBUTE, serviceURI);
 
     } else if (phase.equals(Phase.SEND_ENDING)) {
-      // Log the service completion time
-      Long startTime = (Long) message.getExchange().get(SERVICE_INVOKE_TIME_MC_ATTRIBUTE);
-      String serviceURI = (String) message.getExchange().get(SERVICE_URI_MC_ATTRIBUTE);
-      if (startTime != null && serviceURI != null) {
-        logger.info(
-            "RS completed: {} - Service execution time: {} milliseconds.",
-            serviceURI,
-            System.currentTimeMillis() - startTime);
-      }
 
       // Log the service invoker
       HpcAuthenticationResponseDTO authenticationResponse = null;
@@ -143,7 +138,17 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
                   + authenticationResponse.getAuthenticationType().toString()
                   + "]"
               : "Unknown';";
-      logger.info("RS invoker: {}", serviceInvoker);
+      
+      // Log the service completion time
+      Long startTime = (Long) message.getExchange().get(SERVICE_INVOKE_TIME_MC_ATTRIBUTE);
+      String serviceURI = (String) message.getExchange().get(SERVICE_URI_MC_ATTRIBUTE);
+      if (startTime != null && serviceURI != null) {
+        logger.info(
+            "RS completed: {} - Service execution time: {} milliseconds. RS invoker: {}",
+            serviceURI,
+            System.currentTimeMillis() - startTime,
+            serviceInvoker);
+      }
     }
   }
 }

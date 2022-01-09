@@ -34,7 +34,11 @@
 	<bean id="hpcDataMigrationBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataMigrationBusServiceImpl" />
 	<bean id="hpcDataTieringBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataTieringBusServiceImpl" />
 	<bean id="hpcReviewBusService" class="gov.nih.nci.hpc.bus.impl.HpcReviewBusServiceImpl" />
-
+	<bean id="hpcGetAllDataObjectsExecutorService" class="java.util.concurrent.Executors"
+        factory-method="newFixedThreadPool" destroy-method="shutdown">
+        <constructor-arg value="${hpc.bus.getAllDataObjectsExecutorThreadPoolSize}" />
+    </bean>
+    
 	<!-- Business Services Aspects -->
 	<bean id="hpcBusServiceAspect" class="gov.nih.nci.hpc.bus.aspect.HpcBusServiceAspect" />
 	
@@ -42,5 +46,5 @@
 	<task:executor id="hpcCollectionDownloadTaskExecutor" pool-size="${hpc.bus.collectionDownloadTaskExecutorThreadPoolSize}"/>
 	<task:executor id="hpcDataObjectDownloadTaskExecutor" pool-size="${hpc.bus.dataObjectDownloadTaskExecutorThreadPoolSize}"/>
 	<task:executor id="hpcDataObjectFileSystemUploadTaskExecutor" pool-size="${hpc.bus.dataObjectFileSystemTaskExecutorThreadPoolSize}"/>
-
+	
 </beans>

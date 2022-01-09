@@ -23,8 +23,10 @@
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.dataTransfer.downloadDirectory">/mnt/IRODsScratch/data/S3</prop>
-		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize"></prop>
+		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize">5368709120</prop>
 		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
+		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">8</prop>
+		<prop key="hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId">s3-download-task-server-id</prop>
 		<prop key="hpc.service.dataTransfer.globusTokenExpirationPeriod">120</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
@@ -38,8 +40,9 @@
 		<prop key="hpc.service.notification.mail.port">25</prop>
 		<prop key="hpc.service.notification.notificationDeliveryReceiptsPageSize">100</prop>
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
+		<prop key="hpc.service.notification.storageAdministratorUserIds">HPC_DME_Admin</prop>
 		<prop key="hpc.service.dataSearch.searchResultsPageSize">100</prop>
-		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">5000</prop>
+		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">10000</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
@@ -52,6 +55,7 @@
 		<prop key="hpc.service.dataManagement.deletedBasePath">/DME_Deleted_Archive</prop>
 		<prop key="hpc.service.dataManagement.deletedDataObjectRetentionDays">730</prop>
 		<prop key="hpc.service.event.invokerCollectionUpdateNotification">false</prop>
+		
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -127,6 +131,9 @@
 	<osgi:reference id="hpcGoogleDriveDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGoogleDriveDataTransferProxy"/>
+	<osgi:reference id="hpcGoogleCloudStorageDataTransferProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
+		            bean-name="hpcGoogleCloudStorageDataTransferProxy"/>
 	<osgi:reference id="hpcLdapAuthenticationProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
 	<osgi:reference id="hpcDataManagementProxy"
@@ -137,4 +144,6 @@
 	                interface="gov.nih.nci.hpc.dao.HpcDataMigrationDAO" />	
 	<osgi:reference id="hpcReviewDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcReviewDAO" />	
+	<osgi:reference id="hpcQueryConfigDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcQueryConfigDAO" />	
 </beans>

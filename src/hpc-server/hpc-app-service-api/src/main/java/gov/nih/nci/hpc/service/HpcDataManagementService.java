@@ -333,6 +333,15 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException;
+	
+	/**
+	 * Get data objects that have their data transfer upload failed via
+	 * streaming.
+	 *
+	 * @return A list of data objects.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataObject> getDataTranferUploadStreamingFailed() throws HpcException;
 
 	/**
 	 * Get data objects that have their data transfer upload via streaming has

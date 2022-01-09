@@ -15,6 +15,7 @@
 	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-domain-report="http://hpc.nci.nih.gov/domain/report"
 	xmlns:hpc-dto-datamanagement="http://hpc.nci.nih.gov/dto/datamanagement/v2"
 	targetNamespace="http://hpc.nci.nih.gov/dto/datamanagement/v2"
 	elementFormDefault="unqualified">
@@ -28,6 +29,9 @@
 	<xsd:import
 		namespace="http://hpc.nci.nih.gov/domain/metadata"
 		schemaLocation="HpcMetadataTypes.xsd" />
+	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/report"
+		schemaLocation="HpcReportTypes.xsd" />
 
 	<!-- Data Object Registration DTO -->
 	<xsd:element name="HpcDataObjectRegistrationRequestDTO">
@@ -38,6 +42,8 @@
 				<xsd:element name="s3UploadSource"
 					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 				<xsd:element name="googleDriveUploadSource"
+					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+				<xsd:element name="googleCloudStorageUploadSource"
 					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 				<xsd:element name="fileSystemUploadSource"
 					type="hpc-domain-datatransfer:HpcUploadSource" />
@@ -70,7 +76,9 @@
 				<xsd:element name="s3DownloadDestination"
 					type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 				<xsd:element name="googleDriveDownloadDestination"
-					type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
+					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
+				<xsd:element name="googleCloudStorageDownloadDestination"
+					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 				<xsd:element name="synchronousDownloadFilter"
 					type="hpc-domain-datatransfer:HpcSynchronousDownloadFilter" />
 			</xsd:sequence>
@@ -89,7 +97,9 @@
 				<xsd:element name="s3DownloadDestination"
 					type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 				<xsd:element name="googleDriveDownloadDestination"
-					type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
+					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
+				<xsd:element name="googleCloudStorageDownloadDestination"
+					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 				<xsd:element name="appendPathToDownloadDestination"
 					type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
@@ -106,6 +116,8 @@
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="googleDriveUploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleCloudStorageUploadSource"
+					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="fileSystemUploadSource"
 				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="linkSourcePath" type="xsd:string" />
@@ -128,7 +140,9 @@
 			<xsd:element name="s3ScanDirectory"
 				type="hpc-domain-datatransfer:HpcS3ScanDirectory" />
 			<xsd:element name="googleDriveScanDirectory"
-				type="hpc-domain-datatransfer:HpcGoogleDriveScanDirectory" />
+				type="hpc-domain-datatransfer:HpcGoogleScanDirectory" />
+			<xsd:element name="googleCloudStorageScanDirectory"
+				type="hpc-domain-datatransfer:HpcGoogleScanDirectory" />
 			<xsd:element name="fileSystemScanDirectory"
 				type="hpc-domain-datatransfer:HpcScanDirectory" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
