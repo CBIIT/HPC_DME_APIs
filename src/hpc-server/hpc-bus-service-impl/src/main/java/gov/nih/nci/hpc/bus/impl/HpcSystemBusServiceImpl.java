@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
@@ -53,7 +54,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
@@ -145,6 +146,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Qualifier("hpcDataObjectFileSystemUploadTaskExecutor")
 	Executor dataObjectFileSystemUploadTaskExecutor = null;
 
+	// Max download tasks that can be in-process for a user
+	@Value("${hpc.bus.maxPermittedInProcessDownloadTasksPerUser}")
+	private int maxPermittedInProcessDownloadTasksPerUser = 0;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -179,7 +184,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Transfer the data file.
 				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
-						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null,
+						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null, null,
 						false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
@@ -260,16 +265,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Update data transfer status.
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
 							null, null, null, null, null, null, null, null);
+					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
+							
 					break;
 
 				case FAILED:
 					// Data transfer failed.
-
 					throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
 							HpcErrorType.DATA_TRANSFER_ERROR);
 
 				default:
 					// Transfer is still in progress.
+					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(),
+							Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
+									/ systemGeneratedMetadata.getSourceSize()));
 					continue;
 				}
 
@@ -388,10 +397,24 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void processDataTranferUploadStreamingFailed() throws HpcException {
+		// Iterate through the data objects that their data transfer is in-progress.
+		List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadStreamingFailed();
+		for (HpcDataObject dataObject : dataObjectsInProgress) {
+			String path = dataObject.getAbsolutePath();
+			logger.info("Processing data object upload failed via Streaming: {}", path);
+
+			// Process the data object registration failure.
+			processDataObjectRegistrationFailure(path,
+					"Streaming from S3 / Google Drive / Google Cloud Storage to S3 archive failed");
+		}
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void processDataTranferUploadStreamingStopped() throws HpcException {
 		// Iterate through the data objects that their data transfer (S3 / Google Drive
-		// streaming) has
-		// stopped.
+		// / Google Cloud Storage streaming) has stopped.
 		List<HpcDataObject> dataObjectsStreamingStopped = dataManagementService.getDataTranferUploadStreamingStopped();
 		for (HpcDataObject dataObject : dataObjectsStreamingStopped) {
 			String path = dataObject.getAbsolutePath();
@@ -409,8 +432,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
 								systemGeneratedMetadata.getSourceSize()),
 						toGoogleDriveUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
-								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
-								systemGeneratedMetadata.getSourceSize()),
+								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
+						toGoogleCloudStorageUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
+								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
 						null, null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
@@ -506,9 +530,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@HpcExecuteAsSystemAccount
 	public void startGoogleDriveDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are received and type
-		// is
-		// GOOGLE_DRIVE.
+		// is GOOGLE_DRIVE.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_DRIVE);
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void startGoogleCloudStorageDataObjectDownloadTasks() throws HpcException {
+		// Iterate through all the data object download tasks that are received and type
+		// is GOOGLE_CLOUD_STORAGE.
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED,
+				HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 	}
 
 	@Override
@@ -533,7 +565,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcDataObjectDownloadTask downloadTask : dataTransferService.getDataObjectDownloadTasks()) {
 			try {
 				if ((downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE))
+						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: {}", downloadTask.getId());
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);
@@ -579,14 +612,28 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				continue;
 			}
 
-			// We limit to one collection download task processing per user at a time.
-			int tasksInProgressCount = dataTransferService.getCollectionDownloadTasksCount(downloadTask.getUserId(),
-					HpcCollectionDownloadTaskStatus.RECEIVED, true);
-			if (tasksInProgressCount > 0) {
-				// Another collection download tasks in in-process (other thread) for this user.
+			// We limit a user to one download (collection breakdown or processing) task at
+			// a time for the same collection
+			int tasksInProcessForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
+					downloadTask.getUserId(), downloadTask.getPath(), true);
+			if (tasksInProcessForSameCollectionCount > 0) {
+				// Another collection breakdown or processing task is in-process (other thread)
+				// for this same collection for this user.
 				logger.info(
-						"collection download task: {} - Not processing at this time. {} tasks in-process for user: {}",
-						downloadTask.getId(), tasksInProgressCount, downloadTask.getUserId());
+						"collection download task: {} - Not processing at this time. A download task is already in-process for user {} for collection {}",
+						downloadTask.getId(), downloadTask.getUserId(), downloadTask.getPath());
+				continue;
+			}
+
+			// We also limit a user overall to a configured number of collection download
+			// tasks at a time.
+			int totalTasksInProcessCount = dataTransferService
+					.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
+			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser) {
+				// We have reached the max collection breakdown tasks in-process for this user.
+				logger.info(
+						"collection download task: {} - Not processing at this time. {} download tasks already in-process for user {}",
+						downloadTask.getId(), totalTasksInProcessCount, downloadTask.getUserId());
 				continue;
 			}
 
@@ -608,7 +655,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
-										downloadTask.getGoogleDriveDownloadDestination(), downloadTask.getUserId());
+										downloadTask.getGoogleDriveDownloadDestination(),
+										downloadTask.getGoogleCloudStorageDownloadDestination(),
+										downloadTask.getUserId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								// Get the collection to be downloaded.
@@ -623,6 +672,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
+										downloadTask.getGoogleCloudStorageDownloadDestination(),
 										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
 										collectionDownloadBreaker);
 
@@ -631,6 +681,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
+										downloadTask.getGoogleCloudStorageDownloadDestination(),
 										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
@@ -645,6 +696,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
 													downloadTask.getS3DownloadDestination(),
 													downloadTask.getGoogleDriveDownloadDestination(),
+													downloadTask.getGoogleCloudStorageDownloadDestination(),
 													downloadTask.getAppendPathToDownloadDestination(),
 													downloadTask.getUserId(), collectionDownloadBreaker));
 								}
@@ -1089,9 +1141,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				try {
 					// First mark the task as picked up in this run so we don't pick up the same
 					// record. For tasks in RECEIVED status (which are processed concurrently in
-					// separate threads),
-					// we set their in-process indicator to true so they are not picked up by
-					// another thread.
+					// separate threads), we set their in-process indicator to true so they are
+					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
 					dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
 
@@ -1103,6 +1154,32 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									"download task: {} - continuing in-process in another thread [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
 									downloadTask.getDestinationType());
+							break;
+						}
+
+						if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+							try {
+								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
+										downloadTask.getId(), downloadTask.getDataTransferType(),
+										downloadTask.getDestinationType());
+								dataTransferService.continueDataObjectDownloadTask(downloadTask);
+
+							} catch (HpcException e) {
+								logger.error(
+										"download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+										downloadTask.getId(), downloadTask.getDataTransferType(),
+										downloadTask.getDestinationType(), e);
+							} finally {
+								try {
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+
+								} catch (HpcException e) {
+									logger.error(
+											"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
+											downloadTask.getId(), downloadTask.getDataTransferType(),
+											downloadTask.getDestinationType(), e);
+								}
+							}
 							break;
 						}
 
@@ -1204,7 +1281,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		try {
 			switch (dataTransferStatus) {
 			case ARCHIVED:
-				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted);
+				// Generate the download URL.
+				HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
+				try {
+					downloadRequestURL = dataManagementBusService.generateDownloadRequestURL(path);
+				} catch (HpcException e) {
+					logger.error(
+							"addDataTransferUploadEvent: {} - Failed to generate presigned download URL [transfer-type={}, transfer-status={}]",
+							path, dataTransferType, dataTransferStatus, e);
+				}
+				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
+						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
+						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
 				break;
 
 			case IN_TEMPORARY_ARCHIVE:
@@ -1317,28 +1405,31 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * Download a collection. Traverse the collection tree and submit download
 	 * request to all files in the tree.
 	 *
-	 * @param collection                      The collection to download.
-	 * @param globusDownloadDestination       The user requested Glopbus download
-	 *                                        destination.
-	 * @param s3DownloadDestination           The user requested S3 download
-	 *                                        destination.
-	 * @param googleDriveDownloadDestination  The user requested Google Drive
-	 *                                        download destination.
-	 * @param appendPathToDownloadDestination If true, the (full) object path will
-	 *                                        be used in the destination path,
-	 *                                        otherwise just the object name will be
-	 *                                        used.
-	 * @param userId                          The user ID who requested the
-	 *                                        collection download.
-	 * @param collectionDownloadBreaker       A collection download breaker
-	 *                                        instance.
+	 * @param collection                            The collection to download.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param appendPathToDownloadDestination       If true, the (full) object path
+	 *                                              will be used in the destination
+	 *                                              path, otherwise just the object
+	 *                                              name will be used.
+	 * @param userId                                The user ID who requested the
+	 *                                              collection download.
+	 * @param collectionDownloadBreaker             A collection download breaker
+	 *                                              instance.
 	 * @return The download task items (each item represent a data-object download
 	 *         under the collection).
 	 * @throws HpcException on service failure.
 	 */
 	private List<HpcCollectionDownloadTaskItem> downloadCollection(HpcCollection collection,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, boolean appendPathToDownloadDestination,
 			String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
@@ -1346,7 +1437,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					appendPathToDownloadDestination, userId, null);
+					googleCloudStorageDownloadDestination, appendPathToDownloadDestination, userId, null);
 			downloadItems.add(downloadItem);
 			if (collectionDownloadBreaker.abortDownload(downloadItem)) {
 				// Need to abort collection download processing. Cancel and return the items
@@ -1371,6 +1462,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								appendPathToDownloadDestination ? null : false, null),
 						calculateGoogleDriveDownloadDestination(googleDriveDownloadDestination, subCollectionPath,
 								appendPathToDownloadDestination ? null : false, null),
+						calculateGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination,
+								subCollectionPath, appendPathToDownloadDestination ? null : false, null),
 						appendPathToDownloadDestination, userId, collectionDownloadBreaker));
 			}
 		}
@@ -1381,35 +1474,38 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	/**
 	 * Download a list of data objects.
 	 *
-	 * @param dataObjectPaths                 The list of data object path to
-	 *                                        download.
-	 * @param globusDownloadDestination       The user requested Glopbus download
-	 *                                        destination.
-	 * @param s3DownloadDestination           The user requested S3 download
-	 *                                        destination.
-	 * @param googleDriveDownloadDestination  The user requested Google Drive
-	 *                                        download destination.
-	 * @param appendPathToDownloadDestination If true, the (full) object path will
-	 *                                        be used in the destination path,
-	 *                                        otherwise just the object name will be
-	 *                                        used.
-	 * @param userId                          The user ID who requested the
-	 *                                        collection download.
+	 * @param dataObjectPaths                       The list of data object path to
+	 *                                              download.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param appendPathToDownloadDestination       If true, the (full) object path
+	 *                                              will be used in the destination
+	 *                                              path, otherwise just the object
+	 *                                              name will be used.
+	 * @param userId                                The user ID who requested the
+	 *                                              collection download.
 	 * @return The download task items (each item represent a data-object download
 	 *         from the requested list).
 	 * @throws HpcException on service failure.
 	 */
 	private List<HpcCollectionDownloadTaskItem> downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, boolean appendPathToDownloadDestination,
 			String userId) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
 		for (String dataObjectPath : dataObjectPaths) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectPath, globusDownloadDestination,
-					s3DownloadDestination, googleDriveDownloadDestination, appendPathToDownloadDestination, userId,
-					null);
+					s3DownloadDestination, googleDriveDownloadDestination, googleCloudStorageDownloadDestination,
+					appendPathToDownloadDestination, userId, null);
 			downloadItems.add(downloadItem);
 		}
 
@@ -1420,25 +1516,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * Download the data objects that failed to download in a given
 	 * collection/data-objects download task
 	 *
-	 * @param retryTaskId                    The task ID to retry downloading all
-	 *                                       failed items.
-	 * @param retryTaskType                  The retry download task type.
-	 * @param globusDownloadDestination      The user requested Globus download
-	 *                                       destination.
-	 * @param s3DownloadDestination          The user requested S3 download
-	 *                                       destination.
-	 * @param googleDriveDownloadDestination The user requested Google Drive
-	 *                                       download destination.
-	 * 
-	 * @param userId                         The user ID who requested the
-	 *                                       collection download.
+	 * @param retryTaskId                           The task ID to retry downloading
+	 *                                              all failed items.
+	 * @param retryTaskType                         The retry download task type.
+	 * @param globusDownloadDestination             The user requested Globus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param userId                                The user ID who requested the
+	 *                                              collection download.
 	 * @return The download task items (each item represent a data-object download
 	 *         from the failed items of the task to be retried).
 	 * @throws HpcException on service failure.
 	 */
 	private List<HpcCollectionDownloadTaskItem> retryDownloadTask(String retryTaskId, HpcDownloadTaskType retryTaskType,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId) throws HpcException {
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId) throws HpcException {
 
 		HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
 				? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
@@ -1451,8 +1549,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the failed download items and retry them.
 		for (HpcCollectionDownloadTaskItem failedItem : retryTaskStatus.getFailedItems()) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(failedItem.getPath(),
-					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination, false, userId,
-					failedItem.getDestinationLocation());
+					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
+					googleCloudStorageDownloadDestination, false, userId, failedItem.getDestinationLocation());
 			downloadItems.add(downloadItem);
 		}
 
@@ -1462,28 +1560,32 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	/**
 	 * Download a data object.
 	 *
-	 * @param path                            The data object path.
-	 * @param globusDownloadDestination       The user requested Globus download
-	 *                                        destination.
-	 * @param s3DownloadDestination           The user requested S3 download
-	 *                                        destination.
-	 * @param googleDriveDownloadDestination  The user requested Google Drive
-	 *                                        download destination.
-	 * @param appendPathToDownloadDestination If true, the (full) object path will
-	 *                                        be used in the destination path,
-	 *                                        otherwise just the object name will be
-	 *                                        used.
-	 * @param userId                          The user ID who requested the
-	 *                                        collection download.
-	 * @param retryDestinationLocation        (Optional) A retry destination
-	 *                                        location - download retry is always
-	 *                                        attempted into the original calculated
-	 *                                        download destination.
+	 * @param path                                  The data object path.
+	 * @param globusDownloadDestination             The user requested Globus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              storage download destination.
+	 * @param appendPathToDownloadDestination       If true, the (full) object path
+	 *                                              will be used in the destination
+	 *                                              path, otherwise just the object
+	 *                                              name will be used.
+	 * @param userId                                The user ID who requested the
+	 *                                              collection download.
+	 * @param retryDestinationLocation              (Optional) A retry destination
+	 *                                              location - download retry is
+	 *                                              always attempted into the
+	 *                                              original calculated download
+	 *                                              destination.
 	 * @return The download task item.
 	 */
 	private HpcCollectionDownloadTaskItem downloadDataObject(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, boolean appendPathToDownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, boolean appendPathToDownloadDestination,
 			String userId, HpcFileLocation retryDestinationLocation) {
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
 		dataObjectDownloadRequest.setGlobusDownloadDestination(calculateGlobusDownloadDestination(
@@ -1492,6 +1594,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				appendPathToDownloadDestination, retryDestinationLocation));
 		dataObjectDownloadRequest.setGoogleDriveDownloadDestination(calculateGoogleDriveDownloadDestination(
 				googleDriveDownloadDestination, path, appendPathToDownloadDestination, retryDestinationLocation));
+		dataObjectDownloadRequest.setGoogleCloudStorageDownloadDestination(
+				calculateGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination, path,
+						appendPathToDownloadDestination, retryDestinationLocation));
 
 		// Instantiate a download item for this data object.
 		HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -1518,6 +1623,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				destinationLocation = s3DownloadDestination.getDestinationLocation();
 			} else if (googleDriveDownloadDestination != null) {
 				destinationLocation = googleDriveDownloadDestination.getDestinationLocation();
+			} else if (googleCloudStorageDownloadDestination != null) {
+				destinationLocation = googleCloudStorageDownloadDestination.getDestinationLocation();
 			}
 			downloadItem.setDestinationLocation(destinationLocation);
 			downloadItem.setMessage(e.getMessage());
@@ -1615,20 +1722,57 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * 
 	 * @return A calculated destination location.
 	 */
-	private HpcGoogleDriveDownloadDestination calculateGoogleDriveDownloadDestination(
-			HpcGoogleDriveDownloadDestination collectionDestination, String collectionListingEntryPath,
+	private HpcGoogleDownloadDestination calculateGoogleDriveDownloadDestination(
+			HpcGoogleDownloadDestination collectionDestination, String collectionListingEntryPath,
 			Boolean appendPathToDownloadDestination, HpcFileLocation retryDestinationLocation) {
 		if (collectionDestination == null) {
 			return null;
 		}
 
-		HpcGoogleDriveDownloadDestination calcGoogleDriveDestination = new HpcGoogleDriveDownloadDestination();
+		HpcGoogleDownloadDestination calcGoogleDriveDestination = new HpcGoogleDownloadDestination();
 		calcGoogleDriveDestination.setDestinationLocation(retryDestinationLocation != null ? retryDestinationLocation
 				: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
 						collectionListingEntryPath, appendPathToDownloadDestination));
 		calcGoogleDriveDestination.setAccessToken(collectionDestination.getAccessToken());
 
 		return calcGoogleDriveDestination;
+	}
+
+	/**
+	 * Calculate a Google Cloud Storage download destination path for a collection
+	 * entry under a collection.
+	 *
+	 * @param collectionDestination           The Google Cloud Storage collection
+	 *                                        destination.
+	 * @param collectionListingEntryPath      The entry path under the collection to
+	 *                                        calculate the destination location
+	 *                                        for.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used. If null - not used.
+	 * @param retryDestinationLocation        (Optional) A retry destination
+	 *                                        location - download retry is always
+	 *                                        attempted into the original calculated
+	 *                                        download destination.
+	 * 
+	 * @return A calculated destination location.
+	 */
+	private HpcGoogleDownloadDestination calculateGoogleCloudStorageDownloadDestination(
+			HpcGoogleDownloadDestination collectionDestination, String collectionListingEntryPath,
+			Boolean appendPathToDownloadDestination, HpcFileLocation retryDestinationLocation) {
+		if (collectionDestination == null) {
+			return null;
+		}
+
+		HpcGoogleDownloadDestination calcGoogleCloudStorageDestination = new HpcGoogleDownloadDestination();
+		calcGoogleCloudStorageDestination
+				.setDestinationLocation(retryDestinationLocation != null ? retryDestinationLocation
+						: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
+								collectionListingEntryPath, appendPathToDownloadDestination));
+		calcGoogleCloudStorageDestination.setAccessToken(collectionDestination.getAccessToken());
+
+		return calcGoogleCloudStorageDestination;
 	}
 
 	/**
@@ -1697,6 +1841,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 			destinationLocation = downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
 			dataTransferType = HpcDataTransferType.GOOGLE_DRIVE;
+		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+			destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
+			dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 		}
 
 		addDataTransferDownloadEvent(downloadTask.getUserId(), path, downloadTask.getType(), downloadTask.getId(),
@@ -1716,7 +1863,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	private void completeInProgressDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+		if (!downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 			// Checking transfer status is done for active Globus downloads only.
 			logger.info("download task: {} - still in-progress [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
@@ -1885,6 +2032,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		registrationDTO.setGlobusUploadSource(registrationRequest.getGlobusUploadSource());
 		registrationDTO.setS3UploadSource(registrationRequest.getS3UploadSource());
 		registrationDTO.setGoogleDriveUploadSource(registrationRequest.getGoogleDriveUploadSource());
+		registrationDTO.setGoogleCloudStorageUploadSource(registrationRequest.getGoogleCloudStorageUploadSource());
 		registrationDTO.setFileSystemUploadSource(registrationRequest.getFileSystemUploadSource());
 		registrationDTO.setLinkSourcePath(registrationRequest.getLinkSourcePath());
 		registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
@@ -1954,6 +2102,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					registrationTask.setMessage("Data object upload failed");
 					registrationTask.setCompleted(Calendar.getInstance());
 					registrationTask.setPercentComplete(0);
+					return;
 				}
 
 				// Get the System generated metadata.
@@ -1981,8 +2130,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				} else {
 					// Registration still in progress. Update % complete.
-					registrationTask
-							.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadata));
+					registrationTask.setPercentComplete(
+							dataTransferService.getDataObjectUploadProgress(metadata));
 				}
 			}
 
@@ -2035,22 +2184,40 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param uploadMethod   The method of upload. If not GOOGLE_DRIVE, null will be
 	 *                       returned
 	 * @param sourceLocation The source location to package.
-	 * @param sourceURL      The source URL to stream from.
 	 * @param sourceSize     The source file size.
 	 * @return The packaged S3 upload source.
 	 */
 	private HpcStreamingUploadSource toGoogleDriveUploadSource(HpcDataTransferUploadMethod uploadMethod,
-			HpcFileLocation sourceLocation, String sourceURL, Long sourceSize) {
+			HpcFileLocation sourceLocation, Long sourceSize) {
 		if (!uploadMethod.equals(HpcDataTransferUploadMethod.GOOGLE_DRIVE)) {
 			return null;
 		}
 
 		HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
 		googleDriveUploadSource.setSourceLocation(sourceLocation);
-		// For Google drive, we persisted the access-token as source-url.
-		googleDriveUploadSource.setAccessToken(sourceURL);
 		googleDriveUploadSource.setSourceSize(sourceSize);
 		return googleDriveUploadSource;
+	}
+
+	/**
+	 * Package a source location into a Google Cloud Storage upload source object.
+	 *
+	 * @param uploadMethod   The method of upload. If not GOOGLE_CLOUD_STORAGE, null
+	 *                       will be returned
+	 * @param sourceLocation The source location to package.
+	 * @param sourceSize     The source file size.
+	 * @return The packaged S3 upload source.
+	 */
+	private HpcStreamingUploadSource toGoogleCloudStorageUploadSource(HpcDataTransferUploadMethod uploadMethod,
+			HpcFileLocation sourceLocation, Long sourceSize) {
+		if (!uploadMethod.equals(HpcDataTransferUploadMethod.GOOGLE_CLOUD_STORAGE)) {
+			return null;
+		}
+
+		HpcStreamingUploadSource googleCloudStorageUploadSource = new HpcStreamingUploadSource();
+		googleCloudStorageUploadSource.setSourceLocation(sourceLocation);
+		googleCloudStorageUploadSource.setSourceSize(sourceSize);
+		return googleCloudStorageUploadSource;
 	}
 
 	/**
@@ -2195,7 +2362,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Transfer the data file from the temporary archive / File system into the
 			// archive.
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
-					file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+					null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 					systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 					systemGeneratedMetadata.getConfigurationId());
 

@@ -225,7 +225,11 @@
 				<entry key="registerSystemAccount"
 					value="${hpc.ws.rs.auth.security.register-system-account}" />
 				<entry key="refreshDataManagementConfigurations"
-					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />	
+					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />
+				<entry key="updateQueryConfiguration"
+					value="${hpc.ws.rs.auth.security.update-query-configuration}" />
+				<entry key="getQueryConfiguration"
+					value="${hpc.ws.rs.auth.security.get-query-configuration}" />
 
 				<!-- Data Management Service Authorizations -->
 				<entry key="registerCollection"
@@ -248,6 +252,7 @@
 				<entry key="getDataObjectsRegistrationDownloadStatus"
 					value="${hpc.ws.rs.auth.data-management.get-data-objects-registration-status}" />
 				<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}" />
+				<entry key="getDataObjectV1" value="${hpc.ws.rs.auth.data-management.get-data-object}" />
 				<entry key="downloadDataObject"
 					value="${hpc.ws.rs.auth.data-management.download-data-object}" />
 				<entry key="getDataObjectDownloadStatus"
@@ -292,6 +297,9 @@
 				<!-- Data Search Service Authorizations -->
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />
 				<entry key="queryDataObjects" value="${hpc.ws.rs.auth.data-search.query-data-objects}" />
+				<entry key="queryDataObjectsInPath" value="${hpc.ws.rs.auth.data-search.query-data-objects-in-path}" />
+				<entry key="queryAllDataObjectsInPath" value="${hpc.ws.rs.auth.data-search.query-all-data-objects-in-path}" />
+				<entry key="queryAllDataObjects" value="${hpc.ws.rs.auth.data-search.query-all-data-objects}" />
 				<entry key="addQuery" value="${hpc.ws.rs.auth.data-search.add-query}" />
 				<entry key="addQueryByUser" value="${hpc.ws.rs.auth.data-search.add-query-by-user}" />
 				<entry key="updateQuery" value="${hpc.ws.rs.auth.data-search.update-query}" />
@@ -384,7 +392,6 @@
 			<ref bean="hpcAuthorizationInterceptor" />
 		</jaxrs:inInterceptors>
 		<jaxrs:outInterceptors>
-			<ref bean="hpcAPIVersionInterceptor" />
 			<ref bean="hpcCleanupInterceptor" />
 			<ref bean="hpcCleanupFaultInterceptor" />
 			<ref bean="hpcProfileOutInterceptor" />
