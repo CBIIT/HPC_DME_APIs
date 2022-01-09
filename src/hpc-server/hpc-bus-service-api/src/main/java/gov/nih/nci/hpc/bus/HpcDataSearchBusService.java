@@ -62,6 +62,20 @@ public interface HpcDataSearchBusService {
       throws HpcException;
 
   /**
+   * Get all data objects under path.
+   *
+   * @param path The path specified.
+   * @param page The requested results page.
+   * @param pageSize (Optional) The page size specified by the user. If not specified, it will take the default.
+   * @param totalCount If set to true, return the total count of collections matching the query
+   *     regardless of the limit on returned entities.
+   * @return A list of Data Object DTO.
+   * @throws HpcException on service failure.
+   */
+  public HpcDataObjectListDTO getAllDataObjects(String path, Integer page, Integer pageSize, Boolean totalCount)
+      throws HpcException;
+  
+  /**
    * Get data objects by named query.
    *
    * @param queryName The query name.

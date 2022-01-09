@@ -68,11 +68,11 @@
 	<xsd:complexType name="HpcSearchMetadataEntry">
 		<xsd:sequence>
 				<xsd:element name="id" type="xsd:int" />
-				<xsd:element name="collectionId" type="xsd:int" />
+				<xsd:element name="collectionId" type="xsd:int" minOccurs="0" />
 				<xsd:element name="collectionName" type="xsd:string" />
 				<xsd:element name="absolutePath" type="xsd:string" />
-				<xsd:element name="dataSize" type="xsd:long" />
-				<xsd:element name="dataPath" type="xsd:string" />
+				<xsd:element name="dataSize" type="xsd:long" minOccurs="0" />
+				<xsd:element name="dataPath" type="xsd:string" minOccurs="0" />
 				<xsd:element name="dataOwnerName" type="xsd:string" />
 				<xsd:element name="createdAt" type="xsd:dateTime" />
 				<xsd:element name="attribute" type="xsd:string" />
