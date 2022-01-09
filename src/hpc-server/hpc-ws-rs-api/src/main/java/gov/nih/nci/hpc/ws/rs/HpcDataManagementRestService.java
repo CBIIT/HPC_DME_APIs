@@ -711,7 +711,7 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/dm/model")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataManagementModels();
+	public Response getDataManagementModels(@QueryParam("metadataRules") Boolean metadataRules);
 
 	/**
 	 * Get data management model. This includes all rules.
@@ -722,7 +722,7 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/dm/model/{basePath}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	Response getDataManagementModel(@PathParam("basePath") String basePath);
+	Response getDataManagementModel(@PathParam("basePath") String basePath, @QueryParam("metadataRules") Boolean metadataRules);
 
 	/**
 	 * Move a list of data objects and/or collections.
