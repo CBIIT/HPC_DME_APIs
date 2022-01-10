@@ -785,18 +785,6 @@ public interface HpcDataTransferService {
 	public int getDownloadResultsCount(String userId, String doc) throws HpcException;
 
 	/**
-	 * Get inprocess data object download count.
-	 *
-	 * @param dataTransferType  		The data transfer type.
-	 * @param destinationType   		The destination type.
-	 * @param s3DownloadTaskServerId  	The server ID of the executing s3 download task.
-	 * @return A total count of completed download requests.
-	 * @throws HpcException on database error.
-	 */
-	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType, String s3DownloadTaskServerId) throws HpcException;
-
-	/**
 	 * Get the download results page size.
 	 *
 	 * @return The download results page size.
