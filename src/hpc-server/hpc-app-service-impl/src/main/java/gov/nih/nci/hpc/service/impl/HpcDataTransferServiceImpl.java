@@ -209,9 +209,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
 	private Integer maxPermittedS3DownloadsForGlobus = null;
 
-	//The ID of the S3 download task
+	// A configured ID representing the server performing a download task.
 	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
-	private String s3DataObjectDownloadTaskServerId = null;
+	private String s3DownloadTaskServerId = null;
 
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
@@ -1322,7 +1322,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// in-process not already true.
 		if (!inProcess || (inProcess && !downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, inProcess ? s3DataObjectDownloadTaskServerId : null);
+			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess,
+					inProcess ? s3DownloadTaskServerId : null);
 		}
 
 		Calendar processed = Calendar.getInstance();
@@ -1654,13 +1655,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasksCountByUser(userId, inProcess);
-	}
-
-	@Override
-	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType, String s3DownloadTaskServerId) throws HpcException {
-		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType,
-				HpcDataTransferDownloadStatus.IN_PROGRESS, s3DownloadTaskServerId);
 	}
 
 	@Override
@@ -3016,9 +3010,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
 	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
-		// Retrieve count of active S3 object downloads (inProcess = true)
-		int inProcessS3DownloadsForGlobus = getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3,
-				HpcDataTransferType.GLOBUS, s3DataObjectDownloadTaskServerId);
+		// Get the count of total download tasks to Globus that are in progress of the
+		// 1st hop.
+		int inProcessS3DownloadsForGlobus = dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(
+				HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS, HpcDataTransferDownloadStatus.IN_PROGRESS,
+				s3DownloadTaskServerId);
 
 		if (maxPermittedS3DownloadsForGlobus <= 0
 				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
@@ -3689,9 +3685,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setCreated(Calendar.getInstance());
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
-			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus))
+			downloadTask.setS3DownloadTaskServerId(
+					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
+							? s3DownloadTaskServerId
+							: null);
+			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
-
+			}
 			dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 		}
 
