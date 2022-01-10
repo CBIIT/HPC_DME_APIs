@@ -538,6 +538,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
+					dataObjectDownloadTask.getS3DownloadTaskServerId(),
 					dataObjectDownloadTask.getId(), dataObjectDownloadTask.getUserId(),
 					dataObjectDownloadTask.getPath(), dataObjectDownloadTask.getConfigurationId(),
 					dataObjectDownloadTask.getS3ArchiveConfigurationId(),
