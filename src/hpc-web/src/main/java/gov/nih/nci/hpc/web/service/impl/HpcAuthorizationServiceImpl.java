@@ -97,7 +97,10 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     String redirectUrl="";
     if((userId != null) && (!userId.isEmpty())){
       refreshToken = getRefreshTokenInStore(userId);
-    } 
+    } else {
+      logger.error("HpcAuthorizationServiceImpl::authorize: userId is null");
+      return null;
+    }
     flow = getFlow(resourceType, refreshToken);
     GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
     redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
@@ -179,7 +182,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 
   private String getRefreshTokenInStore(String userId) throws Exception  {
     // The credential is always retrieved from the Store using flowGoogleCloud
-    logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token being retrieved for: ", userId);
+    logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token being retrieved for: " + userId);
     String refreshTokenInStore = null;
     Credential savedAndRetrievedCredential = flowGoogleCloud.loadCredential(userId);
     if (savedAndRetrievedCredential != null) {
@@ -188,7 +191,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     if (refreshTokenInStore == null || refreshTokenInStore.isEmpty()) {
       logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: No refreshToken token available in Store");
     } else {
-      logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token previously saved in Store: ", refreshTokenInStore);
+      logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token previously saved in Store: " + refreshTokenInStore);
     }
     return refreshTokenInStore;
   }
