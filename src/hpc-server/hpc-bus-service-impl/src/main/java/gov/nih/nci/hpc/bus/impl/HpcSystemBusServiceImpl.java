@@ -1292,7 +1292,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
 						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
-						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
+						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null,
+						dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 				break;
 
 			case IN_TEMPORARY_ARCHIVE:
