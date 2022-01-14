@@ -429,10 +429,14 @@
 		{
 			"eventType": "COLLECTION_UPDATED_DATA_OBJECT_REGISTRATION",
 			"doc": "GAU",
-			"subjectFormat": "DME New Dataset Available for Download",
+			"subjectFormat": "Data from Genome Analysis Unit is now available for %1$s",
 			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "COLLECTION_PATH",
+					"index": "0"
+				}
 			],
-			"textFormat": "Dear %6$s %7$s,<br/><br/>We are pleased to inform you that sequencing and primary analysis of your dataset %1$s has been completed and the results have been uploaded to the NCI Data Vault. <br/><br/>Download size is %5$s bytes.<br/><br/>You can use the following URL to access the data:<br/><br/><a href=\"%4$s\">%4$s</a><br/><br/>Alternatively, cut and paste the following command in a terminal window: <br/><br/>wget -O outputfile \"%4$s\"<br/><br/>You can use the above means to access the data for two weeks only. You can download this data at any time by navigating to the below URL and clicking the download icon from the icon bar.<br/><br/><a href=\"%3$s/datafile?action=view&path=%1$s\">%3$s/datafile?action=view&path=%1$s</a><br/><br/>For questions, contact <a ref=\"mailto:ncidatavault@mail.nih.gov\">ncidatavault@mail.nih.gov</a>",
+			"textFormat": "Dear %6$s %7$s,<br/><br/>The sequencing run you requested for %8$s has been successfully completed.  The results have been uploaded for long-term storage on your behalf to the NCI Data Vault.<br/><br/>You do not need to take any additional steps to back up this data or transfer it to another drive for storage.<br/><ul><li>Download size is %5$s bytes.</li><li>Master copies stored on your behalf in the NCI Data Vault are intended for long-term retention.</li><li>No-one can overwrite or delete these master copies without your approval.</li><li>Any copies you download are temporary. You can delete them when they are no longer in active use or when space on your storage drive becomes limiting.</li><li>For questions about accessing the NCI Data Vault, contact <a href=\"mailto:ncidatavault@mail.nih.gov\">ncidatavault@mail.nih.gov</a></li><li>For storage policies and procedures, refer to <a href=\"#\">NCI Data Vault</a>.</li></ul>When you are ready to begin working with your data, you can access them in the following ways:<br/><ul><li>You can download a copy at any time from the NCI Data Vault:<ol><li>Navigate to the master copy of this dataset:<br/><a href=\"%3$s/datafile?action=view&path=%1$s\">%8$s</a></li><li>In the icon bar, click the download icon.</li></ol></li><br/><li>You can use the following link to download a copy from your browser for the next two weeks:<br/><a href=\"%4$s\">%8$s</a></li><br/><li>You can download from the command line using wget for the next two weeks by copying the following command to a terminal window:<br/>wget -O %9$s \"%4$s\"</li><br/><li>You can analyze your data using the genomics analysis tools hosted in NIDAP by logging into your <a href=\"https://nidap.nih.gov/multipass/login/all\">NIDAP Account</a> and navigating to your Data Catalog [insert link]</li></ul>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -461,7 +465,15 @@
 				{
 					"payloadEntryAttribute": "LAST_NAME",
 					"index": "6"
-				}
+				},
+				{
+					"payloadEntryAttribute": "COLLECTION_PATH",
+					"index": "7"
+				},
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_NAME",
+					"index": "8"
+				},
 			]
 		},
 		{
