@@ -1302,6 +1302,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		downloadTask.setInProcess(false);
+		downloadTask.setS3DownloadTaskServerId(null);
 		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
 			FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 			downloadTask.setDownloadFilePath(null);
@@ -1316,15 +1317,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
-			throws HpcException {
+	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
 		boolean updated = true;
+		String serverId = dataTransferType.equals(HpcDataTransferType.S_3) ? s3DownloadTaskServerId : null;
+
 		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess,
-					inProcess ? s3DownloadTaskServerId : null);
+			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
 		}
 
 		if (updated) {
@@ -1332,7 +1334,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
 			downloadTask.setProcessed(processed);
 			downloadTask.setInProcess(inProcess);
-			downloadTask.setS3DownloadTaskServerId(inProcess ? s3DownloadTaskServerId : null);
+			downloadTask.setS3DownloadTaskServerId(serverId);
 		}
 
 		return updated;
