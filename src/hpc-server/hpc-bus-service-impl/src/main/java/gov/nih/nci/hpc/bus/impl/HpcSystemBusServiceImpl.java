@@ -1239,21 +1239,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// separate threads), we set their in-process indicator to true so they are
 					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
-					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
+					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, true);
 
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
 						if (updated) {
 							logger.info(
-									"download task: {} - marked for in-process [transfer-type={}, destination-type={}, server-id={}]",
+									"download task: {} - marked for in-process [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
-									downloadTask.getDestinationType(), downloadTask.getS3DownloadTaskServerId());
+									downloadTask.getDestinationType());
 						} else {
 							// This task is in-process by another server. Skip it.
 							logger.info(
-									"download task: {} - in-process by another server [transfer-type={}, destination-type={}, server-id={}]",
+									"download task: {} - in-process by another server [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
-									downloadTask.getDestinationType(), downloadTask.getS3DownloadTaskServerId());
+									downloadTask.getDestinationType());
 							break;
 						}
 						if (inProcess) {
@@ -1279,7 +1279,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 
 								} catch (HpcException e) {
 									logger.error(
@@ -1317,7 +1317,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 
 								} catch (HpcException e) {
 									logger.error(
