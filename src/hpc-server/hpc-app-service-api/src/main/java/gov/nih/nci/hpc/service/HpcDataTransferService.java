@@ -490,13 +490,15 @@ public interface HpcDataTransferService {
 	 * Mark a data object download task as processed by updating the processed time
 	 * stamp.
 	 *
-	 * @param downloadTask The download task to mark processed.
-	 * @param inProcess    Indicator whether the task is being actively processed.
+	 * @param downloadTask     The download task to mark processed.
+	 * @param dataTransferType The data transfer type performing the task.
+	 * @param inProcess        Indicator whether the task is being actively
+	 *                         processed.
 	 * @return true if the inProcess value was actually updated in the DB.
 	 * @throws HpcException on service failure.
 	 */
-	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
-			throws HpcException;
+	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException;
 
 	/**
 	 * Update a data object download task. % Complete is calculated and any change
