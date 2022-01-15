@@ -125,7 +125,8 @@ public interface HpcDataTransferService {
 	/**
 	 * Get a data object upload progress.
 	 *
-	 * @param systemGeneratedMetadata The system generated metadata for the data object to check upload progress
+	 * @param systemGeneratedMetadata The system generated metadata for the data
+	 *                                object to check upload progress
 	 * @return The upload completion % if upload in progress, otherwise null.
 	 */
 	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata);
@@ -438,8 +439,8 @@ public interface HpcDataTransferService {
 	 * @return The data-object download result object
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, HpcDownloadResult result,
-			String message, Calendar completed, long bytesTransferred) throws HpcException;
+	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException;
 
 	/**
 	 * Complete a synchronous data object download task.
@@ -491,9 +492,10 @@ public interface HpcDataTransferService {
 	 *
 	 * @param downloadTask The download task to mark processed.
 	 * @param inProcess    Indicator whether the task is being actively processed.
+	 * @return true if the inProcess value was actually updated in the DB.
 	 * @throws HpcException on service failure.
 	 */
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
+	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
 			throws HpcException;
 
 	/**
