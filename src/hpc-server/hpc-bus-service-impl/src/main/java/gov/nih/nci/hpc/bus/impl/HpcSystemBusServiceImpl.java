@@ -269,7 +269,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
 							null, null, null, null, null, null, null, null);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
-							
+
 					break;
 
 				case FAILED:
@@ -1239,14 +1239,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// separate threads), we set their in-process indicator to true so they are
 					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
-					dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
+					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
 
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
-						if (inProcess) {
-							// This task is in-process in another thread. Skip it
+						if (!updated) {
+							// This task is in-process by another server. Skip it.
 							logger.info(
-									"download task: {} - continuing in-process in another thread [transfer-type={}, destination-type={}]",
+									"download task: {} - in-process by another server [transfer-type={}, destination-type={}, server-id={}]",
+									downloadTask.getId(), downloadTask.getDataTransferType(),
+									downloadTask.getDestinationType(), downloadTask.getS3DownloadTaskServerId());
+							break;
+						}
+						if (inProcess) {
+							// This task is in-process by another thread. Skip it.
+							logger.info(
+									"download task: {} - in-process by another thread [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
 									downloadTask.getDestinationType());
 							break;
@@ -2285,8 +2293,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				} else {
 					// Registration still in progress. Update % complete.
-					registrationTask.setPercentComplete(
-							dataTransferService.getDataObjectUploadProgress(metadata));
+					registrationTask.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadata));
 				}
 			}
 
