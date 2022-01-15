@@ -1243,7 +1243,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
-						if (!updated) {
+						if (updated) {
+							logger.info(
+									"download task: {} - marked for in-process [transfer-type={}, destination-type={}, server-id={}]",
+									downloadTask.getId(), downloadTask.getDataTransferType(),
+									downloadTask.getDestinationType(), downloadTask.getS3DownloadTaskServerId());
+						} else {
 							// This task is in-process by another server. Skip it.
 							logger.info(
 									"download task: {} - in-process by another server [transfer-type={}, destination-type={}, server-id={}]",
