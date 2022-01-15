@@ -1332,6 +1332,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
 			downloadTask.setProcessed(processed);
 			downloadTask.setInProcess(inProcess);
+			downloadTask.setS3DownloadTaskServerId(inProcess ? s3DownloadTaskServerId : null);
 		}
 
 		return updated;
