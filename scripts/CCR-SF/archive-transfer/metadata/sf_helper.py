@@ -9,16 +9,19 @@ class SFHelper(object):
     @staticmethod
     def get_pi_name(path, log = True):
 
-        pi_names = {"Amundadottir": "Laufey_Amundadottir", "Basrai": "Munira_Basrai", "Beldaid": "Yasmine_Belkaid", "Bottaro": "Donald_Bottaro", "Bernal": "Frederico_Bernal", "Brognard": "John_Brognard", "LiangCao": "Liang_Cao", "Carrington": "Mary_Carrington", "Haobin": "Haobin_Chen",
-                    "JuliaCooper": "Julia_Cooper", "JulieCooper": "Julie_Cooper", "Durum": "Scott_Durum", "Gardner": "Kevin_Gardner", "Gress": "Ronald_Gress", "Curtis": "Curtis_Harris", "Hattar": "Samer_Hattar", "DebraHope":"Debra_Hope", "StevenHou": "Steven_Hou", "DingJin": "Ding_Jin", "PeterJohnson": "Peter_Johnson", "AshishLal": "Ashish_Lal",
+        pi_names = {"Amundadottir": "Laufey_Amundadottir", "Basrai": "Munira_Basrai", "Beldaid": "Yasmine_Belkaid", "Bottaro": "Donald_Bottaro", "Bernal": "Frederico_Bernal",
+                    "Brognard": "John_Brognard", "LiangCao": "Liang_Cao", "Carrington": "Mary_Carrington", "Haobin": "Haobin_Chen",
+                    "JuliaCooper": "Julia_Cooper", "JulieCooper": "Julie_Cooper", "Durum": "Scott_Durum", "Gardner": "Kevin_Gardner", "Gress": "Ronald_Gress", "Curtis": "Curtis_Harris",
+                    "Hattar": "Samer_Hattar", "Hickstein_Robert": "Dennis_Hickstein", "DebraHope":"Debra_Hope", "StevenHou": "Steven_Hou", "DingJin": "Ding_Jin", "PeterJohnson": "Peter_Johnson", "AshishLal": "Ashish_Lal",
                     "Kraemer": "Kenneth_Kraemer", "Kreitman": "Robert_Kreitman", "Larson": "Dan_Larson", "Lowy": "Douglas_Lowy", "Pengnian": "Pengnian_Lin",
-                    "Lipkowitz": "Stanley_Lipkowitz", "Meier": "Jordan_Meier", "Moscow": "Jeffrey_Moscow", "Oppenheim": "Joost_Oppenheim", "Perantoni": "Alan_Perantoni", "Raznaha": "Armin_Raznaha", "Karlyne": "Karlyne_Reilly", "Schneider": "Joel_Schneider", "staudt": "Louis_Staudt",
+                    "Lipkowitz": "Stanley_Lipkowitz", "Meier": "Jordan_Meier", "Moscow": "Jeffrey_Moscow", "Neuman": "Maria_Merino_Neuman", "Oppenheim": "Joost_Oppenheim",
+                    "Perantoni": "Alan_Perantoni", "Raznaha": "Armin_Raznaha", "Karlyne": "Karlyne_Reilly", "JohnShern": "John_Shern", "Schneider": "Joel_Schneider", "staudt": "Louis_Staudt",
                     "Staudt": "Louis_Staudt", "Soppet": "Daniel_Soppet", "Schrump": "David_Schrump", "Shrump": "David_Schrump", "Steeg": "Patricia_Steeg",
-                    "Sterneck": "Esta_Sterneck", "Tessarollo": "Lino_Tessarollo", "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "KentHuter": "Kent_Hunter",
+                    "Sterneck": "Esta_Sterneck", "Tessarollo": "Lino_Tessarollo", "Giorgio": "Giorgio_Trinchieri", "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "KentHuter": "Kent_Hunter",
                     "Jonathan_Keller_Sun": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
                     "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson",
                     "Batchelor": "Eric_Batchelor", "Brownell": "Issac_Brownell", "Ji_Luo": "Ji_Luo", "ShivGrewal": "Shiv_Grewal",
-                    "Raffeld": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
+                    "Raffeld": "Mark_Raffeld", "Javed": "Javed_Khan",
                     "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Alajem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang",
                     "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
                     "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt", "Pastan": "Ira_Pastan",
@@ -28,8 +31,8 @@ class SFHelper(object):
                     "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly", "ShuoGu": "Shuo_Gu",
                     "MarkGilbert": "Mark_Gilbert", "Yamini": "Yamini_Dalal", "AartiGautam": "Aarti_Gautam", "Hernandez": "Jonathan_Hernandez",
                     "DinahSinger": "Dinah_Singer", "Ried": "Thomas_Ried", "JingHuang": "Jing_Huang", "YingZhang": "Ying_Zhang",
-                    "Nickerson": "Mike_Nickerson", "Lipkowitz": "Stan_Lipkowitz", "Brownell": "Issac_Brownell", "Jung-Min": "Jung-Min_Lee",
-                    "PhilippOberdoerffer": "Philipp_Oberdoerffer", "Ambs": "Stefan_Ambs", "Shern": "Jack_Shern", "Tofilon": "Philip_Tofilon",
+                    "Nickerson": "Mike_Nickerson", "Brownell": "Issac_Brownell", "Jung-Min": "Jung-Min_Lee",
+                    "PhilippOberdoerffer": "Philipp_Oberdoerffer", "Ambs": "Stefan_Ambs", "JackShern": "Jack_Shern", "Tofilon": "Philip_Tofilon",
                     "Doroshow": "James_Doroshow", "Alewine": "Christine_Alewine", "JonathanKeller": "Jonathan_Keller",
                     "HowardYoung": "Howard_Young", "Klinman": "Dennis_Klinman", "Dean": "Micheal_Dean",
                     "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Rudloff": "Udo_Rudloff",
@@ -38,7 +41,8 @@ class SFHelper(object):
                     "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Gottesman": "Michael_Gottesman",
                     "Yuspa": "Stuart_Yuspa", "Roberts": "David_Roberts", "Mistelli": "Tom_Misteli", "Misteli": "Tom_Misteli",
                     "Tomozumi": "Tomozumi_Imamichi", "Raffit": "Raffit_Hassan", "Bartolome": "Ramiro_Iglesias-Bartolome",
-                    "RobertWest": "Robert_West", "Citrin": "Deborah_Citrin", "XinWang": "Xin_Wang", "Wolin": "SandraWolin", "Chunzhang": "Chunzhang_Yang", "ChunZhang": "Chunzhang_Yang", "VanderWeele": "David_VanderWeele", "Kylie": "Kylie_Walters", "Whitby" : "Denise_Whitby",
+                    "RobertWest_Dennis": "Robert_West", "Citrin": "Deborah_Citrin", "XinWang": "Xin_Wang", "Wolin": "SandraWolin", "Chunzhang": "Chunzhang_Yang", "ChunZhang": "Chunzhang_Yang",
+                    "VanderWeele": "David_VanderWeele", "Kylie": "Kylie_Walters", "Whitby" : "Denise_Whitby",
                     "Xiaolin": "Xiaolin_Wu", "Yamaguchi": "Terence_Yamaguchi", "Zhi-Ming": "Zhi-Ming_Zheng", "ZhiMing": "Zhi-Ming_Zheng", "Ziegelbauer": "Joe_Ziegelbauer", "ZhengpingZhuang": "Zhengping_Zhuang"}
 
         pi_name = 'CCRSF'
