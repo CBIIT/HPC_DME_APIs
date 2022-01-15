@@ -1316,21 +1316,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
+	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
 			throws HpcException {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
-		if (!inProcess || (inProcess && !downloadTask.getInProcess()
+		boolean updated = true;
+		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess,
+			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess,
 					inProcess ? s3DownloadTaskServerId : null);
 		}
 
-		Calendar processed = Calendar.getInstance();
-		dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
+		if (updated) {
+			Calendar processed = Calendar.getInstance();
+			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
+			downloadTask.setProcessed(processed);
+			downloadTask.setInProcess(inProcess);
+		}
 
-		downloadTask.setProcessed(processed);
-		downloadTask.setInProcess(inProcess);
+		return updated;
 	}
 
 	@Override
@@ -3593,6 +3597,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
 									: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
 					downloadTask.setInProcess(false);
+					downloadTask.setS3DownloadTaskServerId(null);
 
 					// Persist the download task.
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
