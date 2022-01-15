@@ -3600,7 +3600,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
 									: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
 					downloadTask.setInProcess(false);
-					downloadTask.setS3DownloadTaskServerId(null);
 
 					// Persist the download task.
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
@@ -3729,6 +3728,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setCreated(downloadTask.getCreated());
 			this.downloadTask.setPercentComplete(0);
 			this.downloadTask.setSize(downloadTask.getSize());
+			this.downloadTask.setS3DownloadTaskServerId(downloadTask.getS3DownloadTaskServerId());
 
 			dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
 		}
