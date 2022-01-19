@@ -41,9 +41,11 @@ class SFHelper(object):
                     "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Gottesman": "Michael_Gottesman",
                     "Yuspa": "Stuart_Yuspa", "Roberts": "David_Roberts", "Mistelli": "Tom_Misteli", "Misteli": "Tom_Misteli",
                     "Tomozumi": "Tomozumi_Imamichi", "Raffit": "Raffit_Hassan", "Bartolome": "Ramiro_Iglesias-Bartolome",
-                    "RobertWest_Dennis": "Robert_West", "Citrin": "Deborah_Citrin", "XinWang": "Xin_Wang", "Wolin": "SandraWolin", "Chunzhang": "Chunzhang_Yang", "ChunZhang": "Chunzhang_Yang",
+                    "RobertWest_Dennis": "Robert_West", "RobertWest_CS": "Robert_West", "Citrin": "Deborah_Citrin", "XinWang": "Xin_Wang",
+                    "Wolin": "Sandra_Wolin", "Chunzhang": "Chunzhang_Yang", "ChunZhang": "Chunzhang_Yang",
                     "VanderWeele": "David_VanderWeele", "Kylie": "Kylie_Walters", "Whitby" : "Denise_Whitby",
-                    "Xiaolin": "Xiaolin_Wu", "Yamaguchi": "Terence_Yamaguchi", "Zhi-Ming": "Zhi-Ming_Zheng", "ZhiMing": "Zhi-Ming_Zheng", "Ziegelbauer": "Joe_Ziegelbauer", "ZhengpingZhuang": "Zhengping_Zhuang"}
+                    "Xiaolin": "Xiaolin_Wu", "Yamaguchi": "Terence_Yamaguchi", "Zhi-Ming": "Zhi-Ming_Zheng", "ZhiMing": "Zhi-Ming_Zheng",
+                    "Ziegelbauer": "Joe_Ziegelbauer", "ZhengpingZhuang": "Zhengping_Zhuang"}
 
         pi_name = 'CCRSF'
 
