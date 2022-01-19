@@ -10,7 +10,7 @@ class SFHelper(object):
     def get_pi_name(path, log = True):
 
         pi_names = {"Amundadottir": "Laufey_Amundadottir", "Basrai": "Munira_Basrai", "Beldaid": "Yasmine_Belkaid", "Bottaro": "Donald_Bottaro", "Bernal": "Frederico_Bernal",
-                    "Brognard": "John_Brognard", "LiangCao": "Liang_Cao", "Carrington": "Mary_Carrington", "Haobin": "Haobin_Chen", "Chi-Ping": "Chi-Ping_Day",
+                    "Brognard": "John_Brognard", "LiangCao": "Liang_Cao", "Carrington": "Mary_Carrington", "Haobin": "Haobin_Chen", "Chi-Ping_Day": "Chi-Ping_Day",
                     "JuliaCooper": "Julia_Cooper", "JulieCooper": "Julie_Cooper", "Durum": "Scott_Durum", "Gardner": "Kevin_Gardner", "Gress": "Ronald_Gress", "Curtis": "Curtis_Harris",
                     "Hattar": "Samer_Hattar", "Hickstein_Robert": "Dennis_Hickstein", "DebraHope":"Debra_Hope", "StevenHou": "Steven_Hou", "DingJin": "Ding_Jin", "PeterJohnson": "Peter_Johnson", "AshishLal": "Ashish_Lal",
                     "Kraemer": "Kenneth_Kraemer", "Kreitman": "Robert_Kreitman", "Larson": "Dan_Larson", "Lowy": "Douglas_Lowy", "Pengnian": "Pengnian_Lin",
@@ -25,7 +25,7 @@ class SFHelper(object):
                     "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Alajem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang",
                     "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
                     "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt", "Pastan": "Ira_Pastan",
-                    "Merlino": "Glenn_Merlino", "Udayan": "Udayan_Guha", "LiYang": "Li_Yang", "Bhandoola":"Avinash_Bhandoola",
+                    "GlennMerlino": "Glenn_Merlino", "Udayan": "Udayan_Guha", "LiYang": "Li_Yang", "Bhandoola":"Avinash_Bhandoola",
                     "Levens": "David_Levens", "SteveHughes": "Stephen_Hughes", "StephenHuges": "Stephen_Hughes", "Shalini": "Shalini_Oberdoerffer",
                     "Strathern": "Jeff_Strathern", "HonpingZheng": "Honping_Zheng", "Wakefield": "Lalage_Wakefield",
                     "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly", "ShuoGu": "Shuo_Gu",
