@@ -235,7 +235,7 @@ public class HpcS3Connection {
 		// so we override the configured threshold w/ the max size of 5GB.
 		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
 		s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
-				.withAlwaysCalculateMultipartMd5(false).withMinimumUploadPartSize(minimumUploadPartSize)
+				.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
 				.withMultipartUploadThreshold(
 						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
 				.withDisableParallelDownloads(true).build();
