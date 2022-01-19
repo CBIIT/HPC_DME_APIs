@@ -10,7 +10,7 @@ class SFHelper(object):
     def get_pi_name(path, log = True):
 
         pi_names = {"Amundadottir": "Laufey_Amundadottir", "Basrai": "Munira_Basrai", "Beldaid": "Yasmine_Belkaid", "Bottaro": "Donald_Bottaro", "Bernal": "Frederico_Bernal",
-                    "Brognard": "John_Brognard", "LiangCao": "Liang_Cao", "Carrington": "Mary_Carrington", "Haobin": "Haobin_Chen",
+                    "Brognard": "John_Brognard", "LiangCao": "Liang_Cao", "Carrington": "Mary_Carrington", "Haobin": "Haobin_Chen", "Chi-Ping": "Chi-Ping_Day",
                     "JuliaCooper": "Julia_Cooper", "JulieCooper": "Julie_Cooper", "Durum": "Scott_Durum", "Gardner": "Kevin_Gardner", "Gress": "Ronald_Gress", "Curtis": "Curtis_Harris",
                     "Hattar": "Samer_Hattar", "Hickstein_Robert": "Dennis_Hickstein", "DebraHope":"Debra_Hope", "StevenHou": "Steven_Hou", "DingJin": "Ding_Jin", "PeterJohnson": "Peter_Johnson", "AshishLal": "Ashish_Lal",
                     "Kraemer": "Kenneth_Kraemer", "Kreitman": "Robert_Kreitman", "Larson": "Dan_Larson", "Lowy": "Douglas_Lowy", "Pengnian": "Pengnian_Lin",
