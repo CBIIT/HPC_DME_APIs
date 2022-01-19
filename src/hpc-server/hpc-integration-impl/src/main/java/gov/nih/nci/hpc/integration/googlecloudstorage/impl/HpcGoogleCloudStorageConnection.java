@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.integration.googlecloudstorage.impl;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
@@ -28,11 +27,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcGoogleCloudStorageConnection {
-
-	// Temp toggle to use refresh-token
-	@Value("${hpc.integration.googlecloudstorage.refreshToken}")
-	boolean refreshToken = false;
-
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -51,7 +45,7 @@ public class HpcGoogleCloudStorageConnection {
 	/**
 	 * Authenticate google cloud storage.
 	 *
-	 * @param accessToken      Google Cloud Storage token.
+	 * @param accessToken Google Cloud Storage token.
 	 * @throws HpcException if authentication failed.
 	 */
 	public Object authenticate(String accessToken) throws HpcException {
