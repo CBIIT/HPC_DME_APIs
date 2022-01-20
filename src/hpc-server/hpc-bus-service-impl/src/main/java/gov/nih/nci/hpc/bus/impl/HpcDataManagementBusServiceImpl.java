@@ -270,7 +270,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						() -> dataManagementService.validateHierarchy(path, configurationId, false));
 
 				// Add collection update event.
-				addCollectionUpdatedEvent(path, true, false, userId, null, null);
+				addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
 
 				registrationCompleted = true;
 
@@ -306,7 +306,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
 			}
 
-			addCollectionUpdatedEvent(path, false, false, userId, null, null);
+			addCollectionUpdatedEvent(path, false, false, userId, null, null, null);
 		}
 
 		return created;
@@ -998,7 +998,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					}
 					addCollectionUpdatedEvent(path, false, true, userId,
 							downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
-							downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
+							downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null,
+							dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 				}
 
 			} catch (Exception e) {
@@ -2017,9 +2018,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                             collection update event.
 	 * @param presignURL           The presigned download URL.(Optional)
 	 * @param size                 The data size.(Optional)
+	 * @param configurationId      The DOC (Optional)
 	 */
 	private void addCollectionUpdatedEvent(String path, boolean collectionRegistered, boolean dataObjectRegistered,
-			String userId, String presignURL, String size) {
+			String userId, String presignURL, String size, String doc) {
 		try {
 			if (!collectionRegistered && !dataObjectRegistered) {
 				// Add collection metadata updated event.
@@ -2036,7 +2038,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (collectionRegistered) {
 				eventService.addCollectionRegistrationEvent(parentCollection, userId);
 			} else {
-				eventService.addDataObjectRegistrationEvent(parentCollection, userId, presignURL, size, path);
+				eventService.addDataObjectRegistrationEvent(parentCollection, userId, presignURL, size, path, doc);
 			}
 
 		} catch (HpcException e) {
