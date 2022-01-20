@@ -123,6 +123,9 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		if (fullyDistinguishedName == null) {
 			// user not found.
 			return false;
+		} else {
+			logger.info("Fully distinguished name for " + userName + ": " + fullyDistinguishedName);
+			logger.info("User domain name: " + userDomainName);
 		}
 
 		DirContext dirContext = null;
