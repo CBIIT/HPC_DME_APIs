@@ -585,6 +585,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	 * @return A data object list DTO.
 	 * @throws HpcException on service failure.
 	 */
+	@SuppressWarnings("deprecation")
 	private HpcDataObjectListDTO toDataObjectListDTO(List<String> dataObjectPaths, boolean detailedResponse)
 			throws HpcException {
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();

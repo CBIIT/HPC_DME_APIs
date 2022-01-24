@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
+@SuppressWarnings("deprecation")
 public class HpcGlobusConnection {
 	// ---------------------------------------------------------------------//
 	// Instance members

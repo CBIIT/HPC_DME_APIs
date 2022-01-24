@@ -28,6 +28,7 @@
 		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">8</prop>
 		<prop key="hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId">s3-download-task-server-id</prop>
 		<prop key="hpc.service.dataTransfer.globusTokenExpirationPeriod">120</prop>
+		<prop key="hpc.service.dataTransfer.globusCollectionDownloadBunching">true</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriodSso">120</prop>

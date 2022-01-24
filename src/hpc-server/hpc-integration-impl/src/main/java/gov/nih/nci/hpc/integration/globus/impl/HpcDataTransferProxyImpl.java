@@ -39,6 +39,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
@@ -209,9 +211,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					uploadRequest.getPath(), uploadRequest.getCallerObjectId(), baseArchiveDestination.getType(), true);
 		}
 
+		// Build a Globus transfer request.
+		HpcGlobusTransferItem transferItem = new HpcGlobusTransferItem();
+		transferItem.setSourcePath(uploadRequest.getGlobusUploadSource().getSourceLocation().getFileId());
+		transferItem.setDestinationPath(archiveDestinationLocation.getFileId());
+		HpcGlobusTransferRequest transferRequest = new HpcGlobusTransferRequest();
+		transferRequest
+				.setSourceEndpoint(uploadRequest.getGlobusUploadSource().getSourceLocation().getFileContainerId());
+		transferRequest.setDestinationEndpoint(archiveDestinationLocation.getFileContainerId());
+		transferRequest.getItems().add(transferItem);
+
 		// Submit a request to Globus to transfer the data.
-		String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
-				uploadRequest.getGlobusUploadSource().getSourceLocation(), archiveDestinationLocation,
+		String requestId = transferData(globusConnection.getTransferClient(authenticatedToken), transferRequest,
 				encryptedTransfer);
 
 		// Package and return the response.
@@ -260,11 +271,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return String.valueOf(downloadRequest.getFileDestination().hashCode());
 
 		} else {
-			// This is an asynchrnous download request. Submit a request to Globus to
-			// transfer the data.
-			return transferData(globusConnection.getTransferClient(authenticatedToken),
-					downloadRequest.getArchiveLocation(),
-					downloadRequest.getGlobusDestination().getDestinationLocation(), encryptedTransfer);
+			// This is an asynchrnous download request to be performed by Globus
+
+			// Build a Globus transfer request.
+			HpcGlobusTransferItem transferItem = new HpcGlobusTransferItem();
+			transferItem.setSourcePath(downloadRequest.getArchiveLocation().getFileId());
+			transferItem
+					.setDestinationPath(downloadRequest.getGlobusDestination().getDestinationLocation().getFileId());
+			HpcGlobusTransferRequest transferRequest = new HpcGlobusTransferRequest();
+			transferRequest.setSourceEndpoint(downloadRequest.getArchiveLocation().getFileContainerId());
+			transferRequest.setDestinationEndpoint(
+					downloadRequest.getGlobusDestination().getDestinationLocation().getFileContainerId());
+			transferRequest.getItems().add(transferItem);
+
+			// Submit the transfer request
+			return transferData(globusConnection.getTransferClient(authenticatedToken), transferRequest,
+					encryptedTransfer);
 		}
 	}
 
@@ -370,10 +392,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (report.status.equals(SUCCEEDED_STATUS)) {
 			// Download completed successfully.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
+			statusReport.getSuccessfulItems()
+					.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
 
 		} else if (transferFailed(authenticatedToken, dataTransferRequestId, report)) {
 			// Download failed.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
+			statusReport.getSuccessfulItems()
+					.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
 			if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
 				statusReport.setPermissionDenied(true);
 				statusReport.setMessage(report.niceStatusDescription
@@ -451,31 +477,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		});
 	}
 
-	// ---------------------------------------------------------------------//
-	// Helper Methods
-	// ---------------------------------------------------------------------//
-
-	/**
-	 * Submit a data transfer request.
-	 *
-	 * @param client            Client API instance.
-	 * @param source            The source endpoint.
-	 * @param destination       The destination endpoint.
-	 * @param encryptedTransfer (Optional) encrypted transfer indicator
-	 * @return The data transfer request ID.
-	 * @throws HpcException on data transfer system failure.
-	 */
-	private String transferData(JSONTransferAPIClient client, HpcFileLocation source, HpcFileLocation destination,
+	@Override
+	public String transferData(Object authenticatedToken, HpcGlobusTransferRequest transferRequest,
 			Boolean encryptedTransfer) throws HpcException {
-		// Activate endpoints.
-		autoActivate(source.getFileContainerId(), client);
-		autoActivate(destination.getFileContainerId(), client);
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
-		boolean encryptedDataTransfer = Optional.ofNullable(encryptedTransfer).orElse(false);
-		if (encryptedDataTransfer) {
-			logger.info("Globus encrypted transfer {}:{} -> {}:{}", source.getFileContainerId(), source.getFileId(),
-					destination.getFileContainerId(), destination.getFileId());
-		}
+		// Activate endpoints.
+		autoActivate(transferRequest.getSourceEndpoint(), client);
+		autoActivate(transferRequest.getDestinationEndpoint(), client);
 
 		// Submit transfer request.
 		return retryTemplate.execute(arg0 -> {
@@ -488,50 +497,66 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				transfer.put("verify_checksum", true);
 				transfer.put("delete_destination_extra", false);
 				transfer.put("preserve_timestamp", false);
-				transfer.put("encrypt_data", encryptedDataTransfer);
-
-				JSONObject item = setJSONItem(source, destination, client);
-				transfer.append("DATA", item);
+				transfer.put("encrypt_data", Optional.ofNullable(encryptedTransfer).orElse(false));
+				transfer.put("source_endpoint", transferRequest.getSourceEndpoint());
+				transfer.put("destination_endpoint", transferRequest.getDestinationEndpoint());
+				transfer.put("DATA", toTransferItemsJson(transferRequest.getItems()));
 
 				result = client.postResult("/transfer", transfer, null);
-				String taskId = result.document.getString("task_id");
-				logger.debug("Transfer task id : {}", taskId);
-
-				return taskId;
+				return result.document.getString("task_id");
 
 			} catch (APIError error) {
-				logger.error("Error while submitting transfer request to Globus for" + " Source " + source
-						+ " and Destination " + destination + ": " + error.message, error);
-				throw new HpcException("[GLOBUS] Failed to transfer: " + error.message + ". Source: " + source
-						+ ". Destination: " + destination, HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS,
-						error);
+				logger.error("Error while submitting transfer request to Globus for" + " Source "
+						+ transferRequest.getSourceEndpoint() + " and Destination "
+						+ transferRequest.getDestinationEndpoint() + ": " + error.message, error);
+				throw new HpcException(
+						"[GLOBUS] Failed to transfer: " + error.message + ". Source: "
+								+ transferRequest.getSourceEndpoint() + ". Destination: "
+								+ transferRequest.getDestinationEndpoint(),
+						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, error);
 
 			} catch (Exception e) {
-				logger.error("Failed to submit transfer request to Globus for" + " Source " + source
-						+ " and Destination " + destination + ": " + e.getMessage(), e);
-				throw new HpcException("[GLOBUS] Failed to transfer: " + e.getMessage() + ". Source: " + source
-						+ ". Destination: " + destination, HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS,
-						e);
+				logger.error("Failed to submit transfer request to Globus for" + " Source "
+						+ transferRequest.getSourceEndpoint() + " and Destination "
+						+ transferRequest.getDestinationEndpoint() + ": " + e.getMessage(), e);
+				throw new HpcException(
+						"[GLOBUS] Failed to transfer: " + e.getMessage() + ". Source: "
+								+ transferRequest.getSourceEndpoint() + ". Destination: "
+								+ transferRequest.getDestinationEndpoint(),
+						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 			}
 		});
 	}
 
-	private JSONObject setJSONItem(HpcFileLocation source, HpcFileLocation destination, JSONTransferAPIClient client)
-			throws HpcException {
-		JSONObject item = new JSONObject();
-		try {
-			item.put("DATA_TYPE", "transfer_item");
-			item.put("source_endpoint", source.getFileContainerId());
-			item.put("source_path", source.getFileId());
-			item.put("destination_endpoint", destination.getFileContainerId());
-			item.put("destination_path", destination.getFileId());
-			item.put("recursive", getPathAttributes(source, client, false).getIsDirectory());
-			return item;
+	// ---------------------------------------------------------------------//
+	// Helper Methods
+	// ---------------------------------------------------------------------//
 
-		} catch (JSONException e) {
-			throw new HpcException("[GLOBUS] Failed to create JSON: " + source + ", " + destination,
-					HpcErrorType.DATA_TRANSFER_ERROR, e);
+	/**
+	 * Create a 'transfer item' JSON
+	 *
+	 * @param source      The source endpoint.
+	 * @param destination The destination endpoint.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	private JSONArray toTransferItemsJson(List<HpcGlobusTransferItem> items) throws HpcException {
+		JSONArray itemsJson = new JSONArray();
+		for (HpcGlobusTransferItem item : items) {
+			JSONObject itemJson = new JSONObject();
+			try {
+				itemJson.put("DATA_TYPE", "transfer_item");
+				itemJson.put("source_path", item.getSourcePath());
+				itemJson.put("destination_path", item.getDestinationPath());
+				itemJson.put("recursive", false);
+				itemsJson.put(itemJson);
+
+			} catch (JSONException e) {
+				throw new HpcException("[GLOBUS] Failed to create transter item JSON: " + item.getSourcePath() + " -> "
+						+ item.getDestinationPath(), HpcErrorType.DATA_TRANSFER_ERROR, e);
+			}
 		}
+
+		return itemsJson;
 	}
 
 	private void autoActivate(String endpointName, JSONTransferAPIClient client) throws HpcException {
@@ -613,6 +638,52 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
+	 * Get a data transfer report.
+	 *
+	 * @param authenticatedToken    An authenticated token.
+	 * @param dataTransferRequestId The data transfer request ID.
+	 * @return The data transfer report for the request.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	private List<HpcGlobusTransferItem> getSuccessfulTransfers(Object authenticatedToken, String dataTransferRequestId,
+			Integer nextMarker) throws HpcException {
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+		List<HpcGlobusTransferItem> items = new ArrayList<>();
+
+		return retryTemplate.execute(arg0 -> {
+			try {
+				JSONObject jsonSuccessfulTransfers = client.getResult("/endpoint_manager/task/" + dataTransferRequestId
+						+ "/successful_transfers" + (nextMarker != null ? "?marker=" + nextMarker : "")).document;
+
+				JSONArray jsonItems = jsonSuccessfulTransfers.getJSONArray("DATA");
+				if (jsonItems != null) {
+					// Iterate through the directory files, and locate the file we look for.
+					int itemsNum = jsonItems.length();
+					for (int i = 0; i < itemsNum; i++) {
+						JSONObject jsonItem = jsonItems.getJSONObject(i);
+						HpcGlobusTransferItem item = new HpcGlobusTransferItem();
+						item.setSourcePath(jsonItem.getString("source_path"));
+						item.setDestinationPath(jsonItem.getString("destination_path"));
+						items.add(item);
+					}
+				}
+
+				// Check if there additional results to page.
+				if (!jsonSuccessfulTransfers.isNull("next_marker")) {
+					items.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId,
+							jsonSuccessfulTransfers.getInt("next_marker")));
+				}
+
+				return items;
+
+			} catch (Exception e) {
+				throw new HpcException("[GLOBUS] Failed to get task successful transfers: " + dataTransferRequestId,
+						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		});
+	}
+
+	/**
 	 * Get attributes of a file/directory.
 	 *
 	 * @param fileLocation The endpoint/path to check.
@@ -645,9 +716,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					pathAttributes.setIsFile(true);
 					pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
 				} else {
-					throw new HpcException("Error at Globus endpoint " + fileLocation.getFileContainerId()
-						+ ", file location: " + fileLocation.getFileId()
-						+ ": " + error.statusMessage, HpcErrorType.DATA_TRANSFER_ERROR, error);
+					throw new HpcException(
+							"Error at Globus endpoint " + fileLocation.getFileContainerId() + ", file location: "
+									+ fileLocation.getFileId() + ": " + error.statusMessage,
+							HpcErrorType.DATA_TRANSFER_ERROR, error);
 				}
 			} else if (error.statusCode == 403) {
 				// Permission denied.

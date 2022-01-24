@@ -125,7 +125,8 @@ public interface HpcDataTransferService {
 	/**
 	 * Get a data object upload progress.
 	 *
-	 * @param systemGeneratedMetadata The system generated metadata for the data object to check upload progress
+	 * @param systemGeneratedMetadata The system generated metadata for the data
+	 *                                object to check upload progress
 	 * @return The upload completion % if upload in progress, otherwise null.
 	 */
 	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata);
@@ -162,6 +163,10 @@ public interface HpcDataTransferService {
 	 *                                              download request.
 	 * @param completionEvent                       If true, an event will be added
 	 *                                              when async download is complete.
+	 * @param collectionDownloadTaskId              (Optional) The collection
+	 *                                              download task ID if this request
+	 *                                              is part of a collection download
+	 *                                              task
 	 * @param size                                  The data object's size in bytes.
 	 * @param downloadDataObject                    The data transfer status of the
 	 *                                              data object
@@ -175,8 +180,9 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
-			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
+			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
+			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus downloadDataObject,
+			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
 
 	/**
 	 * Generate a (pre-signed) download URL for a data object file.
@@ -430,10 +436,11 @@ public interface HpcDataTransferService {
 	 *                         the failure.
 	 * @param completed        (Optional) The download task completion timestamp.
 	 * @param bytesTransferred The total bytes transfered.
+	 * @return The data-object download result object
 	 * @throws HpcException on service failure.
 	 */
-	public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, HpcDownloadResult result,
-			String message, Calendar completed, long bytesTransferred) throws HpcException;
+	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException;
 
 	/**
 	 * Complete a synchronous data object download task.
@@ -483,12 +490,15 @@ public interface HpcDataTransferService {
 	 * Mark a data object download task as processed by updating the processed time
 	 * stamp.
 	 *
-	 * @param downloadTask The download task to mark processed.
-	 * @param inProcess    Indicator whether the task is being actively processed.
+	 * @param downloadTask     The download task to mark processed.
+	 * @param dataTransferType The data transfer type performing the task.
+	 * @param inProcess        Indicator whether the task is being actively
+	 *                         processed.
+	 * @return true if the inProcess value was actually updated in the DB.
 	 * @throws HpcException on service failure.
 	 */
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
-			throws HpcException;
+	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException;
 
 	/**
 	 * Update a data object download task. % Complete is calculated and any change
@@ -600,6 +610,19 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException;
+
+	/**
+	 * Process the second hop download to Globus of a collection, by submitting a
+	 * single transfer request for the entire bunch.
+	 *
+	 * @param collectionDownloadTask  The collection download task to process.
+	 * @param dataObjectDownloadTasks The individual data object download tasks that
+	 *                                are to be included in the bunch request to
+	 *                                Globus.
+	 * @throws HpcException on service failure.
+	 */
+	public void processCollectionDownloadTaskSecondHopBunch(HpcCollectionDownloadTask collectionDownloadTask,
+			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks) throws HpcException;
 
 	/**
 	 * Cancel a collection download task. This will mark any pending download items
@@ -764,18 +787,6 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public int getDownloadResultsCount(String userId, String doc) throws HpcException;
-
-	/**
-	 * Get inprocess data object download count.
-	 *
-	 * @param dataTransferType  		The data transfer type.
-	 * @param destinationType   		The destination type.
-	 * @param s3DownloadTaskServerId  	The server ID of the executing s3 download task.
-	 * @return A total count of completed download requests.
-	 * @throws HpcException on database error.
-	 */
-	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType, String s3DownloadTaskServerId) throws HpcException;
 
 	/**
 	 * Get the download results page size.

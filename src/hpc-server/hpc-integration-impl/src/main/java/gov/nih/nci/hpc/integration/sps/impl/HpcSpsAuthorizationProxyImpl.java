@@ -1,17 +1,16 @@
 package gov.nih.nci.hpc.integration.sps.impl;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy;
-
 import java.util.Collections;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.provider.JAXBElementProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy;
 
 /**
  * <p>
@@ -39,9 +38,6 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 	// Domain
 	String domain = null;
 
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -49,9 +45,9 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 	/**
 	 * Constructor for spring injection.
 	 * 
-	 * @param url The Authorize SPS URL.
+	 * @param url      The Authorize SPS URL.
 	 * @param resource The SPS web service resource.
-	 * @param domain The basic auth domain.
+	 * @param domain   The basic auth domain.
 	 */
 	private HpcSpsAuthorizationProxyImpl(String url, String resource, String domain) {
 		this.url = url;
@@ -63,8 +59,7 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 	/**
 	 * Default Constructor is disabled
 	 * 
-	 * @throws HpcException
-	 *             Constructor is disabled.
+	 * @throws HpcException Constructor is disabled.
 	 */
 	private HpcSpsAuthorizationProxyImpl() throws HpcException {
 		throw new HpcException("Default Constructor Disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -78,6 +73,7 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 	// HpcSpsAuthorizationProxy Interface Implementation
 	// ---------------------------------------------------------------------//
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean authorize(String nciUserId, String smSession, String username, String password) throws HpcException {
 
@@ -100,8 +96,8 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 			if (response.getStatus() == 200) {
 				AuthorizationResult authorizationResult = response.readEntity(AuthorizationResult.class);
 				if (authorizationResult.getResultCode().equals(AuthorizationResultCodes.AUTHORIZED)) {
-					for(Attribute attribute: authorizationResult.getAuthorizationResponses().getResponse()) {
-						if(attribute.getName().equalsIgnoreCase("SM_USER")) {
+					for (Attribute attribute : authorizationResult.getAuthorizationResponses().getResponse()) {
+						if (attribute.getName().equalsIgnoreCase("SM_USER")) {
 							String smUser = attribute.getValue();
 							return smUser.contains(nciUserId);
 						}

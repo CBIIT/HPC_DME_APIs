@@ -397,16 +397,19 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Download Data Object.
 	 *
-	 * @param path            The data object path.
-	 * @param downloadRequest The download request DTO.
-	 * @param userId          The user submitting the request.
-	 * @param completionEvent If true, an event will be added when async download is
-	 *                        complete.
+	 * @param path                     The data object path.
+	 * @param downloadRequest          The download request DTO.
+	 * @param userId                   The user submitting the request.
+	 * @param completionEvent          If true, an event will be added when async
+	 *                                 download is complete.
+	 * @param collectionDownloadTaskId (Optional) The collection download task ID if
+	 *                                 this request is part of a collection download
+	 *                                 task
 	 * @return Download ResponseDTO
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String userId, boolean completionEvent) throws HpcException;
+			String userId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException;
 
 	/**
 	 * Get Data object download task status.

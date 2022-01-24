@@ -88,15 +88,25 @@ public interface HpcDataDownloadDAO {
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
 
 	/**
-	 * Get all data object download task by data transfer status
+	 * Get all data object download tasks by data transfer status
 	 *
 	 * @param dataTransferStatus The data object download task data transfer status.
-	 * @return A data object download tasks.
+	 * @return Data object download tasks.
 	 * @throws HpcException on database error.
 	 */
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByStatus(
-			HpcDataTransferDownloadStatus dataTransferStatus)
-			throws HpcException;
+			HpcDataTransferDownloadStatus dataTransferStatus) throws HpcException;
+
+	/**
+	 * Get all data object download tasks that are part of a given collection
+	 * download task ID
+	 *
+	 * @param collectionDownloadTaskId The collection download task Id to look for.
+	 * @return Data object download tasks.
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByCollectionDownloadTaskId(
+			String collectionDownloadTaskId) throws HpcException;
 
 	/**
 	 * Get next data object download task by data transfer status and data transfer
@@ -116,12 +126,15 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Set a data object download task in-process value.
 	 *
-	 * @param id                        The data object download task ID.
-	 * @param inProcess                 The value to set.
-	 * @param s3DownloadTaskServerId    The server ID of the executing s3 download task.
+	 * @param id                     The data object download task ID.
+	 * @param inProcess              The value to set.
+	 * @param s3DownloadTaskServerId The server ID of the executing s3 download
+	 *                               task.
+	 * @return True if the value of inProcess was actually updated.
 	 * @throws HpcException on database error.
 	 */
-	public void setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId) throws HpcException;
+	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId)
+			throws HpcException;
 
 	/**
 	 * Reset all data object download tasks in-process value to false.
@@ -133,7 +146,7 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Set a data object download task processed value.
 	 *
-	 * @param id         The data object download task ID.
+	 * @param id        The data object download task ID.
 	 * @param processed The processed time.
 	 * @throws HpcException on database error.
 	 */
@@ -222,53 +235,54 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Get collection download requests count for a specific path and endpoint.
 	 *
-	 * @param path		The archive path to download from.
-	 * @param endpoint 	The destination endpoint.
-	 * @return 			Count of collection download requests.
-	 * @throws 			HpcException on database error.
+	 * @param path     The archive path to download from.
+	 * @param endpoint The destination endpoint.
+	 * @return Count of collection download requests.
+	 * @throws HpcException on database error.
 	 */
 	public int getCollectionDownloadRequestsCountByPathAndEndpoint(String path, String endpoint) throws HpcException;
 
 	/**
 	 * Get collection download tasks count for a specific user and path.
 	 *
-	 * @param userId      The userId to query for.
-	 * @param path        The archive path to download from.
-	 * @param inProcess   True for collections that are under processing.
-	 * @return            Count of collection download tasks.
-	 * @throws            HpcException on database error.
+	 * @param userId    The userId to query for.
+	 * @param path      The archive path to download from.
+	 * @param inProcess True for collections that are under processing.
+	 * @return Count of collection download tasks.
+	 * @throws HpcException on database error.
 	 */
-	public int getCollectionDownloadTasksCountByUserAndPath(String userId, String path, boolean inProcess) throws HpcException;
+	public int getCollectionDownloadTasksCountByUserAndPath(String userId, String path, boolean inProcess)
+			throws HpcException;
 
 	/**
 	 * Get collection download tasks count for a specific user.
 	 *
-	 * @param userId      The userId to query for.
-	 * @param inProcess   True for collections that are under processing.
-	 * @return            Count of collection download tasks.
-	 * @throws            HpcException on database error.
+	 * @param userId    The userId to query for.
+	 * @param inProcess True for collections that are under processing.
+	 * @return Count of collection download tasks.
+	 * @throws HpcException on database error.
 	 */
 	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException;
 
 	/**
 	 * Get inprocess data object download count.
 	 *
-	 * @param dataTransferTypeType      The data transfer type.
-	 * @param destinationType           The destination type
-	 * @param status                    The data transfer download status
-	 * @param s3DownloadTaskServerId    The ID of the executing s3 download task.
+	 * @param dataTransferTypeType   The data transfer type.
+	 * @param destinationType        The destination type
+	 * @param status                 The data transfer download status
+	 * @param s3DownloadTaskServerId The ID of the executing s3 download task.
 	 * @return A total count of completed download requests.
 	 * @throws HpcException on database error.
 	 */
-	public int getDataObjectDownloadTasksCountByStatusAndType(HpcDataTransferType dataTransferType, HpcDataTransferType destinationType, 
-        HpcDataTransferDownloadStatus status, String s3DownloadTaskServerId) throws HpcException;
-
+	public int getDataObjectDownloadTasksCountByStatusAndType(HpcDataTransferType dataTransferType,
+			HpcDataTransferType destinationType, HpcDataTransferDownloadStatus status, String s3DownloadTaskServerId)
+			throws HpcException;
 
 	/**
 	 * Set a collection download task in-process value.
 	 *
-	 * @param id                The collection download task ID.
-	 * @param inProcess         The value to set.
+	 * @param id        The collection download task ID.
+	 * @param inProcess The value to set.
 	 * @throws HpcException on database error.
 	 */
 	public void setCollectionDownloadTaskInProcess(String id, boolean inProcess) throws HpcException;
@@ -276,7 +290,7 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Reset a collection download task in-process value.
 	 *
-	 * @param id        The collection download task ID.
+	 * @param id The collection download task ID.
 	 * @throws HpcException on database error.
 	 */
 	public void resetCollectionDownloadTaskInProcess(String id) throws HpcException;

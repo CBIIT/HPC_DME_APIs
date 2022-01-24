@@ -75,6 +75,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -193,6 +195,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
 	private Long maxSyncDownloadFileSize = null;
 
+	// The Globus collection download using bunching - on/off toggle.
+	@Value("${hpc.service.dataTransfer.globusCollectionDownloadBunching}")
+	boolean globusCollectionDownloadBunching = true;
+
 	// cancelCollectionDownloadTaskItems() query filter
 	private List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter = new ArrayList<>();
 
@@ -203,9 +209,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
 	private Integer maxPermittedS3DownloadsForGlobus = null;
 
-	//The ID of the S3 download task
+	// A configured ID representing the server performing a download task.
 	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
-	private String s3DataObjectDownloadTaskServerId = null;
+	private String s3DownloadTaskServerId = null;
 
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
@@ -512,9 +518,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
-			throws HpcException {
+			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
+			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus dataTransferStatus,
+			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -537,6 +543,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
 		downloadRequest.setUserId(userId);
 		downloadRequest.setCompletionEvent(completionEvent);
+		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
 
 		// Create a download response.
@@ -995,8 +1002,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, HpcDownloadResult result,
-			String message, Calendar completed, long bytesTransferred) throws HpcException {
+	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
 		// Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1068,6 +1075,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
 		taskResult.setMessage(message);
 		taskResult.setCompletionEvent(downloadTask.getCompletionEvent());
+		taskResult.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 		taskResult.setCreated(downloadTask.getCreated());
 		taskResult.setSize(downloadTask.getSize());
 		taskResult.setCompleted(completed);
@@ -1095,6 +1103,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
+		return taskResult;
 	}
 
 	@Override
@@ -1119,12 +1128,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
 		downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+		downloadRequest.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 		downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
 		downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
 		downloadRequest.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
@@ -1260,6 +1269,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
 		downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+		downloadRequest.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 		downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
 		downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
 		downloadRequest.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
@@ -1292,6 +1302,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		downloadTask.setInProcess(false);
+		downloadTask.setS3DownloadTaskServerId(null);
 		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
 			FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 			downloadTask.setDownloadFilePath(null);
@@ -1306,20 +1317,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
-			throws HpcException {
+	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
-		if (!inProcess || (inProcess && !downloadTask.getInProcess()
+		boolean updated = true;
+
+		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, inProcess ? s3DataObjectDownloadTaskServerId : null);
+			String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
+			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
+			downloadTask.setS3DownloadTaskServerId(serverId);
 		}
 
-		Calendar processed = Calendar.getInstance();
-		dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
+		if (updated) {
+			Calendar processed = Calendar.getInstance();
+			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
+			downloadTask.setProcessed(processed);
+			downloadTask.setInProcess(inProcess);
+		}
 
-		downloadTask.setProcessed(processed);
-		downloadTask.setInProcess(inProcess);
+		return updated;
 	}
 
 	@Override
@@ -1466,6 +1484,50 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 	}
 
+	public void processCollectionDownloadTaskSecondHopBunch(HpcCollectionDownloadTask collectionDownloadTask,
+			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks) throws HpcException {
+
+		// Create a Globus transfer request for the bunch.
+		String configurationId = null;
+		String s3ArchiveConfigurationId = null;
+		HpcGlobusTransferRequest globusTransferRequest = new HpcGlobusTransferRequest();
+
+		for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataObjectDownloadTasks) {
+			String sourceEndpoint = dataObjectDownloadTask.getArchiveLocation().getFileContainerId();
+			String destinationEndpoint = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation()
+					.getFileContainerId();
+			String sourcePath = dataObjectDownloadTask.getArchiveLocation().getFileId();
+			String destinationPath = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation()
+					.getFileId();
+
+			if (StringUtils.isEmpty(globusTransferRequest.getSourceEndpoint())) {
+				globusTransferRequest.setSourceEndpoint(sourceEndpoint);
+				globusTransferRequest.setDestinationEndpoint(destinationEndpoint);
+				configurationId = dataObjectDownloadTask.getConfigurationId();
+				s3ArchiveConfigurationId = dataObjectDownloadTask.getS3ArchiveConfigurationId();
+			} else if (!globusTransferRequest.getSourceEndpoint().equals(sourceEndpoint)
+					|| (!globusTransferRequest.getDestinationEndpoint().equals(destinationEndpoint))) {
+				throw new HpcException("Invalid bulk download to Globus, Can't bunch", HpcErrorType.UNEXPECTED_ERROR);
+			}
+			HpcGlobusTransferItem item = new HpcGlobusTransferItem();
+			item.setSourcePath(sourcePath);
+			item.setDestinationPath(destinationPath);
+			globusTransferRequest.getItems().add(item);
+		}
+
+		// Get the base archive destination.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, HpcDataTransferType.S_3);
+
+		// Submit the transfer request to Globus.
+		collectionDownloadTask
+				.setDataTransferRequestId(dataTransferProxies.get(HpcDataTransferType.GLOBUS).transferData(
+						getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId, s3ArchiveConfigurationId),
+						globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer()));
+		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING);
+		collectionDownloadTask.setConfigurationId(configurationId);
+	}
+
 	@Override
 	public void cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException {
 		if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.RECEIVED)) {
@@ -1520,9 +1582,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 			globusDownloadDestination.setDestinationOverwrite(Optional.ofNullable(destinationOverwrite).orElse(false));
 			globusDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
-			if (globusDownloadDestination != null) {
-				checkForDuplicateCollectionDownloadRequests(downloadTaskResult.getPath(), globusDownloadDestination);
-			}
+			checkForDuplicateCollectionDownloadRequests(downloadTaskResult.getPath(), globusDownloadDestination);
 			downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 			break;
 
@@ -1605,13 +1665,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public int getInProcessDataObjectDownloadTasksCount(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType, String s3DownloadTaskServerId) throws HpcException {
-		return dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(dataTransferType, destinationType,
-				HpcDataTransferDownloadStatus.IN_PROGRESS, s3DownloadTaskServerId);
-	}
-
-	@Override
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status,
 			boolean inProcess) throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasks(status, inProcess);
@@ -1625,6 +1678,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException {
 		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
+
+		// Cancel any data object that got started, as the collection download will get
+		// re-processed.
+		for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataDownloadDAO
+				.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId)) {
+			completeDataObjectDownloadTask(dataObjectDownloadTask, HpcDownloadResult.CANCELED,
+					"Collection download restarted", Calendar.getInstance(), 0);
+		}
 	}
 
 	@Override
@@ -1666,6 +1727,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCompleted(completed);
 		taskResult.getItems().addAll(downloadTask.getItems());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
+		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
 		// averaging the effective transfer speed
@@ -2712,6 +2774,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 		downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
 		downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
+		downloadTask.setCollectionDownloadTaskId(downloadRequest.getCollectionDownloadTaskId());
 		downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
 		downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 		downloadTask.setCreated(Calendar.getInstance());
@@ -2909,10 +2972,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (false /*
-						 * TODO: replace this temp change w/ check if it's part of a bulk download
-						 * request
-						 */ && canPerfom2HopDownload(secondHopDownload)) {
+			if (StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())
+					&& canPerfom2HopDownload(secondHopDownload)) {
+				// We start the 1st hop here for a single file download request. For collection
+				// download task, the 1st hop will get kicked off by a scheduled task.
 				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
 						getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 								downloadRequest.getS3ArchiveConfigurationId()),
@@ -2923,7 +2986,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			} else {
-				// Can't perform the 2-hop download at this time. Reset the task
+				// Can't perform the 2-hop download at this time, or this data-object download
+				// is part of a collection. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 
 				logger.info(
@@ -2953,9 +3017,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
 	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
-		// Retrieve count of active S3 object downloads (inProcess = true)
-		int inProcessS3DownloadsForGlobus = getInProcessDataObjectDownloadTasksCount(HpcDataTransferType.S_3,
-				HpcDataTransferType.GLOBUS, s3DataObjectDownloadTaskServerId);
+		// Get the count of total download tasks to Globus that are in progress of the
+		// 1st hop.
+		int inProcessS3DownloadsForGlobus = dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(
+				HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS, HpcDataTransferDownloadStatus.IN_PROGRESS,
+				s3DownloadTaskServerId);
 
 		if (maxPermittedS3DownloadsForGlobus <= 0
 				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
@@ -3243,6 +3309,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 			downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
 			downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
+			downloadTask.setCollectionDownloadTaskId(downloadRequest.getCollectionDownloadTaskId());
 			downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
 			downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 			downloadTask.setCreated(Calendar.getInstance());
@@ -3522,10 +3589,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							downloadTask.getDestinationType());
 
 				} else {
-					// Update the download task to reflect 1st hop transfer completed, and second
-					// received.
+					// Update the download task to reflect 1st hop transfer completed. The transfer
+					// type is updated to Globus to perform the second hop
+					// For single file download, the status is set to received, and for bulk
+					// download, status is set to bunching-received, so we wait for all the files
+					// in the bulk request to finish first hop, and then submit a single Globus
+					// request for the second hop.
 					downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
-					downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+					downloadTask.setDataTransferStatus(StringUtils.isEmpty(downloadTask.getCollectionDownloadTaskId())
+							|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
+									: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
 					downloadTask.setInProcess(false);
 
 					// Persist the download task.
@@ -3612,15 +3685,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setConfigurationId(firstHopDownloadRequest.getConfigurationId());
 			downloadTask.setS3ArchiveConfigurationId(firstHopDownloadRequest.getS3ArchiveConfigurationId());
 			downloadTask.setCompletionEvent(firstHopDownloadRequest.getCompletionEvent());
+			downloadTask.setCollectionDownloadTaskId(firstHopDownloadRequest.getCollectionDownloadTaskId());
 			downloadTask.setArchiveLocation(secondHopArchiveLocation);
 			downloadTask.setGlobusDownloadDestination(secondHopGlobusDestination);
 			downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 			downloadTask.setCreated(Calendar.getInstance());
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
-			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus))
+			downloadTask.setS3DownloadTaskServerId(
+					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
+							? s3DownloadTaskServerId
+							: null);
+			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
-
+			}
 			dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 		}
 
@@ -3646,9 +3724,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setGlobusDownloadDestination(downloadTask.getGlobusDownloadDestination());
 			this.downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 			this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
+			this.downloadTask.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 			this.downloadTask.setCreated(downloadTask.getCreated());
 			this.downloadTask.setPercentComplete(0);
 			this.downloadTask.setSize(downloadTask.getSize());
+			this.downloadTask.setS3DownloadTaskServerId(downloadTask.getS3DownloadTaskServerId());
 
 			dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
 		}
