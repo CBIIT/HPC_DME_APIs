@@ -1308,12 +1308,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
 		return downloadDataObject(path, downloadRequest,
-				securityService.getRequestInvoker().getNciAccount().getUserId(), true);
+				securityService.getRequestInvoker().getNciAccount().getUserId(), true, null);
 	}
 
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String userId, boolean completionEvent) throws HpcException {
+			String userId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException {
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1337,8 +1337,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId, completionEvent,
-				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
-				metadata.getDeepArchiveStatus());
+				collectionDownloadTaskId, metadata.getSourceSize() != null ? metadata.getSourceSize() : 0,
+				metadata.getDataTransferStatus(), metadata.getDeepArchiveStatus());
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
@@ -2483,6 +2483,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @throws HpcException If the calculated checksum doesn't match the provided
 	 *                      value.
 	 */
+	@SuppressWarnings("deprecation")
 	private void validateChecksum(File file, String checksum) throws HpcException {
 		if (file == null || StringUtils.isEmpty(checksum)) {
 			return;
