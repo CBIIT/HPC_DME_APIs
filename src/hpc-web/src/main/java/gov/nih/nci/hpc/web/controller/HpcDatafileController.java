@@ -128,7 +128,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				            "You do not have READ access to " + path + ".");
 				}
 				
-				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
+				HpcDatafileModel hpcDatafile = buildHpcDataObject(model, dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules());
 				hpcDatafile.setPath(path);
 				model.addAttribute("hpcDatafile", hpcDatafile);
@@ -271,25 +271,27 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 		return result;
 	}
 
-	private HpcDatafileModel buildHpcDataObject(HpcDataObjectDTO datafile, List<String> systemAttrs, List<HpcMetadataValidationRule> rules) {
-		HpcDatafileModel model = new HpcDatafileModel();
+	private HpcDatafileModel buildHpcDataObject(Model model, HpcDataObjectDTO datafile, List<String> systemAttrs, List<HpcMetadataValidationRule> rules) {
+		HpcDatafileModel datafileModel = new HpcDatafileModel();
 		systemAttrs.add("collection_type");
-		model.setDataObject(datafile.getDataObject());
+		datafileModel.setDataObject(datafile.getDataObject());
 		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries()) {
 			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 			attrEntry.setAttrName(entry.getAttribute());
-			if(entry.getAttribute().equalsIgnoreCase("source_file_size"))
-			  attrEntry.setAttrValue(addHumanReadableSize(entry.getValue()));
-			else
+			if(entry.getAttribute().equalsIgnoreCase("source_file_size")) {
+			  attrEntry.setAttrValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+			  model.addAttribute("datafileSize", MiscUtil.addHumanReadableSize(entry.getValue(), true));
+			} else {
 			  attrEntry.setAttrValue(entry.getValue());
+			}
 			attrEntry.setAttrUnit(entry.getUnit());
 			if (systemAttrs.contains(entry.getAttribute())) {
 				attrEntry.setSystemAttr(true);
-				model.getSelfSystemMetadataEntries().add(attrEntry);
+				datafileModel.getSelfSystemMetadataEntries().add(attrEntry);
 			}
 			else {
 				attrEntry.setSystemAttr(false);
-				model.getSelfMetadataEntries().add(attrEntry);
+				datafileModel.getSelfMetadataEntries().add(attrEntry);
 			}
 			
 		}
@@ -305,9 +307,9 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
             attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), null, rules));
            
 			if(!attrEntry.isEncrypted())
-			    model.getParentMetadataEntries().add(attrEntry);
+			    datafileModel.getParentMetadataEntries().add(attrEntry);
 		}
-		return model;
+		return datafileModel;
 	}
 
     private HpcDataObjectRegistrationRequestDTO constructRequest(HttpServletRequest request) {
@@ -350,11 +352,6 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 		dto.setSource(null);
 		return dto;
 	}
-
-    private String addHumanReadableSize(String value) {
-        String humanReadableSize = FileUtils.byteCountToDisplaySize(Long.parseLong(value));
-        return value + " (" + humanReadableSize + ")";
-    }
     
     private boolean isEncryptedAttribute(String attribute, String collectionType, List<HpcMetadataValidationRule> rules) {
       for(HpcMetadataValidationRule rule: rules) {
