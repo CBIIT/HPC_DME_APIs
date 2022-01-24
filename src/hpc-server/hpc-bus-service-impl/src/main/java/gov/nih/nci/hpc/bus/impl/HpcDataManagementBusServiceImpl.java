@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+import static gov.nih.nci.hpc.util.HpcUtil.humanReadableByteCount;
 
 import java.io.File;
 import java.io.IOException;
@@ -335,13 +336,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the total size
-		HpcReportCriteria criteria = new HpcReportCriteria();
-		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
-		criteria.setPath(path);
-		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
-		List<HpcReport> reports = reportService.generateReport(criteria);
-		if (!CollectionUtils.isEmpty(reports)) {
-			collectionDTO.getReports().addAll(reports);
+		HpcReport report = getTotalSizeReport(path, true);
+		if (report != null) {
+			collectionDTO.getReports().add(report);
 		}
 
 		// Set the permission if requested
@@ -394,6 +391,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return collectionDTO;
 	}
+
+
+	private HpcReport getTotalSizeReport(String path, boolean isMachineReadable) throws HpcException{
+
+		HpcReport totalSizeReport = null;
+		// Get the total size of the collection
+		HpcReportCriteria criteria = new HpcReportCriteria();
+		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+		criteria.setPath(path);
+		criteria.setIsMachineReadable(isMachineReadable);
+		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+		List<HpcReport> reports = reportService.generateReport(criteria);
+		if(!CollectionUtils.isEmpty(reports)) {
+			totalSizeReport = reports.get(0);
+		}
+
+		return totalSizeReport;
+	}
+
 
 	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollection(String path, HpcDownloadRequestDTO downloadRequest)
