@@ -539,6 +539,16 @@ public class HpcBrowseController extends AbstractHpcController {
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 				HpcCollection collection = collectionDTO.getCollection();
 				
+				//This is for displaying the total size of the selected collection
+				//in the machine readable and human readable form above the file table
+				if(!CollectionUtils.isEmpty(collectionDTO.getReports())) {
+					HpcReport report = collectionDTO.getReports().get(0);
+					if(!CollectionUtils.isEmpty(report.getReportEntries())) {
+						String collectionSize = report.getReportEntries().get(0).getValue();
+						selectedEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(collectionSize, true));
+					}
+				}
+
 				if(collection.getAbsolutePath() != null) {
 					selectedEntry.setFullPath(collection.getAbsolutePath());
 					selectedEntry.setId(collection.getAbsolutePath());
