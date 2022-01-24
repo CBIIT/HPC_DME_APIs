@@ -48,6 +48,7 @@
 			             minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="fromDate" type="xsd:date" />
 			<xsd:element name="ToDate" type="xsd:date" />
+			<xsd:element name="isMachineReadable" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
