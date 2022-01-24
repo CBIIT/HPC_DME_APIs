@@ -373,7 +373,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
 				HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
 				if (entry != null) {
-					subCollection.setDataSize(entry.getDataSize());
+					// Get the total size of the collection
+					HpcReport report = getTotalSizeReport(subCollection.getPath(), true);
+					if(report != null && !CollectionUtils.isEmpty(report.getReportEntries())) {
+							String collectionSize = report.getReportEntries().get(0).getValue();
+							subCollection.setDataSize(Long.parseLong(collectionSize));
+					}
 					subCollection.setCreatedAt(entry.getCreatedAt());
 				}
 			}
