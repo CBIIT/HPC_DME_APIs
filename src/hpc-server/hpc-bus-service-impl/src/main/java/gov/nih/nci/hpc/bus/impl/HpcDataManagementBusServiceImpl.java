@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+import static gov.nih.nci.hpc.util.HpcUtil.humanReadableByteCount;
 
 import java.io.File;
 import java.io.IOException;
@@ -270,7 +271,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						() -> dataManagementService.validateHierarchy(path, configurationId, false));
 
 				// Add collection update event.
-				addCollectionUpdatedEvent(path, true, false, userId, null, null);
+				addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
 
 				registrationCompleted = true;
 
@@ -306,7 +307,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
 			}
 
-			addCollectionUpdatedEvent(path, false, false, userId, null, null);
+			addCollectionUpdatedEvent(path, false, false, userId, null, null, null);
 		}
 
 		return created;
@@ -335,13 +336,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the total size
-		HpcReportCriteria criteria = new HpcReportCriteria();
-		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
-		criteria.setPath(path);
-		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
-		List<HpcReport> reports = reportService.generateReport(criteria);
-		if (!CollectionUtils.isEmpty(reports)) {
-			collectionDTO.getReports().addAll(reports);
+		HpcReport report = getTotalSizeReport(path, true);
+		if (report != null) {
+			collectionDTO.getReports().add(report);
 		}
 
 		// Set the permission if requested
@@ -376,7 +373,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
 				HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
 				if (entry != null) {
-					subCollection.setDataSize(entry.getDataSize());
+					// Get the total size of the collection
+					HpcReport report = getTotalSizeReport(subCollection.getPath(), true);
+					if(report != null && !CollectionUtils.isEmpty(report.getReportEntries())) {
+							String collectionSize = report.getReportEntries().get(0).getValue();
+							subCollection.setDataSize(Long.parseLong(collectionSize));
+					}
 					subCollection.setCreatedAt(entry.getCreatedAt());
 				}
 			}
@@ -391,9 +393,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
+		collectionDTO.getReports().add(getTotalSizeReport(path, true));
 
 		return collectionDTO;
 	}
+
+
+	private HpcReport getTotalSizeReport(String path, boolean isMachineReadable) throws HpcException{
+
+		HpcReport totalSizeReport = null;
+		// Get the total size of the collection
+		HpcReportCriteria criteria = new HpcReportCriteria();
+		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+		criteria.setPath(path);
+		criteria.setIsMachineReadable(isMachineReadable);
+		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+		List<HpcReport> reports = reportService.generateReport(criteria);
+		if(!CollectionUtils.isEmpty(reports)) {
+			totalSizeReport = reports.get(0);
+		}
+
+		return totalSizeReport;
+	}
+
 
 	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollection(String path, HpcDownloadRequestDTO downloadRequest)
@@ -998,7 +1020,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					}
 					addCollectionUpdatedEvent(path, false, true, userId,
 							downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
-							downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
+							downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null,
+							dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 				}
 
 			} catch (Exception e) {
@@ -2017,9 +2040,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                             collection update event.
 	 * @param presignURL           The presigned download URL.(Optional)
 	 * @param size                 The data size.(Optional)
+	 * @param configurationId      The DOC (Optional)
 	 */
 	private void addCollectionUpdatedEvent(String path, boolean collectionRegistered, boolean dataObjectRegistered,
-			String userId, String presignURL, String size) {
+			String userId, String presignURL, String size, String doc) {
 		try {
 			if (!collectionRegistered && !dataObjectRegistered) {
 				// Add collection metadata updated event.
@@ -2036,7 +2060,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (collectionRegistered) {
 				eventService.addCollectionRegistrationEvent(parentCollection, userId);
 			} else {
-				eventService.addDataObjectRegistrationEvent(parentCollection, userId, presignURL, size, path);
+				eventService.addDataObjectRegistrationEvent(parentCollection, userId, presignURL, size, path, doc);
 			}
 
 		} catch (HpcException e) {
