@@ -261,5 +261,11 @@
       <jxb:bindings node="//xsd:simpleType[@name='HpcDeepArchiveStatus']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusTransferItem']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferItem" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusTransferRequest']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest" />
+      </jxb:bindings>
    </jxb:bindings>
 </jxb:bindings>

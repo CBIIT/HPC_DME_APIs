@@ -205,6 +205,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
+		if(downloadRequest.getArchiveLocation() == null) {
+			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
+		}
+		
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a download request to a local file.
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
@@ -467,6 +471,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return objectMetadata;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public synchronized void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
 			String tieringBucket, String tieringProtocol) throws HpcException {
@@ -967,9 +972,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			File destinationLocation, HpcDataTransferProgressListener progressListener) throws HpcException {
 		// Create a S3 download request.
+		
 		GetObjectRequest request = new GetObjectRequest(archiveLocation.getFileContainerId(),
 				archiveLocation.getFileId());
 
+		
 		// Download the file via S3.
 		Download s3Download = null;
 		try {
@@ -989,6 +996,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
+			
+		} catch(Exception ge) {
 		}
 
 		return String.valueOf(s3Download.hashCode());
