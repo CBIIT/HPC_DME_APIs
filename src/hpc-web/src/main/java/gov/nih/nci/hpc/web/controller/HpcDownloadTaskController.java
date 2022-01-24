@@ -408,7 +408,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		    String queryServiceURL = collectionDownloadServiceURL + "?taskId=" + downloadTask.getRetryTaskId();
 			HpcCollectionDownloadStatusDTO origDownloadTask = HpcClientUtil
 			        .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
-			if(origDownloadTask.getCompletedItems() != null && origDownloadTask.getCompletedItems().size() > 0) {
+			if(origDownloadTask != null && origDownloadTask.getCompletedItems() != null && origDownloadTask.getCompletedItems().size() > 0) {
 				previousTasks.add(origDownloadTask);
 			}
 			retrieveOrigCollectionTaskItems(authToken, taskId, model, origDownloadTask, previousTasks);
