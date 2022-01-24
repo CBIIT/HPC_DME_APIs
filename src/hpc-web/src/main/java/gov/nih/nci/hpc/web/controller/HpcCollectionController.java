@@ -9,8 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import static gov.nih.nci.hpc.util.HpcUtil.humanReadableByteCount;
-
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.*;
 
@@ -199,9 +197,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 						if(report.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
 							for(HpcReportEntry reportEntry: report.getReportEntries()) {
 								if(reportEntry.getAttribute().equals(HpcReportEntryAttribute.TOTAL_DATA_SIZE)) {
-									model.addAttribute("collectionSize", reportEntry.getValue());
-									model.addAttribute("humanReadableCollectionSize",
-											humanReadableByteCount(new Double(reportEntry.getValue()), true));
+									model.addAttribute("collectionSize", MiscUtil.addHumanReadableSize(reportEntry.getValue(), true));
 									break;
 								}
 							}
