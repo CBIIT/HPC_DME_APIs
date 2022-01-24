@@ -393,6 +393,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
+		collectionDTO.getReports().add(getTotalSizeReport(path, true));
 
 		return collectionDTO;
 	}
