@@ -256,6 +256,11 @@
 												for="${hpcDatafile.getDataObject().getCollectionName()}"
 												th:text="${hpcDatafile.getDataObject().getCollectionName()}"></label>
 										</div>
+										<div class="col-md-12 form-group" th:if="${datafileSize != null}">
+											<label for="Name">File Size:</label> <label
+												for="${datafileSize}"
+												th:text="${datafileSize}"></label>
+										</div>
 									</div>
 								</div>
 								

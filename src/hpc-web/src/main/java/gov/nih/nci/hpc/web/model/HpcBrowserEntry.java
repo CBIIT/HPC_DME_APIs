@@ -38,6 +38,9 @@ public class HpcBrowserEntry {
 	
 	@JsonView(Views.Public.class)
 	private String fileSize;
+
+	@JsonView(Views.Public.class)
+	private String humanReadableFileSize;
 	
 	@JsonView(Views.Public.class)
 	private String lastUpdated;
@@ -130,6 +133,14 @@ public class HpcBrowserEntry {
 
 	public void setFileSize(String fileSize) {
 		this.fileSize = fileSize;
+	}
+
+	public String getHumanReadableFileSize() {
+		return humanReadableFileSize;
+	}
+
+	public void setHumanReadableFileSize(String humanReadableFileSize) {
+		this.humanReadableFileSize = humanReadableFileSize;
 	}
 
 	public String getLastUpdated() {
