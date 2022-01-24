@@ -134,4 +134,23 @@ public class HpcUtil {
 	public static String decodeGroupName(String groupName) {
 		return groupName.replace(GROUP_NAME_SPACE_CODE, " ");
 	}
+
+	private static final String[] SI_UNITS = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+	private static final String[] BINARY_UNITS = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
+
+	public static String humanReadableByteCount(final double bytes, final boolean useSIUnits) {
+		final String[] units = useSIUnits ? SI_UNITS : BINARY_UNITS;
+		final int base = useSIUnits ? 1000 : 1024;
+
+		// When using the smallest unit no decimal point is needed, because it's
+		// the exact number.
+		if (bytes < base) {
+			return bytes + " " + units[0];
+		}
+
+		final int exponent = (int) (Math.log(bytes) / Math.log(base));
+		final String unit = units[exponent];
+		return String.format("%.1f %s", bytes / Math.pow(base, exponent), unit);
+	}
+
 }
