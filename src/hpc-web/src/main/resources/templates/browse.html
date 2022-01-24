@@ -27,6 +27,7 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<!--  <link href="hpc.css" rel="stylesheet"> -->
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -132,11 +133,17 @@ app
     	var path = '/'+paths[1];
     	var html='';
     	for(i = 1; i < paths.length; i++){
-    		if(html.length == 0)
-    			html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+ paths[i] +'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
-    		else {
+    		if(html.length == 0) {
+        		if(paths.length == 2)  //The path has just one part and ends here, so display the human readable total size
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    			else
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    		} else {
     			path=path+'/'+paths[i];
-    			html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+ paths[i] +'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    			if(i < paths.length - 1)
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    			else //The last part of the path ends here, so display human redable total size
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		}
     	}
     	$('.breadcrumb.folderpath').html(html);
@@ -285,6 +292,33 @@ div.ui-grid-cell-contents.folder {
   visibility: visible;
   overflow: visible;
 }
+
+
+.breadcrumb {
+  padding: 8px 15px;
+  margin-bottom: 20px;
+  list-style: none;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+.breadcrumb > li {
+  display: inline-block;
+}
+.breadcrumb > li + li:before {
+  padding: 0 2px;
+  color: #21130d;
+  content: "/";
+}
+.breadcrumb > .active {
+  color: #21130d;
+}
+
+.breadcrumb li a:hover {
+background-color: #505050;
+cursor: pointer;
+}
+
+
 </style>
 </head>
 <body ng-controller="MainCtrl" onload="scrollWindow()">
@@ -363,24 +397,6 @@ div.ui-grid-cell-contents.folder {
 									</ul>	
 								</div>
 									<div id="right" class="col-md-6">
-										<!-- <div class="form-group">
-											<table class="table table-bordered col-md-12" id="sysMetaAttrTable">
-												<thead>
-													<tr>
-														<th>File name</th>
-														<th>File size</th>
-														<th>Last updated</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr>
-														<td><label>Filename</label></td>
-														<td><label>Filesize</label></td>
-														<td><label>Last updated</label></td>
-													</tr>
-												</tbody>
-											</table>
-								  		</div> -->
 								  		<div ng-controller="MainCtrl">
 								  			<div>
 												<ol class="breadcrumb folderpath">
@@ -512,26 +528,6 @@ function scrollWindow()
 {
 	var posY = Number(scrollLoc);
 	if(posY) window.scrollTo(0, posY-100);
-/*	if(posY <= 500)
-	{
-		window.scrollBy(0, Number(scrollLoc) * 0.4);
-	}
-	else if(posY > 500 && posY <= 2000)
-	{
-		window.scrollBy(0, Number(scrollLoc) * 0.6);
-	}
-	else if(posY > 200 && posY <= 4000)
-	{
-		window.scrollBy(0, Number(scrollLoc) * 0.75);
-	}
-	else if(posY > 3000 && posY <= 5000)
-	{
-		window.scrollBy(0, Number(scrollLoc) * 0.85);
-	}
-	else
-	{
-		window.scrollBy(0, Number(scrollLoc));
-	}*/
 }
 
 
