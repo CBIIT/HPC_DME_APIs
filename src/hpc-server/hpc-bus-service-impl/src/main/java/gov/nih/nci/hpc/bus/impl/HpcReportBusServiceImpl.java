@@ -170,6 +170,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
     criteria.getDocs().addAll(criteriaDTO.getDoc());
     criteria.setType(criteriaDTO.getType());
     criteria.setPath(criteriaDTO.getPath());
+    criteria.setIsMachineReadable(true);
     Calendar fromcal = null;
     Calendar tocal = null;
     try {
