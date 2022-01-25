@@ -83,7 +83,7 @@ public class MiscUtil {
       }
       return encodedDmePath;
     }
- 
+
 
     private static final String[] SI_UNITS = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
 	private static final String[] BINARY_UNITS = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
@@ -105,7 +105,10 @@ public class MiscUtil {
 
 
 	public static String addHumanReadableSize(String value, boolean useSIUnits) {
-        String humanReadableSize = humanReadableByteCount(Long.parseLong(value), useSIUnits);
+        String humanReadableSize = humanReadableByteCount(Double.parseDouble(value), useSIUnits);
+        if(value.contains(".")) {
+            return String.format("%.2f (%s)", Double.parseDouble(value), humanReadableSize);
+        }
         return value + " (" + humanReadableSize + ")";
     }
 
