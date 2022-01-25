@@ -20,6 +20,8 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -59,6 +61,7 @@ import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcReportRequest;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 
 /**
  * <p>
@@ -84,6 +87,9 @@ public class HpcReportsController extends AbstractHpcController {
 
   @Autowired
   private Environment env;
+
+  //The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   /**
    * GET Operation to prepare reports page
@@ -164,9 +170,10 @@ public class HpcReportsController extends AbstractHpcController {
   @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public String generate(@Valid @ModelAttribute("reportRequest") HpcReportRequest reportRequest,
       Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
+
+	HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
     try {
       model.addAttribute("reportRequest", reportRequest);
-      HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
       String authToken = (String) session.getAttribute("hpcUserToken");
       requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
       if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) {
@@ -198,8 +205,6 @@ public class HpcReportsController extends AbstractHpcController {
       if (reportRequest.getToDate() != null && !reportRequest.getToDate().isEmpty())
         requestDTO.setToDate(reportRequest.getToDate());
 
-
-
       WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
       client.header("Authorization", "Bearer " + authToken);
 
@@ -223,14 +228,11 @@ public class HpcReportsController extends AbstractHpcController {
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         model.addAttribute("message", "Failed to generate report: " + exception.getMessage());
-        System.out.println(exception);
+        logger.info("Failed to generate report" + requestDTO.getType() + " for " + requestDTO.getPath() + ": ", exception);
       }
     } catch (HttpStatusCodeException e) {
       model.addAttribute("message", "Failed to generate report: " + e.getMessage());
-    } catch (RestClientException e) {
-      model.addAttribute("message", "Failed to generate report: " + e.getMessage());
-    } catch (Exception e) {
-      model.addAttribute("message", "Failed to generate report: " + e.getMessage());
+      logger.info("Failed to generate report" + requestDTO.getType() + " for " + requestDTO.getPath() + ": ", e);
     } finally {
       return init(model, bindingResult, session, request);
     }
@@ -253,6 +255,11 @@ public class HpcReportsController extends AbstractHpcController {
           entry.setAttribute(env.getProperty(entry.getAttribute()));
           if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
         	  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br>"));
+          }
+          if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
+              || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
+              || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))){
+              entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
           }
         }
       }
