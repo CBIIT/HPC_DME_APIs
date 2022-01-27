@@ -1239,7 +1239,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// separate threads), we set their in-process indicator to true so they are
 					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
-					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, true);
+					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
+							dataTransferType, true);
 
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
@@ -1279,7 +1280,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
+											dataTransferType, false);
 
 								} catch (HpcException e) {
 									logger.error(
@@ -1317,7 +1319,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
+											dataTransferType, false);
 
 								} catch (HpcException e) {
 									logger.error(
@@ -2293,9 +2296,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Calculate the effective transfer speed. Note: there is no transfer in
 					// registration w/
 					// link
-					registrationTask.setEffectiveTransferSpeed(Math.toIntExact(
-							metadata.getSourceSize() * 1000 / (metadata.getDataTransferCompleted().getTimeInMillis()
-									- metadata.getDataTransferStarted().getTimeInMillis())));
+					long transferTime = metadata.getDataTransferCompleted().getTimeInMillis()
+							- metadata.getDataTransferStarted().getTimeInMillis();
+					if (transferTime > 0) {
+						registrationTask.setEffectiveTransferSpeed(
+								Math.toIntExact(metadata.getSourceSize() * 1000 / transferTime));
+					}
 
 				} else {
 					// Registration still in progress. Update % complete.
