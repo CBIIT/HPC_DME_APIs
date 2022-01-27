@@ -2123,9 +2123,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Calculate the effective transfer speed. Note: there is no transfer in
 					// registration w/
 					// link
-					registrationTask.setEffectiveTransferSpeed(Math.toIntExact(
-							metadata.getSourceSize() * 1000 / (metadata.getDataTransferCompleted().getTimeInMillis()
-									- metadata.getDataTransferStarted().getTimeInMillis())));
+					long transferTime = metadata.getDataTransferCompleted().getTimeInMillis()
+							- metadata.getDataTransferStarted().getTimeInMillis();
+					if (transferTime > 0) {
+						registrationTask.setEffectiveTransferSpeed(
+								Math.toIntExact(metadata.getSourceSize() * 1000 / transferTime));
+					}
 
 				} else {
 					// Registration still in progress. Update % complete.
