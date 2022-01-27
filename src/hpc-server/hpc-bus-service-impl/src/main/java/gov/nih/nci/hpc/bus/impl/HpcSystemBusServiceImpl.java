@@ -2298,10 +2298,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// link
 					long transferTime = metadata.getDataTransferCompleted().getTimeInMillis()
 							- metadata.getDataTransferStarted().getTimeInMillis();
-					if (transferTime > 0) {
-						registrationTask.setEffectiveTransferSpeed(
-								Math.toIntExact(metadata.getSourceSize() * 1000 / transferTime));
+					if (transferTime <= 0) {
+						transferTime = 1;
 					}
+					registrationTask
+							.setEffectiveTransferSpeed(Math.toIntExact(metadata.getSourceSize() * 1000 / transferTime));
 
 				} else {
 					// Registration still in progress. Update % complete.
