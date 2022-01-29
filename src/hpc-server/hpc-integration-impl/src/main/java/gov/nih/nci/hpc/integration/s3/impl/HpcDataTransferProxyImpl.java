@@ -117,9 +117,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Autowired
 	private HpcS3Connection s3Connection = null;
 
-	// The S3 download executor.
+	// The S3 executor.
 	@Autowired
-	@Qualifier("hpcS3DownloadExecutor")
+	@Qualifier("hpcS3Executor")
 	Executor s3Executor = null;
 
 	// Date formatter to format files last-modified date
