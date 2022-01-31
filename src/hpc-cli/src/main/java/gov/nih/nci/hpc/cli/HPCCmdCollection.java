@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -424,8 +425,17 @@ public class HPCCmdCollection extends HPCCmdClient {
 	  	client.header("Authorization", "Bearer " + authToken);
 	  	// if necessary, add client.type("application/json; charset=UTF-8");
 		Response restResponse = client.get();
-		MappingJsonFactory factory = new MappingJsonFactory();
 		
+		ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.setSerializationInclusion(Include.NON_NULL);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+	
 		if (restResponse.getStatus() == 200) {
 			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 			HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
