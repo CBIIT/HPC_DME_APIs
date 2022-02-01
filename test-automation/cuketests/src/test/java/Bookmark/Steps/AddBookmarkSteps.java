@@ -56,7 +56,7 @@ public class AddBookmarkSteps {
 		 System.out.println(bookmarkJson);
 
 
-		 System.out.println("Sending request!!");
+		 System.out.println("Sending request to add a bookmark!!");
 		 Response response = request.body(bookmarkJson).put(this.bookmarkName);
 		 System.out.println(response.asString());
 		 System.out.println(response.getBody());
