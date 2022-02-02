@@ -95,12 +95,12 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   @Override
   public String authorize(String redirectUri, ResourceType resourceType, String userId ) throws Exception {
     String redirectUrl="";
-    if((userId != null) && (!userId.isEmpty())){
+    /*if((userId != null) && (!userId.isEmpty())){
       refreshToken = getRefreshTokenInStore(userId);
     } else {
       logger.error("HpcAuthorizationServiceImpl::authorize: userId is null");
       return null;
-    }
+    }*/
     flow = getFlow(resourceType, refreshToken);
     GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
     redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
