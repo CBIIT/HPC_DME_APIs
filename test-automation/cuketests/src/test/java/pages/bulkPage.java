@@ -15,6 +15,7 @@ public class bulkPage {
   private By txt_bulk_accessKey = By.name("accessKey");
   private By txt_bulk_secretKey = By.name("secretKey");
   private By txt_bulk_region = By.name("region");
+  private By txt_path = By.name("path");
   
   
   
@@ -61,6 +62,11 @@ public class bulkPage {
   public void enterAccessKey(String accessKey) {
     
     driver.findElement(txt_bulk_accessKey).sendKeys(accessKey);
+  }
+  
+  public void enterPath(String path) {
+    
+    driver.findElement(txt_path).sendKeys(path);
   }
   
   public void loginValidUser(String username, String password) {

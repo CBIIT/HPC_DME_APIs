@@ -38,34 +38,24 @@ public class LoginSteps {
 
   @And("user is on google search page")
   public void user_is_on_google_search_page() {
-    
-    
-    //driver.navigate().to("https://fsdmel-dsapi01d.ncifcrf.gov/login");
-    //driver.navigate().to("https://www.google.com");
       
   }
 
   @When("user enters text on google search box")
   public void user_enters_text_on_google_search_box() {
-    
-    
+  
     loginPage.enterUsername("schintal");
-    //driver.findElement(By.name("USER")).sendKeys("schintal");
-    //driver.findElement(By.name("q")).sendKeys("Sarada Chintala");
-      
+     
   }
 
   @When("hits Enter")
   public void hits_enter() {
-    //driver.findElement(By.name("USER")).sendKeys(Keys.TABS);
-    //driver.findElement(By.name("q")).sendKeys(Keys.ENTER);
+    
   }
 
   @When("user enters text on password box")
   public void user_enters_text_on_password_box() {
     loginPage.enterPassword("xyz");
-    //driver.findElement(By.name("PASSWORD")).sendKeys("xyz");
-    //driver.findElement(By.name("PASSWORD")).sendKeys(Keys.ENTER);
   }
 
   
@@ -80,6 +70,16 @@ public class LoginSteps {
     bulkPage.enterAccessKey("dme_access_key");
     bulkPage.enterSecretKey("dme_secret_key");
     bulkPage.enterRegion("us-east-1");
+    
+    Select basePath = new Select(driver.findElement(By.name("basePath")));
+    basePath.selectByVisibleText("/FNL_SF_Archive");
+    
+    //Select basePath = new Select(driver.findElement(By.name("basePath")));
+    
+    bulkPage.enterPath("path");
+    
+    WebElement registerButton = driver.findElement(By.id("primaryCreateButton"));
+    registerButton.click();
     
     //bulkPage.enterS3Path("dme_s3_path");
     //WebElement radioaws = radioaws.click();
