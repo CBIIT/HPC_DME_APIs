@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -169,6 +170,7 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 		AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
 				new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
 		mapper.setAnnotationIntrospector(intr);
+		mapper.setSerializationInclusion(Include.NON_NULL);
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		MappingJsonFactory factory = new MappingJsonFactory(mapper);
