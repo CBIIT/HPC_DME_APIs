@@ -120,6 +120,8 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			@RequestParam String action, Model model, BindingResult bindingResult, HttpSession session,
 			HttpServletRequest request, RedirectAttributes redirAttrs) {
 		try {
+			// Prepend forward slash if user doesn't enter
+			path = path.charAt(0) != '/' ? '/' + path : path;
 			// User Session validation
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");			
 			String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
