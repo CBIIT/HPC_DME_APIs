@@ -9,7 +9,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
@@ -59,7 +62,7 @@ import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
  */
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
-	class HpcGlobusTransferAcceptanceResponse implements HpcTransferAcceptanceResponse {
+	private class HpcGlobusTransferAcceptanceResponse implements HpcTransferAcceptanceResponse {
 		private boolean acceptTransferFlag;
 		private int queueLength;
 
@@ -77,6 +80,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		public int getQueueSize() {
 			return queueLength;
 		}
+	}
+
+	class HpcGlobusTransferStatusTimestamp {
+		String niceStatus = null;
+		Date timestamp;
 	}
 
 	// ---------------------------------------------------------------------//
@@ -114,6 +122,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// deemed 'transfer failure'.
 	@Value("${hpc.integration.globus.excludeFromTransferFailureStatuses}")
 	private String excludeFromTransferFailureStatuses = null;
+
+	// The list of Globus transfer nice_statuses (comma separated) that are
+	// considered 'recoverable failures
+	@Value("${hpc.integration.globus.recoverableTransferFailureStatuses}")
+	private String recoverableFromTransferFailureStatuses = null;
+
+	// The time in minutes allowed for a 'recoverable failure' to recover.
+	@Value("${hpc.integration.globus.recoverableFailureTimeout}")
+	private int recoverableFailureTimeout = 0;
+
+	// A map that keeps track of transfer tasks that are in 'recoverable failure'
+	// status.
+	Map<String, HpcGlobusTransferStatusTimestamp> recoverableFailureTasks = new HashMap<>();
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -359,7 +380,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		statusReport.setBytesTransferred(report.bytesTransferred);
 
 		if (report.status.equals(SUCCEEDED_STATUS)) {
-			// Upload completed successfully. Return status based on the archive type.
+			// Upload completed successfully.
+
+			// Clear this task from the recoverable failure list in case it's there.
+			recoverableFailureTasks.remove(dataTransferRequestId);
+
+			// Return status based on the archive type.
 			if (baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
 				statusReport.setStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
 			} else {
@@ -391,6 +417,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		if (report.status.equals(SUCCEEDED_STATUS)) {
 			// Download completed successfully.
+
+			// Clear this task from the recoverable failure list in case it's there.
+			recoverableFailureTasks.remove(dataTransferRequestId);
+
 			statusReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
 			statusReport.getSuccessfulItems()
 					.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
@@ -818,13 +848,56 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private boolean transferFailed(Object authenticatedToken, String dataTransferRequestId,
 			HpcGlobusDataTransferReport report) {
 		if (report.status.equals(FAILED_STATUS)) {
+			recoverableFailureTasks.remove(dataTransferRequestId);
 			return true;
 		}
 
 		if (report.status.equals(INACTIVE_STATUS) || (!StringUtils.isEmpty(report.niceStatus)
 				&& !StringUtils.containsIgnoreCase(excludeFromTransferFailureStatuses, report.niceStatus))) {
-			// Globus task requires some manual intervention. We cancel it and consider it a
-			// failure.
+			// Globus task requires some manual intervention. If it's a recoverable failure,
+			// we give it some time to recover before we cancel.
+			// For errors not recoverable, we cancel immediately.
+			if (!StringUtils.isEmpty(report.niceStatus)
+					&& StringUtils.containsIgnoreCase(recoverableFromTransferFailureStatuses, report.niceStatus)) {
+				// This task status is one of the recoverable failure statuses. Check if it's
+				// time to cancel it.
+				if (!recoverableFailureTasks.containsKey(dataTransferRequestId)) {
+					// First detection of the recoverable failure. Keep track of it.
+					HpcGlobusTransferStatusTimestamp transfaerStatusTimestamp = new HpcGlobusTransferStatusTimestamp();
+					transfaerStatusTimestamp.niceStatus = report.niceStatus;
+					transfaerStatusTimestamp.timestamp = new Date();
+					recoverableFailureTasks.put(dataTransferRequestId, transfaerStatusTimestamp);
+					logger.error(
+							"Globus transfer detected a recoverable failure: globus-task-id: {} [status: {}, rawError: {}, niceStatus: {}]",
+							dataTransferRequestId, report.status, report.rawError, report.niceStatus);
+					return false;
+				}
+
+				HpcGlobusTransferStatusTimestamp transfaerStatusTimestamp = recoverableFailureTasks
+						.get(dataTransferRequestId);
+				if (transfaerStatusTimestamp.niceStatus.equals(report.niceStatus)) {
+					if (new Date().getTime() - transfaerStatusTimestamp.timestamp.getTime() < recoverableFailureTimeout
+							* 1000) {
+						// The transfer is still experiencing the 'recoverable failure', but we are
+						// within the recovery period, so we give it more time to recover.
+						logger.error(
+								"Globus transfer detected a recoverable failure within the recovery period : globus-task-id: {} [status: {}, rawError: {}, niceStatus: {}]",
+								dataTransferRequestId, report.status, report.rawError, report.niceStatus);
+						return false;
+					}
+
+				} else {
+					// This task is now facing a new recoverable failure. Reset the timestamp.
+					transfaerStatusTimestamp.niceStatus = report.niceStatus;
+					transfaerStatusTimestamp.timestamp = new Date();
+					logger.error(
+							"Globus transfer detected a different recoverable failure: globus-task-id: {} [status: {}, rawError: {}, niceStatus: {}]",
+							dataTransferRequestId, report.status, report.rawError, report.niceStatus);
+					return false;
+				}
+			}
+
+			// The transfer task is deemed failed and needs to be cancelled.
 			logger.error("Globus transfer deemed failed: globus-task-id: {} [status: {}, rawError: {}, niceStatus: {}]",
 					dataTransferRequestId, report.status, report.rawError, report.niceStatus);
 			try {
@@ -835,6 +908,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				logger.error("Failed to cancel task", e);
 			}
 
+			recoverableFailureTasks.remove(dataTransferRequestId);
 			return true;
 		}
 
