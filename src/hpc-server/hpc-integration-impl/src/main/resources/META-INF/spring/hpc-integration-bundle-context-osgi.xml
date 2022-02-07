@@ -33,8 +33,8 @@
 	      
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
 	      <prop key="hpc.integration.globus.queueSize">3</prop>
-	      <prop key="hpc.integration.globus.excludeFromTransferFailureStatuses">OK,QUEUED,TIME_OUT,ENDPOINT_ERROR,TIMEOUT,UNKNOWN</prop>
-	      <prop key="hpc.integration.globus.recoverableTransferFailureStatuses">CONNECT_FAILED</prop>
+	      <prop key="hpc.integration.globus.excludeFromTransferFailureStatuses">OK,QUEUED</prop>
+	      <prop key="hpc.integration.globus.recoverableTransferFailureStatuses">CONNECT_FAILED,TIME_OUT,ENDPOINT_ERROR,TIMEOUT,UNKNOWN</prop>
 	      <prop key="hpc.integration.globus.recoverableFailureTimeout">15</prop>
 		  <prop key="hpc.integration.globus.retry.maxAttempts">4</prop>
 		  <prop key="hpc.integration.globus.retry.initialInterval">1000</prop>
