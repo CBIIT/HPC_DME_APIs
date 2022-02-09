@@ -48,12 +48,9 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private String clientId;
   @Value("${gov.nih.nci.hpc.drive.clientsecret}")
   private String clientSecret;
-  @Value("${google.token.expiration.period}")
-  private int tokenExpirationTimeInHours;
 
   private Logger logger = LoggerFactory.getLogger(HpcAuthorizationServiceImpl.class);
   private GoogleAuthorizationCodeFlow flowGoogleDrive;
-  private GoogleAuthorizationCodeFlow flowGoogleCloud;
   private GoogleAuthorizationCodeFlow flowGoogleCloudWithForcedGoogleLogin;
   private GoogleAuthorizationCodeFlow flow;
   private String refreshToken;
@@ -62,9 +59,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 
   @PostConstruct
   public void init() throws Exception {
-
-    Long tokenExpirationInSeconds = new Long(tokenExpirationTimeInHours * 60 * 60);
-   
+  
     // Build flow and trigger user authorization request for Google Drive
     flowGoogleDrive =
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES)
@@ -72,20 +67,9 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
             .setAccessType("offline")
             .build();
     
-    // Build flow and trigger user authorization request for Google Cloud
-    //new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)
-     flowGoogleCloud =
-          new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES_CLOUD)
-              .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-              .setAccessType("offline")
-              //.setExpiresInSeconds(tokenExpirationInSeconds)
-              .setApprovalPrompt("auto")
-              .build(); 
-
       // Build flow and trigger user authorization request for Google Cloud with a forced login
       flowGoogleCloudWithForcedGoogleLogin =
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES_CLOUD)
-          .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
           .setAccessType("offline")
           .setApprovalPrompt("force")
           .build(); 
@@ -95,13 +79,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   @Override
   public String authorize(String redirectUri, ResourceType resourceType, String userId ) throws Exception {
     String redirectUrl="";
-    if((userId != null) && (!userId.isEmpty())){
-      refreshToken = getRefreshTokenInStore(userId);
-    } else {
-      logger.error("HpcAuthorizationServiceImpl::authorize: userId is null");
-      return null;
-    }
-    flow = getFlow(resourceType, refreshToken);
+    flow = getFlow(resourceType);
     GoogleAuthorizationCodeRequestUrl url = flow.newAuthorizationUrl();
     redirectUrl = url.setRedirectUri(redirectUri).setAccessType("offline").build();
     logger.info("HpcAuthorizationServiceImpl::authorize:redirectUrl=" + redirectUrl);
@@ -111,8 +89,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
-    logger.info("HpcAuthorizationServiceImpl::getToken: refreshToken: " + refreshToken);
-    flow = getFlow(resourceType, refreshToken);
+    flow = getFlow(resourceType);
     tokenResponse =
           flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     logger.info("HpcAuthorizationServiceImpl::getToken: tokenResponse: " + gson.toJson(tokenResponse));
@@ -122,9 +99,8 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   public String getRefreshToken(String code, String redirectUri, ResourceType resourceType, String userId) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     logger.info("HpcAuthorizationServiceImpl::getRefreshToken: refreshToken before executing newTokenRequest: " + refreshToken);
-    flow = getFlow(resourceType, refreshToken);
+    flow = getFlow(resourceType);
     // exchange the code against the access token and refresh token
-    logger.info("HpcAuthorizationServiceImpl::getRefreshToken: Invoking flowGoogleCloud.newTokenRequest to get tokens from Google");
     tokenResponse = flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     
     logger.info("getRefreshToken: tokenResponse: " + gson.toJson(tokenResponse));
@@ -132,11 +108,6 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     String newRefreshToken = tokenResponse.getRefreshToken();
 
     if (newRefreshToken != null)   {
-      // The credential is always saved to the Store using flowGoogleCloud
-      flowGoogleCloud.createAndStoreCredential(tokenResponse, userId);
-      // Checking value saved or not
-      String storeCredentialJsonForUser = gson.toJson(flowGoogleCloud.loadCredential(userId));
-      logger.info("HpcAuthorizationServiceImpl::getRefreshToken: storeCredentialJsonForUser: " + storeCredentialJsonForUser);
       refreshToken = newRefreshToken;
     }
 
@@ -165,34 +136,15 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   }
 
 
-  private GoogleAuthorizationCodeFlow getFlow(ResourceType resourceType, String refreshToken) throws Exception  {
+  private GoogleAuthorizationCodeFlow getFlow(ResourceType resourceType) throws Exception  {
     if(resourceType == ResourceType.GOOGLEDRIVE) {
       return flowGoogleDrive;
     } else if(resourceType == ResourceType.GOOGLECLOUD) {
-      if (refreshToken == null || refreshToken.isEmpty()) {
         return flowGoogleCloudWithForcedGoogleLogin;
-      } else {
-        return flowGoogleCloud;
-      }
     } else {
       logger.error("HpcAuthorizationServiceImpl::getRefreshToken: resourceType cannot be null");
       return null;
     }
   }
 
-  private String getRefreshTokenInStore(String userId) throws Exception  {
-    // The credential is always retrieved from the Store using flowGoogleCloud
-    logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token being retrieved for: " + userId);
-    String refreshTokenInStore = null;
-    Credential savedAndRetrievedCredential = flowGoogleCloud.loadCredential(userId);
-    if (savedAndRetrievedCredential != null) {
-      refreshTokenInStore = savedAndRetrievedCredential.getRefreshToken();
-    }
-    if (refreshTokenInStore == null || refreshTokenInStore.isEmpty()) {
-      logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: No refreshToken token available in Store");
-    } else {
-      logger.info("HpcAuthorizationServiceImpl::getRefreshTokenInStore: Refresh token previously saved in Store: " + refreshTokenInStore);
-    }
-    return refreshTokenInStore;
-  }
 }
