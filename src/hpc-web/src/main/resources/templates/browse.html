@@ -409,6 +409,14 @@ cursor: pointer;
 									</div>
 								</div>
 							</div>
+							<div class="modal fade" id="validhierarchyModal" tabindex="-1"
+								role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content"></div>
+									<!-- /.modal-content -->
+								</div>
+								<!-- /.modal-dialog -->
+							</div>
 						</div>
 						<!--/col-->
 					</div>
@@ -463,7 +471,11 @@ $(function() {
         onCreateLi: function(node, $li) {
             if (node.collection) {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
-                $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
+                if(node.parent.id) {
+                	$li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
+                } else {
+                	$li.find('.jqtree-title').after('<a href="/hierarchy?basePath='+node.name+'" data-target="#validhierarchyModal" data-toggle="modal" data-placement="right"><img style="width: 25px; height: 25px;" src="img/help.png"></img></a><div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
+                }
                 if(node.populated) {
                     //Open the node if this onCreateLi method was invoked
                     //when we select a bookmark or browse dialog. If this
