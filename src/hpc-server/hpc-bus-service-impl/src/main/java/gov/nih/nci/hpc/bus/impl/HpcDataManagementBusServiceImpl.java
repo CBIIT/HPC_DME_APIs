@@ -1494,7 +1494,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
 			if (dataObject.getCreatedAt().before(cutOffDate)) {
-				String message = "The data object at " + path + " is not eligible for deletion";
+				String message = "The data object at " + path + " is not eligible for deletion because the file is at least 90 days old.";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
 			}
