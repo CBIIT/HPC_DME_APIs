@@ -65,7 +65,8 @@ public class HpcDataHierarchyController extends AbstractHpcController {
 		List<HpcMetadataValidationRule> rules = null;
 		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		model.addAttribute("hierarchy", basePathRules != null ? basePathRules.getDataHierarchy() : null);
-		
+		model.addAttribute("collectionMetadata", basePathRules != null ? basePathRules.getCollectionMetadataValidationRules() : null);
+	
 		return "datahierarchy";
 	}
 

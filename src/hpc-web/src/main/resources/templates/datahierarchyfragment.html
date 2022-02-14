@@ -2,7 +2,15 @@
     <section th:fragment="hierarchy">
         <ul>
             <li th:each="hierarchy : ${hierarchyList}">
-            	<a th:text="${hierarchy.collectionType}">Parent</a><i style="position: absolute;" title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
+            	<a th:text="${hierarchy.collectionType}">Parent</a><i title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
+                <a style="border:none" onclick="show(this)"><i title="Show mandatory metadata" class="fa fa-plus"></i></a>
+                <div style="display: none">
+					<div th:each="entry : ${collectionMetadata}"
+						th:if="${collectionMetadata != null}">
+						<div th:text="${entry.getAttribute()}"
+							th:if="${entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+					</div>
+				</div>
                 <section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
             </li>
         </ul> 
