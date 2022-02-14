@@ -69,6 +69,11 @@ public class bulkPage {
     driver.findElement(txt_path).sendKeys(path);
   }
   
+  public void selectAWS() {
+    
+    driver.findElement(By.id("bulkTypeS3")).click(); 
+  }
+  
   public void loginValidUser(String username, String password) {
     
     //driver.findElement(txt_login_username).sendKeys(username);
