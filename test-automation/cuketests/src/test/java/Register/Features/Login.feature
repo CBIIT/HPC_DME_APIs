@@ -3,11 +3,17 @@
 Feature: Login to DME
   Description: This feature file contains registering from file system related scenarios
 
-  Scenario: Logging in to DME is working
+  Background: Logging in to DME is working
     Given Browser is open
-    And user is on google search page
-    When user enters text on google search box
-    And hits Enter
+    When user enter in username box as "schintal"
     When user enters text on password box
-    And hits Enter
-    Then user is navigated to the Search Results page
+    Then user is on Bulk page
+
+  Scenario: AWS
+    Given user chooses AWS
+    And user enters <bucketName> as "dme-upload-bucket"
+    And user enters <s3bucket> as "dme_s3_path"
+    And user enters <s3File> as "on"
+    And user enters <accessKey> as "dme_access_key"
+    And user enters <secretKey> as "dme_secret_key"
+    And user enters <region> as "us-east-1"
