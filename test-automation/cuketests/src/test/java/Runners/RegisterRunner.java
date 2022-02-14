@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		 features="src/test/java/Register/Features"
-		, glue="Register.Steps"
+		, glue={"Register.Steps", "Auth"}
 		, dryRun = false
 		, monochrome=true
 		

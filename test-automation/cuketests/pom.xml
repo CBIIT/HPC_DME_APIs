@@ -49,6 +49,13 @@
              <version>6.10.4</version>
              <scope>test</scope>
      </dependency>
+     <!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-picocontainer -->
+	<dependency>
+	    <groupId>io.cucumber</groupId>
+	    <artifactId>cucumber-picocontainer</artifactId>
+	    <version>6.10.4</version>
+	    <scope>test</scope>
+	</dependency>
      <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-chrome-driver -->
 	<dependency>
 	    <groupId>org.seleniumhq.selenium</groupId>
