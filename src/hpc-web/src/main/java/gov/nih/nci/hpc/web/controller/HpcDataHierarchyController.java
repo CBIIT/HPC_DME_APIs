@@ -9,10 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -62,7 +61,7 @@ public class HpcDataHierarchyController extends AbstractHpcController {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 			session.setAttribute("userDOCModel", modelDTO);
 		}
-		List<HpcMetadataValidationRule> rules = null;
+		basePath = StringUtils.prependIfMissing(basePath, "/");
 		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		model.addAttribute("hierarchy", basePathRules != null ? basePathRules.getDataHierarchy() : null);
 		model.addAttribute("collectionMetadata", basePathRules != null ? basePathRules.getCollectionMetadataValidationRules() : null);

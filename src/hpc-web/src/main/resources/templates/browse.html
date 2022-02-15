@@ -521,6 +521,11 @@ function refreshNode(node) {
 $('#tree1').bind(
     'tree.click',
     function(event) {
+    	//if it is the data hierarchy icon, don't toggle the tree
+    	if(event.click_event.target.localName === 'img') {
+    		event.stopImmediatePropagation();
+    		return;
+    	}
         var node = event.node;
         $('#tree1').tree('toggle', node);
         if(!refresh && node.populated && node.collection) {
