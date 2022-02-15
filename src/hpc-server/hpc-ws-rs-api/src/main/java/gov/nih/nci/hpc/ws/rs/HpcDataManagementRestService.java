@@ -528,6 +528,19 @@ public interface HpcDataManagementRestService {
 	public Response getDataObjectDownloadStatus(@PathParam("taskId") String taskId);
 
 	/**
+	 * Retry download task of a data object.
+	 *
+	 * @param taskId               The download task ID.
+	 * @param downloadRetryRequest Retry download request. 
+	 * @return The REST service response w/ HpcDataObjectDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/dataObject/download/{taskId}/retry")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response retryDataObjectDownloadTask(@PathParam("taskId") String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest);
+	
+	/**
 	 * Delete a data object.
 	 *
 	 * @param path The data object path.

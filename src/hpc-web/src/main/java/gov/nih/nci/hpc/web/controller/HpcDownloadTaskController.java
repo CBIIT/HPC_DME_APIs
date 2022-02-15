@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.web.controller;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +35,11 @@ import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -221,20 +218,22 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			return "dataobjectsdownloadtask";
 		}
       } else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT.name())) {
-        String queryServiceURL = dataObjectDownloadServiceURL + "?taskId=" + taskId;
-        HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
-            .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
-        String serviceURL = dataObjectServiceURL + downloadTask.getPath() + "/download";
-        if (!downloadTask.getResult().equals(HpcDownloadResult.COMPLETED)) {
-          HpcDownloadRequestDTO downloadDTO = new HpcDownloadRequestDTO();
-          HpcGlobusDownloadDestination destination = new HpcGlobusDownloadDestination();
-		  HpcFileLocation location = downloadTask.getDestinationLocation();
-		  destination.setDestinationLocation(location);
-          downloadDTO.setGlobusDownloadDestination(destination);
-          AjaxResponseBody responseBody = HpcClientUtil.downloadDataFile(authToken, serviceURL,
-              downloadDTO, taskType, sslCertPath, sslCertPassword);
-          model.addAttribute("error", responseBody.getMessage());
-        }
+    	String queryServiceURL = dataObjectDownloadServiceURL + "?taskId=" + taskId;
+    	HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
+    	            .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
+    	String serviceURL = dataObjectDownloadServiceURL + "/" + taskId + "/retry";
+    	        
+        try {
+			HpcDataObjectDownloadResponseDTO downloadDTO = HpcClientUtil.retryDataObjectDownloadTask(authToken, serviceURL, sslCertPath,
+					sslCertPassword);
+			if (downloadDTO != null) {
+				result.setMessage("Retry request successful. Task Id: " + downloadDTO.getTaskId());
+				model.addAttribute("message", "Retry data object download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
+			}
+		} catch (Exception e) {
+			result.setMessage(e.getMessage());
+			model.addAttribute("error", e.getMessage());
+		}
         model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
         return "dataobjectdownloadtask";
       }
