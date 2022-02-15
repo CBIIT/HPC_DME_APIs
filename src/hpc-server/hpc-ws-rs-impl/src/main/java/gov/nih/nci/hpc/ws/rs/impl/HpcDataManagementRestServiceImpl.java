@@ -631,6 +631,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
+	public Response retryDataObjectDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) {
+		HpcDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.retryDataObjectDownloadTask(taskId,
+					downloadRetryRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(downloadResponse, false);
+	}
+	
+	@Override
 	public Response deleteDataObject(String path, Boolean force) {
 		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = null;
 		try {
