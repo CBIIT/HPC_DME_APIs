@@ -41,6 +41,7 @@
 		<prop key="hpc.scheduler.cron.startGoogleCloudStorageDataObjectDownloadTasks.delay">39 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">50 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">55 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay">47 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processBulkDataObjectRegistrationTasks.delay">0/20 * * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeBulkDataObjectRegistrationTasks.delay">35 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processevents.delay">40 0/1 * * * ?</prop>

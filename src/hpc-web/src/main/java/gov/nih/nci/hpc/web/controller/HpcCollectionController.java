@@ -68,6 +68,7 @@ import gov.nih.nci.hpc.web.model.HpcSecuredRequest;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
+
 /**
  * <p>
  * Collection controller. Gets selected collection details. Updates collection
@@ -196,7 +197,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 						if(report.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
 							for(HpcReportEntry reportEntry: report.getReportEntries()) {
 								if(reportEntry.getAttribute().equals(HpcReportEntryAttribute.TOTAL_DATA_SIZE)) {
-									model.addAttribute("collectionSize", reportEntry.getValue());
+									model.addAttribute("collectionSize", MiscUtil.addHumanReadableSize(reportEntry.getValue(), true));
 									break;
 								}
 							}
