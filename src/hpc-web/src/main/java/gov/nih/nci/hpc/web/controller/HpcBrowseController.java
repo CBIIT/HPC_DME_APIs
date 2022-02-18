@@ -10,6 +10,7 @@
 package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.util.MiscUtil;
+
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -44,8 +46,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -538,6 +539,16 @@ public class HpcBrowseController extends AbstractHpcController {
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 				HpcCollection collection = collectionDTO.getCollection();
 				
+				//This is for displaying the total size of the selected collection
+				//in the machine readable and human readable form above the file table
+				if(!CollectionUtils.isEmpty(collectionDTO.getReports())) {
+					HpcReport report = collectionDTO.getReports().get(0);
+					if(!CollectionUtils.isEmpty(report.getReportEntries())) {
+						String collectionSize = report.getReportEntries().get(0).getValue();
+						selectedEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(collectionSize, true));
+					}
+				}
+
 				if(collection.getAbsolutePath() != null) {
 					selectedEntry.setFullPath(collection.getAbsolutePath());
 					selectedEntry.setId(collection.getAbsolutePath());
@@ -556,6 +567,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setFullPath(listEntry.getPath());
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
+					listChildEntry.setFileSize(Long.toString(listEntry.getDataSize()));
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                     if(listEntry.getCreatedAt() != null)
                       listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));

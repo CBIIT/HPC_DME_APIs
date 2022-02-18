@@ -69,6 +69,7 @@
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="CANCELED" />
 			<xsd:enumeration value="RESTORE_REQUESTED" />
+			<xsd:enumeration value="GLOBUS_BUNCHING" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -80,6 +81,8 @@
 			<xsd:element name="bytesTransferred" type="xsd:long" />
 			<xsd:element name="permissionDenied" type="xsd:boolean"
 				minOccurs="0" />
+			<xsd:element name="successfulItems" type="hpc-domain-datatransfer:HpcGlobusTransferItem" 
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -119,6 +122,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="ACTIVE" />
+			<xsd:enumeration value="GLOBUS_BUNCHING" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -307,6 +311,7 @@
 				type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
+			<xsd:element name="collectionDownloadTaskId" type="xsd:string" />
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
 		</xsd:sequence>
@@ -315,8 +320,7 @@
 	<xsd:complexType name="HpcDataObjectDownloadResponse">
 		<xsd:sequence>
 			<xsd:element name="downloadTaskId" type="xsd:string" />
-			<xsd:element name="dataTransferRequestId"
-				type="xsd:string" />
+			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile"
@@ -353,6 +357,7 @@
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
+			<xsd:element name="collectionDownloadTaskId" type="xsd:string" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="processed" type="xsd:dateTime" />
 			<xsd:element name="percentComplete" type="xsd:int" />
@@ -385,6 +390,7 @@
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
+			<xsd:element name="collectionDownloadTaskId" type="xsd:string" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="effectiveTransferSpeed" type="xsd:int"
@@ -426,6 +432,7 @@
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -504,6 +511,22 @@
 			<xsd:element name="checksum" type="xsd:string" />
 			<xsd:element name="restorationStatus" type="xsd:string" />
 			<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcGlobusTransferItem">
+		<xsd:sequence>
+			<xsd:element name="sourcePath" type="xsd:string" />
+			<xsd:element name="destinationPath" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcGlobusTransferRequest">
+		<xsd:sequence>
+			<xsd:element name="sourceEndpoint" type="xsd:string" />
+			<xsd:element name="destinationEndpoint" type="xsd:string" />
+			<xsd:element name="items" type="hpc-domain-datatransfer:HpcGlobusTransferItem" 
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 

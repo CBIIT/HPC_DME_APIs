@@ -294,7 +294,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				file.setSource(source);
 				file.setCreateParentCollections(true);
 				file.setPath(path + "/" + fileName);
-				System.out.println(path + "/" + fileName);
+				logger.info(path + "/" + fileName);
 				// file.getParentCollectionMetadataEntries().addAll(metadataEntries);
 				files.add(file);
 			}
@@ -394,7 +394,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				file.setGlobusUploadSource(globusSource);
 				file.setCreateParentCollections(true);
 				file.setPath(path + "/" + fileName);
-				System.out.println(path + "/" + fileName);
+				logger.info(path + "/" + fileName);
 				files.add(file);
 			}
 			dto.getDataObjectRegistrationItems().addAll(files);
@@ -414,7 +414,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 file.setGoogleDriveUploadSource(googleDriveSource);
                 file.setCreateParentCollections(true);
                 file.setPath(path + "/" + fileName);
-                System.out.println(path + "/" + fileName);
+                logger.info(path + "/" + fileName);
                 files.add(file);
             }
             dto.getDataObjectRegistrationItems().addAll(files);
@@ -573,7 +573,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			file.setCreateParentCollections(true);
 			Path s3FilePath = Paths.get(s3Path);
 			file.setPath(path + "/" + s3FilePath.getFileName());
-			System.out.println(path + "/" + s3FilePath.getFileName());
+			logger.info(path + "/" + s3FilePath.getFileName());
 			files.add(file);
 			dto.getDataObjectRegistrationItems().addAll(files);
 		}

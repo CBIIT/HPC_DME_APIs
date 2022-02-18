@@ -222,7 +222,12 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
       payloadEntry.setAttribute("LAST_NAME");
       payloadEntry.setValue(user.getNciAccount().getLastName());
       payloadEntries.add(payloadEntry);
-      notificationSender.sendNotification(userId, eventType, user.getNciAccount().getDoc(), payloadEntries);
+      // If payload entry has doc, then send it for doc specific template
+      HpcEventPayloadEntry docPayloadEntry = payloadEntries.stream()
+    		  .filter(entry -> "DOC".equals(entry.getAttribute()))
+    		  .findAny()
+    		  .orElse(null);
+      notificationSender.sendNotification(userId, eventType, docPayloadEntry == null ? null: docPayloadEntry.getValue(), payloadEntries);
 
     } catch (HpcException e) {
       logger.error("failed to send user notification", e);
