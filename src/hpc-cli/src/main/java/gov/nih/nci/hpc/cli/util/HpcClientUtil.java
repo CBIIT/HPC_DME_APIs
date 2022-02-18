@@ -337,6 +337,7 @@ public class HpcClientUtil {
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
             new JacksonAnnotationIntrospector());
         mapper.setAnnotationIntrospector(intr);
+        mapper.setSerializationInclusion(Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         MappingJsonFactory factory = new MappingJsonFactory(mapper);
