@@ -9,6 +9,8 @@
 
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.humanReadableByteCount;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -358,21 +360,15 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		String[] returnVal = new String[] { "0", "0", "0" };
 		if (totals != null) {
 			Iterator<Object> values = totals.values().iterator();
-			Double totalSize = 0d;
-			Double maxSize = 0d;
-			Double avgSize = 0d;
 			Object value1 = values.next();
 			Object value2 = values.next();
 			Object value3 = values.next();
 			if (value1 != null)
-				totalSize = new Double(value1.toString());
-			returnVal[0] = humanReadableByteCount(totalSize, true);
+				returnVal[0] = criteria.getIsMachineReadable() ? value1.toString() : humanReadableByteCount(new Double(value1.toString()), true);
 			if (value2 != null)
-				maxSize = new Double(value2.toString());
-			returnVal[1] = humanReadableByteCount(maxSize, true);
+				returnVal[1] = criteria.getIsMachineReadable() ? value2.toString() : humanReadableByteCount(new Double(value2.toString()), true);
 			if (value3 != null)
-				avgSize = new Double(value3.toString());
-			returnVal[2] = humanReadableByteCount(avgSize, true);
+				returnVal[2] = criteria.getIsMachineReadable() ? value3.toString() : humanReadableByteCount(new Double(value3.toString()), true);
 
 		}
 		return returnVal;
@@ -931,23 +927,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return "0";
 	}
 
-	private static final String[] SI_UNITS = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-	private static final String[] BINARY_UNITS = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
-
-	public static String humanReadableByteCount(final double bytes, final boolean useSIUnits) {
-		final String[] units = useSIUnits ? SI_UNITS : BINARY_UNITS;
-		final int base = useSIUnits ? 1000 : 1024;
-
-		// When using the smallest unit no decimal point is needed, because it's
-		// the exact number.
-		if (bytes < base) {
-			return bytes + " " + units[0];
-		}
-
-		final int exponent = (int) (Math.log(bytes) / Math.log(base));
-		final String unit = units[exponent];
-		return String.format("%.1f %s", bytes / Math.pow(base, exponent), unit);
-	}
 
 	@Override
 	public void refreshViews() throws HpcException {

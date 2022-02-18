@@ -73,7 +73,7 @@ public class HpcS3Connection {
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	private Long multipartUploadThreshold = null;
-	
+
 	// The socket timeout
 	@Value("${hpc.integration.s3.socketTimeout}")
 	private Integer socketTimeout = null;
@@ -203,6 +203,7 @@ public class HpcS3Connection {
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
+	@SuppressWarnings("deprecation")
 	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
 			HpcIntegratedSystem s3Provider, String encryptionAlgorithm, String encryptionKey) throws HpcException {
 		// Create the credential provider based on the configured credentials.
@@ -213,8 +214,8 @@ public class HpcS3Connection {
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
 		// Instantiate a S3 client.
-		ClientConfiguration config = new ClientConfiguration(); 
-		config.setSocketTimeout(socketTimeout); 
+		ClientConfiguration config = new ClientConfiguration();
+		config.setSocketTimeout(socketTimeout);
 		AmazonS3 s3Client = null;
 		if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 			s3Client = AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new CryptoConfigurationV2()
@@ -222,8 +223,7 @@ public class HpcS3Connection {
 					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
 							new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
 					.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
-					.withEndpointConfiguration(endpointConfiguration)
-					.withClientConfiguration(config).build();
+					.withEndpointConfiguration(endpointConfiguration).withClientConfiguration(config).build();
 		} else {
 			s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
 					.withPathStyleAccessEnabled(pathStyleAccessEnabled).withEndpointConfiguration(endpointConfiguration)
@@ -235,7 +235,7 @@ public class HpcS3Connection {
 		// so we override the configured threshold w/ the max size of 5GB.
 		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
 		s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
-				.withMinimumUploadPartSize(minimumUploadPartSize)
+				.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
 				.withMultipartUploadThreshold(
 						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
 				.withDisableParallelDownloads(true).build();
@@ -254,6 +254,7 @@ public class HpcS3Connection {
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
+	@SuppressWarnings("deprecation")
 	private Object authenticateAWS(String accessKey, String secretKey, String region, String encryptionAlgorithm,
 			String encryptionKey) throws HpcException {
 		try {
