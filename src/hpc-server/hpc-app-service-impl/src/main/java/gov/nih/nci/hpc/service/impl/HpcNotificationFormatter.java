@@ -364,7 +364,8 @@ public class HpcNotificationFormatter {
 			HpcEventPayloadEntry updateEntry = payloadEntries.stream()
 					.filter(entry -> "UPDATE".equals(entry.getAttribute())).findAny().orElse(null);
 			// Try to find doc specific template first
-			format = notificationFormats.get(eventType.toString() + "_" + updateEntry.getValue() + "_" + doc);
+			if (doc != null)
+				format = notificationFormats.get(eventType.toString() + "_" + updateEntry.getValue() + "_" + doc);
 			if (format != null)
 				return format;
 			// Try to find template without doc
@@ -373,7 +374,8 @@ public class HpcNotificationFormatter {
 				return format;
 		}
 		// Find the doc specific format for the event type
-		format = notificationFormats.get(eventType.toString() + "_" + doc);
+		if (doc != null)
+			format = notificationFormats.get(eventType.toString() + "_" + doc);
 		if (format != null)
 			return format;
 		// Find the format for the event type
