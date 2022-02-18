@@ -132,6 +132,7 @@
 			<xsd:element name="textArguments" 
 			             type="hpc-domain-notification:HpcNotificationFormatArgument" 
 			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="fromDisplayFormat" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
