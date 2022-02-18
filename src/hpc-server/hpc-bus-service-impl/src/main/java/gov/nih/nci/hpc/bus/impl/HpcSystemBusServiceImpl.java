@@ -14,6 +14,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -50,6 +52,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -266,7 +269,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
 							null, null, null, null, null, null, null, null);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
-							
+
 					break;
 
 				case FAILED:
@@ -577,7 +580,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 		}
 
-		// Set all in-process indicator to false;
+		// Set all in-process indicator to false.
 		dataTransferService.resetDataObjectDownloadTasksInProcess();
 	}
 
@@ -657,7 +660,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
 										downloadTask.getGoogleCloudStorageDownloadDestination(),
-										downloadTask.getUserId());
+										downloadTask.getUserId(), downloadTask.getId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								// Get the collection to be downloaded.
@@ -674,7 +677,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getGoogleDriveDownloadDestination(),
 										downloadTask.getGoogleCloudStorageDownloadDestination(),
 										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-										collectionDownloadBreaker);
+										collectionDownloadBreaker, downloadTask.getId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 								downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
@@ -682,7 +685,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
 										downloadTask.getGoogleCloudStorageDownloadDestination(),
-										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
+										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
+										downloadTask.getId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 								downloadItems = new ArrayList<>();
@@ -692,13 +696,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
 									}
-									downloadItems.addAll(
-											downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
-													downloadTask.getS3DownloadDestination(),
-													downloadTask.getGoogleDriveDownloadDestination(),
-													downloadTask.getGoogleCloudStorageDownloadDestination(),
-													downloadTask.getAppendPathToDownloadDestination(),
-													downloadTask.getUserId(), collectionDownloadBreaker));
+									downloadItems.addAll(downloadCollection(collection,
+											downloadTask.getGlobusDownloadDestination(),
+											downloadTask.getS3DownloadDestination(),
+											downloadTask.getGoogleDriveDownloadDestination(),
+											downloadTask.getGoogleCloudStorageDownloadDestination(),
+											downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
+											collectionDownloadBreaker, downloadTask.getId()));
 								}
 							}
 
@@ -745,6 +749,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.ACTIVE)) {
 			boolean downloadCompleted = true;
+			int inProgressItemsCount = 0;
+			List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
 
 			// Update status of individual download items in this collection download task.
 			for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
@@ -798,6 +804,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							// This item still in progress, so overall download not completed just yet.
 							downloadCompleted = false;
+
+							// We count how many items in progress, and how many completed Globus first hop
+							// (if this is a collection download to Globus).
+							// These counts are used to determine when to trigger a Globus 2nd hop request
+							// for the entire collection.
+							inProgressItemsCount++;
+							if (downloadItemStatus.getDataObjectDownloadTask().getDataTransferStatus()
+									.equals(HpcDataTransferDownloadStatus.GLOBUS_BUNCHING)) {
+								globusBunchingReceivedDownloadTasks.add(downloadItemStatus.getDataObjectDownloadTask());
+							}
 						}
 					}
 
@@ -810,41 +826,120 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			// Update the collection download task.
 			if (downloadCompleted) {
-				// The collection download task finished. Determine if the collection download
-				// was successful.
-				// It is successful if and only if all items (data objects under the collection)
-				// were completed successfully.
-				int completedItemsCount = 0;
-				int canceledItemsCount = 0;
-				for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
-					if (downloadItem.getResult().equals(HpcDownloadResult.COMPLETED)) {
-						completedItemsCount++;
-					} else if (downloadItem.getResult().equals(HpcDownloadResult.CANCELED)) {
-						canceledItemsCount++;
-					}
-				}
-
-				// Determine the collection download result.
-				int itemsCount = downloadTask.getItems().size();
-				HpcDownloadResult result = null;
-				String message = null;
-
-				if (canceledItemsCount > 0
-						|| dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
-					result = HpcDownloadResult.CANCELED;
-					message = "Download request canceled. " + completedItemsCount
-							+ " items downloaded successfully out of " + itemsCount;
-				} else if (completedItemsCount == itemsCount) {
-					result = HpcDownloadResult.COMPLETED;
-				} else {
-					result = HpcDownloadResult.FAILED;
-					message = completedItemsCount + " items downloaded successfully out of " + itemsCount;
-				}
-
-				completeCollectionDownloadTask(downloadTask, result, message);
+				completeCollectionDownloadTask(downloadTask);
 
 			} else {
+				if (inProgressItemsCount == globusBunchingReceivedDownloadTasks.size()) {
+					// A collection download to Globus destination completed first hop of all files.
+					// Submit the transfer request (second hop) as a bunch.
+					dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask,
+							globusBunchingReceivedDownloadTasks);
+				}
+
 				dataTransferService.updateCollectionDownloadTask(downloadTask);
+			}
+		}
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void completeGlobusBunchingCollectionDownloadTasks() throws HpcException {
+		// Iterate through all the active collection download requests.
+		for (HpcCollectionDownloadTask downloadTask : dataTransferService
+				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING)) {
+			try {
+				logger.info("Checking completion of bulk download task submitted to Globus in a bunch: {}",
+						downloadTask.getId());
+
+				// Get the data transfer download status.
+				HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService
+						.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS,
+								downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId(), null);
+
+				// Check the status of the data transfer.
+				HpcDataTransferDownloadStatus globusBunchingDownloadStatus = dataTransferDownloadReport.getStatus();
+				if (!globusBunchingDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+					// This Globus bunching download task is no longer in-progress - complete it.
+
+					// Determine the download result.
+					HpcDownloadResult globusBunchingResult = null;
+					if (globusBunchingDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED)) {
+						globusBunchingResult = HpcDownloadResult.COMPLETED;
+					} else {
+						if (Boolean.TRUE.equals(dataTransferDownloadReport.getPermissionDenied())) {
+							globusBunchingResult = HpcDownloadResult.FAILED_PERMISSION_DENIED;
+						} else {
+							globusBunchingResult = HpcDownloadResult.FAILED;
+						}
+					}
+
+					// Create a set of all successful download source paths in this bunch request.
+					HashSet<String> successfulDownloadSourcePaths = new LinkedHashSet<>();
+					dataTransferDownloadReport.getSuccessfulItems()
+							.forEach(item -> successfulDownloadSourcePaths.add(item.getSourcePath()));
+
+					// Update status of individual download items in this collection download task.
+					for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+						try {
+							if (downloadItem.getResult() == null) {
+								// This download item is included in the bunch. Update the download result.
+								HpcDownloadTaskStatus downloadItemStatus = downloadItem
+										.getDataObjectDownloadTaskId() != null
+												? dataTransferService.getDownloadTaskStatus(
+														downloadItem.getDataObjectDownloadTaskId(),
+														HpcDownloadTaskType.DATA_OBJECT)
+												: null;
+
+								if (downloadItemStatus == null
+										|| downloadItemStatus.getDataObjectDownloadTask() == null) {
+									throw new HpcException("Data object download task status is unknown. Task ID: "
+											+ downloadItem.getDataObjectDownloadTaskId() + ". Path: "
+											+ downloadItem.getPath(), HpcErrorType.UNEXPECTED_ERROR);
+								}
+
+								// Complete the individual file download task.
+								HpcDataObjectDownloadTask dataObjectDownloadTask = downloadItemStatus
+										.getDataObjectDownloadTask();
+
+								// Calculate the individual download item download result. If it's found in the
+								// list of successful downloads, it's COMPLETED, otherwise we default to the
+								// status of the entire bunch.
+								HpcDownloadResult result = successfulDownloadSourcePaths
+										.contains(dataObjectDownloadTask.getArchiveLocation().getFileId())
+												? HpcDownloadResult.COMPLETED
+												: globusBunchingResult;
+								String message = result.equals(HpcDownloadResult.COMPLETED) ? null
+										: "Globus transfer failed within a bunch request ["
+												+ dataTransferDownloadReport.getMessage() + "].";
+								Calendar completed = Calendar.getInstance();
+								HpcDownloadTaskResult dataObjectDownloadResult = dataTransferService
+										.completeDataObjectDownloadTask(dataObjectDownloadTask, result, message,
+												completed, dataTransferDownloadReport.getBytesTransferred());
+
+								// Update the download item.
+								downloadItem.setResult(dataObjectDownloadResult.getResult());
+								downloadItem.setMessage(dataObjectDownloadResult.getMessage());
+								downloadItem.setPercentComplete(
+										dataObjectDownloadResult.getResult().equals(HpcDownloadResult.COMPLETED) ? 100
+												: 0);
+								downloadItem.setEffectiveTransferSpeed(
+										dataObjectDownloadResult.getEffectiveTransferSpeed() > 0
+												? dataObjectDownloadResult.getEffectiveTransferSpeed()
+												: null);
+							}
+
+						} catch (HpcException e) {
+							logger.error("Failed to check collection download item status", e);
+							downloadItem.setResult(HpcDownloadResult.FAILED);
+							downloadItem.setMessage(e.getMessage());
+						}
+					}
+
+					completeCollectionDownloadTask(downloadTask);
+				}
+			} catch (HpcException e) {
+				logger.error("Failed to complete bulk download task submitted to Globus in a bunch: {}",
+						downloadTask.getId(), e);
 			}
 		}
 	}
@@ -1144,14 +1239,28 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// separate threads), we set their in-process indicator to true so they are
 					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
-					dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
+					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
+							dataTransferType, true);
 
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
-						if (inProcess) {
-							// This task is in-process in another thread. Skip it
+						if (updated) {
 							logger.info(
-									"download task: {} - continuing in-process in another thread [transfer-type={}, destination-type={}]",
+									"download task: {} - marked for in-process [transfer-type={}, destination-type={}]",
+									downloadTask.getId(), downloadTask.getDataTransferType(),
+									downloadTask.getDestinationType());
+						} else {
+							// This task is in-process by another server. Skip it.
+							logger.info(
+									"download task: {} - in-process by another server [transfer-type={}, destination-type={}]",
+									downloadTask.getId(), downloadTask.getDataTransferType(),
+									downloadTask.getDestinationType());
+							break;
+						}
+						if (inProcess) {
+							// This task is in-process by another thread. Skip it.
+							logger.info(
+									"download task: {} - in-process by another thread [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
 									downloadTask.getDestinationType());
 							break;
@@ -1171,7 +1280,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
+											dataTransferType, false);
 
 								} catch (HpcException e) {
 									logger.error(
@@ -1209,7 +1319,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
+											dataTransferType, false);
 
 								} catch (HpcException e) {
 									logger.error(
@@ -1292,7 +1403,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
 						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
-						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null);
+						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null,
+						dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 				break;
 
 			case IN_TEMPORARY_ARCHIVE:
@@ -1422,6 +1534,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              collection download.
 	 * @param collectionDownloadBreaker             A collection download breaker
 	 *                                              instance.
+	 * @param collectionDownloadTaskId              The collection download task ID
+	 *                                              this data object download
+	 *                                              request is part of
 	 * @return The download task items (each item represent a data-object download
 	 *         under the collection).
 	 * @throws HpcException on service failure.
@@ -1430,14 +1545,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, boolean appendPathToDownloadDestination,
-			String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
+			String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker, String collectionDownloadTaskId)
+			throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, appendPathToDownloadDestination, userId, null);
+					googleCloudStorageDownloadDestination, appendPathToDownloadDestination, userId, null,
+					collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 			if (collectionDownloadBreaker.abortDownload(downloadItem)) {
 				// Need to abort collection download processing. Cancel and return the items
@@ -1464,7 +1581,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								appendPathToDownloadDestination ? null : false, null),
 						calculateGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination,
 								subCollectionPath, appendPathToDownloadDestination ? null : false, null),
-						appendPathToDownloadDestination, userId, collectionDownloadBreaker));
+						appendPathToDownloadDestination, userId, collectionDownloadBreaker, collectionDownloadTaskId));
 			}
 		}
 
@@ -1490,6 +1607,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              name will be used.
 	 * @param userId                                The user ID who requested the
 	 *                                              collection download.
+	 * @param collectionDownloadTaskId              The collection download task ID
+	 *                                              this data object download
+	 *                                              request is part of
 	 * @return The download task items (each item represent a data-object download
 	 *         from the requested list).
 	 * @throws HpcException on service failure.
@@ -1498,14 +1618,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, boolean appendPathToDownloadDestination,
-			String userId) throws HpcException {
+			String userId, String collectionDownloadTaskId) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
 		for (String dataObjectPath : dataObjectPaths) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectPath, globusDownloadDestination,
 					s3DownloadDestination, googleDriveDownloadDestination, googleCloudStorageDownloadDestination,
-					appendPathToDownloadDestination, userId, null);
+					appendPathToDownloadDestination, userId, null, collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
 
@@ -1529,6 +1649,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              Storage download destination.
 	 * @param userId                                The user ID who requested the
 	 *                                              collection download.
+	 * @param collectionDownloadTaskId              The collection download task ID
+	 *                                              this data object download
+	 *                                              request is part of
 	 * @return The download task items (each item represent a data-object download
 	 *         from the failed items of the task to be retried).
 	 * @throws HpcException on service failure.
@@ -1536,7 +1659,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	private List<HpcCollectionDownloadTaskItem> retryDownloadTask(String retryTaskId, HpcDownloadTaskType retryTaskType,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId) throws HpcException {
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId,
+			String collectionDownloadTaskId) throws HpcException {
 
 		HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
 				? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
@@ -1550,7 +1674,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTaskItem failedItem : retryTaskStatus.getFailedItems()) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(failedItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, false, userId, failedItem.getDestinationLocation());
+					googleCloudStorageDownloadDestination, false, userId, failedItem.getDestinationLocation(),
+					collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
 
@@ -1580,13 +1705,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              always attempted into the
 	 *                                              original calculated download
 	 *                                              destination.
+	 * @param collectionDownloadTaskId              The collection download task ID
+	 *                                              this data object download
+	 *                                              request is part of
 	 * @return The download task item.
 	 */
 	private HpcCollectionDownloadTaskItem downloadDataObject(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, boolean appendPathToDownloadDestination,
-			String userId, HpcFileLocation retryDestinationLocation) {
+			String userId, HpcFileLocation retryDestinationLocation, String collectionDownloadTaskId) {
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
 		dataObjectDownloadRequest.setGlobusDownloadDestination(calculateGlobusDownloadDestination(
 				globusDownloadDestination, path, appendPathToDownloadDestination, retryDestinationLocation));
@@ -1605,7 +1733,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Download this data object.
 		try {
 			HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = dataManagementBusService
-					.downloadDataObject(path, dataObjectDownloadRequest, userId, false);
+					.downloadDataObject(path, dataObjectDownloadRequest, userId, false, collectionDownloadTaskId);
 
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
@@ -1801,6 +1929,50 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		calcDestinationLocation.setFileId(fileId);
 
 		return calcDestinationLocation;
+	}
+
+	/**
+	 * Complete a collection download task. Determine if the collection download was
+	 * successful. It is successful if and only if all items (data objects under the
+	 * collection) were completed successfully.
+	 * 
+	 * @param downloadTask The download task to complete.
+	 * @throws HpcException on service failure.
+	 */
+	private void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException {
+
+		// The collection download task finished. Determine if the collection download
+		// was successful.
+		// It is successful if and only if all items (data objects under the collection)
+		// were completed successfully.
+		int completedItemsCount = 0;
+		int canceledItemsCount = 0;
+		for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+			if (downloadItem.getResult().equals(HpcDownloadResult.COMPLETED)) {
+				completedItemsCount++;
+			} else if (downloadItem.getResult().equals(HpcDownloadResult.CANCELED)) {
+				canceledItemsCount++;
+			}
+		}
+
+		// Determine the collection download result.
+		int itemsCount = downloadTask.getItems().size();
+		HpcDownloadResult result = null;
+		String message = null;
+
+		if (canceledItemsCount > 0
+				|| dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
+			result = HpcDownloadResult.CANCELED;
+			message = "Download request canceled. " + completedItemsCount + " items downloaded successfully out of "
+					+ itemsCount;
+		} else if (completedItemsCount == itemsCount) {
+			result = HpcDownloadResult.COMPLETED;
+		} else {
+			result = HpcDownloadResult.FAILED;
+			message = completedItemsCount + " items downloaded successfully out of " + itemsCount;
+		}
+
+		completeCollectionDownloadTask(downloadTask, result, message);
 	}
 
 	/**
@@ -2124,14 +2296,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Calculate the effective transfer speed. Note: there is no transfer in
 					// registration w/
 					// link
-					registrationTask.setEffectiveTransferSpeed(Math.toIntExact(
-							metadata.getSourceSize() * 1000 / (metadata.getDataTransferCompleted().getTimeInMillis()
-									- metadata.getDataTransferStarted().getTimeInMillis())));
+					long transferTime = metadata.getDataTransferCompleted().getTimeInMillis()
+							- metadata.getDataTransferStarted().getTimeInMillis();
+					if (transferTime <= 0) {
+						transferTime = 1;
+					}
+					registrationTask
+							.setEffectiveTransferSpeed(Math.toIntExact(metadata.getSourceSize() * 1000 / transferTime));
 
 				} else {
 					// Registration still in progress. Update % complete.
-					registrationTask.setPercentComplete(
-							dataTransferService.getDataObjectUploadProgress(metadata));
+					registrationTask.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadata));
 				}
 			}
 

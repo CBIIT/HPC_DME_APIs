@@ -17,7 +17,7 @@
   <parent>
     <groupId>gov.nih.nci.hpc</groupId>
     <artifactId>hpc-server</artifactId>
-    <version>2.16.0</version>
+    <version>2.16.1</version>
   </parent>
   <artifactId>hpc-ws-rs-impl</artifactId>
   <packaging>bundle</packaging>
