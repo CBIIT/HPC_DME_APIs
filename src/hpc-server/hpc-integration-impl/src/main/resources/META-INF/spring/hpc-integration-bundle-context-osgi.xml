@@ -52,6 +52,7 @@
 		  
 		  <prop key="hpc.integration.googledrive.hpcApplicationName">NCI-HPC-DME</prop>
 		  <prop key="hpc.integration.googledrive.downloadExecutorThreadPoolSize">8</prop>
+		  <prop key="hpc.integration.googledrive.chunkSize">5242880</prop>
 		  
 		  <prop key="hpc.integration.googlecloudstorage.downloadExecutorThreadPoolSize">8</prop>
 		  
