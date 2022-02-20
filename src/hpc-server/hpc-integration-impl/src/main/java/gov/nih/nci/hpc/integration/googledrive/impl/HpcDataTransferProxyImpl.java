@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.googleapis.media.MediaHttpUploader.UploadState;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.Drive.Files.Create;
@@ -144,6 +145,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 										new URL(downloadRequest.getArchiveLocationURL()).openStream()))
 						.setFields("size");
 				request.getMediaHttpUploader().setChunkSize(chunkSize);
+				request.getMediaHttpUploader().setProgressListener(uploader -> {
+					if (uploader.getUploadState().equals(UploadState.MEDIA_IN_PROGRESS)) {
+						progressListener.transferProgressed(uploader.getNumBytesUploaded());
+					}
+				});
 
 				progressListener.transferCompleted(request.execute().getSize());
 
