@@ -1352,30 +1352,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Calculate the percent complete.
 		float percentComplete = 100 * (float) bytesTransferred / downloadTask.getSize();
 
-		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
-			if (dataManagementConfigurationLocator
-					.getDataTransferConfiguration(downloadTask.getConfigurationId(),
-							downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType())
-					.getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
-				// This is a 2-hop download, performing the 2nd Hop. Our base % complete is 50%.
-				downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
-			} else {
-				// This is a one-hop Globus download from archive to user destination (currently
-				// only supported by file system archive).
-				downloadTask.setPercentComplete(Math.round(percentComplete));
-			}
+		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
+				&& downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
+			// This is a 2-hop download, performing the 1st Hop.
+			downloadTask.setPercentComplete(Math.round(percentComplete) / 2);
 
-		} else if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
-			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
-				// This is a 2-hop download, performing the 1nd Hop.
-				downloadTask.setPercentComplete(Math.round(percentComplete) / 2);
-			} else {
-				// This is a streaming download to S3 destination.
-				downloadTask.setPercentComplete(Math.round(percentComplete));
-			}
+		} else if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
+				&& dataManagementConfigurationLocator
+						.getDataTransferConfiguration(downloadTask.getConfigurationId(),
+								downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType())
+						.getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+			// This is a 2-hop download, performing the 2nd Hop.
+			downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
 
 		} else {
-			return;
+			// Any other streaming download.
+			downloadTask.setPercentComplete(Math.round(percentComplete));
 		}
 
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
