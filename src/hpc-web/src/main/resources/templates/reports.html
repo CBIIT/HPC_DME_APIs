@@ -231,32 +231,32 @@
 							<tr id='attrRow0' th:each="report : ${reports}">
 								<td style="white-space: nowrap" align="right" colspan="2">
 									<table class="table">
-										<div th:if="${report.doc != null}">
+										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
 										<tr>
 											<td align="center"
 												style="background-color: #006DCC; color: white;" colspan="2">
-												<label for="doc">DOC: </label><label for="doc"
+												<label for="doc">DOC:&nbsp;</label><label for="doc"
 												th:text="${report.doc}">DOC</label>
 											</td>
 										</tr>
 										</div>
-										<div th:if="${report.user != null}">
+										<div th:if="${report.user != null and !report.user.isEmpty()}">
 											<tr>
 												<td align="center"
 													style="background-color: #006DCC; color: white;"
-													colspan="2"><label for="user">User: </label><label
+													colspan="2"><label for="user">User:&nbsp;</label><label
 													for="user" th:text="${report.user}">User</label></td>
 											</tr>
 										</div>
-										<div th:if="${report.path != null}">
+										<div th:if="${report.path != null and !report.path.isEmpty()}">
 											<tr>
 												<td align="center"
 													style="background-color: #006DCC; color: white;"
-													colspan="2"><label for="path">Base Path: </label><label
+													colspan="2"><label for="path">Base Path:&nbsp;</label><label
 													for="user" th:text="${report.path}">Base Path</label></td>
 											</tr>
 										</div>
-										<div th:if="${report.fromDate != null}">
+										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
 										<tr>
 											<td align="center"
 												style="background-color: #006DCC; color: white;" colspan="2">
