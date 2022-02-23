@@ -59,11 +59,15 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -373,12 +377,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
 				HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
 				if (entry != null) {
-					// Get the total size of the collection
-					HpcReport report = getTotalSizeReport(subCollection.getPath(), true);
+					subCollection.setDataSize(entry.getDataSize());
+					//Compute the total size of the collection - this is being temporarily disabled
+					/*HpcReport report = getTotalSizeReport(subCollection.getPath(), true);
 					if(report != null && !CollectionUtils.isEmpty(report.getReportEntries())) {
 							String collectionSize = report.getReportEntries().get(0).getValue();
 							subCollection.setDataSize(Long.parseLong(collectionSize));
-					}
+					}*/
 					subCollection.setCreatedAt(entry.getCreatedAt());
 				}
 			}
@@ -702,6 +707,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	public HpcBulkDataObjectDownloadResponseDTO retryDataObjectsOrCollectionsDownloadTask(String taskId,
 			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException {
+		
 		// Input validation.
 		HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId,
 				HpcDownloadTaskType.COLLECTION_LIST);
@@ -716,7 +722,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Collection / data-object list download task in-progress: " + taskId,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
+	
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
@@ -1407,6 +1413,31 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
+	public HpcDataObjectDownloadResponseDTO retryDataObjectDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException {
+		// Input validation.
+		HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId,
+				HpcDownloadTaskType.DATA_OBJECT);
+		if (taskStatus == null) {
+			throw new HpcException("Data-object download task not found: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getInProgress() || taskStatus.getResult() == null) {
+			throw new HpcException("Data-object download task in-progress: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getResult().equals(HpcDownloadResult.COMPLETED)) {
+			throw new HpcException("Data-object download task already completed: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		HpcDownloadTaskResult downloadTask = taskStatus.getResult();
+        HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
+    
+		return downloadDataObject(downloadTask.getPath(), downloadRequest,
+				downloadTask.getUserId(), true, null);
+	}
+
+	@Override
 	public HpcDataObjectDownloadResponseDTO generateDownloadRequestURL(String path) throws HpcException {
 		// Validate the following:
 		// 1. Path is not empty.
@@ -1493,7 +1524,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
 			if (dataObject.getCreatedAt().before(cutOffDate)) {
-				String message = "The data object at " + path + " is not eligible for deletion";
+				String message = "The data object at " + path + " is not eligible for deletion because the file is at least 90 days old.";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
 			}
@@ -3198,6 +3229,40 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return destinationLocation;
+	}
+	
+	/**
+	 * Create a download request from download task result and download retry request
+	 *
+	 * @param downloadTaskResult The download task result.
+	 * @param downloadRetryRequest The download retry request.
+	 * @return a HpcDownloadRequestDTO instance
+	 */
+	private HpcDownloadRequestDTO createDownloadRequestDTO(HpcDownloadTaskResult downloadTaskResult,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) {
+		HpcDownloadRequestDTO downloadRequest= new HpcDownloadRequestDTO();
+		if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.S_3)) {
+			HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
+			s3DownloadDestination.setAccount(downloadRetryRequest.getS3Account());
+			s3DownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadRequest.setS3DownloadDestination(s3DownloadDestination);
+		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
+			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+			globusDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
+		    downloadRequest.getGlobusDownloadDestination().setDestinationOverwrite(downloadRetryRequest.getDestinationOverwrite());
+		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
+			googleDriveDownloadDestination.setAccessToken(downloadRetryRequest.getGoogleAccessToken());
+			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadRequest.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination = new HpcGoogleDownloadDestination();
+			googleCloudStorageDownloadDestination.setAccessToken(downloadRetryRequest.getGoogleAccessToken());
+			googleCloudStorageDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadRequest.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+		}
+		return downloadRequest;
 	}
 
 	/**

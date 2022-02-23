@@ -87,7 +87,7 @@ function dm_generate_token () {
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <destination-path> <collectton|dataObject> [data-object-file]"
+    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <destination-path> <collection|dataObject> [data-object-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
