@@ -74,11 +74,13 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTieringService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -113,6 +115,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// Data Management Bus Service Instance.
 	@Autowired
 	private HpcDataManagementBusService dataManagementBusService = null;
+
+	// The data management (iRODS) security service.
+	@Autowired
+	private HpcDataManagementSecurityService dataManagementSecurityService = null;
 
 	// Notification Application Service Instance.
 	@Autowired
@@ -604,6 +610,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void processCollectionDownloadTasks() throws HpcException {
 		// Iterate through all the collection download requests that were submitted (not
 		// processed yet).
+
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
 			logger.info("collection download task: {} - started processing [{}]", downloadTask.getId(),
@@ -629,10 +636,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 
 			// We also limit a user overall to a configured number of collection download
-			// tasks at a time.
+			// tasks at a time if they are not system admin or group admin
+
 			int totalTasksInProcessCount = dataTransferService
 					.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
-			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser) {
+			// Get the current user role.
+			HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(downloadTask.getUserId());
+			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser &&
+					!(HpcUserRole.GROUP_ADMIN.equals(currentUserRole) || HpcUserRole.SYSTEM_ADMIN.equals(currentUserRole))) {
 				// We have reached the max collection breakdown tasks in-process for this user.
 				logger.info(
 						"collection download task: {} - Not processing at this time. {} download tasks already in-process for user {}",
