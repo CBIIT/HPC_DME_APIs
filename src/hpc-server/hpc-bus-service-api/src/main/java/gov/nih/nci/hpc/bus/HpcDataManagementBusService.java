@@ -421,6 +421,17 @@ public interface HpcDataManagementBusService {
 	public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(String taskId) throws HpcException;
 
 	/**
+	 * Retry download task of a data object.
+	 *
+	 * @param taskId               The download task ID.
+	 * @param downloadRetryRequest Retry download request.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataObjectDownloadResponseDTO retryDataObjectDownloadTask(String taskId,
+			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException;
+	
+	/**
 	 * Generate (pre-signed) download URL for a Data Object.
 	 *
 	 * @param path The data object path.
