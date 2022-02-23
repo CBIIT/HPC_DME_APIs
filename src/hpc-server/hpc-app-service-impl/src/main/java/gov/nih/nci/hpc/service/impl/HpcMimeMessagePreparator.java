@@ -63,7 +63,8 @@ public class HpcMimeMessagePreparator {
 			mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
 			mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, doc, payloadEntries));
 			mimeMessage.setText(notificationFormatter.formatText(eventType, doc, payloadEntries), "UTF-8", "html");
-			mimeMessage.setFrom(new InternetAddress("DME Notification <dme-notification@doNotReply.nih.gov>"));
+			String fromDisplay = notificationFormatter.formatFromDisplay(eventType, doc, payloadEntries);
+			mimeMessage.setFrom(new InternetAddress(fromDisplay == null || fromDisplay.isEmpty() ? "DME Notification <dme-notification@doNotReply.nih.gov>" : fromDisplay + " <dme-notification@doNotReply.nih.gov>"));
 		};
 	}
 
