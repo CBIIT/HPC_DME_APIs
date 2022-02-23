@@ -21,17 +21,39 @@
 
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal">&times;</button>
-		<h4 class="modal-title">Valid Hierarchy</h4>
+		<h4 class="modal-title">Valid Hierarchy and Mandatory Metadata</h4>
 	</div>
 	<div class="modal-body">
 	  <div th:if="${hierarchy != null}">
         <ul class="tree">
             <li>
-                <a th:text="${hierarchy.collectionType}">Parent</a><i style="position: absolute;" title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
-                <section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
+                <a th:text="${hierarchy.collectionType}">Parent</a><i title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
+                <a style="border:none" onclick="show(this)"><i title="Show mandatory metadata" class="fa fa-plus"></i></a>
+					<div style="display: none">
+						<div th:each="entry : ${collectionMetadata}"
+							th:if="${collectionMetadata != null}">
+							<div th:text="${entry.getAttribute()}"
+								th:if="${entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+						</div>
+					</div>
+					<section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
             </li>
         </ul>
       </div>  
     </div>
+    
+	<script>
+	function show(event)
+	{
+		$(event).children('i:nth-child(1)').toggleClass("fa-plus");
+		$(event).children('i:nth-child(1)').toggleClass("fa-minus");
+		if($(event).children('i:nth-child(1)').hasClass("fa-plus")) {
+			$(event).next().hide();
+		} else {
+			$(event).next().show();
+		}
+	}
+	</script>
+	
 </body>
 </html>

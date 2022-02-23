@@ -140,6 +140,21 @@ public class HpcNotificationFormatter {
 	}
 
 	/**
+	 * Generate a notification from display for an event.
+	 *
+	 * @param eventType      The event type to generate the from display for.
+	 * @param doc			 The doc specific template to be used for this event. (Optional)
+	 * @param payloadEntries   The payload entries to use for the format arguments.
+	 * @return A notification text message.
+	 * @throws HpcException on service failure.
+	 */
+	public String formatFromDisplay(HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
+		// Find the format for the event type
+		HpcNotificationFormat format = getFormat(eventType, doc, payloadEntries);
+		return format.getFromDisplayFormat();
+	}
+	
+	/**
 	 * Generate a notification subject for an event.
 	 *
 	 * @param notificationType The system admin notification type to generate the
@@ -265,6 +280,7 @@ public class HpcNotificationFormatter {
 		notificationFormat.setSubjectFormat((String) jsonNotificationFormat.get("subjectFormat"));
 		notificationFormat.getSubjectArguments().addAll(
 				notificationFormatArgumentsFromJSON((JSONArray) jsonNotificationFormat.get("subjectArguments")));
+		notificationFormat.setFromDisplayFormat((String) jsonNotificationFormat.get("fromDisplayFormat"));
 		notificationFormat.setTextFormat((String) jsonNotificationFormat.get("textFormat"));
 		notificationFormat.getTextArguments()
 				.addAll(notificationFormatArgumentsFromJSON((JSONArray) jsonNotificationFormat.get("textArguments")));
