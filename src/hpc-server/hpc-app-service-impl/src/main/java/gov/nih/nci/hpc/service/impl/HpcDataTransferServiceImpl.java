@@ -2671,6 +2671,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Validate max file size not exceeded.
 		if (synchronousDownloadFilter == null && maxSyncDownloadFileSize != null
 				&& downloadRequest.getSize() > maxSyncDownloadFileSize) {
+			logger.error("File size of {} for path {} exceeds the sync download limit",
+					downloadRequest.getSize(), downloadRequest.getPath());
 			throw new HpcException("File size exceeds the sync download limit",
 					HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
 		}
@@ -2709,6 +2711,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					// Validate max file size not exceeded.
 					if (maxSyncDownloadFileSize != null
 							&& filteredCompressedArchive.length() > maxSyncDownloadFileSize) {
+						logger.error("File size of {} for path {} exceeds the sync download limit",
+								downloadRequest.getSize(), downloadRequest.getPath());
 						throw new HpcException("File size exceeds the sync download limit",
 								HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
 					}
@@ -3017,24 +3021,35 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (maxPermittedS3DownloadsForGlobus <= 0
 				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
-			try {
-				long freeSpace = Files
+			int inProgressDownloadsForUserbyPath = dataDownloadDAO.getDataObjectDownloadTasksCountInProgressForUserByPathAndType(
+					HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS,
+					secondHopDownload.getDownloadTask().getUserId(), secondHopDownload.getDownloadTask().getPath());
+			if(inProgressDownloadsForUserbyPath <= 0) {
+				try {
+					long freeSpace = Files
 						.getFileStore(
 								FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
 						.getUsableSpace();
-				if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+					if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
 					// Not enough space disk space to perform the first hop download. Log an error
 					// and reset the
 					// task.
-					logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+						logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
 							secondHopDownload.getDownloadTask().getPath(), freeSpace,
 							secondHopDownload.getDownloadTask().getSize());
-					return false;
-				}
+						return false;
+					}
 
-			} catch (IOException e) {
-				// Failed to check free disk space. We'll try the download.
-				logger.error("Failed to determine free space", e);
+				} catch (IOException e) {
+					// Failed to check free disk space. We'll try the download.
+					logger.error("Failed to determine free space", e);
+				}
+			} else {
+				// A download from this user for this path is already in progress
+				logger.info(
+						"The file {} is already being downloaded for user {} ",
+						secondHopDownload.getDownloadTask().getPath(), secondHopDownload.getDownloadTask().getUserId());
+				return false;
 			}
 		} else {
 			// We are over the allowed number of transactions

@@ -271,12 +271,29 @@ public interface HpcDataDownloadDAO {
 	 * @param destinationType        The destination type
 	 * @param status                 The data transfer download status
 	 * @param s3DownloadTaskServerId The ID of the executing s3 download task.
-	 * @return A total count of completed download requests.
+	 * @return A total count of inprocess download requests.
 	 * @throws HpcException on database error.
 	 */
 	public int getDataObjectDownloadTasksCountByStatusAndType(HpcDataTransferType dataTransferType,
 			HpcDataTransferType destinationType, HpcDataTransferDownloadStatus status, String s3DownloadTaskServerId)
 			throws HpcException;
+
+
+	/**
+	 * Get inprocess data object download count for a specific path for this user.
+	 *
+	 * @param dataTransferTypeType   The data transfer type.
+	 * @param destinationType        The destination type
+	 * @param path                   The path of the file to download
+	 * @param userId                 The ID of the user executing the download task.
+	 * @return A total count of inprocess download requests.
+	 * @throws HpcException on database error.
+	 */
+	public int getDataObjectDownloadTasksCountInProgressForUserByPathAndType(HpcDataTransferType dataTransferType,
+			HpcDataTransferType destinationType, String userId, String path)
+			throws HpcException;
+
+
 
 	/**
 	 * Set a collection download task in-process value.
