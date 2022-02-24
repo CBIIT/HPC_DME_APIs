@@ -280,17 +280,14 @@ public interface HpcDataDownloadDAO {
 
 
 	/**
-	 * Get inprocess data object download count for a specific path for this user.
+	 * Get Globus inprocess data object download count for a specific path for this user.
 	 *
-	 * @param dataTransferTypeType   The data transfer type.
-	 * @param destinationType        The destination type
 	 * @param path                   The path of the file to download
 	 * @param userId                 The ID of the user executing the download task.
 	 * @return A total count of inprocess download requests.
 	 * @throws HpcException on database error.
 	 */
-	public int getDataObjectDownloadTasksCountInProgressForUserByPathAndType(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType, String userId, String path)
+	public int getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(String userId, String path)
 			throws HpcException;
 
 

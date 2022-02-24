@@ -3021,10 +3021,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (maxPermittedS3DownloadsForGlobus <= 0
 				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
-			int inProgressDownloadsForUserbyPath = dataDownloadDAO.getDataObjectDownloadTasksCountInProgressForUserByPathAndType(
-					HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS,
+			int inProgressDownloadsForUserbyPath = dataDownloadDAO.getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(
 					secondHopDownload.getDownloadTask().getUserId(), secondHopDownload.getDownloadTask().getPath());
-			if(inProgressDownloadsForUserbyPath <= 0) {
+			if(inProgressDownloadsForUserbyPath <= 1) {
 				try {
 					long freeSpace = Files
 						.getFileStore(
