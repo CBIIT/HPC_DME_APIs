@@ -143,7 +143,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%4$s/subscribe\">Unsubscribe</a>",
+			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%4$s/downloadtask?taskId=%3$s&type=%5$s\">%3$s</a><br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%4$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -160,6 +160,10 @@
 				{
 					"payloadEntryAttribute": "BASE_UI_URL",
 					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE_CODE",
+					"index": "4"
 				}
 			]
 		},
@@ -176,7 +180,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
+			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%5$s/downloadtask?taskId=%3$s&type=%6$s\">%3$s</a><br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -197,6 +201,10 @@
 				{
 					"payloadEntryAttribute": "BASE_UI_URL",
 					"index": "4"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE_CODE",
+					"index": "5"
 				}
 			]
 		},
