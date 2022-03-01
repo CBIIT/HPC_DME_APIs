@@ -523,6 +523,7 @@
 									var waitEle = document
 											.getElementById("wait");
 									waitEle.style.display = "block";
+									$("#submit").prop('disabled', true);
 									$.ajax({
 										type : "POST",
 										url : "/download",
@@ -534,12 +535,14 @@
 												$('#message').html(msg.message);
 												ele.style.display = "block";
 												ele.classList.remove("alert-danger");
+												$("#submit").prop('disabled', false);
 											} else {
 												waitEle.style.display = "none";
 												console.log('FAILURE: ', msg);
 												$('#message').html(msg.message);
 												ele.style.display = "block";
 												ele.classList.add("alert-danger");
+												$("#submit").prop('disabled', false);
 											}
 										},
 										error : function(e) {
@@ -548,6 +551,7 @@
 											$('#message').html(e.message);
 											ele.style.display = "block";
 											ele.classList.add("alert-danger");
+											$("#submit").prop('disabled', false);
 										}
 									});
 								} else {
