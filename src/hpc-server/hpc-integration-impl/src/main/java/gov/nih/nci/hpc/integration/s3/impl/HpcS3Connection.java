@@ -292,7 +292,7 @@ public class HpcS3Connection {
 			// Create and return the S3 transfer manager.
 			HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
 			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
-					.withExecutorFactory(() -> executorService).withShutDownThreadPools(false).build();
+					.withDisableParallelDownloads(true).withExecutorFactory(() -> executorService).withShutDownThreadPools(false).build();
 			s3TransferManager.s3Provider = HpcIntegratedSystem.AWS;
 			return s3TransferManager;
 
