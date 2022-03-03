@@ -126,11 +126,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_OVERWRITE = ?, S3_ACCOUNT_ACCESS_KEY = ?, S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, "
 			+ "S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, GOOGLE_CLOUD_ACCESS_TOKEN = ?,"
-			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ?, RETRY_TASK_ID = ?, DATA_TRANSFER_REQUEST_ID = ? "
+			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ?, RETRY_TASK_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, DESTINATION_TYPE = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_ID, "
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, "
-			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, RETRY_TASK_ID, DATA_TRANSFER_REQUEST_ID) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, RETRY_TASK_ID, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ? where ID = ?";
 
@@ -145,35 +145,35 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "and IN_PROCESS = ? order by PRIORITY, CREATED";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select null as USER_ID, ID, PATH, CREATED, 'DATA_OBJECT' as TYPE, "
-			+ "null as COMPLETED, null as RESULT, null as ITEMS from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and COMPLETION_EVENT = '1' "
+			+ "null as COMPLETED, null as RESULT, null as ITEMS, DESTINATION_TYPE from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and COMPLETION_EVENT = '1' "
 			+ "order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, ITEMS from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
+			+ "null as RESULT, ITEMS, DESTINATION_TYPE from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
 
-	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS "
+	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1'";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, 'DATA_OBJECT' as TYPE, "
-			+ "null as COMPLETED, null as RESULT, null as ITEMS from HPC_DATA_OBJECT_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID "
+			+ "null as COMPLETED, null as RESULT, null as ITEMS, DESTINATION_TYPE from HPC_DATA_OBJECT_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID "
 			+ "and USER1.DOC= ? and COMPLETION_EVENT = '1' order by CREATED";
 
 	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select USER_ID, ID, PATH, CREATED, 'DATA_OBJECT' as TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as ITEMS from HPC_DATA_OBJECT_DOWNLOAD_TASK where COMPLETION_EVENT = '1' order by CREATED";
+			+ "null as RESULT, null as ITEMS, DESTINATION_TYPE from HPC_DATA_OBJECT_DOWNLOAD_TASK where COMPLETION_EVENT = '1' order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, ITEMS from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? order by CREATED";
+			+ "null as RESULT, ITEMS, DESTINATION_TYPE from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? order by CREATED";
 
 	private static final String GET_ALL_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, ITEMS from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
+			+ "null as RESULT, ITEMS, DESTINATION_TYPE from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
 
-	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS "
+	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? and "
 			+ "COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
-	private static final String GET_ALL_DOWNLOAD_RESULTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS "
+	private static final String GET_ALL_DOWNLOAD_RESULTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT where COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_FOR_DOC_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where "
@@ -373,6 +373,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.fromValue(rs.getString(("STATUS"))));
 		collectionDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		collectionDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
+		String destinationType = rs.getString("DESTINATION_TYPE");
+		if (destinationType != null)
+			collectionDownloadTask.setDestinationType(HpcDataTransferType.fromValue(destinationType));
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
 
@@ -412,22 +415,29 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			s3DownloadDestination.setDestinationLocation(destinationLocation);
 			s3DownloadDestination.setAccount(s3Account);
 			collectionDownloadTask.setS3DownloadDestination(s3DownloadDestination);
+			if (destinationType == null)
+				collectionDownloadTask.setDestinationType(HpcDataTransferType.S_3);
 		} else if (googleDriveAccessToken != null) {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
 			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
 			collectionDownloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+			if (destinationType == null)
+				collectionDownloadTask.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
 		} else if (googleCloudAccessToken != null) {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination = new HpcGoogleDownloadDestination();
 			googleCloudStorageDownloadDestination.setDestinationLocation(destinationLocation);
 			googleCloudStorageDownloadDestination.setAccessToken(googleCloudAccessToken);
 			collectionDownloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
-
+			if (destinationType == null)
+				collectionDownloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		} else {
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 			globusDownloadDestination.setDestinationLocation(destinationLocation);
 			globusDownloadDestination.setDestinationOverwrite(rs.getBoolean("DESTINATION_OVERWRITE"));
 			collectionDownloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+			if (destinationType == null)
+				collectionDownloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 		}
 
 		collectionDownloadTask.setAppendPathToDownloadDestination(rs.getBoolean("APPEND_PATH_TO_DOWNLOAD_DESTINATION"));
@@ -464,6 +474,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			Calendar completed = Calendar.getInstance();
 			completed.setTime(rs.getTimestamp("COMPLETED"));
 			userDownloadRequest.setCompleted(completed);
+		}
+		if (rs.getObject("DESTINATION_TYPE") != null) {
+			userDownloadRequest.setDestinationType(HpcDataTransferType.fromValue(rs.getString("DESTINATION_TYPE")));
 		}
 		userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 		return userDownloadRequest;
@@ -805,12 +818,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			String s3AccountRegion = null;
 			String s3AccountUrl = null;
 			Boolean s3AccountPathStyleAccessEnabled = null;
+			String destinationType = null;
 
 			byte[] googleDriveAccessToken = null;
 			byte[] googleCloudAccessToken = null;
 			if (collectionDownloadTask.getGlobusDownloadDestination() != null) {
 				destinationLocation = collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
 				destinationOverwrite = collectionDownloadTask.getGlobusDownloadDestination().getDestinationOverwrite();
+				destinationType = HpcDataTransferType.GLOBUS.name();
 			} else if (collectionDownloadTask.getS3DownloadDestination() != null) {
 				destinationLocation = collectionDownloadTask.getS3DownloadDestination().getDestinationLocation();
 				HpcS3Account s3Account = collectionDownloadTask.getS3DownloadDestination().getAccount();
@@ -819,17 +834,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				s3AccountRegion = s3Account.getRegion();
 				s3AccountUrl = s3Account.getUrl();
 				s3AccountPathStyleAccessEnabled = s3Account.getPathStyleAccessEnabled();
+				destinationType = HpcDataTransferType.S_3.name();
 			} else if (collectionDownloadTask.getGoogleDriveDownloadDestination() != null) {
 				destinationLocation = collectionDownloadTask.getGoogleDriveDownloadDestination()
 						.getDestinationLocation();
 				googleDriveAccessToken = encryptor
 						.encrypt(collectionDownloadTask.getGoogleDriveDownloadDestination().getAccessToken());
+				destinationType = HpcDataTransferType.GOOGLE_DRIVE.name();
 			} else if (collectionDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 				destinationLocation = collectionDownloadTask.getGoogleCloudStorageDownloadDestination()
 						.getDestinationLocation();
 				googleCloudAccessToken = encryptor
 						.encrypt(collectionDownloadTask.getGoogleCloudStorageDownloadDestination().getAccessToken());
-
+				destinationType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE.name();
 			} else {
 				throw new HpcException("No download destination in a collection download task",
 						HpcErrorType.UNEXPECTED_ERROR);
@@ -844,6 +861,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
 					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId(),
+					destinationType,
 					collectionDownloadTask.getId(), collectionDownloadTask.getUserId(),
 					collectionDownloadTask.getPath(), collectionDownloadTask.getConfigurationId(),
 					destinationLocation.getFileContainerId(), destinationLocation.getFileId(), destinationOverwrite,
@@ -852,7 +870,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
-					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId());
+					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId(),
+					destinationType);
 
 			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL,
 					new Object[] { new SqlLobValue(toJSON(collectionDownloadTask.getItems()), lobHandler),
