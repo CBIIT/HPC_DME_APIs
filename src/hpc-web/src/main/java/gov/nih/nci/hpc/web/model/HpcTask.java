@@ -12,6 +12,8 @@ public class HpcTask {
 	@JsonView(Views.Public.class)
     protected String type;
 	@JsonView(Views.Public.class)
+    protected String destinationType;
+	@JsonView(Views.Public.class)
     protected String created;
 	@JsonView(Views.Public.class)
     protected String completed;
@@ -44,6 +46,12 @@ public class HpcTask {
 	}
 	public void setPath(String path) {
 		this.path = path;
+	}
+	public String getDestinationType() {
+		return destinationType;
+	}
+	public void setDestinationType(String destinationType) {
+		this.destinationType = destinationType;
 	}
 	public String getType() {
 		return type;
