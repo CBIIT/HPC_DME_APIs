@@ -1530,7 +1530,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 
 			if (!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
-				String message = "The data object at " + path + " can only be deleted by the data uploader";
+				String message = "The data object at " + path + " can only be deleted by the data uploader.";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 			}
