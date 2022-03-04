@@ -109,6 +109,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setTaskId(download.getTaskId());
 					task.setPath(download.getPath());
 					task.setType(download.getType().name());
+					task.setDestinationType(download.getDestinationType() != null ? download.getDestinationType().name() : "");
 					task.setCreated(
 							download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
 					task.setCompleted(
@@ -122,6 +123,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				task.setTaskId(download.getTaskId());
 				task.setPath(download.getPath());
 				task.setType(download.getType().name());
+				task.setDestinationType(download.getDestinationType() != null ? download.getDestinationType().name() : "");
 				task.setCreated(download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
 				task.setCompleted(
 						download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");

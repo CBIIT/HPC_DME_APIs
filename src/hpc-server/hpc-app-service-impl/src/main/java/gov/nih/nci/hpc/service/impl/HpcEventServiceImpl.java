@@ -54,6 +54,7 @@ public class HpcEventServiceImpl implements HpcEventService {
   // Event payload entries attributes.
   public static final String DOWNLOAD_TASK_ID_PAYLOAD_ATTRIBUTE = "DOWNLOAD_TASK_ID";
   public static final String DOWNLOAD_TASK_TYPE_PAYLOAD_ATTRIBUTE = "DOWNLOAD_TASK_TYPE";
+  public static final String DOWNLOAD_TASK_TYPE_CODE_PAYLOAD_ATTRIBUTE = "DOWNLOAD_TASK_TYPE_CODE";
   public static final String DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE = "DATA_OBJECT_PATH";
   public static final String REGISTRATION_TASK_ID_PAYLOAD_ATTRIBUTE = "REGISTRATION_TASK_ID";
   public static final String COLLECTION_PATH_PAYLOAD_ATTRIBUTE = "COLLECTION_PATH";
@@ -389,6 +390,8 @@ public class HpcEventServiceImpl implements HpcEventService {
 
       event.getPayloadEntries()
           .add(toPayloadEntry(DOWNLOAD_TASK_TYPE_PAYLOAD_ATTRIBUTE, downloadTypeStr));
+      event.getPayloadEntries()
+      	  .add(toPayloadEntry(DOWNLOAD_TASK_TYPE_CODE_PAYLOAD_ATTRIBUTE, downloadTaskType.name()));
     }
     if (path != null) {
       event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE,
