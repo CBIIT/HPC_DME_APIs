@@ -56,7 +56,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 
 	private static final String GET_USERS_SQL = "select * from HPC_USER where '1' = ?";
 
-	private static final String GET_USERS_SQL_BY_ROLE = "SELECT USER_ID, FIRST_NAME, LAST_NAME, DOC, DEFAULT_CONFIGURATION_ID, "
+	private static final String GET_USERS_SQL_BY_ROLE = "SELECT u.USER_ID, FIRST_NAME, LAST_NAME, DOC, DEFAULT_CONFIGURATION_ID, "
 			+ "ACTIVE, CREATED, LAST_UPDATED, ACTIVE_UPDATED_BY " + "FROM HPC_USER u, r_user_main r where "
 			+ "u.USER_ID = r.user_name and r.user_type_name = ? ";
 
