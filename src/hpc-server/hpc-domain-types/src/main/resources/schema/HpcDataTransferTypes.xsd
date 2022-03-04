@@ -433,6 +433,8 @@
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
+			<xsd:element name="destinationType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -474,6 +476,8 @@
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="type"
 				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
+			<xsd:element name="destinationType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result"
