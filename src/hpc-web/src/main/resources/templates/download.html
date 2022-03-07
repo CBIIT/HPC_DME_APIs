@@ -295,7 +295,10 @@
 						 th:value="${hpcSearch.getPageNumber()}"/>
 					<input type="hidden"
 						class="form-control" name="pageSize" id="pageSizeId"
-						 th:value="${hpcSearch.getPageSize()}"/>			
+						 th:value="${hpcSearch.getPageSize()}"/>
+					<input type="hidden"
+						class="form-control" name="totalSize" id="totalSizeId"
+						 th:value="${hpcSearch.getTotalSize()}"/>			
 				</form>
 				<form class="form-horizontal" id="searchForm"
 					th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -305,6 +308,9 @@
 						 th:value="${hpcSearch.getPageNumber()}"/> <input type="hidden"
 						class="form-control" name="pageSize" id="pageSize"
 						 th:value="${hpcSearch.getPageSize()}"/>
+					<input type="hidden"
+						class="form-control" name="totalSize" id="totalSize"
+						 th:value="${hpcSearch.getTotalSize()}"/>		
 				</form>
             </div>
           </div>
