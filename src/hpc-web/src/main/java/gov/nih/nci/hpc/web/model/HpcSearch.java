@@ -18,6 +18,7 @@ public class HpcSearch {
 	private int pageNumber=1;
 	private int pageSize=100;
 	private String queryName;
+	private long totalSize=0;
 	
 	public String getQueryName() {
 		return queryName;
@@ -146,4 +147,12 @@ public class HpcSearch {
     public void setUserKey(String userKey) {
       this.userKey = userKey;
     }
+    
+    public long getTotalSize() {
+	  return totalSize;
+	}
+	
+	public void setTotalSize(long totalSize) {
+	  this.totalSize = totalSize;
+	}
 }
