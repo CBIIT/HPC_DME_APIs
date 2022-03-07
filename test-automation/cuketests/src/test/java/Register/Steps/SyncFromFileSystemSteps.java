@@ -29,15 +29,17 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import common.JsonHelper;
+import dataProviders.ConfigFileReader;
 
 
 public class SyncFromFileSystemSteps {
-	
+    
+    ConfigFileReader configFileReader;
 	RegisterPojo registerBody = new RegisterPojo();
 	String datafile;
 	String sourcePath;
 	String destinationPath;
-	String tokenStr = "eyJhbGciOiJIUzI1NiJ9.eyJEYXRhTWFuYWdlbWVudEFjY291bnQiOiJ7XCJwYXNzd29yZFwiOlwiZGVhcmRhc2hzcGFya3l0YXJzXCIsXCJpbnRlZ3JhdGVkU3lzdGVtXCI6XCJJUk9EU1wiLFwicHJvcGVydGllc1wiOntcIlBST1hZX05BTUVcIjpcIlwiLFwiUE9SVFwiOlwiMTI0N1wiLFwiREVGQVVMVF9TVE9SQUdFX1JFU09VUkNFXCI6XCJkZW1vUmVzY1wiLFwiSE9NRV9ESVJFQ1RPUllcIjpcIlwiLFwiWk9ORVwiOlwidGVtcFpvbmVcIixcIkhPU1RcIjpcImZzZG1lbC1pcm9kczAxZC5uY2lmY3JmLmdvdlwiLFwiUFJPWFlfWk9ORVwiOlwiXCJ9LFwidXNlcm5hbWVcIjpcInNjaGludGFsXCJ9IiwiVXNlck5hbWUiOiJzY2hpbnRhbCIsIkRhdGFNYW5hZ2VtZW50QWNjb3VudEV4cGlyYXRpb24iOjE2MjcwMTE2MjQyNTYsImV4cCI6MTgwNjk4MjgyNH0.fjnw6bvqcsGtHBLBhDMCF_dTOVV2F_0HCgH4pM5RjsM";
+	int statusCode;
 	
 	@Given("I am a valid user with token")
 	public void i_am_a_valid_user_with_token() {
@@ -102,9 +104,10 @@ public class SyncFromFileSystemSteps {
 	@When("I click Register")
 	public void i_click_register() {
 	    
-		String token = this.tokenStr;
+	    configFileReader= new ConfigFileReader();
+        String token = configFileReader.getToken();
 		String registerBodyJson = new JsonHelper().getPrettyJson((Object)registerBody);
-		RestAssured.baseURI = "https://localhost/";
+		RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
 	    RestAssured.port = 7738;
 	    RequestSpecification request = RestAssured.given().
 			relaxedHTTPSValidation().
@@ -114,19 +117,24 @@ public class SyncFromFileSystemSteps {
 			multiPart("dataObject", new File(this.sourcePath), "application/octet-stream"); 
 		
 		Response response = request.put("/hpc-server/v2/dataObject"+ this.destinationPath);
-	    System.out.println(response.asString());
-	    System.out.println(response.getBody());
-	    System.out.println(response.getStatusCode());
+	    //System.out.println(response.asString());
+	    //System.out.println(response.getBody());
+	   
 	    
-	    int statuscode = response.getStatusCode();
-	    
-	    
+	    this.statusCode = response.getStatusCode();
+	    if (this.statusCode == 200 || this.statusCode == 201) {
+	      System.out.println("This test was a success");
+		  System.out.println("StatusCode = " + response.getStatusCode());
+	    } else {
+	      System.out.println("This test was a failure");
+	      System.out.println("StatusCode = " + response.getStatusCode());
+	    }
+	   
 	}
 
 	@Then("I get a response of success")
 	public void i_get_a_response_of_success() {
-	    // Write code here that turns the phrase above into concrete actions
-	    //throw new io.cucumber.java.PendingException();
+	    org.junit.Assert.assertEquals(200, this.statusCode);
 	}
 	
 
