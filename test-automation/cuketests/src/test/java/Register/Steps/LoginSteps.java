@@ -53,7 +53,7 @@ public class LoginSteps {
   public void user_enters_text_on_password_box() {
      String pass = System.getenv("CUKEPASSWORD");
      String decodedString = pass;//new String(Base64.decodeBase64(pass));
-     System.out.println("decoded string:" + decodedString);
+     //System.out.println("decoded string:" + decodedString);
     
     loginPage.enterPassword(decodedString);
    
