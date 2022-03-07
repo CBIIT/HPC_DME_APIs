@@ -183,12 +183,14 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
 			hpcSearch.setPageNumber(search.getPageNumber());
 			hpcSearch.setPageSize(search.getPageSize());
+			hpcSearch.setTotalSize(search.getTotalSize());
 			search = hpcSearch;
 		}
 
 		model.addAttribute("source", "criteria");
 		model.addAttribute("pageNumber", search.getPageNumber());
 		model.addAttribute("pageSize", search.getPageSize());
+		model.addAttribute("totalSize", search.getTotalSize());
 		boolean success = false;
 		try {
 
