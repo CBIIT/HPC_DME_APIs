@@ -6,6 +6,7 @@ import static org.awaitility.Awaitility.await;
 import java.util.concurrent.TimeUnit;
 
 import Bookmark.Pojo.BookmarkPojo;
+import dataProviders.ConfigFileReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -17,8 +18,10 @@ import io.restassured.specification.RequestSpecification;
 
 public class AddBookmarkSteps {
 	
+    ConfigFileReader configFileReader;
 	BookmarkPojo bookmark = new BookmarkPojo();
 	String bookmarkName;
+	int statusCode;
 	
 	
 	@Given("I have a path of {string}")
@@ -43,7 +46,8 @@ public class AddBookmarkSteps {
 
 	@When("I add the bookmark")
 	public void i_add_the_bookmark() {
-	    String token = "xyz";
+	    configFileReader= new ConfigFileReader();
+	    String token = configFileReader.getToken();
 		RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
 	    RestAssured.port = 7738;
 	    RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
@@ -58,36 +62,25 @@ public class AddBookmarkSteps {
 
 		 System.out.println("Sending request to add a bookmark!!");
 		 Response response = request.body(bookmarkJson).put(this.bookmarkName);
-		 System.out.println(response.asString());
-		 System.out.println(response.getBody());
+		 //System.out.println(response.asString());
+		 //System.out.println(response.getBody());
 		 System.out.println(response.getStatusCode());
-		 int statuscode = response.getStatusCode();
+		 this.statusCode = response.getStatusCode();
+
+		this.statusCode = response.getStatusCode();
+	    
 }
 
 	@Then("I verify the status of {string}")
-	public void i_verify_the_status_of(String string) {
-	    // Write code here that turns the phrase above into concrete actions
-	    //throw new io.cucumber.java.PendingException();
+	public void i_verify_the_status_of(String status) {
+		org.junit.Assert.assertEquals(201, this.statusCode);
+		if (this.statusCode == 200 || this.statusCode == 201) {
+          System.out.println("This test was a success");
+          System.out.println("StatusCode = " + this.statusCode);
+        } else {
+          System.out.println("This test was a failure");
+          System.out.println("StatusCode = " + this.statusCode);
+        }
 	}
-
-	
-	
-	/*@Given("I have the bookmark data and add a bookmark")
-	public void i_have_the_bookmark_data_and_add_a_bookmark() {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new io.cucumber.java.PendingException();
-	}
-
-	@Then("I verify the status")
-	public void i_verify_the_status(io.cucumber.datatable.DataTable dataTable) {
-	    // Write code here that turns the phrase above into concrete actions
-	    // For automatic transformation, change DataTable to one of
-	    // E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-	    // Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-	    // Double, Byte, Short, Long, BigInteger or BigDecimal.
-	    //
-	    // For other transformations you can register a DataTableType.
-	    throw new io.cucumber.java.PendingException();
-	}*/
 
 }

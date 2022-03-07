@@ -15,6 +15,7 @@ import java.io.*;
 import Register.Pojo.ParentMetadataPojo;
 import Register.Pojo.RegisterPojo;
 import common.JsonHelper;
+import dataProviders.ConfigFileReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -33,7 +34,7 @@ import io.restassured.response.Response;
 
 public class SyncDownloadSteps {
 	
-	String tokenStr = "eyJhbGciOiJIUzI1NiJ9.eyJEYXRhTWFuYWdlbWVudEFjY291bnQiOiJ7XCJwYXNzd29yZFwiOlwiZGVhcmRhc2hzcGFya3l0YXJzXCIsXCJpbnRlZ3JhdGVkU3lzdGVtXCI6XCJJUk9EU1wiLFwicHJvcGVydGllc1wiOntcIlBST1hZX05BTUVcIjpcIlwiLFwiUE9SVFwiOlwiMTI0N1wiLFwiREVGQVVMVF9TVE9SQUdFX1JFU09VUkNFXCI6XCJkZW1vUmVzY1wiLFwiSE9NRV9ESVJFQ1RPUllcIjpcIlwiLFwiWk9ORVwiOlwidGVtcFpvbmVcIixcIkhPU1RcIjpcImZzZG1lbC1pcm9kczAxZC5uY2lmY3JmLmdvdlwiLFwiUFJPWFlfWk9ORVwiOlwiXCJ9LFwidXNlcm5hbWVcIjpcInNjaGludGFsXCJ9IiwiVXNlck5hbWUiOiJzY2hpbnRhbCIsIkRhdGFNYW5hZ2VtZW50QWNjb3VudEV4cGlyYXRpb24iOjE2MjcwMTE2MjQyNTYsImV4cCI6MTgwNjk4MjgyNH0.fjnw6bvqcsGtHBLBhDMCF_dTOVV2F_0HCgH4pM5RjsM";
+	ConfigFileReader configFileReader;
 	DownloadSyncLocal downloadSyncBody = new DownloadSyncLocal();
 	SyncType syncType = new SyncType();
 
@@ -53,13 +54,12 @@ public class SyncDownloadSteps {
 	}
 	
 	@When("I click Download")
-	public void i_click_download() {
-	    		
+	public void i_click_download() { 		
 		
-		String token = this.tokenStr;
+        configFileReader= new ConfigFileReader();
+        String token = configFileReader.getToken();
 		String downloadBodyJson = new JsonHelper().getPrettyJson((Object)this.downloadSyncBody);
 		RestAssured.baseURI = "https://fsdmel-dsapi01t.ncifcrf.gov/";
-		//https://fsdmel-dsapi01t.ncifcrf.gov/
 	    RestAssured.port = 7738;
 	    RequestSpecification request = RestAssured.given().log().all().
 			relaxedHTTPSValidation().
