@@ -18,7 +18,8 @@ BEGIN
                         R_REPORT_REGISTERED_BY_DOC,
                         R_REPORT_REGISTERED_BY_AUDIT,
                         R_REPORT_REGISTERED_BY_PATH,
-                        R_REPORT_SOURCE_FILE_SIZE',
+                        R_REPORT_SOURCE_FILE_SIZE,
+                        R_REPORT_COLLECTION_SIZE',
                         METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
 
 END;
