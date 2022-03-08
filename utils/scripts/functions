@@ -11,6 +11,34 @@
 
 source $HPC_DM_UTILS/scripts/utilities
 
+#dm_list_commands function
+function dm_list_commands {
+  read -d  '' usage <<- EOF
+
+  List of DME CLU commands.  
+  
+	dm_add_bookmark                   dm_get_dataobject
+	dm_delete_collection              dm_list_commands
+	dm_delete_datafile                dm_query_dataobject
+	dm_download_collection            dm_register_collection
+	dm_download_collection_globus     dm_register_dataobject
+	dm_download_collection_s3         dm_register_dataobject_multipart
+	dm_download_dataobject            dm_register_dataobject_presigned
+	dm_download_dataobject_globus     dm_register_directory
+	dm_download_dataobject_presigned  dm_register_globus_directory
+	dm_download_dataobject_s3         dm_register_user
+	dm_download_s3                    dm_rename
+	dm_generate_token                 dm_update_user
+	dm_get_collection
+  
+
+For DME CLU Quick Reference, refer to the following page: 
+https://wiki.nci.nih.gov/x/wIqhH
+
+EOF
+  echo "$usage"
+}
+
 #Print Usage of dm_generate_token function
 function dm_show_generate_token_usage {
   read -d  '' usage <<- EOF
