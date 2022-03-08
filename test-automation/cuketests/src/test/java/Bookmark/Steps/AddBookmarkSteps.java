@@ -67,20 +67,28 @@ public class AddBookmarkSteps {
 		 System.out.println(response.getStatusCode());
 		 this.statusCode = response.getStatusCode();
 
-		this.statusCode = response.getStatusCode();
+		 System.out.println("------------");
+		 if (this.statusCode == 200 || this.statusCode == 201) {
+	          System.out.println("This test was a success");
+	          System.out.println("StatusCode = " + response.getStatusCode());
+	          //assert(true);
+	        } else {
+	          System.out.println("This test was a failure");
+	          String errorType = response.jsonPath().getString("errorType");
+	          System.out.println(errorType);
+	          String message = response.jsonPath().getString("message");
+	          System.out.println(message);
+	          System.out.println("StatusCode = " + response.getStatusCode());
+	         // assert(false);
+	       }
+		 System.out.println("------------");
+		 System.out.println("");
 	    
 }
 
 	@Then("I verify the status of {string}")
 	public void i_verify_the_status_of(String status) {
 		org.junit.Assert.assertEquals(201, this.statusCode);
-		if (this.statusCode == 200 || this.statusCode == 201) {
-          System.out.println("This test was a success");
-          System.out.println("StatusCode = " + this.statusCode);
-        } else {
-          System.out.println("This test was a failure");
-          System.out.println("StatusCode = " + this.statusCode);
-        }
 	}
 
 }
