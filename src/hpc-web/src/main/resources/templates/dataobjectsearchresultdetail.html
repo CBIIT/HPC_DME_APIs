@@ -63,6 +63,7 @@
     var currentPageSize = "[[${currentPageSize}]]";
     var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
     var selectedRowsData = [];
+    var totalSize = [[${totalSize}]];
 /*]]>*/
 </script>
 
@@ -205,28 +206,29 @@
               for(var i=0;i<hpcSelectedDatafileList.length;i++)
                 {
                 var row = hpcSelectedDatafileList[i];
-                //alert(row);
                   var pageRow = row.substring(0,row.lastIndexOf(":"));
-  //								    		  alert(pageRow);
                   var page = pageRow.substring(0,pageRow.indexOf(":"));
-  //								    		  alert(page);
                   var row = pageRow.substring(pageRow.indexOf(":")+1);
-  //							    		  alert(row);
-  //						    		  alert($scope.currentPage);
                   if(page == $scope.currentPage)
-                   $scope.gridApi.selection.selectRow($scope.gridOptions1.data[row]);
+                   $scope.gridApi.selection.selectRow($scope.gridOptions1.data[row], "preselect");
                 }
               }
                             }, 0, 1);
 
           gridApi.selection.on.rowSelectionChanged($scope, function(
-              row) {
+              row, preselect) {
             var selectedRowIndex = $scope.gridOptions1.data.indexOf(row.entity);
             if(row.isSelected)
             {
               if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
                 $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
               selectedRowsData = $scope.selectedRows;
+	          if(preselect != "preselect" && row.entity.source_file_size != null && !isNaN(row.entity.source_file_size * 1))
+		          	totalSize += row.entity.source_file_size * 1;
+		          $("#totalSize").val(totalSize);
+		          if(totalSize > 0)
+		  			$("#totalSizeLabel").show();
+		          $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
             }
             else
             {
@@ -239,6 +241,10 @@
               }
               //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
               $scope.selectedRows.splice(indexFromSelectedRows, 1);
+	          if(preselect != "preselect"  && row.entity.source_file_size != null && !isNaN(row.entity.source_file_size * 1))
+		          totalSize -= row.entity.source_file_size * 1;
+	          $("#totalSize").val(totalSize);
+	          $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
             }
             selectedRowsData = $scope.selectedRows;
             console.log('SUCCESS: ', $scope.selectedRows);
@@ -268,8 +274,11 @@
                 gridApi.selection.getSelectedRows().forEach(function(row) {
                   console.log('SUCCESS: ', row);
                   var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
-                  if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
+                  if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path)) {
                     $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
+                    if(row.source_file_size != null && !isNaN(row.source_file_size * 1))
+        		          totalSize += row.source_file_size * 1;
+                  }
                 });
               if(!selectAll)
               {
@@ -287,10 +296,14 @@
                   }
                   //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
                   $scope.selectedRows.splice(indexFromSelectedRows, 1);
+                  if(row.source_file_size != null && !isNaN(row.source_file_size * 1))
+    		          totalSize -= row.source_file_size * 1;
                 }
               }
             console.log('SUCCESS: ', $scope.selectedRows);
             selectedRowsData = $scope.selectedRows;
+            $("#totalSize").val(totalSize);
+            $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
           });
           
           var metaSet = new Set(); 
@@ -393,6 +406,7 @@
 	          document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
 	          document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
 	          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
+		      document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
 	          document.getElementById("downloadType").value = "datafiles";
 	          document.getElementById("downloadFilesform").submit();
           } else {
@@ -404,6 +418,7 @@
 	        document.getElementById("bulkPermissionsform").elements.namedItem("pageNumber").value =  currentPage;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("downloadType3").value = "datafiles";
 	        document.getElementById("bulkPermissionsform").submit();
           }
@@ -448,6 +463,7 @@
             document.getElementById("linkFilesform").elements.namedItem("pageNumber").value =  currentPage;
             document.getElementById("linkFilesform").elements.namedItem("pageSize").value =  currentPageSize;
             document.getElementById("linkFilesform").elements.namedItem("queryName").value = queryName;
+            document.getElementById("linkFilesform").elements.namedItem("totalSize").value = totalSize.toString();
             document.getElementById("linkFilesform").submit();
           };
           
@@ -522,6 +538,7 @@
 									<a data-toggle="modal" id="linkselectedlink"
 										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
 										><i class="fa fa-link" title="Create Links for Selected Data Files"></i></a>
+									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Data Files: <strong id="totalSizeDisplay"></strong></label>
 								</div>
 							  </div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -578,6 +595,7 @@
 						<input type="hidden" id="pageSize" name="pageSize"/>
 						<input type="hidden" id="queryName" name="queryName"/>
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="totalSize" name="totalSize"/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
@@ -588,6 +606,7 @@
 						<input type="hidden" id="pageNumber1" name="pageNumber"/>
 						<input type="hidden" id="pageSize1" name="pageSize"/>
 						<input type="hidden" id="queryName1" name="queryName"/>
+						<input type="hidden" id="totalSize1" name="totalSize"/>
 					</form> 
 					<form class="form-horizontal" id="linkFilesform" action="#"
 						role="form" th:action="@{/linkfiles}" 
@@ -597,6 +616,7 @@
 						<input type="hidden" id="pageNumber2" name="pageNumber"/>
 						<input type="hidden" id="pageSize2" name="pageSize"/>
 						<input type="hidden" id="queryName2" name="queryName"/>
+						<input type="hidden" id="totalSize2" name="totalSize"/>
 					</form> 
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -607,6 +627,7 @@
 						<input type="hidden" id="pageNumber3" name="pageNumber"/>
 						<input type="hidden" id="pageSize3" name="pageSize"/>
 						<input type="hidden" id="queryName3" name="queryName"/>
+						<input type="hidden" id="totalSize3" name="totalSize"/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -632,6 +653,10 @@
 /*<![CDATA[*/
 	$(document).ready(function(){
 		$('#sub-menu-search').addClass("active");
+		$("#totalSize").val(totalSize);
+		if(totalSize > 0)
+			$("#totalSizeLabel").show();
+		$("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
 	});
 	
     function updatePage(action, newPageSize)
@@ -686,6 +711,15 @@
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
 		document.getElementById("simplesearchform").submit();
     }
+
+    function formatBytes(bytes,decimals) {
+   	   if(bytes == 0) return '0 Bytes';
+   	   var k = 1000,
+   	       dm = decimals || 2,
+   	       sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+   	       i = Math.floor(Math.log(bytes) / Math.log(k));
+   	   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+   	}
 
 /*]]>*/
 </script>
