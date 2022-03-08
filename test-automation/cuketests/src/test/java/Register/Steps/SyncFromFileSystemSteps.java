@@ -117,19 +117,27 @@ public class SyncFromFileSystemSteps {
 			multiPart("dataObject", new File(this.sourcePath), "application/octet-stream"); 
 		
 		Response response = request.put("/hpc-server/v2/dataObject"+ this.destinationPath);
-	    //System.out.println(response.asString());
+		//System.out.println(response.asString());
 	    //System.out.println(response.getBody());
 	   
 	    
 	    this.statusCode = response.getStatusCode();
+	    System.out.println("------------");
 	    if (this.statusCode == 200 || this.statusCode == 201) {
 	      System.out.println("This test was a success");
 		  System.out.println("StatusCode = " + response.getStatusCode());
+		  //assert(true);
 	    } else {
 	      System.out.println("This test was a failure");
+	      String errorType = response.jsonPath().getString("errorType");
+	      System.out.println(errorType);
+	      String message = response.jsonPath().getString("message");
+          System.out.println(message);
 	      System.out.println("StatusCode = " + response.getStatusCode());
+	     // assert(false);
 	    }
-	   
+        System.out.println("------------");
+        System.out.println("");	   
 	}
 
 	@Then("I get a response of success")
