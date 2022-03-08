@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+import com.google.gson.Gson;
 
 public class ConfigFileReader {
     
@@ -51,7 +52,17 @@ public class ConfigFileReader {
       String token = properties.getProperty("token");
       if(token != null) return token;
       else throw new RuntimeException("token not specified in the Configuration.properties file.");
-  }
-      
+    }
+
+    public String getGoogleCloudToken() {
+      String refreshToken = properties.getProperty("refreshToken");
+      RefreshTokenPojo refreshTokenObj = new RefreshTokenPojo();
+      refreshTokenObj.client_id = properties.getProperty("client_id");
+      refreshTokenObj.client_secret = properties.getProperty("client_secret");
+      refreshTokenObj.refresh_token = properties.getProperty("refresh_token");  
+      Gson gson = new Gson();
+      String refreshTokenString = gson.toJson(refreshTokenObj);
+      return refreshTokenString;
+    }
 
 }
