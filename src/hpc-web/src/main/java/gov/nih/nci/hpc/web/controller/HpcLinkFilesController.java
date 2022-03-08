@@ -116,6 +116,7 @@ public class HpcLinkFilesController extends AbstractHpcController {
 				hpcSaveSearch.setPageSize(Integer.parseInt(pageSize));
 			hpcSaveSearch.setQueryName(request.getParameter("queryName"));
 			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
+			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 			model.addAttribute("hpcSearch", hpcSaveSearch);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get selected data file: " + e.getMessage());

@@ -490,7 +490,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 									<a data-toggle="modal" id="bulkPermissionlink"
 										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('permission')"
 										><i class="fa fa-users" title="Manage Permissions on Selected Collections"></i></a>
-									<label id="totalSizeLabel" class="btn btn-sm">Total Size of Selected Collections: <strong id="totalSizeDisplay"></strong></label>
+									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Collections: <strong id="totalSizeDisplay"></strong></label>
 								</div>
 							  </div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -580,8 +580,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		$('[data-toggle="tooltip"]').tooltip();
 		$('#sub-menu-search').addClass("active");
 		$("#totalSize").val(totalSize);
-		if(totalSize == 0)
-			$("#totalSizeLabel").hide();
+		if(totalSize > 0)
+			$("#totalSizeLabel").show();
 		$("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
 	});
 	
