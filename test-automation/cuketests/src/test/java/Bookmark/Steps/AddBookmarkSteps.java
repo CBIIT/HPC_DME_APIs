@@ -67,7 +67,7 @@ public class AddBookmarkSteps {
 		 System.out.println(response.getStatusCode());
 		 this.statusCode = response.getStatusCode();
 
-		 System.out.println("------------");
+         System.out.println("----------------------------------------------------------");
 		 if (this.statusCode == 200 || this.statusCode == 201) {
 	          System.out.println("This test was a success");
 	          System.out.println("StatusCode = " + response.getStatusCode());
@@ -81,9 +81,8 @@ public class AddBookmarkSteps {
 	          System.out.println("StatusCode = " + response.getStatusCode());
 	         // assert(false);
 	       }
-		 System.out.println("------------");
-		 System.out.println("");
-	    
+         System.out.println("----------------------------------------------------------");
+         System.out.println("");	    
 }
 
 	@Then("I verify the status of {string}")
