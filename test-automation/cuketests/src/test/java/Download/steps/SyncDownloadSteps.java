@@ -55,7 +55,8 @@ public class SyncDownloadSteps {
 	
 	@When("I click Download")
 	public void i_click_download() { 		
-		
+      System.out.println("----------------------------------------------------------");
+      System.out.println("Synchronous File Upload");		
         configFileReader= new ConfigFileReader();
         String token = configFileReader.getToken();
 		String downloadBodyJson = new JsonHelper().getPrettyJson((Object)this.downloadSyncBody);

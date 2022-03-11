@@ -103,7 +103,8 @@ public class SyncFromFileSystemSteps {
 	
 	@When("I click Register")
 	public void i_click_register() {
-	    
+        System.out.println("----------------------------------------------------------");
+        System.out.println("Test to Register file synchronously");
 	    configFileReader= new ConfigFileReader();
         String token = configFileReader.getToken();
 		String registerBodyJson = new JsonHelper().getPrettyJson((Object)registerBody);
@@ -130,14 +131,14 @@ public class SyncFromFileSystemSteps {
 	    } else {
 	      System.out.println("This test was a failure");
 	      String errorType = response.jsonPath().getString("errorType");
-	      System.out.println(errorType);
+	      System.out.println("Error Type: " + errorType);
 	      String message = response.jsonPath().getString("message");
-          System.out.println(message);
-	      System.out.println("StatusCode = " + response.getStatusCode());
+          System.out.println("Error Message: " + message);
+	      System.out.println("Error Status Code: " + response.getStatusCode());
 	     // assert(false);
 	    }
-        System.out.println("------------");
-        System.out.println("");	   
+        System.out.println("----------------------------------------------------------");
+        System.out.println("");         
 	}
 
 	@Then("I get a response of success")
