@@ -12,8 +12,9 @@ Feature: Login to DME
   Scenario: AWS
     Given user chooses AWS
     And user enters <bucketName> as "dme-upload-bucket"
-    And user enters <s3bucket> as "dme_s3_path"
+    And user enters <s3bucket> as "google-com.pem"
     And user enters <s3File> as "on"
-    And user enters <accessKey> as "dme_access_key"
-    And user enters <secretKey> as "dme_secret_key"
+    And user enters AWS Access Key
+    And user enters AWS Secret Key
     And user enters <region> as "us-east-1"
+    Then user is clicks Register AWS
