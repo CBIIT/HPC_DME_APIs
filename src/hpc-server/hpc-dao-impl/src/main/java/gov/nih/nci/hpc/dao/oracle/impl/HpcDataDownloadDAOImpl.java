@@ -78,7 +78,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_ACCESS_TOKEN, COMPLETION_EVENT, COLLECTION_DOWNLOAD_TASK_ID, PERCENT_COMPLETE, DATA_SIZE, CREATED, PROCESSED, IN_PROCESS, PRIORITY, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
-
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set DATA_TRANSFER_STATUS = ? where ID = ?";
@@ -180,9 +179,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? and COMPLETION_EVENT = '1'";
 
 	private static final String GET_ALL_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT where COMPLETION_EVENT = '1'";
-
-	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_STATUS_AND_TYPE_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "DATA_TRANSFER_TYPE = ? and DESTINATION_TYPE = ? and DATA_TRANSFER_STATUS = ? and S3_DOWNLOAD_TASK_SERVER_ID = ?";
 
 	private static final String GET_GLOBUS_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_IN_PROGRESS_FOR_USER_BY_PATH_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
 			+ "(DATA_TRANSFER_STATUS = 'IN_PROGRESS' OR DATA_TRANSFER_TYPE = 'GLOBUS') and DESTINATION_TYPE = 'GLOBUS' and USER_ID = ? and PATH = ? ";
@@ -554,10 +550,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
-					dataObjectDownloadTask.getS3DownloadTaskServerId(),
-					dataObjectDownloadTask.getId(), dataObjectDownloadTask.getUserId(),
-					dataObjectDownloadTask.getPath(), dataObjectDownloadTask.getConfigurationId(),
-					dataObjectDownloadTask.getS3ArchiveConfigurationId(),
+					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getId(),
+					dataObjectDownloadTask.getUserId(), dataObjectDownloadTask.getPath(),
+					dataObjectDownloadTask.getConfigurationId(), dataObjectDownloadTask.getS3ArchiveConfigurationId(),
 					dataObjectDownloadTask.getDataTransferRequestId(),
 					dataObjectDownloadTask.getDataTransferType().value(),
 					dataObjectDownloadTask.getDataTransferStatus().value(),
@@ -713,9 +708,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId) throws HpcException {
+	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId)
+			throws HpcException {
 		try {
-			return jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess, s3DownloadTaskServerId, id, inProcess) > 0;
+			return jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess, s3DownloadTaskServerId,
+					id, inProcess) > 0;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to set a data object download task w/ in-process value: " + e.getMessage(),
@@ -861,8 +858,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
 					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId(),
-					destinationType,
-					collectionDownloadTask.getId(), collectionDownloadTask.getUserId(),
+					destinationType, collectionDownloadTask.getId(), collectionDownloadTask.getUserId(),
 					collectionDownloadTask.getPath(), collectionDownloadTask.getConfigurationId(),
 					destinationLocation.getFileContainerId(), destinationLocation.getFileId(), destinationOverwrite,
 					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
@@ -987,23 +983,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public int getDataObjectDownloadTasksCountByStatusAndType(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType, HpcDataTransferDownloadStatus status, String s3DownloadTaskServerId) throws HpcException {
+	public int getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(String userId, String path)
+			throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_STATUS_AND_TYPE_SQL,
-					Integer.class, dataTransferType.value(), destinationType.value(), status.value(), s3DownloadTaskServerId);
-
-		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get inprocess data object download tasks count: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-		}
-	}
-
-	@Override
-	public int getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(String userId, String path) throws HpcException {
-		try {
-			return jdbcTemplate.queryForObject(GET_GLOBUS_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_IN_PROGRESS_FOR_USER_BY_PATH_SQL,
-					Integer.class, userId, path);
+			return jdbcTemplate.queryForObject(
+					GET_GLOBUS_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_IN_PROGRESS_FOR_USER_BY_PATH_SQL, Integer.class, userId,
+					path);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get inprocess data object download tasks count: " + e.getMessage(),

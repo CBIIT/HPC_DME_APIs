@@ -205,10 +205,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.globusTokenExpirationPeriod}")
 	private int globusTokenExpirationPeriod = 0;
 
-	// Max downloads that the transfer manager can perform
-	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
-	private Integer maxPermittedS3DownloadsForGlobus = null;
-
 	// A configured ID representing the server performing a download task.
 	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
 	private String s3DownloadTaskServerId = null;
@@ -2671,8 +2667,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Validate max file size not exceeded.
 		if (synchronousDownloadFilter == null && maxSyncDownloadFileSize != null
 				&& downloadRequest.getSize() > maxSyncDownloadFileSize) {
-			logger.error("File size of {} for path {} exceeds the sync download limit",
-					downloadRequest.getSize(), downloadRequest.getPath());
+			logger.error("File size of {} for path {} exceeds the sync download limit", downloadRequest.getSize(),
+					downloadRequest.getPath());
 			throw new HpcException("File size exceeds the sync download limit",
 					HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
 		}
@@ -3013,51 +3009,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
 	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
-		// Get the count of total download tasks to Globus that are in progress of the
-		// 1st hop.
-		int inProcessS3DownloadsForGlobus = dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(
-				HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS, HpcDataTransferDownloadStatus.IN_PROGRESS,
-				s3DownloadTaskServerId);
-
-		if (maxPermittedS3DownloadsForGlobus <= 0
-				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
-			int inProgressDownloadsForUserbyPath = dataDownloadDAO.getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(
-					secondHopDownload.getDownloadTask().getUserId(), secondHopDownload.getDownloadTask().getPath());
-			if(inProgressDownloadsForUserbyPath <= 1) {
-				try {
-					long freeSpace = Files
+		int inProgressDownloadsForUserbyPath = dataDownloadDAO
+				.getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(
+						secondHopDownload.getDownloadTask().getUserId(), secondHopDownload.getDownloadTask().getPath());
+		if (inProgressDownloadsForUserbyPath <= 1) {
+			try {
+				long freeSpace = Files
 						.getFileStore(
 								FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
 						.getUsableSpace();
-					if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+				if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
 					// Not enough space disk space to perform the first hop download. Log an error
 					// and reset the
 					// task.
-						logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+					logger.error("Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
 							secondHopDownload.getDownloadTask().getPath(), freeSpace,
 							secondHopDownload.getDownloadTask().getSize());
-						return false;
-					}
-
-				} catch (IOException e) {
-					// Failed to check free disk space. We'll try the download.
-					logger.error("Failed to determine free space", e);
+					return false;
 				}
-			} else {
-				// A download from this user for this path is already in progress
-				logger.info(
-						"The file {} is already being downloaded for user {} ",
-						secondHopDownload.getDownloadTask().getPath(), secondHopDownload.getDownloadTask().getUserId());
-				return false;
+
+			} catch (IOException e) {
+				// Failed to check free disk space. We'll try the download.
+				logger.error("Failed to determine free space", e);
 			}
 		} else {
-			// We are over the allowed number of transactions
-			logger.info(
-					"Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
-					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus,
-					secondHopDownload.getDownloadTask().getPath());
+			// A download from this user for this path is already in progress
+			logger.info("The file {} is already being downloaded for user {} ",
+					secondHopDownload.getDownloadTask().getPath(), secondHopDownload.getDownloadTask().getUserId());
 			return false;
 		}
+
 		return true;
 	}
 
