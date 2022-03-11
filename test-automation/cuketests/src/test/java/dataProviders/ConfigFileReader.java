@@ -57,12 +57,23 @@ public class ConfigFileReader {
     public String getGoogleCloudToken() {
       String refreshToken = properties.getProperty("refreshToken");
       RefreshTokenPojo refreshTokenObj = new RefreshTokenPojo();
-      refreshTokenObj.client_id = properties.getProperty("client_id");
-      refreshTokenObj.client_secret = properties.getProperty("client_secret");
-      refreshTokenObj.refresh_token = properties.getProperty("refresh_token");  
+      refreshTokenObj.client_id = properties.getProperty("googleClientId");
+      refreshTokenObj.client_secret = properties.getProperty("googleClientSecret");
+      refreshTokenObj.refresh_token = properties.getProperty("googleRefreshToken");  
       Gson gson = new Gson();
       String refreshTokenString = gson.toJson(refreshTokenObj);
       return refreshTokenString;
     }
+    
+    public String getAwsAccessKey() {
+      String awsAccessKey = properties.getProperty("awsAccessKey");
+      if(awsAccessKey != null) return awsAccessKey;
+      else throw new RuntimeException("awsAccessKey not specified in the Configuration.properties file.");
+    }
 
+    public String getAwsSecretKey() {
+      String awsSecretKey = properties.getProperty("awsSecretKey");
+      if(awsSecretKey != null) return awsSecretKey;
+      else throw new RuntimeException("awsSecretKey not specified in the Configuration.properties file.");
+    }
 }
