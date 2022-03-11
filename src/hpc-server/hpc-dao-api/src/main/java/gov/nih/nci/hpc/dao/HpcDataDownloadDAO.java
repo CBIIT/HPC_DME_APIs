@@ -265,32 +265,16 @@ public interface HpcDataDownloadDAO {
 	public int getCollectionDownloadTasksCountByUser(String userId, boolean inProcess) throws HpcException;
 
 	/**
-	 * Get inprocess data object download count.
+	 * Get Globus inprocess data object download count for a specific path for this
+	 * user.
 	 *
-	 * @param dataTransferTypeType   The data transfer type.
-	 * @param destinationType        The destination type
-	 * @param status                 The data transfer download status
-	 * @param s3DownloadTaskServerId The ID of the executing s3 download task.
-	 * @return A total count of inprocess download requests.
-	 * @throws HpcException on database error.
-	 */
-	public int getDataObjectDownloadTasksCountByStatusAndType(HpcDataTransferType dataTransferType,
-			HpcDataTransferType destinationType, HpcDataTransferDownloadStatus status, String s3DownloadTaskServerId)
-			throws HpcException;
-
-
-	/**
-	 * Get Globus inprocess data object download count for a specific path for this user.
-	 *
-	 * @param path                   The path of the file to download
-	 * @param userId                 The ID of the user executing the download task.
+	 * @param path   The path of the file to download
+	 * @param userId The ID of the user executing the download task.
 	 * @return A total count of inprocess download requests.
 	 * @throws HpcException on database error.
 	 */
 	public int getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(String userId, String path)
 			throws HpcException;
-
-
 
 	/**
 	 * Set a collection download task in-process value.
