@@ -1365,7 +1365,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Any other streaming download.
 			downloadTask.setPercentComplete(Math.round(percentComplete));
 		}
-
+		logger.debug("Percent complete for file " + downloadTask.getPath() + " is " + downloadTask.getPercentComplete());
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 
@@ -1622,6 +1622,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 
 		return downloadTask;
+	}
+
+	@Override
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess()
+			throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadTasksInProcess();
 	}
 
 	@Override
