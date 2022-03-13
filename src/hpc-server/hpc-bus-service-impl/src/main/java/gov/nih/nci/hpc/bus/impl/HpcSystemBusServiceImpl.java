@@ -758,7 +758,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void completeCollectionDownloadTasks() throws HpcException {
 		// Iterate through all the active collection download requests.
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
-				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+				.getCollectionDownloadTasksInProcess()) {
 			boolean downloadCompleted = true;
 			int inProgressItemsCount = 0;
 			List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
