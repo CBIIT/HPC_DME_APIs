@@ -198,6 +198,17 @@ public interface HpcDataDownloadDAO {
 	 */
 	public void deleteCollectionDownloadTask(String id) throws HpcException;
 
+
+	/**
+	 * Get collection download requests in process.
+	 *
+	 * @return A list of collection download requests.
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess()
+			throws HpcException;
+
+
 	/**
 	 * Get collection download requests.
 	 *
