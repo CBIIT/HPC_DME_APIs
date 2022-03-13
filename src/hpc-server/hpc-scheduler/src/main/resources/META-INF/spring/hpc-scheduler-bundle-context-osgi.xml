@@ -32,7 +32,7 @@
 		<prop key="hpc.scheduler.cron.processDataTranferUploadReceived.delay">5 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">20 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processDataTranferUploadFileSystemReady.delay">22 0/1 * * * ?</prop>
-		<prop key="hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay">30 * * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.stageHyperfileGlobusDataObjectDownloadTasks.delay">33 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
@@ -40,7 +40,7 @@
 		<prop key="hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGoogleCloudStorageDataObjectDownloadTasks.delay">39 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">50 0/1 * * * ?</prop>
-		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">55 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">30 * * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay">47 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processBulkDataObjectRegistrationTasks.delay">0/20 * * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeBulkDataObjectRegistrationTasks.delay">35 0/1 * * * ?</prop>
