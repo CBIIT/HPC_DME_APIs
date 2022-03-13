@@ -661,6 +661,17 @@ public interface HpcDataTransferService {
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
 			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException;
 
+
+	/**
+	 * Get collection download tasks in process.
+	 *
+	 * @return A list of collection download tasks.
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess()
+			throws HpcException;
+
+
 	/**
 	 * Get collection download tasks.
 	 *

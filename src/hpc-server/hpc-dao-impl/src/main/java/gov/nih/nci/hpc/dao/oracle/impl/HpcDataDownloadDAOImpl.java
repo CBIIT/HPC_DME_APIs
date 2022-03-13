@@ -137,10 +137,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String DELETE_COLLECTION_DOWNLOAD_TASK_SQL = "delete from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
 
-	private static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where STATUS = ? "
+	private static final String GET_COLLECTION_DOWNLOAD_TASKS_BY_STATUS_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where STATUS = ? "
 			+ "order by \"PRIORITY\", \"CREATED\"";
 
-	private static final String GET_COLLECTION_DOWNLOAD_TASKS_IN_PROCESS_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where STATUS = ? "
+	private static final String GET_COLLECTION_DOWNLOAD_TASKS_IN_PROCESS_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where IN_PROCESS = '1' "
+			+ "order by \"PRIORITY\", \"CREATED\"";
+
+	private static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where STATUS = ? "
 			+ "and IN_PROCESS = ? order by PRIORITY, CREATED";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select null as USER_ID, ID, PATH, CREATED, 'DATA_OBJECT' as TYPE, "
@@ -906,10 +909,21 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess() throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_IN_PROCESS_SQL, collectionDownloadTaskRowMapper);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get collection download tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status)
 			throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_SQL, collectionDownloadTaskRowMapper,
+			return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_BY_STATUS_SQL, collectionDownloadTaskRowMapper,
 					status.value());
 
 		} catch (DataAccessException e) {
@@ -922,7 +936,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status,
 			boolean inProcess) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_IN_PROCESS_SQL, collectionDownloadTaskRowMapper,
+			return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_SQL, collectionDownloadTaskRowMapper,
 					status.value(), inProcess);
 
 		} catch (DataAccessException e) {
