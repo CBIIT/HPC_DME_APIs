@@ -49,7 +49,7 @@
 	</util:map>
 	
 	<!--  HPC System Accounts Locator -->
-	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator"
+	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator" 
 	      init-method="reload" />
 	      
 	<!--  Email Notification Sender beans -->

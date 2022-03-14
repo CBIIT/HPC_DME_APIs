@@ -16,7 +16,8 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
-		<spring.shell.version>1.2.0.M1</spring.shell.version>
+		<spring.version>5.3.15</spring.version>
+		<spring.shell.version>1.2.0.RELEASE</spring.shell.version>
 		<jar.mainclass>org.springframework.shell.Bootstrap</jar.mainclass>
 		<junit.version>4.10</junit.version>
 	</properties>
@@ -25,7 +26,7 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>4.3.21.RELEASE</version>
+			<version>${spring.version}</version>
 			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
@@ -57,17 +58,17 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>4.1.0.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>4.1.0.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-http</artifactId>
-			<version>4.1.0.RELEASE</version>
+			<version>5.5.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -239,7 +240,6 @@
 		 	<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
 				<configuration>
 					<archive>
 						<manifest>
