@@ -15,13 +15,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
@@ -41,6 +47,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
+@Component("hpcDataManagementConfigurationDAO")
 public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementConfigurationDAO {
 	// ---------------------------------------------------------------------//
 	// Constants
@@ -56,12 +63,25 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
+	@Autowired(required=true)
 	private JdbcTemplate jdbcTemplate = null;
+	
+	/*
+	@Autowired
+	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+		this.jdbcTemplate = jdbcTemplate;
+		logger.error("ERAN: Setter is called {}", jdbcTemplate == null);
+	}*/
 
 	// Encryptor.
 	@Autowired
-	HpcEncryptor encryptor = null;
+	private HpcEncryptor encryptor = null;
+	
+	@Value("${hpc.dao.jdbc.template.fetchSize}")
+	private int fetchSize = -1;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// HpcDataManagementConfiguration Table to Object mapper.
 	private RowMapper<HpcDataManagementConfiguration> dataManagementConfigurationRowMapper = (rs, rowNum) -> {
@@ -212,7 +232,10 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	 * @throws HpcException If it failed to connect to the database.
 	 */
 	@SuppressWarnings("unused")
-	private void dbConnect() throws HpcException {
+	@PostConstruct
+	private void dbConnect() throws HpcException, InterruptedException {
+		logger.error("ERAN db-connect = {} {} {}", jdbcTemplate == null, encryptor == null, fetchSize);
+		
 		try {
 			jdbcTemplate.getDataSource().getConnection();
 
