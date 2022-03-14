@@ -21,6 +21,9 @@
 
 	<context:annotation-config />
 	
+	<!-- add this to have the code scanned for beans to see if autowiring work this way -->
+	<context:component-scan base-package="gov.nih.nci.hpc.dao.oracle.impl,org.springframework.jdbc.core" />
+	
 	<!-- HPC Oracle DB data source -->
 	<bean id="hpcOracleDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
@@ -38,6 +41,7 @@
     <!-- Spring JDBC Template -->
     <bean id="hpcOracleJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<constructor-arg ref="hpcOracleDataSource" />
+		<property name="fetchSize" value="${hpc.dao.jdbc.template.fetchSize}" />
 	</bean>
 
 	<!-- HPC DAO Implementation Beans -->
@@ -51,16 +55,21 @@
 	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
 	</bean>
-	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl"
-		 init-method="init">
-		<constructor-arg value="${hpc.dao.jdbc.template.fetchSize}" index="0" />
-	</bean>
+	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl" />
 	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl" />
 	<bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserBookmarkDAOImpl" />
 	<bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGroupDAOImpl" /> 
-	<bean id="hpcDataManagementConfigurationDAO" 
-	      class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementConfigurationDAOImpl" 
-	      init-method="dbConnect"/>
+	
+	<!--  Commented this out to try @Component in the code base, to see if autowiring is happening -->
+	
+	<!--  <bean id="hpcDataManagementConfigurationDAO" 
+	      class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementConfigurationDAOImpl" >
+	      
+	       Tried explicit injection and it works fine. Meaning the jdbcTemplate bean is instantiated, but won't autowired
+	       
+	       <property name="jdbcTemplate" ref="hpcOracleJdbcTemplate" /> 
+	       init-method="dbConnect" 
+	 </bean>-->
 	 <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> 
 	 <bean id="hpcDataMigrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataMigrationDAOImpl" /> 
 	 <bean id="hpcDataTieringDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataTieringDAOImpl" /> 

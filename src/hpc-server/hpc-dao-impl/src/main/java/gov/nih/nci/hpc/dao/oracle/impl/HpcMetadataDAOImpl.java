@@ -17,16 +17,17 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -208,7 +209,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 
-	private int fetchSize = 1000;
+	@Value("${hpc.dao.jdbc.template.fetchSize}")
+	private int fetchSize = -1;
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -363,8 +365,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	// ---------------------------------------------------------------------//
 
 	/** Constructor for Spring Dependency Injection. */
-	private HpcMetadataDAOImpl(int fetchSize) {
-		this.fetchSize = fetchSize;
+	private HpcMetadataDAOImpl() {
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.EQUAL, GET_DATA_OBJECT_IDS_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.NOT_EQUAL, GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.LIKE, GET_DATA_OBJECT_IDS_LIKE_SQL);
@@ -1053,9 +1054,5 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			throw new HpcException("Failed to get metadata attributes: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
 		}
-	}
-	
-	public void init() {
-	    jdbcTemplate.setFetchSize(fetchSize);
 	}
 }
