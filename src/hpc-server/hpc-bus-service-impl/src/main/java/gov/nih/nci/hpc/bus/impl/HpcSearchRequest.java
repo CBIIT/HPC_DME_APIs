@@ -10,6 +10,14 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -21,82 +29,67 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
-
 /**
  * <p>
- * HPC HpcSearchRequest. 
+ * HPC HpcSearchRequest.
  * </p>
  *
  * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
  */
 
-public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
-{ 
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
+public class HpcSearchRequest implements Callable<HpcDataObjectListDTO> {
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
+
 	// Data Search Application Service instance.
 	private HpcDataSearchService dataSearchService = null;
-	
+
 	// Security Application Service instance.
 	private HpcSecurityService securityService = null;
-		
+
 	private final String dataManagementUsername;
-	
+
 	private final String path;
-	
+
 	private final int offset;
-	
+
 	private final int pageSize;
-	
+
 	private final boolean encrypt;
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
-    //---------------------------------------------------------------------//
-    // Constructors
-    //---------------------------------------------------------------------//
-	
-	
-    /**
-     * Default Constructor.
-     * 
-     */
-    HpcSearchRequest(HpcDataSearchService dataSearchService, HpcSecurityService securityService, String dataManagementUsername, String path, int offset, int pageSize, boolean encrypt) 
-    {
-    	this.dataSearchService = dataSearchService;
-    	this.securityService = securityService;
-    	this.dataManagementUsername = dataManagementUsername;
-    	this.path = path;
-    	this.offset = offset;
-    	this.pageSize = pageSize;
-    	this.encrypt = encrypt;
-    }
-    
-    //---------------------------------------------------------------------//
-    // Methods
-    //---------------------------------------------------------------------//
-    
+
+	// ---------------------------------------------------------------------//
+	// Constructors
+	// ---------------------------------------------------------------------//
+
+	/**
+	 * Default Constructor.
+	 * 
+	 */
+	HpcSearchRequest(HpcDataSearchService dataSearchService, HpcSecurityService securityService,
+			String dataManagementUsername, String path, int offset, int pageSize, boolean encrypt) {
+		this.dataSearchService = dataSearchService;
+		this.securityService = securityService;
+		this.dataManagementUsername = dataManagementUsername;
+		this.path = path;
+		this.offset = offset;
+		this.pageSize = pageSize;
+		this.encrypt = encrypt;
+	}
+
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
+
 	@Override
 	public HpcDataObjectListDTO call() throws Exception {
-		
-		return toDetailedDataObjectListDTO(dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize));
+
+		return toDetailedDataObjectListDTO(
+				dataSearchService.getAllDataObjectPaths(dataManagementUsername, path, offset, pageSize));
 	}
-	
-	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {	
-		
+
+	private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {
+
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
 		if (!CollectionUtils.isEmpty(dataObjectPaths)) {
 			dataObjectPaths
@@ -112,9 +105,10 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 			HpcEncryptor encryptor = null;
 			if (encrypt) {
 				try {
-					String basePath = dataObjectPath.getAbsolutePath().substring(0, dataObjectPath.getAbsolutePath().indexOf('/', 1));
+					String basePath = dataObjectPath.getAbsolutePath().substring(0,
+							dataObjectPath.getAbsolutePath().indexOf('/', 1));
 					queryConfig = securityService.getQueryConfig(basePath);
-					if(queryConfig != null)
+					if (queryConfig != null)
 						encryptor = new HpcEncryptor(queryConfig.getEncryptionKey());
 				} catch (HpcException e) {
 					// Failed to get encryptor so don't return the value
@@ -133,11 +127,11 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 				dataObject.setMetadataEntries(entries);
 			}
 			if (dataObjectPath.getLevel().intValue() == 1) {
-				if(encryptor != null)
+				if (encryptor != null)
 					entry.setValue(Base64.getEncoder().encodeToString(encryptor.encrypt(entry.getValue())));
 				dataObject.getMetadataEntries().getSelfMetadataEntries().add(entry);
 			} else {
-				if(encryptor != null)
+				if (encryptor != null)
 					entry.setValue(Base64.getEncoder().encodeToString(encryptor.encrypt(entry.getValue())));
 				dataObject.getMetadataEntries().getParentMetadataEntries().add(entry);
 			}
@@ -146,5 +140,3 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO>
 		return dataObjectsDTO;
 	}
 }
-
- 
