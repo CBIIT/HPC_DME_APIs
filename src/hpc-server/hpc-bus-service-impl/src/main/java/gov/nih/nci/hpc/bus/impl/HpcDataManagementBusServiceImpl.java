@@ -2410,15 +2410,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						.getGoogleDriveDownloadDestination().getDestinationLocation());
 				downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
 			}
-			List<HpcCollectionDownloadTaskItem> items = new ArrayList<HpcCollectionDownloadTaskItem>();
-			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks = dataDownloadDAO
-					.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId);
-			
-				HpcCollectionDownloadTaskItem item = new HpcCollectionDownloadTaskItem();
-				item.setPath(dataObjectDownloadTask.getPath());
-				item.setPercentComplete(dataObjectDownloadTask.getPercentComplete());
-				
-			}
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
 		} else {
