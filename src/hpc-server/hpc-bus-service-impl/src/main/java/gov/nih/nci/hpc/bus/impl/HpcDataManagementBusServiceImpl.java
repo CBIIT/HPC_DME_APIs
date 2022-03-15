@@ -53,6 +53,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -2384,6 +2385,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
 		downloadStatus.setInProgress(taskStatus.getInProgress());
 		if (taskStatus.getInProgress()) {
+			logger.info("Transfer of file is in progress: " + taskStatus.getCollectionDownloadTask().getPath());
 			// Download in progress. Populate the DTO accordingly.
 			if (taskType.equals(HpcDownloadTaskType.COLLECTION)) {
 				downloadStatus.setPath(taskStatus.getCollectionDownloadTask().getPath());
@@ -2407,6 +2409,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
 						.getGoogleDriveDownloadDestination().getDestinationLocation());
 				downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+			}
+			List<HpcCollectionDownloadTaskItem> items = new ArrayList<HpcCollectionDownloadTaskItem>();
+			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks = dataDownloadDAO
+					.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId);
+			
+				HpcCollectionDownloadTaskItem item = new HpcCollectionDownloadTaskItem();
+				item.setPath(dataObjectDownloadTask.getPath());
+				item.setPercentComplete(dataObjectDownloadTask.getPercentComplete());
+				
 			}
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
@@ -2988,15 +2999,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		long totalDownloadSize = 0;
 		long totalBytesTransferred = 0;
+		if(CollectionUtils.isEmpty(downloadTask.getItems())) {
+			logger.info("No items found in the download task for collection " + downloadTask.getPath());
+		}
 		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+			logger.info("Percent complete for item " + item.getPath() + "is " + item.getPercentComplete() + ", size: " + item.getSize());
 			totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
 			totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
 					? ((double) item.getPercentComplete() / 100) * item.getSize()
 					: 0;
 		}
 
+		logger.info("Bytes transferred for collection " + downloadTask.getPath() + ": " + totalBytesTransferred + ", total size: " + totalDownloadSize);
 		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
 			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
+			int percent = Math.round(percentComplete);
+			logger.info("Percent complete for collection " + downloadTask.getPath() + " is " + percent);
 			return Math.round(percentComplete);
 		}
 
