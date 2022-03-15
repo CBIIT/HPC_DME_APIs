@@ -209,6 +209,8 @@
 							<div class="col-sm-10">
 								<label><input type="checkbox" th:field="*{detailed}"
 									id="detailed" />&nbsp;&nbsp;Detailed Results</label>
+								<a href="#" data-toggle="tooltip" data-placement="right" title="Uncheck this checkbox to return search results without metadata.">
+								<img style="width: 25px; height: 25px;vertical-align: top;" src="img/help.png"/></a>
 							</div>
 						</div>
 						
@@ -293,6 +295,8 @@
 	<script>
 	$(document).ready(function(){
 		$('#sub-menu-search').addClass("active");
+		$('[data-toggle="tooltip"]').tooltip();
+		document.getElementById("detailed").checked = true;
 	});
 	
   $('#createdDate').datepicker({
