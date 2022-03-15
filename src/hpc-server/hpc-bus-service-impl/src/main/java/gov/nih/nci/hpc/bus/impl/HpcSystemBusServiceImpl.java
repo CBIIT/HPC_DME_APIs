@@ -618,6 +618,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
 				// User requested to cancel this collection download task.
+				logger.info("Processing User requested cancellation of task for collection path " + downloadTask.getPath());
 				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED, "Download request canceled");
 				continue;
 			}
@@ -758,11 +759,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void completeCollectionDownloadTasks() throws HpcException {
 		// Iterate through all the active collection download requests.
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
-				.getCollectionDownloadTasksInProcess()) {
+				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.ACTIVE)) {
 			boolean downloadCompleted = true;
 			int inProgressItemsCount = 0;
 			List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
-
 			// Update status of individual download items in this collection download task.
 			for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
 				try {
@@ -778,7 +778,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									+ downloadItem.getDataObjectDownloadTaskId() + ". Path: " + downloadItem.getPath(),
 									HpcErrorType.UNEXPECTED_ERROR);
 						}
-
 						if (!downloadItemStatus.getInProgress()) {
 							// This download item is now complete. Update the result.
 							downloadItem.setResult(downloadItemStatus.getResult().getResult());
@@ -837,6 +836,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			// Update the collection download task.
 			if (downloadCompleted) {
+				logger.info("Download completed for task for collection path " + downloadTask.getPath());
 				completeCollectionDownloadTask(downloadTask);
 
 			} else {
@@ -846,7 +846,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask,
 							globusBunchingReceivedDownloadTasks);
 				}
-
 				dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
 		}
