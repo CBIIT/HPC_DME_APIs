@@ -167,8 +167,9 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Delete collection.
 	 *
-	 * @param path The collection path.
-	 * @param force	If true, perform hard delete
+	 * @param path      The collection path.
+	 * @param recursive True to delete sub collections recurssively.
+	 * @param force     If true, perform hard delete
 	 * @throws HpcException on service failure.
 	 */
 	public void deleteCollection(String path, Boolean recursive, Boolean force) throws HpcException;
@@ -296,15 +297,15 @@ public interface HpcDataManagementBusService {
 	 * Register a Data object. In this overloaded method, the user-id, user Name,
 	 * and DOC are explicitly provided.
 	 *
-	 * @param path                        The data object's path.
-	 * @param dataObjectRegistration      A DTO contains the metadata and data
-	 *                                    transfer locations.
-	 * @param dataObjectFile              (Optional) The data object file attachment
-	 * @param userId                      The registrar user-id.
-	 * @param userName                    The registrar name.
-	 * @param configurationId             The data management configuration ID.
+	 * @param path                      The data object's path.
+	 * @param dataObjectRegistration    A DTO contains the metadata and data
+	 *                                  transfer locations.
+	 * @param dataObjectFile            (Optional) The data object file attachment
+	 * @param userId                    The registrar user-id.
+	 * @param userName                  The registrar name.
+	 * @param configurationId           The data management configuration ID.
 	 * @param registrationEventRequired If set to true, an event will be generated
-	 *                                    when registration is completed or failed.
+	 *                                  when registration is completed or failed.
 	 * @return A DTO with an indicator whether the data object was registered and an
 	 *         upload URL if one was requested.
 	 * @throws HpcException on service failure.
@@ -341,6 +342,7 @@ public interface HpcDataManagementBusService {
 	 * @param taskId The registration task ID.
 	 * @return A data object list registration status DTO. Null if the task could
 	 *         not be found.
+	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkDataObjectRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) throws HpcException;
 
@@ -353,7 +355,8 @@ public interface HpcDataManagementBusService {
 	 *                   All active tasks are always returned.
 	 * @param allUsers   group admin or system administrators requesting for all
 	 *                   users
-	 * @return A summary of registration tasks for the request invoker
+	 * @return A summary of registration tasks for the request invoker.
+	 * @throws HpcException on service failure.
 	 */
 	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount, boolean allUsers)
 			throws HpcException;
@@ -417,6 +420,7 @@ public interface HpcDataManagementBusService {
 	 * @param taskId The data object download task ID.
 	 * @return A data object download status DTO. Null if the task could not be
 	 *         found.
+	 * @throws HpcException on service failure.
 	 */
 	public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(String taskId) throws HpcException;
 
@@ -430,7 +434,7 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcDataObjectDownloadResponseDTO retryDataObjectDownloadTask(String taskId,
 			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException;
-	
+
 	/**
 	 * Generate (pre-signed) download URL for a Data Object.
 	 *
@@ -443,8 +447,8 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Delete Data Object.
 	 *
-	 * @param path The data object path.
-	 * @param force	If true, perform hard delete
+	 * @param path  The data object path.
+	 * @param force If true, perform hard delete.
 	 * @return A response DTO with detailed statuses.
 	 * @throws HpcException on service failure.
 	 */
@@ -486,6 +490,7 @@ public interface HpcDataManagementBusService {
 	 *
 	 * @param path                      The path of the data object.
 	 * @param archivePermissionsRequest The archive permissions request
+	 * @return Archive permissions response DTO
 	 * @throws HpcException on service failure.
 	 */
 	public HpcArchivePermissionsResponseDTO setArchivePermissions(String path,
@@ -494,7 +499,9 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Get the Data Management Models (Metadata validation rules and hierarchy
 	 * definitions for all archives)
-	 * @param metadataRules If false do not return metadata validation rules. Default is true.
+	 * 
+	 * @param metadataRules If false do not return metadata validation rules.
+	 *                      Default is true.
 	 *
 	 * @return Data Management Model DTO.
 	 * @throws HpcException on service failure.
@@ -504,8 +511,10 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Get a Data Management Model (Metadata validation rules and hierarchy
 	 * definitions) for a specific archive (basePath)
-	 * @param metadataRules If false do not return metadata validation rules. Default is true.
-	 *
+	 * 
+	 * @param basePath      The base path to get data management model for.
+	 * @param metadataRules If false do not return metadata validation rules.
+	 *                      Default is true.
 	 * @return Data Management Model DTO.
 	 * @throws HpcException on service failure.
 	 */
@@ -534,15 +543,15 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Recover a soft deleted data object.
 	 *
-	 * @param path            The path to recover.
+	 * @param path The path to recover.
 	 * @throws HpcException on service failure.
 	 */
 	public void recoverDataObject(String path) throws HpcException;
-	
+
 	/**
 	 * Recover a soft deleted collection.
 	 *
-	 * @param path            The path to recover.
+	 * @param path The path to recover.
 	 * @throws HpcException on service failure.
 	 */
 	public void recoverCollection(String path) throws HpcException;

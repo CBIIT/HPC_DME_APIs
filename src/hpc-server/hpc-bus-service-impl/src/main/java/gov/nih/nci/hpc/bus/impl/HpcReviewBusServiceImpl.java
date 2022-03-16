@@ -64,11 +64,11 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 	// On off switch to send the review emails to actual users.
 	@Value("${hpc.bus.sendReviewNotificationToUser}")
 	private Boolean sendReviewNotificationToUser = null;
-		
+
 	// The system administrator NCI user ID.
-    @Value("${hpc.service.notification.systemAdministratorUserId}")
-    private String systemAdministratorUserId = null;
-	  
+	@Value("${hpc.service.notification.systemAdministratorUserId}")
+	private String systemAdministratorUserId = null;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -108,35 +108,36 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 		// Send Annual Review emails to data curators
 		logger.info("send annual review task started");
 		List<String> curators = reviewService.getCuratorsForAnnualReview();
-		
-		// For each curator, send an annual review email if the curator have active projects 
-		// and annual review email has never been sent 
+
+		// For each curator, send an annual review email if the curator have active
+		// projects
+		// and annual review email has never been sent
 		// or it has been one year since the last annual review email was sent.
-		for (String curator: curators) {
+		for (String curator : curators) {
 			sendReview(curator);
 		}
 		logger.info("send annual review task completed");
 	}
-	
+
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void sendAnnualReviewReminder() throws HpcException {
 		// Send Annual Review Reminder emails to data curators
 		List<String> curators = reviewService.getCuratorsForAnnualReviewReminder();
-		
+
 		// For each curator, send a reminder email if annual review email has been sent,
-		// and the curator have active projects that has a blank review date 
+		// and the curator have active projects that has a blank review date
 		// or a last review date that is before the last annual review email sent date.
-		for (String curator: curators) {
+		for (String curator : curators) {
 			sendReminder(curator);
 		}
 	}
-	
+
 	/**
 	 * Send an 'Annual Review' email to the user.
 	 *
-	 * @param nciUserId
-	 *            The NCI user ID.
+	 * @param nciUserId The NCI user ID.
+	 * @throws HpcException on service failure.
 	 */
 	private void sendReview(String nciUserId) throws HpcException {
 
@@ -162,18 +163,20 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 
 		// For lower tiers, don't send it to the actual user but to system admin
 
-		logger.info("Sending annual review notification for: {} sending to {}", nciUserId, sendReviewNotificationToUser.booleanValue() ? nciUserId : systemAdministratorUserId);
-		notificationService.sendNotification(sendReviewNotificationToUser.booleanValue() ? nciUserId : systemAdministratorUserId, HpcEventType.REVIEW_SENT, payloadEntries,
-				HpcNotificationDeliveryMethod.EMAIL);
+		logger.info("Sending annual review notification for: {} sending to {}", nciUserId,
+				sendReviewNotificationToUser.booleanValue() ? nciUserId : systemAdministratorUserId);
+		notificationService.sendNotification(
+				sendReviewNotificationToUser.booleanValue() ? nciUserId : systemAdministratorUserId,
+				HpcEventType.REVIEW_SENT, payloadEntries, HpcNotificationDeliveryMethod.EMAIL);
 
 		reviewService.addReviewSentNotification(nciUserId);
 	}
-	
+
 	/**
 	 * Send a 'Review reminder' email to the user.
 	 *
-	 * @param nciUserId
-	 *            The NCI user ID.
+	 * @param nciUserId The NCI user ID.
+	 * @throws HpcException on service failure.
 	 */
 	@Override
 	public void sendReminder(String nciUserId) throws HpcException {
@@ -203,15 +206,14 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 			throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
 		}
 		String invokerUserId = null;
-		if (HpcAuthenticationType.SYSTEM_ACCOUNT
-				.equals(invoker.getAuthenticationType()))
+		if (HpcAuthenticationType.SYSTEM_ACCOUNT.equals(invoker.getAuthenticationType()))
 			invokerUserId = systemAdministratorUserId;
 		else
 			invokerUserId = invoker.getNciAccount().getUserId();
 
 		logger.info("Sending review reminder notification to: {} triggered by {}", nciUserId, invokerUserId);
-		notificationService.sendNotification(sendReviewNotificationToUser.booleanValue() ? nciUserId : invokerUserId, HpcEventType.REVIEW_REMINDER_SENT, payloadEntries,
-				HpcNotificationDeliveryMethod.EMAIL);
+		notificationService.sendNotification(sendReviewNotificationToUser.booleanValue() ? nciUserId : invokerUserId,
+				HpcEventType.REVIEW_REMINDER_SENT, payloadEntries, HpcNotificationDeliveryMethod.EMAIL);
 
 		reviewService.addReviewReminderSentNotification(nciUserId);
 	}
