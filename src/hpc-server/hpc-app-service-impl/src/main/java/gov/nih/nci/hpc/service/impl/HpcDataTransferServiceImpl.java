@@ -1370,8 +1370,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Any other streaming download.
 			downloadTask.setPercentComplete(Math.round(percentComplete));
 		}
-		logger.debug(
-				"Percent complete for file " + downloadTask.getPath() + " is " + downloadTask.getPercentComplete());
+		
+		logger.debug("download task: {} - % complete - {} [transfer-type={}, destination-type={}]", downloadTask.getId(),
+				downloadTask.getPercentComplete(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+		
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 
@@ -3598,6 +3600,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
 									: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
 					downloadTask.setInProcess(false);
+					downloadTask.setPercentComplete(50);
 
 					// Persist the download task.
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
