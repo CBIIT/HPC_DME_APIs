@@ -2417,17 +2417,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			List<HpcCollectionDownloadTaskItem> items = taskStatus.getCollectionDownloadTask().getItems();
 			if(!HpcCollectionDownloadTaskStatus.ACTIVE.equals(taskStatus.getCollectionDownloadTask().getStatus())
 					&& CollectionUtils.isEmpty(items)) {
+				logger.info("Retrieving download tasks in collection {} with status {}",
+					taskStatus.getCollectionDownloadTask().getPath(),
+					taskStatus.getCollectionDownloadTask().getStatus());
 				for(HpcDataObjectDownloadTask dataObjectDownloadTask: dataTransferService.
 					getDataObjectDownloadTasksByCollectionDownloadTaskId(taskId)) {
-					HpcCollectionDownloadTaskItem item = new HpcCollectionDownloadTaskItem();
-					item.setPath(dataObjectDownloadTask.getPath());
-					item.setPercentComplete(dataObjectDownloadTask.getPercentComplete());
+					HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+					downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadTask.getId());
+					downloadItem.setPath(dataObjectDownloadTask.getPath());
+					downloadItem.setPercentComplete(dataObjectDownloadTask.getPercentComplete());
+					downloadItem.setSize(dataObjectDownloadTask.getSize());
+					HpcFileLocation destinationLocation = null;
+					if (dataObjectDownloadTask.getGlobusDownloadDestination() != null) {
+						destinationLocation = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
+					} else if (dataObjectDownloadTask.getS3DownloadDestination() != null) {
+						destinationLocation = dataObjectDownloadTask.getS3DownloadDestination().getDestinationLocation();
+					} else if (dataObjectDownloadTask.getGoogleDriveDownloadDestination() != null) {
+						destinationLocation = dataObjectDownloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+					} else if (dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+						destinationLocation = dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
+					}
+					downloadItem.setDestinationLocation(destinationLocation);
 					if(HpcDataTransferDownloadStatus.RECEIVED.equals(dataObjectDownloadTask.getDataTransferStatus()) ||
 						HpcDataTransferDownloadStatus.IN_PROGRESS.equals(dataObjectDownloadTask.getDataTransferStatus())) {
-						item.setResult(null);
-						item.setRestoreInProgress(dataObjectDownloadTask.getRestoreRequested());
+						downloadItem.setResult(null);
+						downloadItem.setRestoreInProgress(dataObjectDownloadTask.getRestoreRequested());
 					}
-					items.add(item);
+					items.add(downloadItem);
 				}
 			}
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
