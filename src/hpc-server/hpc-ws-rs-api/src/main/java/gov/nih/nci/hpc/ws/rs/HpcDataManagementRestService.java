@@ -181,7 +181,7 @@ public interface HpcDataManagementRestService {
 	 * @param path      The collection path.
 	 * @param recursive If true, delete all sub collections and data objects in this
 	 *                  collection.
-	 * @param force		If true, perform hard delete
+	 * @param force     If true, perform hard delete
 	 * @return The REST service response.
 	 */
 	@DELETE
@@ -204,7 +204,7 @@ public interface HpcDataManagementRestService {
 	/**
 	 * Recover a collection.
 	 *
-	 * @param path            The collection path.
+	 * @param path The collection path.
 	 * @return The REST service response.
 	 */
 	@POST
@@ -531,7 +531,7 @@ public interface HpcDataManagementRestService {
 	 * Retry download task of a data object.
 	 *
 	 * @param taskId               The download task ID.
-	 * @param downloadRetryRequest Retry download request. 
+	 * @param downloadRetryRequest Retry download request.
 	 * @return The REST service response w/ HpcDataObjectDownloadResponseDTO entity.
 	 */
 	@POST
@@ -539,11 +539,11 @@ public interface HpcDataManagementRestService {
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response retryDataObjectDownloadTask(@PathParam("taskId") String taskId,
 			HpcDownloadRetryRequestDTO downloadRetryRequest);
-	
+
 	/**
 	 * Delete a data object.
 	 *
-	 * @param path The data object path.
+	 * @param path  The data object path.
 	 * @param force If true, perform hard delete
 	 * @return The REST service response.
 	 */
@@ -566,7 +566,7 @@ public interface HpcDataManagementRestService {
 	/**
 	 * Recover a data object.
 	 *
-	 * @param path            The data object path.
+	 * @param path The data object path.
 	 * @return The REST service response.
 	 */
 	@POST
@@ -679,8 +679,9 @@ public interface HpcDataManagementRestService {
 	 * Retry download task of a list of data objects or a list of collections.
 	 *
 	 * @param taskId               The download task ID.
-	 * @param downloadRetryRequest Retry download request. 
-	 * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
+	 * @param downloadRetryRequest Retry download request.
+	 * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO
+	 *         entity.
 	 */
 	@POST
 	@Path("/download/{taskId}/retry")
@@ -718,7 +719,8 @@ public interface HpcDataManagementRestService {
 
 	/**
 	 * Get data management model. This includes all rules.
-	 *
+	 * 
+	 * @param metadataRules An indicator to include metadata rules.
 	 * @return The REST service response w/ HpcDataManagementModelDTO entity.
 	 */
 	@GET
@@ -729,13 +731,15 @@ public interface HpcDataManagementRestService {
 	/**
 	 * Get data management model. This includes all rules.
 	 *
-	 * @param basePath The base path.
+	 * @param basePath      The base path.
+	 * @param metadataRules An indicator to include metadata rules.
 	 * @return The REST service response w/ HpcDataManagementModelDTO entity.
 	 */
 	@GET
 	@Path("/dm/model/{basePath}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	Response getDataManagementModel(@PathParam("basePath") String basePath, @QueryParam("metadataRules") Boolean metadataRules);
+	Response getDataManagementModel(@PathParam("basePath") String basePath,
+			@QueryParam("metadataRules") Boolean metadataRules);
 
 	/**
 	 * Move a list of data objects and/or collections.

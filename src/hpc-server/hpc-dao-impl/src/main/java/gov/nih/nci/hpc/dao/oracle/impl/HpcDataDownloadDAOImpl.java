@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -32,7 +33,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
@@ -399,13 +399,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		String googleDriveAccessToken = null;
 		byte[] driveToken = rs.getBytes("GOOGLE_DRIVE_ACCESS_TOKEN");
-		if (!StringUtils.isEmpty(driveToken)) {
+		if (driveToken != null && driveToken.length > 0) {
 			googleDriveAccessToken = encryptor.decrypt(driveToken);
 		}
 
 		String googleCloudAccessToken = null;
 		byte[] cloudToken = rs.getBytes("GOOGLE_CLOUD_ACCESS_TOKEN");
-		if (!StringUtils.isEmpty(cloudToken)) {
+		if (cloudToken != null && cloudToken.length > 0) {
 			googleCloudAccessToken = encryptor.decrypt(cloudToken);
 		}
 
