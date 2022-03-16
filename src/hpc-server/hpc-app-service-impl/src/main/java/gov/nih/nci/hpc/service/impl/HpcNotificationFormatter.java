@@ -15,10 +15,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
@@ -86,11 +86,13 @@ public class HpcNotificationFormatter {
 	 *
 	 * @param eventType      The event type to generate the text for.
 	 * @param payloadEntries The payload entries to use for the format arguments.
-	 * @param doc			 The doc specific template to be used for this user. (Optional)
+	 * @param doc            The doc specific template to be used for this user.
+	 *                       (Optional)
 	 * @return A notification text message.
 	 * @throws HpcException on service failure.
 	 */
-	public String formatText(HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
+	public String formatText(HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries)
+			throws HpcException {
 		// Find the format for the event type
 		HpcNotificationFormat format = getFormat(eventType, doc, payloadEntries);
 
@@ -128,12 +130,14 @@ public class HpcNotificationFormatter {
 	 * Generate a notification subject for an event.
 	 *
 	 * @param eventType      The event type to generate the subject for.
-	 * @param doc			 The doc specific template to be used for this user. (Optional)
+	 * @param doc            The doc specific template to be used for this user.
+	 *                       (Optional)
 	 * @param payloadEntries The payload entries to use for the format arguments.
 	 * @return A notification text message.
 	 * @throws HpcException on service failure.
 	 */
-	public String formatSubject(HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
+	public String formatSubject(HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries)
+			throws HpcException {
 		// Find the format for the event type
 		HpcNotificationFormat format = getFormat(eventType, doc, payloadEntries);
 		return format(format.getSubjectFormat(), format.getSubjectArguments(), payloadEntries);
@@ -143,17 +147,19 @@ public class HpcNotificationFormatter {
 	 * Generate a notification from display for an event.
 	 *
 	 * @param eventType      The event type to generate the from display for.
-	 * @param doc			 The doc specific template to be used for this event. (Optional)
-	 * @param payloadEntries   The payload entries to use for the format arguments.
+	 * @param doc            The doc specific template to be used for this event.
+	 *                       (Optional)
+	 * @param payloadEntries The payload entries to use for the format arguments.
 	 * @return A notification text message.
 	 * @throws HpcException on service failure.
 	 */
-	public String formatFromDisplay(HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
+	public String formatFromDisplay(HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries)
+			throws HpcException {
 		// Find the format for the event type
 		HpcNotificationFormat format = getFormat(eventType, doc, payloadEntries);
 		return format.getFromDisplayFormat();
 	}
-	
+
 	/**
 	 * Generate a notification subject for an event.
 	 *
@@ -330,7 +336,7 @@ public class HpcNotificationFormatter {
 			HpcNotificationFormat notificationFormat = notificationFormatFromJSON(jsonNotificationFormat);
 			if (eventTypeStr != null) {
 				// Populate the map <eventType -> notificationFormat>
-				if(StringUtils.isEmpty(doc))
+				if (StringUtils.isEmpty(doc))
 					notificationFormats.put(eventTypeStr, notificationFormat);
 				else
 					notificationFormats.put(eventTypeStr + "_" + doc, notificationFormat);
@@ -362,13 +368,15 @@ public class HpcNotificationFormatter {
 
 		return DEFAULT_PAYLOAD_ENTRY_VALUE;
 	}
-	
+
 	/**
 	 * Get format template
 	 *
 	 * @param eventType      The event type to obtain the format for.
-	 * @param doc			 The doc specific template to be used for this user. (Optional)
-	 * @param payloadEntries The payload entries to use for looking up specific template.
+	 * @param doc            The doc specific template to be used for this user.
+	 *                       (Optional)
+	 * @param payloadEntries The payload entries to use for looking up specific
+	 *                       template.
 	 * @return The format template
 	 * @throws HpcException If failed to find the format.
 	 */

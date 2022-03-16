@@ -25,6 +25,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_ST
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DELETED_DATE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DME_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
@@ -47,7 +48,6 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_USER_DN_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DELETED_DATE_ATTRIBUTE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,6 +66,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
@@ -76,7 +77,6 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
@@ -239,8 +239,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
-	public void copyMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries)
-			throws HpcException {
+	public void copyMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -259,7 +258,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
 	}
-	
+
 	@Override
 	public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(String path, String userId,
 			String userName, String configurationId) throws HpcException {
@@ -411,7 +410,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
 		}
-		
+
 		if (metadataMap.get(DELETED_DATE_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setDeletedDate(toCalendar(metadataMap.get(DELETED_DATE_ATTRIBUTE)));
 		}
@@ -491,7 +490,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Override
 	public List<HpcMetadataEntry> getDefaultDataObjectMetadataEntries(HpcDirectoryScanItem scanItem) {
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-		//Presently empty, placeholder
+		// Presently empty, placeholder
 
 		return metadataEntries;
 	}
@@ -680,8 +679,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		addMetadataEntry(metadataEntries, toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, callerObjectId));
 
 		// Create the Registration Completion Event Indicator metadata.
-		addMetadataEntry(metadataEntries, toMetadataEntry(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE,
-				Boolean.toString(registrationEventRequired)));
+		addMetadataEntry(metadataEntries,
+				toMetadataEntry(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE, Boolean.toString(registrationEventRequired)));
 
 		// Create the S3 Archive Configuration ID.
 		addMetadataEntry(metadataEntries,
@@ -777,9 +776,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			} else {
 				addMetadataEntry(metadataEntries,
 						toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
-				if(dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
-						addMetadataEntry(metadataEntries,
-								toMetadataEntry(DELETED_DATE_ATTRIBUTE, dateFormat.format(Calendar.getInstance().getTime())));
+				if (dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
+					addMetadataEntry(metadataEntries, toMetadataEntry(DELETED_DATE_ATTRIBUTE,
+							dateFormat.format(Calendar.getInstance().getTime())));
 				}
 			}
 		}
