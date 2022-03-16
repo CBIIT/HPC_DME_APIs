@@ -51,6 +51,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -2408,6 +2409,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
 						.getGoogleDriveDownloadDestination().getDestinationLocation());
 				downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+			}
+
+			//Get the status of the individual data object download tasks if the collection status is not yet
+			//ACTIVE, because the collection items field does not get populated before that
+			List<HpcCollectionDownloadTaskItem> items = taskStatus.getCollectionDownloadTask().getItems();
+			if(!HpcCollectionDownloadTaskStatus.ACTIVE.equals(taskStatus.getCollectionDownloadTask().getStatus())
+					&& CollectionUtils.isEmpty(items)) {
+				for(HpcDataObjectDownloadTask dataObjectDownloadTask: dataTransferService.
+					getDataObjectDownloadTasksByCollectionDownloadTaskId(taskId)) {
+					HpcCollectionDownloadTaskItem item = new HpcCollectionDownloadTaskItem();
+					item.setPath(dataObjectDownloadTask.getPath());
+					item.setPercentComplete(dataObjectDownloadTask.getPercentComplete());
+					if(HpcDataTransferDownloadStatus.RECEIVED.equals(dataObjectDownloadTask.getDataTransferStatus()) ||
+						HpcDataTransferDownloadStatus.IN_PROGRESS.equals(dataObjectDownloadTask.getDataTransferStatus())) {
+						item.setResult(null);
+						item.setRestoreInProgress(dataObjectDownloadTask.getRestoreRequested());
+					}
+					items.add(item);
+				}
 			}
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
