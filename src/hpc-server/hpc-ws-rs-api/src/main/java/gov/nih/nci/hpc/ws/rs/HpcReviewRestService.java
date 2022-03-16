@@ -28,10 +28,8 @@ public interface HpcReviewRestService {
 	/**
 	 * Query review entries.
 	 *
-	 * @param projectStatus
-	 *            project status
-	 * @param dataCurator
-	 *            data curator
+	 * @param projectStatus project status
+	 * @param dataCurator   data curator
 	 * @return The REST service response w/ HpcReviewDTO entity.
 	 */
 	@POST
@@ -44,6 +42,7 @@ public interface HpcReviewRestService {
 	/**
 	 * Send review reminder notification.
 	 *
+	 * @param nciUserId The user NCI ID.
 	 * @return The REST service response.
 	 */
 	@POST

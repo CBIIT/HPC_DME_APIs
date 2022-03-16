@@ -10,10 +10,10 @@
  */
 package gov.nih.nci.hpc.bus.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount;
@@ -238,7 +238,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
 		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
-			throw new HpcException("Migration request is not supported for soft-links", HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Migration request is not supported for soft-links",
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Migration supported only from S3 archive.
@@ -338,6 +339,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 * @param collectionMigrationTaskId (Optional) A collection migration task id
 	 *                                  that this data object migration is part of.
 	 * @param migrationRequest          The migration request.
+	 * @return A data migration response DTO.
 	 * @throws HpcException If failed to process the request.
 	 */
 	private HpcMigrationResponseDTO migrateDataObject(String path, String userId, String collectionMigrationTaskId,

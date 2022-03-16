@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,7 +26,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;

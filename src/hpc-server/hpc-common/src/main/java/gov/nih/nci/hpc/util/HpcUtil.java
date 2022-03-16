@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -51,7 +51,8 @@ public class HpcUtil {
 	 */
 	public static String toNormalizedPath(String path) {
 		// Normalize the path - i.e. remove duplicate and trailing '/'
-		String absolutePath = StringUtils.trimTrailingCharacter(path, '/').replaceAll("/+", "/");
+		String absolutePath = org.springframework.util.StringUtils.trimTrailingCharacter(path, '/').replaceAll("/+",
+				"/");
 
 		StringBuilder buf = new StringBuilder();
 		if (absolutePath.isEmpty() || absolutePath.charAt(0) != '/') {
