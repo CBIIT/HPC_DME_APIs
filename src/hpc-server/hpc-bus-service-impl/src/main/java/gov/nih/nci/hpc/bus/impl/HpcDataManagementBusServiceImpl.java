@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
-import static gov.nih.nci.hpc.util.HpcUtil.humanReadableByteCount;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,11 +24,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
@@ -54,7 +53,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -380,12 +378,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
 				if (entry != null) {
 					subCollection.setDataSize(entry.getDataSize());
-					//Compute the total size of the collection - this is being temporarily disabled
-					/*HpcReport report = getTotalSizeReport(subCollection.getPath(), true);
-					if(report != null && !CollectionUtils.isEmpty(report.getReportEntries())) {
-							String collectionSize = report.getReportEntries().get(0).getValue();
-							subCollection.setDataSize(Long.parseLong(collectionSize));
-					}*/
+					// Compute the total size of the collection - this is being temporarily disabled
+					/*
+					 * HpcReport report = getTotalSizeReport(subCollection.getPath(), true);
+					 * if(report != null && !CollectionUtils.isEmpty(report.getReportEntries())) {
+					 * String collectionSize = report.getReportEntries().get(0).getValue();
+					 * subCollection.setDataSize(Long.parseLong(collectionSize)); }
+					 */
 					subCollection.setCreatedAt(entry.getCreatedAt());
 				}
 			}
@@ -405,8 +404,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return collectionDTO;
 	}
 
-
-	private HpcReport getTotalSizeReport(String path, boolean isMachineReadable) throws HpcException{
+	private HpcReport getTotalSizeReport(String path, boolean isMachineReadable) throws HpcException {
 
 		HpcReport totalSizeReport = null;
 		// Get the total size of the collection
@@ -416,13 +414,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		criteria.setIsMachineReadable(isMachineReadable);
 		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
 		List<HpcReport> reports = reportService.generateReport(criteria);
-		if(!CollectionUtils.isEmpty(reports)) {
+		if (!CollectionUtils.isEmpty(reports)) {
 			totalSizeReport = reports.get(0);
 		}
 
 		return totalSizeReport;
 	}
-
 
 	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollection(String path, HpcDownloadRequestDTO downloadRequest)
@@ -709,7 +706,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	public HpcBulkDataObjectDownloadResponseDTO retryDataObjectsOrCollectionsDownloadTask(String taskId,
 			HpcDownloadRetryRequestDTO downloadRetryRequest) throws HpcException {
-		
+
 		// Input validation.
 		HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId,
 				HpcDownloadTaskType.COLLECTION_LIST);
@@ -724,7 +721,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Collection / data-object list download task in-progress: " + taskId,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-	
+
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
@@ -1433,10 +1430,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		HpcDownloadTaskResult downloadTask = taskStatus.getResult();
-        HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
-    
-		return downloadDataObject(downloadTask.getPath(), downloadRequest,
-				downloadTask.getUserId(), true, null);
+		HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
+
+		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getUserId(), true, null);
 	}
 
 	@Override
@@ -1526,7 +1522,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
 			if (dataObject.getCreatedAt().before(cutOffDate)) {
-				String message = "The data object at " + path + " is not eligible for deletion because the file is at least 90 days old.";
+				String message = "The data object at " + path
+						+ " is not eligible for deletion because the file is at least 90 days old.";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
 			}
@@ -2073,7 +2070,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                             collection update event.
 	 * @param presignURL           The presigned download URL.(Optional)
 	 * @param size                 The data size.(Optional)
-	 * @param configurationId      The DOC (Optional)
+	 * @param doc                  The DOC (Optional)
 	 */
 	private void addCollectionUpdatedEvent(String path, boolean collectionRegistered, boolean dataObjectRegistered,
 			String userId, String presignURL, String size, String doc) {
@@ -2086,7 +2083,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// A collection or data object registered, so we add an event for the parent
 			// collection.
-			String parentCollection = StringUtils.trimTrailingCharacter(path, '/');
+			String parentCollection = org.springframework.util.StringUtils.trimTrailingCharacter(path, '/');
 			int parentCollectionIndex = parentCollection.lastIndexOf('/');
 			parentCollection = parentCollectionIndex <= 0 ? "/" : parentCollection.substring(0, parentCollectionIndex);
 
@@ -2235,7 +2232,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * Recursively delete all the data objects from the specified collection and
 	 * from it's sub-collections.
 	 *
-	 * @param path The path at the root of the hierarchy to delete from.
+	 * @param path  The path at the root of the hierarchy to delete from.
+	 * @param force If true, perform hard delete.
 	 * @throws HpcException if it failed to delete any object in this collection.
 	 */
 	private void deleteDataObjectsInCollections(String path, Boolean force) throws HpcException {
@@ -2309,8 +2307,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * Construct entity permissions DTO out of a list of subject permissions.
 	 *
 	 * @param subjectPermissions A list of subject permissions.
+	 * @param excludeSysAdmins   true if the user is a sys admin.
 	 * @return Entity permissions DTO
-	 * @throws HpcException
+	 * @throws HpcException on service failure.
 	 */
 	private HpcEntityPermissionsDTO toEntityPermissionsDTO(List<HpcSubjectPermission> subjectPermissions,
 			boolean excludeSysAdmins) throws HpcException {
@@ -3026,18 +3025,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		long totalDownloadSize = 0;
 		long totalBytesTransferred = 0;
-		if(CollectionUtils.isEmpty(downloadTask.getItems())) {
+		if (CollectionUtils.isEmpty(downloadTask.getItems())) {
 			logger.info("No items found in the download task for collection " + downloadTask.getPath());
 		}
 		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-			logger.info("Percent complete for item " + item.getPath() + "is " + item.getPercentComplete() + ", size: " + item.getSize());
+			logger.info("Percent complete for item " + item.getPath() + "is " + item.getPercentComplete() + ", size: "
+					+ item.getSize());
 			totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
 			totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
 					? ((double) item.getPercentComplete() / 100) * item.getSize()
 					: 0;
 		}
 
-		logger.info("Bytes transferred for collection " + downloadTask.getPath() + ": " + totalBytesTransferred + ", total size: " + totalDownloadSize);
+		logger.info("Bytes transferred for collection " + downloadTask.getPath() + ": " + totalBytesTransferred
+				+ ", total size: " + totalDownloadSize);
 		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
 			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
 			int percent = Math.round(percentComplete);
@@ -3275,17 +3276,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return destinationLocation;
 	}
-	
+
 	/**
-	 * Create a download request from download task result and download retry request
+	 * Create a download request from download task result and download retry
+	 * request
 	 *
-	 * @param downloadTaskResult The download task result.
+	 * @param downloadTaskResult   The download task result.
 	 * @param downloadRetryRequest The download retry request.
 	 * @return a HpcDownloadRequestDTO instance
 	 */
 	private HpcDownloadRequestDTO createDownloadRequestDTO(HpcDownloadTaskResult downloadTaskResult,
 			HpcDownloadRetryRequestDTO downloadRetryRequest) {
-		HpcDownloadRequestDTO downloadRequest= new HpcDownloadRequestDTO();
+		HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
 		if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.S_3)) {
 			HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
 			s3DownloadDestination.setAccount(downloadRetryRequest.getS3Account());
@@ -3295,7 +3297,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 			globusDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
-		    downloadRequest.getGlobusDownloadDestination().setDestinationOverwrite(downloadRetryRequest.getDestinationOverwrite());
+			downloadRequest.getGlobusDownloadDestination()
+					.setDestinationOverwrite(downloadRetryRequest.getDestinationOverwrite());
 		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setAccessToken(downloadRetryRequest.getGoogleAccessToken());
