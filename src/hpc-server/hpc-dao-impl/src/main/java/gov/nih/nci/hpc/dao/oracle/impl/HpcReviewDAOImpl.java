@@ -14,13 +14,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcReviewDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -55,21 +55,19 @@ public class HpcReviewDAOImpl implements HpcReviewDAO {
 
 	private static final String INSERT_REVIEW_NOTIFICATION_SQL = "insert into HPC_NOTIFICATION_REVIEW ( "
 			+ "USER_ID, EVENT_TYPE, DELIVERED) values (?, ?, ?)";
-	
-	private static final String GET_CURATORS_FOR_REVIEW_SQL = "select distinct review.data_curator from R_REVIEW_META_MAIN review " 
-			+ "left outer join HPC_NOTIFICATION_REVIEW notification "
-			+ "on review.data_curator=notification.USER_ID "
+
+	private static final String GET_CURATORS_FOR_REVIEW_SQL = "select distinct review.data_curator from R_REVIEW_META_MAIN review "
+			+ "left outer join HPC_NOTIFICATION_REVIEW notification " + "on review.data_curator=notification.USER_ID "
 			+ "where (review.project_status='Active' or review.project_status is null) "
 			+ "and (notification.EVENT_TYPE is null or notification.EVENT_TYPE='REVIEW_SENT') "
 			+ "group by review.data_curator "
 			+ "having trunc(max(notification.DELIVERED)) < add_months(sysdate,-12) or max(notification.DELIVERED) is null";
-	
+
 	private static final String GET_CURATORS_FOR_REMINDER_SQL = "select distinct review.data_curator "
 			+ "from R_REVIEW_META_MAIN review left outer join HPC_NOTIFICATION_REVIEW notification "
 			+ "on review.data_curator=notification.USER_ID "
 			+ "where (review.project_status='Active' or review.project_status is null) "
-			+ "and notification.EVENT_TYPE='REVIEW_SENT' "
-			+ "group by review.data_curator, last_reviewed "
+			+ "and notification.EVENT_TYPE='REVIEW_SENT' " + "group by review.data_curator, last_reviewed "
 			+ "having last_reviewed is null or max(notification.DELIVERED) > to_date(last_reviewed, 'YYYY-MM-DD')";
 
 	// ---------------------------------------------------------------------//
@@ -82,7 +80,7 @@ public class HpcReviewDAOImpl implements HpcReviewDAO {
 
 	// Row mappers.
 	private SingleColumnRowMapper<String> curatorRowMapper = new SingleColumnRowMapper<>();
-		
+
 	private RowMapper<HpcReviewEntry> reviewEntryRowMapper = (rs, rowNum) -> {
 		HpcReviewEntry reviewEntry = new HpcReviewEntry();
 		reviewEntry.setId(rs.getInt(1));
@@ -186,8 +184,8 @@ public class HpcReviewDAOImpl implements HpcReviewDAO {
 			return jdbcTemplate.queryForObject(sqlQueryBuilder.toString(), Integer.class, args.toArray());
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get count of projects for review: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
-					HpcIntegratedSystem.ORACLE, e);
+			throw new HpcException("Failed to get count of projects for review: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -220,7 +218,8 @@ public class HpcReviewDAOImpl implements HpcReviewDAO {
 			return jdbcTemplate.query(GET_CURATORS_FOR_REMINDER_SQL, curatorRowMapper);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get a list of curators to send annual review reminder email: " + e.getMessage(),
+			throw new HpcException(
+					"Failed to get a list of curators to send annual review reminder email: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
