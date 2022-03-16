@@ -315,9 +315,11 @@ public interface HpcDataTransferService {
 	 * Get path attributes for a given file in Google Drive or Google Cloud
 	 * Storage(using user provided Google Drive token).
 	 *
-	 * @param accessToken  Google Drive / Storage access token.
-	 * @param fileLocation The file to get attributes for.
-	 * @param getSize      If set to true, the file/directory size will be returned.
+	 * @param dataTransferType Google Drive / Google Cloud Storage.
+	 * @param accessToken      The user provided access token.
+	 * @param fileLocation     The bucket/object-id to get attributes for.
+	 * @param getSize          If set to true, the file/directory size will be
+	 *                         returned.
 	 * @return The path attributes.
 	 * @throws HpcException on service failure.
 	 */
@@ -661,16 +663,13 @@ public interface HpcDataTransferService {
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
 			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException;
 
-
 	/**
 	 * Get collection download tasks in process.
 	 *
 	 * @return A list of collection download tasks.
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess()
-			throws HpcException;
-
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess() throws HpcException;
 
 	/**
 	 * Get collection download tasks.
@@ -708,8 +707,8 @@ public interface HpcDataTransferService {
 	/**
 	 * Get collection download requests count for a path and endpoint.
 	 *
-	 * @param path   The archive path to download from.
-	 * @param status The destination endpoint.
+	 * @param path     The collection path to query for.
+	 * @param endpoint The download destination container ID to query for.
 	 * @return Count of collection download requests.
 	 * @throws HpcException on database error.
 	 */
@@ -718,7 +717,7 @@ public interface HpcDataTransferService {
 	/**
 	 * Get collection download tasks count for a specific user and path.
 	 *
-	 * @userId The userId to query for.
+	 * @param userId    The userId to query for.
 	 * @param path      The archive path to download from.
 	 * @param inProcess True for collections that are under processing.
 	 * @return Count of collection download tasks.
@@ -730,7 +729,7 @@ public interface HpcDataTransferService {
 	/**
 	 * Get collection download tasks count for a specific user.
 	 *
-	 * @userId The userId to query for.
+	 * @param userId    The userId to query for.
 	 * @param inProcess True for collections that are under processing.
 	 * @return Count of collection download tasks.
 	 * @throws HpcException on database error.
@@ -866,7 +865,8 @@ public interface HpcDataTransferService {
 	 *                                 data-object is stored in. This is only
 	 *                                 applicable for S3 archives, not POSIX.
 	 * @param dataTransferType         The data transfer type.
-	 * @param fileId                   The file ID. (Can be a directory)
+	 * @param fileId                   The file ID. (Can be a directory).
+	 * @param permissions              The permissions to set.
 	 * @throws HpcException on service failure.
 	 */
 	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
