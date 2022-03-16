@@ -388,6 +388,17 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
+	
+	
+	/**
+	 * Get all data object download tasks associated with the given collection download task.
+	 * @param taskId  The collection download task Id
+	 * @return A list of data object download tasks.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasksByCollectionDownloadTaskId(String taskId)
+			throws HpcException;
+
 
 	/**
 	 * Get next data object download task to process given data transfer status and
