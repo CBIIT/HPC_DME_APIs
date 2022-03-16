@@ -2393,8 +2393,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 				downloadStatus.getDataObjectPaths().addAll(taskStatus.getCollectionDownloadTask().getDataObjectPaths());
 			}
-			downloadStatus.setPercentComplete(
-					calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
 			downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
 			downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
 			downloadStatus.setRetryTaskId(taskStatus.getCollectionDownloadTask().getRetryTaskId());
@@ -2446,6 +2444,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					items.add(downloadItem);
 				}
 			}
+			downloadStatus.setPercentComplete(
+					calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
 		} else {
@@ -3026,24 +3026,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		long totalDownloadSize = 0;
 		long totalBytesTransferred = 0;
-		if (CollectionUtils.isEmpty(downloadTask.getItems())) {
-			logger.info("No items found in the download task for collection " + downloadTask.getPath());
-		}
+
 		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-			logger.info("Percent complete for item " + item.getPath() + "is " + item.getPercentComplete() + ", size: "
-					+ item.getSize());
 			totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
 			totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
 					? ((double) item.getPercentComplete() / 100) * item.getSize()
 					: 0;
 		}
 
-		logger.info("Bytes transferred for collection " + downloadTask.getPath() + ": " + totalBytesTransferred
-				+ ", total size: " + totalDownloadSize);
+		logger.info("Bytes transferred for collection {} is {}, total size = {}", downloadTask.getPath(), totalBytesTransferred, totalDownloadSize);
 		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
 			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
 			int percent = Math.round(percentComplete);
-			logger.info("Percent complete for collection " + downloadTask.getPath() + " is " + percent);
+			logger.info("Percent complete for collection {} is {}", downloadTask.getPath(), percent);
 			return Math.round(percentComplete);
 		}
 
