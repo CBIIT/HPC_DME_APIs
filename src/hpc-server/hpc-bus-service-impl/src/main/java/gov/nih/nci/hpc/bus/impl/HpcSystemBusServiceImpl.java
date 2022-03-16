@@ -618,7 +618,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
 				// User requested to cancel this collection download task.
-				logger.info("Processing User requested cancellation of task for collection path " + downloadTask.getPath());
+				logger.info(
+						"Processing User requested cancellation of task for collection path " + downloadTask.getPath());
 				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED, "Download request canceled");
 				continue;
 			}
@@ -643,8 +644,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
 			// Get the current user role.
 			HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(downloadTask.getUserId());
-			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser &&
-					!(HpcUserRole.GROUP_ADMIN.equals(currentUserRole) || HpcUserRole.SYSTEM_ADMIN.equals(currentUserRole))) {
+			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser
+					&& !(HpcUserRole.GROUP_ADMIN.equals(currentUserRole)
+							|| HpcUserRole.SYSTEM_ADMIN.equals(currentUserRole))) {
 				// We have reached the max collection breakdown tasks in-process for this user.
 				logger.info(
 						"collection download task: {} - Not processing at this time. {} download tasks already in-process for user {}",
@@ -1916,7 +1918,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	/**
 	 * Calculate a download destination location.
 	 *
-	 * @param collectionDestination           The S3 collection destination.
+	 * @param destinationLocation             The download destination location.
 	 * @param collectionListingEntryPath      The entry path under the collection to
 	 *                                        calculate the destination location
 	 *                                        for.

@@ -40,12 +40,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
@@ -1370,7 +1370,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Any other streaming download.
 			downloadTask.setPercentComplete(Math.round(percentComplete));
 		}
-		logger.debug("Percent complete for file " + downloadTask.getPath() + " is " + downloadTask.getPercentComplete());
+		logger.debug(
+				"Percent complete for file " + downloadTask.getPath() + " is " + downloadTask.getPercentComplete());
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 
@@ -1630,8 +1631,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess()
-			throws HpcException {
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess() throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasksInProcess();
 	}
 
