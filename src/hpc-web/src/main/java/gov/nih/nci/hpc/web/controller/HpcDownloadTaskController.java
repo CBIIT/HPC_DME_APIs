@@ -372,6 +372,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
               || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
                 || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
            retry = false;
+		if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
+		   retry = false;
 	} else {
 		//No retry button if download is in progress or has no failed or cancelled items
 		retry = false;
@@ -426,6 +428,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
             || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
               || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
         retry = false;
+      if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
+		   retry = false;
 	} else {
 		//No retry button if download is in progress or has no failed or cancelled items
 		retry = false;
@@ -464,6 +468,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
                   || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
                     || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
                retry = false;
+			if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
+	           retry = false;
 		} else {
 			//No retry button if download is in progress or has no failed or cancelled items
 			retry = false;
