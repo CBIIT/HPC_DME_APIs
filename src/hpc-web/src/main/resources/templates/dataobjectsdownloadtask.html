@@ -286,18 +286,17 @@
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading"
-								th:if="${(hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0) or (hpcDataObjectsDownloadStatusDTO.getCanceledItems() != null and hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() > 0)}">
-								<div class="col-md-3">
-									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Failed</strong>
-									</h2>
+							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
+							  <div class="col-md-3">	
+								<h2>
+									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+								</h2>
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
-									<h2>
+								  <h2>
 								    <strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
-									</h2>
-								</div>
+								  </h2>
+							   </div>
 							</div>
 							<div class="panel-body">
 							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
