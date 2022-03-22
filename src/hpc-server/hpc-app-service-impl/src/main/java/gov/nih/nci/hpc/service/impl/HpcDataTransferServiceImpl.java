@@ -503,7 +503,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
-		return systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) ? null
+		return systemGeneratedMetadata.getDataTransferStatus() != null 
+				&& systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) ? null
 				: Optional.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
 						.orElse(0);
 	}
