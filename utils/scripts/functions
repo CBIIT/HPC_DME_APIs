@@ -30,8 +30,9 @@ function dm_list_commands {
 	dm_generate_token                 dm_update_user
 	dm_get_collection
   
+To see the detailed information on each command, use '<command name> -h'
 
-The DME CLU Quick Reference page provides examples for the most frequently-used commands: 
+To get started with CLU commands, refer to the DME CLU Quick Reference page:
 https://wiki.nci.nih.gov/x/wIqhH
 
 EOF
