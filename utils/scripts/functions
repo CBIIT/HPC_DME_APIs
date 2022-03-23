@@ -25,14 +25,13 @@ function dm_list_commands {
 	dm_download_collection_s3         dm_register_dataobject_multipart
 	dm_download_dataobject            dm_register_dataobject_presigned
 	dm_download_dataobject_globus     dm_register_directory
-	dm_download_dataobject_presigned  dm_register_globus_directory
-	dm_download_dataobject_s3         dm_register_user
-	dm_download_s3                    dm_rename
+	dm_download_dataobject_presigned  dm_register_user
+	dm_download_dataobject_s3         dm_rename
 	dm_generate_token                 dm_update_user
 	dm_get_collection
   
 
-For DME CLU Quick Reference, refer to the following page: 
+The DME CLU Quick Reference page provides examples for the most frequently-used commands: 
 https://wiki.nci.nih.gov/x/wIqhH
 
 EOF
