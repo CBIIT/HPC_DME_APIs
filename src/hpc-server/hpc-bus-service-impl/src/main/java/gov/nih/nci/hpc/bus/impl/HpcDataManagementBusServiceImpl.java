@@ -586,7 +586,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getRetryCanceledTasks());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -726,7 +727,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getRetryCanceledTasks());
 
 		// Create and return a DTO with the request receipt.
 		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
@@ -2410,16 +2412,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
 			}
 
-			//Get the status of the individual data object download tasks if the collection status is not yet
-			//ACTIVE, because the collection items field does not get populated before that
+			// Get the status of the individual data object download tasks if the collection
+			// status is not yet
+			// ACTIVE, because the collection items field does not get populated before that
 			List<HpcCollectionDownloadTaskItem> items = taskStatus.getCollectionDownloadTask().getItems();
-			if(!HpcCollectionDownloadTaskStatus.ACTIVE.equals(taskStatus.getCollectionDownloadTask().getStatus())
+			if (!HpcCollectionDownloadTaskStatus.ACTIVE.equals(taskStatus.getCollectionDownloadTask().getStatus())
 					&& CollectionUtils.isEmpty(items)) {
 				logger.info("Retrieving download tasks in collection {} with status {}",
-					taskStatus.getCollectionDownloadTask().getPath(),
-					taskStatus.getCollectionDownloadTask().getStatus());
-				for(HpcDataObjectDownloadTask dataObjectDownloadTask: dataTransferService.
-					getDataObjectDownloadTasksByCollectionDownloadTaskId(taskId)) {
+						taskStatus.getCollectionDownloadTask().getPath(),
+						taskStatus.getCollectionDownloadTask().getStatus());
+				for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataTransferService
+						.getDataObjectDownloadTasksByCollectionDownloadTaskId(taskId)) {
 					HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
 					downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadTask.getId());
 					downloadItem.setPath(dataObjectDownloadTask.getPath());
@@ -2427,17 +2430,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadItem.setSize(dataObjectDownloadTask.getSize());
 					HpcFileLocation destinationLocation = null;
 					if (dataObjectDownloadTask.getGlobusDownloadDestination() != null) {
-						destinationLocation = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
+						destinationLocation = dataObjectDownloadTask.getGlobusDownloadDestination()
+								.getDestinationLocation();
 					} else if (dataObjectDownloadTask.getS3DownloadDestination() != null) {
-						destinationLocation = dataObjectDownloadTask.getS3DownloadDestination().getDestinationLocation();
+						destinationLocation = dataObjectDownloadTask.getS3DownloadDestination()
+								.getDestinationLocation();
 					} else if (dataObjectDownloadTask.getGoogleDriveDownloadDestination() != null) {
-						destinationLocation = dataObjectDownloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+						destinationLocation = dataObjectDownloadTask.getGoogleDriveDownloadDestination()
+								.getDestinationLocation();
 					} else if (dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
-						destinationLocation = dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
+						destinationLocation = dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination()
+								.getDestinationLocation();
 					}
 					downloadItem.setDestinationLocation(destinationLocation);
-					if(HpcDataTransferDownloadStatus.RECEIVED.equals(dataObjectDownloadTask.getDataTransferStatus()) ||
-						HpcDataTransferDownloadStatus.IN_PROGRESS.equals(dataObjectDownloadTask.getDataTransferStatus())) {
+					if (HpcDataTransferDownloadStatus.RECEIVED.equals(dataObjectDownloadTask.getDataTransferStatus())
+							|| HpcDataTransferDownloadStatus.IN_PROGRESS
+									.equals(dataObjectDownloadTask.getDataTransferStatus())) {
 						downloadItem.setResult(null);
 						downloadItem.setRestoreInProgress(dataObjectDownloadTask.getRestoreRequested());
 					}
@@ -3034,7 +3042,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					: 0;
 		}
 
-		logger.info("Bytes transferred for collection {} is {}, total size = {}", downloadTask.getPath(), totalBytesTransferred, totalDownloadSize);
+		logger.info("Bytes transferred for collection {} is {}, total size = {}", downloadTask.getPath(),
+				totalBytesTransferred, totalDownloadSize);
 		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
 			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
 			int percent = Math.round(percentComplete);
