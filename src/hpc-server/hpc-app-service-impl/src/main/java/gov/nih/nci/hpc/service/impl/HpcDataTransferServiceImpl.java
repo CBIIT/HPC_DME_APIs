@@ -1545,17 +1545,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException {
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, Boolean retryCanceledTasks) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
-		if (!failedDownloadResult(downloadTaskResult.getResult())) {
+		
+		boolean retryCanceled = Optional.ofNullable(retryCanceledTasks).orElse(false);
+		if (!downloadTaskCanBeRetried(downloadTaskResult.getResult(), retryCanceled)) {
 			throw new HpcException("Download task completed or canceled: " + downloadTaskResult.getId()
 					+ ". Only failed tasks can be retried", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
+		
 		boolean failedDownloadItemFound = false;
 		for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
-			if (failedDownloadResult(downloadItem.getResult())) {
+			if (downloadTaskCanBeRetried(downloadItem.getResult(), retryCanceled)) {
 				failedDownloadItemFound = true;
 				break;
 			}
@@ -1568,6 +1570,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
 		downloadTask.setRetryTaskId(downloadTaskResult.getId());
+		downloadTask.setRetryCanceledTasks(retryCanceled);
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setUserId(downloadTaskResult.getUserId());
@@ -3404,12 +3407,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Determine if a download result is 'failed' - one of 3 failure status.
+	 * Determine if a download task can be retried. result is 'failed' or 'canceled'.
 	 *
 	 * @param result the download result.
-	 * @return true if the status is one of 3 representing a failure.
+	 * @param retryCanceledTasks indicator whether canceled task are allowed to be retried. 
+	 * @return true if the download task can be retried, or false otherwise.
 	 */
-	private boolean failedDownloadResult(HpcDownloadResult result) {
+	private boolean downloadTaskCanBeRetried(HpcDownloadResult result, boolean retryCanceledTasks) {
 		if (result == null) {
 			return false;
 		}
@@ -3418,6 +3422,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		case FAILED_PERMISSION_DENIED:
 		case FAILED_CREDENTIALS_NEEDED:
 			return true;
+			
+		case CANCELED:
+			 return retryCanceledTasks;
 
 		default:
 			return false;

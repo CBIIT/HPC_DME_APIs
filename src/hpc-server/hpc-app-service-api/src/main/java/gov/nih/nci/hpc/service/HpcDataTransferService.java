@@ -388,17 +388,17 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
-	
-	
+
 	/**
-	 * Get all data object download tasks associated with the given collection download task.
-	 * @param taskId  The collection download task Id
+	 * Get all data object download tasks associated with the given collection
+	 * download task.
+	 * 
+	 * @param taskId The collection download task Id
 	 * @return A list of data object download tasks.
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasksByCollectionDownloadTaskId(String taskId)
 			throws HpcException;
-
 
 	/**
 	 * Get next data object download task to process given data transfer status and
@@ -668,11 +668,13 @@ public interface HpcDataTransferService {
 	 * @param s3Account            (Optional) s3Account for S3 destinations.
 	 * @param googleAccessToken    (Optional) access token for Google Drive / Cloud
 	 *                             storage destinations.
+	 * @param retryCanceledTasks   (Optional) Indicator to retry of cancelled tasks.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException;
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, Boolean retryCanceledTasks)
+			throws HpcException;
 
 	/**
 	 * Get collection download tasks in process.
