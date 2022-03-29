@@ -1683,6 +1683,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			throw new HpcException("No task found", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
+		logger.error("ERAN: {} : {}", retryTaskStatus.getCanceledItems().size(), retryTaskStatus.getRetryCanceledTasks());
+		
 		boolean retryCancledTasks = Optional.ofNullable(retryTaskStatus.getRetryCanceledTasks()).orElse(false);
 		if (!retryCancledTasks && retryTaskStatus.getFailedItems().isEmpty()) {
 			throw new HpcException("No failed items found in task", HpcErrorType.INVALID_REQUEST_INPUT);
