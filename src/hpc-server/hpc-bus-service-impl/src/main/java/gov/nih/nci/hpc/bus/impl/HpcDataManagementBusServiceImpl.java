@@ -2384,8 +2384,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 		
-		logger.error("ERAN: {}", taskStatus.getCollectionDownloadTask().getRetryCanceledTasks());
-
 		// Map the task status to DTO.
 		HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
 		downloadStatus.setInProgress(taskStatus.getInProgress());
