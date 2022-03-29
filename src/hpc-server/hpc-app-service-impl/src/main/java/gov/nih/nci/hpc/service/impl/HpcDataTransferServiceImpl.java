@@ -982,6 +982,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 			if (task != null) {
 				taskStatus.setCollectionDownloadTask(task);
+				
+				logger.error("ERAN 1 {}", task.getRetryCanceledTasks());
 				return taskStatus;
 			}
 		}
