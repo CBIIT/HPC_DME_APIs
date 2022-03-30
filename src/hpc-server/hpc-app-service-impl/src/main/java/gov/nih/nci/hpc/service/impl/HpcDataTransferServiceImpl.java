@@ -956,8 +956,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Null download task type", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.error("ERAN 2 {}", taskType);
-		
 		HpcDownloadTaskStatus taskStatus = new HpcDownloadTaskStatus();
 		HpcDownloadTaskResult taskResult = dataDownloadDAO.getDownloadTaskResult(taskId, taskType);
 		if (taskResult != null) {
@@ -967,8 +965,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return taskStatus;
 		}
 		
-		logger.error("ERAN 3");
-
 		// Task still in-progress. Return either the data-object or the collection
 		// active download task.
 		taskStatus.setInProgress(true);
@@ -987,7 +983,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (task != null) {
 				taskStatus.setCollectionDownloadTask(task);
 				
-				logger.error("ERAN 1 {}", task.getRetryCanceledTasks());
 				return taskStatus;
 			}
 		}
