@@ -964,7 +964,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskStatus.setResult(taskResult);
 			return taskStatus;
 		}
-
+		
 		// Task still in-progress. Return either the data-object or the collection
 		// active download task.
 		taskStatus.setInProgress(true);
@@ -982,6 +982,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 			if (task != null) {
 				taskStatus.setCollectionDownloadTask(task);
+				
 				return taskStatus;
 			}
 		}

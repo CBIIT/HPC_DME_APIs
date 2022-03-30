@@ -670,6 +670,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							if (!StringUtils.isEmpty(downloadTask.getRetryTaskId())) {
 								downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
+										downloadTask.getRetryCanceledTasks(),
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
@@ -1651,6 +1652,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param retryTaskId                           The task ID to retry downloading
 	 *                                              all failed items.
 	 * @param retryTaskType                         The retry download task type.
+	 * @param retryCancledTasks                     Indicator whether canceled
+	 *                                              download tasks should be
+	 *                                              retried.
 	 * @param globusDownloadDestination             The user requested Globus
 	 *                                              download destination.
 	 * @param s3DownloadDestination                 The user requested S3 download
@@ -1669,24 +1673,42 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	private List<HpcCollectionDownloadTaskItem> retryDownloadTask(String retryTaskId, HpcDownloadTaskType retryTaskType,
-			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			boolean retryCancledTasks, HpcGlobusDownloadDestination globusDownloadDestination,
+			HpcS3DownloadDestination s3DownloadDestination, HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId,
 			String collectionDownloadTaskId) throws HpcException {
 
 		HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
 				? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
 				: dataManagementBusService.getDataObjectsOrCollectionsDownloadStatus(retryTaskId);
-		if (retryTaskStatus == null || retryTaskStatus.getFailedItems().isEmpty()) {
-			throw new HpcException("No task / failed items found", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
-		// Iterate through the failed download items and retry them.
-		for (HpcCollectionDownloadTaskItem failedItem : retryTaskStatus.getFailedItems()) {
-			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(failedItem.getPath(),
+		// Validate there are tasks to retry.
+		if (retryTaskStatus == null) {
+			throw new HpcException("No task found", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (!retryCancledTasks && retryTaskStatus.getFailedItems().isEmpty()) {
+			throw new HpcException("No failed items found in task", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (retryCancledTasks && retryTaskStatus.getFailedItems().isEmpty()
+				&& retryTaskStatus.getCanceledItems().isEmpty()) {
+			throw new HpcException("No failed/canceled items found in task", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Create a single list of items to be retried - failed and optionally the
+		// canceled items.
+		List<HpcCollectionDownloadTaskItem> retryItems = new ArrayList<>();
+		retryItems.addAll(retryTaskStatus.getFailedItems());
+		if (retryCancledTasks) {
+			retryItems.addAll(retryTaskStatus.getCanceledItems());
+		}
+
+		// Iterate through the items to be retried, and retry them.
+		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+		for (HpcCollectionDownloadTaskItem retryItem : retryItems) {
+			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(retryItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, false, userId, failedItem.getDestinationLocation(),
+					googleCloudStorageDownloadDestination, false, userId, retryItem.getDestinationLocation(),
 					collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
