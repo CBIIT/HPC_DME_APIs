@@ -1,3 +1,0 @@
-ALTER TABLE HPC_COLLECTION_DOWNLOAD_TASK add (RETRY_CANCELED_TASKS CHAR(1));
-COMMENT ON COLUMN HPC_COLLECTION_DOWNLOAD_TASK.RETRY_CANCELED_TASKS IS
-                 'An indicator where canceled tasks will be retried in this task';
