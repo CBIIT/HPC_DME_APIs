@@ -503,10 +503,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
-		return systemGeneratedMetadata.getDataTransferStatus() != null 
-				&& systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) ? null
-				: Optional.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
-						.orElse(0);
+		return systemGeneratedMetadata.getDataTransferStatus() != null
+				&& systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)
+						? null
+						: Optional
+								.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
+								.orElse(0);
 	}
 
 	@Override
@@ -938,7 +940,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasksByCollectionDownloadTaskId(String taskId) throws HpcException {
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasksByCollectionDownloadTaskId(String taskId)
+			throws HpcException {
 		return dataDownloadDAO.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId);
 	}
 
@@ -964,7 +967,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskStatus.setResult(taskResult);
 			return taskStatus;
 		}
-		
+
 		// Task still in-progress. Return either the data-object or the collection
 		// active download task.
 		taskStatus.setInProgress(true);
@@ -982,7 +985,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 			if (task != null) {
 				taskStatus.setCollectionDownloadTask(task);
-				
+
 				return taskStatus;
 			}
 		}
@@ -1372,10 +1375,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Any other streaming download.
 			downloadTask.setPercentComplete(Math.round(percentComplete));
 		}
-		
-		logger.debug("download task: {} - % complete - {} [transfer-type={}, destination-type={}]", downloadTask.getId(),
-				downloadTask.getPercentComplete(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
-		
+
+		logger.debug("download task: {} - % complete - {} [transfer-type={}, destination-type={}]",
+				downloadTask.getId(), downloadTask.getPercentComplete(), downloadTask.getDataTransferType(),
+				downloadTask.getDestinationType());
+
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 
@@ -1546,38 +1550,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, Boolean retryCanceledTasks) throws HpcException {
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
-		
-		boolean retryCanceled = Optional.ofNullable(retryCanceledTasks).orElse(false);
-		if (!downloadTaskCanBeRetried(downloadTaskResult.getResult(), retryCanceled)) {
-			throw new HpcException("Download task completed or canceled: " + downloadTaskResult.getId()
-					+ ". Only failed tasks can be retried", HpcErrorType.INVALID_REQUEST_INPUT);
+
+		if (!downloadTaskCanBeRetried(downloadTaskResult.getResult())) {
+			throw new HpcException("Download task completed: " + downloadTaskResult.getId()
+					+ ". Only failed or canceled tasks can be retried", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
-		boolean failedDownloadItemFound = false;
+
+		boolean failedOrCanceledDownloadItemFound = false;
 		for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
-			if (downloadTaskCanBeRetried(downloadItem.getResult(), retryCanceled)) {
-				failedDownloadItemFound = true;
+			if (downloadTaskCanBeRetried(downloadItem.getResult())) {
+				failedOrCanceledDownloadItemFound = true;
 				break;
 			}
 		}
-		if (!failedDownloadItemFound) {
-			throw new HpcException("No failed download item found for task: " + downloadTaskResult.getId(),
+		if (!failedOrCanceledDownloadItemFound) {
+			throw new HpcException("No failed / canceled download item found for task: " + downloadTaskResult.getId(),
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
 		downloadTask.setRetryTaskId(downloadTaskResult.getId());
-		downloadTask.setRetryCanceledTasks(retryCanceled);
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setUserId(downloadTaskResult.getUserId());
 		downloadTask.setType(downloadTaskResult.getType());
 		downloadTask.setPath(downloadTaskResult.getPath());
-
+		
 		switch (downloadTaskResult.getDestinationType()) {
 		case GLOBUS:
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
@@ -3408,13 +3410,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Determine if a download task can be retried. result is 'failed' or 'canceled'.
+	 * Determine if a download task can be retried. result is 'failed' or
+	 * 'canceled'.
 	 *
 	 * @param result the download result.
-	 * @param retryCanceledTasks indicator whether canceled task are allowed to be retried. 
 	 * @return true if the download task can be retried, or false otherwise.
 	 */
-	private boolean downloadTaskCanBeRetried(HpcDownloadResult result, boolean retryCanceledTasks) {
+	private boolean downloadTaskCanBeRetried(HpcDownloadResult result) {
 		if (result == null) {
 			return false;
 		}
@@ -3422,10 +3424,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		case FAILED:
 		case FAILED_PERMISSION_DENIED:
 		case FAILED_CREDENTIALS_NEEDED:
-			return true;
-			
 		case CANCELED:
-			 return retryCanceledTasks;
+			return true;
 
 		default:
 			return false;

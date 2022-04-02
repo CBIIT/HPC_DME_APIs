@@ -125,11 +125,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_OVERWRITE = ?, S3_ACCOUNT_ACCESS_KEY = ?, S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, "
 			+ "S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, GOOGLE_CLOUD_ACCESS_TOKEN = ?,"
-			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ?, RETRY_TASK_ID = ?, RETRY_CANCELED_TASKS = ?, DATA_TRANSFER_REQUEST_ID = ?, DESTINATION_TYPE = ? "
+			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ?, RETRY_TASK_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, DESTINATION_TYPE = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_ID, "
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, "
-			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, RETRY_TASK_ID, RETRY_CANCELED_TASKS, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, RETRY_TASK_ID, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ? where ID = ?";
 
@@ -371,7 +371,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.fromValue(rs.getString(("STATUS"))));
 		collectionDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
-		collectionDownloadTask.setRetryCanceledTasks(rs.getBoolean("RETRY_CANCELED_TASKS"));
 		collectionDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		String destinationType = rs.getString("DESTINATION_TYPE");
 		if (destinationType != null)
@@ -820,8 +819,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			String s3AccountUrl = null;
 			Boolean s3AccountPathStyleAccessEnabled = null;
 			String destinationType = null;
-			boolean retryCanceledTasks = Optional.ofNullable(collectionDownloadTask.getRetryCanceledTasks())
-					.orElse(false);
 
 			byte[] googleDriveAccessToken = null;
 			byte[] googleCloudAccessToken = null;
@@ -863,17 +860,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					googleCloudAccessToken, collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
-					collectionDownloadTask.getRetryTaskId(), retryCanceledTasks,
-					collectionDownloadTask.getDataTransferRequestId(), destinationType, collectionDownloadTask.getId(),
-					collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
-					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
-					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
-					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
-					googleCloudAccessToken, collectionDownloadTask.getAppendPathToDownloadDestination(),
+					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId(),
+					destinationType, collectionDownloadTask.getId(), collectionDownloadTask.getUserId(),
+					collectionDownloadTask.getPath(), collectionDownloadTask.getConfigurationId(),
+					destinationLocation.getFileContainerId(), destinationLocation.getFileId(), destinationOverwrite,
+					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
+					s3AccountPathStyleAccessEnabled, googleDriveAccessToken, googleCloudAccessToken,
+					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
-					collectionDownloadTask.getRetryTaskId(), retryCanceledTasks,
-					collectionDownloadTask.getDataTransferRequestId(), destinationType);
+					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId(),
+					destinationType);
 
 			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL,
 					new Object[] { new SqlLobValue(toJSON(collectionDownloadTask.getItems()), lobHandler),

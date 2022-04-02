@@ -670,7 +670,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							if (!StringUtils.isEmpty(downloadTask.getRetryTaskId())) {
 								downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
-										downloadTask.getRetryCanceledTasks(),
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
@@ -1652,9 +1651,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param retryTaskId                           The task ID to retry downloading
 	 *                                              all failed items.
 	 * @param retryTaskType                         The retry download task type.
-	 * @param retryCancledTasks                     Indicator whether canceled
-	 *                                              download tasks should be
-	 *                                              retried.
 	 * @param globusDownloadDestination             The user requested Globus
 	 *                                              download destination.
 	 * @param s3DownloadDestination                 The user requested S3 download
@@ -1673,8 +1669,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	private List<HpcCollectionDownloadTaskItem> retryDownloadTask(String retryTaskId, HpcDownloadTaskType retryTaskType,
-			boolean retryCancledTasks, HpcGlobusDownloadDestination globusDownloadDestination,
-			HpcS3DownloadDestination s3DownloadDestination, HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId,
 			String collectionDownloadTaskId) throws HpcException {
 
@@ -1687,11 +1683,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			throw new HpcException("No task found", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		if (!retryCancledTasks && retryTaskStatus.getFailedItems().isEmpty()) {
-			throw new HpcException("No failed items found in task", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		if (retryCancledTasks && retryTaskStatus.getFailedItems().isEmpty()
-				&& retryTaskStatus.getCanceledItems().isEmpty()) {
+		if (retryTaskStatus.getFailedItems().isEmpty() && retryTaskStatus.getCanceledItems().isEmpty()) {
 			throw new HpcException("No failed/canceled items found in task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -1699,9 +1691,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// canceled items.
 		List<HpcCollectionDownloadTaskItem> retryItems = new ArrayList<>();
 		retryItems.addAll(retryTaskStatus.getFailedItems());
-		if (retryCancledTasks) {
-			retryItems.addAll(retryTaskStatus.getCanceledItems());
-		}
+		retryItems.addAll(retryTaskStatus.getCanceledItems());
 
 		// Iterate through the items to be retried, and retry them.
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
