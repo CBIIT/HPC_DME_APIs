@@ -432,7 +432,6 @@
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
-			<xsd:element name="retryCanceledTasks" type="xsd:boolean" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
