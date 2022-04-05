@@ -100,23 +100,12 @@
 									onchange="show(this.value)">
 									<option value="-1">----Select----</option>
 
-									<option value="USAGE_SUMMARY_BY_BASEPATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH'}">Base Path Report</option>
-									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path
-										Report by Date Range</option>
-									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Collection Path Report</option>
-									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path
-										Report by Date Range</option>
-									<option value="USAGE_SUMMARY_BY_DOC" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC'}">DOC Report</option>
-									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC
-										Report by Date Range</option>
-									<option value="USAGE_SUMMARY"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY'}">Summary Report</option>
+									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
+									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
+									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
 									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report
-										by Date Range</option>
-									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User Report</option>
-									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User
-										Report by Date Range</option>
+										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
+									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>
 									
 								</select>
 							</div>
@@ -338,13 +327,13 @@
 		
   $('#fromDate').datepicker({
 	    format: 'mm/dd/yyyy',
-	    defaultDate: 'now',
+	    defaultDate: '01/01/2016'
 	}).on('change', function(){
         $('.datepicker').hide();
     });
  
   if($('#fromDate').val() == '')
-  	$('#fromDate').datepicker('setDate', new Date());
+  	$('#fromDate').datepicker('setDate', '01/01/2016');
   
   $('#toDate').datepicker({
 	    format: 'mm/dd/yyyy',
@@ -393,7 +382,7 @@
     	var pathEle = document.getElementById("collectionPath");
       	var selectedValue = reportType;
       	if(selected != reportType) {
-      		$('#fromDate').datepicker('setDate', new Date());
+      		$('#fromDate').datepicker('setDate', '01/01/2016');
       		$('#toDate').datepicker('setDate', new Date());
       	}
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
@@ -500,29 +489,14 @@
     	  
     	  var fromDate = new Date(fromDateVal);
     	  var toDate = new Date(toDateVal);
-	      	if(reportType == "USAGE_SUMMARY")
-	      	{
-	    		document.getElementById("doc").value = "-1";
-	      		document.getElementById("user").value = "-1";
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-	      	}
-	      	else if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE")
+            if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE")
           	{
         		document.getElementById("doc").value = "-1";
           		document.getElementById("user").value = "-1";
           		if(!validateDateRange())
           			return false;
           	}
-          	else if(reportType == "USAGE_SUMMARY_BY_DOC")
-          	{
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-          		document.getElementById("user").value = "-1";
-        	  	if(document.getElementById("doc").value == "-1")
-        	  		alert("Please select a DOC");
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
+            else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
           	{
           		document.getElementById("user").value = "-1";
         	  	if(document.getElementById("doc").value == "-1")
@@ -530,15 +504,7 @@
         	  	if(!validateDateRange())
           			return false;
           	}
-          	else if(reportType == "USAGE_SUMMARY_BY_USER")
-          	{
-        		document.getElementById("doc").value = "-1";
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-        	  	if(document.getElementById("user").value == "-1")
-        	  		alert("Please select a user");
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
+            else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
           	{
         	  	if(document.getElementById("user").value == "-1")
         	  		alert("Please select a user");
@@ -546,16 +512,7 @@
         		if(!validateDateRange())
           			return false;
           	}
-          	else if(reportType == "USAGE_SUMMARY_BY_BASEPATH")
-          	{
-        		document.getElementById("doc").value = "-1";
-        		document.getElementById("user").value = "-1";
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-        	  	if(document.getElementById("basepath").value == "-1")
-        	  		alert("Please select a Base path");
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
+            else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
           	{
         	  	if(document.getElementById("basepath").value == "-1")
         	  		alert("Please select a Base path");
@@ -564,25 +521,19 @@
         		if(!validateDateRange())
           			return false;
           	}
-          	else if(reportType == "USAGE_SUMMARY_BY_PATH" || 
-          			reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
+            else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
           	{
         		document.getElementById("doc").value = "-1";
         		document.getElementById("user").value = "-1";
         		document.getElementById("basepath").value = "-1";
-        		
-        		if(reportType == "USAGE_SUMMARY_BY_PATH") {
-        			document.getElementById("fromDate").value = null;
-        	  		document.getElementById("toDate").value = null;
-        		} else {
-        			if(!validateDateRange())
+
+        		if(!validateDateRange()) {
               			return false;
-        		}
-        		
+                }
+
         	  	if(document.getElementById("path").value == null || document.getElementById("path").value == "")
         	  		alert("Please enter path");
           	
-	      
 	      		//Strip trailing "/" if present
 				var lastChar = $("#path").val().substr(-1);
 			 	if(lastChar === '/') {
@@ -590,7 +541,7 @@
 					$("#path").val(updatedPath);
 				}
           	}
-      
+
     	  if(fromDate.valueOf() > toDate.valueOf())
     	  {
     		  alert("Invalid date range");
@@ -601,15 +552,13 @@
     		  alert("Please select report type");
     		  return false;
     	  }
-    	  
+
 	      document.getElementById("reportsform").submit();
       }
+
+
       function validateDateRange()
       {
-    	  if($('#fromDate').val() == '' && $('#toDate').val() == '') {
-    		  alert("Please enter a date range");
-    		  return false;
-    	  }
     	  if($('#fromDate').val() == '')
     		  $('#fromDate').val('01/01/2016');
     	  if($('#toDate').val() == '') {
