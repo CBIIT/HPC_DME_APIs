@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -618,8 +619,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
 				// User requested to cancel this collection download task.
-				logger.info(
-						"Processing User requested cancellation of task for collection path " + downloadTask.getPath());
+				logger.info("Processing User requested cancellation of task for collection path {}",
+						downloadTask.getPath());
 				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED, "Download request canceled");
 				continue;
 			}
@@ -668,7 +669,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker(
 									downloadTask.getId());
 
-							if (!StringUtils.isEmpty(downloadTask.getRetryTaskId())) {
+							// If this is a retry task, exclude the path that downloaded successfully in the
+							// original request.
+							Set<String> excludedPaths = getExcludedDownloadTaskItemPaths(downloadTask.getRetryTaskId(),
+									downloadTask.getType());
+
+							if (!StringUtils.isEmpty(downloadTask.getRetryTaskId())
+									&& downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 								downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
@@ -691,7 +698,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getGoogleDriveDownloadDestination(),
 										downloadTask.getGoogleCloudStorageDownloadDestination(),
 										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-										collectionDownloadBreaker, downloadTask.getId());
+										collectionDownloadBreaker, downloadTask.getId(), excludedPaths);
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 								downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
@@ -716,7 +723,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											downloadTask.getGoogleDriveDownloadDestination(),
 											downloadTask.getGoogleCloudStorageDownloadDestination(),
 											downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-											collectionDownloadBreaker, downloadTask.getId()));
+											collectionDownloadBreaker, downloadTask.getId(), excludedPaths));
 								}
 							}
 
@@ -1549,6 +1556,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param collectionDownloadTaskId              The collection download task ID
 	 *                                              this data object download
 	 *                                              request is part of
+	 * @param excludedPaths                         List of paths to exclude from
+	 *                                              the download (this is in the
+	 *                                              case of a retry, not
+	 *                                              re-downloading items that
+	 *                                              already completed).
 	 * @return The download task items (each item represent a data-object download
 	 *         under the collection).
 	 * @throws HpcException on service failure.
@@ -1557,12 +1569,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, boolean appendPathToDownloadDestination,
-			String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker, String collectionDownloadTaskId)
-			throws HpcException {
+			String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker, String collectionDownloadTaskId,
+			Set<String> excludedPaths) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
+			if (excludedPaths.contains(dataObjectEntry.getPath())) {
+				// This file was successfully downloaded in the original run. No need to
+				// download in this retry attempt.
+				logger.info(
+						"Processing collection download retry task {}: Skip file that was successfully completed in original request: {}",
+						collectionDownloadTaskId, dataObjectEntry.getPath());
+				continue;
+			}
+
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 					googleCloudStorageDownloadDestination, appendPathToDownloadDestination, userId, null,
@@ -1593,7 +1614,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								appendPathToDownloadDestination ? null : false, null),
 						calculateGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination,
 								subCollectionPath, appendPathToDownloadDestination ? null : false, null),
-						appendPathToDownloadDestination, userId, collectionDownloadBreaker, collectionDownloadTaskId));
+						appendPathToDownloadDestination, userId, collectionDownloadBreaker, collectionDownloadTaskId,
+						excludedPaths));
 			}
 		}
 
@@ -1704,6 +1726,33 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 
 		return downloadItems;
+	}
+
+	/**
+	 * Get a list of path to exclude from retry because they were successful in the
+	 * initial download task.
+	 *
+	 * @param retryTaskId   The task ID to retry downloading all failed items.
+	 * @param retryTaskType The retry download task type.
+	 * @return List of path to exclude from download retry
+	 * @throws HpcException on service failure.
+	 */
+	private Set<String> getExcludedDownloadTaskItemPaths(String retryTaskId, HpcDownloadTaskType retryTaskType)
+			throws HpcException {
+		Set<String> excludedPaths = new HashSet<>();
+		if (!StringUtils.isEmpty(retryTaskId) && retryTaskType != null) {
+			HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
+					? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
+					: dataManagementBusService.getDataObjectsOrCollectionsDownloadStatus(retryTaskId);
+
+			if (retryTaskStatus == null) {
+				throw new HpcException("No task found", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			retryTaskStatus.getCompletedItems().forEach(item -> excludedPaths.add(item.getPath()));
+		}
+
+		return excludedPaths;
 	}
 
 	/**
