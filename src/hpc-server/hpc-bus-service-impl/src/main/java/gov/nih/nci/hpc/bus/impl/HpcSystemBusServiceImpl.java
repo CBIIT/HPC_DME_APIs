@@ -1573,6 +1573,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			Set<String> excludedPaths) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
+		logger.info("Processing collection download retry task {}: Excluded Paths: {}", collectionDownloadTaskId,
+				excludedPaths);
+
 		// Iterate through the data objects in the collection and download them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
 			if (excludedPaths.contains(dataObjectEntry.getPath())) {
@@ -1581,21 +1584,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				logger.info(
 						"Processing collection download retry task {}: Skip file that was successfully completed in original request: {}",
 						collectionDownloadTaskId, dataObjectEntry.getPath());
-				continue;
-			}
-
-			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
-					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, appendPathToDownloadDestination, userId, null,
-					collectionDownloadTaskId);
-			downloadItems.add(downloadItem);
-			if (collectionDownloadBreaker.abortDownload(downloadItem)) {
-				// Need to abort collection download processing. Cancel and return the items
-				// processed so
-				// far.
-				dataTransferService.cancelCollectionDownloadTaskItems(downloadItems);
-				logger.info("Processing collection download task [{}] aborted", collection.getAbsolutePath());
-				return downloadItems;
+			} else {
+				// Download this file. It was not previously successfully downloaded in case
+				// this is a retry request.
+				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
+						globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
+						googleCloudStorageDownloadDestination, appendPathToDownloadDestination, userId, null,
+						collectionDownloadTaskId);
+				downloadItems.add(downloadItem);
+				if (collectionDownloadBreaker.abortDownload(downloadItem)) {
+					// Need to abort collection download processing. Cancel and return the items
+					// processed so
+					// far.
+					dataTransferService.cancelCollectionDownloadTaskItems(downloadItems);
+					logger.info("Processing collection download task [{}] aborted", collection.getAbsolutePath());
+					return downloadItems;
+				}
 			}
 		}
 
