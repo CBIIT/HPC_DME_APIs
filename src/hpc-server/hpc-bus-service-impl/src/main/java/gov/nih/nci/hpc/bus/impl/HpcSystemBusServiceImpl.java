@@ -744,7 +744,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							logger.info("collection download task: {} - finished processing [{}]", downloadTask.getId(),
 									downloadTask.getType());
 
-						} catch (HpcException e) {
+						} catch (Exception e) {
 							logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
 							try {
 								completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
