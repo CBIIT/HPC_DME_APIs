@@ -286,7 +286,9 @@
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
+							<div class="panel-heading"
+								th:if="${(hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0) or
+										 (hpcDataObjectsDownloadStatusDTO.getCanceledItems() != null and hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() > 0)}">
 							  <div class="col-md-3">	
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
