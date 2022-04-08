@@ -744,7 +744,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							logger.info("collection download task: {} - finished processing [{}]", downloadTask.getId(),
 									downloadTask.getType());
 
-						} catch (Exception e) {
+						} catch (HpcException e) {
 							logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
 							try {
 								completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
@@ -1816,7 +1816,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
 			downloadItem.setRestoreInProgress(dataObjectDownloadResponse.getRestoreInProgress());
 
-		} catch (HpcException e) {
+		} catch (Exception e) {
 			// Data object download failed.
 			logger.error("Failed to download data object in a collection", e);
 
