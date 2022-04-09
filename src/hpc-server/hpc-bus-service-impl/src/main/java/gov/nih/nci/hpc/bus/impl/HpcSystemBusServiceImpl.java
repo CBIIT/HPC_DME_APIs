@@ -1585,6 +1585,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						"Processing collection download retry task {}: Skip file that was successfully completed in original request: {}",
 						collectionDownloadTaskId, dataObjectEntry.getPath());
 			} else {
+				logger.error("ERAN: Not skipping file: {} {}", excludedPaths.size(), dataObjectEntry.getPath());
 				// Download this file. It was not previously successfully downloaded in case
 				// this is a retry request.
 				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
