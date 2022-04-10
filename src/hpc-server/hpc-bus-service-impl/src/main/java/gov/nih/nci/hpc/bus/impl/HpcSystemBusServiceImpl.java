@@ -1585,7 +1585,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						"Processing collection download retry task {}: Skip file that was successfully completed in original request: {}",
 						collectionDownloadTaskId, dataObjectEntry.getPath());
 			} else {
-				logger.error("ERAN: Not skipping file: {} {}", excludedPaths.size(), dataObjectEntry.getPath());
 				// Download this file. It was not previously successfully downloaded in case
 				// this is a retry request.
 				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
@@ -1745,16 +1744,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	private Set<String> getExcludedDownloadTaskItemPaths(String retryTaskId, HpcDownloadTaskType retryTaskType)
 			throws HpcException {
 		Set<String> excludedPaths = new HashSet<>();
+		return getExcludedDownloadTaskItemPaths(retryTaskId, retryTaskType, excludedPaths);
+	}
+
+	private Set<String> getExcludedDownloadTaskItemPaths(String retryTaskId, HpcDownloadTaskType retryTaskType,
+			Set<String> excludedPaths) throws HpcException {
 		if (!StringUtils.isEmpty(retryTaskId) && retryTaskType != null) {
 			HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
 					? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
 					: dataManagementBusService.getDataObjectsOrCollectionsDownloadStatus(retryTaskId);
 
 			if (retryTaskStatus == null) {
-				throw new HpcException("No task found", HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException("No task found: " + retryTaskId + " " + retryTaskType,
+						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
 			retryTaskStatus.getCompletedItems().forEach(item -> excludedPaths.add(item.getPath()));
+
+			// Call this method recursively in case this was a 'retry of retry' situation,
+			// so make sure we exclude
+			// all successful downloads in this chain of retries.
+			return getExcludedDownloadTaskItemPaths(retryTaskStatus.getRetryTaskId(), retryTaskType, excludedPaths);
 		}
 
 		return excludedPaths;
