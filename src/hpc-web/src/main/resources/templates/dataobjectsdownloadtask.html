@@ -218,8 +218,8 @@
 							<div class="panel-body"
 								th:if="${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems()}" style="margin-top:5px" >
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems()}" style="margin-top:5px;word-break: break-all;" >
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -257,8 +257,8 @@
 							<div class="panel-body"
 								th:if="${hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getInProgressItems()}" style="margin-top:5px" >
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getInProgressItems()}" style="margin-top:5px;word-break: break-all;" >
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -303,8 +303,8 @@
 							<div class="panel-body">
 							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getFailedItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getFailedItems()}"  style="margin-top:5px;word-break: break-all;">
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -321,8 +321,8 @@
 							  <div 
 								th:if="${hpcDataObjectsDownloadStatusDTO.getCanceledItems() != null and hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCanceledItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCanceledItems()}"  style="margin-top:5px;word-break: break-all;">
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -337,7 +337,7 @@
 							  </div>
 							</div>
 							<div class="panel-heading" th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
-								or (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
+								or (hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Completed</strong>
@@ -346,11 +346,11 @@
 							</div>
 							<div class="panel-body"
 								th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
-								or  (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
+								or  (hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="panel panel-default">
 							    <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
-								  <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+								  <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px;word-break: break-all;">
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -372,8 +372,8 @@
 							    <div th:if="${hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty()}">
 							      <div th:each="hpcDataObjectsDownloadStatusDTO : ${hpcOrigDataObjectsDownloadStatusDTOs.subList(0, hpcOrigDataObjectsDownloadStatusDTOs.size())}">
 							        <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
-								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
-									    <div class="col-md-12 form-group" style="word-break: break-all;">
+								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px;word-break: break-all;">
+									    <div class="col-md-12 form-group">
 										  <label for="Name">Path:</label> 
 										  <a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					    <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
