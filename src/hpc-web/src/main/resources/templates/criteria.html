@@ -36,6 +36,7 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link href="css/select2-4.0.11.min.css" rel="stylesheet" />
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -132,7 +133,7 @@
 												<input type="hidden" id="attributeEncryptedHidden1" name="encrypted" value="false"/>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
-												id="level1" name="level" class="form-control"
+												id="level1" name="level" class="form-control simple-select2 sl"
 												th:required="required"
 												onChange="populateLevelAttributes(this.value, this.id)">
 													<option value="ANY">ANY</option>
@@ -142,7 +143,7 @@
 														Wireframe</option>
 											</select></td>
 											<td style="white-space: nowrap"><select size="1"
-												id="attrName1" name="attrName" class="form-control"
+												id="attrName1" name="attrName" class="form-control simple-select2 sl"
 												th:required="required">
 													<option value="ANY">ANY</option>
 													<option
@@ -291,12 +292,17 @@
 	<script src="js/charts.js"></script>
 	<script src="js/jquery.slimscroll.min.js"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
-
+	<script src="js/select2-4.0.11.min.js"></script>
+	
 	<script>
 	$(document).ready(function(){
 		$('#sub-menu-search').addClass("active");
 		$('[data-toggle="tooltip"]').tooltip();
 		document.getElementById("detailed").checked = true;
+		$('#level1').select2().on("change", function(e) {
+		  populateLevelAttributes(e.val, "level1")
+        });
+		$('#attrName1').select2();
 	});
 	
   $('#createdDate').datepicker({
