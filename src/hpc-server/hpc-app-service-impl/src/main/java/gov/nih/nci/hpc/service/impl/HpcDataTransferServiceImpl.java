@@ -1559,16 +1559,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					+ ". Only failed or canceled tasks can be retried", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		boolean failedOrCanceledDownloadItemFound = false;
-		for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
-			if (downloadTaskCanBeRetried(downloadItem.getResult())) {
-				failedOrCanceledDownloadItemFound = true;
-				break;
+		if (downloadTaskResult.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+			// If retry a data object list downlnload task, we validate that at least 1 item
+			// failed or canceled in the task.
+			boolean failedOrCanceledDownloadItemFound = false;
+			for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
+				if (downloadTaskCanBeRetried(downloadItem.getResult())) {
+					failedOrCanceledDownloadItemFound = true;
+					break;
+				}
 			}
-		}
-		if (!failedOrCanceledDownloadItemFound) {
-			throw new HpcException("No failed / canceled download item found for task: " + downloadTaskResult.getId(),
-					HpcErrorType.INVALID_REQUEST_INPUT);
+			if (!failedOrCanceledDownloadItemFound) {
+				throw new HpcException(
+						"No failed / canceled download item found for task: " + downloadTaskResult.getId(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 
 		// Create a new collection download task.
@@ -1580,7 +1585,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setType(downloadTaskResult.getType());
 		downloadTask.setPath(downloadTaskResult.getPath());
 		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
-		
+
 		switch (downloadTaskResult.getDestinationType()) {
 		case GLOBUS:
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
