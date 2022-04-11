@@ -337,7 +337,7 @@
 							  </div>
 							</div>
 							<div class="panel-heading" th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
-								or (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
+								or (hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Completed</strong>
@@ -346,7 +346,7 @@
 							</div>
 							<div class="panel-body"
 								th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
-								or  (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
+								or  (hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="panel panel-default">
 							    <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
 								  <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
