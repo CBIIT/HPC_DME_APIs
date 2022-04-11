@@ -87,6 +87,11 @@
 								<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
 								</h2>
 								</div>
+								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED')}">
+								  <h2>
+								    <strong> <a class="downloadfailed btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								  </h2>
+							    </div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() == null or (hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0) }">
 									<h2>
 										<strong> <a id="cancelDownload"
@@ -121,7 +126,7 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>
-								<div class="form-group" style="word-break: break-all;}">
+								<div class="form-group" style="word-break: break-all;">
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
 										<label for="Name">Task ID:</label> <label
 											for="${taskId}"
@@ -301,7 +306,7 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
 								  <h2>
-								    <strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								    <strong> <a class="downloadfailed btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
 								  </h2>
 							   </div>
 							</div>
@@ -449,7 +454,7 @@ $(document).ready(function(){
 	
 function retryDownload(task, taskType)
 {
-	$('#downloadfailed').addClass('disabled');
+	$('.downloadfailed').addClass('disabled');
 	document.getElementById("taskId").value = task;
 	document.getElementById("taskType").value = taskType;
 	$("#downloadForm").submit();
