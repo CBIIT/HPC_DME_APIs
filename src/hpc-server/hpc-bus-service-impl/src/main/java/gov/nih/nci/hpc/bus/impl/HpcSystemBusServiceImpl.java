@@ -798,6 +798,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
 											? downloadItemStatus.getResult().getEffectiveTransferSpeed()
 											: null);
+							downloadItem.setSize(downloadItemStatus.getResult().getSize());
 
 							if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)) {
 								// This item failed because of permission denied.
