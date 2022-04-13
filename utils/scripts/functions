@@ -315,6 +315,8 @@ For files larger than 2GB, use dm_register_dataobject_multipart.
   archive-path                Destination path in the archive
   [source-file]               Path of the file to upload
 
+For a sample description.json file, see templates/dataobject-presigned-metadata.json
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/KohzFw
 
@@ -429,6 +431,9 @@ function dm_show_register_dataobject_usage {
   [description-json]          Path to the JSON file containing the metadata and source info for the new dataobject 
   [archive-path]              Destination path in the archive
   [source-file]               Path to the source file for synchronous uploads. Omit the parameter for asynchronous upload (Globus and S3).
+
+For sample description.json files for synchronous uploads, see templates/dataobject-sync-metadata.json and templates/dataobject-sync-metadata-extraction.json
+For sample description.json files for asynchronous uploads, see templates/dataobject-globus-metadata.json and templates/dataobject-s3-metadata.json	 
 
 For detailed information on registering a data file, refer to the following page: 
 https://wiki.nci.nih.gov/x/ARtGFw
@@ -3003,6 +3008,8 @@ function dm_show_rename_usage {
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   [description-json]          Path to the JSON file containing the source and destination path in the archive
 
+For a sample description.json file, see templates/rename-template.json
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/Lg5GFw
 
@@ -3121,6 +3128,8 @@ function dm_show_add_bookmark_usage {
   bookmark_name               Display name for the bookmark 
   description-json            Path to the JSON file containing the bookmark path in the archive
 
+For a sample description.json file, see templates/add_bookmark_group_admin.json
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/ooheFw
 
@@ -3238,6 +3247,8 @@ function dm_show_register_user_usage {
   user_id                     NIH user ID of the user
   description.json            Path to the JSON file containing input data for registration
 
+For a sample description.json file, see templates/register-user-template.json
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/xh5GFw
 
@@ -3353,6 +3364,8 @@ function dm_show_update_user_usage {
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   user_id                     NIH user ID of the user
   description-json            Path to the JSON file containing additional command parameters
+
+For a sample description.json file, see templates/update-user-template.json
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/yB5GFw
