@@ -232,6 +232,7 @@ function dm_show_register_collection_usage {
   [description.json]          Path to the JSON file containing the metadata for the new collection.
   [archive-path]              Destination path in the archive
 
+For a sample description.json file, see templates/collection-metadata-template.json
 For detailed information on creating a collection, refer to the following page: 
 https://wiki.nci.nih.gov/x/g4JeFw
 
@@ -315,7 +316,7 @@ For files larger than 2GB, use dm_register_dataobject_multipart.
   archive-path                Destination path in the archive
   [source-file]               Path of the file to upload
 
-For a sample description.json file, see templates/dataobject-presigned-metadata.json
+For a sample description.json file, see templates/dataobject-presigned-metadata-template.json
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/KohzFw
@@ -432,8 +433,8 @@ function dm_show_register_dataobject_usage {
   [archive-path]              Destination path in the archive
   [source-file]               Path to the source file for synchronous uploads. Omit the parameter for asynchronous upload (Globus and S3).
 
-For sample description.json files for synchronous uploads, see templates/dataobject-sync-metadata.json and templates/dataobject-sync-metadata-extraction.json
-For sample description.json files for asynchronous uploads, see templates/dataobject-globus-metadata.json and templates/dataobject-s3-metadata.json	 
+For sample description.json files for synchronous uploads, see templates/dataobject-sync-metadata-template.json and templates/dataobject-sync-metadata-extraction-template.json
+For sample description.json files for asynchronous uploads, see templates/dataobject-globus-metadata-template.json and templates/dataobject-s3-metadata-template.json	 
 
 For detailed information on registering a data file, refer to the following page: 
 https://wiki.nci.nih.gov/x/ARtGFw
@@ -3128,7 +3129,7 @@ function dm_show_add_bookmark_usage {
   bookmark_name               Display name for the bookmark 
   description-json            Path to the JSON file containing the bookmark path in the archive
 
-For a sample description.json file, see templates/add_bookmark_group_admin.json
+For a sample description.json file, see templates/add_bookmark_group_admin-template.json
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/ooheFw
