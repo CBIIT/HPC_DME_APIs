@@ -2485,7 +2485,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void populateDownloadItems(HpcCollectionDownloadStatusDTO downloadStatus,
 			List<HpcCollectionDownloadTaskItem> items) {
 		for (HpcCollectionDownloadTaskItem item : items) {
-			item.setSize(null);
 			HpcDownloadResult result = item.getResult();
 			if (result == null) {
 				if (Boolean.TRUE.equals(item.getRestoreInProgress()))
