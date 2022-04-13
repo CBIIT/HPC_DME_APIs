@@ -744,7 +744,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							logger.info("collection download task: {} - finished processing [{}]", downloadTask.getId(),
 									downloadTask.getType());
 
-						} catch (Exception e) {
+						} catch (HpcException e) {
 							logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
 							try {
 								completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
@@ -798,6 +798,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
 											? downloadItemStatus.getResult().getEffectiveTransferSpeed()
 											: null);
+							downloadItem.setSize(downloadItemStatus.getResult().getSize());
 
 							if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)) {
 								// This item failed because of permission denied.
@@ -1744,16 +1745,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	private Set<String> getExcludedDownloadTaskItemPaths(String retryTaskId, HpcDownloadTaskType retryTaskType)
 			throws HpcException {
 		Set<String> excludedPaths = new HashSet<>();
+		return getExcludedDownloadTaskItemPaths(retryTaskId, retryTaskType, excludedPaths);
+	}
+
+	private Set<String> getExcludedDownloadTaskItemPaths(String retryTaskId, HpcDownloadTaskType retryTaskType,
+			Set<String> excludedPaths) throws HpcException {
 		if (!StringUtils.isEmpty(retryTaskId) && retryTaskType != null) {
 			HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
 					? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
 					: dataManagementBusService.getDataObjectsOrCollectionsDownloadStatus(retryTaskId);
 
 			if (retryTaskStatus == null) {
-				throw new HpcException("No task found", HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException("No task found: " + retryTaskId + " " + retryTaskType,
+						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
 			retryTaskStatus.getCompletedItems().forEach(item -> excludedPaths.add(item.getPath()));
+
+			// Call this method recursively in case this was a 'retry of retry' situation,
+			// so make sure we exclude
+			// all successful downloads in this chain of retries.
+			return getExcludedDownloadTaskItemPaths(retryTaskStatus.getRetryTaskId(), retryTaskType, excludedPaths);
 		}
 
 		return excludedPaths;
@@ -1816,7 +1828,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
 			downloadItem.setRestoreInProgress(dataObjectDownloadResponse.getRestoreInProgress());
 
-		} catch (HpcException e) {
+		} catch (Exception e) {
 			// Data object download failed.
 			logger.error("Failed to download data object in a collection", e);
 
