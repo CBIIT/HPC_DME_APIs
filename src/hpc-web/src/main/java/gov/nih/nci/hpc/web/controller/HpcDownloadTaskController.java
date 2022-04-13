@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
+
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -381,6 +383,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
 			new ArrayList<HpcCollectionDownloadStatusDTO>());
 
+	long completedItemsSize = getCompletedItemsSize(downloadTask, previousTasks);
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
 		int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
@@ -393,6 +396,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+    model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
 
     return "dataobjectsdownloadtask";
   }
@@ -435,6 +439,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
 			new ArrayList<HpcCollectionDownloadStatusDTO>());
 
+	long completedItemsSize = getCompletedItemsSize(downloadTask, previousTasks);
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
 		int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
@@ -447,6 +452,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+    model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
 
     return "dataobjectsdownloadtask";
   }
@@ -472,6 +478,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
 				new ArrayList<HpcCollectionDownloadStatusDTO>());
 
+		long completedItemsSize = getCompletedItemsSize(downloadTask, previousTasks);
 		//If previousTasks is not empty, update the message to include the items in it
 		if(!previousTasks.isEmpty()) {
 			int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
@@ -484,6 +491,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
 	    model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 	    model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+	    model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
 
 	    return "dataobjectsdownloadtask";
   }
@@ -518,5 +526,19 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	  return completedItemsCount;
   }
 
+  private long getCompletedItemsSize(HpcCollectionDownloadStatusDTO downloadTask, List<HpcCollectionDownloadStatusDTO> previousTasks) {
+	  long completedItemsSize = 0;
+	  if(downloadTask != null) {
+		  for(HpcCollectionDownloadTaskItem completedItem: downloadTask.getCompletedItems())
+			  completedItemsSize += completedItem.getSize() != null ? completedItem.getSize() : 0;
+		  if(previousTasks != null && !previousTasks.isEmpty()) {
+			  for(HpcCollectionDownloadStatusDTO previousTask: previousTasks) {
+				  for(HpcCollectionDownloadTaskItem prevCompletedItem: previousTask.getCompletedItems())
+					  completedItemsSize += prevCompletedItem.getSize() != null ? prevCompletedItem.getSize() : 0;
+			  }
+		  }
+	  }
+	  return completedItemsSize;
+  }
 
 }
