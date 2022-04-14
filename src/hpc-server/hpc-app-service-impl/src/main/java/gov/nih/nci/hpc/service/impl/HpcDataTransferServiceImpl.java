@@ -503,10 +503,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
-		return systemGeneratedMetadata.getDataTransferStatus() != null 
-				&& systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) ? null
-				: Optional.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
-						.orElse(0);
+		return systemGeneratedMetadata.getDataTransferStatus() != null
+				&& systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)
+						? null
+						: Optional
+								.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
+								.orElse(0);
 	}
 
 	@Override
@@ -938,7 +940,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasksByCollectionDownloadTaskId(String taskId) throws HpcException {
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasksByCollectionDownloadTaskId(String taskId)
+			throws HpcException {
 		return dataDownloadDAO.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId);
 	}
 
@@ -982,6 +985,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 			if (task != null) {
 				taskStatus.setCollectionDownloadTask(task);
+
 				return taskStatus;
 			}
 		}
@@ -1371,10 +1375,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Any other streaming download.
 			downloadTask.setPercentComplete(Math.round(percentComplete));
 		}
-		
-		logger.debug("download task: {} - % complete - {} [transfer-type={}, destination-type={}]", downloadTask.getId(),
-				downloadTask.getPercentComplete(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
-		
+
+		logger.debug("download task: {} - % complete - {} [transfer-type={}, destination-type={}]",
+				downloadTask.getId(), downloadTask.getPercentComplete(), downloadTask.getDataTransferType(),
+				downloadTask.getDestinationType());
+
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 
@@ -1548,21 +1553,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
-		if (!failedDownloadResult(downloadTaskResult.getResult())) {
-			throw new HpcException("Download task completed or canceled: " + downloadTaskResult.getId()
-					+ ". Only failed tasks can be retried", HpcErrorType.INVALID_REQUEST_INPUT);
+
+		if (!downloadTaskCanBeRetried(downloadTaskResult.getResult())) {
+			throw new HpcException("Download task completed: " + downloadTaskResult.getId()
+					+ ". Only failed or canceled tasks can be retried", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		boolean failedDownloadItemFound = false;
-		for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
-			if (failedDownloadResult(downloadItem.getResult())) {
-				failedDownloadItemFound = true;
-				break;
+		if (downloadTaskResult.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+			// If retry a data object list downlnload task, we validate that at least 1 item
+			// failed or canceled in the task.
+			boolean failedOrCanceledDownloadItemFound = false;
+			for (HpcCollectionDownloadTaskItem downloadItem : downloadTaskResult.getItems()) {
+				if (downloadTaskCanBeRetried(downloadItem.getResult())) {
+					failedOrCanceledDownloadItemFound = true;
+					break;
+				}
 			}
-		}
-		if (!failedDownloadItemFound) {
-			throw new HpcException("No failed download item found for task: " + downloadTaskResult.getId(),
-					HpcErrorType.INVALID_REQUEST_INPUT);
+			if (!failedOrCanceledDownloadItemFound) {
+				throw new HpcException(
+						"No failed / canceled download item found for task: " + downloadTaskResult.getId(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 
 		// Create a new collection download task.
@@ -1573,6 +1584,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setUserId(downloadTaskResult.getUserId());
 		downloadTask.setType(downloadTaskResult.getType());
 		downloadTask.setPath(downloadTaskResult.getPath());
+		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
 
 		switch (downloadTaskResult.getDestinationType()) {
 		case GLOBUS:
@@ -1706,6 +1718,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setId(downloadTask.getId());
 		taskResult.setUserId(downloadTask.getUserId());
 		taskResult.setPath(downloadTask.getPath());
+		taskResult.getCollectionPaths().addAll(downloadTask.getCollectionPaths());
 		if (downloadTask.getS3DownloadDestination() != null) {
 			taskResult.setDestinationLocation(downloadTask.getS3DownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.S_3);
@@ -3404,12 +3417,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Determine if a download result is 'failed' - one of 3 failure status.
+	 * Determine if a download task can be retried. result is 'failed' or
+	 * 'canceled'.
 	 *
 	 * @param result the download result.
-	 * @return true if the status is one of 3 representing a failure.
+	 * @return true if the download task can be retried, or false otherwise.
 	 */
-	private boolean failedDownloadResult(HpcDownloadResult result) {
+	private boolean downloadTaskCanBeRetried(HpcDownloadResult result) {
 		if (result == null) {
 			return false;
 		}
@@ -3417,6 +3431,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		case FAILED:
 		case FAILED_PERMISSION_DENIED:
 		case FAILED_CREDENTIALS_NEEDED:
+		case CANCELED:
 			return true;
 
 		default:

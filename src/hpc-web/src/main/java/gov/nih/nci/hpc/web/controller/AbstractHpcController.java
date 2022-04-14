@@ -22,6 +22,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -52,6 +53,8 @@ public abstract class AbstractHpcController {
 	protected static final String ATTR_USER_DOC_MODEL = "userDOCModel";
 	protected static final String ATTR_USER_PERMISSION = "userpermission";
 	protected static final String ATTR_ERROR = "error";
+	protected static final String ATTR_MESSAGE = "message";
+	protected static final String ATTR_BOOKMARKS = "bookmarks";
 	
 	//Return constants
 	protected static final String RET_DASHBOARD = "dashboard";
@@ -78,7 +81,7 @@ public abstract class AbstractHpcController {
 	@ExceptionHandler({ Exception.class, java.net.ConnectException.class })
 	public @ResponseBody HpcResponse handleUncaughtException(Exception ex, WebRequest request,
 			HttpServletResponse response) {
-		log.info("Converting Uncaught exception to RestResponse : " + ex.getMessage());
+		log.info("Converting Uncaught exception to RestResponse : {}", ex.getMessage());
 
 		response.setHeader("Content-Type", "application/json");
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -88,16 +91,27 @@ public abstract class AbstractHpcController {
 	@ExceptionHandler(IllegalArgumentException.class)
 	public @ResponseBody HpcResponse handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request,
 			HttpServletResponse response) {
-		log.info("Converting IllegalArgumentException to RestResponse : " + ex.getMessage());
+		log.info("Converting IllegalArgumentException to RestResponse : {}", ex.getMessage());
 
 		response.setHeader("Content-Type", "application/json");
 		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		return new HpcResponse("Error occurred", ex.toString());
 	}
+
+
+	protected HpcDataManagementModelDTO getModelDTO(HttpSession session) {
+		String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
+		if (modelDTO == null) {
+			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+			session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
+		}
+		return modelDTO;
+	}
 	
 	
 	protected void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
-		List<String> userDOCs = new ArrayList<String>();
+		List<String> userDOCs = new ArrayList<>();
 		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
 			List<String> docs = HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session);
 			model.addAttribute("docs", docs);
@@ -110,13 +124,13 @@ public abstract class AbstractHpcController {
 	
 	protected List<HpcBookmark> fetchCurrentUserBookmarks(HttpSession session) {
 	    List<HpcBookmark> retBookmarkList;
-	    if (session.getAttribute("bookmarks") instanceof List) {
+	    if (session.getAttribute(ATTR_BOOKMARKS) instanceof List) {
 	      // if "bookmarks" session attribute of type List is present, assume component type is HpcBookmark
 	      retBookmarkList = (List<HpcBookmark>) session.getAttribute("bookmarks");
-	    } else if (null == session.getAttribute("hpcUserToken")) {
+	    } else if (null == session.getAttribute(ATTR_USER_TOKEN)) {
 	      throw new HpcWebException("No user token is session, so unable to resolve which user.");
 	    } else {
-	      final String authToken = session.getAttribute("hpcUserToken").toString();
+	      final String authToken = session.getAttribute(ATTR_USER_TOKEN).toString();
 	      final HpcBookmarkListDTO dto = HpcClientUtil.getBookmarks(
 	          authToken, bookmarkServiceURL, sslCertPath,
 	          sslCertPassword);
