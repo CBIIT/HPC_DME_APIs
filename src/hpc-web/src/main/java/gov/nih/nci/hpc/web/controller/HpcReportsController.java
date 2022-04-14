@@ -32,6 +32,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -105,11 +106,11 @@ public class HpcReportsController extends AbstractHpcController {
   public String home(@RequestBody(required = false) String q, Model model,
       BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
     model.addAttribute("reportRequest", new HpcReportRequest());
-    return init(model, bindingResult, session, request);
+    return init(model, bindingResult, session);
   }
 
-  private String init(Model model, BindingResult bindingResult, HttpSession session,
-      HttpServletRequest request) {
+
+  private String init(Model model, BindingResult bindingResult, HttpSession session) {
     String authToken = (String) session.getAttribute("hpcUserToken");
     if (authToken == null) {
       return "redirect:/login?returnPath=reports";
@@ -122,6 +123,7 @@ public class HpcReportsController extends AbstractHpcController {
       model.addAttribute("hpcLogin", hpcLogin);
       return "redirect:/login?returnPath=reports";
     }
+
     model.addAttribute("userRole", user.getUserRole());
     model.addAttribute("userDOC", user.getDoc());
     HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
@@ -131,7 +133,8 @@ public class HpcReportsController extends AbstractHpcController {
         .thenComparing(HpcUserListEntry::getLastName, String.CASE_INSENSITIVE_ORDER);
     users.getUsers().sort(firstLastComparator);
     model.addAttribute("docUsers", users.getUsers());
-    List<String> docs = new ArrayList<String>();
+    List<String> docs = new ArrayList<>();
+
     if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
       docs.add(user.getDoc());
     else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
@@ -140,14 +143,9 @@ public class HpcReportsController extends AbstractHpcController {
     }
     docs.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("docs", docs);
-    HpcDataManagementModelDTO modelDTO =
-        (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-    if (modelDTO == null) {
-      modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-      session.setAttribute("userDOCModel", modelDTO);
-    }
-    List<String> basepaths = new ArrayList<String>();
-    for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+
+    List<String> basepaths = new ArrayList<>();
+    for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
       for (HpcDataManagementRulesDTO rule : docRule.getRules())
         basepaths.add(rule.getBasePath());
     }
@@ -167,7 +165,7 @@ public class HpcReportsController extends AbstractHpcController {
    * @return
    */
   @SuppressWarnings("finally")
-  @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public String generate(@Valid @ModelAttribute("reportRequest") HpcReportRequest reportRequest,
       Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 
@@ -176,35 +174,40 @@ public class HpcReportsController extends AbstractHpcController {
       model.addAttribute("reportRequest", reportRequest);
       String authToken = (String) session.getAttribute("hpcUserToken");
       requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
-      if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) {
-        if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
-            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-          requestDTO.getDoc().add(reportRequest.getDoc());
+      if ( (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) &&
+        (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
+            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))) {
+        requestDTO.getDoc().add(reportRequest.getDoc());
       }
-      if (reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) {
-        if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
-            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))
-          requestDTO.setPath(reportRequest.getBasepath());
+      if ((reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) &&
+        (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
+            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))) {
+        requestDTO.setPath(reportRequest.getBasepath());
+          //Also populate DOC from Model for display purposes
+        requestDTO.getDoc().add(HpcClientUtil.getDocByBasePath(getModelDTO(session), reportRequest.getBasepath()));
       }
-      else if (reportRequest.getPath() != null && !reportRequest.getPath().equals("-1")) {
-        if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
-            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
-          try {
-            HpcClientUtil.getCollection(authToken, hpcCollectionlURL, reportRequest.getPath(), true,
-                sslCertPath, sslCertPassword);
-          } catch (HpcWebException e) {
-            model.addAttribute("message", "Invalid collection path: " + reportRequest.getPath() +". Please re-enter valid path.");
-            return init(model, bindingResult, session, request);
-          }
+      else if ( (reportRequest.getPath() != null && !reportRequest.getPath().equals("-1")) &&
+        (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
+            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))) {
+        try {
+          HpcClientUtil.getCollection(authToken, hpcCollectionlURL, reportRequest.getPath(), true,
+               sslCertPath, sslCertPassword);
+        } catch (HpcWebException e) {
+          model.addAttribute(ATTR_MESSAGE, "Invalid collection path: " + reportRequest.getPath() +". Please re-enter valid path.");
+          return init(model, bindingResult, session);
+        }
         requestDTO.setPath(reportRequest.getPath());
       }
-      if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1"))
-        requestDTO.getUser().add(reportRequest.getUser());
-      if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty())
-        requestDTO.setFromDate(reportRequest.getFromDate());
-      if (reportRequest.getToDate() != null && !reportRequest.getToDate().isEmpty())
-        requestDTO.setToDate(reportRequest.getToDate());
 
+      if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1")) {
+        requestDTO.getUser().add(reportRequest.getUser());
+      }
+      if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty()) {
+        requestDTO.setFromDate(reportRequest.getFromDate());
+      }
+      if (reportRequest.getToDate() != null && !reportRequest.getToDate().isEmpty()) {
+        requestDTO.setToDate(reportRequest.getToDate());
+      }
       WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
       client.header("Authorization", "Bearer " + authToken);
 
@@ -227,19 +230,20 @@ public class HpcReportsController extends AbstractHpcController {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        model.addAttribute("message", "Failed to generate report: " + exception.getMessage());
-        logger.info("Failed to generate report" + requestDTO.getType() + " for " + requestDTO.getPath() + ": ", exception);
+        model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + exception.getMessage());
+        logger.info("Failed to generate report {} for {}: {}", requestDTO.getType(), requestDTO.getPath(), exception);
       }
     } catch (HttpStatusCodeException e) {
-      model.addAttribute("message", "Failed to generate report: " + e.getMessage());
-      logger.info("Failed to generate report" + requestDTO.getType() + " for " + requestDTO.getPath() + ": ", e);
+        model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + e.getMessage());
+        logger.info("Failed to generate report {} for path {}", requestDTO.getType(), requestDTO.getPath(), e);
     } finally {
-      return init(model, bindingResult, session, request);
+      return init(model, bindingResult, session);
     }
   }
 
+
   private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
-    List<HpcReportDTO> tReports = new ArrayList<HpcReportDTO>();
+    List<HpcReportDTO> tReports = new ArrayList<>();
     for (HpcReportDTO dto : reports) {
       if(dto.getFromDate() != null) {
         DateTimeFormatter dtoFormat = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
@@ -267,6 +271,7 @@ public class HpcReportsController extends AbstractHpcController {
     }
     return tReports;
   }
+
 
   private String getReportName(String type) {
     if (env.getProperty(type) != null)
