@@ -36,5 +36,6 @@ GROUP BY config."DOC",
        meta_main2.meta_attr_value
 ), IRODS.R_REPORT_COLLECTION_SIZE coll_size
 where coll_size.COLL_NAME(+) = object_path
+and object_path not like '/ncifprodZone/home/DME_Deleted_Archive%'
 group by DOC, BASE_PATH, OBJECT_PATH, DATA_OWNER, DATA_CURATOR
 ORDER BY DOC, BASE_PATH, OBJECT_PATH;
