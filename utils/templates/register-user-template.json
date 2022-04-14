@@ -1,6 +1,7 @@
 {
- "firstName" : "Palantir",
- "lastName" : "Metadata",
- "doc" : "COMPASS",
+ "firstName" : "Sunita",
+ "lastName" : "Menon",
+ "defaultBasePath" : "/CCR_SBL_Admin_Archive",
+ "doc" : "CCR_SBL",
  "userRole" : "USER"
 }
