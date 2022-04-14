@@ -19,10 +19,10 @@ FROM r_coll_hierarchy_meta_main meta_main,
      IRODS.R_COLL_HIERARCHY_META_MAIN meta_main2
 WHERE (meta_main.object_id IN (SELECT r_coll_hierarchy_meta_main.object_id
                                FROM r_coll_hierarchy_meta_main
-                               WHERE cast(r_coll_hierarchy_meta_main.level_label as varchar2(50)) like
-                                     cast('PI%' as varchar2(50))
+                               WHERE (r_coll_hierarchy_meta_main.level_label like 'PI%'
+                                   or r_coll_hierarchy_meta_main.level_label = 'Domain')
                                  AND r_coll_hierarchy_meta_main.data_level = 1))
-  AND cast(config_meta.meta_attr_value as varchar(4000)) = config."ID"
+  AND config_meta.meta_attr_value = config."ID"
   AND config_meta.object_id = meta_main.object_id
   AND meta_main.META_ATTR_NAME in ('pi_name', 'data_owner')
   AND objt_access.OBJECT_ID = meta_main.object_id
@@ -33,7 +33,7 @@ GROUP BY config."DOC",
          config."BASE_PATH",
          meta_main.object_path,
          meta_main.meta_attr_value,
-       meta_main2.meta_attr_value
+         meta_main2.meta_attr_value
 ), IRODS.R_REPORT_COLLECTION_SIZE coll_size
 where coll_size.COLL_NAME(+) = object_path
 and object_path not like '/ncifprodZone/home/DME_Deleted_Archive%'
