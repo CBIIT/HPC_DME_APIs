@@ -22,36 +22,36 @@
 
 	<!-- HPC Scheduler OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		<prop key="hpc.scheduler.cron.summaryreport.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.weeklysummaryreport.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processDataTranferUploadInProgress.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processDataTranferUploadInProgressWithGeneratedURL.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processDataTranferUploadStreamingInProgress.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processDataTranferUploadStreamingStopped.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processDataTranferUploadStreamingFailed.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processDataTranferUploadReceived.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processDataTranferUploadFileSystemReady.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.stageHyperfileGlobusDataObjectDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.startS3DataObjectDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.startGoogleCloudStorageDataObjectDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.processBulkDataObjectRegistrationTasks.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.completeBulkDataObjectRegistrationTasks.delay">0 0 0 29 2 ?</prop>
+		<prop key="hpc.scheduler.cron.summaryreport.delay">0 0 23 1/1 * ?</prop>
+		<prop key="hpc.scheduler.cron.weeklysummaryreport.delay">0 23 * * 7 ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadInProgress.delay">10 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadInProgressWithGeneratedURL.delay">0/20 * * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadStreamingInProgress.delay">11 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadStreamingStopped.delay">17 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadStreamingFailed.delay">21 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadReceived.delay">5 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">20 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadFileSystemReady.delay">22 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay">0/30 * * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.stageHyperfileGlobusDataObjectDownloadTasks.delay">33 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.startS3DataObjectDownloadTasks.delay">0/30 * * * * ?</prop>
+		<prop key="hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.startGoogleCloudStorageDataObjectDownloadTasks.delay">39 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">50 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">0/30 * * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay">47 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processBulkDataObjectRegistrationTasks.delay">0/20 * * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeBulkDataObjectRegistrationTasks.delay">35 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processevents.delay">40 0/1 * * * ?</prop>
-		<prop key="hpc.scheduler.cron.refreshMetadataViews.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.refreshReportViews.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.completeDeepArchiveInProgress.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.completeRestoreRequest.delay">0 0 0 29 2 ?</prop>
+		<prop key="hpc.scheduler.cron.refreshMetadataViews.delay">0 0/60 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.refreshReportViews.delay">0 0/60 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeDeepArchiveInProgress.delay">15 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeRestoreRequest.delay">25 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.sendAnnualReview.delay">0 0 0 29 2 ?</prop>
 		<prop key="hpc.scheduler.cron.sendAnnualReviewReminder.delay">0 0 0 29 2 ?</prop>
-		<prop key="hpc.scheduler.cron.removeDeletedDataObjects.delay">0 0 0 29 2 ?</prop>
+		<prop key="hpc.scheduler.cron.removeDeletedDataObjects.delay">0 0 * * * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
