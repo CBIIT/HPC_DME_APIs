@@ -29,7 +29,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class HpcWebConfig extends WebMvcConfigurerAdapter {
 
 	private static final String[] EXCLUDE_PATTERNS = { "/login", "/css/**", "/fonts/**", "/img/**", "/js/**",
-			"/ng-table/**","/jsoncollector" };
+			"/ng-table/**" };
 	/**
 	 * The User Interceptor.
 	 */
