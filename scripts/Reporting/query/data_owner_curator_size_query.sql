@@ -26,7 +26,7 @@ WHERE (meta_main.object_id IN (SELECT r_coll_hierarchy_meta_main.object_id
   AND config_meta.object_id = meta_main.object_id
   AND meta_main.META_ATTR_NAME in ('pi_name', 'data_owner')
   AND objt_access.OBJECT_ID = meta_main.object_id
-  AND config."BASE_PATH" not in ('/TEST_Archive','/TEST_NO_HIER_Archive')
+  AND config."BASE_PATH" not in ('/TEST_Archive','/TEST_NO_HIER_Archive','/DME_Deleted_Archive')
   AND meta_main2.OBJECT_ID(+)=meta_main.OBJECT_ID
   AND meta_main2.META_ATTR_NAME(+)='data_curator'
 GROUP BY config."DOC",
