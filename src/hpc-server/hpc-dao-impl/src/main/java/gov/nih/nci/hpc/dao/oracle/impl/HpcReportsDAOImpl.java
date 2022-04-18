@@ -271,15 +271,15 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     private static final String BASE_PATHS_SQL = "select base_path from HPC_DATA_MANAGEMENT_CONFIGURATION";
     
     /////////////////////////// DATA FIELDS FOR BASEPATH GRID
+    private static final String SUM_OF_DATA_SQL2 = "select b.base_path path, sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
+        + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
+        + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize ";
     private static final String BASEPATH_FROM_SQL = " from r_report_source_file_size a, r_report_registered_by_basepath b ";
     private static final String BASEPATH_GRID_DATERANGE_SQL = " and CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
     private static final String BASEPATH_GRID_WHERE_SQL =  " where a.object_id = b.object_id " + BASEPATH_GRID_DATERANGE_SQL;
     private static final String BASEPATH_GRID_GROUP_BY_SQL = " group by b.base_path ";
     
-    private static final String SUM_OF_DATA_GROUPBY_BASEPATH_SQL = "select b.base_path path, sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
-        + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
-        + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize "
-        + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
+    private static final String SUM_OF_DATA_GROUPBY_BASEPATH_SQL = SUM_OF_DATA_SQL2+ BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
 
     private static final String TOTAL_NUM_OF_USERS_GROUPBY_BASEPATH_SQL = "select b.base_path path, count(*) totalUsers FROM \"HPC_USER\" a,  \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
            + "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and a.created BETWEEN ?  AND ? " +  BASEPATH_GRID_GROUP_BY_SQL;
@@ -617,7 +617,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	public List<HpcReport> generatReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
 		
-	    if (criteria.getPath().equals("All")){
+	    if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE) && criteria.getPath().equals("All")){
             reports = generatGroupReportWithModifiedQueries(criteria);
             return reports;
         }
