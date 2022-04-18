@@ -689,7 +689,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       }
 
       List<String> basePathsList = jdbcTemplate.queryForList(BASE_PATHS_SQL, String.class);
-      /// Initialize fields of grid 
+
       List<HpcReportEntryAttribute> fields = new ArrayList<>();
       fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
       fields.add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
@@ -697,12 +697,21 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       fields.add(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
       fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
       fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-      /*for (HpcReportEntryAttribute field : fields) {
-          System.out.println(field);
-      }
-      for (HpcReportEntryAttribute field : HpcReportEntryAttribute.values()) { 
-        System.out.println(field); 
-    }*/
+     
+      List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB);
+      //for (HpcReportEntryAttribute field : fileSizeFields) {
+      //System.out.println(field);
+      //}
+
+      /// Initialize fields of grid 
       for (String path : basePathsList) {
         HpcReport basereport = new HpcReport();
         basereport.setPath(path);
@@ -713,49 +722,18 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
           reportEntry.setAttribute(field);
           reportEntry.setValue("0");
           basereport.getReportEntries().add(reportEntry);
-        }        
-        HpcReportEntry fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
-        fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
-        fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
-        
-        fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
-
-        fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
-        
-        fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
-        
-        fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
-        
-        fsEntry = new HpcReportEntry();
-        fsEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB);
-        fsEntry.setValue("0");
-        basereport.getReportEntries().add(fsEntry);
+        }
+        for (HpcReportEntryAttribute field : fileSizeFields) {
+          HpcReportEntry reportEntry = new HpcReportEntry();
+          reportEntry.setAttribute(field);
+          reportEntry.setValue("0");
+          basereport.getReportEntries().add(reportEntry);
+        }       
 
         reports.add(basereport);
         mapReports.put(path, basereport);
       }
-    
+
       if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
           || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)) {
 
@@ -838,88 +816,47 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
          }
 
          List<Map<String, Object>> fileRangeList = jdbcTemplate.queryForList(FILE_RANGE_SELECT_GRID + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL  + FILE_RANGE_GROUP_GRID, basepathDateLongArgs);
-         
+         //System.out.println("fileRangeList=");
+         //System.out.println(fileRangeList);
+         HpcReportEntryAttribute entryAttr =  HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB;
          // FILE RANGES
          for (Map<String, Object> map : fileRangeList) {
            Object path = map.get("PATH");
-           //System.out.println(path.toString());
            matchedReport = mapReports.get(path.toString());
-           //System.out.println("MATCH!! = ");
-           //System.out.println(matchedReport);
            Object range = map.get("RANGE");
-           //System.out.println(range.toString());
            Object count = map.get("CNT");
-           //System.out.println(count.toString());
-           if(range.toString().equals("range1")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB) {
-                 reportEntry.setValue(count.toString());
-               }
-             }
+           switch(range.toString()) {
+             case "range1":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB;
+               break;
+             case "range2":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB;
+               break;
+             case "range3":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB;
+               break;
+             case "range4":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB;
+               break; 
+             case "range5":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB;
+               break;               
+             case "range6":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB;
+               break;               
+             case "range7":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB;
+               break;               
+             case "range8":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB;
+               break;
            }
-           if(range.toString().equals("range2")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB) {
-                 reportEntry.setValue(count.toString());
-               }
-             }
-           }
-           if(range.toString().equals("range3")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB) {
-                 reportEntry.setValue(count.toString());
-               }
-             }
-           }
-           if(range.toString().equals("range4")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB) {
-                 reportEntry.setValue(count.toString());
-               }
-             }
-           }
-           if(range.toString().equals("range5")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB) {
-                 reportEntry.setValue(count.toString());
-               }
-             }
-           }
-           if(range.toString().equals("range6")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB) {
-                 reportEntry.setValue(count.toString());
-               }
-             }
-           }
-           if(range.toString().equals("range7")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB) {
-                 reportEntry.setValue(count.toString());
-               }
-             }
-           }
-           if(range.toString().equals("range8")) {
-             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-               HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-               if (matchedReport.getReportEntries().get(i)
-                   .getAttribute() == HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB) {
-                 reportEntry.setValue(count.toString());
-               }
+           //System.out.println(entryAttr.toString());
+           for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+             HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+             if (matchedReport.getReportEntries().get(i)
+                 .getAttribute() == entryAttr) {
+               reportEntry.setValue(count.toString());
              }
            }
          }
