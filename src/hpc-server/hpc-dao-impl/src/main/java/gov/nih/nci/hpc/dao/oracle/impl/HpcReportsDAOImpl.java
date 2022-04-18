@@ -270,51 +270,65 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     /////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
     private static final String BASE_PATHS_SQL = "select base_path from HPC_DATA_MANAGEMENT_CONFIGURATION";
     
-    /////////////////////////// DATA FIELDS FOR BASEPATH GRID
-    private static final String SUM_OF_DATA_SQL2 = "select b.base_path path, sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
+    /////////////////////////// BASEPATH GRID and DOC GRID
+    ////////////////////////// COMMON SQL
+    private static final String SUM_OF_DATA_FRAGMENT_SQL = " sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
         + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
         + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize ";
     private static final String BASEPATH_FROM_SQL = " from r_report_source_file_size a, r_report_registered_by_basepath b ";
-    private static final String BASEPATH_GRID_DATERANGE_SQL = " and CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
-    private static final String BASEPATH_GRID_WHERE_SQL =  " where a.object_id = b.object_id " + BASEPATH_GRID_DATERANGE_SQL;
+    private static final String DATERANGE_SQL = " and CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
+    private static final String BASEPATH_GRID_WHERE_SQL =  " where a.object_id = b.object_id " + DATERANGE_SQL;
     private static final String BASEPATH_GRID_GROUP_BY_SQL = " group by b.base_path ";
+    private static final String DOC_GRID_GROUP_BY_SQL = " group by b.doc ";
+    private static final String FILE_SIZE_FUNC_SQL = " (case when to_number(a.meta_attr_value, '9999999999999999999') <= 1000000 then 'range1' "
+        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
+        + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
+        + "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
+        + "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
+        + "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
+        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
+        + "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' " + "end) ";
     
-    private static final String SUM_OF_DATA_GROUPBY_BASEPATH_SQL = SUM_OF_DATA_SQL2+ BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
-
+    private static final String SUM_OF_DATA_GROUPBY_BASEPATH_SQL = "select b.base_path path, " + SUM_OF_DATA_FRAGMENT_SQL
+            + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
+    
+    private static final String SUM_OF_DATA_GROUPBY_DOC_SQL = "select b.doc doc, " + SUM_OF_DATA_FRAGMENT_SQL 
+            + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL + DOC_GRID_GROUP_BY_SQL;
+    
     private static final String TOTAL_NUM_OF_USERS_GROUPBY_BASEPATH_SQL = "select b.base_path path, count(*) totalUsers FROM \"HPC_USER\" a,  \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
            + "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and a.created BETWEEN ?  AND ? " +  BASEPATH_GRID_GROUP_BY_SQL;
 
+    private static final String TOTAL_NUM_OF_USERS_GROUPBY_DOC_SQL = "select b.base_path path, count(*) totalUsers FROM \"HPC_USER\" a,  \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+        + "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and a.created BETWEEN ?  AND ? " +  DOC_GRID_GROUP_BY_SQL;
+
     private static final String TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_BASEPATH_SQL = "select b.base_path path, count(distinct a.data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
-        + "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" " + BASEPATH_GRID_DATERANGE_SQL +  BASEPATH_GRID_GROUP_BY_SQL;
+        + "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" " + DATERANGE_SQL +  BASEPATH_GRID_GROUP_BY_SQL;
+
+    private static final String TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_DOC_SQL = "select b.base_path path, count(distinct a.data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+        + "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" " + DATERANGE_SQL +  DOC_GRID_GROUP_BY_SQL;
 
     private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_BASEPATH_SQL = "select b.base_path path, a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
         + "r_report_coll_registered_by_basepath b where a.coll_id=b.coll_id " + " and CAST(b.create_ts as double precision) BETWEEN ? AND ? " +  " group by a.meta_attr_value, b.base_path";
 
+    private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_DOC_SQL = "select b.base_path path, a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
+        + "r_report_coll_registered_by_basepath b where a.coll_id=b.coll_id " + " and CAST(b.create_ts as double precision) BETWEEN ? AND ? " +  " group by a.meta_attr_value, b.doc";
+
     private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_BASEPATH_SQL = "SELECT b.base_path path, floor(count(a.meta_attr_name) / greatest( count(distinct data_id), 1 )) totalattrs "
         + "FROM r_report_data_objects a, r_report_registered_by_basepath b "
-        + "where a.data_id = b.object_id " + BASEPATH_GRID_DATERANGE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
+        + "where a.data_id = b.object_id " + DATERANGE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
 
-    private static final String FILE_RANGE_SELECT_GRID = "select (case when to_number(a.meta_attr_value, '9999999999999999999') <=  1000000 then 'range1' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' "
-        + "end) as range, count(*) as cnt, b.base_path path ";
-   
-    private static final String FILE_RANGE_GROUP_GRID = " group by b.base_path, (case when to_number(a.meta_attr_value, '9999999999999999999') <= 1000000 then 'range1' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' " + "end)";
+    private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_DOC_SQL = "SELECT b.base_path path, floor(count(a.meta_attr_name) / greatest( count(distinct data_id), 1 )) totalattrs "
+        + "FROM r_report_data_objects a, r_report_registered_by_basepath b "
+        + "where a.data_id = b.object_id " + DATERANGE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
 
-    private static final String BASEPATH_GRID_WHERE_SQL1 = " where a.object_id = b.object_id ";	
-	
+    private static final String FILE_RANGE_SELECT_GRID = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt, b.base_path path ";
+
+    private static final String FILE_RANGE_SELECT_DOC_GRID = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt, b.doc doc ";
+    
+    private static final String FILE_RANGE_GROUP_GRID = BASEPATH_GRID_GROUP_BY_SQL + ", " + FILE_SIZE_FUNC_SQL;
+
+    private static final String FILE_RANGE_GROUP_DOC_GRID = DOC_GRID_GROUP_BY_SQL + ", " + FILE_SIZE_FUNC_SQL;
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -707,9 +721,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB);
       fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
       fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB);
-      //for (HpcReportEntryAttribute field : fileSizeFields) {
-      //System.out.println(field);
-      //}
 
       /// Initialize fields of grid 
       for (String path : basePathsList) {
@@ -734,8 +745,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         mapReports.put(path, basereport);
       }
 
-      if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
-          || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)) {
+      if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)) {
 
         List<Map<String, Object>> totalsList;
         HpcReport matchedReport;
