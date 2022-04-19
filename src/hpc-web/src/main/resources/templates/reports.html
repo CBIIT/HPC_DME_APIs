@@ -135,6 +135,7 @@
 												id="doc" name="doc" class="form-control"
 												th:required="required">
 													<option value="-1">----Select----</option>
+													<option value="All" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
 													<option
 														th:each="entry : ${docs}"
 														th:value="${entry}" th:text="${entry}" 
