@@ -87,7 +87,9 @@
 								<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
 								</h2>
 								</div>
-								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED')}">
+								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED') 
+									and (hpcDataObjectsDownloadStatusDTO.getFailedItems() == null or hpcDataObjectsDownloadStatusDTO.getFailedItems().size() == 0) 
+									and (hpcDataObjectsDownloadStatusDTO.getCanceledItems() == null or hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() == 0)}">
 								  <h2>
 								    <strong> <a class="downloadfailed btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
 								  </h2>
@@ -181,7 +183,7 @@
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() == null}">
 										<label for="Name">Transfer Completed:</label> <label id="regComplete">In Progress</label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadBytesTransferred != null}">
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadBytesTransferred != null and !#strings.startsWith(hpcDataObjectsDownloadBytesTransferred,'0')}">
 										<label for="BytesTransferred">Bytes Transferred:</label> <label
 											for="${hpcDataObjectsDownloadBytesTransferred}"
 											th:text="${hpcDataObjectsDownloadBytesTransferred}"></label>
