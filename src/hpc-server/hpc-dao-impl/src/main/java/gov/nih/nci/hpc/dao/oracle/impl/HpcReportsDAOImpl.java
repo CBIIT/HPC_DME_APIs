@@ -48,27 +48,22 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	// Constants
 	// ---------------------------------------------------------------------//
 	// File size range
-	private static final String FILE_RANGE_SELECT = "select (case when to_number(a.meta_attr_value, '9999999999999999999') <=  1000000 then 'range1' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' "
-			+ "end) as range, count(*) as cnt ";
+  
+  private static final String FILE_SIZE_FUNC_SQL = " (case when to_number(a.meta_attr_value, '9999999999999999999') <= 10000000 then 'range1' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 1000000000 then 'range2' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 10000000000 then 'range3' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000000 then 'range4' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000000 then 'range5' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000000 then 'range6' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') >  1000000000000  then 'range7' " + "end) ";
+
+  
+	private static final String FILE_RANGE_SELECT = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt ";
 
 	private static String FILE_RANGE_FROM = "";
 	private static String FILE_RANGE_WHERE = "";
 
-	private static final String FILE_RANGE_GROUP = " group by (case when to_number(a.meta_attr_value, '9999999999999999999') <= 1000000 then 'range1' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' " + "end)";
+	private static final String FILE_RANGE_GROUP = " group by " + FILE_SIZE_FUNC_SQL;
 
 	private RowMapper<Map<String, Object>> fileSizeRangeRowMapper = (rs, rowNum) -> {
 		Map<String, Object> range = new HashMap<String, Object>();
@@ -282,15 +277,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     private static final String BASEPATH_GRID_WHERE_SQL =  " where a.object_id = b.object_id " + DATERANGE_SQL;
     private static final String BASEPATH_GRID_GROUP_BY_SQL = " group by b.base_path ";
     private static final String DOC_GRID_GROUP_BY_SQL = " group by b.doc ";
-    private static final String FILE_SIZE_FUNC_SQL = " (case when to_number(a.meta_attr_value, '9999999999999999999') <= 1000000 then 'range1' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
-        + "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' " + "end) ";
-    
+ 
     private static final String SUM_OF_DATA_GROUPBY_BASEPATH_SQL = "select b.base_path path, " + SUM_OF_DATA_FRAGMENT_SQL
             + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
     
@@ -699,16 +686,17 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       fields.add(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
       fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
       fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-     
+      fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
+  
       List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
-      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
-      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB);
-      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB);
-      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB);
-      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB);
-      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB);
       fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
-      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB);
+      
       if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)) {       
         keyList = jdbcTemplate.queryForList(ALL_DOCS_SQL, String.class);
         isDocReport = true;
@@ -879,11 +867,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
          } else {
            fileRangeList = jdbcTemplate.queryForList(FILESIZE_SELECT_DOC_GRID + DOC_FROM_SQL + BASEPATH_GRID_WHERE_SQL  + FILESIZE_GROUP_DOC_GRID, basepathDateLongArgs);
-         }         
+         }
 
          //System.out.println("fileRangeList=");
          //System.out.println(fileRangeList);
-         HpcReportEntryAttribute entryAttr =  HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB;
+         HpcReportEntryAttribute entryAttr =  HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
          // FILE RANGES
          for (Map<String, Object> map : fileRangeList) {
            String key = isBasePathReport ?  map.get("PATH").toString() :  map.get("DOC").toString();
@@ -893,28 +881,25 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
            Object count = map.get("CNT");
            switch(range.toString()) {
              case "range1":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB;
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
                break;
              case "range2":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB;
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB;
                break;
              case "range3":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB;
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB;
                break;
              case "range4":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB;
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB;
                break; 
              case "range5":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB;
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB;
                break;               
              case "range6":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB;
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB;
                break;               
              case "range7":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB;
-               break;               
-             case "range8":
-               entryAttr = HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB;
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB;
                break;
            }
            //System.out.println(entryAttr.toString());
@@ -931,8 +916,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
             StringBuffer str = new StringBuffer();
              str.append("[");
              if (numCollectionList != null) {
-                 for ( String path : keyList) {
-                    matchedReport = mapReports.get(path);
+                 for ( String key : keyList) {
+                    matchedReport = mapReports.get(key);
                     if(matchedReport == null) continue;
                     for (Map<String, Object> listEntry : numCollectionList) {
                         String type = null;
@@ -944,13 +929,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
                             if (name.equalsIgnoreCase("cnt")) {
                                 java.math.BigDecimal value = (java.math.BigDecimal) listEntry.get(name);
                                 count = value.toString();
-                            } else if(name.equalsIgnoreCase("path")){
+                            } else if(name.equalsIgnoreCase("path") || name.equalsIgnoreCase("doc")){
                                 tpath = (String)listEntry.get(name);
                             } else {
                               type = (String) listEntry.get(name);
                             }
                         }
-                        if (tpath.equals(path)){
+                        if (tpath.equals(key)){
                           str.append("{" + type + ": " + count + "}");
                       }
                     }
@@ -1212,51 +1197,48 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			filesizeuserDateArgs[0] = criteria.getUsers().get(0);
 		filesizeuserDateArgs[1] = fromDateLong;
 		filesizeuserDateArgs[2] = toDateLong;
-
+		
+   
 		if (allAttributes || criteria.getAttributes().contains(HpcReportEntryAttribute.FILE_SIZES)) {
 			// Get File size ranges
 			List<Map<String, Object>> fileSizeRanges = getFileSizeRange(criteria, filesizedateArgs, filesizedocArgs,
 					filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs, basepathArg, basepathDateLongArgs,
 					pathArg, pathDateLongArgs);
 			HpcReportEntry oneMBEntry = new HpcReportEntry();
-			oneMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
+			oneMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
 			oneMBEntry.setValue(getFilesSize("range1", fileSizeRanges));
 			report.getReportEntries().add(oneMBEntry);
 
 			HpcReportEntry tenMBEntry = new HpcReportEntry();
-			tenMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB);
+			tenMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB);
 			tenMBEntry.setValue(getFilesSize("range2", fileSizeRanges));
 			report.getReportEntries().add(tenMBEntry);
 
 			HpcReportEntry fiftyMBEntry = new HpcReportEntry();
-			fiftyMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB);
+			fiftyMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
 			fiftyMBEntry.setValue(getFilesSize("range3", fileSizeRanges));
 			report.getReportEntries().add(fiftyMBEntry);
 
 			HpcReportEntry hundredMBEntry = new HpcReportEntry();
-			hundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB);
+			hundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB);
 			hundredMBEntry.setValue(getFilesSize("range4", fileSizeRanges));
 			report.getReportEntries().add(hundredMBEntry);
 
 			HpcReportEntry fivehundredMBEntry = new HpcReportEntry();
-			fivehundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB);
+			fivehundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB);
 			fivehundredMBEntry.setValue(getFilesSize("range5", fileSizeRanges));
 			report.getReportEntries().add(fivehundredMBEntry);
 
 			HpcReportEntry onegbEntry = new HpcReportEntry();
-			onegbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB);
+			onegbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB);
 			onegbEntry.setValue(getFilesSize("range6", fileSizeRanges));
 			report.getReportEntries().add(onegbEntry);
 
 			HpcReportEntry tengbEntry = new HpcReportEntry();
-			tengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
+			tengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB);
 			tengbEntry.setValue(getFilesSize("range7", fileSizeRanges));
 			report.getReportEntries().add(tengbEntry);
 
-			HpcReportEntry overtengbEntry = new HpcReportEntry();
-			overtengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB);
-			overtengbEntry.setValue(getFilesSize("range8", fileSizeRanges));
-			report.getReportEntries().add(overtengbEntry);
 		}
 
 		report.setGeneratedOn(Calendar.getInstance());
