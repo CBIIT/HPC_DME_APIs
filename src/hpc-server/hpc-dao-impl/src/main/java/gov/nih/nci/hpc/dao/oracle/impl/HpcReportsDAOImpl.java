@@ -300,7 +300,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         + "r_report_coll_registered_by_basepath b where a.coll_id=b.coll_id " + " and CAST(b.create_ts as double precision) BETWEEN ? AND ? " +  " group by a.meta_attr_value, b.base_path";
 
     private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_DOC_SQL = "select b.doc doc, a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
-        + "r_report_coll_registered_by_basepath b where a.coll_id=b.coll_id " + " and CAST(b.create_ts as double precision) BETWEEN ? AND ? " +  " group by a.meta_attr_value, b.doc";
+        + "r_report_coll_registered_by_doc b where a.coll_id=b.coll_id " + " and CAST(b.create_ts as double precision) BETWEEN ? AND ? " +  " group by a.meta_attr_value, b.doc";
 
     private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_BASEPATH_SQL = "SELECT b.base_path path, floor(count(a.meta_attr_name) / greatest( count(distinct data_id), 1 )) totalattrs "
         + "FROM r_report_data_objects a, r_report_registered_by_basepath b "
@@ -686,7 +686,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       fields.add(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
       fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
       fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-      fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
+      //fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
   
       List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
       fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
@@ -912,7 +912,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
            }
          }
          //
-            List<Map<String, Object>> numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_BASEPATH_SQL, basepathDateLongArgs);
+            List<Map<String, Object>> numCollectionList;
+            if (isBasePathReport) {
+              numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_BASEPATH_SQL, basepathDateLongArgs);  
+            } else {
+              numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_DOC_SQL, basepathDateLongArgs);     
+            }
             StringBuffer str = new StringBuffer();
              str.append("[");
              if (numCollectionList != null) {
