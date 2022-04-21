@@ -91,14 +91,13 @@
 			<xsd:enumeration value="AVERAGE_FILE_SIZE" />
 			<xsd:enumeration value="SMALLEST_FILE_SIZE" />
 			<xsd:enumeration value="FILE_SIZES" />
-			<xsd:enumeration value="FILE_SIZE_BELOW_1MB" />
-			<xsd:enumeration value="FILE_SIZE_1MB_10MB" />
-			<xsd:enumeration value="FILE_SIZE_10MB_50MB" />
-			<xsd:enumeration value="FILE_SIZE_50MB_100MB" />
-			<xsd:enumeration value="FILE_SIZE_100MB_500MB" />
-			<xsd:enumeration value="FILE_SIZE_500MB_1GB" />
-			<xsd:enumeration value="FILE_SIZE_1GB_10GB" />
-			<xsd:enumeration value="FILE_SIZE_OVER_10GB" />			
+			<xsd:enumeration value="FILE_SIZE_BELOW_10MB" />
+			<xsd:enumeration value="FILE_SIZE_10MB_1GB" />
+			<xsd:enumeration value="FILE_SIZE_1GB_10GB"	/>
+			<xsd:enumeration value="FILE_SIZE_10GB_100GB" />
+			<xsd:enumeration value="FILE_SIZE_100GB_500GB" />
+			<xsd:enumeration value="FILE_SIZE_500GB_1TB" />
+			<xsd:enumeration value="FILE_SIZE_OVER_1TB" />
 		</xsd:restriction>
 	</xsd:simpleType>	
 </xsd:schema>

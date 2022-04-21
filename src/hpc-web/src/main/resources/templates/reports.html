@@ -302,7 +302,8 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="report : ${reports}">
-							   <td id='path1' th:text="${report.getPath()}"></td>
+							   <td id='path1'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="${report.getPath()}"></td>
+							   <td id='path2'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="${report.getDoc()}"></td>
 							   <td id='attr0' th:text="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
 							</tr>
 						</tbody>
