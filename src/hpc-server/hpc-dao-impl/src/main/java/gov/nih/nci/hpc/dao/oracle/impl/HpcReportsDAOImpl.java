@@ -264,7 +264,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
     /////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
     private static final String BASE_PATHS_SQL = "select BASE_PATH from HPC_DATA_MANAGEMENT_CONFIGURATION";
-    private static final String ALL_DOCS_SQL = "select DOC from HPC_DATA_MANAGEMENT_CONFIGURATION";
+    private static final String ALL_DOCS_SQL = "select distinct DOC from HPC_DATA_MANAGEMENT_CONFIGURATION";
     
     /////////////////////////// BASEPATH GRID and DOC GRID
     ////////////////////////// COMMON SQL
@@ -316,7 +316,47 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     private static final String FILESIZE_SELECT_DOC_GRID = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt, b.doc doc ";
     private static final String FILESIZE_GROUP_DOC_GRID = DOC_GRID_GROUP_BY_SQL + ", " + FILE_SIZE_FUNC_SQL;
     
-
+    private static final String DATA_OWNER_SQL = "With config_meta(meta_id, meta_namespace, meta_attr_name, meta_attr_value, meta_attr_unit, r_comment, "
+        + "                 create_ts, modify_ts, object_id, meta_id_1, create_ts_1, modify_ts_1) as "
+        + "         (SELECT * "
+        + "          from r_meta_main meta_main_1 "
+        + "                   JOIN r_objt_metamap metamap ON cast(meta_main_1.meta_attr_name as varchar2(250)) = "
+        + "                                                  cast('configuration_id' as varchar2 (50)) AND "
+        + "                                                  metamap.meta_id = meta_main_1.meta_id) "
+        + "SELECT DOC, BASE_PATH, OBJECT_PATH, DATA_OWNER, DATA_CURATOR, SUM(coll_size.TOTALSIZE) as collection_size FROM "
+        +     "(SELECT config.\"DOC\", "
+        + "       config.\"BASE_PATH\", "
+        + "       meta_main.object_path, "
+        + "       meta_main.meta_attr_value as data_owner, "
+        + "       meta_main2.meta_attr_value as data_curator "
+        + "FROM r_coll_hierarchy_meta_main meta_main, "
+        + "     \"HPC_DATA_MANAGEMENT_CONFIGURATION\" config, "
+        + "     config_meta, "
+        + "     R_OBJT_ACCESS objt_access, "
+        + "     IRODS.R_COLL_HIERARCHY_META_MAIN meta_main2 "
+        + "WHERE (meta_main.object_id IN (SELECT r_coll_hierarchy_meta_main.object_id "
+        + "                               FROM r_coll_hierarchy_meta_main "
+        + "                               WHERE (r_coll_hierarchy_meta_main.level_label like 'PI%' "
+        + "                                   or r_coll_hierarchy_meta_main.level_label = 'Domain') "
+        + "                                 AND r_coll_hierarchy_meta_main.data_level = 1)) "
+        + "  AND config_meta.meta_attr_value = config.\"ID\" "
+        + "  AND config_meta.object_id = meta_main.object_id "
+        + "  AND meta_main.META_ATTR_NAME in ('pi_name', 'data_owner') "
+        + "  AND objt_access.OBJECT_ID = meta_main.object_id "
+        + "  AND config.\"BASE_PATH\" not in ('/TEST_Archive','/TEST_NO_HIER_Archive','/DME_Deleted_Archive') "
+        + "  AND meta_main2.OBJECT_ID(+)=meta_main.OBJECT_ID "
+        + "  AND meta_main2.META_ATTR_NAME(+)='data_curator' "
+        + "GROUP BY config.\"DOC\", "
+        + "         config.\"BASE_PATH\", "
+        + "         meta_main.object_path, "
+        + "         meta_main.meta_attr_value, "
+        + "         meta_main2.meta_attr_value "
+        + "), IRODS.R_REPORT_COLLECTION_SIZE coll_size "
+        + "where coll_size.COLL_NAME(+) = object_path "
+        + "and object_path not like '/ncifprodZone/home/DME_Deleted_Archive%' "
+        + "group by DOC, BASE_PATH, OBJECT_PATH, DATA_OWNER, DATA_CURATOR "
+        + "ORDER BY DOC, BASE_PATH, OBJECT_PATH";
+    
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -624,7 +664,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
             return reports;
         }
 
-		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)
+	    if ((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER))) {
+	       reports = generateDataOwnerGridReport(criteria);
+	       return reports;
+	    }
+
+
+	    if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)
 				|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)
 				|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
 				|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
@@ -671,7 +717,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 	}
 	
-	
+    public List<HpcReport> generateDataOwnerGridReport(HpcReportCriteria criteria) {
+      List<HpcReport> reports = new ArrayList<HpcReport>();
+      List<Map<String, Object>> piList = jdbcTemplate.queryForList(DATA_OWNER_SQL);
+      System.out.println(piList);
+      return reports;
+    }
 	
     public List<HpcReport> generatGroupReportWithModifiedQueries(HpcReportCriteria criteria) {  
       List<HpcReport> reports = new ArrayList<HpcReport>();
