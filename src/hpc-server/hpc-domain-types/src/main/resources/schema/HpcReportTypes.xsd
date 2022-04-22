@@ -30,6 +30,7 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_DATA_OWNER" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
