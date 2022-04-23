@@ -365,6 +365,7 @@
 			<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="s3DownloadTaskServerId" type="xsd:string" />
+			<xsd:element name="firstHopRetried" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -400,6 +401,7 @@
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="firstHopRetried" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
