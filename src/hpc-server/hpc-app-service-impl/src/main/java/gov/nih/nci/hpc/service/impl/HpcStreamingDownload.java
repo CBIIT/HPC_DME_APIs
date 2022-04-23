@@ -165,6 +165,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setPercentComplete(0);
 		downloadTask.setSize(downloadRequest.getSize());
+		downloadTask.setFirstHopRetried(false);
 
 		if (downloadTask.getS3DownloadDestination() != null) {
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
@@ -204,6 +205,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setCreated(downloadTask.getCreated());
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
+		this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 
 		if (this.downloadTask.getS3DownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
