@@ -1308,6 +1308,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
 		downloadTask.setS3DownloadTaskServerId(null);
 		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
@@ -3638,8 +3639,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// This callback method is called when the first hop download failed.
 		@Override
 		public void transferFailed(String message) {
-			logger.info("download task: {} - 1 Hop download Failed. Path at scratch space: {}", downloadTask.getId(),
+			if (!downloadTask.getFirstHopRetried()) {
+				// First hop failed, but was not retried yet. Give it a second chance.
+				logger.info("download task: {} - 1 Hop download failed and will be retried. Path at scratch space: {}",
+						downloadTask.getId(), sourceFile.getAbsolutePath());
+				downloadTask.setFirstHopRetried(true);
+				try {
+					resetDataObjectDownloadTask(downloadTask);
+					return;
+				} catch (HpcException e) {
+					downloadTask.setFirstHopRetried(false);
+					logger.error("download task: {} - failed to reset", downloadTask.getId(), e);
+					
+				}
+			}
+			
+			logger.info("download task: {} - 1 Hop download retry failed. Path at scratch space: {}", downloadTask.getId(),
 					sourceFile.getAbsolutePath());
+
 			String errorMessage = "Failed to get data from archive via S3: " + message;
 			downloadFailed(errorMessage);
 
