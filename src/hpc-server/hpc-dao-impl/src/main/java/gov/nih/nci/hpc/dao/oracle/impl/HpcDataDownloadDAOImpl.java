@@ -130,7 +130,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ?, RETRY_TASK_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, DESTINATION_TYPE = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_ID, "
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, "
-			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, RETRY_TASK_ID, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE) "
+			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, "
+			+ "RETRY_TASK_ID, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ? where ID = ?";
@@ -558,8 +559,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
-					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getId(),
-					dataObjectDownloadTask.getFirstHopRetried(), dataObjectDownloadTask.getUserId(),
+					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
+					dataObjectDownloadTask.getId(), dataObjectDownloadTask.getUserId(),
 					dataObjectDownloadTask.getPath(), dataObjectDownloadTask.getConfigurationId(),
 					dataObjectDownloadTask.getS3ArchiveConfigurationId(),
 					dataObjectDownloadTask.getDataTransferRequestId(),
