@@ -59,6 +59,8 @@
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="user" type="xsd:string" />
+			<xsd:element name="data_owner" type="xsd:string" />
+			<xsd:element name="data_curator" type="xsd:string" />
 			<xsd:element name="fromDate" type="xsd:date" />
 			<xsd:element name="ToDate" type="xsd:date" />
 			<xsd:element name="generatedOn" type="xsd:date" />
