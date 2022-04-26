@@ -482,14 +482,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		HpcCollectionDownloadTask collectionDownloadTask = null;
+		List<String> errors = new ArrayList<>();
 		if (!downloadRequest.getDataObjectPaths().isEmpty()) {
 			// Submit a request to download a list of data objects.
 
 			// Validate all data object paths requested exist.
 			for (String path : downloadRequest.getDataObjectPaths()) {
 				if (dataManagementService.getDataObject(path) == null) {
-					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+					errors.add(path);
 				}
+			}
+			if (!errors.isEmpty()) {
+				String errorMessage = "Data object doesn't exist: " + StringUtils.join(errors, ", ");
+				throw new HpcException(errorMessage, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
 			// Get configuration ID of the first data object. It will be used to validate
@@ -513,12 +518,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			for (String path : downloadRequest.getCollectionPaths()) {
 				HpcCollection collection = dataManagementService.getCollection(path, true);
 				if (collection == null) {
-					throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+					errors.add(path);
 				}
 				// Verify at least one data object found under these collection.
-				if (!dataObjectExist && dataManagementService.hasDataObjects(collection)) {
+				else if (!dataObjectExist && dataManagementService.hasDataObjects(collection)) {
 					dataObjectExist = true;
 				}
+			}
+			if (!errors.isEmpty()) {
+				String errorMessage = "Collection doesn't exist: " + StringUtils.join(errors, ", ");
+				throw new HpcException(errorMessage, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
 			if (!dataObjectExist) {
