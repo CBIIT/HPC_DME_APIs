@@ -179,6 +179,9 @@ public class HpcReportsController extends AbstractHpcController {
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))) {
         requestDTO.getDoc().add(reportRequest.getDoc());
       }
+      if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER)) {
+          requestDTO.setPath("ALL");
+      }
       if ((reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) &&
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))) {
@@ -217,7 +220,14 @@ public class HpcReportsController extends AbstractHpcController {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
         HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
         model.addAttribute("reports", translate(reports.getReports()));
-        model.addAttribute("reportName", getReportName(reportRequest.getReportType()));
+        if ((reportRequest.getReportType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
+            && reportRequest.getDoc().equals("All")) || (reportRequest.getReportType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
+                && reportRequest.getBasepath().equals("All"))) {
+          model.addAttribute("reportName", getReportName(reportRequest.getReportType() + "_GRID"));
+        }
+        else {
+          model.addAttribute("reportName", getReportName(reportRequest.getReportType()));
+        }     
       } else {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
