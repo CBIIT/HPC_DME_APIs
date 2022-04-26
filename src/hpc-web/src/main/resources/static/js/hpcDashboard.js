@@ -32,7 +32,7 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
     columnDefs: [
       {
         field : 'searchName',
-        width : 300,
+        minWidth : 300,
         displayName : 'Search Name',
         cellFilter: 'percentEncoding',
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
