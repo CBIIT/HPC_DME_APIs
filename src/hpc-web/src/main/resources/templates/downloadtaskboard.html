@@ -120,7 +120,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     columnDefs: [
     			 { field: 'userId', width:150, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
     			 { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="downloadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
-                 { field: 'path', width:200, displayName : 'Path' },
+                 { field: 'path', minWidth:200, displayName : 'Path' },
                  { field: 'type', width:150, displayName : 'Type', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{grid.appScope.toTitleCase(row.entity.type)}}</div>'},
                  { field: 'destinationType', width:150, displayName : 'Destination Type'},
                 { field: 'result', width:150, displayName: 'Transfer Result'},
