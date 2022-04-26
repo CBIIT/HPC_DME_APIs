@@ -516,6 +516,8 @@ function dm_register_dataobject_multipart_usage {
   destination-path            Destination path in the archive
   source-path                 Path of the file to upload
 
+For a sample description.json file, see templates/dataobject-multipart-metadata-template.json
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/7AIFGg
 
