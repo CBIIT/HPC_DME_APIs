@@ -119,6 +119,7 @@
 
 									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
 									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
+									<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
 									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
 									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
 										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
@@ -286,10 +287,11 @@
 
 					</table>
 				</div>
-				<!-- Start of Grid -->
+				<!-- Start of Grid code -->
+				<!-- Start BasePath or DOC Grid -->
 				<div 
-				   th:if="${reports != null and reports.size() > 1}">
-					<table id="example" class="display" style="width:100%">
+				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+					<table id="report_grid" class="display" style="width:100%">
 						<caption th:text="${reportName}">Grid Layout</caption>
 						<div>
 							Toggle column: <a class="toggle-vis" data-column="0">Path</a> - <a class="toggle-vis" data-column="1">Total Registered Users</a> - <a class="toggle-vis" data-column="2">Total  Data</a> - <a class="toggle-vis" data-column="3">Largest File</a> - <a class="toggle-vis" data-column="4">Average File</a> - <a class="toggle-vis" data-column="5">Data Objs</a> - <a class="toggle-vis" data-column="6">Collections</a> - <a class="toggle-vis" data-column="7">Meta Attrs</a> - <a class="toggle-vis" data-column="8"> &le; 1MB</a>
@@ -314,7 +316,44 @@
 						</tfoot>
 					</table>
 				</div>
-				<!-- End of Grid -->
+				<!-- End BasePath or DOC Grid -->
+				<!-- Start Data Owner Grid -->
+				<div 
+				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+					<table id="report_grid" class="display" style="width:100%">
+						<caption th:text="${reportName}">Grid Layout</caption>
+						<div>
+							Toggle column: <a class="toggle-vis" data-column="0">Path</a>
+						</div>
+						<thead>
+							<tr id='attrRow0'>
+								<td id='path001' th:text="Doc"></td>
+								<td id='path002' th:text="BasePath"></td>
+								<td id='path003' th:text="'Object Path'"></td>
+								<td id='path004' th:text="'Data Owner'"></td>
+								<td id='path005' th:text="'Data Curator'"></td>
+								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr id='attrCol0' th:each="report : ${reports}">
+							   <td id='path1'  th:text="${report.getDoc()}"></td>
+							   <td id='path2' th:text="${report.getPath()}"></td>
+							   <td id='path3' th:text="${report.getUser()}"></td>
+							   <td id='path4' th:text="'report.getDataOwner()'"></td>
+							   <td id='path5' th:text="'report.getDataCurator()'"></td>
+							   <td id='attr0' th:text="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr id='attrFooter0'>
+								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+				<!-- End Data Owner Grid -->
+				<!-- End of Grid code -->
 			</section>
 			<div th:include="footer :: footer"></div>
 		</section>
@@ -369,7 +408,7 @@
 	//<![CDATA[
 	
 	$(document).ready(function() {
-	    var table = $('#example').DataTable( {
+	    var table = $('#report_grid').DataTable( {
 				responsive: true,
 				dom: 'Blfrtip',
 				fixedHeader: true,
