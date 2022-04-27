@@ -340,8 +340,8 @@
 							   <td id='path1'  th:text="${report.getDoc()}"></td>
 							   <td id='path2' th:text="${report.getPath()}"></td>
 							   <td id='path3' th:text="${report.getUser()}"></td>
-							   <td id='path4' th:text="'report.getDataOwner()'"></td>
-							   <td id='path5' th:text="'report.getDataCurator()'"></td>
+							   <td id='path4' th:text="${report.getDataOwner()}"></td>
+							   <td id='path5' th:text="${report.getDataCurator()}"></td>
 							   <td id='attr0' th:text="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
 							</tr>
 						</tbody>
