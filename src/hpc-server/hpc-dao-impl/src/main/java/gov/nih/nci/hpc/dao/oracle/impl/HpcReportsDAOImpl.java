@@ -692,8 +692,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		report.setType(criteria.getType());
         report.setDoc(map.get("DOC").toString());
         report.setPath(map.get("BASE_PATH").toString()); 
-        report.setDataOwner(map.get("DATA_OWNER").toString());
-        report.setDataCurator(map.get("DATA_CURATOR").toString());
+        report.setDataOwner((map.get("DATA_OWNER") == null) ? "" : map.get("DATA_OWNER").toString());
+        report.setDataCurator((map.get("DATA_CURATOR") == null) ? "" : map.get("DATA_CURATOR").toString());
         report.setUser(map.get("USER_PATH").toString());
         Object cobj = map.get("COLLECTION_SIZE");
         float collection_size = (cobj == null) ? 0: Float.parseFloat(map.get("COLLECTION_SIZE").toString());
