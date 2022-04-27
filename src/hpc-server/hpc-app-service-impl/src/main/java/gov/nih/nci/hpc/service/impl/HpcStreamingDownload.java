@@ -249,8 +249,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 					eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(), downloadTask.getPath(),
 							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed);
 				} else {
-					eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
-							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed,
+					eventService
+							.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
+							HpcDownloadTaskType.DATA_OBJECT, result, downloadTask.getId(), destinationLocation, completed,
 							message);
 				}
 			}
