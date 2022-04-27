@@ -1524,7 +1524,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, downloadTaskId,
 						destinationLocation, dataTransferCompleted);
 			} else {
-				eventService.addDataTransferDownloadFailedEvent(userId, path, downloadTaskType, downloadTaskId,
+				eventService.addDataTransferDownloadFailedEvent(userId, path, downloadTaskType, result, downloadTaskId,
 						destinationLocation, dataTransferCompleted, message);
 			}
 
