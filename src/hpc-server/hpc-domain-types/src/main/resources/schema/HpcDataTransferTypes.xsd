@@ -447,6 +447,7 @@
 			<xsd:element name="dataObjectDownloadTaskId"
 				type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="collectionPath" type="xsd:string" />
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="result"
