@@ -266,15 +266,28 @@ public class HpcReportsController extends AbstractHpcController {
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
       for (HpcReportEntryDTO entry : entries) {
         if (env.getProperty(entry.getAttribute()) != null) {
-          entry.setAttribute(env.getProperty(entry.getAttribute()));
-          if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
-        	  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br>"));
-          }
-          if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
-              || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
-              || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))){
-              entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
-          }
+          // Data Owner Grid: we are reusing an existing attribute TOTAL_DATA_SIZE, therefore we are using the proper property for this Grid
+           if (dto.getType().equals("USAGE_SUMMARY_BY_DATA_OWNER")) {
+              if (entry.getAttribute().equals("TOTAL_DATA_SIZE") || dto.getType().equals("LARGEST_FILE_SIZE")) {
+                entry.setAttribute(env.getProperty("COLLECTION_SIZE"));
+                entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+              } else if (entry.getAttribute().equals("LARGEST_FILE_SIZE")) {
+                entry.setAttribute(env.getProperty("COLLECTION_SIZE2"));
+                entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));        
+              } else {
+                entry.setAttribute(env.getProperty(entry.getAttribute()));
+              }
+           } else {
+              entry.setAttribute(env.getProperty(entry.getAttribute()));
+              if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
+            	  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br>"));
+              }
+              if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
+                  || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
+                  || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))){
+                  entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+              }
+           }
         }
       }
       tReports.add(dto);

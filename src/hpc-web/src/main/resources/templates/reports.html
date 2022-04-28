@@ -323,10 +323,10 @@
 					<table id="report_grid" class="display" style="width:100%">
 						<caption th:text="${reportName}">Grid Layout</caption>
 						<div>
-							Toggle column: <a class="toggle-vis" data-column="0">Path</a>
+							Toggle column: <a class="toggle-vis" data-column="0">Doc</a> - <a class="toggle-vis" data-column="1">Path</a> - <a class="toggle-vis" data-column="2">Object Path</a> - <a class="toggle-vis" data-column="3">Data Owner</a>- <a class="toggle-vis" data-column="4">Data Curator</a>- <a class="toggle-vis" data-column="5">Collection Size</a>
 						</div>
 						<thead>
-							<tr id='attrRow0'>
+							<tr id='attrRow2'>
 								<td id='path001' th:text="Doc"></td>
 								<td id='path002' th:text="BasePath"></td>
 								<td id='path003' th:text="'Object Path'"></td>
@@ -336,7 +336,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr id='attrCol0' th:each="report : ${reports}">
+							<tr id='attrCol2' th:each="report : ${reports}">
 							   <td id='path1'  th:text="${report.getDoc()}"></td>
 							   <td id='path2' th:text="${report.getPath()}"></td>
 							   <td id='path3' th:text="${report.getUser()}"></td>
@@ -346,7 +346,12 @@
 							</tr>
 						</tbody>
 						<tfoot>
-							<tr id='attrFooter0'>
+							<tr id='attrFooter2'>
+								<td id='path0011' th:text="Doc"></td>
+								<td id='path0022' th:text="BasePath"></td>
+								<td id='path0033' th:text="'Object Path'"></td>
+								<td id='path0044' th:text="'Data Owner'"></td>
+								<td id='path0055' th:text="'Data Curator'"></td>
 								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
