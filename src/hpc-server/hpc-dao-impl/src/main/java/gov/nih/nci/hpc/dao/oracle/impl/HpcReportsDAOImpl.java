@@ -698,8 +698,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         Object cobj = map.get("COLLECTION_SIZE");
         float collection_size = (cobj == null) ? 0: Float.parseFloat(map.get("COLLECTION_SIZE").toString());
         //System.out.println(collection_size);
-        float collection_size_gb = collection_size/1000000000;
-        float collection_size_tb = collection_size_gb/1000;
+        float collection_size_gb = collection_size;
+        float collection_size_tb = collection_size_gb;
         HpcReportEntry reportEntry = new HpcReportEntry();
         //reusing existing attributes for collection sizes in GB and TB
         reportEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
