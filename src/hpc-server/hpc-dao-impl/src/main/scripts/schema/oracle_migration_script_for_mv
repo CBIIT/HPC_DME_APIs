@@ -309,6 +309,7 @@ FROM r_meta_main a,
 WHERE a.meta_id = b.meta_id
   AND b.object_id = c.coll_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('registered_by' as varchar2(50))
+  AND c.coll_name not like '%DME_Deleted_Archive%'
 GROUP BY a.meta_attr_name,
          a.meta_attr_value,
          c.coll_id,
@@ -337,6 +338,7 @@ WHERE a.meta_id = b.meta_id
   AND b.object_id = c.coll_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50))
   AND cast(a.meta_attr_value as varchar2(2700)) = d."ID"
+  AND c.coll_name not like '%DME_Deleted_Archive%'
 GROUP BY d."BASE_PATH",
          a.meta_attr_name,
          a.meta_attr_value,
@@ -366,6 +368,7 @@ WHERE a.meta_id = b.meta_id
   AND b.object_id = c.coll_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50))
   AND cast(a.meta_attr_value as varchar2(2700)) = d."ID"
+  AND c.coll_name not like '%DME_Deleted_Archive%'
 GROUP BY d."DOC",
          a.meta_attr_name,
          a.meta_attr_value,
@@ -470,7 +473,8 @@ FROM r_data_main a,
      r_objt_metamap b,
      r_meta_main c
 WHERE
-        a.data_id = b.object_id and b.meta_id = c.meta_id;
+        a.data_id = b.object_id and b.meta_id = c.meta_id
+        and a.data_path not like '%DME_Deleted_Archive%';
 
 create unique index r_report_data_objects_uidx1
     on irods.r_report_data_objects (meta_attr_name, meta_attr_value, data_id);
@@ -519,6 +523,7 @@ FROM r_meta_main a,
 WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('registered_by' as varchar2(50))
+  AND c.data_path not like '%DME_Deleted_Archive%'
 group by  a.meta_attr_name,
           a.meta_attr_value,
           b.object_id,
@@ -546,6 +551,7 @@ WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50))
   AND cast(a.meta_attr_value as varchar2(2700)) = d."ID"
+  AND c.data_path not like '%DME_Deleted_Archive%'
 GROUP BY d."BASE_PATH",
          a.meta_attr_name,
          a.meta_attr_value,
@@ -575,6 +581,7 @@ WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50))
   AND cast(a.meta_attr_value as varchar2(2700)) = d."ID"
+  AND c.data_path not like '%DME_Deleted_Archive%'
 GROUP BY d."DOC",
          a.meta_attr_name,
          a.meta_attr_value,
@@ -789,7 +796,7 @@ WHERE (meta_main.object_id IN (SELECT r_coll_hierarchy_meta_main.object_id
   AND config."BASE_PATH" not in ('/TEST_Archive', '/TEST_NO_HIER_Archive', '/DME_Deleted_Archive')
   AND meta_main2.OBJECT_ID(+) = meta_main.OBJECT_ID
   AND meta_main2.META_ATTR_NAME(+) = 'data_curator'
-  AND meta_main.OBJECT_PATH not like '/ncifprodZone/home/DME_Deleted_Archive%'
+  AND meta_main.OBJECT_PATH not like '%DME_Deleted_Archive%'
 GROUP BY config."DOC",
          config."BASE_PATH",
          meta_main.object_path,
