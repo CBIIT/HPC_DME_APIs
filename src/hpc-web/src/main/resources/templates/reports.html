@@ -413,12 +413,26 @@
 	//<![CDATA[
 	
 	$(document).ready(function() {
+		var eo = {
+		    columns: [ 0, ':visible' ]};
+ 
 	    var table = $('#report_grid').DataTable( {
 				responsive: true,
 				dom: 'Blfrtip',
 				fixedHeader: true,
 				buttons: [
-	            'copy', 'csv', 'excel', 'pdf', 'print'
+				{
+					extend: 'copyHtml5',
+					exportOptions: eo
+				},
+				{
+					extend: 'excelHtml5',
+					exportOptions: eo
+				},
+				{
+					extend: 'pdfHtml5',
+					exportOptions: eo
+				},
 				],
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
 	    } );
