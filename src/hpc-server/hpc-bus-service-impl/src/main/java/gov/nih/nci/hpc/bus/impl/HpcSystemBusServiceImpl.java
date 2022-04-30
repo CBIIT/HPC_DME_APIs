@@ -717,13 +717,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
 									}
-									downloadItems.addAll(downloadCollection(collection,
+									
+									// Get a list of download items for this collection
+									List<HpcCollectionDownloadTaskItem> items = downloadCollection(collection,
 											downloadTask.getGlobusDownloadDestination(),
 											downloadTask.getS3DownloadDestination(),
 											downloadTask.getGoogleDriveDownloadDestination(),
 											downloadTask.getGoogleCloudStorageDownloadDestination(),
 											downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-											collectionDownloadBreaker, downloadTask.getId(), excludedPaths));
+											collectionDownloadBreaker, downloadTask.getId(), excludedPaths);
+									
+									// Update the collection path on the items.
+									items.forEach(item -> item.setCollectionPath(path));
+									
+									downloadItems.addAll(items);
 								}
 							}
 
