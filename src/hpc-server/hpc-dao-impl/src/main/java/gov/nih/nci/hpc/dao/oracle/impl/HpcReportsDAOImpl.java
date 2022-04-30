@@ -626,7 +626,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
 		
 	    if ((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE) && criteria.getPath().equals("All"))) {
-	      reports = generatGroupReportWithModifiedQueries(criteria);
+	      reports = generateDocOrBasepathGridReport(criteria);
             return reports;
         }
 
@@ -655,7 +655,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			for (String doc : docs) {
 				criteria.getDocs().clear();
 				if (doc.equals("All")) {
-				    reports = generatGroupReportWithModifiedQueries(criteria);
+				    reports = generateDocOrBasepathGridReport(criteria);
 				} else {
 				    criteria.getDocs().add(doc);
 				    HpcReport report = getReport(criteria);
@@ -697,26 +697,24 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         report.setUser(map.get("USER_PATH").toString());
         Object cobj = map.get("COLLECTION_SIZE");
         float collection_size = (cobj == null) ? 0: Float.parseFloat(map.get("COLLECTION_SIZE").toString());
-        //System.out.println(collection_size);
         float collection_size_gb = collection_size;
         float collection_size_tb = collection_size_gb;
         HpcReportEntry reportEntry = new HpcReportEntry();
-        //reusing existing attributes for collection sizes in GB and TB
+        //Reusing existing attributes for collection sizes in GB or TB
         reportEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
         reportEntry.setValue(collection_size_gb + "");
         report.getReportEntries().add(reportEntry);
-        reportEntry = new HpcReportEntry();
-        reportEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
-        reportEntry.setValue(collection_size_tb + "");
-        //System.out.println(report);
-        report.getReportEntries().add(reportEntry);
+        // the following entry may not be needed
+        //reportEntry = new HpcReportEntry();
+        //reportEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
+        //reportEntry.setValue(collection_size_tb + "");
+        //report.getReportEntries().add(reportEntry);
         reports.add(report);
       }
-      //System.out.println(reports);
       return reports;
     }
 	
-    public List<HpcReport> generatGroupReportWithModifiedQueries(HpcReportCriteria criteria) {  
+    public List<HpcReport> generateDocOrBasepathGridReport(HpcReportCriteria criteria) {  
       List<HpcReport> reports = new ArrayList<HpcReport>();
       Map<String, HpcReport> mapReports = new HashMap<>();
       List<String> keyList = new ArrayList<>();
@@ -901,9 +899,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
            }
          }
 
-         //private static final String FILESIZE_SELECT_DOC_GRID = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt, b.doc doc ";
-         //private static final String FILESIZE_GROUP_DOC_GRID = DOC_GRID_GROUP_BY_SQL + ", " + FILE_SIZE_FUNC_SQL;
-
          List<Map<String, Object>> fileRangeList; 
          if (isBasePathReport) {
            fileRangeList = jdbcTemplate.queryForList(FILESIZE_SELECT_BASEPATH_GRID + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL  + FILESIZE_GROUP_BASEPATH_GRID, basepathDateLongArgs);
@@ -912,8 +907,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
            fileRangeList = jdbcTemplate.queryForList(FILESIZE_SELECT_DOC_GRID + DOC_FROM_SQL + BASEPATH_GRID_WHERE_SQL  + FILESIZE_GROUP_DOC_GRID, basepathDateLongArgs);
          }
 
-         //System.out.println("fileRangeList=");
-         //System.out.println(fileRangeList);
          HpcReportEntryAttribute entryAttr =  HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
          // FILE RANGES
          for (Map<String, Object> map : fileRangeList) {
@@ -945,7 +938,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
                entryAttr = HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB;
                break;
            }
-           //System.out.println(entryAttr.toString());
            for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
              HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
              if (matchedReport.getReportEntries().get(i)
