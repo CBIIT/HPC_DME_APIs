@@ -1220,6 +1220,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		for (HpcCollectionDownloadTaskItem downloadItem : downloadItems) {
 			JSONObject jsonDownloadItem = new JSONObject();
 			jsonDownloadItem.put("path", downloadItem.getPath());
+			if (downloadItem.getCollectionPath() != null) {
+				jsonDownloadItem.put("collectionPath", downloadItem.getCollectionPath());
+			}
 			if (downloadItem.getDataObjectDownloadTaskId() != null) {
 				jsonDownloadItem.put("dataObjectDownloadTaskId", downloadItem.getDataObjectDownloadTaskId());
 			}
@@ -1284,6 +1287,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				JSONObject jsonDownloadItem = downloadItemIterator.next();
 				HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
 				downloadItem.setPath(jsonDownloadItem.get("path").toString());
+				
+				Object collectionPath = jsonDownloadItem.get("collectionPath");
+				if (collectionPath != null) {
+					downloadItem.setCollectionPath(collectionPath.toString());
+				}
 
 				Object dataObjectDownloadTaskId = jsonDownloadItem.get("dataObjectDownloadTaskId");
 				if (dataObjectDownloadTaskId != null) {
