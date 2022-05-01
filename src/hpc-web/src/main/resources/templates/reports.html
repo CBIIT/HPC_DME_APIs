@@ -327,7 +327,7 @@
 						</div>
 						<thead>
 							<tr id='attrRow2'>
-								<td id='path001' th:text="Doc"></td>
+								<td id='path001' th:text="DOC"></td>
 								<td id='path002' th:text="BasePath"></td>
 								<td id='path003' th:text="'Object Path'"></td>
 								<td id='path004' th:text="'Data Owner'"></td>
@@ -434,8 +434,22 @@
 					exportOptions: eo
 				},
 				],
+				"columnDefs": [ {
+            		"searchable": false,
+            		"orderable": false,
+            		"targets": 0
+        		} ],
+        		"order": [[ 1, 'asc' ]],
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
-	    } );
+	    	} );
+	    
+	    table.on( 'order.dt search.dt', function () {
+        let i = 1;
+ 
+        table.cells(null, 0, {search:'applied', order:'applied'}).every( function (cell) {
+            this.data(i++);
+        	} );
+    	} ).draw();
 
 	    $('a.toggle-vis').on( 'click', function (e) {
 	        e.preventDefault();
