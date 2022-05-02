@@ -48,10 +48,11 @@
 <script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
 <script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css"></script>
 
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.html5.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.print.min.js"></script>
-
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.2/js/buttons.colVis.min.js"></script>
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -293,17 +294,16 @@
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
 					<table id="report_grid" class="display" style="width:100%">
 						<caption th:text="${reportName}">Grid Layout</caption>
-						<div>
-							Toggle column: <a class="toggle-vis" data-column="0">Path</a> - <a class="toggle-vis" data-column="1">Total Registered Users</a> - <a class="toggle-vis" data-column="2">Total  Data</a> - <a class="toggle-vis" data-column="3">Largest File</a> - <a class="toggle-vis" data-column="4">Average File</a> - <a class="toggle-vis" data-column="5">Data Objs</a> - <a class="toggle-vis" data-column="6">Collections</a> - <a class="toggle-vis" data-column="7">Meta Attrs</a> - <a class="toggle-vis" data-column="8"> &le; 1MB</a>
-						</div>
 						<thead>
 							<tr id='attrRow0'>
+								<td id='index0'></td>
 								<td id='path0' th:text="Path"></td>
 								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="report : ${reports}">
+							   <td id='index1'></td>
 							   <td id='path1'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="${report.getPath()}"></td>
 							   <td id='path2'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="${report.getDoc()}"></td>
 							   <td id='attr0' th:text="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
@@ -311,6 +311,8 @@
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter0'>
+								<td id='indexf0'></td>
+								<td id='pathf0' th:text="Path"></td>
 								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -320,13 +322,14 @@
 				<!-- Start Data Owner Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+					<div id="test" style="float:right">
+
+    				</div>
 					<table id="report_grid" class="display" style="width:100%">
 						<caption th:text="${reportName}">Grid Layout</caption>
-						<div>
-							Toggle column: <a class="toggle-vis" data-column="0">Doc</a> - <a class="toggle-vis" data-column="1">Path</a> - <a class="toggle-vis" data-column="2">Object Path</a> - <a class="toggle-vis" data-column="3">Data Owner</a>- <a class="toggle-vis" data-column="4">Data Curator</a>- <a class="toggle-vis" data-column="5">Collection Size</a>
-						</div>
 						<thead>
 							<tr id='attrRow2'>
+								<td id='index001'></td>
 								<td id='path001' th:text="DOC"></td>
 								<td id='path002' th:text="BasePath"></td>
 								<td id='path003' th:text="'Object Path'"></td>
@@ -337,6 +340,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol2' th:each="report : ${reports}">
+							   <td id='index01'></td>
 							   <td id='path1'  th:text="${report.getDoc()}"></td>
 							   <td id='path2' th:text="${report.getPath()}"></td>
 							   <td id='path3' th:text="${report.getUser()}"></td>
@@ -347,6 +351,7 @@
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter2'>
+								<td id='index0000'></td>
 								<td id='path0011' th:text="Doc"></td>
 								<td id='path0022' th:text="BasePath"></td>
 								<td id='path0033' th:text="'Object Path'"></td>
@@ -414,7 +419,8 @@
 	
 	$(document).ready(function() {
 		var eo = {
-		    columns: [ 0, ':visible' ]};
+		    columns: [ 0, ':visible' ]
+		    };
  
 	    var table = $('#report_grid').DataTable( {
 				responsive: true,
@@ -433,23 +439,28 @@
 					extend: 'pdfHtml5',
 					exportOptions: eo
 				},
+				{
+	                extend: 'colvis',
+	                collectionLayout: 'fixed columns',
+	                collectionTitle: 'Column visibility control'
+	            }
 				],
-				"columnDefs": [ {
-            		"searchable": false,
-            		"orderable": false,
-            		"targets": 0
-        		} ],
-        		"order": [[ 1, 'asc' ]],
+				 "columnDefs": [ {
+            "searchable": false,
+            "orderable": false,
+            "targets": 0
+        } ],
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
 	    	} );
 	    
 	    table.on( 'order.dt search.dt', function () {
-        let i = 1;
- 
-        table.cells(null, 0, {search:'applied', order:'applied'}).every( function (cell) {
-            this.data(i++);
-        	} );
+				let i = 1;
+				table.cells(null, 0, {search:'applied', order:'applied'}).every( function (cell) {
+				this.data(i++);
+			} );
     	} ).draw();
+
+    	//table.buttons().container().appendTo($('#test'));
 
 	    $('a.toggle-vis').on( 'click', function (e) {
 	        e.preventDefault();
