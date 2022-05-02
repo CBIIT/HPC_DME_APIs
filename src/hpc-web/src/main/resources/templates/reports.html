@@ -52,7 +52,7 @@
 
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.html5.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.print.min.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.2/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.colVis.min.js"></script>
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -65,6 +65,28 @@
 <style>
 .datepicker { 
     z-index: 1002 !important;
+}
+</style>
+<style>
+body {
+  font: 90%/1.45em "Helvetica Neue", HelveticaNeue, Verdana, Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  background-color: #fff;
+}
+
+.dt-buttons .dt-button-collection {
+  margin: 5px 0 !important;
+}
+
+.dt-button.buttons-columnVisibility {
+  background-color: red;
+  color: white;
+}
+
+.dt-button.buttons-columnVisibility.active {
+  background-color: green;
 }
 </style>
 <script th:inline="javascript">
@@ -441,10 +463,10 @@
 				},
 				{
 	                extend: 'colvis',
-	                collectionLayout: 'fixed columns',
-	                collectionTitle: 'Column visibility control'
+	                text: 'Show/Hide Columns',
 	            }
 				],
+				"order": [[ 1, 'asc' ]],
 				 "columnDefs": [ {
             "searchable": false,
             "orderable": false,
