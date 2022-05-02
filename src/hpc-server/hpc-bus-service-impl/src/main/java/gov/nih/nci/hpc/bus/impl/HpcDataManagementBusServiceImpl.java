@@ -110,6 +110,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionResultSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
@@ -2464,7 +2465,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
 		} else {
-			// Download completed or failed. Populate the DTO accordingly.
+			// Download completed, canceled or failed. Populate the DTO accordingly.
 			if (taskType.equals(HpcDownloadTaskType.COLLECTION)) {
 				downloadStatus.setPath(taskStatus.getResult().getPath());
 			}
@@ -2479,6 +2480,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);
 			populateDownloadItems(downloadStatus, taskStatus.getResult().getItems());
+			if (taskType.equals(HpcDownloadTaskType.COLLECTION_LIST)) {
+				populateCollectionListResultSummary(downloadStatus, taskStatus.getResult().getCollectionPaths(),
+						taskStatus.getResult().getItems());
+			}
 		}
 
 		return downloadStatus;
@@ -2496,10 +2501,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcCollectionDownloadTaskItem item : items) {
 			HpcDownloadResult result = item.getResult();
 			if (result == null) {
-				if (Boolean.TRUE.equals(item.getRestoreInProgress()))
+				if (Boolean.TRUE.equals(item.getRestoreInProgress())) {
 					downloadStatus.getRestoreInProgressItems().add(item);
-				else
+				} else {
 					downloadStatus.getInProgressItems().add(item);
+				}
 			} else if (result.equals(HpcDownloadResult.COMPLETED)) {
 				item.setPercentComplete(null);
 				downloadStatus.getCompletedItems().add(item);
@@ -2511,6 +2517,68 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.getFailedItems().add(item);
 			}
 		}
+	}
+
+	/**
+	 * Iterate through the download list items of collection list task, and prepare
+	 * a summary per each collection.
+	 *
+	 * @param downloadStatus  The download status to populate the items into.
+	 * @param collectionPaths The list of collection paths in this download task.
+	 * @param items           The collection / bulk download items.
+	 */
+	private void populateCollectionListResultSummary(HpcCollectionDownloadStatusDTO downloadStatus,
+			List<String> collectionPaths, List<HpcCollectionDownloadTaskItem> items) {
+		// Instantiate the collection summary map.
+		HashMap<String, HpcCollectionResultSummaryDTO> collectionsResultSummary = new HashMap<>();
+		collectionPaths.forEach(path -> {
+			HpcCollectionResultSummaryDTO collectionResultSummary = new HpcCollectionResultSummaryDTO();
+			collectionResultSummary.setProcessed(false);
+			collectionResultSummary.setPath(path);
+			collectionsResultSummary.put(path, collectionResultSummary);
+		});
+
+		// Iterate through the download items list and update the collection summary
+		// accordingly
+		for (HpcCollectionDownloadTaskItem item : items) {
+			HpcDownloadResult result = item.getResult();
+			String path = item.getCollectionPath();
+			HpcCollectionResultSummaryDTO collectionResultSummary = collectionsResultSummary.get(path);
+			if (result == null || StringUtils.isEmpty(path) || collectionResultSummary == null) {
+				// The collection path was not captured for this task, or it's still in
+				// progress.
+				logger.info("Could not create collections download summary - {}, {}, {}", path, result,
+						collectionPaths);
+				return;
+			}
+
+			collectionResultSummary.setProcessed(true);
+
+			// Update completed/failed/canceled count, and update overall collection result:
+			// COMPLETED - all items completed
+			// CANCELED - at least 1 item canceled
+			// FAILED - at least 1 item failed and no item canceled.
+			if (result.equals(HpcDownloadResult.COMPLETED)) {
+				collectionResultSummary.setCompletedCount(
+						Optional.ofNullable(collectionResultSummary.getCompletedCount()).orElse(0) + 1);
+				if (collectionResultSummary.getResult() == null) {
+					collectionResultSummary.setResult(HpcDownloadResult.COMPLETED);
+				}
+			} else if (result.equals(HpcDownloadResult.CANCELED)) {
+				collectionResultSummary.setCanceledCount(
+						Optional.ofNullable(collectionResultSummary.getCanceledCount()).orElse(0) + 1);
+				collectionResultSummary.setResult(HpcDownloadResult.CANCELED);
+			} else {
+				collectionResultSummary
+						.setFailedCount(Optional.ofNullable(collectionResultSummary.getFailedCount()).orElse(0) + 1);
+				if (!Optional.ofNullable(collectionResultSummary.getResult()).orElse(HpcDownloadResult.COMPLETED)
+						.equals(HpcDownloadResult.CANCELED)) {
+					collectionResultSummary.setResult(HpcDownloadResult.FAILED);
+				}
+			}
+		}
+
+		downloadStatus.getCollectionListResultSummary().addAll(collectionsResultSummary.values());
 	}
 
 	/**
