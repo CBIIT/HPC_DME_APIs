@@ -184,7 +184,7 @@
 					"index": "2"
 				}
 			],
-			"textFormat": "Your download request %6$s.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%5$s/downloadtask?taskId=%3$s&type=%6$s\">%3$s</a><br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
+			"textFormat": "Your download request %6$s.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%5$s/downloadtask?taskId=%3$s&type=%6$s\">%3$s</a><br/>Reason: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
