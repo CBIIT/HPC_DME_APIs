@@ -387,15 +387,15 @@ public class HpcEventServiceImpl implements HpcEventService {
 			String downloadResultStr = "";
 			switch (downloadTaskResult) {
 			case COMPLETED:
-				downloadResultStr = "Completed";
+				downloadResultStr = "completed";
 				break;
 
 			case CANCELED:
-				downloadResultStr = "Canceled";
+				downloadResultStr = "canceled";
 				break;
 
 			default:
-				downloadResultStr = "Failed";
+				downloadResultStr = "failed";
 			}
 
 			event.getPayloadEntries().add(toPayloadEntry(DOWNLOAD_TASK_RESULT_PAYLOAD_ATTRIBUTE, downloadResultStr));
