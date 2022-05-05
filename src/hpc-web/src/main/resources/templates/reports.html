@@ -319,7 +319,8 @@ body {
 						<thead>
 							<tr id='attrRow0'>
 								<td id='index0' th:text="Index"></td>
-								<td id='path0' th:text="Path"></td>
+								<td id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="Path"></td>
+								<td id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
