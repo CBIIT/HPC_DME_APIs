@@ -220,8 +220,8 @@ public class HpcReportsController extends AbstractHpcController {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
         HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
         model.addAttribute("reports", translate(reports.getReports()));
-        if ((reportRequest.getReportType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
-            && reportRequest.getDoc().equals("All")) || (reportRequest.getReportType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
+        if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
+            && reportRequest.getDoc().equals("All")) || (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
                 && reportRequest.getBasepath().equals("All"))) {
           model.addAttribute("reportName", getReportName(reportRequest.getReportType() + "_GRID"));
         }

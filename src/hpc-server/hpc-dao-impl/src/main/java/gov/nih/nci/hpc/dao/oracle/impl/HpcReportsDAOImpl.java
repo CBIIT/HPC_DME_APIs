@@ -724,10 +724,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
       fields.add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
       fields.add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
-      fields.add(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
       fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
       fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-      //fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
   
       List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
       fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
@@ -812,7 +810,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
             String key = isBasePathReport ?  map.get("PATH").toString() :  map.get("DOC").toString();
             Object totalSize = map.get("TOTALSIZE");
             Object maxSize = map.get("MAXSIZE");
-            Object avgSize = map.get("AVGSIZE");
             matchedReport = mapReports.get(key);
             if(matchedReport == null) continue;
             for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
@@ -826,11 +823,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
               if (matchedReport.getReportEntries().get(i)
                   .getAttribute() == HpcReportEntryAttribute.LARGEST_FILE_SIZE) {
                 reportEntry.setValue(maxSize.toString());
-              }
-             // Average file - AVERAGE_FILE_SIZE
-              if (matchedReport.getReportEntries().get(i)
-                  .getAttribute() == HpcReportEntryAttribute.AVERAGE_FILE_SIZE) {
-                reportEntry.setValue(avgSize.toString());
               }
             }
           }
@@ -997,10 +989,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
     }
     
-   // private updateReportEntryAttribute() {
-   //   
-   // }
-
 	private List<String> getUsers() {
 		return jdbcTemplate.queryForList(USERS_SQL, String.class);
 	}
