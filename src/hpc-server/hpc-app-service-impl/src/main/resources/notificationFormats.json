@@ -169,7 +169,7 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_DOWNLOAD_FAILED",
-			"subjectFormat": "DME %1$s Download Request %2$s at %3$s",
+			"subjectFormat": "DME %1$s download request %2$s at %3$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
@@ -184,7 +184,7 @@
 					"index": "2"
 				}
 			],
-			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%5$s/downloadtask?taskId=%3$s&type=%6$s\">%3$s</a><br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
+			"textFormat": "Your download request %7$s.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%5$s/downloadtask?taskId=%3$s&type=%6$s\">%3$s</a><br/>Reason: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -209,6 +209,10 @@
 				{
 					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE_CODE",
 					"index": "5"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_RESULT",
+					"index": "6"
 				}
 			]
 		},
