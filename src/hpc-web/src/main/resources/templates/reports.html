@@ -669,93 +669,77 @@ body {
       	
       }
 	
-      function validateAndSubmit()
-      {
-    	  var reportType = document.getElementById("reportType").value;
-    	  var fromDateVal = document.getElementById("fromDate").value;
-    	  var toDateVal = document.getElementById("toDate").value;
-      	  var docListValue = document.getElementById("docList").value;
-    	  var userListValue = document.getElementById("userList").value;
+      function validateAndSubmit() {
+		var reportType = document.getElementById("reportType").value;
+		var fromDateVal = document.getElementById("fromDate").value;
+		var toDateVal = document.getElementById("toDate").value;
+		var docListValue = document.getElementById("docList").value;
+		var userListValue = document.getElementById("userList").value;
     	  
-    	  var fromDate = new Date(fromDateVal);
-    	  var toDate = new Date(toDateVal);
-            if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE")
-          	{
-        		document.getElementById("doc").value = "-1";
-          		document.getElementById("user").value = "-1";
-          		if(!validateDateRange())
-          			return false;
-          	}
-            else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
-          	{
-          		document.getElementById("user").value = "-1";
-        	  	if(document.getElementById("doc").value == "-1")
-        	  		alert("Please select a DOC");
-        	  	if(!validateDateRange())
-          			return false;
-          	}
-            else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
-          	{
-        	  	if(document.getElementById("user").value == "-1")
-        	  		alert("Please select a user");
-        		document.getElementById("doc").value = "-1";
-        		if(!validateDateRange())
-          			return false;
-          	}
-            else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
-          	{
-        	  	if(document.getElementById("basepath").value == "-1")
-        	  		alert("Please select a Base path");
-        		document.getElementById("doc").value = "-1";
-        		document.getElementById("user").value = "-1";
-        		if(!validateDateRange())
-          			return false;
-          	}
-            else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
-          	{
-        		document.getElementById("doc").value = "-1";
-        		document.getElementById("user").value = "-1";
-        		document.getElementById("basepath").value = "-1";
-
-        		if(!validateDateRange()) {
-              			return false;
-                }
-
-        	  	if(document.getElementById("path").value == null || document.getElementById("path").value == "")
-        	  		alert("Please enter path");
-          	
-	      		//Strip trailing "/" if present
-				var lastChar = $("#path").val().substr(-1);
-			 	if(lastChar === '/') {
-					var updatedPath = $("#path").val().slice(0, -1);
-					$("#path").val(updatedPath);
-				}
-          	}
-
-    	  if(fromDate.valueOf() > toDate.valueOf())
-    	  {
-    		  alert("Invalid date range");
-    		  return false;
-    	  }
-    	  if(reportType == "-1")
-    	  {
-    		  alert("Please select report type");
-    		  return false;
-    	  }
-
-	      document.getElementById("reportsform").submit();
+		var fromDate = new Date(fromDateVal);
+		var toDate = new Date(toDateVal);
+		if(fromDate.valueOf() > toDate.valueOf()){
+			alert("Invalid date range");
+			return false;
+		}
+		if(reportType == "-1"){
+			alert("Please select report type");
+			return false;
+		}
+	    validateDateRange();
+		if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			document.getElementById("user").value = "-1";
+		}
+		else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE"){
+			document.getElementById("user").value = "-1";
+			if(document.getElementById("doc").value == "-1"){
+				alert("Please select a DOC");
+				return false;
+			}
+		}
+		else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			if(document.getElementById("user").value == "-1"){
+				alert("Please select a user");
+				return false;
+			}
+        }
+		else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			document.getElementById("user").value = "-1";
+			if(document.getElementById("basepath").value == "-1"){
+			alert("Please select a Base path");
+			return false;
+			}
+		}
+        else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			document.getElementById("user").value = "-1";
+			document.getElementById("basepath").value = "-1";
+			if(document.getElementById("path").value == null || document.getElementById("path").value == ""){
+				alert("Please enter path");
+				return false;
+			}
+			//Strip trailing "/" if present
+			var lastChar = $("#path").val().substr(-1);
+			if(lastChar === '/') {
+				var updatedPath = $("#path").val().slice(0, -1);
+				$("#path").val(updatedPath);
+			}
+		}
+		document.getElementById("reportsform").submit();
       }
 
 
-      function validateDateRange()
-      {
-    	  if($('#fromDate').val() == '')
-    		  $('#fromDate').val('01/01/2016');
-    	  if($('#toDate').val() == '') {
-    		  var now = new Date();
-    		  $('#toDate').val($.datepicker.formatDate("mm/dd/yy", new Date()));
+      function validateDateRange(){
+		if($('#fromDate').val() == '')
+			$('#fromDate').val('01/01/2016');
+		if($('#toDate').val() == '') {
+			var now = new Date();
+			$('#toDate').val($.datepicker.formatDate("mm/dd/yy", new Date()));
     	  }
-    	  return true;
+		return true;
       }
     //]]>
   </script>
