@@ -302,7 +302,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			int totalPages = 1;
 			do {
 				compoundQuery.setPage(pageNumber++);
-				compoundQuery.setPageSize(100);
+				compoundQuery.setPageSize(10000);
 				Response restResponse = client.invoke("POST", compoundQuery);
 				if (restResponse.getStatus() == 200) {
 					HpcSearchUtil.processResponseResults(hpcSearch != null ? hpcSearch : search, restResponse, model, session);
