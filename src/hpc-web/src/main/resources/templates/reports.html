@@ -352,7 +352,7 @@ body {
 						<caption th:text="${reportName}">Grid Layout</caption>
 						<thead>
 							<tr id='attrRow2'>
-								<td id='index001'></td>
+								<td id='index001' th:text="Index"></td>
 								<td id='path001' th:text="DOC"></td>
 								<td id='path002' th:text="BasePath"></td>
 								<td id='path003' th:text="'Object Path'"></td>
@@ -374,7 +374,7 @@ body {
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter2'>
-								<td id='index0000'></td>
+								<td id='index0000' th:text="Index"></td>
 								<td id='path0011' th:text="Doc"></td>
 								<td id='path0022' th:text="BasePath"></td>
 								<td id='path0033' th:text="'Object Path'"></td>
@@ -461,7 +461,7 @@ body {
 		}
 		
 		var eo = {
-		    columns: [ 0, ':visible' ]
+		    columns: [ [0,1], ':visible' ]
 		    };
  
 	    var table = $('#report_grid').DataTable( {
@@ -481,36 +481,40 @@ body {
 				{
 	                extend: 'colvis',
 	                text: 'Show/Hide Columns',
-	            }
+	                columns: ':nth-child(n+3)'
+	            },
 				],
 				"order": [[ 1, 'asc' ]],
-				 "columnDefs": [ {
-            "searchable": false,
-            "orderable": false,
-            "targets": 0
-        } ],
+				"columnDefs": [ {
+								"targets": 0,
+								"searchable": false,
+								"orderable": false,
+								},
+	  							// { "targets": [0, 1], "visible": true},
+								//{ "targets": '_all', "visible": false }
+ ],
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
-	    	} );
+				} );
 	    
-	    table.on( 'order.dt search.dt', function () {
-				let i = 1;
-				table.cells(null, 0, {search:'applied', order:'applied'}).every( function (cell) {
-				this.data(i++);
-			} );
-    	} ).draw();
+			table.on( 'order.dt search.dt', function () {
+					let i = 1;
+					table.cells(null, 0, {search:'applied', order:'applied'}).every( function (cell) {
+					this.data(i++);
+				} );
+			} ).draw();
 
-    	//table.buttons().container().appendTo($('#test'));
 
-	    $('a.toggle-vis').on( 'click', function (e) {
-	        e.preventDefault();
+		$('a.toggle-vis').on( 'click', function (e) {
+			e.preventDefault();
 
-	        // Get the column API object
-	        var column = table.column( $(this).attr('data-column') );
+			// Get the column API object
+			var column = table.column( $(this).attr('data-column') );
 
-	        // Toggle the visibility
-	        column.visible( ! column.visible() );
-	    } );
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+		} );
 	} );
+
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
 	});
@@ -686,7 +690,7 @@ body {
 			alert("Please select report type");
 			return false;
 		}
-	    validateDateRange();
+		validateDateRange();
 		if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE"){
 			document.getElementById("doc").value = "-1";
 			document.getElementById("user").value = "-1";
@@ -709,11 +713,11 @@ body {
 			document.getElementById("doc").value = "-1";
 			document.getElementById("user").value = "-1";
 			if(document.getElementById("basepath").value == "-1"){
-			alert("Please select a Base path");
-			return false;
+				alert("Please select a Base path");
+				return false;
 			}
 		}
-        else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE"){
+		else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE"){
 			document.getElementById("doc").value = "-1";
 			document.getElementById("user").value = "-1";
 			document.getElementById("basepath").value = "-1";
