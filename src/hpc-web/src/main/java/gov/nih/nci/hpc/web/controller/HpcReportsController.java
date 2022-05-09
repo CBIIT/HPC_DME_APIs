@@ -270,10 +270,10 @@ public class HpcReportsController extends AbstractHpcController {
            if (dto.getType().equals("USAGE_SUMMARY_BY_DATA_OWNER")) {
               if (entry.getAttribute().equals("TOTAL_DATA_SIZE") || dto.getType().equals("LARGEST_FILE_SIZE")) {
                 entry.setAttribute(env.getProperty("COLLECTION_SIZE"));
-                entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+                //entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
               } else if (entry.getAttribute().equals("LARGEST_FILE_SIZE")) {
-                entry.setAttribute(env.getProperty("COLLECTION_SIZE2"));
-                entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));        
+                entry.setAttribute(env.getProperty("COLLECTION_SIZE_HUMAN_READABLE"));
+                entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
               } else {
                 entry.setAttribute(env.getProperty(entry.getAttribute()));
               }
