@@ -280,7 +280,7 @@ public class HpcReportsController extends AbstractHpcController {
            } else {
               entry.setAttribute(env.getProperty(entry.getAttribute()));
               if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
-            	  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br>"));
+                  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
               }
               if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
                   || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
