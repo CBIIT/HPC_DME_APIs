@@ -705,10 +705,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         reportEntry.setValue(collection_size_gb + "");
         report.getReportEntries().add(reportEntry);
         // the following entry may not be needed
-        //reportEntry = new HpcReportEntry();
-        //reportEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
-        //reportEntry.setValue(collection_size_tb + "");
-        //report.getReportEntries().add(reportEntry);
+        reportEntry = new HpcReportEntry();
+        reportEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
+        reportEntry.setValue(collection_size_tb + "");
+        report.getReportEntries().add(reportEntry);
         reports.add(report);
       }
       return reports;
