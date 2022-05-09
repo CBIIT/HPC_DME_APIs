@@ -329,7 +329,7 @@ body {
 							   <td id='index1'></td>
 							   <td id='path1'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="${report.getPath()}"></td>
 							   <td id='path2'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="${report.getDoc()}"></td>
-							   <td id='attr0' th:text="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
+							   <td id='attr0' th:utext="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
 							</tr>
 						</tbody>
 						<tfoot>
@@ -380,7 +380,7 @@ body {
 								<td id='path0033' th:text="'Object Path'"></td>
 								<td id='path0044' th:text="'Data Owner'"></td>
 								<td id='path0055' th:text="'Data Curator'"></td>
-								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+								<th th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
 					</table>
