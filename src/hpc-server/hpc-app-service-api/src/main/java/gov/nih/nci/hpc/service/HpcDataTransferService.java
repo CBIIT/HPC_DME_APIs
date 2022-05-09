@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
@@ -427,6 +428,17 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType) throws HpcException;
+
+	/**
+	 * Get current status of active (result not captured yet) download items in a
+	 * collection download task.
+	 *
+	 * @param downloadTask The collection download task to get items status for
+	 * @return A map from download item ID to the status
+	 * @throws HpcException on service failure.
+	 */
+	public Map<String, HpcDownloadTaskStatus> getDownloadItemsStatus(HpcCollectionDownloadTask downloadTask)
+			throws HpcException;
 
 	/**
 	 * Get a collection download task cancellation request.
