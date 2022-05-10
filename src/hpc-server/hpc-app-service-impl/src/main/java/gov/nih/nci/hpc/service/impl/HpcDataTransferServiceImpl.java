@@ -1007,7 +1007,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					taskStatus.setDataObjectDownloadTask(dataObjectDownloadTask);
 					downloadItemsStatus.put(dataObjectDownloadTask.getId(), taskStatus);
 				});
-		
+
 		int inProgress = downloadItemsStatus.size();
 
 		// Get all the data object download tasks that completed but a result was not
@@ -1029,8 +1029,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		}
-		
-		logger.error("ERAN: download items query - total: {}, inprogress: {}",  downloadItemsStatus.size(), inProgress);
+
+		// TODO - Remove after HPCDATAMGM-1570 is tested successfully
+		logger.error("ERAN: download items query - total: {}, inprogress: {}", downloadItemsStatus.size(), inProgress);
 
 		return downloadItemsStatus;
 	}
