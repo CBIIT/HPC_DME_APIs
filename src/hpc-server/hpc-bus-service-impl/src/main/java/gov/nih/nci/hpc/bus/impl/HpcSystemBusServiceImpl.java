@@ -797,10 +797,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				try {
 					if (downloadItem.getResult() == null) {
 						// This download item in progress - check its status.
-						HpcDownloadTaskStatus downloadItemStatus = downloadItem.getDataObjectDownloadTaskId() != null
-								? dataTransferService.getDownloadTaskStatus(downloadItem.getDataObjectDownloadTaskId(),
-										HpcDownloadTaskType.DATA_OBJECT)
-								: null;
+						HpcDownloadTaskStatus downloadItemStatus = downloadItemsStatus.get(downloadItem.getDataObjectDownloadTaskId());
+						/*
+						 * TODO - Remove after HPCDATAMGM-1570 is tested successfully
+						 * HpcDownloadTaskStatus downloadItemStatus =
+						 * downloadItem.getDataObjectDownloadTaskId() != null ?
+						 * dataTransferService.getDownloadTaskStatus(downloadItem.
+						 * getDataObjectDownloadTaskId(), HpcDownloadTaskType.DATA_OBJECT) : null;
+						 */
 
 						if (downloadItemStatus == null) {
 							throw new HpcException("Data object download task status is unknown. Task ID: "
