@@ -471,7 +471,8 @@ body {
 				buttons: [
 				{
 					extend: 'copyHtml5',
-					exportOptions: eo
+					exportOptions: eo,
+					text: '<i class="fa fa-files-o">Copy to Clipboard</i>'
 				},
 				{
 					extend: 'excelHtml5',
@@ -481,20 +482,32 @@ body {
 				{
 	                extend: 'colvis',
 	                text: 'Show/Hide Columns',
-	                columns: ':nth-child(n+3)'
+	                columns: ':nth-child(n+3)' // Exclude first two columns from show/hide. It starts from 3rd column
 	            },
 				],
 				"order": [[ 1, 'asc' ]],
 				"columnDefs": [ {
-								"targets": 0,
+								"targets": 0, // The first column - index
 								"searchable": false,
 								"orderable": false,
+								"visible": true
 								},
-	  							// { "targets": [0, 1], "visible": true},
-								//{ "targets": '_all', "visible": false }
- ],
+								{
+								"targets": [-1], // Last column should not be sortable. Human readable value.
+								"orderable": false,
+								"visible": true
+								},
+								{
+								"targets": [ 1, 2, 3, 4, 5, 6], // Visible columns at start up(include 0 specified above)
+								"visible": true
+	  							},
+								{
+								"targets": '_all', // The rest of the columns will not visible at start up
+								"visible": false
+								}
+								],
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
-				} );
+			} );
 	    
 			table.on( 'order.dt search.dt', function () {
 					let i = 1;
