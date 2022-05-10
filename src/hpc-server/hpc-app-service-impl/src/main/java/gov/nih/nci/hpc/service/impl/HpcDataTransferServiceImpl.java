@@ -995,6 +995,47 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public Map<String, HpcDownloadTaskStatus> getDownloadItemsStatus(HpcCollectionDownloadTask downloadTask)
+			throws HpcException {
+		Map<String, HpcDownloadTaskStatus> downloadItemsStatus = new HashMap<>();
+
+		// Get all the data object download tasks that are in progress.
+		dataDownloadDAO.getDataObjectDownloadTaskByCollectionDownloadTaskId(downloadTask.getId())
+				.forEach(dataObjectDownloadTask -> {
+					HpcDownloadTaskStatus taskStatus = new HpcDownloadTaskStatus();
+					taskStatus.setInProgress(true);
+					taskStatus.setDataObjectDownloadTask(dataObjectDownloadTask);
+					downloadItemsStatus.put(dataObjectDownloadTask.getId(), taskStatus);
+				});
+		
+		int inProgress = downloadItemsStatus.size();
+
+		// Get all the data object download tasks that completed but a result was not
+		// recorded yet.
+		for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+			if (downloadItem.getResult() == null) {
+				String dataObjectDownloadTaskId = downloadItem.getDataObjectDownloadTaskId();
+				if (!StringUtils.isEmpty(dataObjectDownloadTaskId)
+						&& !downloadItemsStatus.containsKey(dataObjectDownloadTaskId)) {
+					HpcDownloadTaskStatus taskStatus = new HpcDownloadTaskStatus();
+					HpcDownloadTaskResult taskResult = dataDownloadDAO.getDownloadTaskResult(dataObjectDownloadTaskId,
+							HpcDownloadTaskType.DATA_OBJECT);
+					if (taskResult != null) {
+						// Task completed or failed. Return the result.
+						taskStatus.setInProgress(false);
+						taskStatus.setResult(taskResult);
+						downloadItemsStatus.put(dataObjectDownloadTaskId, taskStatus);
+					}
+				}
+			}
+		}
+		
+		logger.error("ERAN: download items query - total: {}, inprogress: {}",  downloadItemsStatus.size(), inProgress);
+
+		return downloadItemsStatus;
+	}
+
+	@Override
 	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) {
 		try {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
@@ -3650,12 +3691,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				} catch (HpcException e) {
 					downloadTask.setFirstHopRetried(false);
 					logger.error("download task: {} - failed to reset", downloadTask.getId(), e);
-					
+
 				}
 			}
-			
-			logger.info("download task: {} - 1 Hop download retry failed. Path at scratch space: {}", downloadTask.getId(),
-					sourceFile.getAbsolutePath());
+
+			logger.info("download task: {} - 1 Hop download retry failed. Path at scratch space: {}",
+					downloadTask.getId(), sourceFile.getAbsolutePath());
 
 			String errorMessage = "Failed to get data from archive via S3: " + message;
 			downloadFailed(errorMessage);
