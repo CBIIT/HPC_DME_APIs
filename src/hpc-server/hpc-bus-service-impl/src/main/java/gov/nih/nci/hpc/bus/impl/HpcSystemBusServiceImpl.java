@@ -14,9 +14,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -779,6 +781,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			boolean downloadCompleted = true;
 			int inProgressItemsCount = 0;
 			List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
+			
+			// Get updated status on download items w/o a result yet.
+			Map<String, HpcDownloadTaskStatus> downloadItemsStatus = null;
+			try {
+				downloadItemsStatus = dataTransferService.getDownloadItemsStatus(downloadTask);
+				
+			} catch (HpcException e) {
+				logger.error("Failed to get download items status", e);
+				downloadItemsStatus = new HashMap<>();
+			}
+			
 			// Update status of individual download items in this collection download task.
 			for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
 				try {
