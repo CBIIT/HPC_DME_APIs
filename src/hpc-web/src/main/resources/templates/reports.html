@@ -142,7 +142,7 @@ body {
 
 									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
 									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
-									<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
+									<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
 									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
 									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
 										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
@@ -155,33 +155,33 @@ body {
 						<div class="form-group" style="display: none" id="docList">
 							<label class="control-label col-sm-2" for="level">DOC:</label>
 							<div class="col-sm-6">
-											<select size="1"
-												id="doc" name="doc" class="form-control"
-												th:required="required">
-													<option value="-1">----Select----</option>
-													<option value="All" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
-													<option
-														th:each="entry : ${docs}"
-														th:value="${entry}" th:text="${entry}" 
-														th:selected="${reportRequest.getDoc() == entry}">
-														Wireframe</option>
-											</select>
-							</div>
+								<select size="1"
+									id="doc" name="doc" class="form-control"
+									th:required="required">
+										<option value="-1">----Select----</option>
+										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
+										<option
+											th:each="entry : ${docs}"
+											th:value="${entry}" th:text="${entry}" 
+											th:selected="${reportRequest.getDoc() == entry}">
+											Wireframe</option>
+								</select>
+							</div>	
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
 						<div class="form-group" style="display: none" id="userList">
 							<label class="control-label col-sm-2" for="level">Users:</label>
 							<div class="col-sm-6">
-											<select size="1"
-												id="user" name="user" class="form-control"
-												th:required="required">
-													<option value="-1">----Select----</option>
-													<option
-														th:each="entry : ${docUsers}"
-														th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
-														th:selected="${reportRequest.getUser() == entry.getUserId()}">
-														Wireframe</option>
-											</select>
+								<select size="1"
+									id="user" name="user" class="form-control"
+									th:required="required">
+										<option value="-1">----Select----</option>
+										<option
+											th:each="entry : ${docUsers}"
+											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
+											th:selected="${reportRequest.getUser() == entry.getUserId()}">
+											Wireframe</option>
+								</select>
 							</div>
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
@@ -192,7 +192,7 @@ body {
 												id="basepath" name="basepath" class="form-control"
 												th:required="required">
 													<option value="-1">----Select----</option>
-													<option value="All" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
+													<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
 													<option
 														th:each="entry : ${basepaths}"
 														th:value="${entry}" th:text="${entry}" 
