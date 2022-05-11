@@ -135,12 +135,17 @@ public class HpcReportsController extends AbstractHpcController {
     model.addAttribute("docUsers", users.getUsers());
     List<String> docs = new ArrayList<>();
 
-    if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
+
+    boolean canSeeAllDocs = false;
+    if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER")) {
       docs.add(user.getDoc());
+    }
     else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
       docs.addAll(
           HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
+      canSeeAllDocs = true;
     }
+    model.addAttribute("canSeeAllDocs", canSeeAllDocs);
     docs.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("docs", docs);
 
