@@ -66,6 +66,15 @@
 .datepicker { 
     z-index: 1002 !important;
 }
+legend {text-align:center}
+/* Header Title */
+.header1 {
+  padding: 20px;
+  text-align: center;
+  background: #eeeeee;
+  margin:25px;
+  font-size:18px;
+}
 </style>
 <style>
 body {
@@ -73,7 +82,7 @@ body {
   margin: 0;
   padding: 0;
   color: #333;
-  background-color: #fff;
+  background-color: #f0f0f0;
 }
 
 .dt-buttons .dt-button-collection {
@@ -81,12 +90,13 @@ body {
 }
 
 .dt-button.buttons-columnVisibility {
-  background-color: red;
+  background-color: #CC5500;
   color: white;
 }
 
 .dt-button.buttons-columnVisibility.active {
-  background-color: green;
+  background-color: #002366;
+  color: white;
 }
 </style>
 <script th:inline="javascript">
@@ -114,8 +124,6 @@ body {
 				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<br />
-					<br />
 					<div th:if="${error != null}">
 						<div class="alert alert-error">
 							<a class="close" data-dismiss="alert">×</a> <label for="${error}"
@@ -128,33 +136,34 @@ body {
 								for="${message}" th:text="${message}"></label>
 						</div>
 					</div>
+				</div>
 
-					<form class="form-horizontal" id="reportsform" action="#"
-						role="form" th:action="@{/reports}" th:object="${reportRequest}"
-						method="post" enctype="multipart/form-data">
-						<div class="form-group">
-							<label class="control-label col-sm-2" for="level">Report
-								Type:</label>
-							<div class="col-sm-6">
-								<select name="reportType" id="reportType" class="form-control"
-									onchange="show(this.value)">
-									<option value="-1">----Select----</option>
+				<form  id="reportsform" action="#"
+					role="form" th:action="@{/reports}" th:object="${reportRequest}"
+					method="post" enctype="multipart/form-data">
+					
+					<!-- First Row Begin -->
+					<div class="row">
+						<div class="col-6 col-md-4">
+							<label><b>Report Type:</b></label>
+							<select name="reportType" id="reportType" class="form-control"
+								onchange="show(this.value)">
+								<option value="-1">----Select----</option>
 
-									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
-									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
-									<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
-									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
-									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
-									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>
-									
-								</select>
-							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
+								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
+								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
+								<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
+								<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
+								<option value="USAGE_SUMMARY_BY_DATE_RANGE"
+									th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
+								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
+							</select>
 						</div>
-						<div class="form-group" style="display: none" id="docList">
-							<label class="control-label col-sm-2" for="level">DOC:</label>
-							<div class="col-sm-6">
+						
+						<div style="display: none" id="docList">
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-4">
+								<label><b>DOC:</b></label>
 								<select size="1"
 									id="doc" name="doc" class="form-control"
 									th:required="required">
@@ -166,12 +175,14 @@ body {
 											th:selected="${reportRequest.getDoc() == entry}">
 											Wireframe</option>
 								</select>
-							</div>	
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
+							</div>
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>			
 						</div>
-						<div class="form-group" style="display: none" id="userList">
-							<label class="control-label col-sm-2" for="level">Users:</label>
-							<div class="col-sm-6">
+						
+						<div  style="display: none" id="userList">
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>					
+							<div class="col-6 col-md-6">
+								<label><b>Users:</b></label>
 								<select size="1"
 									id="user" name="user" class="form-control"
 									th:required="required">
@@ -183,82 +194,80 @@ body {
 											Wireframe</option>
 								</select>
 							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
-						<div class="form-group" style="display: none" id="basepathList">
-							<label class="control-label col-sm-2" for="level">Base Path:</label>
-							<div class="col-sm-6">
-											<select size="1"
-												id="basepath" name="basepath" class="form-control"
-												th:required="required">
-													<option value="-1">----Select----</option>
-													<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
-													<option
-														th:each="entry : ${basepaths}"
-														th:value="${entry}" th:text="${entry}" 
-														th:selected="${reportRequest.getBasepath() == entry}">
-														Wireframe</option>
-											</select>
+						<div style="display: none" id="basepathList">
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-6">
+								<label><b>Base Path:</b></label>
+								<select size="1"
+									id="basepath" name="basepath" class="form-control"
+									th:required="required">
+										<option value="-1">----Select----</option>
+										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
+										<option
+											th:each="entry : ${basepaths}"
+											th:value="${entry}" th:text="${entry}" 
+											th:selected="${reportRequest.getBasepath() == entry}">
+											Wireframe</option>
+								</select>
 							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
-						<div class="form-group" style="display: none" id="collectionPath">
-							<label class="control-label col-sm-2" for="level">Collection Path:</label>
-							<div class="col-sm-6">
+						<div style="display: none" id="collectionPath">
+							<div class="col-6 col-md-8">
+								<label><b>Collection Path:</b></label>
 								<input type="text" name="path" id="path" th:value="${reportRequest.getPath()}" size="100"/>
 							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
-						<div class="form-group" style="display: none" id="fromDateDiv">
-							<label class="control-label col-sm-2" for="level">From
-								Date:</label>
-<div class="input-group date col-sm-6" data-provide="datepicker">
-    <input type="text" class="form-control" id="fromDate" name="fromDate" th:value="${reportRequest.getFromDate()}"/>
-    <div class="input-group-addon">
-        <span class="glyphicon glyphicon-th"></span>
-    </div>
-</div>								
-<!-- 
-							<div class="col-sm-6">
-								<input type="text" class="form-control" id="fromDate"
-									name="fromDate"></input>
+					</div> <!-- First Row End -->
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>			
+					<!-- Second Row Begin -->
+					<div class="row">			
+						<div style="display: none" id="fromDateDiv">
+							<div class="col-md-2">
+								<label><b>From Date:</b></label>
+								<div class="input-group date" data-provide="datepicker">	
+	    							<input type="text" class="form-control" id="fromDate" name="fromDate" th:value="${reportRequest.getFromDate()}"/>
+	    							<div class="input-group-addon">
+	        							<span class="glyphicon glyphicon-th"></span>
+	    							</div>
+								</div>
 							</div>
- -->							
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
-						</div>
-						<div class="form-group" style="display: none" id="toDateDiv">
-							<label class="control-label col-sm-2" for="level">To
-								Date:</label>
-<div class="input-group date col-sm-6" data-provide="datepicker">
-    <input type="text" class="form-control" id="toDate" name="toDate" th:value="${reportRequest.getToDate()}"/>
-    <div class="input-group-addon">
-        <span class="glyphicon glyphicon-th"></span>
-    </div>
-</div>								
-<!-- 
-							<div class="col-sm-6">
-								<input type="text" class="form-control" id="toDate"
-									name="toDate"></input>
+						</div>						
+						<div style="display: none" id="toDateDiv">
+							<div class="col-md-1">&nbsp;</div>
+							<div class="col-md-2">
+								<label><b>To Date:</b></label>						
+								<div class="input-group date" data-provide="datepicker">
+    								<input type="text" class="form-control" id="toDate" name="toDate" th:value="${reportRequest.getToDate()}"/>
+    								<div class="input-group-addon">
+        								<span class="glyphicon glyphicon-th"></span>
+    								</div>
+    							</div>
 							</div>
- -->							
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
+							<div class="col-md-1">&nbsp;</div>						
 						</div>
-
-						<div class="form-group">
-							<div class="col-sm-offset-2 col-sm-10">
+						<div>
+							<div class="col-md-2">
 								<br />
 								<button type="submit" class="btn btn-md btn-primary"
 									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
 							</div>
 						</div>
-						<input type="hidden" id="actionType" name="actionType" />
-					</form>
+					</div> <!-- Second Row end -->
+					<input type="hidden" id="actionType" name="actionType" />	 
+				</form>
+				<div class="row">
+					<div class="col-md-12">&nbsp;</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">&nbsp;</div>
 				</div>
 				<div style="width: 800px; height: 800px; overflow-y: scroll; margin-left: 15%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<table class="table">
-						<caption th:text="${reportName}">Basic Table Layout</caption>
-
+						<caption th:text="${reportName}">Basic Table Layout</caption>				
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
 								<td style="white-space: nowrap" align="right" colspan="2">
@@ -314,8 +323,10 @@ body {
 				<!-- Start BasePath or DOC Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
-					<table id="report_grid" class="display" style="width:100%">
-						<caption th:text="${reportName}">Grid Layout</caption>
+					<table id="report_grid" class="display" style="width:100%">					
+						<div class="header1"> 
+						  <h4 th:text="${reportName}">Grid Layout</h4>
+						</div>
 						<thead>
 							<tr id='attrRow0'>
 								<td id='index0' th:text="Index"></td>
@@ -349,7 +360,9 @@ body {
 
     				</div>
 					<table id="report_grid" class="display" style="width:100%">
-						<caption th:text="${reportName}">Grid Layout</caption>
+						<div class="header1"> 
+						  <h4 th:text="${reportName}">Grid Layout</h4>
+						</div>
 						<thead>
 							<tr id='attrRow2'>
 								<td id='index001' th:text="Index"></td>
