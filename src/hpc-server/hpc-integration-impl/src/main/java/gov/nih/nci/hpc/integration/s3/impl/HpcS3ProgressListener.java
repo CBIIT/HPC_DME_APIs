@@ -88,6 +88,10 @@ public class HpcS3ProgressListener implements ProgressListener {
 	// Methods
 	// ---------------------------------------------------------------------//
 
+	// ---------------------------------------------------------------------//
+	// ProgressListener Interface Implementation
+	// ---------------------------------------------------------------------//
+
 	@Override
 	public void progressChanged(ProgressEvent event) {
 		if (event.getBytesTransferred() > 0) {
@@ -100,7 +104,7 @@ public class HpcS3ProgressListener implements ProgressListener {
 				bytesTransferredReported = bytesTransferred.get();
 				logger.info("S3 transfer [{}] in progress. {}MB transferred so far", transferSourceDestination,
 						bytesTransferredReported / MB);
-				
+
 				progressListener.transferProgressed(bytesTransferredReported);
 			}
 		}
@@ -123,6 +127,8 @@ public class HpcS3ProgressListener implements ProgressListener {
 			break;
 
 		default:
+			logger.info("S3 transfer [{}] no-op event. {}MB transferred. progress event = {}",
+					transferSourceDestination, bytesTransferred.get() / MB, event.getEventType());
 			break;
 		}
 	}
