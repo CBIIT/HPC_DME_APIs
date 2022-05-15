@@ -36,6 +36,7 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link href="css/select2-4.0.11.min.css" rel="stylesheet" />
 
 <link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
 <script src="js/jquery/3.1.1/jquery.min.js"></script>
@@ -69,11 +70,13 @@
 legend {text-align:center}
 /* Header Title */
 .header1 {
-  padding: 20px;
+  padding: 5px;
   text-align: center;
   background: #eeeeee;
-  margin:25px;
-  font-size:18px;
+  margin:10px;
+  font-size:16px;
+  background-color: #006DCC;
+  color: white;
 }
 </style>
 <style>
@@ -97,6 +100,9 @@ body {
 .dt-button.buttons-columnVisibility.active {
   background-color: #002366;
   color: white;
+}
+.select2-container {
+width: 100% !important;
 }
 </style>
 <script th:inline="javascript">
@@ -182,9 +188,9 @@ body {
 						<div  style="display: none" id="userList">
 							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>					
 							<div class="col-6 col-md-6">
-								<label><b>Users:</b></label>
+								<label for="user"><b>Users:</b>
 								<select size="1"
-									id="user" name="user" class="form-control"
+									id="user" name="user" class="userSelect"
 									th:required="required">
 										<option value="-1">----Select----</option>
 										<option
@@ -193,11 +199,12 @@ body {
 											th:selected="${reportRequest.getUser() == entry.getUserId()}">
 											Wireframe</option>
 								</select>
+								</label>
 							</div>
 						</div>
 						<div style="display: none" id="basepathList">
 							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-6">
+							<div class="col-6 col-md-4">
 								<label><b>Base Path:</b></label>
 								<select size="1"
 									id="basepath" name="basepath" class="form-control"
@@ -211,6 +218,7 @@ body {
 											Wireframe</option>
 								</select>
 							</div>
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
 						<div style="display: none" id="collectionPath">
 							<div class="col-6 col-md-8">
@@ -258,14 +266,14 @@ body {
 					</div> <!-- Second Row end -->
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div class="row">
-					<div class="col-md-12">&nbsp;</div>
-				</div>
-				<div class="row">
-					<div class="col-md-12">&nbsp;</div>
-				</div>
 				<div style="width: 800px; height: 800px; overflow-y: scroll; margin-left: 15%;"
 					th:if="${reports != null and reports.size() == 1}">
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
 					<table class="table">
 						<caption th:text="${reportName}">Basic Table Layout</caption>				
 						<tbody>
@@ -323,10 +331,15 @@ body {
 				<!-- Start BasePath or DOC Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+					<div class="header1" style="width: 800px; overflow-y: scroll; margin-left: 15%;"> 
+					  <h4 th:text="${reportName}"></h4>
+					  <h6 th:text="'Reporting Period: From ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')' "> </h6>
+					</div>
+
 					<table id="report_grid" class="display" style="width:100%">					
-						<div class="header1"> 
-						  <h4 th:text="${reportName}">Grid Layout</h4>
-						</div>
 						<thead>
 							<tr id='attrRow0'>
 								<td id='index0' th:text="Index"></td>
@@ -356,12 +369,9 @@ body {
 				<!-- Start Data Owner Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
-					<div id="test" style="float:right">
-
-    				</div>
 					<table id="report_grid" class="display" style="width:100%">
-						<div class="header1"> 
-						  <h4 th:text="${reportName}">Grid Layout</h4>
+						<div class="header1" style="width: 800px; overflow-y: scroll; margin-left: 15%;"> 
+						  <h4 th:text="${reportName}"></h4>
 						</div>
 						<thead>
 							<tr id='attrRow2'>
@@ -449,6 +459,7 @@ body {
 	<script src="js/charts.js"></script>
 	<script src="js/jquery.slimscroll.min.js"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
+	<script src="js/select2-4.0.11.min.js"></script>
 
 	<script>
 	//<![CDATA[
@@ -543,6 +554,9 @@ body {
 
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
+		$('.userSelect').select2({
+    		width: 'resolve', 
+		});
 	});
 		
   $('#fromDate').datepicker({
