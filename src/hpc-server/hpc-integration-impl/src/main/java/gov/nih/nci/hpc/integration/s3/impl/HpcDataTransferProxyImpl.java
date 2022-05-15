@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
+import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Rule;
@@ -205,10 +206,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
-		if(downloadRequest.getArchiveLocation() == null) {
+		if (downloadRequest.getArchiveLocation() == null) {
 			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
 		}
-		
+
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a download request to a local file.
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
@@ -972,11 +973,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			File destinationLocation, HpcDataTransferProgressListener progressListener) throws HpcException {
 		// Create a S3 download request.
-		
+
 		GetObjectRequest request = new GetObjectRequest(archiveLocation.getFileContainerId(),
 				archiveLocation.getFileId());
 
-		
 		// Download the file via S3.
 		Download s3Download = null;
 		try {
@@ -988,6 +988,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				// Download asynchronously.
 				s3Download.addProgressListener(new HpcS3ProgressListener(progressListener,
 						"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
+
+				// TODO - remove. This is added to get additional insights on internal
+				// exceptions thrown in AWS transfer manager while doing 1st hop download.
+				s3Download.addProgressListener(
+						ProgressListener.ExceptionReporter.wrap(new ProgressListener.NoOpProgressListener()));
 			}
 
 		} catch (AmazonClientException ace) {
@@ -996,8 +1001,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
-			
-		} catch(Exception ge) {
+
+		} catch (Exception ge) {
 		}
 
 		return String.valueOf(s3Download.hashCode());
