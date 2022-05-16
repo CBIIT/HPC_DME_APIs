@@ -151,8 +151,11 @@ public class HpcReportsController extends AbstractHpcController {
 
     List<String> basepaths = new ArrayList<>();
     for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
-      for (HpcDataManagementRulesDTO rule : docRule.getRules())
-        basepaths.add(rule.getBasePath());
+      if (docs.contains(docRule.getDoc())){
+        for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+          basepaths.add(rule.getBasePath());
+        }
+      }
     }
     basepaths.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("basepaths", basepaths);
