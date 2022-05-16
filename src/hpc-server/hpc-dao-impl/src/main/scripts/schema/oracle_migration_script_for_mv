@@ -471,10 +471,12 @@ SELECT a.rowid arowid,
        a.create_ts
 FROM r_data_main a,
      r_objt_metamap b,
-     r_meta_main c
+     r_meta_main c,
+     r_coll_main d
 WHERE
         a.data_id = b.object_id and b.meta_id = c.meta_id
-        and INSTR(a.data_path, '/DME_Deleted_Archive') = 0;
+        and a.coll_id = d.coll_id
+        AND INSTR(d.coll_name, '/DME_Deleted_Archive') = 0;
 
 create unique index r_report_data_objects_uidx1
     on irods.r_report_data_objects (meta_attr_name, meta_attr_value, data_id);
@@ -519,11 +521,13 @@ SELECT  a.meta_attr_name,
         count(*)
 FROM r_meta_main a,
      r_objt_metamap b,
-     r_data_main c
+     r_data_main c,
+     r_coll_main d
 WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
+  AND c.coll_id = d.coll_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('registered_by' as varchar2(50))
-  AND INSTR(c.data_path, '/DME_Deleted_Archive') = 0
+  AND INSTR(d.coll_name, '/DME_Deleted_Archive') = 0
 group by  a.meta_attr_name,
           a.meta_attr_value,
           b.object_id,
@@ -546,18 +550,21 @@ SELECT d."BASE_PATH",
 FROM r_meta_main a,
      r_objt_metamap b,
      r_data_main c,
-     "HPC_DATA_MANAGEMENT_CONFIGURATION" d
+     "HPC_DATA_MANAGEMENT_CONFIGURATION" d,
+     r_coll_main e
 WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
+  AND c.coll_id = e.coll_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50))
   AND cast(a.meta_attr_value as varchar2(2700)) = d."ID"
-  AND INSTR(c.data_path, '/DME_Deleted_Archive') = 0
+  AND INSTR(e.coll_name, '/DME_Deleted_Archive') = 0
 GROUP BY d."BASE_PATH",
          a.meta_attr_name,
          a.meta_attr_value,
          b.object_id,
          b.meta_id,
          c.create_ts;
+
 
 create unique index r_report_registered_by_basepath_uidx1
     on irods.r_report_registered_by_basepath (meta_attr_name, meta_attr_value, object_id, "BASE_PATH");
@@ -576,12 +583,14 @@ SELECT d."DOC",
 FROM r_meta_main a,
      r_objt_metamap b,
      r_data_main c,
-     "HPC_DATA_MANAGEMENT_CONFIGURATION" d
+     "HPC_DATA_MANAGEMENT_CONFIGURATION" d,
+     r_coll_main e
 WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
+  AND c.coll_id = e.coll_id
   AND cast(a.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50))
   AND cast(a.meta_attr_value as varchar2(2700)) = d."ID"
-  AND INSTR(c.data_path, '/DME_Deleted_Archive') = 0
+  AND INSTR(e.coll_name, '/DME_Deleted_Archive') = 0
 GROUP BY d."DOC",
          a.meta_attr_name,
          a.meta_attr_value,
