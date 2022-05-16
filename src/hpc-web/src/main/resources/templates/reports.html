@@ -74,7 +74,7 @@ legend {text-align:center}
   text-align: center;
   background: #eeeeee;
   margin:10px;
-  font-size:16px;
+  font-size:15px;
   background-color: #006DCC;
   color: white;
 }
@@ -221,10 +221,12 @@ width: 100% !important;
 							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
 						<div style="display: none" id="collectionPath">
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 							<div class="col-6 col-md-8">
 								<label><b>Collection Path:</b></label>
 								<input type="text" name="path" id="path" th:value="${reportRequest.getPath()}" size="100"/>
 							</div>
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
 					</div> <!-- First Row End -->
 					<div class="row">
@@ -336,7 +338,7 @@ width: 100% !important;
 					</div>
 					<div class="header1" style="width: 800px; overflow-y: scroll; margin-left: 15%;"> 
 					  <h4 th:text="${reportName}"></h4>
-					  <h6 th:text="'Reporting Period: From ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')' "> </h6>
+					  <h5 th:text="'Reporting Period: From ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate}"> </h5>
 					</div>
 
 					<table id="report_grid" class="display" style="width:100%">					
