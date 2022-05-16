@@ -469,23 +469,30 @@ width: 100% !important;
 	$(document).ready(function() {
 		var reportType = document.getElementById("reportType").value;
 		var exportFileName = "";
+		var reportHeaderTitle = "";
 		const d = new Date();
 		let pretag = "NCI_DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
 		switch (reportType) {
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
-				exportFileName= pretag + "Basepath_Report" + tag;
+				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
-				exportFileName= pretag + "Doc_Report" + tag;
+				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
-				exportFileName= pretag + "Data_Owner_Report" + tag;
+				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
+				reportHeaderTitle = "DME Data Owner Summary Report";
 				break;
 			default:
 				break;
 		}
 		
+		var fromDate = document.getElementById("fromDate").value;
+		var toDate = document.getElementById("toDate").value;
+		var messageTopDateRange = reportHeaderTitle + "  (Date Range: " +  fromDate + "-" + toDate + ")";
 		var eo = {
 		    columns: [ [0,1], ':visible' ]
 		    };
@@ -498,16 +505,23 @@ width: 100% !important;
 				{
 					extend: 'copyHtml5',
 					exportOptions: eo,
-					text: '<i class="fa fa-files-o">Copy to Clipboard</i>'
+					//text: '<i class="fa fa-files-o"> Copy</i>',
+					text: 'Copy',
+					titleAttr: 'Copy to Clipboard',
 				},
 				{
 					extend: 'excelHtml5',
 					title: exportFileName,
+					//text:  '<i class="fa fa-file-excel-o"> Excel</i>',
+					text: 'Excel',
+					messageTop: messageTopDateRange,
+					titleAttr: 'Export to Excel',
 					exportOptions: eo
 				},
 				{
 	                extend: 'colvis',
 	                text: 'Show/Hide Columns',
+	                titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
 	                columns: ':nth-child(n+3)' // Exclude first two columns from show/hide. It starts from 3rd column
 	            },
 				],
