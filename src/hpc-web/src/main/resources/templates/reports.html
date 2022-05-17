@@ -337,17 +337,17 @@ width: 100% !important;
 						<div class="col-md-12">&nbsp;</div>
 					</div>
 					<div class="header1" style="width: 800px; overflow-y: scroll; margin-left: 15%;"> 
-					  <h4 th:text="${reportName}"></h4>
+					  <h5 style="font-weight:bold" th:text="${reportName}"></h5>
 					  <h5 th:text="'Reporting Period: From ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate}"> </h5>
 					</div>
 
 					<table id="report_grid" class="display" style="width:100%">					
 						<thead>
 							<tr id='attrRow0'>
-								<td id='index0' th:text="Index"></td>
-								<td id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="Path"></td>
-								<td id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
-								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+								<td style="color: black; font-weight:bold" id='index0' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -373,17 +373,17 @@ width: 100% !important;
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
 					<table id="report_grid" class="display" style="width:100%">
 						<div class="header1" style="width: 800px; overflow-y: scroll; margin-left: 15%;"> 
-						  <h4 th:text="${reportName}"></h4>
+						  <h5 style="font-weight:bold" th:text="${reportName}"></h5>
 						</div>
 						<thead>
 							<tr id='attrRow2'>
-								<td id='index001' th:text="Index"></td>
-								<td id='path001' th:text="DOC"></td>
-								<td id='path002' th:text="BasePath"></td>
-								<td id='path003' th:text="'Object Path'"></td>
-								<td id='path004' th:text="'Data Owner'"></td>
-								<td id='path005' th:text="'Data Curator'"></td>
-								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+								<td style="color: black; font-weight:bold" id='index001' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path001' th:text="DOC"></td>
+								<td style="color: black; font-weight:bold" id='path002' th:text="'Base Path'"></td>
+								<td style="color: black; font-weight:bold" id='path003' th:text="'Object Path'"></td>
+								<td style="color: black; font-weight:bold" id='path004' th:text="'Data Owner'"></td>
+								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Curator'"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
 						<tbody>
