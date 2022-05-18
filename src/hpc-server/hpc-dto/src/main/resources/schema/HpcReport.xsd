@@ -59,6 +59,8 @@
 				<xsd:element name="fromDate" type="xsd:string" />
 				<xsd:element name="toDate" type="xsd:string" />
 				<xsd:element name="generatedOn" type="xsd:string" />
+				<xsd:element name="dataOwner" type="xsd:string" />
+				<xsd:element name="dataCurator" type="xsd:string" />
 				<xsd:element name="reportEntries" 
 				             type="hpc-dto-report:HpcReportEntryDTO" 
 				             minOccurs="0" maxOccurs="unbounded" />

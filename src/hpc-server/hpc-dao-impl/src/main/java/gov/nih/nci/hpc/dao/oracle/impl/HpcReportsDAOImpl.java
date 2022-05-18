@@ -48,27 +48,22 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	// Constants
 	// ---------------------------------------------------------------------//
 	// File size range
-	private static final String FILE_RANGE_SELECT = "select (case when to_number(a.meta_attr_value, '9999999999999999999') <=  1000000 then 'range1' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' "
-			+ "end) as range, count(*) as cnt ";
+  
+  private static final String FILE_SIZE_FUNC_SQL = " (case when to_number(a.meta_attr_value, '9999999999999999999') <= 10000000 then 'range1' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 1000000000 then 'range2' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 10000000000 then 'range3' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000000 then 'range4' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000000 then 'range5' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000000 then 'range6' "
+      + "when to_number(a.meta_attr_value, '9999999999999999999') >  1000000000000  then 'range7' " + "end) ";
+
+  
+	private static final String FILE_RANGE_SELECT = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt ";
 
 	private static String FILE_RANGE_FROM = "";
 	private static String FILE_RANGE_WHERE = "";
 
-	private static final String FILE_RANGE_GROUP = " group by (case when to_number(a.meta_attr_value, '9999999999999999999') <= 1000000 then 'range1' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' " + "end)";
+	private static final String FILE_RANGE_GROUP = " group by " + FILE_SIZE_FUNC_SQL;
 
 	private RowMapper<Map<String, Object>> fileSizeRangeRowMapper = (rs, rowNum) -> {
 		Map<String, Object> range = new HashMap<String, Object>();
@@ -267,6 +262,67 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String REFRESH_VIEWS_SQL = "call REFRESH_REPORT_META_VIEW()";
 
+    /////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
+    private static final String BASE_PATHS_SQL = "select BASE_PATH from HPC_DATA_MANAGEMENT_CONFIGURATION";
+    private static final String ALL_DOCS_SQL = "select distinct DOC from HPC_DATA_MANAGEMENT_CONFIGURATION";
+    
+    /////////////////////////// BASEPATH GRID and DOC GRID
+    ////////////////////////// COMMON SQL
+    private static final String SUM_OF_DATA_FRAGMENT_SQL = " sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
+        + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
+        + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize ";
+    private static final String BASEPATH_FROM_SQL = " from r_report_source_file_size a, r_report_registered_by_basepath b ";
+    private static final String DOC_FROM_SQL = " from r_report_source_file_size a, r_report_registered_by_doc b ";
+    private static final String DATERANGE_SQL = " and CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
+    private static final String BASEPATH_GRID_WHERE_SQL =  " where a.object_id = b.object_id " + DATERANGE_SQL;
+    private static final String BASEPATH_GRID_GROUP_BY_SQL = " group by b.base_path ";
+    private static final String DOC_GRID_GROUP_BY_SQL = " group by b.doc ";
+ 
+    private static final String SUM_OF_DATA_GROUPBY_BASEPATH_SQL = "select b.base_path path, " + SUM_OF_DATA_FRAGMENT_SQL
+            + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
+    
+    private static final String SUM_OF_DATA_GROUPBY_DOC_SQL = "select b.doc doc, " + SUM_OF_DATA_FRAGMENT_SQL 
+            + DOC_FROM_SQL + BASEPATH_GRID_WHERE_SQL + DOC_GRID_GROUP_BY_SQL;
+    
+    private static final String TOTAL_NUM_OF_USERS_GROUPBY_BASEPATH_SQL = "select b.base_path path, count(*) totalUsers FROM \"HPC_USER\" a,  \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+           + "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and a.created BETWEEN ?  AND ? " +  BASEPATH_GRID_GROUP_BY_SQL;
+
+    private static final String TOTAL_NUM_OF_USERS_GROUPBY_DOC_SQL = "select doc, count(*) totalUsers FROM \"HPC_USER\" "
+        + "where created BETWEEN ?  AND ? " +  " group by doc";
+    
+    private static final String TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_BASEPATH_SQL = "select b.base_path path, count(distinct a.data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+        + "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" " + DATERANGE_SQL +  BASEPATH_GRID_GROUP_BY_SQL;
+
+    private static final String TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_DOC_SQL = "select b.doc doc, count(distinct a.data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+        + "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" " + DATERANGE_SQL +  DOC_GRID_GROUP_BY_SQL;
+
+    private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_BASEPATH_SQL = "select b.base_path path, a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
+        + "r_report_coll_registered_by_basepath b where a.coll_id=b.coll_id " + " and CAST(b.create_ts as double precision) BETWEEN ? AND ? " +  " group by a.meta_attr_value, b.base_path";
+
+    private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_DOC_SQL = "select b.doc doc, a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
+        + "r_report_coll_registered_by_doc b where a.coll_id=b.coll_id " + " and CAST(b.create_ts as double precision) BETWEEN ? AND ? " +  " group by a.meta_attr_value, b.doc";
+
+    private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_BASEPATH_SQL = "SELECT b.base_path path, floor(count(a.meta_attr_name) / greatest( count(distinct data_id), 1 )) totalattrs "
+        + "FROM r_report_data_objects a, r_report_registered_by_basepath b "
+        + "where a.data_id = b.object_id " + DATERANGE_SQL + BASEPATH_GRID_GROUP_BY_SQL;
+
+    private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_DOC_SQL = "SELECT b.doc doc, floor(count(a.meta_attr_name) / greatest( count(distinct data_id), 1 )) totalattrs "
+        + "FROM r_report_data_objects a, r_report_registered_by_doc b "
+        + "where a.data_id = b.object_id " + DATERANGE_SQL + DOC_GRID_GROUP_BY_SQL;
+
+    private static final String FILESIZE_SELECT_BASEPATH_GRID = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt, b.base_path path ";
+    private static final String FILESIZE_GROUP_BASEPATH_GRID = BASEPATH_GRID_GROUP_BY_SQL + ", " + FILE_SIZE_FUNC_SQL;
+
+    private static final String FILESIZE_SELECT_DOC_GRID = "select " + FILE_SIZE_FUNC_SQL + " as range, count(*) as cnt, b.doc doc ";
+    private static final String FILESIZE_GROUP_DOC_GRID = DOC_GRID_GROUP_BY_SQL + ", " + FILE_SIZE_FUNC_SQL;
+    
+    private static final String DATA_OWNER_SQL = "SELECT DOC, BASE_PATH, OBJECT_PATH as USER_PATH, DATA_OWNER, DATA_CURATOR, SUM(coll_size.TOTALSIZE) as collection_size "
+        + " FROM r_coll_hierarchy_data_owner, "
+        + " r_report_collection_size coll_size "
+        + " where coll_size.COLL_NAME(+) = object_path "
+        + " group by DOC, BASE_PATH, OBJECT_PATH, DATA_OWNER, DATA_CURATOR "
+        + " ORDER BY DOC, BASE_PATH, OBJECT_PATH ";
+    
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -568,8 +624,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	public List<HpcReport> generatReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
+		
+	    if ((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE) && criteria.getPath().equals("All"))) {
+	      reports = generateDocOrBasepathGridReport(criteria);
+            return reports;
+        }
 
-		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)
+	    if ((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER))) {
+	       reports = generateDataOwnerGridReport(criteria);
+	       return reports;
+	    }
+
+
+	    if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)
 				|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)
 				|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
 				|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
@@ -587,9 +654,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 			for (String doc : docs) {
 				criteria.getDocs().clear();
-				criteria.getDocs().add(doc);
-				HpcReport report = getReport(criteria);
-				reports.add(report);
+				if (doc.equals("All")) {
+				    reports = generateDocOrBasepathGridReport(criteria);
+				} else {
+				    criteria.getDocs().add(doc);
+				    HpcReport report = getReport(criteria);
+				    reports.add(report);
+				}
 			}
 		}
 
@@ -611,7 +682,313 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 		return reports;
 	}
+	
+    public List<HpcReport> generateDataOwnerGridReport(HpcReportCriteria criteria) {
+      List<HpcReport> reports = new ArrayList<HpcReport>();
+      List<Map<String, Object>> piList = jdbcTemplate.queryForList(DATA_OWNER_SQL);
+      for (Map<String, Object> map : piList) {
+        HpcReport report = new HpcReport();
+		report.setGeneratedOn(Calendar.getInstance());
+		report.setType(criteria.getType());
+        report.setDoc(map.get("DOC").toString());
+        report.setPath(map.get("BASE_PATH").toString()); 
+        report.setDataOwner((map.get("DATA_OWNER") == null) ? "" : map.get("DATA_OWNER").toString());
+        report.setDataCurator((map.get("DATA_CURATOR") == null) ? "" : map.get("DATA_CURATOR").toString());
+        report.setUser(map.get("USER_PATH").toString());
+        Object cobj = map.get("COLLECTION_SIZE");
+        float collection_size = (cobj == null) ? 0: Float.parseFloat(map.get("COLLECTION_SIZE").toString());
+        float collection_size_gb = collection_size;
+        float collection_size_tb = collection_size_gb;
+        HpcReportEntry reportEntry = new HpcReportEntry();
+        //Reusing existing attributes for collection sizes in GB or TB
+        reportEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+        reportEntry.setValue(collection_size_gb + "");
+        report.getReportEntries().add(reportEntry);
+        // the following entry may not be needed
+        reportEntry = new HpcReportEntry();
+        reportEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
+        reportEntry.setValue(collection_size_tb + "");
+        report.getReportEntries().add(reportEntry);
+        reports.add(report);
+      }
+      return reports;
+    }
+	
+    public List<HpcReport> generateDocOrBasepathGridReport(HpcReportCriteria criteria) {  
+      List<HpcReport> reports = new ArrayList<HpcReport>();
+      Map<String, HpcReport> mapReports = new HashMap<>();
+      List<String> keyList = new ArrayList<>();
+      boolean isBasePathReport = false;
+      boolean isDocReport = false;
+      List<HpcReportEntryAttribute> fields = new ArrayList<>();
+      fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
+      fields.add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+      fields.add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
+      fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
+      fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
+  
+      List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB);
+      fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB);
+      
+      if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)) {       
+        keyList = jdbcTemplate.queryForList(ALL_DOCS_SQL, String.class);
+        isDocReport = true;
+      } 
+      if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)){
+        keyList = jdbcTemplate.queryForList(BASE_PATHS_SQL, String.class);
+        isBasePathReport = true;
+      }
+      if (isBasePathReport || isDocReport) {
+        // Params
+        Object[] basepathDateArgs = new Object[2];
+        Object[] basepathDateLongArgs = new Object[2];
+        if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+          criteria.getFromDate().set(Calendar.HOUR_OF_DAY, 0);
+          criteria.getFromDate().set(Calendar.MINUTE, 0);
+          criteria.getFromDate().set(Calendar.SECOND, 0);
+          criteria.getFromDate().set(Calendar.MILLISECOND, 0);
+  
+          criteria.getToDate().set(Calendar.HOUR_OF_DAY, 23);
+          criteria.getToDate().set(Calendar.MINUTE, 59);
+          criteria.getToDate().set(Calendar.SECOND, 60);
+          criteria.getToDate().set(Calendar.MILLISECOND, 0);
+          basepathDateArgs[0] = criteria.getFromDate().getTime();
+          basepathDateArgs[1] = criteria.getToDate().getTime();
+          basepathDateLongArgs[0] = criteria.getFromDate().getTime().getTime() / 1000;
+          basepathDateLongArgs[1] = criteria.getToDate().getTime().getTime() / 1000;
+        }
 
+
+        /// Initialize fields of grid
+        for (String key : keyList) {
+          HpcReport report = new HpcReport();
+          if (isBasePathReport) {
+            report.setPath(key);
+          } else {
+            report.setDoc(key);
+        }
+          
+          report.setGeneratedOn(Calendar.getInstance());
+          report.setType(criteria.getType());
+          for (HpcReportEntryAttribute field : fields) {
+            HpcReportEntry reportEntry = new HpcReportEntry();
+            reportEntry.setAttribute(field);
+            reportEntry.setValue("0");
+            report.getReportEntries().add(reportEntry);
+          }
+          for (HpcReportEntryAttribute field : fileSizeFields) {
+            HpcReportEntry reportEntry = new HpcReportEntry();
+            reportEntry.setAttribute(field);
+            reportEntry.setValue("0");
+            report.getReportEntries().add(reportEntry);
+          }       
+          reports.add(report);
+          // If the reports are BasePath reports, the key will be the 'path'
+          // If the reports are Doc reports, the key will be the 'doc'
+          mapReports.put(key, report);
+        }
+
+     
+
+        List<Map<String, Object>> totalsList;
+        HpcReport matchedReport;
+
+        try {
+          // Sum of Data Fields
+          if (isBasePathReport) {
+            totalsList = jdbcTemplate.queryForList(SUM_OF_DATA_GROUPBY_BASEPATH_SQL, basepathDateLongArgs);
+          } else {
+            totalsList = jdbcTemplate.queryForList(SUM_OF_DATA_GROUPBY_DOC_SQL, basepathDateLongArgs);
+          }
+          for (Map<String, Object> map : totalsList) {
+            String key = isBasePathReport ?  map.get("PATH").toString() :  map.get("DOC").toString();
+            Object totalSize = map.get("TOTALSIZE");
+            Object maxSize = map.get("MAXSIZE");
+            matchedReport = mapReports.get(key);
+            if(matchedReport == null) continue;
+            for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+              HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+              // Total Size - TOTAL_DATA_SIZE
+              if (matchedReport.getReportEntries().get(i)
+                  .getAttribute() == HpcReportEntryAttribute.TOTAL_DATA_SIZE) {
+                reportEntry.setValue(totalSize.toString());
+              }
+              // Largest file - LARGEST_FILE_SIZE
+              if (matchedReport.getReportEntries().get(i)
+                  .getAttribute() == HpcReportEntryAttribute.LARGEST_FILE_SIZE) {
+                reportEntry.setValue(maxSize.toString());
+              }
+            }
+          }
+          // TOTAL_NUM_OF_REGISTERED_USERS
+          List<Map<String, Object>> usersSizeList;
+          if (isBasePathReport) {
+            usersSizeList = jdbcTemplate.queryForList(TOTAL_NUM_OF_USERS_GROUPBY_BASEPATH_SQL, basepathDateArgs);
+          } else {
+            usersSizeList = jdbcTemplate.queryForList(TOTAL_NUM_OF_USERS_GROUPBY_DOC_SQL, basepathDateArgs);
+          }
+
+          for (Map<String, Object> map : usersSizeList) {
+            String key = isBasePathReport ?  map.get("PATH").toString() :  map.get("DOC").toString();
+            matchedReport = mapReports.get(key);
+            if(matchedReport == null) continue;
+            Object totalUsersEntry = map.get("TOTALUSERS");
+            for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+              HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+              if (matchedReport.getReportEntries().get(i)
+                  .getAttribute() == HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS) {
+                reportEntry.setValue(totalUsersEntry.toString());
+              }
+            }
+          }
+
+         // Total number of data objects - TOTAL_NUM_OF_DATA_OBJECTS
+          List<Map<String, Object>> totalObjList;
+          if (isBasePathReport) {
+            totalObjList = jdbcTemplate.queryForList(TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_BASEPATH_SQL, basepathDateLongArgs);
+          } else {
+            totalObjList = jdbcTemplate.queryForList(TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_DOC_SQL, basepathDateLongArgs);
+          }         
+         //TOTAL_NUM_OF_DATA_OBJECTS
+         for (Map<String, Object> map : totalObjList) {
+           String key = isBasePathReport ?  map.get("PATH").toString() :  map.get("DOC").toString();
+           matchedReport = mapReports.get(key);
+           if(matchedReport == null) continue;
+           Object totalObjsEntry = map.get("TOTALOBJS");
+           for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+             HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+             if (matchedReport.getReportEntries().get(i)
+                 .getAttribute() == HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS) {
+               reportEntry.setValue(totalObjsEntry.toString());
+             }
+           }
+         }
+
+         // Total Meta attributes Size - TOTAL_NUMBER_OF_META_ATTRS
+         List<Map<String, Object>> avgDataObjMetaAttrsList;
+         if (isBasePathReport) {
+           avgDataObjMetaAttrsList = jdbcTemplate.queryForList(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_BASEPATH_SQL, basepathDateLongArgs);
+         } else {
+           avgDataObjMetaAttrsList = jdbcTemplate.queryForList(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_DOC_SQL, basepathDateLongArgs);
+         }         
+         for (Map<String, Object> map : avgDataObjMetaAttrsList) {
+           String key = isBasePathReport ?  map.get("PATH").toString() :  map.get("DOC").toString();
+           matchedReport = mapReports.get(key);
+           if(matchedReport == null) continue;
+           Object metasizeEntry = map.get("totalattrs");
+           for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+             HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+             if (matchedReport.getReportEntries().get(i)
+                 .getAttribute() == HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS) {
+               reportEntry.setValue(metasizeEntry.toString());
+             }
+           }
+         }
+
+         List<Map<String, Object>> fileRangeList; 
+         if (isBasePathReport) {
+           fileRangeList = jdbcTemplate.queryForList(FILESIZE_SELECT_BASEPATH_GRID + BASEPATH_FROM_SQL + BASEPATH_GRID_WHERE_SQL  + FILESIZE_GROUP_BASEPATH_GRID, basepathDateLongArgs);
+
+         } else {
+           fileRangeList = jdbcTemplate.queryForList(FILESIZE_SELECT_DOC_GRID + DOC_FROM_SQL + BASEPATH_GRID_WHERE_SQL  + FILESIZE_GROUP_DOC_GRID, basepathDateLongArgs);
+         }
+
+         HpcReportEntryAttribute entryAttr =  HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
+         // FILE RANGES
+         for (Map<String, Object> map : fileRangeList) {
+           String key = isBasePathReport ?  map.get("PATH").toString() :  map.get("DOC").toString();
+           matchedReport = mapReports.get(key);
+           if(matchedReport == null) continue;
+           Object range = map.get("RANGE");
+           Object count = map.get("CNT");
+           switch(range.toString()) {
+             case "range1":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
+               break;
+             case "range2":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB;
+               break;
+             case "range3":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB;
+               break;
+             case "range4":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB;
+               break; 
+             case "range5":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB;
+               break;               
+             case "range6":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB;
+               break;               
+             case "range7":
+               entryAttr = HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB;
+               break;
+           }
+           for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+             HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+             if (matchedReport.getReportEntries().get(i)
+                 .getAttribute() == entryAttr) {
+               reportEntry.setValue(count.toString());
+             }
+           }
+         }
+         //
+            List<Map<String, Object>> numCollectionList;
+            if (isBasePathReport) {
+              numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_BASEPATH_SQL, basepathDateLongArgs);  
+            } else {
+              numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_DOC_SQL, basepathDateLongArgs);     
+            }
+            StringBuffer str = new StringBuffer();
+             str.append("[");
+             if (numCollectionList != null) {
+                 for ( String key : keyList) {
+                    matchedReport = mapReports.get(key);
+                    if(matchedReport == null) continue;
+                    for (Map<String, Object> listEntry : numCollectionList) {
+                        String type = null;
+                        String count = null;
+                        Iterator<String> iter = listEntry.keySet().iterator();
+                        String tpath = "";
+                        while (iter.hasNext()) {
+                            String name = iter.next();
+                            if (name.equalsIgnoreCase("cnt")) {
+                                java.math.BigDecimal value = (java.math.BigDecimal) listEntry.get(name);
+                                count = value.toString();
+                            } else if(name.equalsIgnoreCase("path") || name.equalsIgnoreCase("doc")){
+                                tpath = (String)listEntry.get(name);
+                            } else {
+                              type = (String) listEntry.get(name);
+                            }
+                        }
+                        if (tpath.equals(key)){
+                          str.append("{" + type + ": " + count + "}");
+                      }
+                    }
+                    str.append("]");
+                    HpcReportEntry numOfCollEntry = new HpcReportEntry();
+                    numOfCollEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
+                    numOfCollEntry.setValue(str.toString());
+                    matchedReport.getReportEntries().add(numOfCollEntry);
+                    str = new StringBuffer();
+                    str.append("[");
+                }
+            }
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+     
+     return reports;
+
+    }
+    
 	private List<String> getUsers() {
 		return jdbcTemplate.queryForList(USERS_SQL, String.class);
 	}
@@ -848,51 +1225,48 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			filesizeuserDateArgs[0] = criteria.getUsers().get(0);
 		filesizeuserDateArgs[1] = fromDateLong;
 		filesizeuserDateArgs[2] = toDateLong;
-
+		
+   
 		if (allAttributes || criteria.getAttributes().contains(HpcReportEntryAttribute.FILE_SIZES)) {
 			// Get File size ranges
 			List<Map<String, Object>> fileSizeRanges = getFileSizeRange(criteria, filesizedateArgs, filesizedocArgs,
 					filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs, basepathArg, basepathDateLongArgs,
 					pathArg, pathDateLongArgs);
 			HpcReportEntry oneMBEntry = new HpcReportEntry();
-			oneMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
+			oneMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
 			oneMBEntry.setValue(getFilesSize("range1", fileSizeRanges));
 			report.getReportEntries().add(oneMBEntry);
 
 			HpcReportEntry tenMBEntry = new HpcReportEntry();
-			tenMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB);
+			tenMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB);
 			tenMBEntry.setValue(getFilesSize("range2", fileSizeRanges));
 			report.getReportEntries().add(tenMBEntry);
 
 			HpcReportEntry fiftyMBEntry = new HpcReportEntry();
-			fiftyMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB);
+			fiftyMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
 			fiftyMBEntry.setValue(getFilesSize("range3", fileSizeRanges));
 			report.getReportEntries().add(fiftyMBEntry);
 
 			HpcReportEntry hundredMBEntry = new HpcReportEntry();
-			hundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB);
+			hundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB);
 			hundredMBEntry.setValue(getFilesSize("range4", fileSizeRanges));
 			report.getReportEntries().add(hundredMBEntry);
 
 			HpcReportEntry fivehundredMBEntry = new HpcReportEntry();
-			fivehundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB);
+			fivehundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB);
 			fivehundredMBEntry.setValue(getFilesSize("range5", fileSizeRanges));
 			report.getReportEntries().add(fivehundredMBEntry);
 
 			HpcReportEntry onegbEntry = new HpcReportEntry();
-			onegbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB);
+			onegbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB);
 			onegbEntry.setValue(getFilesSize("range6", fileSizeRanges));
 			report.getReportEntries().add(onegbEntry);
 
 			HpcReportEntry tengbEntry = new HpcReportEntry();
-			tengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
+			tengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB);
 			tengbEntry.setValue(getFilesSize("range7", fileSizeRanges));
 			report.getReportEntries().add(tengbEntry);
 
-			HpcReportEntry overtengbEntry = new HpcReportEntry();
-			overtengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB);
-			overtengbEntry.setValue(getFilesSize("range8", fileSizeRanges));
-			report.getReportEntries().add(overtengbEntry);
 		}
 
 		report.setGeneratedOn(Calendar.getInstance());
