@@ -30,6 +30,7 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_DATA_OWNER" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -58,6 +59,8 @@
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="user" type="xsd:string" />
+			<xsd:element name="dataOwner" type="xsd:string" />
+			<xsd:element name="dataCurator" type="xsd:string" />
 			<xsd:element name="fromDate" type="xsd:date" />
 			<xsd:element name="ToDate" type="xsd:date" />
 			<xsd:element name="generatedOn" type="xsd:date" />
@@ -91,14 +94,13 @@
 			<xsd:enumeration value="AVERAGE_FILE_SIZE" />
 			<xsd:enumeration value="SMALLEST_FILE_SIZE" />
 			<xsd:enumeration value="FILE_SIZES" />
-			<xsd:enumeration value="FILE_SIZE_BELOW_1MB" />
-			<xsd:enumeration value="FILE_SIZE_1MB_10MB" />
-			<xsd:enumeration value="FILE_SIZE_10MB_50MB" />
-			<xsd:enumeration value="FILE_SIZE_50MB_100MB" />
-			<xsd:enumeration value="FILE_SIZE_100MB_500MB" />
-			<xsd:enumeration value="FILE_SIZE_500MB_1GB" />
-			<xsd:enumeration value="FILE_SIZE_1GB_10GB" />
-			<xsd:enumeration value="FILE_SIZE_OVER_10GB" />			
+			<xsd:enumeration value="FILE_SIZE_BELOW_10MB" />
+			<xsd:enumeration value="FILE_SIZE_10MB_1GB" />
+			<xsd:enumeration value="FILE_SIZE_1GB_10GB"	/>
+			<xsd:enumeration value="FILE_SIZE_10GB_100GB" />
+			<xsd:enumeration value="FILE_SIZE_100GB_500GB" />
+			<xsd:enumeration value="FILE_SIZE_500GB_1TB" />
+			<xsd:enumeration value="FILE_SIZE_OVER_1TB" />
 		</xsd:restriction>
 	</xsd:simpleType>	
 </xsd:schema>

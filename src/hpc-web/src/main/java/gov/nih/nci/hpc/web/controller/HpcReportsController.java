@@ -135,19 +135,27 @@ public class HpcReportsController extends AbstractHpcController {
     model.addAttribute("docUsers", users.getUsers());
     List<String> docs = new ArrayList<>();
 
-    if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
+
+    boolean canSeeAllDocs = false;
+    if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER")) {
       docs.add(user.getDoc());
+    }
     else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
       docs.addAll(
           HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
+      canSeeAllDocs = true;
     }
+    model.addAttribute("canSeeAllDocs", canSeeAllDocs);
     docs.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("docs", docs);
 
     List<String> basepaths = new ArrayList<>();
     for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
-      for (HpcDataManagementRulesDTO rule : docRule.getRules())
-        basepaths.add(rule.getBasePath());
+      if (docs.contains(docRule.getDoc())){
+        for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+          basepaths.add(rule.getBasePath());
+        }
+      }
     }
     basepaths.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("basepaths", basepaths);
@@ -178,6 +186,9 @@ public class HpcReportsController extends AbstractHpcController {
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))) {
         requestDTO.getDoc().add(reportRequest.getDoc());
+      }
+      if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER)) {
+          requestDTO.setPath("ALL");
       }
       if ((reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) &&
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
@@ -217,7 +228,14 @@ public class HpcReportsController extends AbstractHpcController {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
         HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
         model.addAttribute("reports", translate(reports.getReports()));
-        model.addAttribute("reportName", getReportName(reportRequest.getReportType()));
+        if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
+            && reportRequest.getDoc().equals("All")) || (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
+                && reportRequest.getBasepath().equals("All"))) {
+          model.addAttribute("reportName", getReportName(reportRequest.getReportType() + "_GRID"));
+        }
+        else {
+          model.addAttribute("reportName", getReportName(reportRequest.getReportType()));
+        }     
       } else {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -256,15 +274,28 @@ public class HpcReportsController extends AbstractHpcController {
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
       for (HpcReportEntryDTO entry : entries) {
         if (env.getProperty(entry.getAttribute()) != null) {
-          entry.setAttribute(env.getProperty(entry.getAttribute()));
-          if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
-        	  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br>"));
-          }
-          if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
-              || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
-              || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))){
-              entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
-          }
+          // Data Owner Grid: we are reusing an existing attribute TOTAL_DATA_SIZE, therefore we are using the proper property for this Grid
+           if (dto.getType().equals("USAGE_SUMMARY_BY_DATA_OWNER")) {
+              if (entry.getAttribute().equals("TOTAL_DATA_SIZE") || dto.getType().equals("LARGEST_FILE_SIZE")) {
+                entry.setAttribute(env.getProperty("COLLECTION_SIZE"));
+                entry.setValue(String.format("%.2f", Double.parseDouble(entry.getValue())));
+              } else if (entry.getAttribute().equals("LARGEST_FILE_SIZE")) {
+                entry.setAttribute(env.getProperty("COLLECTION_SIZE_HUMAN_READABLE"));
+                entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+              } else {
+                entry.setAttribute(env.getProperty(entry.getAttribute()));
+              }
+           } else {
+              entry.setAttribute(env.getProperty(entry.getAttribute()));
+              if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
+                  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
+              }
+              if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
+                  || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
+                  || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))){
+                  entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+              }
+           }
         }
       }
       tReports.add(dto);

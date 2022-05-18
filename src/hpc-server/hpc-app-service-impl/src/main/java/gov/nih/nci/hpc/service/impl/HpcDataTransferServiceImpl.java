@@ -995,6 +995,48 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public Map<String, HpcDownloadTaskStatus> getDownloadItemsStatus(HpcCollectionDownloadTask downloadTask)
+			throws HpcException {
+		Map<String, HpcDownloadTaskStatus> downloadItemsStatus = new HashMap<>();
+
+		// Get all the data object download tasks that are in progress.
+		dataDownloadDAO.getDataObjectDownloadTaskByCollectionDownloadTaskId(downloadTask.getId())
+				.forEach(dataObjectDownloadTask -> {
+					HpcDownloadTaskStatus taskStatus = new HpcDownloadTaskStatus();
+					taskStatus.setInProgress(true);
+					taskStatus.setDataObjectDownloadTask(dataObjectDownloadTask);
+					downloadItemsStatus.put(dataObjectDownloadTask.getId(), taskStatus);
+				});
+
+		int inProgress = downloadItemsStatus.size();
+
+		// Get all the data object download tasks that completed but a result was not
+		// recorded yet.
+		for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+			if (downloadItem.getResult() == null) {
+				String dataObjectDownloadTaskId = downloadItem.getDataObjectDownloadTaskId();
+				if (!StringUtils.isEmpty(dataObjectDownloadTaskId)
+						&& !downloadItemsStatus.containsKey(dataObjectDownloadTaskId)) {
+					HpcDownloadTaskStatus taskStatus = new HpcDownloadTaskStatus();
+					HpcDownloadTaskResult taskResult = dataDownloadDAO.getDownloadTaskResult(dataObjectDownloadTaskId,
+							HpcDownloadTaskType.DATA_OBJECT);
+					if (taskResult != null) {
+						// Task completed or failed. Return the result.
+						taskStatus.setInProgress(false);
+						taskStatus.setResult(taskResult);
+						downloadItemsStatus.put(dataObjectDownloadTaskId, taskStatus);
+					}
+				}
+			}
+		}
+
+		// TODO - Remove after HPCDATAMGM-1570 is tested successfully
+		logger.error("ERAN: download items query - total: {}, inprogress: {}", downloadItemsStatus.size(), inProgress);
+
+		return downloadItemsStatus;
+	}
+
+	@Override
 	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) {
 		try {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
@@ -1086,6 +1128,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setSize(downloadTask.getSize());
 		taskResult.setCompleted(completed);
 		taskResult.setRestoreRequested(downloadTask.getRestoreRequested());
+		taskResult.setFirstHopRetried(downloadTask.getFirstHopRetried());
 
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(Math.toIntExact(bytesTransferred * 1000
@@ -1307,6 +1350,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
 		downloadTask.setS3DownloadTaskServerId(null);
 		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
@@ -2771,6 +2815,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCreated(created);
 		taskResult.setSize(downloadRequest.getSize());
 		taskResult.setCompleted(Calendar.getInstance());
+		taskResult.setFirstHopRetried(false);
 
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
@@ -2814,6 +2859,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 		downloadTask.setPath(downloadRequest.getPath());
 		downloadTask.setUserId(downloadRequest.getUserId());
+		downloadTask.setFirstHopRetried(false);
 
 		// Persist the download task. The download will be performed by a scheduled task
 		// picking up
@@ -3337,6 +3383,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setGlobusDownloadDestination(downloadRequest.getGlobusDestination());
 			downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
 			downloadTask.setGoogleDriveDownloadDestination(downloadRequest.getGoogleDriveDestination());
+			downloadTask.setFirstHopRetried(false);
 			downloadTask.setRestoreRequested(true);
 
 			if (downloadTask.getS3DownloadDestination() != null) {
@@ -3634,8 +3681,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// This callback method is called when the first hop download failed.
 		@Override
 		public void transferFailed(String message) {
-			logger.info("download task: {} - 1 Hop download Failed. Path at scratch space: {}", downloadTask.getId(),
-					sourceFile.getAbsolutePath());
+			if (!downloadTask.getFirstHopRetried()) {
+				// First hop failed, but was not retried yet. Give it a second chance.
+				logger.info("download task: {} - 1 Hop download failed and will be retried. Path at scratch space: {}",
+						downloadTask.getId(), sourceFile.getAbsolutePath());
+				downloadTask.setFirstHopRetried(true);
+				try {
+					resetDataObjectDownloadTask(downloadTask);
+					return;
+				} catch (HpcException e) {
+					downloadTask.setFirstHopRetried(false);
+					logger.error("download task: {} - failed to reset", downloadTask.getId(), e);
+
+				}
+			}
+
+			logger.info("download task: {} - 1 Hop download retry failed. Path at scratch space: {}",
+					downloadTask.getId(), sourceFile.getAbsolutePath());
+
 			String errorMessage = "Failed to get data from archive via S3: " + message;
 			downloadFailed(errorMessage);
 
@@ -3709,6 +3772,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setCreated(Calendar.getInstance());
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
+			downloadTask.setFirstHopRetried(false);
 			downloadTask.setS3DownloadTaskServerId(
 					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
 							? s3DownloadTaskServerId
@@ -3746,6 +3810,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setPercentComplete(0);
 			this.downloadTask.setSize(downloadTask.getSize());
 			this.downloadTask.setS3DownloadTaskServerId(downloadTask.getS3DownloadTaskServerId());
+			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 
 			dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
 		}
@@ -3762,7 +3827,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				// Record a download failed event if requested to.
 				if (downloadTask.getCompletionEvent()) {
 					eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
-							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
+							HpcDownloadTaskType.DATA_OBJECT, HpcDownloadResult.FAILED, downloadTask.getId(),
 							downloadTask.getGlobusDownloadDestination().getDestinationLocation(),
 							transferFailedTimestamp, message);
 				}
