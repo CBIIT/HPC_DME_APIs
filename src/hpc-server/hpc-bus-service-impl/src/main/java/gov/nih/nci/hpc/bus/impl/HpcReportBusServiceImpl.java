@@ -203,6 +203,8 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       dtoreport.setType(report.getType().value());
       dtoreport.setUser(report.getUser());
       dtoreport.setPath(report.getPath());
+      dtoreport.setDataOwner(report.getDataOwner());
+      dtoreport.setDataCurator(report.getDataCurator());
 
       for (HpcReportEntry entry : report.getReportEntries()) {
         HpcReportEntryDTO entryDTO = new HpcReportEntryDTO();
