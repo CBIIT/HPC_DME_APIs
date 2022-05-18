@@ -126,9 +126,13 @@ public class HpcS3ProgressListener implements ProgressListener {
 					bytesTransferred.get() / MB, event.getEventType());
 			break;
 
-		default:
+		case CLIENT_REQUEST_STARTED_EVENT:
+		case CLIENT_REQUEST_SUCCESS_EVENT:
 			logger.info("S3 transfer [{}] no-op event. {}MB transferred. progress event = {}",
 					transferSourceDestination, bytesTransferred.get() / MB, event.getEventType());
+			break;
+
+		default:
 			break;
 		}
 	}
