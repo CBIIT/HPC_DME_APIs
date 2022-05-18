@@ -169,18 +169,22 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_DOWNLOAD_FAILED",
-			"subjectFormat": "DME %1$s Download Request Failed at %2$s",
+			"subjectFormat": "DME %1$s download request %2$s at %3$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
 					"index": "0"
 				},
 				{
-					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"payloadEntryAttribute": "DOWNLOAD_TASK_RESULT",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "2"
 				}
 			],
-			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%5$s/downloadtask?taskId=%3$s&type=%6$s\">%3$s</a><br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
+			"textFormat": "Your download request %7$s.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: <a href=\"%5$s/downloadtask?taskId=%3$s&type=%6$s\">%3$s</a><br/>Reason: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -205,6 +209,10 @@
 				{
 					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE_CODE",
 					"index": "5"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_RESULT",
+					"index": "6"
 				}
 			]
 		},
@@ -226,14 +234,13 @@
          <br/>Total number of collections:  %7$s
          <br/>Total number of metadata attributes:  %8$s
          <br/>Total number of files with size:
-         <br/>\t < 1MB:  %9$s 
-		 <br/>\t > 1MB and < 10MB:  %10$s
-		 <br/>\t > 10MB and < 50MB:  %11$s
-		 <br/>\t > 50MB and < 100MB:  %12$s
-		 <br/>\t > 100MB and < 500MB:  %13$s
-		 <br/>\t > 500MB and < 1GB:  %14$s
-		 <br/>\t > 1GB and < 10GB:  %15$s
-		 <br/>\t > 10GB:  %16$s
+         <br/>\t < 10MB:  %9$s 
+		 <br/>\t > 10MB and < 1GB:  %10$s
+		 <br/>\t > 1GB and < 10GB:  %11$s
+		 <br/>\t > 10GB and < 100GB:  %12$s
+		 <br/>\t > 100GB and < 500GB:  %13$s
+		 <br/>\t > 500GB and < 1TB:  %14$s
+		 <br/>\t > > 1 TB:  %15$s
 		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%17$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
@@ -269,40 +276,36 @@
 					"index": "7"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_BELOW_1_MB",
+					"payloadEntryAttribute": "FILE_SIZE_BELOW_10_MB",
 					"index": "8"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_1_MB_10_MB",
+					"payloadEntryAttribute": "FILE_SIZE_10_MB_1_GB",
 					"index": "9"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_10_MB_50_MB",
+					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
 					"index": "10"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_50_MB_100_MB",
+					"payloadEntryAttribute": "FILE_SIZE_10_GB_100_GB",
 					"index": "11"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_100_MB_500_MB",
+					"payloadEntryAttribute": "FILE_SIZE_100_GB_500_GB",
 					"index": "12"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_500_MB_1_GB",
+					"payloadEntryAttribute": "FILE_SIZE_500_GB_1_TB",
 					"index": "13"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
+					"payloadEntryAttribute": "FILE_SIZE_OVER_1_TB",
 					"index": "14"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_OVER_10_GB",
-					"index": "15"
-				},
-				{
 					"payloadEntryAttribute": "BASE_UI_URL",
-					"index": "16"
+					"index": "15"
 				}
 			]
 		},
@@ -368,48 +371,44 @@
 					"index": "7"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_BELOW_1_MB",
+					"payloadEntryAttribute": "FILE_SIZE_BELOW_10_MB",
 					"index": "8"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_1_MB_10_MB",
+					"payloadEntryAttribute": "FILE_SIZE_10_MB_1_GB",
 					"index": "9"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_10_MB_50_MB",
+					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
 					"index": "10"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_50_MB_100_MB",
+					"payloadEntryAttribute": "FILE_SIZE_10_GB_100_GB",
 					"index": "11"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_100_MB_500_MB",
+					"payloadEntryAttribute": "FILE_SIZE_100_GB_500_GB",
 					"index": "12"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_500_MB_1_GB",
+					"payloadEntryAttribute": "FILE_SIZE_500_GB_1_TB",
 					"index": "13"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
+					"payloadEntryAttribute": "FILE_SIZE_OVER_1_TB",
 					"index": "14"
 				},
 				{
-					"payloadEntryAttribute": "FILE_SIZE_OVER_10_GB",
+					"payloadEntryAttribute": "FROM_DATE",
 					"index": "15"
 				},
 				{
-					"payloadEntryAttribute": "FROM_DATE",
+					"payloadEntryAttribute": "TO_DATE",
 					"index": "16"
 				},
 				{
-					"payloadEntryAttribute": "TO_DATE",
-					"index": "17"
-				},
-				{
 					"payloadEntryAttribute": "BASE_UI_URL",
-					"index": "18"
+					"index": "17"
 				}
 			]
 		},
