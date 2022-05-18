@@ -14,9 +14,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -717,13 +719,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
 									}
-									downloadItems.addAll(downloadCollection(collection,
+									
+									// Get a list of download items for this collection
+									List<HpcCollectionDownloadTaskItem> items = downloadCollection(collection,
 											downloadTask.getGlobusDownloadDestination(),
 											downloadTask.getS3DownloadDestination(),
 											downloadTask.getGoogleDriveDownloadDestination(),
 											downloadTask.getGoogleCloudStorageDownloadDestination(),
 											downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-											collectionDownloadBreaker, downloadTask.getId(), excludedPaths));
+											collectionDownloadBreaker, downloadTask.getId(), excludedPaths);
+									
+									// Update the collection path on the items.
+									items.forEach(item -> item.setCollectionPath(path));
+									
+									downloadItems.addAll(items);
 								}
 							}
 
@@ -772,15 +781,30 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			boolean downloadCompleted = true;
 			int inProgressItemsCount = 0;
 			List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
+			
+			// Get updated status on download items w/o a result yet.
+			Map<String, HpcDownloadTaskStatus> downloadItemsStatus = null;
+			try {
+				downloadItemsStatus = dataTransferService.getDownloadItemsStatus(downloadTask);
+				
+			} catch (HpcException e) {
+				logger.error("Failed to get download items status", e);
+				downloadItemsStatus = new HashMap<>();
+			}
+			
 			// Update status of individual download items in this collection download task.
 			for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
 				try {
 					if (downloadItem.getResult() == null) {
 						// This download item in progress - check its status.
-						HpcDownloadTaskStatus downloadItemStatus = downloadItem.getDataObjectDownloadTaskId() != null
-								? dataTransferService.getDownloadTaskStatus(downloadItem.getDataObjectDownloadTaskId(),
-										HpcDownloadTaskType.DATA_OBJECT)
-								: null;
+						HpcDownloadTaskStatus downloadItemStatus = downloadItemsStatus.get(downloadItem.getDataObjectDownloadTaskId());
+						/*
+						 * TODO - Remove after HPCDATAMGM-1570 is tested successfully
+						 * HpcDownloadTaskStatus downloadItemStatus =
+						 * downloadItem.getDataObjectDownloadTaskId() != null ?
+						 * dataTransferService.getDownloadTaskStatus(downloadItem.
+						 * getDataObjectDownloadTaskId(), HpcDownloadTaskType.DATA_OBJECT) : null;
+						 */
 
 						if (downloadItemStatus == null) {
 							throw new HpcException("Data object download task status is unknown. Task ID: "
@@ -1524,7 +1548,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, downloadTaskId,
 						destinationLocation, dataTransferCompleted);
 			} else {
-				eventService.addDataTransferDownloadFailedEvent(userId, path, downloadTaskType, downloadTaskId,
+				eventService.addDataTransferDownloadFailedEvent(userId, path, downloadTaskType, result, downloadTaskId,
 						destinationLocation, dataTransferCompleted, message);
 			}
 
