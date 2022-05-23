@@ -204,7 +204,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				dataObjectMigrationTask, this);
 		dataObjectMigrationTask.setToS3ArchiveLocation(s3DataTransferProxy.uploadDataObject(toS3ArchiveAuthToken,
 				uploadRequest, toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
-				toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener, null,
+				toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
+				dataTransferService.generateArchiveMetadata(dataObjectMigrationTask.getConfigurationId(),
+						dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId()),
 				toS3ArchiveDataTransferConfiguration.getEncryptedTransfer(),
 				toS3ArchiveDataTransferConfiguration.getStorageClass()).getArchiveLocation());
 
