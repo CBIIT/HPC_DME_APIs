@@ -278,6 +278,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
 			hpcSearch.setPageNumber(search.getPageNumber());
 			hpcSearch.setPageSize(search.getPageSize());
+			hpcSearch.setSelectedColumns(search.getSelectedColumns());
 			search = hpcSearch;
 		}
 		try {
@@ -309,7 +310,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					totalPages = (int) session.getAttribute("totalPages");
 				}
 			} while (pageNumber <= totalPages);
-			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response);
+			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response, exportSearch.getSelectedColumns());
 			
 		} catch (Exception e) {
 			e.printStackTrace();
