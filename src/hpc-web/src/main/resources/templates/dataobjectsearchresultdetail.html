@@ -147,6 +147,34 @@
 						exporterSuppressExport : true,
 						enableSorting: false
 					} ],
+			gridMenuCustomItems: [
+			      {
+			        title: 'Hide All Columns',
+			        action: function ($event) {
+			        	this.grid.columns.forEach(function(col){
+			                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission'&& col.displayName != 'Create Link') {
+			                	   col.hideColumn();
+			                 }  
+			        	});
+			        	this.grid.api.core.notifyDataChange("column");
+			        },
+			        order: 210
+			      },
+			      {
+				        title: 'Show All Columns',
+				        action: function ($event) {
+				        	var grid = this.grid;
+				        	
+				        	this.grid.columns.forEach(function(col){
+				                   if(!col.visible){
+				                	   col.showColumn();
+				                   }
+				        	});
+				        	this.grid.api.core.notifyDataChange("column");
+				        },
+				        order: 211
+				      }
+			    ],
 			treeRowHeaderAlwaysVisible : false,
 			onRegisterApi : function(gridApi) {
 				$scope.grid1Api = gridApi;
@@ -352,6 +380,14 @@
         };
         
         $scope.export = function() {
+        	var selectedColumns = [];
+        	
+        	$scope.gridOptions1.columnDefs.forEach(function(col){
+                if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
+                	selectedColumns.push(col.field);
+              }  
+     		});
+
     		if(source == "'search'" || source == 'search')
     			document.getElementById("simplesearchform").action = "/search/export";
     		else
@@ -360,6 +396,7 @@
     		document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(currentPageSize);
     		document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = parseInt(currentPage);
     		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
+    		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
     		document.getElementById("simplesearchform").submit();
         };
         
@@ -596,6 +633,7 @@
 						<input type="hidden" id="queryName" name="queryName"/>
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="totalSize" name="totalSize"/>
+						<input type="hidden" id="selectedColumns" name="selectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
