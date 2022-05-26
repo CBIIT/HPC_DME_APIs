@@ -227,12 +227,12 @@ public class HpcSearchController extends AbstractHpcController {
 			int totalPages = 1;
 			do {
 				exportSearch.setPageNumber(pageNumber++);
-				exportSearch.setPageSize(100);
+				exportSearch.setPageSize(10000);
 				query = processSearch(search, session, request, model, bindingResult);
 				totalPages = (int) session.getAttribute("totalPages");
 			} while (pageNumber <= totalPages);
 			String searchType = query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) ? "collection" : "datafile";
-			HpcSearchUtil.exportResponseResults(searchType, session, request, response);
+			HpcSearchUtil.exportResponseResults(searchType, session, request, response, exportSearch.getSelectedColumns());
 			
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -48,11 +48,11 @@ public class HpcSearchUtil {
 	}
 	
 	public static void exportResponseResults(String searchType, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+			HttpServletResponse response, List<String> selectedColumns) throws IOException {
 		if (searchType.equalsIgnoreCase("collection"))
-			exportCollectionResults(session, request, response);
+			exportCollectionResults(session, request, response, selectedColumns);
 		else
-			exportDataObjectResults(session, request, response);
+			exportDataObjectResults(session, request, response, selectedColumns);
 	}
 
 	private static void processCollectionResults(HpcSearch search, Response restResponse, Model model, HttpSession session)
@@ -272,7 +272,7 @@ public class HpcSearchUtil {
 	}
 	
 	public static void exportCollectionResults(HttpSession session, HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+			HttpServletResponse response, List<String> selectedColumns) throws IOException {
 		
 		List<HpcCollectionSearchResultDetailed> collectionResults = (List<HpcCollectionSearchResultDetailed>) session.getAttribute("searchresults");
 		
@@ -280,27 +280,35 @@ public class HpcSearchUtil {
 		if (CollectionUtils.isNotEmpty(collectionResults)) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
+			for (String selectedColumn : selectedColumns) {
+				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
+						&& !selectedColumn.equals("permission"))
+					headers.add(selectedColumn);
+			}
 			for (HpcCollectionSearchResultDetailed collection : collectionResults) {
 				List<String> result = new ArrayList<String>();
 				result.add(collection.getPath());
-				if (collection != null && collection.getMetadataEntries() != null
-						&& !collection.getMetadataEntries().getSelfMetadataEntries().isEmpty()) {
+				if (collection != null && collection.getMetadataEntries() != null) {
+					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
+					combinedMetadataEntries.addAll(collection.getMetadataEntries().getSelfMetadataEntries());
+					combinedMetadataEntries.addAll(collection.getMetadataEntries().getParentMetadataEntries());
 					for (String header : headers) {
 						boolean found = false;
-						for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
+						for (HpcMetadataEntry entry : combinedMetadataEntries) {
 							if (header.equals(entry.getAttribute())) {
 								result.add(entry.getValue());
 								found = true;
+								break;
 							}
 						}
-						if(!found && !header.equals("path"))
+						if(!found && header.equals("registeredBy"))
+							result.add(collection.getRegisteredBy());
+						else if(!found && header.equals("createdOn"))
+							result.add(collection.getCreatedOn());
+						else if(!found && header.equals("collectionType"))
+							result.add(collection.getCollectionType());
+						else if(!found && !header.equals("path"))
 							result.add("");
-					}
-					for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
-						if(!headers.contains(entry.getAttribute())) {
-							headers.add(entry.getAttribute());
-							result.add(entry.getValue());
-						}
 					}
 				}
 				rows.add(result);
@@ -320,7 +328,7 @@ public class HpcSearchUtil {
 	}
 	
 	public static void exportDataObjectResults(HttpSession session, HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+			HttpServletResponse response, List<String> selectedColumns) throws IOException {
 		
 		List<HpcDatafileSearchResultDetailed> datafileResults = (List<HpcDatafileSearchResultDetailed>) session.getAttribute("searchresults");
 		
@@ -328,27 +336,33 @@ public class HpcSearchUtil {
 		if (CollectionUtils.isNotEmpty(datafileResults)) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
+			for (String selectedColumn : selectedColumns) {
+				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
+						&& !selectedColumn.equals("permission") && !selectedColumn.equals("link"))
+					headers.add(selectedColumn);
+			}
 			for (HpcDatafileSearchResultDetailed datafile : datafileResults) {
 				List<String> result = new ArrayList<String>();
 				result.add(datafile.getPath());
-				if (datafile != null && datafile.getMetadataEntries() != null
-						&& !datafile.getMetadataEntries().getSelfMetadataEntries().isEmpty()) {
+				if (datafile != null && datafile.getMetadataEntries() != null) {
+					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
+					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
+					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getParentMetadataEntries());
 					for (String header : headers) {
 						boolean found = false;
-						for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries()) {
+						for (HpcMetadataEntry entry : combinedMetadataEntries) {
 							if (header.equals(entry.getAttribute())) {
 								result.add(entry.getValue());
 								found = true;
+								break;
 							}
 						}
-						if(!found && !header.equals("path"))
+						if(!found && header.equals("registeredBy"))
+							result.add(datafile.getRegisteredBy());
+						else if(!found && header.equals("createdOn"))
+							result.add(datafile.getCreatedOn());
+						else if(!found && !header.equals("path"))
 							result.add("");
-					}
-					for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries()) {
-						if(!headers.contains(entry.getAttribute())) {
-							headers.add(entry.getAttribute());
-							result.add(entry.getValue());
-						}
 					}
 				}
 				rows.add(result);
