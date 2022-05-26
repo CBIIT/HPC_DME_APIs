@@ -49,6 +49,7 @@ public class HpcSsoController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@CookieValue(value = "NIHSMSESSION", required = false) String smSession, Model model,
 			@RequestParam(value = "redirect_uri", required = true) String redirectURL,
+			@RequestParam(value = "state", required = false) String state,
 			@RequestParam(value = "urlencoded", required = false) Boolean urlencoded, HttpSession session,
 			HttpServletRequest request) {
 		// Default to enctype application/x-www-form-urlencoded
@@ -64,10 +65,13 @@ public class HpcSsoController extends AbstractHpcController {
 				logger.error("Authentication failed. " + e.getMessage());
 			}
 		}
+		
 		// This is to support posting the token in format, {"token": "ABC123", "ignoreme": "="} using text/plain encoding.
-		String formattedToken = "<input type='hidden' name='{\"token\": \"" + authToken + "\", \"ignoreme\": \"' value='\"}'/>";
+		String formattedToken = "<input type='hidden' name='{\"token\": \"" + authToken + "\", \"state\": \"" + state
+				+ "\", \"ignoreme\": \"' value='\"}'/>";
 		model.addAttribute("formattedToken", formattedToken);
 		model.addAttribute("redirectURL", redirectURL);
+		model.addAttribute("state", state);
 		model.addAttribute("token", authToken);
 		model.addAttribute("urlencoded", urlencoded);
 		return "sso";
