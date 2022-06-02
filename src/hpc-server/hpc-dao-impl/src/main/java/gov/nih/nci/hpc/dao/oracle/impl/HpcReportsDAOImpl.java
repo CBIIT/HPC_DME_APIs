@@ -697,17 +697,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         report.setUser(map.get("USER_PATH").toString());
         Object cobj = map.get("COLLECTION_SIZE");
         float collection_size = (cobj == null) ? 0: Float.parseFloat(map.get("COLLECTION_SIZE").toString());
-        float collection_size_gb = collection_size;
-        float collection_size_tb = collection_size_gb;
         HpcReportEntry reportEntry = new HpcReportEntry();
-        //Reusing existing attributes for collection sizes in GB or TB
+        //Reusing existing attribute TOTAL_DATA_SIZE for collection size
         reportEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
-        reportEntry.setValue(collection_size_gb + "");
-        report.getReportEntries().add(reportEntry);
-        // the following entry may not be needed
-        reportEntry = new HpcReportEntry();
-        reportEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
-        reportEntry.setValue(collection_size_tb + "");
+        reportEntry.setValue(collection_size + "");
         report.getReportEntries().add(reportEntry);
         reports.add(report);
       }

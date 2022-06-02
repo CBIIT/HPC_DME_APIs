@@ -470,6 +470,7 @@ width: 100% !important;
 		var reportType = document.getElementById("reportType").value;
 		var exportFileName = "";
 		var reportHeaderTitle = "";
+		var noSortColumns = [-1];
 		const d = new Date();
 		let pretag = "NCI_DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
@@ -477,10 +478,12 @@ width: 100% !important;
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
 				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
+				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right. 
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
+				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right.
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
@@ -533,7 +536,7 @@ width: 100% !important;
 								"visible": true
 								},
 								{
-								"targets": [-1], // Last column should not be sortable. Human readable value.
+								"targets": noSortColumns, // These columns should not be sortable. For e.g, Human readable values.
 								"orderable": false,
 								"visible": true
 								},
