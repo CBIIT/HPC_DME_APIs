@@ -10,6 +10,9 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.fromPathsString;
+import static gov.nih.nci.hpc.util.HpcUtil.toPathsString;
+
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -1347,34 +1350,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 
 		return downloadItems;
-	}
-
-	/**
-	 * Map a list of paths to a comma separated string
-	 * 
-	 * @param paths A list of paths.
-	 * @return comma separated string.
-	 */
-	private String toPathsString(List<String> paths) {
-		StringBuilder pathsStr = new StringBuilder();
-		paths.forEach(path -> pathsStr.append(path + ","));
-		return pathsStr.toString();
-	}
-
-	/**
-	 * Map a comma separated string of paths to a list
-	 * 
-	 * @param pathsStr A comma separated string of paths.
-	 * @return list of paths.
-	 */
-	private List<String> fromPathsString(String pathsStr) {
-		List<String> paths = new ArrayList<>();
-		if (!StringUtils.isEmpty(pathsStr)) {
-			for (String path : pathsStr.split(",")) {
-				paths.add(path);
-			}
-		}
-		return paths;
 	}
 
 	/**
