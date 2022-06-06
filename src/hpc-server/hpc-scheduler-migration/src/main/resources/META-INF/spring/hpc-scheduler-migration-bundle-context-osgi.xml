@@ -24,7 +24,9 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.scheduler.migration.cron.processDataObjectMigrationReceived.delay">10 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.migration.cron.processCollectionMigrationReceived.delay">15 0/1 * * * ?</prop>
-		<prop key="hpc.scheduler.migration.cron.completeCollectionMigrationInProgress.delay">20 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.migration.cron.processDataObjectListMigrationReceived.delay">25 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.migration.cron.processCollectionListMigrationReceived.delay">35 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.migration.cron.completeBulkMigrationInProgress.delay">20 0/1 * * * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

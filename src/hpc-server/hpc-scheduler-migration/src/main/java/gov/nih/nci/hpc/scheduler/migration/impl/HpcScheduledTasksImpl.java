@@ -60,12 +60,26 @@ public class HpcScheduledTasksImpl {
 		execute("processCollectionMigrationReceivedTask()", dataMigrationBusService::processCollectionMigrationReceived,
 				logger);
 	}
+	
+	/** Process received data object list migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectListMigrationReceived.delay}")
+	private void processDataObjectListMigrationReceivedTask() {
+		execute("processDataObjectListMigrationReceivedTask()", dataMigrationBusService::processDataObjectListMigrationReceived,
+				logger);
+	}
+	
+	/** Process received collection list migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processCollectionListMigrationReceived.delay}")
+	private void processCollectionListMigrationReceivedTask() {
+		execute("processDataObjectListMigrationReceivedTask()", dataMigrationBusService::processCollectionListMigrationReceived,
+				logger);
+	}
 
 	/** Complete collection migration tasks that are in-progress. */
-	@Scheduled(cron = "${hpc.scheduler.migration.cron.completeCollectionMigrationInProgress.delay}")
-	private void completeCollectionMigrationInProgressTask() {
-		execute("completeCollectionMigrationInProgressTask()",
-				dataMigrationBusService::completeCollectionMigrationInProgress, logger);
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.completeBulkMigrationInProgress.delay}")
+	private void completeBulkMigrationInProgressTask() {
+		execute("completeBulkMigrationInProgressTask()",
+				dataMigrationBusService::completeBulkMigrationInProgress, logger);
 	}
 
 	/**
