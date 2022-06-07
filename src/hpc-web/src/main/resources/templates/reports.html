@@ -102,7 +102,7 @@ body {
   color: white;
 }
 .select2-container {
-width: 100% !important;
+
 }
 </style>
 <script th:inline="javascript">
@@ -192,7 +192,7 @@ width: 100% !important;
 								<select size="1"
 									id="user" name="user" class="userSelect"
 									th:required="required">
-										<option value="-1">----Select----</option>
+										<option></option>
 										<option
 											th:each="entry : ${docUsers}"
 											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
@@ -360,9 +360,9 @@ width: 100% !important;
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter0'>
-								<td id='indexf0' th:text="Index"></td>
-								<td id='pathf0' th:text="Path"></td>
-								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='pathf0' th:text="Path"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
 					</table>
@@ -399,13 +399,13 @@ width: 100% !important;
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter2'>
-								<td id='index0000' th:text="Index"></td>
-								<td id='path0011' th:text="Doc"></td>
-								<td id='path0022' th:text="BasePath"></td>
-								<td id='path0033' th:text="'Object Path'"></td>
-								<td id='path0044' th:text="'Data Owner'"></td>
-								<td id='path0055' th:text="'Data Curator'"></td>
-								<th th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path0011' th:text="Doc"></td>
+								<td style="color: black; font-weight:bold" id='path0022' th:text="BasePath"></td>
+								<td style="color: black; font-weight:bold" id='path0033' th:text="'Object Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
+								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Curator'"></td>
+								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
 					</table>
@@ -574,7 +574,10 @@ width: 100% !important;
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
 		$('.userSelect').select2({
-    		width: 'resolve', 
+			width: 'auto',
+			dropdownAutoWidth: true,
+			allowClear: true,
+			placeholder: '-------------------Select-------------------'
 		});
 	});
 		
