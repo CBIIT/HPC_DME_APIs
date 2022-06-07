@@ -46,6 +46,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -894,5 +895,20 @@ public interface HpcDataTransferService {
 	 */
 	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType, String fileId, HpcPathPermissions permissions) throws HpcException;
+
+	/**
+	 * Generate metadata to attach to the data object in the archive: 1. UUID - the
+	 * data object UUID in the DM system (iRODS) 2. User ID - the user id that
+	 * registered the data object.
+	 * 
+	 * Note: creating archive metadata is configurable in
+	 * data-management-configuration.
+	 *
+	 * @param configurationId The data management configuration ID.
+	 * @param objectId        The data object UUID.
+	 * @param registrarId     The user-id uploaded the data.
+	 * @return a List of the 2 metadata.
+	 */
+	public List<HpcMetadataEntry> generateArchiveMetadata(String configurationId, String objectId, String registrarId);
 
 }
