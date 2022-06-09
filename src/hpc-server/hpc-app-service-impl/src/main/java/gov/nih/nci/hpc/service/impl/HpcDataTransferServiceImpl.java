@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
+import static gov.nih.nci.hpc.util.HpcUtil.fromValue;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
@@ -689,11 +690,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		objectMetadata.setChecksum(checksum);
 
-		if (dataTransferType.equals(HpcDataTransferType.S_3) && dataTransferProxies.get(dataTransferType)
-				.existsTieringPolicy(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-						fileLocation)) {
-			// Add deep_archive_status in progress
-			objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.IN_PROGRESS);
+		if (dataTransferType.equals(HpcDataTransferType.S_3)) {
+			if (dataTransferProxies.get(dataTransferType).existsTieringPolicy(
+					getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation)) {
+				// Add deep_archive_status in progress
+				objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.IN_PROGRESS);
+			} else {
+				HpcDeepArchiveStatus deepArchiveStatus = fromValue(HpcDeepArchiveStatus.class,
+						dataTransferConfiguration.getStorageClass());
+				if (deepArchiveStatus != null) {
+					// Add deep_archive_status set to the storage class of the archive
+					objectMetadata.setDeepArchiveStatus(deepArchiveStatus);
+				}
+			}
 		}
 		return objectMetadata;
 	}
