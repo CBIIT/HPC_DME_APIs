@@ -136,6 +136,27 @@ public class HpcUtil {
 		return groupName.replace(GROUP_NAME_SPACE_CODE, " ");
 	}
 
+	/**
+	 * Enum fromValue implementation that doesn't throw an exception if value
+	 * provided not found.
+	 *
+	 * @param enumType The enum class
+	 * @param name     The value string to convert
+	 * @return The Enum value of the name
+	 */
+	public static <T extends Enum<T>> T fromValue(Class<T> enumType, String name) {
+		if (enumType == null || StringUtils.isEmpty(name)) {
+			return null;
+		}
+
+		try {
+			return T.valueOf(enumType, name);
+
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	private static final String[] SI_UNITS = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
 	private static final String[] BINARY_UNITS = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
 
