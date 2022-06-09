@@ -101,9 +101,32 @@ body {
   background-color: #002366;
   color: white;
 }
-.select2-container {
-
+.item {
+    display: inline-block;
 }
+
+input, select {
+    display: inline-block;
+}
+label {
+    display: inline-block;
+    width: 10em;
+    margin-right: 0em;
+    padding-top: 1.5em;
+    text-align:center;
+}
+
+
+.select2-container .select2-choice, .select2-result-label {
+  font-size: 1.5em;
+  height: 41px;
+  overflow: auto;
+}
+
+.select2-arrow, .select2-chosen {
+  padding-top: 6px;
+}
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -150,7 +173,7 @@ body {
 					
 					<!-- First Row Begin -->
 					<div class="row">
-						<div class="col-6 col-md-4">
+						<div class="col-6 col-md-3">
 							<label><b>Report Type:</b></label>
 							<select name="reportType" id="reportType" class="form-control"
 								onchange="show(this.value)">
@@ -165,15 +188,15 @@ body {
 								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
 							</select>
 						</div>
-						
+						<div class="col-6 col-md-1">&nbsp;</div>
 						<div style="display: none" id="docList">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-4">
+							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-2">
 								<label><b>DOC:</b></label>
 								<select size="1"
 									id="doc" name="doc" class="form-control"
 									th:required="required">
-										<option value="-1">----Select----</option>
+										<option value="-1">----------Select----------</option>
 										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
 										<option
 											th:each="entry : ${docs}"
@@ -182,12 +205,13 @@ body {
 											Wireframe</option>
 								</select>
 							</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>			
+							<div class="col-6 col-md-4">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
 						</div>
 						
 						<div  style="display: none" id="userList">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>					
-							<div class="col-6 col-md-6">
+							<div class="col-6 col-md-1">&nbsp;</div>			
+							<div class="col-6 col-md-4">
 								<label for="user"><b>Users:</b>
 								<select size="1"
 									id="user" name="user" class="userSelect"
@@ -201,15 +225,16 @@ body {
 								</select>
 								</label>
 							</div>
+							<div class="col-6 col-md-3">&nbsp;</div>
 						</div>
 						<div style="display: none" id="basepathList">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-4">
+							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-3">
 								<label><b>Base Path:</b></label>
 								<select size="1"
 									id="basepath" name="basepath" class="form-control"
 									th:required="required">
-										<option value="-1">----Select----</option>
+										<option value="-1">------------------Select------------------</option>
 										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
 										<option
 											th:each="entry : ${basepaths}"
@@ -218,15 +243,15 @@ body {
 											Wireframe</option>
 								</select>
 							</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-4">&nbsp;&nbsp;</div>
 						</div>
 						<div style="display: none" id="collectionPath">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-8">
+							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-6">
 								<label><b>Collection Path:</b></label>
-								<input type="text" name="path" id="path" th:value="${reportRequest.getPath()}" size="100"/>
+								<input type="text" name="path" id="id_collection_path" class="form-control" th:value="${reportRequest.getPath()}" size="75"/>
 							</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
 						</div>
 					</div> <!-- First Row End -->
 					<div class="row">
@@ -234,7 +259,7 @@ body {
 					</div>			
 					<!-- Second Row Begin -->
 					<div class="row">			
-						<div style="display: none" id="fromDateDiv">
+						<div style="display: none" id="fromDateDiv" class="item">
 							<div class="col-md-2">
 								<label><b>From Date:</b></label>
 								<div class="input-group date" data-provide="datepicker">	
@@ -245,7 +270,7 @@ body {
 								</div>
 							</div>
 						</div>						
-						<div style="display: none" id="toDateDiv">
+						<div style="display: none" id="toDateDiv" class="item">
 							<div class="col-md-1">&nbsp;</div>
 							<div class="col-md-2">
 								<label><b>To Date:</b></label>						
@@ -258,12 +283,14 @@ body {
 							</div>
 							<div class="col-md-1">&nbsp;</div>						
 						</div>
-						<div>
-							<div class="col-md-2">
-								<br />
+						<div style="display: block" id="gen" class="item">
+							<div class="col-md-1">&nbsp;</div>
+							<div class="col-md-1">
+								<label>&nbsp;</label>
 								<button type="submit" class="btn btn-md btn-primary"
 									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
 							</div>
+							<div class="col-md-4">&nbsp;</div>
 						</div>
 					</div> <!-- Second Row end -->
 					<input type="hidden" id="actionType" name="actionType" />	 
@@ -576,8 +603,8 @@ body {
 		$('.userSelect').select2({
 			width: 'auto',
 			dropdownAutoWidth: true,
-			allowClear: true,
-			placeholder: '-------------------Select-------------------'
+			//allowClear: true,
+			placeholder: '-----------------Select User-----------------'
 		});
 	});
 		
@@ -766,7 +793,7 @@ body {
 		}
 		else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE"){
 			document.getElementById("doc").value = "-1";
-			if(document.getElementById("user").value == "-1"){
+			if(document.getElementById("user").value == "-1" || document.getElementById("user").value == ""){
 				alert("Please select a user");
 				return false;
 			}
