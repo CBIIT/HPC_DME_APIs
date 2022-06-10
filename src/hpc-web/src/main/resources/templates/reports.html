@@ -190,7 +190,6 @@ label {
 						</div>
 						<div class="col-6 col-md-1">&nbsp;</div>
 						<div style="display: none" id="docList">
-							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
 							<div class="col-6 col-md-2">
 								<label><b>DOC:</b></label>
 								<select size="1"
@@ -206,11 +205,10 @@ label {
 								</select>
 							</div>
 							<div class="col-6 col-md-4">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
 						
-						<div  style="display: none" id="userList">
-							<div class="col-6 col-md-1">&nbsp;</div>			
+						<div style="display: none" id="userList">
 							<div class="col-6 col-md-4">
 								<label for="user"><b>Users:</b>
 								<select size="1"
@@ -225,10 +223,9 @@ label {
 								</select>
 								</label>
 							</div>
-							<div class="col-6 col-md-3">&nbsp;</div>
+							<div class="col-6 col-md-4">&nbsp;</div>
 						</div>
 						<div style="display: none" id="basepathList">
-							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
 							<div class="col-6 col-md-3">
 								<label><b>Base Path:</b></label>
 								<select size="1"
@@ -243,15 +240,14 @@ label {
 											Wireframe</option>
 								</select>
 							</div>
-							<div class="col-6 col-md-4">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-5">&nbsp;&nbsp;</div>
 						</div>
 						<div style="display: none" id="collectionPath">
-							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
 							<div class="col-6 col-md-6">
 								<label><b>Collection Path:</b></label>
 								<input type="text" name="path" id="id_collection_path" class="form-control" th:value="${reportRequest.getPath()}" size="75"/>
 							</div>
-							<div class="col-6 col-md-1">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
 					</div> <!-- First Row End -->
 					<div class="row">
@@ -284,18 +280,17 @@ label {
 							<div class="col-md-1">&nbsp;</div>						
 						</div>
 						<div style="display: block" id="gen" class="item">
-							<div class="col-md-1">&nbsp;</div>
 							<div class="col-md-1">
 								<label>&nbsp;</label>
 								<button type="submit" class="btn btn-md btn-primary"
 									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
 							</div>
-							<div class="col-md-4">&nbsp;</div>
+							<div class="col-md-5">&nbsp;</div>
 						</div>
 					</div> <!-- Second Row end -->
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 800px; height: 800px; overflow-y: scroll; margin-left: 15%;"
+				<div style="width: 1000px; height: 1000px; overflow-y: scroll; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
