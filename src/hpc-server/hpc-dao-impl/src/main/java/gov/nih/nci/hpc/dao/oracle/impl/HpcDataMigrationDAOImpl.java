@@ -25,6 +25,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.SqlLobValue;
@@ -79,6 +80,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	private static final String GET_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where STATUS = ? and TYPE = ?";
 
 	private static final String GET_DATA_OBJECT_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK  where PARENT_ID = ?";
+
+	private static final String GET_DATA_OBJECT_MIGRATION_TASK_SQL = "select * from HPC_DATA_MIGRATION_TASK  where PARENT_ID = ? and PATH = ?";
 
 	private static final String GET_COLLECTION_MIGRATION_RESULT_COUNT_SQL = "select RESULT, count(RESULT) as COUNT from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? group by RESULT";
 
@@ -193,6 +196,21 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		try {
 			return jdbcTemplate.query(GET_DATA_OBJECT_MIGRATION_TASKS_SQL, dataMigrationTaskRowMapper,
 					collectionMigrationTaskId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get a data object migration tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	public HpcDataMigrationTask getDataObjectMigrationTask(String collectionMigrationTaskId, String path)
+			throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_DATA_OBJECT_MIGRATION_TASK_SQL, HpcDataMigrationTask.class,
+					collectionMigrationTaskId, path);
+
+		} catch (IncorrectResultSizeDataAccessException irse) {
+			return null;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get a data object migration tasks: " + e.getMessage(),

@@ -106,8 +106,15 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId)
 			throws HpcException {
+		// Check if a task already exist.
+		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
+				path);
+		if (migrationTask != null) {
+			return migrationTask;
+		}
+
 		// Create and persist a migration task.
-		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+		migrationTask = new HpcDataMigrationTask();
 		migrationTask.setPath(path);
 		migrationTask.setUserId(userId);
 		migrationTask.setConfigurationId(configurationId);
