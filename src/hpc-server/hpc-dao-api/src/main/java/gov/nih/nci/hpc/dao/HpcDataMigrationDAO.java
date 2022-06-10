@@ -55,6 +55,18 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataMigrationTask> getDataObjectMigrationTasks(String collectionMigrationTaskId) throws HpcException;
+	
+	/**
+	 * Get a data object migration tasks that associated with specific a
+	 * collection migration task and path
+	 *
+	 * @param collectionMigrationTaskId The collection migration task id.
+	 * @param path The data object path.
+	 * @return A data object migration task if found, or null otherwise.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask getDataObjectMigrationTask(String collectionMigrationTaskId, String path)
+			throws HpcException;
 
 	/**
 	 * Delete a data Migration task.
