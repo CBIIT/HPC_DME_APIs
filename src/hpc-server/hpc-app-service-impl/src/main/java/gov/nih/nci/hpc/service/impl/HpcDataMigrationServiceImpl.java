@@ -110,6 +110,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
 		if (migrationTask != null) {
+			logger.error("ERAN: {} {} {}", path, collectionMigrationTaskId, migrationTask.getId());
 			return migrationTask;
 		}
 
