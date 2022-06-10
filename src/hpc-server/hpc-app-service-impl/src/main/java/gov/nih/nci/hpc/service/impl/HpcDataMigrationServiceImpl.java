@@ -113,8 +113,15 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			return migrationTask;
 		}
 
-		// Create and persist a migration task.
+		// Check if the task already completed.
 		migrationTask = new HpcDataMigrationTask();
+		String taskId = dataMigrationDAO.getDataObjectMigrationTaskResultId(collectionMigrationTaskId, path);
+		if (!StringUtils.isEmpty(taskId)) {
+			migrationTask.setId(taskId);
+			return migrationTask;
+		}
+
+		// Create and persist a migration task.
 		migrationTask.setPath(path);
 		migrationTask.setUserId(userId);
 		migrationTask.setConfigurationId(configurationId);
