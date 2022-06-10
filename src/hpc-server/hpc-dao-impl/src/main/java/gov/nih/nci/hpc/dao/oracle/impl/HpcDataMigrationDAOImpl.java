@@ -81,7 +81,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String GET_DATA_OBJECT_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK  where PARENT_ID = ?";
 
-	private static final String GET_DATA_OBJECT_MIGRATION_TASK_SQL = "select * from HPC_DATA_MIGRATION_TASK  where PARENT_ID = ? and PATH = ?";
+	private static final String GET_DATA_OBJECT_MIGRATION_TASK_SQL = "select * from HPC_DATA_MIGRATION_TASK where PARENT_ID = ? and PATH = ?";
+
+	private static final String GET_DATA_OBJECT_MIGRATION_TASK_RESULT_ID_SQL = "select ID from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? and PATH = ?";
 
 	private static final String GET_COLLECTION_MIGRATION_RESULT_COUNT_SQL = "select RESULT, count(RESULT) as COUNT from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? group by RESULT";
 
@@ -203,6 +205,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		}
 	}
 
+	@Override
 	public HpcDataMigrationTask getDataObjectMigrationTask(String collectionMigrationTaskId, String path)
 			throws HpcException {
 		try {
@@ -213,7 +216,23 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			return null;
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get a data object migration tasks: " + e.getMessage(),
+			throw new HpcException("Failed to get a data object migration task: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public String getDataObjectMigrationTaskResultId(String collectionMigrationTaskId, String path)
+			throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_DATA_OBJECT_MIGRATION_TASK_RESULT_ID_SQL, String.class,
+					collectionMigrationTaskId, path);
+
+		} catch (IncorrectResultSizeDataAccessException irse) {
+			return null;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get a data object migration task result ID: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
