@@ -110,7 +110,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
 		if (migrationTask != null) {
-			logger.error("ERAN: {} {} {}", path, collectionMigrationTaskId, migrationTask.getId());
+			logger.error("ERAN active: {} {} {}", path, collectionMigrationTaskId, migrationTask.getId());
 			return migrationTask;
 		}
 
@@ -119,6 +119,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		String taskId = dataMigrationDAO.getDataObjectMigrationTaskResultId(collectionMigrationTaskId, path);
 		if (!StringUtils.isEmpty(taskId)) {
 			migrationTask.setId(taskId);
+			logger.error("ERAN done: {} {} {}", path, collectionMigrationTaskId, migrationTask.getId());
 			return migrationTask;
 		}
 
