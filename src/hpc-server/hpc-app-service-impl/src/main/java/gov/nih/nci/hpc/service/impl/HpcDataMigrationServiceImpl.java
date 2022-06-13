@@ -249,8 +249,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				// deep-archive status/date after migration.
 				String checksum = objectMetadata.getChecksum();
 				HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
-				Calendar deepArchiveDate = deepArchiveStatus != null
-						&& deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
+				Calendar deepArchiveDate = deepArchiveStatus != null ? Calendar.getInstance() : null;
 				securityService.executeAsSystemAccount(Optional.empty(),
 						() -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
 								dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
