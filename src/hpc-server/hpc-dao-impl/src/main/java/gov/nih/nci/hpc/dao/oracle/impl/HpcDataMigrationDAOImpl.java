@@ -209,7 +209,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	public HpcDataMigrationTask getDataObjectMigrationTask(String collectionMigrationTaskId, String path)
 			throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_DATA_OBJECT_MIGRATION_TASK_SQL, HpcDataMigrationTask.class,
+			return jdbcTemplate.queryForObject(GET_DATA_OBJECT_MIGRATION_TASK_SQL, dataMigrationTaskRowMapper,
 					collectionMigrationTaskId, path);
 
 		} catch (IncorrectResultSizeDataAccessException irse) {
