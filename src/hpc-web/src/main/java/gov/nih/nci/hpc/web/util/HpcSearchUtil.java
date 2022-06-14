@@ -87,7 +87,7 @@ public class HpcSearchUtil {
 			for (HpcCollectionDTO result : searchResults) {
 				HpcCollectionSearchResultDetailed returnResult = new HpcCollectionSearchResultDetailed();
 				returnResult.setPath(result.getCollection().getCollectionName());
-				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
+				returnResult.setUniqueId(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
@@ -280,14 +280,17 @@ public class HpcSearchUtil {
 		if (CollectionUtils.isNotEmpty(collectionResults)) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
+			headers.add("uuid");
 			for (String selectedColumn : selectedColumns) {
 				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission"))
+						&& !selectedColumn.equals("permission")
+						&& !selectedColumn.equals("uniqueId"))
 					headers.add(selectedColumn);
 			}
 			for (HpcCollectionSearchResultDetailed collection : collectionResults) {
 				List<String> result = new ArrayList<String>();
 				result.add(collection.getPath());
+				result.add(collection.getUniqueId());
 				if (collection != null && collection.getMetadataEntries() != null) {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getSelfMetadataEntries());
@@ -295,7 +298,7 @@ public class HpcSearchUtil {
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
-							if (header.equals(entry.getAttribute())) {
+							if (header.equals(entry.getAttribute()) && !header.equals("uuid")) {
 								result.add(entry.getValue());
 								found = true;
 								break;
@@ -307,7 +310,7 @@ public class HpcSearchUtil {
 							result.add(collection.getCreatedOn());
 						else if(!found && header.equals("collectionType"))
 							result.add(collection.getCollectionType());
-						else if(!found && !header.equals("path"))
+						else if(!found && !header.equals("path") && !header.equals("uuid"))
 							result.add("");
 					}
 				}
@@ -354,7 +357,7 @@ public class HpcSearchUtil {
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
-							if (header.equals(entry.getAttribute())) {
+							if (header.equals(entry.getAttribute()) && !header.equals("uuid")) {
 								result.add(entry.getValue());
 								found = true;
 								break;
