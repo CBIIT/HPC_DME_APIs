@@ -160,7 +160,7 @@ public class HpcSearchUtil {
 			for (HpcDataObjectDTO result : searchResults) {
 				HpcDatafileSearchResultDetailed returnResult = new HpcDatafileSearchResultDetailed();
 				returnResult.setPath(result.getDataObject().getAbsolutePath());
-				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
+				returnResult.setUniqueId(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
@@ -336,14 +336,17 @@ public class HpcSearchUtil {
 		if (CollectionUtils.isNotEmpty(datafileResults)) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
+			headers.add("uuid");
 			for (String selectedColumn : selectedColumns) {
 				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission") && !selectedColumn.equals("link"))
+						&& !selectedColumn.equals("permission") && !selectedColumn.equals("link")
+						&& !selectedColumn.equals("uniqueId"))
 					headers.add(selectedColumn);
 			}
 			for (HpcDatafileSearchResultDetailed datafile : datafileResults) {
 				List<String> result = new ArrayList<String>();
 				result.add(datafile.getPath());
+				result.add(datafile.getUniqueId());
 				if (datafile != null && datafile.getMetadataEntries() != null) {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
@@ -361,7 +364,7 @@ public class HpcSearchUtil {
 							result.add(datafile.getRegisteredBy());
 						else if(!found && header.equals("createdOn"))
 							result.add(datafile.getCreatedOn());
-						else if(!found && !header.equals("path"))
+						else if(!found && !header.equals("path") && !header.equals("uuid"))
 							result.add("");
 					}
 				}
