@@ -123,7 +123,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>keytool-maven-plugin</artifactId>
         <executions>
-          <execution>
+<!--      <execution>
             <id>importLdapRootCertificate</id>
             <goals>
               <goal>importCertificate</goal>
@@ -138,7 +138,7 @@
               <noprompt>true</noprompt>
               <skipIfExist>false</skipIfExist>
             </configuration>
-          </execution>
+          </execution> -->
           <execution>
             <id>importIrodsCertificate</id>
             <goals>
