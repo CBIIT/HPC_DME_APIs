@@ -527,7 +527,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		HpcCollectionListDTO collectionDTO = new HpcCollectionListDTO();
 		if (!CollectionUtils.isEmpty(collectionPaths)) {
 			collectionPaths.sort(Comparator
-					.comparing(HpcSearchMetadataEntryForCollection::getAbsolutePath, String::compareToIgnoreCase)
+					.comparing(HpcSearchMetadataEntryForCollection::getAbsolutePath, String::compareTo)
 					.thenComparing(HpcSearchMetadataEntryForCollection::getLevel));
 		}
 		int prevId = 0;
@@ -612,7 +612,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		if (!CollectionUtils.isEmpty(dataObjectPaths)) {
 			dataObjectPaths
-					.sort(Comparator.comparing(HpcSearchMetadataEntry::getAbsolutePath, String::compareToIgnoreCase)
+					.sort(Comparator.comparing(HpcSearchMetadataEntry::getAbsolutePath, String::compareTo)
 							.thenComparing(HpcSearchMetadataEntry::getLevel));
 		}
 		int prevId = 0;
