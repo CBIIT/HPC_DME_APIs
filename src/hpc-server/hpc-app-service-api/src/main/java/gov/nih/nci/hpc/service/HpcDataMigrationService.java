@@ -74,14 +74,14 @@ public interface HpcDataMigrationService {
 			HpcDataMigrationResult result, String message) throws HpcException;
 
 	/**
-	 * Complete a collection migration task.
+	 * Complete a bulk migration task (Collection, Data Object List or Collection List).
 	 *
-	 * @param collectionMigrationTask The collection migration task.
+	 * @param bulkMigrationTask The bulk migration task.
 	 * @param message                 (Optional) An error message in case the
 	 *                                migration failed
 	 * @throws HpcException on service failure.
 	 */
-	public void completeCollectionMigrationTask(HpcDataMigrationTask collectionMigrationTask, String message)
+	public void completeBulkMigrationTask(HpcDataMigrationTask bulkMigrationTask, String message)
 			throws HpcException;
 
 	/**
@@ -104,6 +104,34 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
 			String toS3ArchiveConfigurationId) throws HpcException;
+
+	/**
+	 * Create a data object list migration task.
+	 *
+	 * @param dataObjectPaths            The data object paths.
+	 * @param userId                     The user Id requested the migration.
+	 * @param configurationId            The The data object configuration ID.
+	 * @param toS3ArchiveConfigurationId The migration target S3 archive
+	 *                                   configuration ID.
+	 * @return A migration task ID.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
+			String configurationId, String toS3ArchiveConfigurationId) throws HpcException;
+
+	/**
+	 * Create a collection list migration task.
+	 *
+	 * @param dataObjectPaths            The collection paths.
+	 * @param userId                     The user Id requested the migration.
+	 * @param configurationId            The The data object configuration ID.
+	 * @param toS3ArchiveConfigurationId The migration target S3 archive
+	 *                                   configuration ID.
+	 * @return A migration task ID.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
+			String configurationId, String toS3ArchiveConfigurationId) throws HpcException;
 
 	/**
 	 * Update a migration task.
