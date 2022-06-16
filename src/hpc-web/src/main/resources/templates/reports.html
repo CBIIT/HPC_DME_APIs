@@ -101,9 +101,32 @@ body {
   background-color: #002366;
   color: white;
 }
-.select2-container {
-width: 100% !important;
+.item {
+    display: inline-block;
 }
+
+input, select {
+    display: inline-block;
+}
+label {
+    display: inline-block;
+    width: 10em;
+    margin-right: 0em;
+    padding-top: 1.5em;
+    text-align:center;
+}
+
+
+.select2-container .select2-choice, .select2-result-label {
+  font-size: 1.5em;
+  height: 41px;
+  overflow: auto;
+}
+
+.select2-arrow, .select2-chosen {
+  padding-top: 6px;
+}
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -150,7 +173,7 @@ width: 100% !important;
 					
 					<!-- First Row Begin -->
 					<div class="row">
-						<div class="col-6 col-md-4">
+						<div class="col-6 col-md-3">
 							<label><b>Report Type:</b></label>
 							<select name="reportType" id="reportType" class="form-control"
 								onchange="show(this.value)">
@@ -165,15 +188,14 @@ width: 100% !important;
 								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
 							</select>
 						</div>
-						
+						<div class="col-6 col-md-1">&nbsp;</div>
 						<div style="display: none" id="docList">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-4">
+							<div class="col-6 col-md-2">
 								<label><b>DOC:</b></label>
 								<select size="1"
 									id="doc" name="doc" class="form-control"
 									th:required="required">
-										<option value="-1">----Select----</option>
+										<option value="-1">----------Select----------</option>
 										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
 										<option
 											th:each="entry : ${docs}"
@@ -182,17 +204,17 @@ width: 100% !important;
 											Wireframe</option>
 								</select>
 							</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>			
+							<div class="col-6 col-md-4">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
 						
-						<div  style="display: none" id="userList">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>					
-							<div class="col-6 col-md-6">
+						<div style="display: none" id="userList">
+							<div class="col-6 col-md-4">
 								<label for="user"><b>Users:</b>
 								<select size="1"
 									id="user" name="user" class="userSelect"
 									th:required="required">
-										<option value="-1">----Select----</option>
+										<option></option>
 										<option
 											th:each="entry : ${docUsers}"
 											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
@@ -201,15 +223,15 @@ width: 100% !important;
 								</select>
 								</label>
 							</div>
+							<div class="col-6 col-md-4">&nbsp;</div>
 						</div>
 						<div style="display: none" id="basepathList">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-4">
+							<div class="col-6 col-md-3">
 								<label><b>Base Path:</b></label>
 								<select size="1"
 									id="basepath" name="basepath" class="form-control"
 									th:required="required">
-										<option value="-1">----Select----</option>
+										<option value="-1">------------------Select------------------</option>
 										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
 										<option
 											th:each="entry : ${basepaths}"
@@ -218,13 +240,12 @@ width: 100% !important;
 											Wireframe</option>
 								</select>
 							</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
+							<div class="col-6 col-md-5">&nbsp;&nbsp;</div>
 						</div>
 						<div style="display: none" id="collectionPath">
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-8">
+							<div class="col-6 col-md-6">
 								<label><b>Collection Path:</b></label>
-								<input type="text" name="path" id="path" th:value="${reportRequest.getPath()}" size="100"/>
+								<input type="text" name="path" id="id_collection_path" class="form-control" th:value="${reportRequest.getPath()}" size="75"/>
 							</div>
 							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
@@ -234,7 +255,7 @@ width: 100% !important;
 					</div>			
 					<!-- Second Row Begin -->
 					<div class="row">			
-						<div style="display: none" id="fromDateDiv">
+						<div style="display: none" id="fromDateDiv" class="item">
 							<div class="col-md-2">
 								<label><b>From Date:</b></label>
 								<div class="input-group date" data-provide="datepicker">	
@@ -245,7 +266,7 @@ width: 100% !important;
 								</div>
 							</div>
 						</div>						
-						<div style="display: none" id="toDateDiv">
+						<div style="display: none" id="toDateDiv" class="item">
 							<div class="col-md-1">&nbsp;</div>
 							<div class="col-md-2">
 								<label><b>To Date:</b></label>						
@@ -258,17 +279,18 @@ width: 100% !important;
 							</div>
 							<div class="col-md-1">&nbsp;</div>						
 						</div>
-						<div>
-							<div class="col-md-2">
-								<br />
+						<div style="display: block" id="gen" class="item">
+							<div class="col-md-1">
+								<label>&nbsp;</label>
 								<button type="submit" class="btn btn-md btn-primary"
 									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
 							</div>
+							<div class="col-md-5">&nbsp;</div>
 						</div>
 					</div> <!-- Second Row end -->
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 800px; height: 800px; overflow-y: scroll; margin-left: 15%;"
+				<div style="width: 1000px; height: 1000px; overflow-y: scroll; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
@@ -360,9 +382,9 @@ width: 100% !important;
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter0'>
-								<td id='indexf0' th:text="Index"></td>
-								<td id='pathf0' th:text="Path"></td>
-								<th th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='pathf0' th:text="Path"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
 					</table>
@@ -399,13 +421,13 @@ width: 100% !important;
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter2'>
-								<td id='index0000' th:text="Index"></td>
-								<td id='path0011' th:text="Doc"></td>
-								<td id='path0022' th:text="BasePath"></td>
-								<td id='path0033' th:text="'Object Path'"></td>
-								<td id='path0044' th:text="'Data Owner'"></td>
-								<td id='path0055' th:text="'Data Curator'"></td>
-								<th th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path0011' th:text="Doc"></td>
+								<td style="color: black; font-weight:bold" id='path0022' th:text="BasePath"></td>
+								<td style="color: black; font-weight:bold" id='path0033' th:text="'Object Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
+								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Curator'"></td>
+								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
 					</table>
@@ -470,6 +492,7 @@ width: 100% !important;
 		var reportType = document.getElementById("reportType").value;
 		var exportFileName = "";
 		var reportHeaderTitle = "";
+		var noSortColumns = [-1];
 		const d = new Date();
 		let pretag = "NCI_DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
@@ -477,10 +500,12 @@ width: 100% !important;
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
 				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
+				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right. 
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
+				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right.
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
@@ -533,7 +558,7 @@ width: 100% !important;
 								"visible": true
 								},
 								{
-								"targets": [-1], // Last column should not be sortable. Human readable value.
+								"targets": noSortColumns, // These columns should not be sortable. For e.g, Human readable values.
 								"orderable": false,
 								"visible": true
 								},
@@ -571,7 +596,10 @@ width: 100% !important;
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
 		$('.userSelect').select2({
-    		width: 'resolve', 
+			width: 'auto',
+			dropdownAutoWidth: true,
+			//allowClear: true,
+			placeholder: '-----------------Select User-----------------'
 		});
 	});
 		
@@ -760,7 +788,7 @@ width: 100% !important;
 		}
 		else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE"){
 			document.getElementById("doc").value = "-1";
-			if(document.getElementById("user").value == "-1"){
+			if(document.getElementById("user").value == "-1" || document.getElementById("user").value == ""){
 				alert("Please select a user");
 				return false;
 			}

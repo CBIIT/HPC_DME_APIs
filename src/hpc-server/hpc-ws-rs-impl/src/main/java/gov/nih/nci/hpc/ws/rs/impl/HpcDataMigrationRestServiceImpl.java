@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
+import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -70,6 +71,19 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 		HpcMigrationResponseDTO migrationResponse = null;
 		try {
 			migrationResponse = dataMigrationBusService.migrateCollection(toNormalizedPath(path), migrationRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(migrationResponse, false);
+	}
+
+	@Override
+	public Response migrateDataObjectsOrCollections(HpcBulkMigrationRequestDTO migrationRequest) {
+		HpcMigrationResponseDTO migrationResponse = null;
+		try {
+			migrationResponse = dataMigrationBusService.migrateDataObjectsOrCollections(migrationRequest);
 
 		} catch (HpcException e) {
 			return errorResponse(e);

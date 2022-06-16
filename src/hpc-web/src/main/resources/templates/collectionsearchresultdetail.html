@@ -101,7 +101,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD | dmePathEncoding}}">{{COL_FIELD}}</a></div>'
       },
       {
-        field : 'uuid',
+        field : 'uniqueId',
         width : 200,
         displayName : 'UUID'
       },
@@ -139,6 +139,34 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         enableSorting: false
       }
 	 	],
+	 gridMenuCustomItems: [
+	      {
+	        title: 'Hide All Columns',
+	        action: function ($event) {
+	        	this.grid.columns.forEach(function(col){
+	                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission') {
+	                	   col.hideColumn();
+	                 }  
+	        	});
+	        	this.grid.api.core.notifyDataChange("column");
+	        },
+	        order: 210
+	      },
+	      {
+	        title: 'Show All Columns',
+	        action: function ($event) {
+	        	var grid = this.grid;
+	        	
+	        	this.grid.columns.forEach(function(col){
+	                   if(!col.visible){
+	                	   col.showColumn();
+	                   }
+	        	});
+	        	this.grid.api.core.notifyDataChange("column");
+	        },
+	        order: 211
+	      }
+	],
     treeRowHeaderAlwaysVisible: false,
     onRegisterApi : function(gridApi) {
     	$scope.gridApi = gridApi;
@@ -346,6 +374,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     };
     
     $scope.export = function() {
+    	var selectedColumns = [];
+    	
+    	$scope.gridOptions1.columnDefs.forEach(function(col){
+            if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
+            	selectedColumns.push(col.field);
+          }  
+ 		});
+    	
 		if(source == "'search'" || source == 'search')
 			document.getElementById("simplesearchform").action = "/search/export";
 		else
@@ -354,6 +390,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(currentPageSize);
 		document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = parseInt(currentPage);
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
+		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
 		document.getElementById("simplesearchform").submit();
     };
     
@@ -512,7 +549,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body">
-								<div ng-controller="MainCtrl">
+								<div>
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true" 
@@ -531,6 +568,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="queryName" name="queryName"/>
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="totalSize" name="totalSize"/>
+						<input type="hidden" id="selectedColumns" name="selectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
