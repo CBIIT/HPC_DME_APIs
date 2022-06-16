@@ -34,4 +34,16 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:element name="HpcBulkMigrationRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 </xsd:schema>

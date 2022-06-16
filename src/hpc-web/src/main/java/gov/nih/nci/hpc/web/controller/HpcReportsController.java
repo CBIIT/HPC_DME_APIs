@@ -272,14 +272,19 @@ public class HpcReportsController extends AbstractHpcController {
         dto.setToDate(formatter.format(toDate.minusDays(1)));
       }
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
+      // Loop through to add the entries for the Human Readable fields
+      int index = 0;
+      int total_data_size_index = 0;
+      int largest_file_size_index = 0;
+      String total_data_size = "";
+      String largest_file_size = "";
       for (HpcReportEntryDTO entry : entries) {
         if (env.getProperty(entry.getAttribute()) != null) {
           // Data Owner Grid: we are reusing an existing attribute TOTAL_DATA_SIZE, therefore we are using the proper property for this Grid
            if (dto.getType().equals("USAGE_SUMMARY_BY_DATA_OWNER")) {
-              if (entry.getAttribute().equals("TOTAL_DATA_SIZE") || dto.getType().equals("LARGEST_FILE_SIZE")) {
-                entry.setAttribute(env.getProperty("COLLECTION_SIZE"));
-                entry.setValue(String.format("%.2f", Double.parseDouble(entry.getValue())));
-              } else if (entry.getAttribute().equals("LARGEST_FILE_SIZE")) {
+              if (entry.getAttribute().equals("TOTAL_DATA_SIZE")) {
+                total_data_size_index = index;
+                total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
                 entry.setAttribute(env.getProperty("COLLECTION_SIZE_HUMAN_READABLE"));
                 entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
               } else {
@@ -290,13 +295,51 @@ public class HpcReportsController extends AbstractHpcController {
               if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
                   entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
               }
-              if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
-                  || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
-                  || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))){
-                  entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+              if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
+                  dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1 ){
+                // In Grid Reports, the TOTAL_DATA_SIZE contains only the Byte value
+                if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))) {
+                  total_data_size_index = index;
+                  total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
+                  entry.setAttribute(env.getProperty("TOTAL_DATA_SIZE_HUMAN_READABLE_FOR_GRID"));
+                  entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+                }
+                // In Grid Reports, the LARGEST_FILE_SIZE contains only the Byte value
+                if (entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))) {
+                  largest_file_size_index = index;
+                  largest_file_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
+                  entry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_HUMAN_READABLE_FOR_GRID"));
+                  entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+                }
+              } else {
+                // For rest of the Single Reports, the value displayed is always a human readable value.
+                if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
+                      || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
+                      || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))) {
+                      entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+                }
               }
            }
         }
+        index = index + 1;
+      }
+      // A new column will be added to the Data Owner grid next to the Collection size column showing the Human readable value
+      if (dto.getType().equals("USAGE_SUMMARY_BY_DATA_OWNER")) {
+        HpcReportEntryDTO newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("COLLECTION_SIZE"));
+        newEntry.setValue(total_data_size);
+        dto.getReportEntries().add(total_data_size_index, newEntry);
+      }
+      if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
+        dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1  ){
+        HpcReportEntryDTO newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("TOTAL_DATA_SIZE_VALUE_ONLY_FOR_GRID"));
+        newEntry.setValue(total_data_size);
+        dto.getReportEntries().add(total_data_size_index, newEntry);
+        newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_VALUE_ONLY_FOR_GRID"));
+        newEntry.setValue(largest_file_size);
+        dto.getReportEntries().add(largest_file_size_index + 1, newEntry);
       }
       tReports.add(dto);
     }

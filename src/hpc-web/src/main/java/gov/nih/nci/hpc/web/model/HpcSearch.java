@@ -1,5 +1,8 @@
 package gov.nih.nci.hpc.web.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HpcSearch {
 
 	private String[] rowId;
@@ -19,6 +22,7 @@ public class HpcSearch {
 	private int pageSize=100;
 	private String queryName;
 	private long totalSize=0;
+	private List<String> selectedColumns;
 	
 	public String getQueryName() {
 		return queryName;
@@ -154,5 +158,15 @@ public class HpcSearch {
 	
 	public void setTotalSize(long totalSize) {
 	  this.totalSize = totalSize;
+	}
+
+	public List<String> getSelectedColumns() {
+		if(selectedColumns == null)
+			selectedColumns = new ArrayList<String>();
+		return selectedColumns;
+	}
+
+	public void setSelectedColumns(List<String> selectedColumns) {
+		this.selectedColumns = selectedColumns;
 	}
 }
