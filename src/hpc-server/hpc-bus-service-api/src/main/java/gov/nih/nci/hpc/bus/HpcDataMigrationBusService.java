@@ -10,6 +10,7 @@
  */
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -43,6 +44,18 @@ public interface HpcDataMigrationBusService {
 			throws HpcException;
 
 	/**
+	 * Migrate data objects or collections. Note: API doesn't support mixed, so user
+	 * expected to provide a list of data objects or a list of collections, not
+	 * both.
+	 *
+	 * @param migrationRequest The download request DTO.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO migrateDataObjectsOrCollections(HpcBulkMigrationRequestDTO migrationRequest)
+			throws HpcException;
+
+	/**
 	 * Process received data object migration tasks.
 	 *
 	 * @throws HpcException on service failure.
@@ -55,13 +68,27 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void processCollectionMigrationReceived() throws HpcException;
-	
+
 	/**
-	 * Complete in-progress collection migration tasks.
+	 * Process received data object list migration tasks
 	 *
 	 * @throws HpcException on service failure.
 	 */
-	public void completeCollectionMigrationInProgress() throws HpcException;
+	public void processDataObjectListMigrationReceived() throws HpcException;
+	
+	/**
+	 * Process received collection list migration tasks
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processCollectionListMigrationReceived() throws HpcException;
+	
+	/**
+	 * Complete in-progress bulk migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void completeBulkMigrationInProgress() throws HpcException;
 
 	/**
 	 * Restart data object and collection migration tasks that are in progress.

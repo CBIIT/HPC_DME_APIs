@@ -13,6 +13,7 @@
 	</noscript>
 	<form th:if="${urlencoded}" th:action="${redirectURL}" method="POST">
 		<input type="hidden" name="token" th:value="${token}"/>
+		<input type="hidden" name="state" th:value="${state}"/>
 		<noscript>
 			<input type="submit" value="Continue"/>
 		</noscript>

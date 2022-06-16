@@ -10,6 +10,9 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.fromPathsString;
+import static gov.nih.nci.hpc.util.HpcUtil.toPathsString;
+
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -110,16 +113,16 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "CREATED fetch next 1 rows only";
 
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, PATH = ?, COLLECTION_PATHS = ?, DATA_TRANSFER_REQUEST_ID = ?, DATA_TRANSFER_TYPE = ?, "
+			+ "when matched then update set USER_ID = ?, PATH = ?, DATA_TRANSFER_REQUEST_ID = ?, DATA_TRANSFER_TYPE = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_NAME = ?, DESTINATION_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
 			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ?, FIRST_HOP_RETRIED = ? "
-			+ "when not matched then insert (ID, USER_ID, PATH, COLLECTION_PATHS, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
+			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
 			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, FIRST_HOP_RETRIED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
-	private static final String UPDATE_DOWNLOAD_TASK_RESULT_ITEMS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ? where ID = ?";
+	private static final String UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ?, COLLECTION_PATHS = ? where ID = ?";
 
 	private static final String GET_DOWNLOAD_TASK_RESULT_SQL = "select * from HPC_DOWNLOAD_TASK_RESULT where ID = ? and TYPE = ?";
 
@@ -127,14 +130,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_OVERWRITE = ?, S3_ACCOUNT_ACCESS_KEY = ?, S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, "
 			+ "S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, GOOGLE_CLOUD_ACCESS_TOKEN = ?,"
-			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ?, CREATED = ?, RETRY_TASK_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, DESTINATION_TYPE = ? "
+			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, CREATED = ?, RETRY_TASK_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, DESTINATION_TYPE = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_ID, "
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, "
-			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED, "
+			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, CREATED, "
 			+ "RETRY_TASK_ID, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
-	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ? where ID = ?";
+	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_CLOBS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
 
@@ -765,7 +768,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					: null;
 
 			jdbcTemplate.update(UPSERT_DOWNLOAD_TASK_RESULT_SQL, taskResult.getId(), taskResult.getUserId(),
-					taskResult.getPath(), collectionPaths, taskResult.getDataTransferRequestId(), dataTransferType,
+					taskResult.getPath(), taskResult.getDataTransferRequestId(), dataTransferType,
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
@@ -774,7 +777,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getSize(), taskResult.getCreated(), taskResult.getCompleted(),
 					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), taskResult.getRetryTaskId(),
 					taskResult.getFirstHopRetried(), taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
-					collectionPaths, taskResult.getDataTransferRequestId(), dataTransferType,
+					taskResult.getDataTransferRequestId(), dataTransferType,
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
@@ -784,9 +787,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), taskResult.getRetryTaskId(),
 					taskResult.getFirstHopRetried());
 
-			jdbcTemplate.update(UPDATE_DOWNLOAD_TASK_RESULT_ITEMS_SQL,
-					new Object[] { new SqlLobValue(toJSON(taskResult.getItems()), lobHandler), taskResult.getId() },
-					new int[] { Types.CLOB, Types.VARCHAR });
+			jdbcTemplate.update(UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL,
+					new Object[] { new SqlLobValue(toJSON(taskResult.getItems()), lobHandler),
+							new SqlLobValue(collectionPaths, lobHandler), taskResult.getId() },
+					new int[] { Types.CLOB, Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a download task result: " + e.getMessage(),
@@ -871,23 +875,22 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
 					googleCloudAccessToken, collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
-					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
-					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId(),
-					destinationType, collectionDownloadTask.getId(), collectionDownloadTask.getUserId(),
-					collectionDownloadTask.getPath(), collectionDownloadTask.getConfigurationId(),
-					destinationLocation.getFileContainerId(), destinationLocation.getFileId(), destinationOverwrite,
-					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
-					s3AccountPathStyleAccessEnabled, googleDriveAccessToken, googleCloudAccessToken,
-					collectionDownloadTask.getAppendPathToDownloadDestination(),
+					collectionDownloadTask.getCreated(), collectionDownloadTask.getRetryTaskId(),
+					collectionDownloadTask.getDataTransferRequestId(), destinationType, collectionDownloadTask.getId(),
+					collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
+					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
+					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
+					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
+					googleCloudAccessToken, collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
-					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
-					collectionDownloadTask.getRetryTaskId(), collectionDownloadTask.getDataTransferRequestId(),
-					destinationType);
+					collectionDownloadTask.getCreated(), collectionDownloadTask.getRetryTaskId(),
+					collectionDownloadTask.getDataTransferRequestId(), destinationType);
 
-			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL,
+			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_CLOBS_SQL,
 					new Object[] { new SqlLobValue(toJSON(collectionDownloadTask.getItems()), lobHandler),
+							new SqlLobValue(dataObjectPaths, lobHandler), new SqlLobValue(collectionPaths, lobHandler),
 							collectionDownloadTask.getId() },
-					new int[] { Types.CLOB, Types.VARCHAR });
+					new int[] { Types.CLOB, Types.CLOB, Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),
@@ -1287,7 +1290,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				JSONObject jsonDownloadItem = downloadItemIterator.next();
 				HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
 				downloadItem.setPath(jsonDownloadItem.get("path").toString());
-				
+
 				Object collectionPath = jsonDownloadItem.get("collectionPath");
 				if (collectionPath != null) {
 					downloadItem.setCollectionPath(collectionPath.toString());
@@ -1347,34 +1350,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 
 		return downloadItems;
-	}
-
-	/**
-	 * Map a list of paths to a comma separated string
-	 * 
-	 * @param paths A list of paths.
-	 * @return comma separated string.
-	 */
-	private String toPathsString(List<String> paths) {
-		StringBuilder pathsStr = new StringBuilder();
-		paths.forEach(path -> pathsStr.append(path + ","));
-		return pathsStr.toString();
-	}
-
-	/**
-	 * Map a comma separated string of paths to a list
-	 * 
-	 * @param pathsStr A comma separated string of paths.
-	 * @return list of paths.
-	 */
-	private List<String> fromPathsString(String pathsStr) {
-		List<String> paths = new ArrayList<>();
-		if (!StringUtils.isEmpty(pathsStr)) {
-			for (String path : pathsStr.split(",")) {
-				paths.add(path);
-			}
-		}
-		return paths;
 	}
 
 	/**

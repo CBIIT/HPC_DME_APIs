@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
+import static gov.nih.nci.hpc.util.HpcUtil.fromValue;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
@@ -682,18 +683,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				!globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
 						: null,
 				fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
-				generateMetadata(configurationId, objectId, registrarId),
+				generateArchiveMetadata(configurationId, objectId, registrarId),
 				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
 				dataTransferConfiguration.getStorageClass());
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		objectMetadata.setChecksum(checksum);
 
-		if (dataTransferType.equals(HpcDataTransferType.S_3) && dataTransferProxies.get(dataTransferType)
-				.existsTieringPolicy(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-						fileLocation)) {
-			// Add deep_archive_status in progress
-			objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.IN_PROGRESS);
+		if (dataTransferType.equals(HpcDataTransferType.S_3)) {
+			if (dataTransferProxies.get(dataTransferType).existsTieringPolicy(
+					getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation)) {
+				// Add deep_archive_status in progress
+				objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.IN_PROGRESS);
+			} else {
+				HpcDeepArchiveStatus deepArchiveStatus = fromValue(HpcDeepArchiveStatus.class,
+						dataTransferConfiguration.getStorageClass());
+				if (deepArchiveStatus != null) {
+					// Add deep_archive_status set to the storage class of the archive
+					objectMetadata.setDeepArchiveStatus(deepArchiveStatus);
+				}
+			}
 		}
 		return objectMetadata;
 	}
@@ -1950,6 +1959,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword);
 	}
 
+	@Override
+	public List<HpcMetadataEntry> generateArchiveMetadata(String configurationId, String objectId, String registrarId) {
+		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+
+		if (dataManagementConfigurationLocator.get(configurationId).getCreateArchiveMetadata()) {
+			// Create the user-id metadata.
+			HpcMetadataEntry entry = new HpcMetadataEntry();
+			entry.setAttribute(REGISTRAR_ID_ATTRIBUTE);
+			entry.setValue(registrarId);
+			metadataEntries.add(entry);
+
+			// Create the path metadata.
+			entry = new HpcMetadataEntry();
+			entry.setAttribute(OBJECT_ID_ATTRIBUTE);
+			entry.setValue(objectId);
+			metadataEntries.add(entry);
+		}
+
+		return metadataEntries;
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -2055,39 +2085,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		return token;
-	}
-
-	/**
-	 * Generate metadata to attach to the data object in the archive: 1. UUID - the
-	 * data object UUID in the DM system (iRODS) 2. User ID - the user id that
-	 * registered the data object.
-	 * 
-	 * Note: creating archive metadata is configurable in
-	 * data-management-configuration.
-	 *
-	 * @param configurationId The data management configuration ID.
-	 * @param objectId        The data object UUID.
-	 * @param registrarId     The user-id uploaded the data.
-	 * @return a List of the 2 metadata.
-	 */
-	private List<HpcMetadataEntry> generateMetadata(String configurationId, String objectId, String registrarId) {
-		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-
-		if (dataManagementConfigurationLocator.get(configurationId).getCreateArchiveMetadata()) {
-			// Create the user-id metadata.
-			HpcMetadataEntry entry = new HpcMetadataEntry();
-			entry.setAttribute(REGISTRAR_ID_ATTRIBUTE);
-			entry.setValue(registrarId);
-			metadataEntries.add(entry);
-
-			// Create the path metadata.
-			entry = new HpcMetadataEntry();
-			entry.setAttribute(OBJECT_ID_ATTRIBUTE);
-			entry.setValue(objectId);
-			metadataEntries.add(entry);
-		}
-
-		return metadataEntries;
 	}
 
 	/**
@@ -2226,7 +2223,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						: null,
 				uploadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
 				dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
-				generateMetadata(configurationId, uploadRequest.getDataObjectId(), uploadRequest.getUserId()),
+				generateArchiveMetadata(configurationId, uploadRequest.getDataObjectId(), uploadRequest.getUserId()),
 				dataTransferConfiguration.getEncryptedTransfer(), dataTransferConfiguration.getStorageClass());
 	}
 
