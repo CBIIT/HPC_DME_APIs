@@ -609,6 +609,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return false;
 	}
 
+	@Override
+	public void shutdown(Object authenticatedToken) throws HpcException {
+		try {
+			s3Connection.getTransferManager(authenticatedToken).shutdownNow();
+
+		} catch (Exception e) {
+			throw new HpcException("[S3] Failed to shutdown TransferManager: " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
