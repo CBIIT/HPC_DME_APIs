@@ -148,7 +148,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		if (dataObjectMigrationTask.getToS3ArchiveConfigurationId()
 				.equals(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
 			// Migration not needed.
-			completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, null);
+			completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, null, null, null);
 			return;
 		}
 
@@ -215,7 +215,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// Upload the data object into the S3 archive we are migrating to, and update
 		// the task w/ new archive location.
 		HpcDataMigrationProgressListener progressListener = new HpcDataMigrationProgressListener(
-				dataObjectMigrationTask, this);
+				dataObjectMigrationTask, this, fromS3ArchiveAuthToken, toS3ArchiveAuthToken);
 		dataObjectMigrationTask.setToS3ArchiveLocation(s3DataTransferProxy.uploadDataObject(toS3ArchiveAuthToken,
 				uploadRequest, toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
 				toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
@@ -231,7 +231,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
-			HpcDataMigrationResult result, String message) throws HpcException {
+			HpcDataMigrationResult result, String message, Object fromS3ArchiveAuthToken, Object toS3ArchiveAuthToken)
+			throws HpcException {
 		if (!dataObjectMigrationTask.getType().equals(HpcDataMigrationType.DATA_OBJECT)) {
 			throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
 		}
@@ -273,6 +274,18 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		dataMigrationDAO.deleteDataMigrationTask(dataObjectMigrationTask.getId());
 		dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMigrationTask, Calendar.getInstance(), result,
 				message);
+
+		// Shutdown the transfer managers.
+		try {
+			if (fromS3ArchiveAuthToken != null) {
+				s3DataTransferProxy.shutdown(fromS3ArchiveAuthToken);
+			}
+			if (toS3ArchiveAuthToken != null) {
+				s3DataTransferProxy.shutdown(toS3ArchiveAuthToken);
+			}
+		} catch (HpcException e) {
+			logger.error("Failed to shutdown TransferManager", e);
+		}
 	}
 
 	@Override
