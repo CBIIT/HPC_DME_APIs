@@ -798,10 +798,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
 				logger.info(
-						"S3 upload AWS/S3 Provider->{} [{}] started. Source size - {} bytes. Read limit - {}. AWS Transfer Config - {}",
+						"S3 upload AWS/S3 Provider->{} [{}] started. Source size - {} bytes. Read limit - {}. Minimum Upload Part Size - {}",
 						s3Connection.getS3Provider(authenticatedToken), sourceDestinationLogMessage, size,
-						request.getRequestClientOptions().getReadLimit(),
-						s3Connection.getTransferManager(authenticatedToken).getConfiguration());
+						request.getRequestClientOptions().getReadLimit(), s3Connection
+								.getTransferManager(authenticatedToken).getConfiguration().getMinimumUploadPartSize());
 
 				// Wait for the result. This ensures the input stream to the URL remains opened
 				// and
