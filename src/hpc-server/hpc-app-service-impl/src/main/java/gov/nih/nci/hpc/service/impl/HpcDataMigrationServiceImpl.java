@@ -276,6 +276,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				message);
 
 		// Shutdown the transfer managers.
+		/* TODO: enable this code
 		try {
 			if (fromS3ArchiveAuthToken != null) {
 				s3DataTransferProxy.shutdown(fromS3ArchiveAuthToken);
@@ -285,7 +286,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			}
 		} catch (HpcException e) {
 			logger.error("Failed to shutdown TransferManager", e);
-		}
+		} */
 	}
 
 	@Override
