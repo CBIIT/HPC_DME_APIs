@@ -74,7 +74,7 @@ public interface HpcDataTransferProxy {
 	/**
 	 * Authenticate a Google Drive / Google Cloud Storage account.
 	 *
-	 * @param accessToken      Google Drive / Storage access token.
+	 * @param accessToken Google Drive / Storage access token.
 	 * @return An authenticated token, to be used in subsequent calls to data
 	 *         transfer.
 	 * @throws HpcException on data transfer system failure.
@@ -417,5 +417,15 @@ public interface HpcDataTransferProxy {
 	public default String transferData(Object authenticatedToken, HpcGlobusTransferRequest transferRequest,
 			Boolean encryptedTransfer) throws HpcException {
 		throw new HpcException("transferData() not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	/**
+	 * Shutdown a transfer manager
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default void shutdown(Object authenticatedToken) throws HpcException {
+		throw new HpcException("shutdown(authenticatedToken) not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 }
