@@ -249,7 +249,8 @@ public class HpcS3Connection {
 				.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
 				.withMultipartUploadThreshold(
 						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
-				.withDisableParallelDownloads(true).withExecutorFactory(() -> executorService)
+				.withDisableParallelDownloads(true)
+				.withExecutorFactory(() -> executorService)
 				.withShutDownThreadPools(false).build();
 		s3TransferManager.s3Provider = s3Provider;
 		return s3TransferManager;
@@ -292,7 +293,9 @@ public class HpcS3Connection {
 			// Create and return the S3 transfer manager.
 			HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
 			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
-					.withDisableParallelDownloads(true).withExecutorFactory(() -> executorService).withShutDownThreadPools(false).build();
+					.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
+					.withMultipartUploadThreshold(multipartUploadThreshold).withDisableParallelDownloads(true)
+					.withExecutorFactory(() -> executorService).withShutDownThreadPools(false).build();
 			s3TransferManager.s3Provider = HpcIntegratedSystem.AWS;
 			return s3TransferManager;
 
