@@ -67,22 +67,25 @@ public interface HpcDataMigrationService {
 	 * @param dataObjectMigrationTask The data migration task.
 	 * @param result                  The data migration result.
 	 * @param message                 (Optional) An error message in case the
-	 *                                migration failed
+	 *                                migration failed.
+	 * @param fromS3ArchiveAuthToken  The from S3 archive token
+	 * @param toS3ArchiveAuthToken    The to S3 archive token
 	 * @throws HpcException on service failure.
 	 */
 	public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
-			HpcDataMigrationResult result, String message) throws HpcException;
+			HpcDataMigrationResult result, String message, Object fromS3ArchiveAuthToken, Object toS3ArchiveAuthToken)
+			throws HpcException;
 
 	/**
-	 * Complete a bulk migration task (Collection, Data Object List or Collection List).
+	 * Complete a bulk migration task (Collection, Data Object List or Collection
+	 * List).
 	 *
 	 * @param bulkMigrationTask The bulk migration task.
-	 * @param message                 (Optional) An error message in case the
-	 *                                migration failed
+	 * @param message           (Optional) An error message in case the migration
+	 *                          failed
 	 * @throws HpcException on service failure.
 	 */
-	public void completeBulkMigrationTask(HpcDataMigrationTask bulkMigrationTask, String message)
-			throws HpcException;
+	public void completeBulkMigrationTask(HpcDataMigrationTask bulkMigrationTask, String message) throws HpcException;
 
 	/**
 	 * Reset migration tasks that are in-progress

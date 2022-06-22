@@ -57,7 +57,10 @@ import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter;
 import com.amazonaws.services.s3.model.lifecycle.LifecycleFilterPredicate;
 import com.amazonaws.services.s3.model.lifecycle.LifecyclePrefixPredicate;
 import com.amazonaws.services.s3.transfer.Download;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
 import com.amazonaws.services.s3.transfer.Upload;
+import com.amazonaws.services.s3.transfer.internal.TransferManagerUtils;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -609,6 +612,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return false;
 	}
 
+	@Override
+	public void shutdown(Object authenticatedToken) throws HpcException {
+		try {
+			s3Connection.getTransferManager(authenticatedToken).shutdownNow();
+
+		} catch (Exception e) {
+			throw new HpcException("[S3] Failed to shutdown TransferManager: " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -779,16 +793,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				request.getRequestClientOptions().setReadLimit(getReadLimit(size));
 
 				// Upload asynchronously. AWS transfer manager will perform the upload in its
-				// own managed
-				// thread.
-				Upload s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
+				// own managed threads.
+				TransferManager transferManager = s3Connection.getTransferManager(authenticatedToken);
+				Upload s3Upload = transferManager.upload(request);
 
 				// Attach a progress listener.
 				s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
-				logger.info("S3 upload AWS/S3 Provider->{} [{}] started. Source size - {} bytes. Read limit - {}",
+				TransferManagerConfiguration configuration = transferManager.getConfiguration();
+				logger.info(
+						"S3 upload AWS/S3 Provider->{} [{}] started. Source size - {} bytes. Read limit - {}. "
+								+ "Should Use Multipart Uplod - {}. Minimum Part Size - {}. Optimal Part Size - {}",
 						s3Connection.getS3Provider(authenticatedToken), sourceDestinationLogMessage, size,
-						request.getRequestClientOptions().getReadLimit());
+						request.getRequestClientOptions().getReadLimit(),
+						TransferManagerUtils.shouldUseMultipartUpload(request, configuration),
+						configuration.getMinimumUploadPartSize(),
+						TransferManagerUtils.calculateOptimalPartSize(request, configuration));
 
 				// Wait for the result. This ensures the input stream to the URL remains opened
 				// and
