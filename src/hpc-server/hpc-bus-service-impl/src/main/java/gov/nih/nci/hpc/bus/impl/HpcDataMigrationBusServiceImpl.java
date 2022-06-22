@@ -155,7 +155,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 								dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath(), e);
 						try {
 							dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
-									HpcDataMigrationResult.FAILED, e.getMessage());
+									HpcDataMigrationResult.FAILED, e.getMessage(), null, null);
 
 						} catch (HpcException ex) {
 							logger.error("Failed to complete data object migration: task - {}, path - {}",
