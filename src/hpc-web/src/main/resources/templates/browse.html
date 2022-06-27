@@ -591,6 +591,7 @@ function browseDataobject(node) {
 function browseNode1(id, path) {  
 	  node = $('#tree1').tree('getNodeById', id);
 	  $('#tree1').tree('closeNode', node, false);
+	  document.getElementById("processingIcon"+ id).scrollIntoView();
 	  $(document.getElementById("processingIcon"+ id)).parent().click();
 };
 
