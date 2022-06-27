@@ -186,6 +186,34 @@ app
     }
     
 }]);
+var isResizing = false,
+lastDownX = 0;
+
+$(function () {
+var container = $('#panel-body'),
+    left = $('#left'),
+    right = $('#right'),
+    handle = $('#drag');
+
+handle.on('mousedown', function (e) {
+    isResizing = true;
+    lastDownX = e.clientX;
+});
+
+$(document).on('mousemove', function (e) {
+    // we don't want to do anything if we aren't resizing.
+    if (!isResizing) 
+        return;
+    
+    var offsetRight = container.width() - (e.clientX - container.offset().left);
+
+    left.css('right', offsetRight);
+    right.css('width', offsetRight);
+}).on('mouseup', function (e) {
+    // stop resizing
+    isResizing = false;
+});
+});
 /*]]>*/
 </script>
 
@@ -272,20 +300,40 @@ div.ui-grid-cell-contents > i.fa-folder {
 div.ui-grid-cell-contents.folder {
 	cursor: pointer;
 }
+#panel-body {
+    width: 100%;
+    height: 815px;
+    
+}
 
 @media (min-width: 768px){
   #left {
-  	position: relative;
-    width: 50%;
+  	position: absolute;
+    left: 25px;
+    top: 35px;
+    bottom: 0;
+    right: 50%;
     overflow-y: scroll; 
     height: 780px;
   }
   
   #right {
-    position: relative;
+    position: absolute;
+    right: 0;
+    top: 35px;
+    bottom: 0;
     width: 50%;
     height: 780px;
   }
+}
+
+#drag {
+    position: absolute;
+    left: -4px;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: w-resize;
 }
 
 .ui-grid-cell-contents:hover {
@@ -355,7 +403,7 @@ cursor: pointer;
 								</div>
 							</div>
 								<!--panel-body start-->
-								<div class="panel-body">
+								<div class="panel-body" id="panel-body">
 									<div class="modal fade" id="bookmarksTarget" tabindex="-1" role="dialog"
 										aria-labelledby="bookmarksLabel" aria-hidden="true">
 										<div class="modal-dialog">
@@ -372,7 +420,7 @@ cursor: pointer;
 										</div>
 										<!-- /.modal-dialog -->
 									</div>
-									<div class="row"><div id="left" class="col-md-6 grid">
+									<div class="row"><div id="left" class="grid">
 									<div class="form-group">
 										<div id="tree1"></div>
                     <div id="bookmarksContent">
@@ -396,8 +444,9 @@ cursor: pointer;
 											<li><a href="#refreshNode">Refresh Node</a></li>
 									</ul>	
 								</div>
-									<div id="right" class="col-md-6">
-								  		<div ng-controller="MainCtrl">
+									<div id="right" class="">
+										<div id="drag"></div>
+								  		<div ng-controller="MainCtrl" style="width:95%">
 								  			<div>
 												<ol class="breadcrumb folderpath">
 												</ol>
