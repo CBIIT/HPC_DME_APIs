@@ -617,10 +617,11 @@ public class HpcEventServiceImpl implements HpcEventService {
 					source = toString(sourceLocation);
 				}
 			}
-			if (source != null)
-				registrationItemsStr.append("\n\t" + source + " -> " + registrationItem.getTask().getPath());
-			else
-				registrationItemsStr.append("\n\t" + registrationItem.getTask().getPath());
+			if (source != null) {
+				registrationItemsStr.append("<br>&emsp;" + source + " -> " + registrationItem.getTask().getPath());
+			} else {
+				registrationItemsStr.append("<br>&emsp;" + registrationItem.getTask().getPath());
+			}
 		});
 
 		return registrationItemsStr.toString();
