@@ -604,7 +604,7 @@ public class HpcEventServiceImpl implements HpcEventService {
 					|| registrationItem.getRequest().getS3UploadSource() != null
 					|| registrationItem.getRequest().getGoogleDriveUploadSource() != null) {
 				if (registrationItem.getRequest().getLinkSourcePath() != null) {
-					source = registrationItem.getRequest().getLinkSourcePath();
+					source = "[Link]:" + registrationItem.getRequest().getLinkSourcePath();
 				} else {
 					HpcFileLocation sourceLocation = null;
 					if (registrationItem.getRequest().getGlobusUploadSource() != null) {
