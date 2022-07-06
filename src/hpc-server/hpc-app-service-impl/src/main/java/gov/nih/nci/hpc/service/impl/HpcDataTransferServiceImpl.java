@@ -54,7 +54,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -1017,8 +1016,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadItemsStatus.put(dataObjectDownloadTask.getId(), taskStatus);
 				});
 
-		int inProgress = downloadItemsStatus.size();
-
 		// Get all the data object download tasks that completed but a result was not
 		// recorded yet.
 		for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
@@ -1038,9 +1035,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		}
-
-		// TODO - Remove after HPCDATAMGM-1570 is tested successfully
-		logger.error("ERAN: download items query - total: {}, inprogress: {}", downloadItemsStatus.size(), inProgress);
 
 		return downloadItemsStatus;
 	}
@@ -1413,19 +1407,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
 				&& downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
-			// This is a 2-hop download, performing the 1st Hop.
-			downloadTask.setPercentComplete(Math.round(percentComplete) / 2);
-
-		} else if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
-				&& dataManagementConfigurationLocator
-						.getDataTransferConfiguration(downloadTask.getConfigurationId(),
-								downloadTask.getS3ArchiveConfigurationId(), downloadTask.getDataTransferType())
-						.getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
-			// This is a 2-hop download, performing the 2nd Hop.
-			downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
+			// This is a 2-hop download, performing the 1st Hop (i.e. staging the file, not
+			// downloading to destination just yet)
+			downloadTask.setPercentComplete(0);
 
 		} else {
-			// Any other streaming download.
+			// Any other download.
 			downloadTask.setPercentComplete(Math.round(percentComplete));
 		}
 
@@ -3660,7 +3647,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
 									: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
 					downloadTask.setInProcess(false);
-					downloadTask.setPercentComplete(50);
+					downloadTask.setPercentComplete(0);
 
 					// Persist the download task.
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
