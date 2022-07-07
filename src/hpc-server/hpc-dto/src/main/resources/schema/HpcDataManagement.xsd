@@ -528,6 +528,9 @@
 				<xsd:element name="restoreInProgressItems"
 					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="stagingInProgressItems"
+					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="message" type="xsd:string" />
 				<xsd:element name="effectiveTrasnsferSpeed"
 					type="xsd:int" minOccurs="0" />
