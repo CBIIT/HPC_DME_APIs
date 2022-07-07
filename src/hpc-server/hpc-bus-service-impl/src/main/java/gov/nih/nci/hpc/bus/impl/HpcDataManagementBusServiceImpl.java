@@ -1441,7 +1441,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Data-object download task in-progress: " + taskId,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		if (taskStatus.getResult().equals(HpcDownloadResult.COMPLETED)) {
+		if (taskStatus.getResult() != null && taskStatus.getResult().getResult().equals(HpcDownloadResult.COMPLETED)) {
 			throw new HpcException("Data-object download task already completed: " + taskId,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -2462,6 +2462,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						downloadItem.setResult(null);
 						downloadItem.setRestoreInProgress(dataObjectDownloadTask.getRestoreRequested());
 					}
+					downloadItem.setStagingInProgress(
+							HpcDataTransferType.GLOBUS.equals(dataObjectDownloadTask.getDestinationType())
+									&& HpcDataTransferType.S_3.equals(dataObjectDownloadTask.getDataTransferType())
+											? true
+											: null);
 					items.add(downloadItem);
 				}
 			}
@@ -2508,6 +2513,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (result == null) {
 				if (Boolean.TRUE.equals(item.getRestoreInProgress())) {
 					downloadStatus.getRestoreInProgressItems().add(item);
+				} else if (Optional.ofNullable(item.getStagingInProgress()).orElse(false)) {
+					downloadStatus.getStagingInProgressItems().add(item);
 				} else {
 					downloadStatus.getInProgressItems().add(item);
 				}
