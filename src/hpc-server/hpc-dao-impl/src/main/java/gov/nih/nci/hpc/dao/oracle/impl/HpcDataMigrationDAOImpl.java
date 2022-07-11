@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -58,7 +60,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
-	
+
 	private static final String UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
 	private static final String UPSERT_DATA_MIGRATION_TASK_RESULT_SQL = "merge into HPC_DATA_MIGRATION_TASK_RESULT using dual on (ID = ?) "
@@ -72,7 +74,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
-	
+
 	private static final String SET_DATA_MIGRATION_TASKS_STATUS_SQL = "update HPC_DATA_MIGRATION_TASK set STATUS = ? where STATUS = ?";
 
 	private static final String DELETE_DATA_MIGRATION_TASK_SQL = "delete from HPC_DATA_MIGRATION_TASK where ID = ?";
@@ -94,9 +96,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	// The Spring JDBC Template instance.
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
-	
+
 	// Lob handler
-		private LobHandler lobHandler = new DefaultLobHandler();
+	private LobHandler lobHandler = new DefaultLobHandler();
 
 	// HpcDataMigrationTask table to object mapper.
 	private RowMapper<HpcDataMigrationTask> dataMigrationTaskRowMapper = (rs, rowNum) -> {
@@ -128,6 +130,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 				HpcDataMigrationResult.fromValue(rs.getString("RESULT")), rs.getInt("COUNT"));
 	};
 
+	// The Logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -150,7 +155,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			if (StringUtils.isEmpty(dataMigrationTask.getId())) {
 				dataMigrationTask.setId(UUID.randomUUID().toString());
 			}
-			
+
 			String dataObjectPaths = !dataMigrationTask.getDataObjectPaths().isEmpty()
 					? toPathsString(dataMigrationTask.getDataObjectPaths())
 					: null;
@@ -167,10 +172,10 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
 					dataMigrationTask.getStatus().value(), dataMigrationTask.getCreated());
-			
+
 			jdbcTemplate.update(UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL,
-					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler), new SqlLobValue(collectionPaths, lobHandler),
-							dataMigrationTask.getId() },
+					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler),
+							new SqlLobValue(collectionPaths, lobHandler), dataMigrationTask.getId() },
 					new int[] { Types.CLOB, Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
@@ -255,14 +260,14 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 				.orElse(new HpcFileLocation());
 		HpcFileLocation toS3ArchiveLocation = Optional.ofNullable(dataMigrationTask.getToS3ArchiveLocation())
 				.orElse(new HpcFileLocation());
-		
+
 		String dataObjectPaths = !dataMigrationTask.getDataObjectPaths().isEmpty()
 				? toPathsString(dataMigrationTask.getDataObjectPaths())
 				: null;
 		String collectionPaths = !dataMigrationTask.getCollectionPaths().isEmpty()
 				? toPathsString(dataMigrationTask.getCollectionPaths())
 				: null;
-		
+
 		try {
 			jdbcTemplate.update(UPSERT_DATA_MIGRATION_TASK_RESULT_SQL, dataMigrationTask.getId(),
 					dataMigrationTask.getParentId(), dataMigrationTask.getUserId(), dataMigrationTask.getPath(),
@@ -278,13 +283,20 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					result.value(), dataMigrationTask.getCreated(), completed, message,
 					fromS3ArchiveLocation.getFileContainerId(), fromS3ArchiveLocation.getFileId(),
 					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId());
-			
+
 			jdbcTemplate.update(UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL,
-					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler), new SqlLobValue(collectionPaths, lobHandler),
-							dataMigrationTask.getId() },
+					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler),
+							new SqlLobValue(collectionPaths, lobHandler), dataMigrationTask.getId() },
 					new int[] { Types.CLOB, Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
+			logger.error("Failed to upsert a data migration task result", e);
+			throw new HpcException("Failed to upsert a data migration task result: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+			
+		} catch (Exception e) {
+			// TODO - remove after debugging why unique constraint violation exception is thrown.
+			logger.error("Failed to upsert a data migration task result", e);
 			throw new HpcException("Failed to upsert a data migration task result: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
