@@ -101,6 +101,7 @@
 			<xsd:enumeration value="FILE_SIZE_100GB_500GB" />
 			<xsd:enumeration value="FILE_SIZE_500GB_1TB" />
 			<xsd:enumeration value="FILE_SIZE_OVER_1TB" />
+			<xsd:enumeration value="ARCHIVE_SUMMARY" />
 		</xsd:restriction>
 	</xsd:simpleType>	
 </xsd:schema>

@@ -290,12 +290,15 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					new int[] { Types.CLOB, Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
+			// TODO - remove logging after debugging why unique constraint violation
+			// exception is thrown.
 			logger.error("Failed to upsert a data migration task result", e);
 			throw new HpcException("Failed to upsert a data migration task result: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-			
+
 		} catch (Exception e) {
-			// TODO - remove after debugging why unique constraint violation exception is thrown.
+			// TODO - remove complete catch block after debugging why unique constraint
+			// violation exception is thrown.
 			logger.error("Failed to upsert a data migration task result", e);
 			throw new HpcException("Failed to upsert a data migration task result: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
