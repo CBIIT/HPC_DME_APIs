@@ -1403,17 +1403,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// Calculate the percent complete.
-		float percentComplete = 100 * (float) bytesTransferred / downloadTask.getSize();
+		int percentComplete =  Math.round(100 * (float) bytesTransferred / downloadTask.getSize());
 
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
 				&& downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
 			// This is a 2-hop download, performing the 1st Hop (i.e. staging the file, not
 			// downloading to destination just yet)
 			downloadTask.setPercentComplete(0);
+			downloadTask.setStagingPercentComplete(percentComplete);
 
 		} else {
 			// Any other download.
-			downloadTask.setPercentComplete(Math.round(percentComplete));
+			downloadTask.setPercentComplete(percentComplete);
+			downloadTask.setStagingPercentComplete(null);
 		}
 
 		logger.debug("download task: {} - % complete - {} [transfer-type={}, destination-type={}]",
