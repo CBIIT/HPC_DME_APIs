@@ -253,7 +253,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		int stagingPercentComplete = rs.getInt("STAGING_PERCENT_COMPLETE");
 		dataObjectDownloadTask.setStagingPercentComplete(stagingPercentComplete > 0 ? stagingPercentComplete : null);
-		
+
 		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
 		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
 		if (archiveLocationFileContainerId != null && archiveLocationFileId != null) {
@@ -561,8 +561,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
 					s3AccountPathStyleAccessEnabled, googleAccessToken, dataObjectDownloadTask.getCompletionEvent(),
 					dataObjectDownloadTask.getCollectionDownloadTaskId(), dataObjectDownloadTask.getPercentComplete(),
-					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
-					dataObjectDownloadTask.getProcessed(),
+					dataObjectDownloadTask.getStagingPercentComplete(), dataObjectDownloadTask.getSize(),
+					dataObjectDownloadTask.getCreated(), dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
@@ -579,8 +579,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
 					s3AccountPathStyleAccessEnabled, googleAccessToken, dataObjectDownloadTask.getCompletionEvent(),
 					dataObjectDownloadTask.getCollectionDownloadTaskId(), dataObjectDownloadTask.getPercentComplete(),
-					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
-					dataObjectDownloadTask.getProcessed(),
+					dataObjectDownloadTask.getStagingPercentComplete(), dataObjectDownloadTask.getSize(),
+					dataObjectDownloadTask.getCreated(), dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					this.getMaxDownloadTaskPriority(dataObjectDownloadTask.getConfigurationId()) + 1,
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
@@ -1350,7 +1350,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				if (restoreInProgress != null) {
 					downloadItem.setRestoreInProgress(restoreInProgress.toString().equals("true"));
 				}
-				
+
 				Object stagingInProgress = jsonDownloadItem.get("stagingInProgress");
 				if (stagingInProgress != null) {
 					downloadItem.setStagingInProgress(stagingInProgress.toString().equals("true"));
