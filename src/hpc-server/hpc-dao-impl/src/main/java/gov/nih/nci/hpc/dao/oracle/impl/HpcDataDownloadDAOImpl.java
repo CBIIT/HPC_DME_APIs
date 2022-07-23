@@ -1256,7 +1256,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			if (downloadItem.getStagingInProgress() != null) {
 				jsonDownloadItem.put("stagingInProgress", downloadItem.getStagingInProgress());
 			}
-
+			if (downloadItem.getStagingPercentComplete() != null) {
+				jsonDownloadItem.put("stagingPercentComplete", downloadItem.getStagingPercentComplete());
+			}
+			
 			jsonDownloadItems.add(jsonDownloadItem);
 		}
 
@@ -1354,6 +1357,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				Object stagingInProgress = jsonDownloadItem.get("stagingInProgress");
 				if (stagingInProgress != null) {
 					downloadItem.setStagingInProgress(stagingInProgress.toString().equals("true"));
+				}
+				
+				Object stagingPercentComplete = jsonDownloadItem.get("stagingPercentComplete");
+				if (stagingPercentComplete != null) {
+					downloadItem.setStagingPercentComplete(Integer.valueOf(stagingPercentComplete.toString()));
 				}
 
 				downloadItems.add(downloadItem);
