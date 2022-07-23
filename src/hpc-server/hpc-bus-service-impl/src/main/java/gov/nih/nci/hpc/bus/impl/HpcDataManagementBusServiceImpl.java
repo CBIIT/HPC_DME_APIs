@@ -1407,6 +1407,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					&& HpcDataTransferType.S_3.equals(taskStatus.getDataObjectDownloadTask().getDataTransferType())
 							? true
 							: null);
+			if (Optional.ofNullable(downloadStatus.getStagingInProgress()).orElse(false)) {
+				downloadStatus.setPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
+			}
 
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
