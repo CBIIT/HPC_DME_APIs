@@ -472,6 +472,7 @@
 				<xsd:element name="completed" type="xsd:dateTime" />
 				<xsd:element name="restoreInProgress" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="stagingInProgress" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="stagingPercentComplete" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
