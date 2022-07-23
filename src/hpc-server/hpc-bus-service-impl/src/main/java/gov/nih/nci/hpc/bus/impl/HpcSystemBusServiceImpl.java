@@ -844,7 +844,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											downloadItemStatus.getDataObjectDownloadTask().getDataTransferType()) ? true
 													: null);
 							if (Optional.ofNullable(downloadItem.getStagingInProgress()).orElse(false)) {
-							downloadItem.setStagingPercentComplete(downloadItemStatus.getDataObjectDownloadTask().getStagingPercentComplete());
+								downloadItem.setStagingPercentComplete(
+										downloadItemStatus.getDataObjectDownloadTask().getStagingPercentComplete());
 							}
 
 							// This item still in progress, so overall download not completed just yet.
