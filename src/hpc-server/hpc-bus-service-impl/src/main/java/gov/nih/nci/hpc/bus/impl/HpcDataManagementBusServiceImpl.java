@@ -1408,7 +1408,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							? true
 							: null);
 			if (Optional.ofNullable(downloadStatus.getStagingInProgress()).orElse(false)) {
-				downloadStatus.setPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
+				downloadStatus.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
 			}
 
 		} else {
