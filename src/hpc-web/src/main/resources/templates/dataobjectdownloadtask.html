@@ -158,6 +158,16 @@
 											<label th:if="${hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">Restore In Progress</label>
 											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress()}" id="regComplete">Staging In Progress</label>
 										</div>
+										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() != null
+										    and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() != null
+											and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() > 0}">
+										<div class="progress">
+    										<div class="progress-bar" id="progressBar" role="progressbar" th:attr="aria-valuenow=${hpcDataObjectDownloadStatusDTO.getStagingPercentComplete()}" aria-valuemin="0" aria-valuemax="100"  th:style="'width:'+ ${hpcDataObjectDownloadStatusDTO.getStagingPercentComplete()}+'%;'">
+      											<span th:text="${hpcDataObjectDownloadStatusDTO.getStagingPercentComplete()}"></span>
+    											%
+    										</div>
+  										</div>
+										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getPercentComplete() != null
 											and hpcDataObjectDownloadStatusDTO.getPercentComplete() > 0}">
 										<div class="progress">
