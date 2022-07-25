@@ -287,11 +287,11 @@
 											for="${hpcCollectionDownloadTaskItem.getMessage()}"
 											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getPercentComplete() != null
-												and hpcCollectionDownloadTaskItem.getPercentComplete() > 0}">
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getStagingPercentComplete() != null
+												and hpcCollectionDownloadTaskItem.getStagingPercentComplete() > 0}">
 										<div class="progress">
-    										<div class="progress-bar" id="progressBar" role="progressbar" th:attr="aria-valuenow=${hpcCollectionDownloadTaskItem.getPercentComplete()}" aria-valuemin="0" aria-valuemax="100"  th:style="'width:'+ ${hpcCollectionDownloadTaskItem.getPercentComplete()}+'%;'">
-      											<span th:text="${hpcCollectionDownloadTaskItem.getPercentComplete()}"></span>
+    										<div class="progress-bar" id="progressBar" role="progressbar" th:attr="aria-valuenow=${hpcCollectionDownloadTaskItem.getStagingPercentComplete()}" aria-valuemin="0" aria-valuemax="100"  th:style="'width:'+ ${hpcCollectionDownloadTaskItem.getStagingPercentComplete()}+'%;'">
+      											<span th:text="${hpcCollectionDownloadTaskItem.getStagingPercentComplete()}"></span>
     											%
     										</div>
   										</div>
