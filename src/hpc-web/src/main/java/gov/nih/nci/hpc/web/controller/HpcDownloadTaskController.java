@@ -537,6 +537,10 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 					  completedItemsSize += prevCompletedItem.getSize() != null ? prevCompletedItem.getSize() : 0;
 			  }
 		  }
+		  //Also add in progress item current bytes transferred
+		  for (HpcCollectionDownloadTaskItem inProgressItem : downloadTask.getInProgressItems())
+			  completedItemsSize += inProgressItem.getSize() != null && inProgressItem.getPercentComplete() != null
+						? inProgressItem.getSize() * (inProgressItem.getPercentComplete() / 100.0) : 0;
 	  }
 	  return completedItemsSize;
   }
