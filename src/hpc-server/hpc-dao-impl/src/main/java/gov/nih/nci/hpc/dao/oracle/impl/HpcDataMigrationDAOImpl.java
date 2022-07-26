@@ -283,14 +283,15 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					result.value(), dataMigrationTask.getCreated(), completed, message,
 					fromS3ArchiveLocation.getFileContainerId(), fromS3ArchiveLocation.getFileId(),
 					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId());
-			
-			logger.info("upserted result[{}]: {}", dataMigrationTask.getType(), dataMigrationTask.getId());
+
+			logger.info("upserted result[{}]: {} {}-{}", dataMigrationTask.getType(), dataMigrationTask.getId(),
+					result.value(), message);
 
 			jdbcTemplate.update(UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL,
 					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler),
 							new SqlLobValue(collectionPaths, lobHandler), dataMigrationTask.getId() },
 					new int[] { Types.CLOB, Types.CLOB, Types.VARCHAR });
-			
+
 			logger.info("updated result CLOB[{}]: {}", dataMigrationTask.getType(), dataMigrationTask.getId());
 
 		} catch (DataAccessException e) {
