@@ -334,6 +334,18 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_doc b, r_report_registered_by_s3_archive_configuration c "
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ?  group by c.S3_ARCHIVE_NAME";
 
+	private static final String ARCHIVE_SUMMARY_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = c.object_id group by c.S3_ARCHIVE_NAME";
+
+	private static final String ARCHIVE_SUMMARY_BY_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by c.S3_ARCHIVE_NAME";
+
+	private static final String ARCHIVE_SUMMARY_BY_DOC_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by c.S3_ARCHIVE_NAME";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -459,13 +471,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs, Object[] basepathArg,
 			Object[] basepathDateArgs, Object[] pathArg, Object[] pathDateArgs) {
 		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)) {
-			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_SQL);
+			return jdbcTemplate.query(ARCHIVE_SUMMARY_SQL, archiveSummaryReportRowMapper);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)) {
-			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_DATE_SQL, (Object[]) dates);
+			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_DATE_SQL, archiveSummaryReportRowMapper, (Object[]) dates);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)) {
 			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_DOC_SQL, archiveSummaryReportRowMapper, (Object[]) docArg);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)) {
-			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_DOC_DATE_SQL, docDateArgs);
+			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_DOC_DATE_SQL, archiveSummaryReportRowMapper, docDateArgs);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER)) {
 			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_USER_SQL, (Object[])
 			// userArg);
