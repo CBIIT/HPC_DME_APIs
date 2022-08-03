@@ -156,6 +156,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
     AjaxResponseBody result = new AjaxResponseBody();
     try {
+      HpcUserDTO retryUser = (HpcUserDTO) session.getAttribute("hpcUser");
+      String retryUserId = (String) session.getAttribute("hpcUserId");
       String authToken = (String) session.getAttribute("hpcUserToken");
       if (authToken == null) {
         result.setMessage("Invalid user session, expired. Please login again.");
@@ -178,7 +180,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
                 .getDataObjectsDownloadTask(authToken, dataObjectsDownloadServiceURL + "/" + taskId, sslCertPath, sslCertPassword);
 		try {
 			HpcBulkDataObjectDownloadResponseDTO downloadDTO = HpcClientUtil.retryBulkDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath,
-					sslCertPassword);
+					sslCertPassword, retryUserId);
 			if (downloadDTO != null) {
 				result.setMessage("Retry bulk download request successful. Task Id: " + downloadDTO.getTaskId());
 				model.addAttribute("message", "Retry bulk download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
@@ -205,7 +207,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     	
 		try {
 			HpcCollectionDownloadResponseDTO downloadDTO = HpcClientUtil.retryCollectionDownloadTask(authToken, queryServiceURL, sslCertPath,
-					sslCertPassword);
+					sslCertPassword, retryUserId);
 			if (downloadDTO != null) {
 				result.setMessage("Retry request successful. Task Id: " + downloadDTO.getTaskId());
 				model.addAttribute("message", "Retry collection download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
@@ -227,7 +229,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     	        
         try {
 			HpcDataObjectDownloadResponseDTO downloadDTO = HpcClientUtil.retryDataObjectDownloadTask(authToken, serviceURL, sslCertPath,
-					sslCertPassword);
+					sslCertPassword, retryUserId);
 			if (downloadDTO != null) {
 				result.setMessage("Retry request successful. Task Id: " + downloadDTO.getTaskId());
 				model.addAttribute("message", "Retry data object download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");

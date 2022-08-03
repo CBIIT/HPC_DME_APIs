@@ -1971,7 +1971,7 @@ public class HpcClientUtil {
   }
 
   public static HpcCollectionDownloadResponseDTO retryCollectionDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, String retryUserId) {
     try {
     	HpcCollectionDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -2017,7 +2017,7 @@ public class HpcClientUtil {
   }
   
   public static HpcBulkDataObjectDownloadResponseDTO retryBulkDataObjectDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, String retryUserId) {
     try {
     	HpcBulkDataObjectDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -2063,7 +2063,7 @@ public class HpcClientUtil {
   }
   
   public static HpcDataObjectDownloadResponseDTO retryDataObjectDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, String retryUserId) {
     try {
     	HpcDataObjectDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
