@@ -1592,7 +1592,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException {
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, String retryUserId) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
 
@@ -1621,6 +1621,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
 		downloadTask.setRetryTaskId(downloadTaskResult.getId());
+		downloadTask.setRetryUserId(retryUserId);
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setUserId(downloadTaskResult.getUserId());
@@ -1784,6 +1785,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCompleted(completed);
 		taskResult.getItems().addAll(downloadTask.getItems());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
+	    taskResult.setRetryUserId(downloadTask.getRetryUserId());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
@@ -3797,6 +3799,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setSize(downloadTask.getSize());
 			this.downloadTask.setS3DownloadTaskServerId(downloadTask.getS3DownloadTaskServerId());
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
+            this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
 
 			dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
 		}
