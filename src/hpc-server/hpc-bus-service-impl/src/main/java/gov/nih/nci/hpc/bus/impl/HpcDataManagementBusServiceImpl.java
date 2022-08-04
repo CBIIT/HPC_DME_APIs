@@ -602,7 +602,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
 		responseDTO.setTaskId(collectionDownloadTask.getId());
 		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
-
+		responseDTO.setRetryUserId(collectionDownloadTask.getRetryUserId());
 		return responseDTO;
 
 	}
@@ -2399,7 +2399,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (taskStatus == null) {
 			return null;
 		}
-
 		// Map the task status to DTO.
 		HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
 		downloadStatus.setInProgress(taskStatus.getInProgress());

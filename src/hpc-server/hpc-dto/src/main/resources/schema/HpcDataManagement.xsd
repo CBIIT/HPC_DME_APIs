@@ -484,6 +484,7 @@
 				<xsd:element name="taskId" type="xsd:string" />
 				<xsd:element name="destinationLocation"
 					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="retryUserId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
