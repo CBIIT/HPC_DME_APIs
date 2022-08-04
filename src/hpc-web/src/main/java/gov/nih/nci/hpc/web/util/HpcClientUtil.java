@@ -1979,6 +1979,7 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
+        requestDTO.setRetryUserId(retryUserId);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
@@ -2025,6 +2026,7 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
+        requestDTO.setRetryUserId(retryUserId);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
@@ -2071,6 +2073,7 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
+        requestDTO.setRetryUserId(retryUserId);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
