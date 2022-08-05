@@ -514,7 +514,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	@Override
 	public void upsertDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException {
-		try {
+	    try {
 			if (dataObjectDownloadTask.getId() == null) {
 				dataObjectDownloadTask.setId(UUID.randomUUID().toString());
 			}
@@ -568,7 +568,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getCreated(), dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
-					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
+					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(), dataObjectDownloadTask.getRetryUserId(),
 					dataObjectDownloadTask.getId(), dataObjectDownloadTask.getUserId(),
 					dataObjectDownloadTask.getPath(), dataObjectDownloadTask.getConfigurationId(),
 					dataObjectDownloadTask.getS3ArchiveConfigurationId(),
@@ -587,7 +587,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					this.getMaxDownloadTaskPriority(dataObjectDownloadTask.getConfigurationId()) + 1,
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
-					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried());
+					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(), dataObjectDownloadTask.getRetryUserId());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
@@ -763,7 +763,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	@Override
 	public void upsertDownloadTaskResult(HpcDownloadTaskResult taskResult) throws HpcException {
-		try {
+	  try {
 			String dataTransferType = taskResult.getDataTransferType() != null
 					? taskResult.getDataTransferType().value()
 					: null;
