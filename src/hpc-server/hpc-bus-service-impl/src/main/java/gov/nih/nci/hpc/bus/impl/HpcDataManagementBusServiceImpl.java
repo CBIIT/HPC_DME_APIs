@@ -1410,6 +1410,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (Optional.ofNullable(downloadStatus.getStagingInProgress()).orElse(false)) {
 				downloadStatus.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
 			}
+	        downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
@@ -1425,6 +1426,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);
 			downloadStatus.setSize(taskStatus.getResult().getSize());
+			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 		}
 
 		return downloadStatus;
