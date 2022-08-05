@@ -314,6 +314,7 @@
 			<xsd:element name="collectionDownloadTaskId" type="xsd:string" />
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
