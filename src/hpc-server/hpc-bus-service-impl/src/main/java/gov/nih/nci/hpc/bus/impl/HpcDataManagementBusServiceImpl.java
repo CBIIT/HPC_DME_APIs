@@ -1426,7 +1426,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);
 			downloadStatus.setSize(taskStatus.getResult().getSize());
-			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 		}
 
 		return downloadStatus;
