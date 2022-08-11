@@ -1971,7 +1971,7 @@ public class HpcClientUtil {
   }
 
   public static HpcCollectionDownloadResponseDTO retryCollectionDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, String retryUserId) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
     try {
     	HpcCollectionDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -1979,7 +1979,6 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
-        requestDTO.setRetryUserId(retryUserId);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
@@ -2018,7 +2017,7 @@ public class HpcClientUtil {
   }
   
   public static HpcBulkDataObjectDownloadResponseDTO retryBulkDataObjectDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, String retryUserId) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
     try {
     	HpcBulkDataObjectDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -2026,7 +2025,6 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
-        requestDTO.setRetryUserId(retryUserId);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
@@ -2065,7 +2063,7 @@ public class HpcClientUtil {
   }
   
   public static HpcDataObjectDownloadResponseDTO retryDataObjectDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, String retryUserId) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
     try {
     	HpcDataObjectDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -2073,7 +2071,6 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
-        requestDTO.setRetryUserId(retryUserId);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
