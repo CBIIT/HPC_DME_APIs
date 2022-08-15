@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
@@ -78,6 +79,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	// The Security Application Service Instance.
 	@Autowired
 	private HpcSecurityService securityService = null;
+
+	// A configured ID representing the server performing a migration task.
+	@Value("${hpc.service.dataMigration.serverId}")
+	private String serverId = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -285,7 +290,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			}
 		} catch (HpcException e) {
 			logger.error("Failed to shutdown TransferManager", e);
-		} 
+		}
 	}
 
 	@Override
@@ -324,7 +329,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void resetMigrationTasksInProcess() throws HpcException {
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS,
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, null,
 				HpcDataMigrationStatus.RECEIVED);
 	}
 
@@ -385,5 +390,25 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException {
 		dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+	}
+
+	@Override
+	public boolean markInProcess(HpcDataMigrationTask dataObjectMigrationTask, boolean inProcess) throws HpcException {
+		// Only set in-process to true if this task in a RECEIVED status, and the
+		// in-process not already true.
+		boolean updated = true;
+
+		if (!inProcess || (!dataObjectMigrationTask.getInProcess()
+				&& dataObjectMigrationTask.getStatus().equals(HpcDataMigrationStatus.RECEIVED))) {
+			updated = dataMigrationDAO.setDataMigrationTaskInProcess(dataObjectMigrationTask.getId(), inProcess,
+					serverId);
+		}
+
+		if (updated) {
+			dataObjectMigrationTask.setInProcess(inProcess);
+			dataObjectMigrationTask.setServerId(serverId);
+		}
+
+		return updated;
 	}
 }
