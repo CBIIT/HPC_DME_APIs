@@ -189,6 +189,7 @@ public class HpcSearchUtil {
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
 			model.addAttribute("currentPageSize", search.getPageSize());
 			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
+			model.addAttribute("selectedColumns", search.getSelectedColumns());
 		}
 	}
 
