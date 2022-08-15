@@ -144,4 +144,17 @@ public interface HpcDataMigrationService {
 	 */
 	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException;
 
+	/**
+	 * Mark a migration task that is in a RECEIVED state 'in-process', so that the
+	 * task can be started. This enables multiple threads to read off of the
+	 * migration task
+	 *
+	 * @param dataObjectMigrationTask The data migration task to mark
+	 * @param inProcess               Indicator whether the task is being actively
+	 *                                processed.
+	 * @return true if the inProcess value was actually updated in the DB.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean markInProcess(HpcDataMigrationTask dataObjectMigrationTask, boolean inProcess) throws HpcException;
+
 }

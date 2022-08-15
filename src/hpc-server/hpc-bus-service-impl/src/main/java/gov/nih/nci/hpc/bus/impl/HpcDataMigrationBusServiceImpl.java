@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -145,21 +146,25 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	public void processDataObjectMigrationReceived() throws HpcException {
 		dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.DATA_OBJECT)
 				.forEach(dataObjectMigrationTask -> {
-					try {
-						logger.info("Migrating Data Object: task - {}, path - {}", dataObjectMigrationTask.getId(),
-								dataObjectMigrationTask.getPath());
-						dataMigrationService.migrateDataObject(dataObjectMigrationTask);
-
-					} catch (HpcException e) {
-						logger.error("Failed to migrate data object: task - {}, path - {}",
-								dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath(), e);
+					if (claimDataMigrationTask(dataObjectMigrationTask)) {
 						try {
-							dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
-									HpcDataMigrationResult.FAILED, e.getMessage(), null, null);
+							logger.info("Migrating Data Object: task - {}, path - {}", dataObjectMigrationTask.getId(),
+									dataObjectMigrationTask.getPath());
+							dataMigrationService.migrateDataObject(dataObjectMigrationTask);
 
-						} catch (HpcException ex) {
-							logger.error("Failed to complete data object migration: task - {}, path - {}",
-									dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath(), ex);
+						} catch (HpcException e) {
+							logger.error("Failed to migrate data object: task - {}, path - {}",
+									dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath(), e);
+							try {
+								dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
+										HpcDataMigrationResult.FAILED, e.getMessage(), null, null);
+
+							} catch (HpcException ex) {
+								logger.error("Failed to complete data object migration: task - {}, path - {}",
+										dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath(), ex);
+							}
+						} finally {
+							doneProcessingDataMigrationTask(dataObjectMigrationTask);
 						}
 					}
 				});
@@ -170,33 +175,37 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	public void processCollectionMigrationReceived() throws HpcException {
 		dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.COLLECTION)
 				.forEach(collectionMigrationTask -> {
-					try {
-						logger.info("Migrating Collection: task - {}, path - {}", collectionMigrationTask.getId(),
-								collectionMigrationTask.getPath());
-
-						// Get the collection to be migrated.
-						HpcCollection collection = dataManagementService
-								.getCollection(collectionMigrationTask.getPath(), true);
-						if (collection == null) {
-							throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
-						}
-
-						// Create migration tasks for all data objects under this collection
-						migrateCollection(collection, collectionMigrationTask);
-
-						// Mark the collection migration task - in-progress
-						collectionMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
-						dataMigrationService.updateDataMigrationTask(collectionMigrationTask);
-
-					} catch (HpcException e) {
-						logger.error("Failed to migrate collection: task - {}, path - {}",
-								collectionMigrationTask.getId(), collectionMigrationTask.getPath(), e);
+					if (claimDataMigrationTask(collectionMigrationTask)) {
 						try {
-							dataMigrationService.completeBulkMigrationTask(collectionMigrationTask, e.getMessage());
+							logger.info("Migrating Collection: task - {}, path - {}", collectionMigrationTask.getId(),
+									collectionMigrationTask.getPath());
 
-						} catch (HpcException ex) {
-							logger.error("Failed to complete collection migration: task - {}, path - {}",
-									collectionMigrationTask.getId(), collectionMigrationTask.getPath(), ex);
+							// Get the collection to be migrated.
+							HpcCollection collection = dataManagementService
+									.getCollection(collectionMigrationTask.getPath(), true);
+							if (collection == null) {
+								throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+							}
+
+							// Create migration tasks for all data objects under this collection
+							migrateCollection(collection, collectionMigrationTask);
+
+							// Mark the collection migration task - in-progress
+							collectionMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
+							dataMigrationService.updateDataMigrationTask(collectionMigrationTask);
+
+						} catch (HpcException e) {
+							logger.error("Failed to migrate collection: task - {}, path - {}",
+									collectionMigrationTask.getId(), collectionMigrationTask.getPath(), e);
+							try {
+								dataMigrationService.completeBulkMigrationTask(collectionMigrationTask, e.getMessage());
+
+							} catch (HpcException ex) {
+								logger.error("Failed to complete collection migration: task - {}, path - {}",
+										collectionMigrationTask.getId(), collectionMigrationTask.getPath(), ex);
+							}
+						} finally {
+							doneProcessingDataMigrationTask(collectionMigrationTask);
 						}
 					}
 				});
@@ -208,34 +217,40 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataMigrationService
 				.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.DATA_OBJECT_LIST)
 				.forEach(dataObjectListMigrationTask -> {
-					try {
-						logger.info("Migrating Data Object List: task - {}, path - {}",
-								dataObjectListMigrationTask.getId(), dataObjectListMigrationTask.getDataObjectPaths());
-
-						// Iterate through the data objects in the list and migrate them.
-						for (String dataObjectPath : dataObjectListMigrationTask.getDataObjectPaths()) {
-							HpcMigrationRequestDTO migrationRequest = new HpcMigrationRequestDTO();
-							migrationRequest.setS3ArchiveConfigurationId(
-									dataObjectListMigrationTask.getToS3ArchiveConfigurationId());
-							migrateDataObject(dataObjectPath, dataObjectListMigrationTask.getUserId(),
-									dataObjectListMigrationTask.getId(), migrationRequest);
-						}
-
-						// Mark the collection migration task - in-progress
-						dataObjectListMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
-						dataMigrationService.updateDataMigrationTask(dataObjectListMigrationTask);
-
-					} catch (HpcException e) {
-						logger.error("Failed to migrate data object list: task - {}, path - {}",
-								dataObjectListMigrationTask.getId(), dataObjectListMigrationTask.getDataObjectPaths(),
-								e);
+					if (claimDataMigrationTask(dataObjectListMigrationTask)) {
 						try {
-							dataMigrationService.completeBulkMigrationTask(dataObjectListMigrationTask, e.getMessage());
-
-						} catch (HpcException ex) {
-							logger.error("Failed to complete data object list migration: task - {}, path - {}",
+							logger.info("Migrating Data Object List: task - {}, path - {}",
 									dataObjectListMigrationTask.getId(),
-									dataObjectListMigrationTask.getDataObjectPaths(), ex);
+									dataObjectListMigrationTask.getDataObjectPaths());
+
+							// Iterate through the data objects in the list and migrate them.
+							for (String dataObjectPath : dataObjectListMigrationTask.getDataObjectPaths()) {
+								HpcMigrationRequestDTO migrationRequest = new HpcMigrationRequestDTO();
+								migrationRequest.setS3ArchiveConfigurationId(
+										dataObjectListMigrationTask.getToS3ArchiveConfigurationId());
+								migrateDataObject(dataObjectPath, dataObjectListMigrationTask.getUserId(),
+										dataObjectListMigrationTask.getId(), migrationRequest);
+							}
+
+							// Mark the collection migration task - in-progress
+							dataObjectListMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
+							dataMigrationService.updateDataMigrationTask(dataObjectListMigrationTask);
+
+						} catch (HpcException e) {
+							logger.error("Failed to migrate data object list: task - {}, path - {}",
+									dataObjectListMigrationTask.getId(),
+									dataObjectListMigrationTask.getDataObjectPaths(), e);
+							try {
+								dataMigrationService.completeBulkMigrationTask(dataObjectListMigrationTask,
+										e.getMessage());
+
+							} catch (HpcException ex) {
+								logger.error("Failed to complete data object list migration: task - {}, path - {}",
+										dataObjectListMigrationTask.getId(),
+										dataObjectListMigrationTask.getDataObjectPaths(), ex);
+							}
+						} finally {
+							doneProcessingDataMigrationTask(dataObjectListMigrationTask);
 						}
 					}
 				});
@@ -247,36 +262,42 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataMigrationService
 				.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.COLLECTION_LIST)
 				.forEach(collectionListMigrationTask -> {
-					try {
-						logger.info("Migrating Collection list: task - {}, path - {}",
-								collectionListMigrationTask.getId(), collectionListMigrationTask.getCollectionPaths());
+					if (claimDataMigrationTask(collectionListMigrationTask)) {
+						try {
+							logger.info("Migrating Collection list: task - {}, path - {}",
+									collectionListMigrationTask.getId(),
+									collectionListMigrationTask.getCollectionPaths());
 
-						// Iterate through the collections in the list and migrate them.
-						for (String collectionPath : collectionListMigrationTask.getCollectionPaths()) {
-							// Get the collection to be migrated.
-							HpcCollection collection = dataManagementService.getCollection(collectionPath, true);
-							if (collection == null) {
-								throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+							// Iterate through the collections in the list and migrate them.
+							for (String collectionPath : collectionListMigrationTask.getCollectionPaths()) {
+								// Get the collection to be migrated.
+								HpcCollection collection = dataManagementService.getCollection(collectionPath, true);
+								if (collection == null) {
+									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+								}
+
+								// Create migration tasks for all data objects under this collection
+								migrateCollection(collection, collectionListMigrationTask);
 							}
 
-							// Create migration tasks for all data objects under this collection
-							migrateCollection(collection, collectionListMigrationTask);
-						}
+							// Mark the collection migration task - in-progress
+							collectionListMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
+							dataMigrationService.updateDataMigrationTask(collectionListMigrationTask);
 
-						// Mark the collection migration task - in-progress
-						collectionListMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
-						dataMigrationService.updateDataMigrationTask(collectionListMigrationTask);
+						} catch (HpcException e) {
+							logger.error("Failed to migrate collection list: task - {}, path - {}",
+									collectionListMigrationTask.getId(),
+									collectionListMigrationTask.getCollectionPaths(), e);
+							try {
+								dataMigrationService.completeBulkMigrationTask(collectionListMigrationTask,
+										e.getMessage());
 
-					} catch (HpcException e) {
-						logger.error("Failed to migrate collection list: task - {}, path - {}",
-								collectionListMigrationTask.getId(), collectionListMigrationTask.getCollectionPaths(),
-								e);
-						try {
-							dataMigrationService.completeBulkMigrationTask(collectionListMigrationTask, e.getMessage());
-
-						} catch (HpcException ex) {
-							logger.error("Failed to complete collection list migration: task - {}, path - {}",
-									collectionListMigrationTask.getId(), collectionListMigrationTask.getPath(), ex);
+							} catch (HpcException ex) {
+								logger.error("Failed to complete collection list migration: task - {}, path - {}",
+										collectionListMigrationTask.getId(), collectionListMigrationTask.getPath(), ex);
+							}
+						} finally {
+							doneProcessingDataMigrationTask(collectionListMigrationTask);
 						}
 					}
 				});
@@ -550,11 +571,48 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	}
 
 	/**
-	 * Process a data object migration task
+	 * Claims a migration task to work on.
 	 *
-	 * @param collection              The collection to be migrated
-	 * @param collectionMigrationTask The migration task.
-	 * @throws HpcException If failed to process the request.
+	 * @param dataMigrationTask The migration task to claim
+	 * @return true if the task was claimed, or false otherwise - i.e. another
+	 *         process/thread already working on the task.
+	 *
 	 */
+	private boolean claimDataMigrationTask(HpcDataMigrationTask dataMigrationTask) {
+		if (Optional.ofNullable(dataMigrationTask.getInProcess()).orElse(false)) {
+			logger.info("Data migration: task - {} already in-process by {}", dataMigrationTask.getId(),
+					dataMigrationTask.getServerId());
+			return false;
+		}
 
+		// Try to claim the task
+		try {
+			if (!dataMigrationService.markInProcess(dataMigrationTask, true)) {
+				logger.info("Data migration: task - {} failed to claim. Already in-process by {}",
+						dataMigrationTask.getId(), dataMigrationTask.getServerId());
+				return false;
+			}
+		} catch (HpcException e) {
+			logger.error("Data migration: task - {} failed to claim", dataMigrationTask.getId(), e);
+			return false;
+		}
+
+		logger.info("Data migration: task - {} claimed", dataMigrationTask.getId());
+		return true;
+	}
+
+	/**
+	 * Done processing a migration task. Mark in-process to false
+	 *
+	 * @param dataMigrationTask The migration task to mark done processing.
+	 *
+	 */
+	private void doneProcessingDataMigrationTask(HpcDataMigrationTask dataMigrationTask) {
+		try {
+			dataMigrationService.markInProcess(dataMigrationTask, false);
+
+		} catch (HpcException e) {
+			logger.error("Data migration: task - {} failed to mark done processing", dataMigrationTask.getId(), e);
+		}
+	}
 }

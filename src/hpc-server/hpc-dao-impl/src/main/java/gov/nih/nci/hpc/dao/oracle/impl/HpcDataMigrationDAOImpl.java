@@ -75,7 +75,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
-	private static final String SET_DATA_MIGRATION_TASKS_STATUS_SQL = "update HPC_DATA_MIGRATION_TASK set STATUS = ? where STATUS = ?";
+	private static final String SET_DATA_MIGRATION_TASKS_STATUS_SQL = "update HPC_DATA_MIGRATION_TASK set STATUS = ?, IN_PROCESS = ? where STATUS = ?";
 
 	private static final String DELETE_DATA_MIGRATION_TASK_SQL = "delete from HPC_DATA_MIGRATION_TASK where ID = ?";
 
@@ -88,6 +88,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	private static final String GET_DATA_OBJECT_MIGRATION_TASK_RESULT_ID_SQL = "select ID from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? and PATH = ?";
 
 	private static final String GET_COLLECTION_MIGRATION_RESULT_COUNT_SQL = "select RESULT, count(RESULT) as COUNT from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? group by RESULT";
+
+	private static final String SET_MIGRATION_TASK_IN_PROCESS_SQL = "update HPC_DATA_MIGRATION_TASK set IN_PROCESS = ?, SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -311,10 +313,10 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	}
 
 	@Override
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, HpcDataMigrationStatus toStatus)
-			throws HpcException {
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, Boolean inProcess,
+			HpcDataMigrationStatus toStatus) throws HpcException {
 		try {
-			jdbcTemplate.update(SET_DATA_MIGRATION_TASKS_STATUS_SQL, toStatus.value(), fromStatus.value());
+			jdbcTemplate.update(SET_DATA_MIGRATION_TASKS_STATUS_SQL, toStatus.value(), inProcess, fromStatus.value());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to update data migration tasks status: " + e.getMessage(),
@@ -336,6 +338,17 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get a collection migration result count: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess, String serverId) throws HpcException {
+		try {
+			return jdbcTemplate.update(SET_MIGRATION_TASK_IN_PROCESS_SQL, inProcess, serverId, id, inProcess) > 0;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to set a datamigration task w/ in-process value: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
