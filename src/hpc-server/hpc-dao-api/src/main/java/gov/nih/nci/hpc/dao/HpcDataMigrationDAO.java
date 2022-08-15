@@ -103,10 +103,11 @@ public interface HpcDataMigrationDAO {
 	 * Update the status of all data migration tasks
 	 *
 	 * @param fromStatus Only update tasks in this status
+	 * @param inProcess The in-process value to set
 	 * @param toStatus   The status to set
 	 * @throws HpcException on database error.
 	 */
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, HpcDataMigrationStatus toStatus)
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, Boolean inProcess, HpcDataMigrationStatus toStatus)
 			throws HpcException;
 
 	/**
@@ -118,5 +119,16 @@ public interface HpcDataMigrationDAO {
 	 */
 	public Map<HpcDataMigrationResult, Integer> getCollectionMigrationResultCount(String collectionMigrationTaskId)
 			throws HpcException;
+
+	/**
+	 * Set a migration task in-process value.
+	 *
+	 * @param id        The data migration task ID.
+	 * @param inProcess The value to set.
+	 * @param serverId  The server ID executing the migration task.
+	 * @return True if the value of inProcess was actually updated.
+	 * @throws HpcException on database error.
+	 */
+	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess, String serverId) throws HpcException;
 
 }

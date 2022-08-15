@@ -55,7 +55,7 @@
 		<prop key="hpc.service.dataManagement.deletedBasePath">/DME_Deleted_Archive</prop>
 		<prop key="hpc.service.dataManagement.deletedDataObjectRetentionDays">730</prop>
 		<prop key="hpc.service.event.invokerCollectionUpdateNotification">false</prop>
-		
+		<prop key="hpc.service.dataMigration.serverId">server-id</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

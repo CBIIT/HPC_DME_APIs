@@ -51,6 +51,8 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="toS3ArchiveLocation"
 					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="serverId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
