@@ -1473,7 +1473,16 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.get();
       if (null != restResponse && 200 == restResponse.getStatus()) {
-        JsonParser parser = new MappingJsonFactory().createParser((InputStream)
+	    ObjectMapper mapper = new ObjectMapper();
+	    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+	      new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+	      new JacksonAnnotationIntrospector());
+	    mapper.setAnnotationIntrospector(intr);
+	    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+	    false);
+	    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+	    mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        JsonParser parser = new MappingJsonFactory(mapper).createParser((InputStream)
             restResponse.getEntity());
         retVal = parser.readValueAs(HpcNamedCompoundMetadataQueryDTO.class);
       }
@@ -1493,7 +1502,16 @@ public class HpcClientUtil {
     Response restResponse = client.get();
     if (restResponse == null || restResponse.getStatus() != 200)
       return null;
-    MappingJsonFactory factory = new MappingJsonFactory();
+    ObjectMapper mapper = new ObjectMapper();
+    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+      new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+      new JacksonAnnotationIntrospector());
+    mapper.setAnnotationIntrospector(intr);
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+    false);
+    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+    mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+    MappingJsonFactory factory = new MappingJsonFactory(mapper);
     JsonParser parser;
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
