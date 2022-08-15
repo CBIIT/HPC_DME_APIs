@@ -37,6 +37,7 @@
     var authorized = [[${authorized}]];
 	var authorizedGC = [[${authorizedGC}]];
     var oauthToken = [[${accessToken}]];
+    var selectedColumns = [[${selectedColumns}]];
 /*]]>*/
 </script>
 </head>
@@ -298,7 +299,9 @@
 						 th:value="${hpcSearch.getPageSize()}"/>
 					<input type="hidden"
 						class="form-control" name="totalSize" id="totalSizeId"
-						 th:value="${hpcSearch.getTotalSize()}"/>			
+						 th:value="${hpcSearch.getTotalSize()}"/>
+					<input type="hidden"
+						class="form-control" name="selectedColumns" id="selectedColumnsId"/>		
 				</form>
 				<form class="form-horizontal" id="searchForm"
 					th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -310,7 +313,9 @@
 						 th:value="${hpcSearch.getPageSize()}"/>
 					<input type="hidden"
 						class="form-control" name="totalSize" id="totalSize"
-						 th:value="${hpcSearch.getTotalSize()}"/>		
+						 th:value="${hpcSearch.getTotalSize()}"/>
+					<input type="hidden"
+						class="form-control" name="selectedColumns" id="selectedColumns"/>
 				</form>
             </div>
           </div>
@@ -492,10 +497,14 @@
 
 		function goBack()
 		{
-			if(source != null && source == "search")
+			if(source != null && source == "search") {
+				document.getElementById("searchForm").elements.namedItem("selectedColumns").value = selectedColumns;
 				document.getElementById("searchForm").submit();
-			else if(source != null && source == "criteria")
+			}
+			else if(source != null && source == "criteria") {
+				document.getElementById("criteriaForm").elements.namedItem("selectedColumns").value = selectedColumns;
 				document.getElementById("criteriaForm").submit();
+			}
 			else if(downloadType == "collection")
 				window.location.href = '../collection?action=view&path=' + downloadFilePath;
 			else
