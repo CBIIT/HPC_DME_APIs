@@ -156,7 +156,7 @@
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getResult() == null}">
 											<label for="Name">Transfer Completed:</label> <label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() == null and !hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">Download In Progress</label>
 											<label th:if="${hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">Restore In Progress</label>
-											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress()}" id="regComplete">Staging In Progress</label>
+											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() != null}" id="regComplete">Staging In Progress</label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() != null
 										    and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() != null

@@ -66,6 +66,7 @@
     var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
     var selectedRowsData = [];
     var totalSize = [[${totalSize}]];
+    var selectedColumns = [[${selectedColumns}]];
 /*]]>*/
 </script>
 <script>
@@ -143,6 +144,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	      {
 	        title: 'Hide All Columns',
 	        action: function ($event) {
+	        	selectedColumns = [];
 	        	this.grid.columns.forEach(function(col){
 	                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission') {
 	                	   col.hideColumn();
@@ -160,6 +162,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        	this.grid.columns.forEach(function(col){
 	                   if(!col.visible){
 	                	   col.showColumn();
+	                	   selectedColumns.push(col.field);
 	                   }
 	        	});
 	        	this.grid.api.core.notifyDataChange("column");
@@ -272,7 +275,15 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
       });
       
       gridApi.pagination.on.paginationChanged($scope, function (newPage, pageSize) {
-          if(pageSize != parseInt(currentPageSize))
+    	  selectedColumns = [];
+      	
+    	  $scope.gridOptions1.columnDefs.forEach(function(col){
+            if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
+            	selectedColumns.push(col.field);
+            }  
+ 		  });
+    	  
+    	  if(pageSize != parseInt(currentPageSize))
               updatePage('first', pageSize);
           else if(newPage == parseInt(currentPage) + 1)
         	  updatePage('next', pageSize);
@@ -327,6 +338,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
             $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
           });
       
+	      gridApi.core.on.columnVisibilityChanged($scope, function(col) {
+	    	  if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
+	           	selectedColumns.push(col.field);
+	          } else {
+	        	selectedColumns = selectedColumns.filter(e => e !== col.field);
+	          }
+	      });
+	      
 	      var metaSet = new Set(); 
 	      for(var i=0; i<$scope.gridOptions1.data.length; i++){
 	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries.length; j++){
@@ -356,7 +375,18 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		    	  }
 	    	  }
 	      }
-      
+	      
+	      var len = selectedColumns.length;
+	      $scope.gridOptions1.columnDefs.forEach(function(col){
+          	if(len != 0 && col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download' && col.displayName != 'Permission') {
+          		if(selectedColumns != null && selectedColumns.length && selectedColumns.indexOf(col.field) < 0)
+           	 		col.visible = false;
+          	} else {
+          		selectedColumns.push(col.field);
+          	}
+		  });
+	      gridApi.core.notifyDataChange("column");
+   	
     };
   
     Array.prototype.contains = function(obj) {
@@ -438,6 +468,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
+	        document.getElementById("downloadFilesform").elements.namedItem("selectedColumns").value = selectedColumns;
 	        document.getElementById("downloadType").value = "collections";
 	        document.getElementById("downloadFilesform").submit();
         } else {
@@ -450,6 +481,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        document.getElementById("bulkPermissionsform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
+	        document.getElementById("bulkPermissionsform").elements.namedItem("selectedColumns").value = selectedColumns;
 	        document.getElementById("downloadType2").value = "collections";
 	        document.getElementById("bulkPermissionsform").submit();
         }
@@ -580,6 +612,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="pageSize1" name="pageSize"/>
 						<input type="hidden" id="queryName1" name="queryName"/>
 						<input type="hidden" id="totalSize1" name="totalSize"/>
+						<input type="hidden" id="selectedColumns1" name="selectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -591,6 +624,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="pageSize2" name="pageSize"/>
 						<input type="hidden" id="queryName2" name="queryName"/>
 						<input type="hidden" id="totalSize2" name="totalSize"/>
+						<input type="hidden" id="selectedColumns2" name="selectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -672,6 +706,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
+		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
 		document.getElementById("simplesearchform").submit();
     }
     
