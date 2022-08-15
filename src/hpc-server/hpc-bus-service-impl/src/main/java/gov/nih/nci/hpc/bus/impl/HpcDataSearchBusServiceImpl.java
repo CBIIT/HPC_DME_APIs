@@ -372,6 +372,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		namedCompoundMetadataQuery.setTotalCount(
 				compoundMetadataQueryDTO.getTotalCount() != null ? compoundMetadataQueryDTO.getTotalCount() : false);
 		namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
+		namedCompoundMetadataQuery.getSelectedColumns().addAll(compoundMetadataQueryDTO.getSelectedColumns());
 
 		// Save the query.
 		dataSearchService.saveQuery(nciUserId, namedCompoundMetadataQuery);
@@ -407,6 +408,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		}
 		if (compoundMetadataQueryDTO.getCompoundQueryType() != null) {
 			namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
+		}
+		if (compoundMetadataQueryDTO.getSelectedColumns() != null && !compoundMetadataQueryDTO.getSelectedColumns().isEmpty()) {
+			if(namedCompoundMetadataQuery.getSelectedColumns() != null)
+				namedCompoundMetadataQuery.getSelectedColumns().clear();
+			namedCompoundMetadataQuery.getSelectedColumns().addAll(compoundMetadataQueryDTO.getSelectedColumns());
 		}
 
 		// Save the query.
