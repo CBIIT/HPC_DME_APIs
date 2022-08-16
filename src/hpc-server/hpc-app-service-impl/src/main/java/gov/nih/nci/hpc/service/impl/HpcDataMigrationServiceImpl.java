@@ -329,7 +329,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void resetMigrationTasksInProcess() throws HpcException {
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, null,
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false,
 				HpcDataMigrationStatus.RECEIVED);
 	}
 
