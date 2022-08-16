@@ -153,35 +153,35 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "and IN_PROCESS = ? order by PRIORITY, CREATED";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select null as USER_ID, ID, PATH, CREATED, 'DATA_OBJECT' as TYPE, "
-			+ "null as COMPLETED, null as RESULT, null as ITEMS, DESTINATION_TYPE from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and COMPLETION_EVENT = '1' "
+			+ "null as COMPLETED, null as RESULT, null as ITEMS, DESTINATION_TYPE, RETRY_USER_ID from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and COMPLETION_EVENT = '1' "
 			+ "order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, ITEMS, DESTINATION_TYPE from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
+			+ "null as RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
 
-	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE "
+	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, RETRY_USER_ID, ITEMS, DESTINATION_TYPE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1'";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, 'DATA_OBJECT' as TYPE, "
-			+ "null as COMPLETED, null as RESULT, null as ITEMS, DESTINATION_TYPE from HPC_DATA_OBJECT_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID "
+			+ "null as COMPLETED, null as RESULT, null as ITEMS, DESTINATION_TYPE, RETRY_USER_ID from HPC_DATA_OBJECT_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID "
 			+ "and USER1.DOC= ? and COMPLETION_EVENT = '1' order by CREATED";
 
 	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select USER_ID, ID, PATH, CREATED, 'DATA_OBJECT' as TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as ITEMS, DESTINATION_TYPE from HPC_DATA_OBJECT_DOWNLOAD_TASK where COMPLETION_EVENT = '1' order by CREATED";
+			+ "null as RESULT, null as ITEMS, DESTINATION_TYPE, RETRY_USER_ID from HPC_DATA_OBJECT_DOWNLOAD_TASK where COMPLETION_EVENT = '1' order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, ITEMS, DESTINATION_TYPE from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? order by CREATED";
+			+ "null as RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? order by CREATED";
 
 	private static final String GET_ALL_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, ITEMS, DESTINATION_TYPE from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
+			+ "null as RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
 
-	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE "
+	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID "
 			+ "from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? and "
 			+ "COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
-	private static final String GET_ALL_DOWNLOAD_RESULTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE "
+	private static final String GET_ALL_DOWNLOAD_RESULTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, RETRY_USER_ID, ITEMS, DESTINATION_TYPE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT where COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_FOR_DOC_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where "
@@ -492,6 +492,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		if (rs.getObject("DESTINATION_TYPE") != null) {
 			userDownloadRequest.setDestinationType(HpcDataTransferType.fromValue(rs.getString("DESTINATION_TYPE")));
 		}
+		if (rs.getObject("RETRY_USER_ID") != null) {
+            userDownloadRequest.setRetryUserId(rs.getString("RETRY_USER_ID"));
+        }
 		userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 		return userDownloadRequest;
 	};
