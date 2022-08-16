@@ -315,7 +315,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	}
 
 	@Override
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, Boolean inProcess,
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess,
 			HpcDataMigrationStatus toStatus) throws HpcException {
 		try {
 			jdbcTemplate.update(SET_DATA_MIGRATION_TASKS_STATUS_SQL, toStatus.value(), inProcess, fromStatus.value());
