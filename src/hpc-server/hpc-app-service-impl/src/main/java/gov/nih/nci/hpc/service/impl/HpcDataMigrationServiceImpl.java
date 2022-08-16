@@ -398,8 +398,6 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// in-process not already true.
 		boolean updated = true;
 
-		logger.error("ERAN {} {}", dataObjectMigrationTask.getInProcess(), dataObjectMigrationTask.getStatus());
-		
 		if (!inProcess || (!dataObjectMigrationTask.getInProcess()
 				&& dataObjectMigrationTask.getStatus().equals(HpcDataMigrationStatus.RECEIVED))) {
 			updated = dataMigrationDAO.setDataMigrationTaskInProcess(dataObjectMigrationTask.getId(), inProcess,
