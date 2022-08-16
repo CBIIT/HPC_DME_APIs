@@ -117,7 +117,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		dataMigrationTask.setType(HpcDataMigrationType.fromValue(rs.getString(("TYPE"))));
 		dataMigrationTask.setStatus(HpcDataMigrationStatus.fromValue(rs.getString(("STATUS"))));
 		dataMigrationTask.setInProcess(rs.getBoolean("IN_PROCESS"));
-		dataMigrationTask.setServerId(rs.getString("S3_DOWNLOAD_TASK_SERVER_ID"));
+		dataMigrationTask.setServerId(rs.getString("SERVER_ID"));
 
 		Calendar created = Calendar.getInstance();
 		created.setTime(rs.getTimestamp("CREATED"));
