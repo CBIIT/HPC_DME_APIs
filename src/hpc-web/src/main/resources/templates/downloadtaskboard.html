@@ -123,7 +123,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
                  { field: 'path', minWidth:200, displayName : 'Path' },
                  { field: 'type', width:150, displayName : 'Type', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{grid.appScope.toTitleCase(row.entity.type)}}</div>'},
                  { field: 'destinationType', width:150, displayName : 'Destination Type'},
-                { field: 'result', width:150, displayName: 'Transfer Result'},
+                 { field: 'result', width:150, displayName: 'Transfer Result'},
+				 { field: 'retryUserId', width:100, displayName : 'Reinitiated User ID'},
                  { field: 'created', width:200, displayName : 'Created On' },
                  { field: 'completed', width:200, displayName : 'Completed On'}
                ],

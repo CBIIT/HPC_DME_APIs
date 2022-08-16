@@ -494,6 +494,7 @@
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result"
 				type="hpc-domain-datatransfer:HpcDownloadResult" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
