@@ -107,7 +107,7 @@ public interface HpcDataMigrationDAO {
 	 * @param toStatus   The status to set
 	 * @throws HpcException on database error.
 	 */
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, Boolean inProcess, HpcDataMigrationStatus toStatus)
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess, HpcDataMigrationStatus toStatus)
 			throws HpcException;
 
 	/**
