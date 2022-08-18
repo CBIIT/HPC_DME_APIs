@@ -206,7 +206,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private int globusTokenExpirationPeriod = 0;
 
 	// A configured ID representing the server performing a download task.
-	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
+	@Value("${hpc.service.serverId}")
 	private String s3DownloadTaskServerId = null;
 
 	// List of authenticated tokens
