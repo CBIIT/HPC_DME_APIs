@@ -81,7 +81,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	private HpcSecurityService securityService = null;
 
 	// A configured ID representing the server performing a migration task.
-	@Value("${hpc.service.dataMigration.serverId}")
+	@Value("${hpc.service.serverId}")
 	private String serverId = null;
 
 	// The logger instance.
