@@ -331,20 +331,26 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	/////////////////////////// Archive summary report.
 	private static final String ARCHIVE_SUMMARY_BY_DOC_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_doc b, r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ?  group by c.S3_ARCHIVE_NAME";
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_registered_by_doc b, r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? group by c.S3_ARCHIVE_NAME, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = c.object_id group by c.S3_ARCHIVE_NAME";
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = c.object_id group by c.S3_ARCHIVE_NAME, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_BY_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by c.S3_ARCHIVE_NAME";
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+			+ "group by c.S3_ARCHIVE_NAME, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_BY_DOC_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by c.S3_ARCHIVE_NAME";
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_NAME as archive_name, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+			+ "group by c.S3_ARCHIVE_NAME, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -454,13 +460,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private class HpcArchiveSummaryReport {
 		String archiveName;
+		String archiveProvider;
+		String archiveBucket;
 		long count;
 		long size;
 	}
 
 	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper = (rs, rowNum) -> {
 		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
+		// TODO - remove the archive name after UI completed the change to new fields -
+		// provider and bucket
 		archiveSummaryReport.archiveName = rs.getString("archive_name");
+		archiveSummaryReport.archiveProvider = rs.getString("archive_provider");
+		archiveSummaryReport.archiveBucket = rs.getString("archive_bucket");
 		archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
 
@@ -1381,8 +1393,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private String toString(List<HpcArchiveSummaryReport> archiveSummaryReport) {
 		StringBuffer archiveSummaryReportStr = new StringBuffer("[");
-		archiveSummaryReport.forEach(report -> archiveSummaryReportStr.append(
-				"{archiveName: " + report.archiveName + ", count: " + report.count + ", size: " + report.size + "}"));
+		archiveSummaryReport.forEach(report -> archiveSummaryReportStr.append("{archiveName: " + report.archiveName
+				+ ", archiveProvider: " + report.archiveProvider + ", archiveBucket: " + report.archiveBucket
+				+ ", count: " + report.count + ", size: " + report.size + "}"));
 		archiveSummaryReportStr.append("]");
 		return archiveSummaryReportStr.toString();
 	}
