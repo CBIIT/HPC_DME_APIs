@@ -390,8 +390,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 			// Add user entry into the return list.
 			HpcUserListEntry userListEntry = new HpcUserListEntry();
 			userListEntry.setUserId(user.getNciAccount().getUserId());
-			userListEntry.setFirstName(user.getNciAccount().getFirstName());
-			userListEntry.setLastName(user.getNciAccount().getLastName());
+			userListEntry.setFirstName(user.getNciAccount().getFirstName().replace("'","\\'"));
+			userListEntry.setLastName(user.getNciAccount().getLastName().replace("'","\\'"));
 			userListEntry.setDoc(user.getNciAccount().getDoc());
 			userListEntry.setDefaultBasePath(
 					dataManagementConfiguration != null ? dataManagementConfiguration.getBasePath() : null);
