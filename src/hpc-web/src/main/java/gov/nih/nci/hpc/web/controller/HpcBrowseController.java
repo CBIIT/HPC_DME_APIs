@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.web.controller;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -639,7 +640,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			if (childPath == null || childPath.equals(""))
 				continue;
 			if (childPath.indexOf(parentPath) != -1) {
-				String childName = childPath.substring(childPath.indexOf(parentPath) + parentPath.length() + 1);
+				String childName = Paths.get(childPath).getFileName().toString();
 				child.setName(childName);
 			}
 			trimPath(child, childPath);
