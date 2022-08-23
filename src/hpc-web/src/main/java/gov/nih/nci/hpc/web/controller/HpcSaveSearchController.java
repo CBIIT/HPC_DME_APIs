@@ -141,8 +141,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 				compoundQuery.setCompoundQueryType(namedCompoundQuery.getCompoundQueryType());
 				compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
 				compoundQuery.setTotalCount(namedCompoundQuery.getTotalCount());
-				compoundQuery.getSelectedColumns().addAll(search.getSelectedColumns());
 			}
+			compoundQuery.getSelectedColumns().clear();
+			compoundQuery.getSelectedColumns().addAll(search.getSelectedColumns());
 
 			if (search.getCriteriaName() == null || search.getCriteriaName().isEmpty()) {
 				result.setCode("400");
