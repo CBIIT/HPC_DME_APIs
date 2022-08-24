@@ -25,6 +25,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.report.HpcReport;
@@ -352,6 +355,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
 			+ "group by c.S3_ARCHIVE_NAME, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
 
+    private static final String ARCHIVE_SUMMARY_ALL_DOCS_SQL = "select b.DOC as doc, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+        + "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+        + "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
+        + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+        + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, b.doc";
+	
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -361,6 +370,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private JdbcTemplate jdbcTemplate = null;
 
 	private String iRodsBasePath = "";
+
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -789,6 +800,25 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 	}
 
+
+	private class HpcArchiveSummaryDocReport {
+      String doc;
+      String vault;
+      String bucket;
+      long count;
+      long size;
+    }
+
+    private RowMapper<HpcArchiveSummaryDocReport> archiveSummaryReportRowMapper2 = (rs, rowNum) -> {
+        HpcArchiveSummaryDocReport archiveSummaryReport = new HpcArchiveSummaryDocReport();
+        archiveSummaryReport.doc = rs.getString("doc");
+        archiveSummaryReport.count = rs.getLong("count");
+        archiveSummaryReport.size = rs.getLong("total_size");
+        archiveSummaryReport.vault = rs.getString("archive_provider");
+        archiveSummaryReport.bucket = rs.getString("archive_bucket");
+        return archiveSummaryReport;
+    };
+
 	public List<HpcReport> generateDocOrBasepathGridReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
 		Map<String, HpcReport> mapReports = new HashMap<>();
@@ -801,6 +831,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		fields.add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
 		fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
 		fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
+		fields.add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
 
 		List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
 		fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
@@ -908,20 +939,23 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 					usersSizeList = jdbcTemplate.queryForList(TOTAL_NUM_OF_USERS_GROUPBY_DOC_SQL, basepathDateArgs);
 				}
 
-				for (Map<String, Object> map : usersSizeList) {
-					String key = isBasePathReport ? map.get("PATH").toString() : map.get("DOC").toString();
-					matchedReport = mapReports.get(key);
-					if (matchedReport == null)
-						continue;
-					Object totalUsersEntry = map.get("TOTALUSERS");
-					for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-						HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-						if (matchedReport.getReportEntries().get(i)
-								.getAttribute() == HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS) {
-							reportEntry.setValue(totalUsersEntry.toString());
-						}
-					}
-				}
+                for (Map<String, Object> map : usersSizeList) {
+                  Object objectkey = isBasePathReport ? map.get("PATH") : map.get("DOC");
+                  if (objectkey == null)
+                    continue;
+                  matchedReport = mapReports.get(objectkey.toString());
+                  if (matchedReport == null)
+                    continue;
+                  Object totalUsersEntry = map.get("TOTALUSERS");
+                  for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+                      HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+                      if (matchedReport.getReportEntries().get(i)
+                              .getAttribute() == HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS) {
+                          reportEntry.setValue(totalUsersEntry.toString());
+                      }
+                  }
+              }
+
 
 				// Total number of data objects - TOTAL_NUM_OF_DATA_OBJECTS
 				List<Map<String, Object>> totalObjList;
@@ -971,6 +1005,52 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 						}
 					}
 				}
+
+                // Archive Summary
+                List<HpcArchiveSummaryDocReport> archiveSummaryDetailsList = new ArrayList();
+                Map<String, List<HpcArchiveSummaryDocReport>> archiveSummaryByDocMap = new HashMap();
+                if (isDocReport) {
+                   List<HpcArchiveSummaryDocReport> archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_DOCS_SQL, archiveSummaryReportRowMapper2, basepathDateLongArgs);
+                   for (int i = 0; i < archiveSummaryReport.size(); i++) {
+                     archiveSummaryDetailsList = new ArrayList(); 
+                     HpcArchiveSummaryDocReport rec = archiveSummaryReport.get(i);
+                     String doc = archiveSummaryReport.get(i).doc;
+                     if(archiveSummaryByDocMap.get(doc) == null) {
+                       archiveSummaryDetailsList.add(archiveSummaryReport.get(i));
+                       archiveSummaryByDocMap.put(doc, archiveSummaryDetailsList);
+                     } else {
+                         List<HpcArchiveSummaryDocReport> currentSummary = archiveSummaryByDocMap.get(doc);
+                         // Before adding check if a record with the same vault and bucket name exists. If so, add count and sum
+                         boolean match = false;
+                         for (int j=0; j < currentSummary.size(); j++) {
+                           if ((currentSummary.get(j).vault == rec.vault) &&
+                               (currentSummary.get(j).bucket == rec.bucket)) {
+                             currentSummary.get(j).count = currentSummary.get(j).count + rec.count;
+                             currentSummary.get(j).size = currentSummary.get(j).size + rec.size;
+                             match = true;
+                             break;
+                           } else {
+                             match = false;
+                           }
+                         } // for
+                         if (!match) {
+                           currentSummary.add(rec);
+                         }
+                         archiveSummaryByDocMap.replace(doc, currentSummary);
+                       }
+                    } // for (int i = 0;
+                }
+                archiveSummaryByDocMap.forEach((key, archiveSummaryDetailvalues) -> {
+                  HpcReport report = mapReports.get(key);
+                  if (report != null) {
+                    for (int i = 0; i < report.getReportEntries().size(); i++) {
+                      HpcReportEntry reportEntry = report.getReportEntries().get(i);
+                      if (reportEntry.getAttribute() == HpcReportEntryAttribute.ARCHIVE_SUMMARY) {
+                        reportEntry.setValue(gson.toJson(archiveSummaryDetailvalues));
+                      }
+                    }
+                  }
+                });
 
 				List<Map<String, Object>> fileRangeList;
 				if (isBasePathReport) {
