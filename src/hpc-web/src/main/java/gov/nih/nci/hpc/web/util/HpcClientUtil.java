@@ -2307,8 +2307,16 @@ public class HpcClientUtil {
   }
 
   public static void populateBasePaths(HttpSession session, Model model,
+	      HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
+	      String sslCertPath, String sslCertPassword) throws HpcWebException {
+
+      populateBasePaths(session, model, modelDTO, authToken, userId, collectionURL,
+          sslCertPath, sslCertPassword, false);
+  }
+
+  public static void populateBasePaths(HttpSession session, Model model,
       HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
-      String sslCertPath, String sslCertPassword) throws HpcWebException {
+      String sslCertPath, String sslCertPassword, boolean includeRead) throws HpcWebException {
 
     Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
     final List<String> docRulesBasePaths = new ArrayList<>();
@@ -2324,7 +2332,8 @@ public class HpcClientUtil {
       for (HpcPermissionForCollection permission : permissions.getPermissionsForCollections()) {
         if (permission != null && permission.getPermission() != null
             && (permission.getPermission().equals(HpcPermission.WRITE)
-                || permission.getPermission().equals(HpcPermission.OWN)))
+                || permission.getPermission().equals(HpcPermission.OWN)
+                || (includeRead && permission.getPermission().equals(HpcPermission.READ))))
           basePaths.add(permission.getCollectionPath());
       }
     }
