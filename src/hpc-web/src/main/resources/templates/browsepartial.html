@@ -1,5 +1,5 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 
@@ -45,6 +45,7 @@
   background-clip: padding-box;
   outline: none;
 }
+
 </style>
 </head>
 <body>
@@ -61,10 +62,16 @@
 					method="POST">
 					<label for="path">Path:</label> <input
 						type="text" class="form-control"
-						id="selectedNodePath" name="selectedNodePath" placeholder="Enter Path" />
+						list="basePaths" autocomplete="off"
+						id="selectedNodePath" name="selectedNodePath" placeholder="Select or Enter Path" />
+					<datalist id="basePaths">
+					    <option
+					        th:each="basePath : ${basePaths}"
+					        th:value="${basePath}" th:text="${basePath}">
+					    </option>
+					</datalist>
 					<button type="submit" class="btn btn-md btn-primary"
 						id="primaryButton" onClick="return prepareAndSubmit()">Browse</button>
-					<input type="hidden" id="selectedNodeId" name="selectedNodeId"/>
 					<input type="hidden" id="partial" name="partial" value="true"/>
 				</form>
 				</div>

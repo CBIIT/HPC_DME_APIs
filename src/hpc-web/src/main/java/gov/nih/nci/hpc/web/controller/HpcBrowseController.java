@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,6 +87,9 @@ public class HpcBrowseController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.pathreftype}")
 	private String hpcPathRefTypeURL;
 	
+	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
+	private String collectionAclURL;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -248,6 +252,7 @@ public class HpcBrowseController extends AbstractHpcController {
     // Verify User session
     HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
     String authToken = (String) session.getAttribute("hpcUserToken");
+
     if (user == null || authToken == null) {
       ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
       bindingResult.addError(error);
@@ -262,9 +267,18 @@ public class HpcBrowseController extends AbstractHpcController {
       modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
       session.setAttribute("userDOCModel", modelDTO);
     }
+    //Get user permissioned basePaths for Browse dialog
+    if(session.getAttribute("basePaths") == null) {
+        String userId = (String) session.getAttribute("hpcUserId");
+        HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, collectionAclURL, sslCertPath,
+		    sslCertPassword, true);
+    }
+    Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
+    model.addAttribute("basePaths", basePaths);
+
     String partial = request.getParameter("partial");
     String refresh = request.getParameter("refresh");
-    
+
     String path = null;
     if (partial != null)
       return "browsepartial";
@@ -272,7 +286,7 @@ public class HpcBrowseController extends AbstractHpcController {
     if (refresh != null) {
       session.removeAttribute("browserEntry");
     }
-    
+
     try {
 	    if (path == null || path.isEmpty()) {
 	      path = request.getParameter("path");
