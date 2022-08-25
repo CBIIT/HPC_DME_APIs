@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,6 +31,7 @@ import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -48,16 +50,25 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 
 /**
@@ -87,8 +98,14 @@ public class HpcBrowseController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.pathreftype}")
 	private String hpcPathRefTypeURL;
 	
-	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
-	private String collectionAclURL;
+	@Value("${gov.nih.nci.hpc.server.collection.acl}")
+	private String collectionAclsURL;
+
+	@Value("${gov.nih.nci.hpc.server.user.group}")
+	private String userGroupServiceURL;
+
+	@Autowired
+	private HpcModelBuilder hpcModelBuilder;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -264,16 +281,57 @@ public class HpcBrowseController extends AbstractHpcController {
     // Get User DOC model for base path
     HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
     if (modelDTO == null) {
-      modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+      //go to server only if not available in cache
+      modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
       session.setAttribute("userDOCModel", modelDTO);
     }
+
+    //Get the groups the user belongs to.
+    HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("userGroups");
+    if (groups == null) {
+      groups =
+          HpcClientUtil.getUserGroup(
+              authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
+      session.setAttribute("userGroups", groups);
+    }
+
+    List<HpcGroup> userGroups = groups.getGroups();
+    List<String> groupNames = new ArrayList<String>();
+    for(HpcGroup group: userGroups) {
+        groupNames.add(group.getGroupName());
+    }
+
     //Get user permissioned basePaths for Browse dialog
+
+    Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
     if(session.getAttribute("basePaths") == null) {
         String userId = (String) session.getAttribute("hpcUserId");
-        HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, collectionAclURL, sslCertPath,
-		    sslCertPassword, true);
+
+        //Get all permissions for all base paths, go to server only if not available in cache
+        HpcPermsForCollectionsDTO permissions = hpcModelBuilder.getModelPermissions(
+            modelDTO, authToken, collectionAclsURL, sslCertPath, sslCertPassword);
+
+        //Get the base paths that this user has permissions to
+        if (permissions != null) {
+            for (HpcPermissionsForCollection collectionPermissions : permissions.getCollectionPermissions()) {
+                if (collectionPermissions != null && !CollectionUtils.isEmpty(collectionPermissions.getCollectionPermissions())) {
+                    for(HpcSubjectPermission permission: collectionPermissions.getCollectionPermissions()) {
+                        if( (permission.getSubject().contentEquals(userId) ||
+                              groupNames.contains(permission.getSubject()))
+                          && (permission.getPermission() != null
+                          && !permission.getPermission().equals(HpcPermission.NONE))) {
+                            basePaths.add(collectionPermissions.getCollectionPath());
+                            break;
+                        }
+                    }
+                }
+            }
+            session.setAttribute("basePaths", basePaths);
+        }
+    } else {
+        //user base paths are already in session, retrieve it
+        basePaths = (Set<String>) session.getAttribute("basePaths");
     }
-    Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
     model.addAttribute("basePaths", basePaths);
 
     String partial = request.getParameter("partial");
