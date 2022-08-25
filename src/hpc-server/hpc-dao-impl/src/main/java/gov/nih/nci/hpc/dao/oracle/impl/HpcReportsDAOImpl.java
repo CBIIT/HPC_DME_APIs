@@ -470,9 +470,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	}
 
 	private class HpcArchiveSummaryReport {
-		String archiveName;
-		String archiveProvider;
-		String archiveBucket;
+		String vault;
+		String bucket;
 		long count;
 		long size;
 	}
@@ -481,9 +480,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
 		// TODO - remove the archive name after UI completed the change to new fields -
 		// provider and bucket
-		archiveSummaryReport.archiveName = rs.getString("archive_name");
-		archiveSummaryReport.archiveProvider = rs.getString("archive_provider");
-		archiveSummaryReport.archiveBucket = rs.getString("archive_bucket");
+		archiveSummaryReport.vault = rs.getString("archive_provider");
+		archiveSummaryReport.bucket = rs.getString("archive_bucket");
 		archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
 
@@ -1311,7 +1309,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			if (archiveSummaryReport != null) {
 				HpcReportEntry archiveSummaryEntry = new HpcReportEntry();
 				archiveSummaryEntry.setAttribute(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
-				archiveSummaryEntry.setValue(toString(archiveSummaryReport));
+				archiveSummaryEntry.setValue(gson.toJson(archiveSummaryReport));
 				report.getReportEntries().add(archiveSummaryEntry);
 			}
 		}
@@ -1469,15 +1467,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			}
 		}
 		return "0";
-	}
-
-	private String toString(List<HpcArchiveSummaryReport> archiveSummaryReport) {
-		StringBuffer archiveSummaryReportStr = new StringBuffer("[");
-		archiveSummaryReport.forEach(report -> archiveSummaryReportStr.append("{archiveName: " + report.archiveName
-				+ ", archiveProvider: " + report.archiveProvider + ", archiveBucket: " + report.archiveBucket
-				+ ", count: " + report.count + ", size: " + report.size + "}"));
-		archiveSummaryReportStr.append("]");
-		return archiveSummaryReportStr.toString();
 	}
 
 	@Override
