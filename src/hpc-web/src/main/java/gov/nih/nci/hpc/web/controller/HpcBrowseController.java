@@ -286,53 +286,58 @@ public class HpcBrowseController extends AbstractHpcController {
       session.setAttribute("userDOCModel", modelDTO);
     }
 
-    //Get the groups the user belongs to.
-    HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("userGroups");
-    if (groups == null) {
-      groups =
-          HpcClientUtil.getUserGroup(
-              authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
-      session.setAttribute("userGroups", groups);
-    }
-
-    List<HpcGroup> userGroups = groups.getGroups();
-    List<String> groupNames = new ArrayList<String>();
-    for(HpcGroup group: userGroups) {
-        groupNames.add(group.getGroupName());
-    }
-
     //Get user permissioned basePaths for Browse dialog
 
-    Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-    if(session.getAttribute("basePaths") == null) {
+    Set<String> userBasePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+    if(session.getAttribute("userBasePaths") == null) {
+
         String userId = (String) session.getAttribute("hpcUserId");
 
-        //Get all permissions for all base paths, go to server only if not available in cache
+        //Get the groups the user belongs to.
+        HpcGroupListDTO groups = null;
+        List<String> userGroupNames = new ArrayList<String>();
+        if (session.getAttribute("userGroups") == null) {
+            groups =
+              HpcClientUtil.getUserGroup(
+                  authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
+            if(groups != null) {
+                session.setAttribute("userGroups", groups);
+            }
+        } else {
+            groups = (HpcGroupListDTO) session.getAttribute("userGroups");
+        }
+        if(groups != null && CollectionUtils.isEmpty(groups.getGroups())) {
+           for(HpcGroup group: groups.getGroups()) {
+               userGroupNames.add(group.getGroupName());
+           }
+        }
+
+        //Get all permissions for all base paths, hpcModelBuilder goes to server only if not available in cache
         HpcPermsForCollectionsDTO permissions = hpcModelBuilder.getModelPermissions(
             modelDTO, authToken, collectionAclsURL, sslCertPath, sslCertPassword);
 
-        //Get the base paths that this user has permissions to
-        if (permissions != null) {
+        //Now extract the base paths that this user has permissions to
+        if (permissions != null && !CollectionUtils.isEmpty(permissions.getCollectionPermissions())) {
             for (HpcPermissionsForCollection collectionPermissions : permissions.getCollectionPermissions()) {
                 if (collectionPermissions != null && !CollectionUtils.isEmpty(collectionPermissions.getCollectionPermissions())) {
                     for(HpcSubjectPermission permission: collectionPermissions.getCollectionPermissions()) {
                         if( (permission.getSubject().contentEquals(userId) ||
-                              groupNames.contains(permission.getSubject()))
+                              userGroupNames.contains(permission.getSubject()))
                           && (permission.getPermission() != null
                           && !permission.getPermission().equals(HpcPermission.NONE))) {
-                            basePaths.add(collectionPermissions.getCollectionPath());
+                            userBasePaths.add(collectionPermissions.getCollectionPath());
                             break;
                         }
                     }
                 }
             }
-            session.setAttribute("basePaths", basePaths);
+            session.setAttribute("userBasePaths", userBasePaths);
         }
     } else {
         //user base paths are already in session, retrieve it
-        basePaths = (Set<String>) session.getAttribute("basePaths");
+        userBasePaths = (Set<String>) session.getAttribute("userBasePaths");
     }
-    model.addAttribute("basePaths", basePaths);
+    model.addAttribute("userBasePaths", userBasePaths);
 
     String partial = request.getParameter("partial");
     String refresh = request.getParameter("refresh");

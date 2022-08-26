@@ -62,12 +62,12 @@
 					method="POST">
 					<label for="path">Path:</label> <input
 						type="text" class="form-control"
-						list="basePaths" autocomplete="off"
+						list="userBasePaths" autocomplete="off"
 						id="selectedNodePath" name="selectedNodePath" placeholder="Select or Enter Path" />
-					<datalist id="basePaths">
+					<datalist id="userBasePaths">
 					    <option
-					        th:each="basePath : ${basePaths}"
-					        th:value="${basePath}" th:text="${basePath}">
+					        th:each="userBasePath : ${userBasePaths}"
+					        th:value="${userBasePath}" th:text="${userBasePath}">
 					    </option>
 					</datalist>
 					<button type="submit" class="btn btn-md btn-primary"
