@@ -287,10 +287,10 @@ public class HpcBrowseController extends AbstractHpcController {
     }
 
     //Get user permissioned basePaths for Browse dialog
-
     if(session.getAttribute("userBasePaths") == null) {
         String userId = (String) session.getAttribute("hpcUserId");
-        populateUserBasePaths(modelDTO, authToken, userId, "userBasePaths",
+        HpcPermission[] hpcPermissions = {HpcPermission.OWN, HpcPermission.WRITE, HpcPermission.READ};
+        populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "userBasePaths",
             sslCertPath, sslCertPassword, session, hpcModelBuilder);
     }
     model.addAttribute("userBasePaths", (Set<String>) session.getAttribute("userBasePaths"));

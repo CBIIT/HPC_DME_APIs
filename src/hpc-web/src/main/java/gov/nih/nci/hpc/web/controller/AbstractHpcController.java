@@ -34,6 +34,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcPermissions;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
@@ -123,8 +124,8 @@ public abstract class AbstractHpcController {
 	}
 
 	protected void populateUserBasePaths(HpcDataManagementModelDTO modelDTO, String authToken, String userId,
-			String sessionAttribute, String sslCertPath, String sslCertPassword, HttpSession session, 
-			HpcModelBuilder hpcModelBuilder) {
+			HpcPermission[] hpcPermissions, String sessionAttribute, String sslCertPath, String sslCertPassword, 
+			HttpSession session, HpcModelBuilder hpcModelBuilder) {
 
 		Set<String> userBasePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
@@ -158,8 +159,7 @@ public abstract class AbstractHpcController {
                     for(HpcSubjectPermission permission: collectionPermissions.getCollectionPermissions()) {
                         if( (permission.getSubject().contentEquals(userId) ||
                               userGroupNames.contains(permission.getSubject()))
-                          && (permission.getPermission() != null
-                          && !permission.getPermission().equals(HpcPermission.NONE))) {
+                          && (hpcPermissions != null && Arrays.asList(hpcPermissions).contains((permission.getPermission())))) {
                             userBasePaths.add(collectionPermissions.getCollectionPath());
                             break;
                         }
@@ -167,7 +167,7 @@ public abstract class AbstractHpcController {
                 }
             }
         }
-        session.setAttribute("userBasePaths", userBasePaths);
+        session.setAttribute(sessionAttribute, userBasePaths);
 	}
 	
 	protected void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
