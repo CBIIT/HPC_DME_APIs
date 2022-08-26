@@ -288,56 +288,12 @@ public class HpcBrowseController extends AbstractHpcController {
 
     //Get user permissioned basePaths for Browse dialog
 
-    Set<String> userBasePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
     if(session.getAttribute("userBasePaths") == null) {
-
         String userId = (String) session.getAttribute("hpcUserId");
-
-        //Get the groups the user belongs to.
-        HpcGroupListDTO groups = null;
-        List<String> userGroupNames = new ArrayList<String>();
-        if (session.getAttribute("userGroups") == null) {
-            groups =
-              HpcClientUtil.getUserGroup(
-                  authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
-            if(groups != null) {
-                session.setAttribute("userGroups", groups);
-            }
-        } else {
-            groups = (HpcGroupListDTO) session.getAttribute("userGroups");
-        }
-        if(groups != null && CollectionUtils.isEmpty(groups.getGroups())) {
-           for(HpcGroup group: groups.getGroups()) {
-               userGroupNames.add(group.getGroupName());
-           }
-        }
-
-        //Get all permissions for all base paths, hpcModelBuilder goes to server only if not available in cache
-        HpcPermsForCollectionsDTO permissions = hpcModelBuilder.getModelPermissions(
-            modelDTO, authToken, collectionAclsURL, sslCertPath, sslCertPassword);
-
-        //Now extract the base paths that this user has permissions to
-        if (permissions != null && !CollectionUtils.isEmpty(permissions.getCollectionPermissions())) {
-            for (HpcPermissionsForCollection collectionPermissions : permissions.getCollectionPermissions()) {
-                if (collectionPermissions != null && !CollectionUtils.isEmpty(collectionPermissions.getCollectionPermissions())) {
-                    for(HpcSubjectPermission permission: collectionPermissions.getCollectionPermissions()) {
-                        if( (permission.getSubject().contentEquals(userId) ||
-                              userGroupNames.contains(permission.getSubject()))
-                          && (permission.getPermission() != null
-                          && !permission.getPermission().equals(HpcPermission.NONE))) {
-                            userBasePaths.add(collectionPermissions.getCollectionPath());
-                            break;
-                        }
-                    }
-                }
-            }
-            session.setAttribute("userBasePaths", userBasePaths);
-        }
-    } else {
-        //user base paths are already in session, retrieve it
-        userBasePaths = (Set<String>) session.getAttribute("userBasePaths");
+        populateUserBasePaths(modelDTO, authToken, userId, "userBasePaths",
+            sslCertPath, sslCertPassword, session, hpcModelBuilder);
     }
-    model.addAttribute("userBasePaths", userBasePaths);
+    model.addAttribute("userBasePaths", (Set<String>) session.getAttribute("userBasePaths"));
 
     String partial = request.getParameter("partial");
     String refresh = request.getParameter("refresh");
