@@ -97,12 +97,6 @@ public class HpcBrowseController extends AbstractHpcController {
 
 	@Value("${gov.nih.nci.hpc.server.pathreftype}")
 	private String hpcPathRefTypeURL;
-	
-	@Value("${gov.nih.nci.hpc.server.collection.acl}")
-	private String collectionAclsURL;
-
-	@Value("${gov.nih.nci.hpc.server.user.group}")
-	private String userGroupServiceURL;
 
 	@Autowired
 	private HpcModelBuilder hpcModelBuilder;

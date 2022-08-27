@@ -2359,6 +2359,7 @@ public class HpcClientUtil {
     }
   }
 
+  @Deprecated
   public static void populateBasePaths(HttpSession session, Model model,
 	      HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
 	      String sslCertPath, String sslCertPassword) throws HpcWebException {
@@ -2382,6 +2383,7 @@ public class HpcClientUtil {
 	      docRulesBasePaths.toArray(), sslCertPath, sslCertPassword);
   }
 
+  @Deprecated
   public static void populateBasePaths(HttpSession session, Model model,
       HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
       String sslCertPath, String sslCertPassword, boolean includeRead) throws HpcWebException {
