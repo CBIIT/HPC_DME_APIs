@@ -142,7 +142,7 @@ public abstract class AbstractHpcController {
         } else {
             groups = (HpcGroupListDTO) session.getAttribute("userGroups");
         }
-        if(groups != null && CollectionUtils.isEmpty(groups.getGroups())) {
+        if(groups != null && !CollectionUtils.isEmpty(groups.getGroups())) {
            for(HpcGroup group: groups.getGroups()) {
                userGroupNames.add(group.getGroupName());
            }
