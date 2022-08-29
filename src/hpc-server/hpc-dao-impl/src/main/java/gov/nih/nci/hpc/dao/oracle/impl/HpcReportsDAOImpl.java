@@ -492,9 +492,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs, Object[] basepathArg,
 			Object[] basepathDateArgs, Object[] pathArg, Object[] pathDateArgs) {
 		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)) {
-			return jdbcTemplate.query(ARCHIVE_SUMMARY_SQL, archiveSummaryReportRowMapper);
+			//return jdbcTemplate.query(ARCHIVE_SUMMARY_SQL, archiveSummaryReportRowMapper);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)) {
-			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_DATE_SQL, archiveSummaryReportRowMapper, (Object[]) dates);
+			//return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_DATE_SQL, archiveSummaryReportRowMapper, (Object[]) dates);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)) {
 			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_DOC_SQL, archiveSummaryReportRowMapper, (Object[]) docArg);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)) {
