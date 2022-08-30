@@ -322,7 +322,6 @@ public class HpcReportsController extends AbstractHpcController {
                     String hrSize = MiscUtil.getHumanReadableSize(size , true);
                     assaySummaryString = assaySummaryString + assaySummaryList.get(i).vault + ", " +
                         assaySummaryList.get(i).bucket + ", " +
-                        assaySummaryList.get(i).count + ", " +
                         hrSize + "<br/><br/>";
                   }
                   entry.setValue(assaySummaryString);
