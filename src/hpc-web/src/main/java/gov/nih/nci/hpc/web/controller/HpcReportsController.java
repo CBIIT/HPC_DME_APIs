@@ -14,7 +14,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -63,6 +65,11 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcReportRequest;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+
 
 /**
  * <p>
@@ -91,6 +98,7 @@ public class HpcReportsController extends AbstractHpcController {
 
   //The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+  private Gson gson = new Gson();
 
   /**
    * GET Operation to prepare reports page
@@ -259,6 +267,13 @@ public class HpcReportsController extends AbstractHpcController {
     }
   }
 
+  private class HpcArchiveSummaryDocReport {
+    String doc;
+    String vault;
+    String bucket;
+    long count;
+    long size;
+  }
 
   private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
     List<HpcReportDTO> tReports = new ArrayList<>();
@@ -294,6 +309,23 @@ public class HpcReportsController extends AbstractHpcController {
               entry.setAttribute(env.getProperty(entry.getAttribute()));
               if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
                   entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
+              }
+              if (entry.getAttribute().equals(env.getProperty("ARCHIVE_SUMMARY"))) {
+                if (entry.getValue().equals("0")) {
+                  entry.setValue("NA");
+                } else {
+                  Type empMapType = new TypeToken<List<HpcArchiveSummaryDocReport>>() {}.getType();
+                  List<HpcArchiveSummaryDocReport> assaySummaryList = gson.fromJson(entry.getValue(), empMapType);
+                  String assaySummaryString = "";
+                  for(int i=0 ; i < assaySummaryList.size(); i++) {
+                    String size = String.valueOf(assaySummaryList.get(i).size);
+                    String hrSize = MiscUtil.getHumanReadableSize(size , true);
+                    assaySummaryString = assaySummaryString + assaySummaryList.get(i).vault + ", " +
+                        assaySummaryList.get(i).bucket + ", " +
+                        hrSize + "<br/><br/>";
+                  }
+                  entry.setValue(assaySummaryString);
+                }
               }
               if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
                   dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1 ){
