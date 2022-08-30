@@ -27,6 +27,7 @@
 	<div class="modal-body">
 		<form class="form-horizontal" id="saveCriteriaForm"
 			th:object="${hpcSaveSearch}">
+			<input type="hidden" th:field="*{selectedColumns}" id="selectedColumns"/>
 			<div th:if="${!#strings.isEmpty(hpcSaveSearch.getCriteriaName())}" class="pull-center" id="note">
 				<p>You can save a query with a new name by changing the name below.<br/>
 					Note: Saving with the same name replaces the existing query.</p>
@@ -83,7 +84,9 @@
 		 	alert ("The only special characters allowed are underscore (_) and dash (-).");
 		 	return false;
 		 }
-		 	
+	 
+	 document.getElementById("saveCriteriaForm").elements.namedItem("selectedColumns").value = selectedColumns;
+	 
 	 $.ajax({
      type: "POST",
 	 url: "/savesearch",

@@ -403,7 +403,7 @@ label {
 								<td style="color: black; font-weight:bold" id='path002' th:text="'Base Path'"></td>
 								<td style="color: black; font-weight:bold" id='path003' th:text="'Object Path'"></td>
 								<td style="color: black; font-weight:bold" id='path004' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Curator'"></td>
+								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Generator'"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
@@ -425,7 +425,7 @@ label {
 								<td style="color: black; font-weight:bold" id='path0022' th:text="BasePath"></td>
 								<td style="color: black; font-weight:bold" id='path0033' th:text="'Object Path'"></td>
 								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Curator'"></td>
+								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Generator'"></td>
 								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -558,11 +558,10 @@ label {
 								},
 								{
 								"targets": noSortColumns, // These columns should not be sortable. For e.g, Human readable values.
-								"orderable": false,
-								"visible": true
+								"orderable": false
 								},
 								{
-								"targets": [ 1, 2, 3, 4, 5, 6], // Visible columns at start up(include 0 specified above)
+								"targets": [ 1, 2, 4, 7, 9], // Visible columns at start up(include 0 specified above)
 								"visible": true
 	  							},
 								{
