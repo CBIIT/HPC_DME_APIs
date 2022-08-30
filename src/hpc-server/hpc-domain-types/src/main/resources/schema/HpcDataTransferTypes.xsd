@@ -314,6 +314,7 @@
 			<xsd:element name="collectionDownloadTaskId" type="xsd:string" />
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -367,6 +368,7 @@
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="s3DownloadTaskServerId" type="xsd:string" />
 			<xsd:element name="firstHopRetried" type="xsd:boolean" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -402,6 +404,7 @@
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="firstHopRetried" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
@@ -437,6 +440,7 @@
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
@@ -490,6 +494,7 @@
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result"
 				type="hpc-domain-datatransfer:HpcDownloadResult" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />

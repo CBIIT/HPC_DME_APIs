@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -57,7 +58,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -143,6 +143,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				hpcSaveSearch.setPageSize(Integer.parseInt(pageSize));
 			hpcSaveSearch.setQueryName(request.getParameter("queryName"));
 			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
+			String[] selectedColumns =  request.getParameterValues("selectedColumns");
+			if(selectedColumns != null && StringUtils.isNotEmpty(selectedColumns[0]))
+				hpcSaveSearch.getSelectedColumns().addAll(CollectionUtils.arrayToList(selectedColumns[0].split(",")));
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 			model.addAttribute("hpcSearch", hpcSaveSearch);
 			session.setAttribute("hpcSavedSearch", hpcSaveSearch);

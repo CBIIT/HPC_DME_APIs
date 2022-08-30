@@ -596,15 +596,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
 		responseDTO.setTaskId(collectionDownloadTask.getId());
 		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
-
 		return responseDTO;
-
 	}
 
 	@Override
@@ -736,7 +735,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
-				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken());
+				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
 		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
@@ -1410,6 +1410,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (Optional.ofNullable(downloadStatus.getStagingInProgress()).orElse(false)) {
 				downloadStatus.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
 			}
+	        downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
@@ -1450,7 +1451,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		HpcDownloadTaskResult downloadTask = taskStatus.getResult();
 		HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
-
+		downloadTask.setRetryUserId(securityService.getRequestInvoker().getNciAccount().getUserId());
 		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getUserId(), true, null);
 	}
 
@@ -2399,7 +2400,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (taskStatus == null) {
 			return null;
 		}
-
 		// Map the task status to DTO.
 		HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
 		downloadStatus.setInProgress(taskStatus.getInProgress());
@@ -2414,6 +2414,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
 			downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
 			downloadStatus.setRetryTaskId(taskStatus.getCollectionDownloadTask().getRetryTaskId());
+			downloadStatus.setRetryUserId(taskStatus.getCollectionDownloadTask().getRetryUserId());
 			if (taskStatus.getCollectionDownloadTask().getS3DownloadDestination() != null) {
 				downloadStatus.setDestinationLocation(
 						taskStatus.getCollectionDownloadTask().getS3DownloadDestination().getDestinationLocation());
@@ -2489,6 +2490,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setMessage(taskStatus.getResult().getMessage());
 			downloadStatus.setResult(taskStatus.getResult().getResult());
 			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
+			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
 			downloadStatus.setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);

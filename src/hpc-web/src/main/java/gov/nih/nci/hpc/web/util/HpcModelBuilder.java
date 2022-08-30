@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 
 /**
  * DOC Model Builder. Gets DOC Model from cache if present, else goes 
@@ -31,7 +32,6 @@ public class HpcModelBuilder {
 	}
 
 
-
 	@CachePut(value="model", key="#hpcModelURL")
 	public HpcDataManagementModelDTO updateDOCModel(String token, String hpcModelURL,
 		String hpcCertPath, String hpcCertPassword) {
@@ -40,5 +40,24 @@ public class HpcModelBuilder {
 		return HpcClientUtil.getDOCModel(token, hpcModelURL, hpcCertPath, hpcCertPassword);
 	}
 
+
+	@Cacheable(value="modelPermissions", key="#hpcPermissionsURL")
+	public HpcPermsForCollectionsDTO getModelPermissions(HpcDataManagementModelDTO modelDTO, String token,
+			String hpcPermissionsURL, String hpcCertPath, String hpcCertPassword) {
+
+		log.info("Getting base path permissions");
+		   return HpcClientUtil.getAllPermissionsForBasePaths(modelDTO, token,
+				   hpcPermissionsURL, hpcCertPath, hpcCertPassword);
+	}
+
+
+	@CachePut(value="modelPermissions", key="#hpcPermissionsURL")
+	public HpcPermsForCollectionsDTO updateModelPermissions(HpcDataManagementModelDTO modelDTO, String token, 
+			String hpcPermissionsURL, String hpcCertPath, String hpcCertPassword) {
+
+		log.info("Upgating base path permissions");
+		return HpcClientUtil.getAllPermissionsForBasePaths(modelDTO, token,
+				hpcPermissionsURL, hpcCertPath, hpcCertPassword);
+	}
 
 }
