@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
@@ -1473,7 +1474,16 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.get();
       if (null != restResponse && 200 == restResponse.getStatus()) {
-        JsonParser parser = new MappingJsonFactory().createParser((InputStream)
+	    ObjectMapper mapper = new ObjectMapper();
+	    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+	      new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+	      new JacksonAnnotationIntrospector());
+	    mapper.setAnnotationIntrospector(intr);
+	    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+	    false);
+	    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+	    mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        JsonParser parser = new MappingJsonFactory(mapper).createParser((InputStream)
             restResponse.getEntity());
         retVal = parser.readValueAs(HpcNamedCompoundMetadataQueryDTO.class);
       }
@@ -1493,7 +1503,16 @@ public class HpcClientUtil {
     Response restResponse = client.get();
     if (restResponse == null || restResponse.getStatus() != 200)
       return null;
-    MappingJsonFactory factory = new MappingJsonFactory();
+    ObjectMapper mapper = new ObjectMapper();
+    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+      new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+      new JacksonAnnotationIntrospector());
+    mapper.setAnnotationIntrospector(intr);
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+    false);
+    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+    mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+    MappingJsonFactory factory = new MappingJsonFactory(mapper);
     JsonParser parser;
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
@@ -1629,6 +1648,58 @@ public class HpcClientUtil {
         e.getMessage());
     }
   }
+
+  public static HpcPermsForCollectionsDTO getAllPermissionsForCollections(
+	      String token, String hpcServiceURL, Object[] collectionPaths,
+	      String hpcCertPath, String hpcCertPassword) {
+      JsonParser parser = null;
+      try {
+          HpcPermsForCollectionsDTO retVal = null;
+	      UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
+	        hpcServiceURL);
+	      if (null == collectionPaths || collectionPaths.length == 0) {
+              logger.error("No collection paths specified in call to get permissions for collections");
+	      } else {
+              ucBuilder.queryParam("collectionPath", collectionPaths);
+	          WebClient client = HpcClientUtil.getWebClient(ucBuilder.build().encode()
+	          .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+	          client.header("Authorization", "Bearer " + token);
+	          Response restResponse = client.get();
+
+              if(restResponse != null) {
+                  if (200 == restResponse.getStatus()) {
+                      parser = new MappingJsonFactory().createParser((InputStream)restResponse.getEntity());
+                      retVal = parser.readValueAs(HpcPermsForCollectionsDTO.class);
+                  } else {
+                      ObjectMapper mapper = new ObjectMapper();
+                      AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+                        new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+                        new JacksonAnnotationIntrospector());
+                      mapper.setAnnotationIntrospector(intr);
+                      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+                      parser = new MappingJsonFactory(mapper).createParser((InputStream)restResponse.getEntity());
+                      HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+                      throw new HpcWebException(
+                      "Failed to parse error message from call to get permissions for collections: " + exception.getMessage());
+                  }
+	          }
+	      }
+	      return retVal;
+      } catch (IllegalStateException | IOException e) {
+	      String errorMsg = "Failed to get permissions for requested collections: " +  e.getMessage();
+	      throw new HpcWebException(errorMsg, e);
+      } finally {
+          try {
+              if(parser != null) {
+                  parser.close();
+              }
+          } catch (IOException e) {
+                logger.error("Unable to close JsonParser during call to get permissions for collections", e);
+          }
+      }
+  }
+
 
 
   public static HpcNotificationSubscriptionListDTO getUserNotifications(String token,
@@ -2288,9 +2359,34 @@ public class HpcClientUtil {
     }
   }
 
+  @Deprecated
+  public static void populateBasePaths(HttpSession session, Model model,
+	      HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
+	      String sslCertPath, String sslCertPassword) throws HpcWebException {
+
+      populateBasePaths(session, model, modelDTO, authToken, userId, collectionURL,
+          sslCertPath, sslCertPassword, false);
+  }
+
+  public static HpcPermsForCollectionsDTO getAllPermissionsForBasePaths(
+	      HpcDataManagementModelDTO modelDTO, String authToken, String collectionURL,
+	      String sslCertPath, String sslCertPassword) {
+
+	    final List<String> docRulesBasePaths = new ArrayList<>();
+	    for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+	      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+	        docRulesBasePaths.add(rule.getBasePath());
+	      }
+	    }
+
+	    return HpcClientUtil.getAllPermissionsForCollections(authToken, collectionURL,
+	      docRulesBasePaths.toArray(), sslCertPath, sslCertPassword);
+  }
+
+  @Deprecated
   public static void populateBasePaths(HttpSession session, Model model,
       HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
-      String sslCertPath, String sslCertPassword) throws HpcWebException {
+      String sslCertPath, String sslCertPassword, boolean includeRead) throws HpcWebException {
 
     Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
     final List<String> docRulesBasePaths = new ArrayList<>();
@@ -2306,7 +2402,8 @@ public class HpcClientUtil {
       for (HpcPermissionForCollection permission : permissions.getPermissionsForCollections()) {
         if (permission != null && permission.getPermission() != null
             && (permission.getPermission().equals(HpcPermission.WRITE)
-                || permission.getPermission().equals(HpcPermission.OWN)))
+                || permission.getPermission().equals(HpcPermission.OWN)
+                || (includeRead && permission.getPermission().equals(HpcPermission.READ))))
           basePaths.add(permission.getCollectionPath());
       }
     }

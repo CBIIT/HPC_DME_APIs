@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,12 +23,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcPermissions;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 public abstract class AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.ssl.cert}")
@@ -46,6 +56,10 @@ public abstract class AbstractHpcController {
 	private String bookmarkServiceURL;
 	@Value("${dme.globus.public.endpoints:}")
 	private String globusPublicEndpoints;
+	@Value("${gov.nih.nci.hpc.server.collection.acl}")
+	private String collectionAclsURL;
+	@Value("${gov.nih.nci.hpc.server.user.group}")
+	private String userGroupServiceURL;
 
 	//Attribute constants
 	protected static final String ATTR_USER_LOGIN = "hpcLogin";
@@ -108,7 +122,53 @@ public abstract class AbstractHpcController {
 		}
 		return modelDTO;
 	}
-	
+
+	protected void populateUserBasePaths(HpcDataManagementModelDTO modelDTO, String authToken, String userId,
+			HpcPermission[] hpcPermissions, String sessionAttribute, String sslCertPath, String sslCertPassword, 
+			HttpSession session, HpcModelBuilder hpcModelBuilder) {
+
+		Set<String> userBasePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+
+        //Get the groups the user belongs to.
+        HpcGroupListDTO groups = null;
+        List<String> userGroupNames = new ArrayList<String>();
+        if (session.getAttribute("userGroups") == null) {
+            groups =
+              HpcClientUtil.getUserGroup(
+                  authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
+            if(groups != null) {
+                session.setAttribute("userGroups", groups);
+            }
+        } else {
+            groups = (HpcGroupListDTO) session.getAttribute("userGroups");
+        }
+        if(groups != null && !CollectionUtils.isEmpty(groups.getGroups())) {
+           for(HpcGroup group: groups.getGroups()) {
+               userGroupNames.add(group.getGroupName());
+           }
+        }
+
+        //Get all permissions for all base paths, hpcModelBuilder goes to server only if not available in cache
+        HpcPermsForCollectionsDTO permissions = hpcModelBuilder.getModelPermissions(
+            modelDTO, authToken, collectionAclsURL, sslCertPath, sslCertPassword);
+
+        //Now extract the base paths that this user has permissions to
+        if (permissions != null && !CollectionUtils.isEmpty(permissions.getCollectionPermissions())) {
+            for (HpcPermissionsForCollection collectionPermissions : permissions.getCollectionPermissions()) {
+                if (collectionPermissions != null && !CollectionUtils.isEmpty(collectionPermissions.getCollectionPermissions())) {
+                    for(HpcSubjectPermission permission: collectionPermissions.getCollectionPermissions()) {
+                        if( (permission.getSubject().contentEquals(userId) ||
+                              userGroupNames.contains(permission.getSubject()))
+                          && (hpcPermissions != null && Arrays.asList(hpcPermissions).contains((permission.getPermission())))) {
+                            userBasePaths.add(collectionPermissions.getCollectionPath());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        session.setAttribute(sessionAttribute, userBasePaths);
+	}
 	
 	protected void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		List<String> userDOCs = new ArrayList<>();
