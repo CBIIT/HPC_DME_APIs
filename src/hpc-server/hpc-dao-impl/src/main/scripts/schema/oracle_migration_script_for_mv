@@ -804,7 +804,7 @@ WHERE (meta_main.object_id IN (SELECT r_coll_hierarchy_meta_main.object_id
   AND objt_access.OBJECT_ID = meta_main.object_id
   AND config."BASE_PATH" not in ('/TEST_Archive', '/TEST_NO_HIER_Archive', '/DME_Deleted_Archive')
   AND meta_main2.OBJECT_ID(+) = meta_main.OBJECT_ID
-  AND meta_main2.META_ATTR_NAME(+) = 'data_curator'
+  AND meta_main2.META_ATTR_NAME(+) = 'data_generator'
   AND meta_main.OBJECT_PATH not like '%DME_Deleted_Archive%'
 GROUP BY config."DOC",
          config."BASE_PATH",
