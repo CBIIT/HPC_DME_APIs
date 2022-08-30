@@ -361,9 +361,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
         + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, b.doc";
 
-    private static final String STORAGE_CLASS_SQL = "select a.object_id as doc,  a.bucket, a.provider, a.storage_class "
-        + "from hpc_s3_archive_configuration a "
-        + "where a.provider = 'AWS'";
+    private static final String STORAGE_CLASS_SQL = "select b.doc as doc,  a.bucket, a.provider, a.storage_class "
+        + "from hpc_s3_archive_configuration a, hpc_data_management_configuration b "
+        + "where a.data_management_configuration_id=b.id and  a.provider = 'AWS'";
 
 
 	// ---------------------------------------------------------------------//
