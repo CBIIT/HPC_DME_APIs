@@ -855,12 +855,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
               if (sc == null) {
                 archiveSummaryReport.vault = "S3";
               } else if (sc.equals("DEEP_ARCHIVE")) {
-                archiveSummaryReport.vault = "GLACIER_DEEP_ARCHIVE";
+                archiveSummaryReport.vault = "Glacier Deep Archive";
               } else if (sc.equals("GLACIER")) {
-                archiveSummaryReport.vault = "GLACIER";
+                archiveSummaryReport.vault = "Glacier";
               }
               break;
             } else {
+              // Do we need this case?
               archiveSummaryReport.vault = "S3";
             }
           }
