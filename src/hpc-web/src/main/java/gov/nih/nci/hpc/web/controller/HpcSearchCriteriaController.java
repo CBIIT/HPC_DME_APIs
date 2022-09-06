@@ -184,6 +184,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch.setPageNumber(search.getPageNumber());
 			hpcSearch.setPageSize(search.getPageSize());
 			hpcSearch.setTotalSize(search.getTotalSize());
+			hpcSearch.setSelectedColumns(search.getSelectedColumns());
 			search = hpcSearch;
 		}
 
@@ -191,6 +192,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("pageNumber", search.getPageNumber());
 		model.addAttribute("pageSize", search.getPageSize());
 		model.addAttribute("totalSize", search.getTotalSize());
+		model.addAttribute("selectedColumns", search.getSelectedColumns());
 		boolean success = false;
 		try {
 
@@ -337,6 +339,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		dto.setDetailedResponse(search.isDetailed());
 		dto.setPage(search.getPageNumber());
 		dto.setPageSize(search.getPageSize());
+		dto.getSelectedColumns().addAll(search.getSelectedColumns());
 		return dto;
 	}
 

@@ -135,7 +135,7 @@ app
     	for(i = 1; i < paths.length; i++){
     		if(html.length == 0) {
         		if(paths.length == 2)  //The path has just one part and ends here, so display the human readable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + node.children.length + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		} else {
@@ -143,7 +143,7 @@ app
     			if(i < paths.length - 1)
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else //The last part of the path ends here, so display human redable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + node.children.length + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		}
     	}
     	$('.breadcrumb.folderpath').html(html);

@@ -1840,7 +1840,7 @@ function dm_register_directory {
     command_args+=" --checksum $checksum"
 
     #Generate the command for the client: 
-    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local command_file=$HPC_DM_UTILS/temp/cmd-file-$(uuidgen)
     echo "registerFromFilePath  " $command_args >  $command_file
 
     case "$(uname -s)" in
