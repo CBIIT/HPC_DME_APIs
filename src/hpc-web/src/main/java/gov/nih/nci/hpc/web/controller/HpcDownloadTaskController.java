@@ -156,6 +156,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
     AjaxResponseBody result = new AjaxResponseBody();
     try {
+      HpcUserDTO retryUser = (HpcUserDTO) session.getAttribute("hpcUser");
+      String retryUserId = (String) session.getAttribute("hpcUserId");
       String authToken = (String) session.getAttribute("hpcUserToken");
       if (authToken == null) {
         result.setMessage("Invalid user session, expired. Please login again.");
@@ -210,6 +212,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 				result.setMessage("Retry request successful. Task Id: " + downloadDTO.getTaskId());
 				model.addAttribute("message", "Retry collection download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
 			}
+			downloadTask.setRetryUserId(downloadDTO.getRetryUserId());
 			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 			model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
 			return "dataobjectsdownloadtask";

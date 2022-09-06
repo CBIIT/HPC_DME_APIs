@@ -520,7 +520,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
 			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException {
-		// Input Validation.
+	    // Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -1055,7 +1055,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
-		// Input validation
+
+	    // Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -1132,6 +1133,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCompleted(completed);
 		taskResult.setRestoreRequested(downloadTask.getRestoreRequested());
 		taskResult.setFirstHopRetried(downloadTask.getFirstHopRetried());
+		taskResult.setRetryUserId(downloadTask.getRetryUserId());
 
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(Math.toIntExact(bytesTransferred * 1000
@@ -1592,7 +1594,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException {
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, String retryUserId) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
 
@@ -1621,6 +1623,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
 		downloadTask.setRetryTaskId(downloadTaskResult.getId());
+		downloadTask.setRetryUserId(retryUserId);
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setUserId(downloadTaskResult.getUserId());
@@ -1784,6 +1787,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCompleted(completed);
 		taskResult.getItems().addAll(downloadTask.getItems());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
+	    taskResult.setRetryUserId(downloadTask.getRetryUserId());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
@@ -2846,6 +2850,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(downloadRequest.getPath());
 		downloadTask.setUserId(downloadRequest.getUserId());
 		downloadTask.setFirstHopRetried(false);
+		downloadTask.setRetryUserId(downloadRequest.getRetryUserId());
 
 		// Persist the download task. The download will be performed by a scheduled task
 		// picking up
@@ -3797,6 +3802,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setSize(downloadTask.getSize());
 			this.downloadTask.setS3DownloadTaskServerId(downloadTask.getS3DownloadTaskServerId());
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
+            this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
 
 			dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
 		}

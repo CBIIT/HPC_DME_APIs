@@ -55,9 +55,9 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_USER_QUERY_SQL = "merge into HPC_USER_QUERY using dual on (USER_ID = ? and QUERY_NAME = ?) "
-			+ "when matched then update set QUERY = ?, DETAILED_RESPONSE = ?, TOTAL_COUNT = ?, QUERY_TYPE = ?, CREATED = ?, UPDATED = ? "
-			+ "when not matched then insert (USER_ID, QUERY_NAME, QUERY, DETAILED_RESPONSE, TOTAL_COUNT, QUERY_TYPE, CREATED, UPDATED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "when matched then update set QUERY = ?, DETAILED_RESPONSE = ?, TOTAL_COUNT = ?, QUERY_TYPE = ?, CREATED = ?, UPDATED = ?, SELECTED_COLUMNS = ? "
+			+ "when not matched then insert (USER_ID, QUERY_NAME, QUERY, DETAILED_RESPONSE, TOTAL_COUNT, QUERY_TYPE, CREATED, UPDATED, SELECTED_COLUMNS) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private static final String DELETE_USER_QUERY_SQL = "delete from HPC_USER_QUERY where USER_ID = ? and QUERY_NAME = ?";
 
@@ -91,6 +91,12 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 		Calendar updated = Calendar.getInstance();
 		updated.setTime(rs.getTimestamp("UPDATED"));
 		namedCompoundQuery.setUpdated(updated);
+		String selectedColumns = rs.getString("SELECTED_COLUMNS");
+		if(selectedColumns != null) {
+			for (String selectedColumn : selectedColumns.split(",")) {
+				namedCompoundQuery.getSelectedColumns().add(selectedColumn);
+			}
+		}
 		return namedCompoundQuery;
 	};
 
@@ -124,11 +130,12 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 			jdbcTemplate.update(UPSERT_USER_QUERY_SQL, nciUserId, namedCompoundMetadataQuery.getName(), encryptedQuery,
 					namedCompoundMetadataQuery.getDetailedResponse(), namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated(), nciUserId, namedCompoundMetadataQuery.getName(),
+					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getSelectedColumns()),
+					nciUserId, namedCompoundMetadataQuery.getName(),
 					encryptedQuery, namedCompoundMetadataQuery.getDetailedResponse(),
 					namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated());
+					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getSelectedColumns()));
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a user query " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
@@ -339,5 +346,20 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 		}
 
 		return metadataQuery;
+	}
+	
+	/**
+	 * Map an array of selected columns to a single string.
+	 * 
+	 * @param selectedColumns A list of selected columns.
+	 * @return A comma separated selected columns string.
+	 */
+	private String toString(List<String> selectedColumns) {
+		StringBuilder selectedColumnsStr = new StringBuilder();
+		for (String selectedColumn : selectedColumns) {
+			selectedColumnsStr.append(selectedColumn + ",");
+		}
+
+		return selectedColumnsStr.toString();
 	}
 }
