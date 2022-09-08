@@ -365,6 +365,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, b.doc";
 
+    private static final String ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL = "select b.BASE_PATH as doc, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+        + "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+        + "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
+        + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+        + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, b.base_path";
+	
 	private static final String STORAGE_CLASS_SQL = "select b.doc as doc,  a.bucket, a.provider, a.storage_class "
 			+ "from hpc_s3_archive_configuration a, hpc_data_management_configuration b "
 			+ "where a.data_management_configuration_id=b.id and  a.provider = 'AWS'";
@@ -838,7 +844,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			HpcArchiveSummaryReport archiveSummaryReport = archiveSummaryReportList.get(i);
 			if (archiveSummaryReport.vault.equals("AWS")) {
 				for (int j = 0; j < storageClassList.size(); j++) {
-					if (doc.equals(storageClassList.get(j).doc)
+					if ((doc != null) && doc.equals(storageClassList.get(j).doc)
 							&& archiveSummaryReport.bucket.equals(storageClassList.get(j).bucket)) {
 						String sc = storageClassList.get(j).storage_class;
 						archiveSummaryReport.vault = getVaultString(archiveSummaryReport.vault, sc);
@@ -893,9 +899,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		fields.add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
 		fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
 		fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-		if (isDocReport) {
-			fields.add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
-		}
+		fields.add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
 
 		List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
 		fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
@@ -960,57 +964,39 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 			try {
 				// Sum of Data Fields
+				// 1) Total Size - TOTAL_DATA_SIZE
+				// 2) Largest file - LARGEST_FILE_SIZE
 				if (isBasePathReport) {
 					totalsList = jdbcTemplate.queryForList(SUM_OF_DATA_GROUPBY_BASEPATH_SQL, dateLongArgs);
 				} else {
 					totalsList = jdbcTemplate.queryForList(SUM_OF_DATA_GROUPBY_DOC_SQL, dateLongArgs);
 				}
-				for (Map<String, Object> map : totalsList) {
-					String key = isBasePathReport ? map.get("PATH").toString() : map.get("DOC").toString();
-					Object totalSize = map.get("TOTALSIZE");
-					Object maxSize = map.get("MAXSIZE");
-					matchedReport = mapReports.get(key);
-					if (matchedReport == null)
-						continue;
-					for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-						HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-						// Total Size - TOTAL_DATA_SIZE
-						if (matchedReport.getReportEntries().get(i)
-								.getAttribute() == HpcReportEntryAttribute.TOTAL_DATA_SIZE) {
-							reportEntry.setValue(totalSize.toString());
-						}
-						// Largest file - LARGEST_FILE_SIZE
-						if (matchedReport.getReportEntries().get(i)
-								.getAttribute() == HpcReportEntryAttribute.LARGEST_FILE_SIZE) {
-							reportEntry.setValue(maxSize.toString());
-						}
-					}
-				}
-                // TOTAL_NUM_OF_REGISTERED_USERS
+                boolean success = setGridFieldValue(isBasePathReport, mapReports, totalsList, HpcReportEntryAttribute.TOTAL_DATA_SIZE, "TOTALSIZE");
+				success = setGridFieldValue(isBasePathReport, mapReports, totalsList, HpcReportEntryAttribute.LARGEST_FILE_SIZE, "MAXSIZE");
+
+				// TOTAL_NUM_OF_REGISTERED_USERS
                 List<Map<String, Object>> usersSizeList;
                 if (isBasePathReport) {
                     usersSizeList = jdbcTemplate.queryForList(TOTAL_NUM_OF_USERS_GROUPBY_BASEPATH_SQL, dateArgs);
                 } else {
                     usersSizeList = jdbcTemplate.queryForList(TOTAL_NUM_OF_USERS_GROUPBY_DOC_SQL, dateArgs);
                 }
-                boolean success = setGridFieldValue(isBasePathReport, mapReports, usersSizeList, HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS, "TOTALUSERS");
+                success = setGridFieldValue(isBasePathReport, mapReports, usersSizeList, HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS, "TOTALUSERS");
                 //TODO - if not success, log error
                 
-                // TOTAL_NUM_OF_DATA_OBJECTS
+               // TOTAL_NUM_OF_DATA_OBJECTS
                 List<Map<String, Object>> totalObjList;
                 if (isBasePathReport) {
-                    totalObjList = jdbcTemplate.queryForList(TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_BASEPATH_SQL,
-                            dateLongArgs);
+                  totalObjList = jdbcTemplate.queryForList(TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_BASEPATH_SQL, dateLongArgs);
                 } else {
-                    totalObjList = jdbcTemplate.queryForList(TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_DOC_SQL,
-                            dateLongArgs);
+                    totalObjList = jdbcTemplate.queryForList(TOTAL_NUM_OF_DATA_OBJECTS_GROUPBY_DOC_SQL, dateLongArgs);
                 }
                 success = setGridFieldValue(isBasePathReport, mapReports, totalObjList, HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS, "TOTALOBJS");
 
                 // AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS
                 List<Map<String, Object>> avgDataObjMetaAttrsList;
                 if (isBasePathReport) {
-                    avgDataObjMetaAttrsList = jdbcTemplate
+                  avgDataObjMetaAttrsList = jdbcTemplate
                             .queryForList(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_BASEPATH_SQL, dateLongArgs);
                 } else {
                     avgDataObjMetaAttrsList = jdbcTemplate
@@ -1150,8 +1136,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       List<HpcArchiveSummaryReport> archiveSummaryDetailsList = new ArrayList();
       Map<String, List<HpcArchiveSummaryReport>> archiveSummaryByDocMap = new HashMap();
       try {
-        if (!isBasePathReport) {
-           List<HpcArchiveSummaryReport> archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_DOCS_SQL, archiveSummaryReportRowMapper2, dateLongArgs);
+           List<HpcArchiveSummaryReport> archiveSummaryReport;
+           if(isBasePathReport) {
+             archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL, archiveSummaryReportRowMapper2, dateLongArgs); 
+           } else {
+             archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_DOCS_SQL, archiveSummaryReportRowMapper2, dateLongArgs);
+           }
            for (int i = 0; i < archiveSummaryReport.size(); i++) {
              archiveSummaryDetailsList = new ArrayList(); 
              HpcArchiveSummaryReport rec = archiveSummaryReport.get(i);
@@ -1179,7 +1169,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
                }
              }
            }); // archiveSummaryByDocMap.forEach
-        } // !basepath
         } catch(Exception e) {
           e.printStackTrace();
           return false;
