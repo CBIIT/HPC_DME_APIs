@@ -541,7 +541,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
 						collectionMigrationTaskId);
 				dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
-						HpcDataMigrationResult.IGNORED, "Invalid data object request: " + e.getMessage(), null, null);
+						HpcDataMigrationResult.IGNORED, "Invalid migration request: " + e.getMessage(), null, null);
 				migrationResponse.setTaskId(dataObjectMigrationTask.getId());
 				return migrationResponse;
 			}
