@@ -527,10 +527,29 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	private HpcMigrationResponseDTO migrateDataObject(String path, String userId, String collectionMigrationTaskId,
 			HpcMigrationRequestDTO migrationRequest) throws HpcException {
 		// Input validation.
-		HpcSystemGeneratedMetadata metadata = validateDataObjectMigrationRequest(path, migrationRequest);
+		HpcSystemGeneratedMetadata metadata = null;
+		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
+		try {
+			metadata = validateDataObjectMigrationRequest(path, migrationRequest);
+
+		} catch (HpcException e) {
+			if (!StringUtils.isEmpty(collectionMigrationTaskId)) {
+				// While processing a collection download, if a validation request invalid, we
+				// create a task and complete as failed.
+				HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(path,
+						userId, null, null,
+						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
+						collectionMigrationTaskId);
+				dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
+						HpcDataMigrationResult.IGNORED, "Invalid data object request: " + e.getMessage(), null, null);
+				migrationResponse.setTaskId(dataObjectMigrationTask.getId());
+				return migrationResponse;
+			}
+
+			throw e;
+		}
 
 		// Create a migration task.
-		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
 		migrationResponse.setTaskId(dataMigrationService.createDataObjectMigrationTask(path, userId,
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
 				migrationRequest.getS3ArchiveConfigurationId(), collectionMigrationTaskId).getId());
