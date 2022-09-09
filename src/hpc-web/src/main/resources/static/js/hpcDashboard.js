@@ -2,6 +2,7 @@ var app = angular.module('DashBoard', ['ngTouch', 'ui.grid', 'ui.grid.pagination
 var linkSearchNameCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 '  <a href="search?queryName={{row.getProperty(\'message\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
+var selectedColumns = null;
 
 app.filter('percentEncoding', function () {
   return function (argStr) {
@@ -39,25 +40,32 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
       },
       {
         field : 'searchType',
-        width : 200,
+        width : 100,
         displayName : 'Search Type'
       },
       {
         field : 'createdOn',
-        width : 200,
+        width : 150,
         displayName : 'Created On',
         type:'date'
       },
       {
         field : 'edit',
-        width : 200,
+        width : 100,
         displayName : 'Edit',
         cellFilter: 'percentEncoding',
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}_edit" onclick="editSearch(this)">Edit</a></div>'
       },
       {
-        field : 'delete',
+        field : 'frequency',
         width : 200,
+        displayName : 'Auto Run Frequency',
+        cellFilter: 'percentEncoding',
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="/savesearch?queryName={{row.entity.searchName}}" data-toggle="modal" data-target="#saveModal" id="{{COL_FIELD CUSTOM_FILTERS}}_frequency">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+       },
+      {
+        field : 'delete',
+        width : 100,
         displayName : 'Delete',
         cellFilter: 'percentEncoding',
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)">Delete</a></div>'

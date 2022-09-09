@@ -167,7 +167,7 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 				sendReviewNotificationToUser.booleanValue() ? nciUserId : systemAdministratorUserId);
 		notificationService.sendNotification(
 				sendReviewNotificationToUser.booleanValue() ? nciUserId : systemAdministratorUserId,
-				HpcEventType.REVIEW_SENT, payloadEntries, HpcNotificationDeliveryMethod.EMAIL);
+				HpcEventType.REVIEW_SENT, payloadEntries, HpcNotificationDeliveryMethod.EMAIL, null);
 
 		reviewService.addReviewSentNotification(nciUserId);
 	}
@@ -213,7 +213,7 @@ public class HpcReviewBusServiceImpl implements HpcReviewBusService {
 
 		logger.info("Sending review reminder notification to: {} triggered by {}", nciUserId, invokerUserId);
 		notificationService.sendNotification(sendReviewNotificationToUser.booleanValue() ? nciUserId : invokerUserId,
-				HpcEventType.REVIEW_REMINDER_SENT, payloadEntries, HpcNotificationDeliveryMethod.EMAIL);
+				HpcEventType.REVIEW_REMINDER_SENT, payloadEntries, HpcNotificationDeliveryMethod.EMAIL, null);
 
 		reviewService.addReviewReminderSentNotification(nciUserId);
 	}
