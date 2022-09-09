@@ -184,5 +184,21 @@ public interface HpcDataSearchBusService {
    */
   public HpcCatalogsDTO getCatalog(HpcCatalogRequestDTO catalogRequestDTO)
       throws HpcException;
+  
+  /**
+   * Send monthly scheduled user stored query results.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void sendMonthlyQueryResults()
+      throws HpcException;
+  
+  /**
+   * Send weekly scheduled user stored query results.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void sendWeeklyQueryResults()
+      throws HpcException;
 
 }
