@@ -78,13 +78,15 @@ public interface HpcNotificationService {
    * @param eventType The event type to notify.
    * @param payloadEntries The payload entries to use for the notification message.
    * @param deliveryMethod The delivery method.
+   * @param attachment The attachment to send.
    * @return If the notification was delivered successfully, or false otherwise.
    */
   public boolean sendNotification(
       String userId,
       HpcEventType eventType,
       List<HpcEventPayloadEntry> payloadEntries,
-      HpcNotificationDeliveryMethod deliveryMethod);
+      HpcNotificationDeliveryMethod deliveryMethod,
+      String attachment);
 
   /**
    * Notify a system admin.
