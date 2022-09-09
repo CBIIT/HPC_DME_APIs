@@ -632,6 +632,40 @@
 					"index": "2"
 				}
 			]
+		},
+		{
+			"eventType": "USER_QUERY_SENT",
+			"subjectFormat": "%1$s Query Results for %2$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "FREQUENCY",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "QUERY_NAME",
+					"index": "1"
+				}
+			],
+			"textFormat": "Hello %1$s %2$s,<br/><br/>
+			Attached results from %3$s. <br/><br/>You are receiving this email because you setup auto-run for your query from DME. <br/><a href=\"%4$s\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "QUERY_NAME",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "3"
+				}
+			]
 		}
 	]
 }

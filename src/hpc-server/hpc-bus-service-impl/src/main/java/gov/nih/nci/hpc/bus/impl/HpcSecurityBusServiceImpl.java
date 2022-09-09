@@ -811,7 +811,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 			return systemAccountFunction.execute();
 		}
 	}
-
+	
 	/**
 	 * Convert a user role from string to enum.
 	 *
@@ -1018,6 +1018,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		payloadEntries.add(payloadEntry);
 
 		notificationService.sendNotification(nciUserId, HpcEventType.USER_REGISTERED, payloadEntries,
-				HpcNotificationDeliveryMethod.EMAIL);
+				HpcNotificationDeliveryMethod.EMAIL, null);
 	}
 }
