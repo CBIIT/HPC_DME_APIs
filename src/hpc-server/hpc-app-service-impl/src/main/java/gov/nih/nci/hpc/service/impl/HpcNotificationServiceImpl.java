@@ -195,7 +195,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
 
   @Override
   public boolean sendNotification(String userId, HpcEventType eventType,
-      List<HpcEventPayloadEntry> payloadEntries, HpcNotificationDeliveryMethod deliveryMethod) {
+      List<HpcEventPayloadEntry> payloadEntries, HpcNotificationDeliveryMethod deliveryMethod, String attachment) {
     // Input validation.
     if (userId == null || eventType == null || deliveryMethod == null) {
       return false;
@@ -227,7 +227,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
     		  .filter(entry -> "DOC".equals(entry.getAttribute()))
     		  .findAny()
     		  .orElse(null);
-      notificationSender.sendNotification(userId, eventType, docPayloadEntry == null ? null: docPayloadEntry.getValue(), payloadEntries);
+      notificationSender.sendNotification(userId, eventType, docPayloadEntry == null ? null: docPayloadEntry.getValue(), payloadEntries, attachment);
 
     } catch (HpcException e) {
       logger.error("failed to send user notification", e);

@@ -52,6 +52,8 @@
 		<prop key="hpc.scheduler.cron.sendAnnualReview.delay">0 0 0 29 2 ?</prop>
 		<prop key="hpc.scheduler.cron.sendAnnualReviewReminder.delay">0 0 0 29 2 ?</prop>
 		<prop key="hpc.scheduler.cron.removeDeletedDataObjects.delay">0 0 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.sendWeeklyUserQueryResults.delay">0 0 0 * * 4</prop>
+		<prop key="hpc.scheduler.cron.sendMonthlyUserQueryResults.delay">0 0 0 1 * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -63,4 +65,6 @@
 		interface="gov.nih.nci.hpc.bus.HpcSystemBusService" />
 	<osgi:reference id="hpcReviewBusService"
 		interface="gov.nih.nci.hpc.bus.HpcReviewBusService" />
+	<osgi:reference id="hpcDataSearchBusService"
+		interface="gov.nih.nci.hpc.bus.HpcDataSearchBusService" />
 </beans>
