@@ -453,6 +453,8 @@ public class HpcBrowseController extends AbstractHpcController {
     entry.setId(entryPath);
     entry.setFullPath(entryPath);
     entry.setPopulated(true);
+    //Indicate that this entry is only partially populated
+    entry.setPartial(true);
     entry.setName(path);
     entry.getChildren().add(childEntry);
     return entry;
@@ -525,23 +527,13 @@ public class HpcBrowseController extends AbstractHpcController {
 			boolean getChildren, boolean partial, boolean refresh) {
 
 		path = path.trim();
-		//HpcBrowserEntry selectedEntry = null;
-		
-		//If partial is true, it means we came here from browse dialog,
-		//while building the initial tree, from bookmark, or browse
-		//icon in detail view, so no relative selected entry 
-		//will be found anyways, so skip this. 
-		//If node refresh is true, then we will be re-populating 
-		//selectEntry from irods anyways, so skip this.
-		//if(!partial && !refresh) {		
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
-		//}
 
 		if(refresh & selectedEntry != null) {
 			selectedEntry.setPopulated(false);
 		}
 
-		if (selectedEntry != null && selectedEntry.isPopulated())
+		if (selectedEntry != null && selectedEntry.isPopulated() && !selectedEntry.isPartial())
 			return partial ? selectedEntry : browserEntry;
 		if (selectedEntry != null && selectedEntry.getChildren() != null)
 			selectedEntry.getChildren().clear();
@@ -587,6 +579,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				//we dont read again from DB, unless an explicit refresh 
 				//request has been made
 				selectedEntry.setPopulated(true);
+				selectedEntry.setPartial(false);
 				
 				selectedEntry.setCollection(true);
 				for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
