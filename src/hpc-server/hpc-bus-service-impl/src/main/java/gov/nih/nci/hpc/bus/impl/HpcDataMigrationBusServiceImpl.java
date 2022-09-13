@@ -532,7 +532,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		try {
 			metadata = validateDataObjectMigrationRequest(path, migrationRequest);
 
-		} catch (HpcException e) {
+		} catch (Exception e) {
 			if (!StringUtils.isEmpty(collectionMigrationTaskId)) {
 				// While processing a collection download, if a validation request invalid, we
 				// create a task and complete as failed.
