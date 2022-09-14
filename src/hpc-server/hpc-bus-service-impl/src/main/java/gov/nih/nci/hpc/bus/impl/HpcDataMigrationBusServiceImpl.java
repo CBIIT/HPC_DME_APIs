@@ -606,6 +606,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		// Try to claim the task
 		try {
+			logger.info("Data migration: task - {} attempting to claim.", dataMigrationTask.getId());
 			if (!dataMigrationService.markInProcess(dataMigrationTask, true)) {
 				logger.info("Data migration: task - {} failed to claim. Already in-process by {}",
 						dataMigrationTask.getId(), dataMigrationTask.getServerId());
