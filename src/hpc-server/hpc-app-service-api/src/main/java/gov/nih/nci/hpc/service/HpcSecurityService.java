@@ -203,6 +203,18 @@ public interface HpcSecurityService {
 			HpcSystemAccountFunctionNoReturn systemAccountFunction) throws HpcException;
 
 	/**
+	 * Perform a function using user account.
+	 *
+	 * @param userId   				UserId of the user to be executed as.
+	 * @param userAccountFunction   The function to perform as user account.
+	 * @param <T>                   The class of the user account function
+	 * @return T The functional interface return type
+	 * @throws HpcException thrown by the function.
+	 */
+	public <T> T executeAsUserAccount(String userId,
+			HpcSystemAccountFunction<T> userAccountFunction) throws HpcException;
+
+	/**
 	 * Authenticate a user (via LDAP).
 	 *
 	 * @param userName The user's name.
