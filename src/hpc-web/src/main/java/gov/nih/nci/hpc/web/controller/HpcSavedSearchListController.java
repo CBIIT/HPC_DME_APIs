@@ -92,6 +92,10 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 					namedQuery.setCreatedOn(format.format(query.getCreated().getTime()));
 					namedQuery.setDelete(URLEncoder.encode(query.getName(), "UTF-8"));
 					namedQuery.setEdit(URLEncoder.encode(query.getName(), "UTF-8"));
+					if(query.getFrequency() != null)
+						namedQuery.setFrequency("WEEKLY".equals(query.getFrequency().value()) ? "Weekly" : "Monthly");
+					else
+						namedQuery.setFrequency("Set");
 					result.add(namedQuery);
 				}
 			}
