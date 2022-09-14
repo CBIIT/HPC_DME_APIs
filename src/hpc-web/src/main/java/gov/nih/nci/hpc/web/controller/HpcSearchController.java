@@ -124,6 +124,7 @@ public class HpcSearchController extends AbstractHpcController {
 			model.addAttribute("selectedColumns", query.getNamedCompoundQuery().getSelectedColumns());
 			search.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
 			hpcSaveSearch.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+			hpcSaveSearch.setFrequency(query.getNamedCompoundQuery().getFrequency());
 		}
 		session.setAttribute("hpcSearch", search);
 		session.setAttribute("hpcSaveSearch", hpcSaveSearch);
