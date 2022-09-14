@@ -39,6 +39,9 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 	private Object fromS3ArchiveAuthToken = null;
 	private Object toS3ArchiveAuthToken = null;
 
+	// Indicator to mark transfer failed event received.
+	boolean transferFailed = false;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -88,6 +91,14 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 
 	@Override
 	public void transferFailed(String message) {
+		synchronized (this) {
+			if (transferFailed) {
+				// Failure event already received and processed.
+				return;
+			}
+			transferFailed = true;
+		}
+
 		logger.error("Migration failed for: {} [task-id: {}]", dataObjectMigrationTask.getPath(),
 				dataObjectMigrationTask.getId());
 		try {
