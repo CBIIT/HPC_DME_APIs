@@ -95,7 +95,7 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 					if(query.getFrequency() != null)
 						namedQuery.setFrequency("WEEKLY".equals(query.getFrequency().value()) ? "Weekly" : "Monthly");
 					else
-						namedQuery.setFrequency("Set");
+						namedQuery.setFrequency("None");
 					result.add(namedQuery);
 				}
 			}
