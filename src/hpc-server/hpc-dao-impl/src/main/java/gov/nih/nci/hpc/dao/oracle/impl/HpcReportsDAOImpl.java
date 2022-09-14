@@ -1005,7 +1005,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
                 success = setGridFieldValue(isBasePathReport, mapReports, avgDataObjMetaAttrsList, HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS, "totalattrs");
 
                 // Archive Summary Fields (Vault, Bucket, Size)
-                success = archiveSummaryFieldForGrid(isBasePathReport, mapReports, dateLongArgs);
+                success = setArchiveSummaryFieldForGrid(isBasePathReport, mapReports, dateLongArgs);
 
 				List<Map<String, Object>> fileRangeList;
 				if (isBasePathReport) {
@@ -1017,47 +1017,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 							FILESIZE_SELECT_DOC_GRID + DOC_FROM_SQL + BASEPATH_GRID_WHERE_SQL + FILESIZE_GROUP_DOC_GRID,
 							dateLongArgs);
 				}
+                setFilesFieldsForGrid(isBasePathReport, mapReports, fileRangeList);
 
-				HpcReportEntryAttribute entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
-				// FILE RANGES
-				for (Map<String, Object> map : fileRangeList) {
-					String key = isBasePathReport ? map.get("PATH").toString() : map.get("DOC").toString();
-					matchedReport = mapReports.get(key);
-					if (matchedReport == null)
-						continue;
-					Object range = map.get("RANGE");
-					Object count = map.get("CNT");
-					switch (range.toString()) {
-					case "range1":
-						entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
-						break;
-					case "range2":
-						entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB;
-						break;
-					case "range3":
-						entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB;
-						break;
-					case "range4":
-						entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB;
-						break;
-					case "range5":
-						entryAttr = HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB;
-						break;
-					case "range6":
-						entryAttr = HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB;
-						break;
-					case "range7":
-						entryAttr = HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB;
-						break;
-					}
-					for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
-						HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
-						if (matchedReport.getReportEntries().get(i).getAttribute() == entryAttr) {
-							reportEntry.setValue(count.toString());
-						}
-					}
-				}
-				//
 				List<Map<String, Object>> numCollectionList;
 				if (isBasePathReport) {
 					numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_BASEPATH_SQL,
@@ -1066,42 +1027,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 					numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_DOC_SQL,
 							dateLongArgs);
 				}
-				StringBuffer str = new StringBuffer();
-				str.append("[");
-				if (numCollectionList != null) {
-					for (String key : keyList) {
-						matchedReport = mapReports.get(key);
-						if (matchedReport == null)
-							continue;
-						for (Map<String, Object> listEntry : numCollectionList) {
-							String type = null;
-							String count = null;
-							Iterator<String> iter = listEntry.keySet().iterator();
-							String tpath = "";
-							while (iter.hasNext()) {
-								String name = iter.next();
-								if (name.equalsIgnoreCase("cnt")) {
-									java.math.BigDecimal value = (java.math.BigDecimal) listEntry.get(name);
-									count = value.toString();
-								} else if (name.equalsIgnoreCase("path") || name.equalsIgnoreCase("doc")) {
-									tpath = (String) listEntry.get(name);
-								} else {
-									type = (String) listEntry.get(name);
-								}
-							}
-							if (tpath.equals(key)) {
-								str.append("{" + type + ": " + count + "}");
-							}
-						}
-						str.append("]");
-						HpcReportEntry numOfCollEntry = new HpcReportEntry();
-						numOfCollEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
-						numOfCollEntry.setValue(str.toString());
-						matchedReport.getReportEntries().add(numOfCollEntry);
-						str = new StringBuffer();
-						str.append("[");
-					}
-				}
+				setNumCollectionsForGrid(mapReports, keyList, numCollectionList);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1132,7 +1058,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       return true;
     }
 
-    private boolean archiveSummaryFieldForGrid(boolean isBasePathReport, Map<String, HpcReport> mapReports, Object[]dateLongArgs){
+    private boolean setArchiveSummaryFieldForGrid(boolean isBasePathReport, Map<String, HpcReport> mapReports, Object[]dateLongArgs){
       List<HpcArchiveSummaryReport> archiveSummaryDetailsList = new ArrayList();
       Map<String, List<HpcArchiveSummaryReport>> archiveSummaryByDocMap = new HashMap();
       try {
@@ -1175,6 +1101,89 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         }
       return true;
     }
+    
+    private void setFilesFieldsForGrid(boolean isBasePathReport, Map<String, HpcReport> mapReports, List<Map<String, Object>>  fileRangeList) {
+      HpcReportEntryAttribute entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
+      HpcReport matchedReport;
+      // FILE RANGES
+      for (Map<String, Object> map : fileRangeList) {
+          String key = isBasePathReport ? map.get("PATH").toString() : map.get("DOC").toString();
+          matchedReport = mapReports.get(key);
+          if (matchedReport == null)
+              continue;
+          Object range = map.get("RANGE");
+          Object count = map.get("CNT");
+          switch (range.toString()) {
+          case "range1":
+              entryAttr = HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB;
+              break;
+          case "range2":
+              entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_MB_1_GB;
+              break;
+          case "range3":
+              entryAttr = HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB;
+              break;
+          case "range4":
+              entryAttr = HpcReportEntryAttribute.FILE_SIZE_10_GB_100_GB;
+              break;
+          case "range5":
+              entryAttr = HpcReportEntryAttribute.FILE_SIZE_100_GB_500_GB;
+              break;
+          case "range6":
+              entryAttr = HpcReportEntryAttribute.FILE_SIZE_500_GB_1_TB;
+              break;
+          case "range7":
+              entryAttr = HpcReportEntryAttribute.FILE_SIZE_OVER_1_TB;
+              break;
+          }
+          for (int i = 0; i < matchedReport.getReportEntries().size(); i++) {
+              HpcReportEntry reportEntry = matchedReport.getReportEntries().get(i);
+              if (matchedReport.getReportEntries().get(i).getAttribute() == entryAttr) {
+                  reportEntry.setValue(count.toString());
+              }
+          }
+      }
+
+    }
+	private void setNumCollectionsForGrid(Map<String, HpcReport> mapReports, List<String> keyList, List<Map<String, Object>> numCollectionList) {
+		HpcReport matchedReport;
+		StringBuffer str = new StringBuffer();
+		str.append("[");
+		if (numCollectionList != null) {
+			for (String key : keyList) {
+				matchedReport = mapReports.get(key);
+				if (matchedReport == null)
+					continue;
+				for (Map<String, Object> listEntry : numCollectionList) {
+					String type = null;
+					String count = null;
+					Iterator<String> iter = listEntry.keySet().iterator();
+					String tpath = "";
+					while (iter.hasNext()) {
+						String name = iter.next();
+						if (name.equalsIgnoreCase("cnt")) {
+							java.math.BigDecimal value = (java.math.BigDecimal) listEntry.get(name);
+							count = value.toString();
+						} else if (name.equalsIgnoreCase("path") || name.equalsIgnoreCase("doc")) {
+							tpath = (String) listEntry.get(name);
+						} else {
+							type = (String) listEntry.get(name);
+						}
+					}
+					if (tpath.equals(key)) {
+						str.append("{" + type + ": " + count + "}");
+					}
+				}
+				str.append("]");
+				HpcReportEntry numOfCollEntry = new HpcReportEntry();
+				numOfCollEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
+				numOfCollEntry.setValue(str.toString());
+				matchedReport.getReportEntries().add(numOfCollEntry);
+				str = new StringBuffer();
+				str.append("[");
+			}
+		}
+	}
     	
 	private List<String> getUsers() {
 		return jdbcTemplate.queryForList(USERS_SQL, String.class);
