@@ -33,42 +33,35 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
     columnDefs: [
       {
         field : 'searchName',
-        minWidth : 300,
+        width: '45%',
         displayName : 'Search Name',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a title="Run Search" href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a>&nbsp;&nbsp;&nbsp;<a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}_edit" onclick="editSearch(this)"><i class="fa fa-edit" title="Edit Search Criteria"></i></a></div>'
       },
       {
         field : 'searchType',
-        width : 100,
+        width: '15%',
         displayName : 'Search Type'
       },
       {
         field : 'createdOn',
-        width : 150,
+        width: '15%',
         displayName : 'Created On',
         type:'date'
       },
       {
-        field : 'edit',
-        width : 100,
-        displayName : 'Edit',
-        cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}_edit" onclick="editSearch(this)">Edit</a></div>'
-      },
-      {
         field : 'frequency',
-        width : 200,
+        width: '15%',
         displayName : 'Auto Run Frequency',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="/savesearch?queryName={{row.entity.searchName}}" data-toggle="modal" data-target="#saveModal" id="{{COL_FIELD CUSTOM_FILTERS}}_frequency">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}&nbsp;&nbsp;&nbsp;<a href="/savesearch?queryName={{row.entity.searchName}}" data-toggle="modal" data-target="#saveModal" id="{{COL_FIELD CUSTOM_FILTERS}}_frequency"><i class="fa fa-edit" title="Modify Settings"></a></div>'
        },
       {
         field : 'delete',
-        width : 100,
+        width: '10%',
         displayName : 'Delete',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)">Delete</a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)"><i class="fa fa-trash" title="Delete"></i></a></div>'
       }
     ],
   };
