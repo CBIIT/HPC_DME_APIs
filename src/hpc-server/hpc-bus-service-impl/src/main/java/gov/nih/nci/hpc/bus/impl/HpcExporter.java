@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,17 +67,23 @@ public class HpcExporter
 	public void exportCollections(String exportFileName, HpcCollectionListDTO collectionsDTO,
 			List<String> selectedColumns) throws IOException {
 		
+		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 		List<String> headers = new ArrayList<String>();
 		if (CollectionUtils.isNotEmpty(collectionsDTO.getCollections()) ||
 				CollectionUtils.isNotEmpty(collectionsDTO.getCollectionPaths())) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
+			if (selectedColumns != null && selectedColumns.contains(("createdOn")))
+				headers.add("created_on");
 			for (String selectedColumn : selectedColumns) {
-				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission")
-						&& !selectedColumn.equals("uniqueId")
-						&& !selectedColumn.equals("registeredBy")
-						&& !selectedColumn.equals("createdOn"))
+				if (selectedColumn.equals("uniqueId"))
+					headers.add("uuid");
+				else if (selectedColumn.equals("registeredBy"))
+					headers.add("registered_by");
+				else if (selectedColumn.equals("collectionType"))
+					headers.add("collection_type");
+				else if (!selectedColumn.equals("path") && !selectedColumn.equals("createdOn") && !selectedColumn.equals("download")
+						&& !selectedColumn.equals("permission"))
 					headers.add(selectedColumn);
 			}
 			// For non-detailed search
@@ -89,6 +96,8 @@ public class HpcExporter
 			for (HpcCollectionDTO collection : collectionsDTO.getCollections()) {
 				List<String> result = new ArrayList<String>();
 				result.add(collection.getCollection().getAbsolutePath());
+				if(headers.contains("created_on"))
+					result.add(format.format(collection.getCollection().getCreatedAt().getTime()));
 				if (collection != null && collection.getMetadataEntries() != null) {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getSelfMetadataEntries());
@@ -108,7 +117,7 @@ public class HpcExporter
 								break;
 							}
 						}
-						if(!found && !header.equals("path"))
+						if(!found && !header.equals("path") && !header.equals("created_on"))
 							result.add("");
 					}
 				}
@@ -127,17 +136,21 @@ public class HpcExporter
 	public void exportDataObjects(String exportFileName, HpcDataObjectListDTO dataObjectsDTO,
 			List<String> selectedColumns) throws IOException {
 		
+		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 		List<String> headers = new ArrayList<String>();
 		if (CollectionUtils.isNotEmpty(dataObjectsDTO.getDataObjects()) ||
 				CollectionUtils.isNotEmpty(dataObjectsDTO.getDataObjectPaths())) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
+			if (selectedColumns != null && selectedColumns.contains(("createdOn")))
+				headers.add("created_on");
 			for (String selectedColumn : selectedColumns) {
-				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission") && !selectedColumn.equals("link")
-						&& !selectedColumn.equals("uniqueId")
-						&& !selectedColumn.equals("registeredBy")
-						&& !selectedColumn.equals("createdOn"))
+				if (selectedColumn.equals("uniqueId"))
+					headers.add("uuid");
+				else if (selectedColumn.equals("registeredBy"))
+					headers.add("registered_by");
+				else if (!selectedColumn.equals("path") && !selectedColumn.equals("createdOn") && !selectedColumn.equals("download")
+						&& !selectedColumn.equals("permission") && !selectedColumn.equals("link"))
 					headers.add(selectedColumn);
 			}
 			// For non-detailed search
@@ -150,6 +163,8 @@ public class HpcExporter
 			for (HpcDataObjectDTO datafile : dataObjectsDTO.getDataObjects()) {
 				List<String> result = new ArrayList<String>();
 				result.add(datafile.getDataObject().getAbsolutePath());
+				if(headers.contains("created_on"))
+					result.add(format.format(datafile.getDataObject().getCreatedAt().getTime()));
 				if (datafile != null && datafile.getMetadataEntries() != null) {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
@@ -169,7 +184,7 @@ public class HpcExporter
 								break;
 							}
 						}
-						if(!found && !header.equals("path"))
+						if(!found && !header.equals("path") && !header.equals("created_on"))
 							result.add("");
 					}
 				}
