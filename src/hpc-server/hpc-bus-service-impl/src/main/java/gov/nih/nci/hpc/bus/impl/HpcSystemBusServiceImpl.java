@@ -1093,7 +1093,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									.getNotificationDeliveryMethods()) {
 								// Send notification via this delivery method.
 								boolean notificationSent = notificationService.sendNotification(userId, eventType,
-										event.getPayloadEntries(), deliveryMethod);
+										event.getPayloadEntries(), deliveryMethod, null);
 
 								// Create a delivery receipt for this delivery method.
 								notificationService.createNotificationDeliveryReceipt(userId, event.getId(),
