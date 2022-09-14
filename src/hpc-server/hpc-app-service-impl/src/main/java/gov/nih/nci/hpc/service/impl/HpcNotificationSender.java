@@ -28,10 +28,11 @@ public interface HpcNotificationSender {
    * @param eventType The event type to notify.
    * @param doc The user's doc if doc specific template is available.
    * @param payloadEntries The payload entries to use for the notification message.
+   * @param attachment The attachment to send.
    * @throws HpcException if the delivery failed.
    */
   public void sendNotification(
-      String userId, HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries)
+      String userId, HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries, String attachment)
       throws HpcException;
 
   /**

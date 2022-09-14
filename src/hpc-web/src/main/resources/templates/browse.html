@@ -578,8 +578,12 @@ $('#tree1').bind(
         var node = event.node;
         $('#tree1').tree('toggle', node);
         if(!refresh && node.populated && node.collection) {
-	        data[0] = node;
-			angular.element('#refreshGrid').triggerHandler('click');
+            if(node.partial) {
+                browseNode(node);
+            } else {
+                data[0] = node;
+		        angular.element('#refreshGrid').triggerHandler('click');
+            }
 	    } else if (!node.collection && !node.populated) {
 	    	browseDataobject(node);
 	    }
@@ -605,7 +609,7 @@ function scrollWindow()
 	//when browse menu was invoked. If we are coming from onCreateLi when a
 	//bookmark or browser dialog was selected, then the node would already
 	//be populated so dont want to go to the server.
-	if(!refresh && !node.populated) {
+	if(!refresh && (!node.populated || node.partial)) {
 		browseNode(node);
 		node = $('#tree1').tree('getNodeById', node.id);
 	} else {

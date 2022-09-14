@@ -468,6 +468,31 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	}
 
 	@Override
+	public <T> T executeAsUserAccount(String userId,
+			HpcSystemAccountFunction<T> userAccountFunction) throws HpcException {
+		// Get the current request invoker, and authentication type.
+		HpcRequestInvoker currentRequestInvoker = getRequestInvoker();
+
+		// Switch to the user account
+		setUserRequestInvoker(userId);
+
+		// Execute the function as user account.
+		try {
+			return userAccountFunction.execute();
+
+		} finally {
+			// We may need to close the connection to data management.
+			if (getRequestInvoker().getDataManagementAuthenticatedToken() != null) {
+				// Data management system account was used, so need to close this connection.
+				dataManagementProxy.disconnect(getRequestInvoker().getDataManagementAuthenticatedToken());
+			}
+
+			// Switch back to the original request invoker.
+			HpcRequestContext.setRequestInvoker(currentRequestInvoker);
+		}
+	}
+	
+	@Override
 	public boolean authenticate(String userName, String password) throws HpcException {
 		// Input validation.
 		if (userName == null || userName.trim().length() == 0) {
@@ -741,4 +766,34 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		HpcRequestContext.setRequestInvoker(invoker);
 	}
 
+	/**
+	 * Set the service call invoker in the request context using user account.
+	 *
+	 * @param userId The userId of the user account to switch to.
+	 * @throws HpcException on service failure.
+	 */
+	private void setUserRequestInvoker(String userId) throws HpcException {
+		HpcUser user = getUser(userId);
+		if (user == null) {
+			throw new HpcException("User is not registered with HPC-DM: " + userId, HpcErrorType.UNAUTHORIZED_REQUEST);
+		}
+		if (!user.getActive()) {
+			throw new HpcException(
+					"User is inactive. Please contact system administrator to activate account: " + userId,
+					HpcErrorType.UNAUTHORIZED_REQUEST);
+		}
+		// Instantiate a Data Management account.
+		HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
+		dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
+		dataManagementAccount.setUsername(userId);
+
+		HpcRequestInvoker invoker = new HpcRequestInvoker();
+		invoker.setNciAccount(user.getNciAccount());
+		invoker.setDataManagementAccount(dataManagementAccount);
+		invoker.setDataManagementAuthenticatedToken(null);
+		invoker.setUserRole(getUserRole(dataManagementAccount.getUsername()));
+
+		HpcRequestContext.setRequestInvoker(invoker);
+	}
+	
 }

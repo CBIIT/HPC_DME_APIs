@@ -33,6 +33,7 @@
 			    <xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
 			    <xsd:element name="selectedColumns" type="xsd:string"
 						minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="frequency" type="hpc-domain-metadata:HpcCompoundMetadataQueryFrequency" minOccurs="0"  />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

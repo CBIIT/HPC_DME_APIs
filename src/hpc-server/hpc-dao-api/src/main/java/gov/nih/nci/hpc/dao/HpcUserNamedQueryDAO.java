@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryFrequency;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -67,6 +68,15 @@ public interface HpcUserNamedQueryDAO
      */
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) 
     		                                     throws HpcException;
+    /**
+     * Get all saved queries with the scheduled frequency.
+     *
+     * @param HpcCompoundMetadataQueryFrequency The scheduled frequency.
+     * @return A list of queries saved by the user with this frequency.
+     * @throws HpcException on database error.
+     */
+    public List<HpcNamedCompoundMetadataQuery> getQueriesByFrequency(HpcCompoundMetadataQueryFrequency frequency)
+			throws HpcException;
 }
 
  
