@@ -71,7 +71,7 @@
 <script>
 //<![CDATA[
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
-			'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns',
+			'ui.grid.pagination', 'ui.grid.resizeColumns',
 			'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection' ]);
 
 	app
@@ -85,8 +85,7 @@
 		'$scope',
 		'$http',
 		'$interval',
-		'uiGridGroupingConstants',
-		function($scope, $http, $interval, uiGridGroupingConstants) {
+		function($scope, $http, $interval) {
 
 		$scope.gridOptions1 = {
 			exporterMenuPdf: false,
