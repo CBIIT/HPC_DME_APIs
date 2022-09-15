@@ -333,43 +333,46 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	/////////////////////////// Archive summary report.
 	private static final String ARCHIVE_SUMMARY_BY_DOC_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b, r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? "
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = c.object_id group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
+			+ "where a.object_id = c.object_id " 
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_BY_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by_s3_archive_configuration c "
 			+ "where a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
-			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_BY_DOC_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
-			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_BY_USER_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by b, r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.meta_attr_value = ? group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET";
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.meta_attr_value = ? "
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_ALL_DOCS_SQL = "select b.DOC as doc, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
-			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, b.doc";
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET, b.doc";
 
     private static final String ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL = "select b.BASE_PATH as doc, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-        + "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_BUCKET as archive_bucket "
+        + "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
         + "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
         + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
-        + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, b.base_path";
+        + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, c.S3_ARCHIVE_STORAGE_CLASS, b.base_path";
 	
 	private static final String STORAGE_CLASS_SQL = "select b.doc as doc,  a.bucket, a.provider, a.storage_class "
 			+ "from hpc_s3_archive_configuration a, hpc_data_management_configuration b "
@@ -487,6 +490,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private class HpcArchiveSummaryReport {
 		String vault;
+		String storageClass;
 		String bucket;
 		long count;
 		long size;
@@ -499,6 +503,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		archiveSummaryReport.bucket = rs.getString("archive_bucket");
 		archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
+		archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
 		return archiveSummaryReport;
 	};
 
