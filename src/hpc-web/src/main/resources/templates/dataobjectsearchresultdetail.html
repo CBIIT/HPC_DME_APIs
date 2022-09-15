@@ -178,7 +178,6 @@
 				        order: 211
 				      }
 			    ],
-			treeRowHeaderAlwaysVisible : false,
 			onRegisterApi : function(gridApi) {
 				$scope.grid1Api = gridApi;
 			}
@@ -193,10 +192,6 @@
 
         $scope.selectAll = function() {
           $scope.gridApi.selection.selectAllRows();
-        };
-
-        $scope.expandAll = function() {
-          $scope.gridApi.treeBase.expandAllRows();
         };
 
         function getTableHeight(totalPage, currentPage, pageSize, dataLen) {  

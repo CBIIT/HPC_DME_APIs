@@ -111,6 +111,7 @@
 	     console.log('SUCCESS: ', msg);
 	     $('#message').html(msg.message);
  	     ele.style.display = "block";
+ 	     $('#updatedField').val('true').trigger('change');
 	 },
 	 error: function(e){
 	 console.log('ERROR: ', e);
