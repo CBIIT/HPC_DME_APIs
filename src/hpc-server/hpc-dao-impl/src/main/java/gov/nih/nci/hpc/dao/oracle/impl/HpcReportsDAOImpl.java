@@ -364,13 +364,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.meta_attr_value = ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
-	private static final String ARCHIVE_SUMMARY_ALL_DOCS_SQL = "select b.DOC as doc, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+	private static final String ARCHIVE_SUMMARY_ALL_DOCS_SQL = "select b.DOC as repName, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
 			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET, b.doc";
 
-    private static final String ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL = "select b.BASE_PATH as doc, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+    private static final String ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL = "select b.BASE_PATH as repName, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
         + "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
         + "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
         + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
@@ -497,7 +497,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		String bucket;
 		long count;
 		long size;
-		String doc; // optional field
+		String repName; // optional field
 	}
 
 	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper = (rs, rowNum) -> {
@@ -821,7 +821,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper2 = (rs, rowNum) -> {
 		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
-		archiveSummaryReport.doc = rs.getString("doc");
+		archiveSummaryReport.repName = rs.getString("repName");
 		archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
 		archiveSummaryReport.vault = rs.getString("archive_provider");
@@ -1054,14 +1054,14 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			 for (int i = 0; i < archiveSummaryReport.size(); i++) {
 			   archiveSummaryDetailsList = new ArrayList(); 
 			   HpcArchiveSummaryReport rec = archiveSummaryReport.get(i);
-			   String doc = archiveSummaryReport.get(i).doc;
-			   if(archiveSummaryByDocMap.get(doc) == null) {
+			   String repName = archiveSummaryReport.get(i).repName;
+			   if(archiveSummaryByDocMap.get(repName) == null) {
 				 archiveSummaryDetailsList.add(archiveSummaryReport.get(i));
-				 archiveSummaryByDocMap.put(doc, archiveSummaryDetailsList);
+				 archiveSummaryByDocMap.put(repName, archiveSummaryDetailsList);
 			   } else {
-				   List<HpcArchiveSummaryReport> currentSummary = archiveSummaryByDocMap.get(doc);
+				   List<HpcArchiveSummaryReport> currentSummary = archiveSummaryByDocMap.get(repName);
 				   currentSummary.add(rec);
-				   archiveSummaryByDocMap.replace(doc, currentSummary);
+				   archiveSummaryByDocMap.replace(repName, currentSummary);
 				 }
 			 } // for
 			 archiveSummaryByDocMap.forEach((key, archiveSummaryDetailvalues) -> {
