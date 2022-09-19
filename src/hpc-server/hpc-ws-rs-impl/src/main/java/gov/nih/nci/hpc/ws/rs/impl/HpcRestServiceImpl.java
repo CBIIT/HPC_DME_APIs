@@ -120,6 +120,10 @@ public abstract class HpcRestServiceImpl {
 	 * @return The REST response object.
 	 */
 	protected Response errorResponse(Object entity) {
+		if(entity instanceof HpcException) {
+			HpcException e = (HpcException) entity;
+			return apiVersion.header(exceptionMapper.toResponse(e)).build();
+		}
 		return Response.serverError().entity(entity).build();
 	}
 
