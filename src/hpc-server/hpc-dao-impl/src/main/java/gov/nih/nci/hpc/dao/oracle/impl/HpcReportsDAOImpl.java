@@ -392,8 +392,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private Gson gson = new Gson();
 
-	List<HpcS3ArchiveConfig> storageClassList = new ArrayList<>();
-
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -508,7 +506,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		archiveSummaryReport.bucket = rs.getString("archive_bucket");
 		archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
-		//archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
+		archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
 		return archiveSummaryReport;
 	};
 
@@ -831,62 +829,27 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return archiveSummaryReport;
 	};
 
-	private class HpcS3ArchiveConfig {
-		String doc;
-		String storage_class;
-		String vault;
-		String bucket;
-	}
-
-	private RowMapper<HpcS3ArchiveConfig> storageClassRowMapper = (rs, rowNum) -> {
-		HpcS3ArchiveConfig sc = new HpcS3ArchiveConfig();
-		sc.doc = rs.getString("doc");
-		sc.storage_class = rs.getString("storage_class");
-		sc.vault = rs.getString("provider");
-		sc.bucket = rs.getString("bucket");
-		return sc;
-	};
-
-	private List<HpcArchiveSummaryReport> translateVaultName(List<HpcArchiveSummaryReport> archiveSummaryReportList,
-			String doc) {
-		storageClassList = jdbcTemplate.query(STORAGE_CLASS_SQL, storageClassRowMapper);
+	private List<HpcArchiveSummaryReport> translateVaultName(List<HpcArchiveSummaryReport> archiveSummaryReportList) {
 		for (int i = 0; i < archiveSummaryReportList.size(); i++) {
 			HpcArchiveSummaryReport archiveSummaryReport = archiveSummaryReportList.get(i);
 			if (archiveSummaryReport.vault.equals("AWS")) {
-				for (int j = 0; j < storageClassList.size(); j++) {
-					if ((doc != null) && doc.equals(storageClassList.get(j).doc)
-							&& archiveSummaryReport.bucket.equals(storageClassList.get(j).bucket)) {
-						String sc = storageClassList.get(j).storage_class;
-						archiveSummaryReport.vault = getVaultString(archiveSummaryReport.vault, sc);
-						break;
-					} else {
-						// No entries HpcS3Archive to determine Storage Class
-						archiveSummaryReport.vault = "S3";
-					}
+				String storageClass = archiveSummaryReport.storageClass;
+				if (storageClass == null) {
+					archiveSummaryReport.vault = "S3";
+				} else if (storageClass.equals("DEEP_ARCHIVE")) {
+					archiveSummaryReport.vault = "Glacier Deep Archive";
+				} else if (storageClass.equals("GLACIER")) {
+					archiveSummaryReport.vault = "Glacier";
 				}
 			} else {
-				// Cloudian or Cleversafe
-				archiveSummaryReport.vault = getVaultString(archiveSummaryReport.vault, "");
+				if (archiveSummaryReport.vault.equals("CLOUDIAN")) {
+					archiveSummaryReport.vault = "Cloudian";
+				} else if (archiveSummaryReport.vault.equals("CLEVERSAFE")) {
+					archiveSummaryReport.vault = "Cleversafe";
+				}
 			}
 		}
 		return archiveSummaryReportList;
-	}
-
-	private String getVaultString(String vault, String storageClass) {
-		if (vault.equals("AWS")) {
-			if (storageClass == null) {
-				vault = "S3";
-			} else if (storageClass.equals("DEEP_ARCHIVE")) {
-				vault = "Glacier Deep Archive";
-			} else if (storageClass.equals("GLACIER")) {
-				vault = "Glacier";
-			}
-		} else if (vault.equals("CLOUDIAN")) {
-			vault = "Cloudian";
-		} else if (vault.equals("CLEVERSAFE")) {
-			vault = "Cleversafe";
-		}
-		return vault;
 	}
 
 	public List<HpcReport> generateDocOrBasepathGridReport(HpcReportCriteria criteria) {
@@ -1104,7 +1067,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			 archiveSummaryByDocMap.forEach((key, archiveSummaryDetailvalues) -> {
 			  // Translate vault string
 			  List<HpcArchiveSummaryReport> translatedList = archiveSummaryDetailvalues;
-			  translatedList = translateVaultName(translatedList, key);
+			  translatedList = translateVaultName(translatedList);
 			   HpcReport report = mapReports.get(key);
 			  if (report != null) {
 				 for (int i = 0; i < report.getReportEntries().size(); i++) {
@@ -1362,7 +1325,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			List<HpcArchiveSummaryReport> archiveSummaryReport = getArchiveSummaryReport(criteria, dateLongArgs, docArg,
 					docDateArgs, userArg, userDateArgs, basepathArg, basepathDateLongArgs, pathArg, pathDateLongArgs);
 			if (archiveSummaryReport != null) {
-				archiveSummaryReport = translateVaultName(archiveSummaryReport, docDateArgs[0].toString());
+				archiveSummaryReport = translateVaultName(archiveSummaryReport);
 				HpcReportEntry archiveSummaryEntry = new HpcReportEntry();
 				archiveSummaryEntry.setAttribute(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
 				archiveSummaryEntry.setValue(gson.toJson(archiveSummaryReport));
