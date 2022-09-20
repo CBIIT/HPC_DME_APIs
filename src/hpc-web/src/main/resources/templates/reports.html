@@ -382,7 +382,8 @@ label {
 						<tfoot>
 							<tr id='attrFooter0'>
 								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='pathf0' th:text="Path"></td>
+								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -421,8 +422,8 @@ label {
 						<tfoot>
 							<tr id='attrFooter2'>
 								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0011' th:text="Doc"></td>
-								<td style="color: black; font-weight:bold" id='path0022' th:text="BasePath"></td>
+								<td style="color: black; font-weight:bold" id='path0011' th:text="DOC"></td>
+								<td style="color: black; font-weight:bold" id='path0022' th:text="'Base Path'"></td>
 								<td style="color: black; font-weight:bold" id='path0033' th:text="'Object Path'"></td>
 								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
 								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Generator'"></td>
@@ -492,6 +493,7 @@ label {
 		var exportFileName = "";
 		var reportHeaderTitle = "";
 		var noSortColumns = [-1];
+		var visibleColumns = [1];
 		const d = new Date();
 		let pretag = "NCI_DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
@@ -500,15 +502,18 @@ label {
 				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
 				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right. 
+				visibleColumns = [ 1, 2, 4, 7, 9];
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
 				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right.
+				visibleColumns = [ 1, 2, 4, 7, 9];
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
 				reportHeaderTitle = "DME Data Owner Summary Report";
+				visibleColumns = [ 1, 2, 3, 4, 5, 7];
 				break;
 			default:
 				break;
@@ -561,7 +566,7 @@ label {
 								"orderable": false
 								},
 								{
-								"targets": [ 1, 2, 4, 7, 9], // Visible columns at start up(include 0 specified above)
+								"targets": visibleColumns, // Visible columns at start up(include 0 specified above)
 								"visible": true
 	  							},
 								{
