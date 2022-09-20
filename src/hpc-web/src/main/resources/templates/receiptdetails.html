@@ -133,9 +133,9 @@
 										</thead>
 										<tbody>
 											<tr th:each="entry : ${receipt.getEventPayloadEntries()}">
-												<td><label th:text="${entry.getAttribute()}"></label></td>
-												<td><label for="${entry.getAttribute()}"
-													th:text="${entry.getValue()}"></label></td>
+												<td><label th:text="${#strings.replace(entry.getAttribute(),'_',' ')}"></label></td>
+												<td><label th:for="${entry.getAttribute()}"
+													th:utext="${entry.getValue()}"></label></td>
 											</tr>
 										</tbody>
 									</table>
