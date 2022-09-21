@@ -63,9 +63,13 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
         cellFilter: 'percentEncoding',
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)"><i class="fa fa-trash" title="Delete"></i></a></div>'
       }
-    ],
+    ]
   };
 
+  $("#updatedField").on("change", function(){
+	  location.reload() 
+  });
+	     
 $scope.notificationsloading = true;
 $http.get('/notificationList').
   success(function(data, status, headers, config) {

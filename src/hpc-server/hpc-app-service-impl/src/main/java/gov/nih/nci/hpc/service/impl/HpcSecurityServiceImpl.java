@@ -792,6 +792,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		invoker.setDataManagementAccount(dataManagementAccount);
 		invoker.setDataManagementAuthenticatedToken(null);
 		invoker.setUserRole(getUserRole(dataManagementAccount.getUsername()));
+		invoker.setAuthenticationType(HpcAuthenticationType.TOKEN);
 
 		HpcRequestContext.setRequestInvoker(invoker);
 	}

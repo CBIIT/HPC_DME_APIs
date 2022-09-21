@@ -404,7 +404,19 @@
 								th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
 								or  (hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="panel panel-default">
+							    <div th:if="${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary() != null and hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary().size() > 0}">
+								  <strong>Collections Completed: </strong>
+								  <div th:each="hpcCollectionResultSummary : ${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary()}"  style="margin-top:5px;word-break: break-all;">
+									<div th:if="${#strings.equals(hpcCollectionResultSummary.getResult(),'COMPLETED')}" class="col-md-12 form-group">
+										<a th:href="@{/collection(action=view,path=${hpcCollectionResultSummary.getPath()})}">
+                      					  <label for="${hpcCollectionResultSummary.getPath()}" th:text="${hpcCollectionResultSummary.getPath()}">
+                     					 </label>
+                    				    </a>
+									</div>
+								  </div>
+							    </div>
 							    <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
+								  <strong>Data Objects Completed: </strong>
 								  <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px;word-break: break-all;">
 									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
