@@ -647,7 +647,7 @@
 				}
 			],
 			"textFormat": "Hello %1$s %2$s,<br/><br/>
-			Attached results from %3$s. <br/><br/>You are receiving this email because you configured auto-run for your query from DME. <br/><a href=\"%4$s\">Modify Settings</a>",
+			Results from your saved search %3$s are in the attached file. <br/><br/>You are receiving this email because you configured auto-run for your query from DME. <br/><a href=\"%4$s\">Modify Settings</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "FIRST_NAME",

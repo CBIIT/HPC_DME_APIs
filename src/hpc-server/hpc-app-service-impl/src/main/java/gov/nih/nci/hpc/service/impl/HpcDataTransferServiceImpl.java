@@ -2176,7 +2176,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// // Instantiate a progress listener for uploading a file staged on DME server
 		// (Sync, Globus 2nd Hop, FileSystem).
-		if (uploadRequest.getSourceFile() != null) {
+		if (uploadRequest.getSourceFile() != null && !globusSyncUpload) {
 			progressListener = new HpcStagedFileUpload(uploadRequest.getPath(), uploadRequest.getDataObjectId(),
 					uploadRequest.getSourceSize(), this);
 		}
