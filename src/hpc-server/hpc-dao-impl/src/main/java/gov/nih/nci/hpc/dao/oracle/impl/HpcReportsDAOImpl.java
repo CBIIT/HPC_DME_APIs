@@ -375,6 +375,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         + "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
         + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
         + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, c.S3_ARCHIVE_STORAGE_CLASS, b.base_path";
+
+	private static final String ARCHIVE_SUMMARY_BY_BASEPATH_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+		+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
+		+ "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
+		+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.BASE_PATH = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+		+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
+
 	
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -525,8 +532,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)) {
 			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_BASEPATH_SQL, basepathArg);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)) {
-			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_BASEPATH_DATE_SQL,
-			// basepathDateArgs);
+			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_BASEPATH_DATE_SQL, archiveSummaryReportRowMapper, basepathDateArgs);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
 			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_PATH_SQL, pathArg);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE)) {
