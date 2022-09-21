@@ -71,7 +71,7 @@
 <script>
 //<![CDATA[
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
-			'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns',
+			'ui.grid.pagination', 'ui.grid.resizeColumns',
 			'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection' ]);
 
 	app
@@ -85,8 +85,7 @@
 		'$scope',
 		'$http',
 		'$interval',
-		'uiGridGroupingConstants',
-		function($scope, $http, $interval, uiGridGroupingConstants) {
+		function($scope, $http, $interval) {
 
 		$scope.gridOptions1 = {
 			exporterMenuPdf: false,
@@ -178,7 +177,6 @@
 				        order: 211
 				      }
 			    ],
-			treeRowHeaderAlwaysVisible : false,
 			onRegisterApi : function(gridApi) {
 				$scope.grid1Api = gridApi;
 			}
@@ -193,10 +191,6 @@
 
         $scope.selectAll = function() {
           $scope.gridApi.selection.selectAllRows();
-        };
-
-        $scope.expandAll = function() {
-          $scope.gridApi.treeBase.expandAllRows();
         };
 
         function getTableHeight(totalPage, currentPage, pageSize, dataLen) {  
