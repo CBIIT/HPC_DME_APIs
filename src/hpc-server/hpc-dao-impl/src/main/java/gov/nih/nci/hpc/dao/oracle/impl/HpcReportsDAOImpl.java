@@ -376,10 +376,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
         + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, c.S3_ARCHIVE_STORAGE_CLASS, b.base_path";
 	
-	private static final String STORAGE_CLASS_SQL = "select b.doc as doc,  a.bucket, a.provider, a.storage_class "
-			+ "from hpc_s3_archive_configuration a, hpc_data_management_configuration b "
-			+ "where a.data_management_configuration_id=b.id and  a.provider = 'AWS'";
-
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -504,7 +500,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
 		archiveSummaryReport.vault = rs.getString("archive_provider");
 		archiveSummaryReport.bucket = rs.getString("archive_bucket");
-		archiveSummaryReport.count = rs.getLong("count");
+		//archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
 		archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
 		return archiveSummaryReport;
@@ -822,10 +818,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper2 = (rs, rowNum) -> {
 		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
 		archiveSummaryReport.repName = rs.getString("repName");
-		archiveSummaryReport.count = rs.getLong("count");
+		//archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
 		archiveSummaryReport.vault = rs.getString("archive_provider");
 		archiveSummaryReport.bucket = rs.getString("archive_bucket");
+		archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
 		return archiveSummaryReport;
 	};
 
