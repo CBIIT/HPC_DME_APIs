@@ -78,6 +78,9 @@ import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
+	
+	private static final int USER_QUERY_SEARCH_RESULTS_PAGE_SIZE = 10000;
+			
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -767,8 +770,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			try {
 				sendQuery(query.getUserId(), query.getName());
 			} catch (HpcException e) {
-				// swallow so that the rest of the queries can run.
 				logger.error(e.getMessage(), e);
+				notificationService.sendNotification(e);
 			}
 			
 		}
@@ -787,66 +790,67 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		logger.info("Running query {} for user {}", queryName, userId);
 		HpcNamedCompoundMetadataQuery query = dataSearchService.getQuery(userId, queryName);
 		//Construct the excel file name
-		String exportFileName = exportDirectory + File.separator + "Export_Search_Results_" + queryName
+		String exportFileName = exportDirectory + File.separator + "Search_Results_" + queryName
                 + MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xls";
         
 		//Construct the query
 		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
 		compoundMetadataQueryDTO.setCompoundQuery(query.getCompoundQuery());
 		compoundMetadataQueryDTO.setDetailedResponse(query.getDetailedResponse());
-		compoundMetadataQueryDTO.setPageSize(10000);
+		compoundMetadataQueryDTO.setPageSize(USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
 		compoundMetadataQueryDTO.setTotalCount(true);
 		
-		if(query.getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)) {
-			HpcDataObjectListDTO dataobjectListDTO = new HpcDataObjectListDTO();
-			int pageNumber = 1;
-			int totalPages = 1;
-			do {
-				compoundMetadataQueryDTO.setPage(pageNumber++);
-				//Switch context to the query user
-				HpcDataObjectListDTO dataobjectsDTO = executeAsUserAccount(() -> getDataObjects(null, compoundMetadataQueryDTO), userId);
-				dataobjectListDTO.getDataObjectPaths().addAll(dataobjectsDTO.getDataObjectPaths());
-				dataobjectListDTO.getDataObjects().addAll(dataobjectsDTO.getDataObjects());
-				totalPages = getTotalPages(dataobjectsDTO.getTotalCount(), 10000);
-			} while (pageNumber <= totalPages);
-			if(CollectionUtils.isEmpty(dataobjectListDTO.getDataObjectPaths()) && CollectionUtils.isEmpty(dataobjectListDTO.getDataObjects())) {
-				logger.info("No results found from query {} for user {}", queryName, userId);
-			}
-			try {
+		try {
+			if(query.getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)) {
+				HpcDataObjectListDTO dataobjectListDTO = new HpcDataObjectListDTO();
+				int pageNumber = 1;
+				int totalPages = 1;
+				do {
+					compoundMetadataQueryDTO.setPage(pageNumber++);
+					//Switch context to the query user
+					HpcDataObjectListDTO dataobjectsDTO = executeAsUserAccount(() -> getDataObjects(null, compoundMetadataQueryDTO), userId);
+					dataobjectListDTO.getDataObjectPaths().addAll(dataobjectsDTO.getDataObjectPaths());
+					dataobjectListDTO.getDataObjects().addAll(dataobjectsDTO.getDataObjects());
+					totalPages = getTotalPages(dataobjectsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
+				} while (pageNumber <= totalPages);
+				if(CollectionUtils.isEmpty(dataobjectListDTO.getDataObjectPaths()) && CollectionUtils.isEmpty(dataobjectListDTO.getDataObjects())) {
+					logger.info("No results found from query {} for user {}", queryName, userId);
+					return;
+				}
 				exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getSelectedColumns());
-			} catch (IOException e) {
-				throw new HpcException("Error exporting search result for query: " + queryName, HpcErrorType.UNEXPECTED_ERROR);
-			}
-		} else {
-			HpcCollectionListDTO collectionListDTO = new HpcCollectionListDTO();
-			int pageNumber = 1;
-			int totalPages = 1;
-			do {
-				compoundMetadataQueryDTO.setPage(pageNumber++);
-				//Switch context to the query user
-				HpcCollectionListDTO collectionsDTO = executeAsUserAccount(() -> getCollections(compoundMetadataQueryDTO), userId);
-				collectionListDTO.getCollectionPaths().addAll(collectionsDTO.getCollectionPaths());
-				collectionListDTO.getCollections().addAll(collectionsDTO.getCollections());
-				totalPages = getTotalPages(collectionsDTO.getTotalCount(), 10000);
-			} while (pageNumber <= totalPages);
-			if(CollectionUtils.isEmpty(collectionListDTO.getCollectionPaths()) && CollectionUtils.isEmpty(collectionListDTO.getCollections())) {
-				logger.info("No results found from query {} for user {}", queryName, userId);
-			}
-			try {
+			} else {
+				HpcCollectionListDTO collectionListDTO = new HpcCollectionListDTO();
+				int pageNumber = 1;
+				int totalPages = 1;
+				do {
+					compoundMetadataQueryDTO.setPage(pageNumber++);
+					//Switch context to the query user
+					HpcCollectionListDTO collectionsDTO = executeAsUserAccount(() -> getCollections(compoundMetadataQueryDTO), userId);
+					collectionListDTO.getCollectionPaths().addAll(collectionsDTO.getCollectionPaths());
+					collectionListDTO.getCollections().addAll(collectionsDTO.getCollections());
+					totalPages = getTotalPages(collectionsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
+				} while (pageNumber <= totalPages);
+				if(CollectionUtils.isEmpty(collectionListDTO.getCollectionPaths()) && CollectionUtils.isEmpty(collectionListDTO.getCollections())) {
+					logger.info("No results found from query {} for user {}", queryName, userId);
+					return;
+				}
 				exporter.exportCollections(exportFileName, collectionListDTO, query.getSelectedColumns());
-			} catch (IOException e) {
-				throw new HpcException("Error exporting search result for query: " + queryName, HpcErrorType.UNEXPECTED_ERROR, e);
 			}
-		}
-		// Send the file to the user
-		sendQueryNotification(userId, exportFileName, queryName, query.getFrequency().value());
-		// Delete the file
-		Path path = FileSystems.getDefault().getPath(exportFileName);
-        try {
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-        	logger.error("Failed to delete file: {}", exportFileName, e);
+			// Send the file to the user
+			sendQueryNotification(userId, exportFileName, queryName, query.getFrequency().value());
+			
+		} catch (IOException e) {
+			throw new HpcException("Error exporting search result for query: " + queryName, HpcErrorType.UNEXPECTED_ERROR, e);
+		} finally {
+			// Delete the file
+			Path path = FileSystems.getDefault().getPath(exportFileName);
+	        try {
+	            Files.deleteIfExists(path);
+	        } catch (IOException e) {
+	        	logger.error("Failed to delete file: {}", exportFileName, e);
+	        }
         }
+
 	}
 	
 	/**
