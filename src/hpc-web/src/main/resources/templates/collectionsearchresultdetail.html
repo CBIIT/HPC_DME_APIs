@@ -71,7 +71,7 @@
 </script>
 <script>
 //<![CDATA[
-var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection']);
+var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection']);
 
 app.filter('dmePathEncoding', function () {
   return function (dmePathValue) {
@@ -79,7 +79,7 @@ app.filter('dmePathEncoding', function () {
   };
 });
 
-app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
+app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval, uiGridGroupingConstants ) {
 
 	$scope.gridOptions1 = {
 	exporterMenuPdf: false,
@@ -170,7 +170,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        order: 211
 	      }
 	],
-    treeRowHeaderAlwaysVisible: false,
     onRegisterApi : function(gridApi) {
     	$scope.gridApi = gridApi;
     }
@@ -186,10 +185,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
   
   $scope.selectAll = function() {
   	$scope.gridApi.selection.selectAllRows();
-  };
-
-  $scope.expandAll = function() {
-  	$scope.gridApi.treeBase.expandAllRows();
   };
   
   function getTableHeight(totalPage, currentPage, pageSize, dataLen) {  
