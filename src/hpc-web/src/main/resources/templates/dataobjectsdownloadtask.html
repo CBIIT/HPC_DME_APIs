@@ -357,7 +357,19 @@
 							   </div>
 							</div>
 							<div class="panel-body">
+							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary() != null and hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary().size() > 0}">
+								  <strong>Collections Failed: </strong>
+								  <div th:each="hpcCollectionResultSummary : ${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary()}"  style="margin-top:5px;word-break: break-all;">
+									<div th:if="${#strings.equals(hpcCollectionResultSummary.getResult(),'FAILED')}" class="col-md-12 form-group">
+										<a th:href="@{/collection(action=view,path=${hpcCollectionResultSummary.getPath()})}">
+                      					  <label for="${hpcCollectionResultSummary.getPath()}" th:text="${hpcCollectionResultSummary.getPath()}">
+                     					 </label>
+                    				    </a>
+									</div>
+								  </div>
+							  </div>
 							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
+								<strong>Data Objects Failed: </strong>
 								<div class="panel panel-default"
 									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getFailedItems()}"  style="margin-top:5px;word-break: break-all;">
 									<div class="col-md-12 form-group">
