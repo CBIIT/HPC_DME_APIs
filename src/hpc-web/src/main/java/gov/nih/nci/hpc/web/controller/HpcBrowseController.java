@@ -456,6 +456,7 @@ public class HpcBrowseController extends AbstractHpcController {
     //Indicate that this entry is only partially populated
     entry.setPartial(true);
     entry.setName(path);
+    entry.setSelectedNodePath(fullPath);
     entry.getChildren().add(childEntry);
     return entry;
   }
