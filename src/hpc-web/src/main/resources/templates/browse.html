@@ -502,20 +502,22 @@ cursor: pointer;
 
 <script th:inline="javascript">
 /*<![CDATA[*/
-           
+
 //Invoked after the server side code is executed when 
 //- the browse menu is first accessed
 //- A bookmark is clicked on the Browse page
 $(document).ready(function(){
 	$('#sub-menu-browse').addClass("active");
 });
-		
+
+//Invoked whe the node is programmatically created
+//Specifically,when we come click browse icon on detail screen or select a bookmark
 $(function() {
     $('#tree1').tree({
     	closedIcon: $('<i class="fa fa-folder" />'),
         openedIcon: $('<i class="fa fa-folder-open" />'),
         data: data,
-        saveState: true,
+        saveState: false,
         usecontextmenu: true,
         onCreateLi: function(node, $li) {
             if (node.collection) {
@@ -567,6 +569,7 @@ function refreshNode(node) {
 }
 
 //bind 'tree.click' event
+//Invoked when the node (label) is manually selected
 $('#tree1').bind(
     'tree.click',
     function(event) {
@@ -578,7 +581,7 @@ $('#tree1').bind(
         var node = event.node;
         $('#tree1').tree('toggle', node);
         if(!refresh && node.populated && node.collection) {
-            if(node.partial) {
+            if(node.partial && event.hasOwnProperty('click_event')) {
                 browseNode(node);
             } else {
                 data[0] = node;
@@ -602,6 +605,8 @@ function scrollWindow()
 
 
  //Invoked when we click on a node to open it or progammatically open it.
+ //Specifically, invoked to open the parent node programmatically when selectNode is called on a node,
+ //or when a node is opened manually by clicking the folder icon
  $('#tree1').bind('tree.open', function (e,data1) {  
 	//document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
@@ -609,15 +614,20 @@ function scrollWindow()
 	//when browse menu was invoked. If we are coming from onCreateLi when a
 	//bookmark or browser dialog was selected, then the node would already
 	//be populated so dont want to go to the server.
-	if(!refresh && (!node.populated || node.partial)) {
+	//Additionally, if selectedNodePath is populated with something other than it's
+	//own fullPath, then it means this is a parent node populated with the child's
+	//fullPath (done in the controller) and we got here to while populating the child node,
+	//when bookmark or browse was selected, so we don't want to populate it fully
+	if(!refresh && (node.selectedNodePath == null || node.selectedNodePath == node.fullPath) && (!node.populated || node.partial)) {
 		browseNode(node);
 		node = $('#tree1').tree('getNodeById', node.id);
 	} else {
 		refresh = null;
+		//Reset it so that going forward when we manually click on the node, it gets populated
+		node.selectedNodePath = null;
 	}
 	
-	$('#tree1').tree('selectNode', node);
-	angular.element('#refreshGrid').triggerHandler('click');
+	
 }
 );
 
