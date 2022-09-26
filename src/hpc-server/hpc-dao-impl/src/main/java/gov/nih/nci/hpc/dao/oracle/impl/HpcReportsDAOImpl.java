@@ -339,6 +339,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b, r_report_registered_by_s3_archive_configuration c "
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
+	
+	private static final String ARCHIVE_SUMMARY_BY_DOC_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 	private static final String ARCHIVE_SUMMARY_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
 			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
@@ -352,18 +358,30 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "where a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
-	private static final String ARCHIVE_SUMMARY_BY_DOC_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
-			+ "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
-			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.DOC = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
-			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
-
 	private static final String ARCHIVE_SUMMARY_BY_USER_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
 			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by b, r_report_registered_by_s3_archive_configuration c "
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.meta_attr_value = ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
+	
+	private static final String ARCHIVE_SUMMARY_BY_USER_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_registered_by b, r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.meta_attr_value = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
+	private static final String ARCHIVE_SUMMARY_BY_BASEPATH_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.BASE_PATH = ? "
+			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
+	
+	private static final String ARCHIVE_SUMMARY_BY_BASEPATH_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+		+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
+		+ "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
+		+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.BASE_PATH = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
+		+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
+	
 	private static final String ARCHIVE_SUMMARY_ALL_DOCS_SQL = "select b.DOC as repName, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
 			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b , r_report_registered_by_s3_archive_configuration c "
@@ -375,12 +393,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
         + "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
         + "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
         + "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, c.S3_ARCHIVE_STORAGE_CLASS, b.base_path";
-
-	private static final String ARCHIVE_SUMMARY_BY_BASEPATH_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
-		+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
-		+ "from r_report_source_file_size a, r_report_registered_by_basepath b , r_report_registered_by_s3_archive_configuration c "
-		+ "where a.object_id = b.object_id and a.object_id = c.object_id and b.BASE_PATH = ? and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
-		+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 	
 	// ---------------------------------------------------------------------//
@@ -507,7 +519,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
 		archiveSummaryReport.vault = rs.getString("archive_provider");
 		archiveSummaryReport.bucket = rs.getString("archive_bucket");
-		//archiveSummaryReport.count = rs.getLong("count");
+		archiveSummaryReport.count = rs.getLong("count");
 		archiveSummaryReport.size = rs.getLong("total_size");
 		archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
 		return archiveSummaryReport;
@@ -527,10 +539,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER)) {
 			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_USER_SQL, archiveSummaryReportRowMapper, (Object[]) userArg);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE)) {
-			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_USER_DATE_SQL,
-			// userDateArgs);
+			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_USER_DATE_SQL, archiveSummaryReportRowMapper, (Object[]) userDateArgs);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)) {
-			// totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_BASEPATH_SQL, basepathArg);
+			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_BASEPATH_SQL, archiveSummaryReportRowMapper, basepathArg);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)) {
 			return jdbcTemplate.query(ARCHIVE_SUMMARY_BY_BASEPATH_DATE_SQL, archiveSummaryReportRowMapper, basepathDateArgs);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
