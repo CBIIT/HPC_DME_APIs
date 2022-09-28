@@ -127,6 +127,21 @@ label {
   padding-top: 6px;
 }
 
+.headercol .property{
+  width:50%;
+  display:inline-block;
+  box-sizing:border-box;
+  text-align:right;
+  }
+
+.headercol .value{
+  text-align:left;
+  padding-left:10px;
+  width:50%;
+  display:inline-block;
+  box-sizing:border-box;
+  }
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -289,7 +304,7 @@ label {
 					</div> <!-- Second Row end -->
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 1000px; height: 1000px; overflow-y: scroll; margin-left: 1%;"
+				<div style="width: 1000px; height: 1000px; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
@@ -307,8 +322,10 @@ label {
 										<tr>
 											<td align="center"
 												style="background-color: #006DCC; color: white;" colspan="2">
-												<label for="doc">DOC:&nbsp;<span
-												th:text="${report.doc}">DOC</span></label>
+												<div class="headercol">
+													<div class="property">DOC:</div>
+													<div class="value" th:text="${report.doc}">DOC</div>
+												</div>
 											</td>
 										</tr>
 										</div>
@@ -316,28 +333,40 @@ label {
 											<tr>
 												<td align="center"
 													style="background-color: #006DCC; color: white;"
-													colspan="2"><label for="user">User:&nbsp;</label><label
-													for="user" th:text="${report.user}">User</label></td>
+													colspan="2">
+													<div class="headercol">
+														<div class="property">User:</div>
+														<div class="value" th:text="${report.user}">User</div>
+													</div>
+												</td>
 											</tr>
 										</div>
 										<div th:if="${report.path != null and !report.path.isEmpty()}">
 											<tr>
 												<td align="center"
 													style="background-color: #006DCC; color: white;"
-													colspan="2"><label for="path">Base Path:&nbsp;<span
-													for="user" th:text="${report.path}">Base Path</span></label></td>
+													colspan="2">
+													<div class="headercol">
+														<div class="property">Base Path:</div>
+														<div class="value" for="user" th:text="${report.path}">Base Path</div>
+													</div>
+												</td>
 											</tr>
 										</div>
 										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
-										<tr>
-											<td align="center"
-												style="background-color: #006DCC; color: white;" colspan="2">
-												<label for="fromDate">Reporting Period from Date: </label> <label
-												for="fromDate" th:text="${report.fromDate}">date</label> <br />
-												<label for="toDate">Reporting Period to Date: </label> <label
-												for="toDate" th:text="${report.toDate}">date</label>
-											</td>
-										</tr>
+											<tr>
+												<td align="center"
+													style="background-color: #006DCC; color: white;" colspan="2">
+													<div class="headercol">
+														<div class="property">Reporting Period from Date: </div>
+														<div class="value" th:text="${report.fromDate}">date</div>
+													</div>
+													<div class="headercol">
+														<div class="property">Reporting Period to Date: </div>
+														<div class="value" th:text="${report.toDate}">date </div>
+													</div> 
+												</td>
+											</tr>
 										</div>
 										<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
 											<td th:text="${entry.attribute}">value</td>
