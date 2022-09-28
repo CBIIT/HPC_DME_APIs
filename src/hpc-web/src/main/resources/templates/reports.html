@@ -381,14 +381,15 @@ label {
 				</div>
 				<!-- Start of Grid code -->
 				<!-- Start BasePath or DOC Grid -->
+				<!-- caption style="font-weight:bold" th:text="${reportName}"></caption -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
-					<div class="header1" style="width: 800px; overflow-y: scroll; margin-left: 15%;"> 
-					  <h5 style="font-weight:bold" th:text="${reportName}"></h5>
-					  <h5 th:text="'Reporting Period: From ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate}"> </h5>
+					<div class="header1" style="width: 600px; margin-left: 30%;">
+						<h5 style="font-weight:bold" th:text="${reportName}"></h5>
+						<h5 th:text="'Reporting Period: From ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate}"> </h5>
 					</div>
 
 					<table id="report_grid" class="display" style="width:100%">					
@@ -423,7 +424,7 @@ label {
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
 					<table id="report_grid" class="display" style="width:100%">
-						<div class="header1" style="width: 800px; overflow-y: scroll; margin-left: 15%;"> 
+						<div class="header1" style="width: 500px;  margin-left: 35%;">
 						  <h5 style="font-weight:bold" th:text="${reportName}"></h5>
 						</div>
 						<thead>
