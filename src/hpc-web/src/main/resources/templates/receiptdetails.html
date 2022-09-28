@@ -99,7 +99,7 @@
 										<div class="col-md-6 form-group">
 											<label for="Name">ID:</label> <label
 												for="${receipt.getEventType().value()}"
-												th:text="${receipt.getEventType().value()}"></label>
+												th:text="${#strings.replace(receipt.getEventType().value(),'_',' ')}"></label>
 										</div>
 										<div class="col-md-6 form-group">
 											<label for="Name">Created On:</label> <label
