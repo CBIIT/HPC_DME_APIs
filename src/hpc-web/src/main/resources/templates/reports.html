@@ -136,7 +136,7 @@ label {
 
 .headercol .value{
   text-align:left;
-  padding-left:10px;
+  padding-left:2px;
   width:50%;
   display:inline-block;
   box-sizing:border-box;
@@ -358,13 +358,9 @@ label {
 												<td align="center"
 													style="background-color: #006DCC; color: white;" colspan="2">
 													<div class="headercol">
-														<div class="property">Reporting Period from Date: </div>
-														<div class="value" th:text="${report.fromDate}">date</div>
+														<div class="property">Reporting Period: </div>
+														<div class="value" th:text="' From ' + ${report.fromDate} + ' to ' + ${report.toDate}"></div>
 													</div>
-													<div class="headercol">
-														<div class="property">Reporting Period to Date: </div>
-														<div class="value" th:text="${report.toDate}">date </div>
-													</div> 
 												</td>
 											</tr>
 										</div>
@@ -381,18 +377,15 @@ label {
 				</div>
 				<!-- Start of Grid code -->
 				<!-- Start BasePath or DOC Grid -->
-				<!-- caption style="font-weight:bold" th:text="${reportName}"></caption -->
+				
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
-					<div class="header1" style="width: 600px; margin-left: 30%;">
-						<h5 style="font-weight:bold" th:text="${reportName}"></h5>
-						<h5 th:text="'Reporting Period: From ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate}"> </h5>
-					</div>
 
-					<table id="report_grid" class="display" style="width:100%">					
+					<table id="report_grid" class="display" style="width:100%">
+						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
 						<thead>
 							<tr id='attrRow0'>
 								<td style="color: black; font-weight:bold" id='index0' th:text="Index"></td>
@@ -424,9 +417,7 @@ label {
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
 					<table id="report_grid" class="display" style="width:100%">
-						<div class="header1" style="width: 500px;  margin-left: 35%;">
-						  <h5 style="font-weight:bold" th:text="${reportName}"></h5>
-						</div>
+						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
 						<thead>
 							<tr id='attrRow2'>
 								<td style="color: black; font-weight:bold" id='index001' th:text="Index"></td>
@@ -558,7 +549,7 @@ label {
  
 	    var table = $('#report_grid').DataTable( {
 				responsive: true,
-				dom: 'Blfrtip',
+				dom: 'lfrtipB',
 				fixedHeader: true,
 				buttons: [
 				{
