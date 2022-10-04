@@ -406,6 +406,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, c.S3_ARCHIVE_STORAGE_CLASS, b.base_path";
 
+	private static final String ARCHIVE_SUMMARY_BY_ALL_DATA_OWNER_SQL = "select d.data_owner as repName, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
+			+ "from r_report_source_file_size a, r_report_collection_path b, r_report_registered_by_s3_archive_configuration c, r_coll_hierarchy_data_owner d "
+			+ "where a.object_id = b.object_id and a.object_id = c.object_id and (b.coll_name like (d.object_path || '%') or b.coll_name = d.object_path) "
+			+ "group by d.data_owner, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
+
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -824,6 +831,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	public List<HpcReport> generateDataOwnerGridReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
+		Map<String, HpcReport> mapReports = new HashMap<>();
 		List<Map<String, Object>> piList = jdbcTemplate.queryForList(DATA_OWNER_SQL);
 		for (Map<String, Object> map : piList) {
 			HpcReport report = new HpcReport();
@@ -831,34 +839,29 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			report.setType(criteria.getType());
 			report.setDoc(map.get("DOC").toString());
 			report.setPath(map.get("BASE_PATH").toString());
-			report.setDataOwner((map.get("DATA_OWNER") == null) ? "" : map.get("DATA_OWNER").toString());
+			String dataOwner = (map.get("DATA_OWNER") == null) ? "" : map.get("DATA_OWNER").toString();
+			report.setDataOwner(dataOwner);
 			report.setDataCurator((map.get("DATA_CURATOR") == null) ? "" : map.get("DATA_CURATOR").toString());
 			report.setUser(map.get("USER_PATH").toString().replaceFirst(iRodsBasePath, ""));
 			Object cobj = map.get("COLLECTION_SIZE");
 			float collection_size = (cobj == null) ? 0 : Float.parseFloat(map.get("COLLECTION_SIZE").toString());
-			HpcReportEntry reportEntry = new HpcReportEntry();
 			// Reusing existing attribute TOTAL_DATA_SIZE for collection size
+			HpcReportEntry reportEntry = new HpcReportEntry();
 			reportEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
 			reportEntry.setValue(collection_size + "");
 			report.getReportEntries().add(reportEntry);
-
-			// Add the archive summary entry
-			String[] pathArg = new String[2];
-			pathArg[0] = report.getUser() + "/%";
-			pathArg[1] = report.getUser();
-
-			List<HpcArchiveSummaryReport> archiveSummaryReport = getArchiveSummaryReport(criteria, null, null, null,
-					null, null, null, null, pathArg, null);
-			if (archiveSummaryReport != null) {
-				archiveSummaryReport = translateVaultName(archiveSummaryReport);
-				HpcReportEntry archiveSummaryEntry = new HpcReportEntry();
-				archiveSummaryEntry.setAttribute(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
-				archiveSummaryEntry.setValue(gson.toJson(archiveSummaryReport));
-				report.getReportEntries().add(archiveSummaryEntry);
-			}
-
+			// Initializing Archive Summary field
+			reportEntry = new HpcReportEntry();
+			reportEntry.setAttribute(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
+			reportEntry.setValue("");
+			report.getReportEntries().add(reportEntry);
 			reports.add(report);
+			mapReports.put(dataOwner, report);
 		}
+		// Populate the Archive Summary field for all the data owners
+		List<HpcArchiveSummaryReport> archiveSummaryReport;
+		archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_BY_ALL_DATA_OWNER_SQL, archiveSummaryReportRowMapper2);
+		setArchiveSummaryFieldForGrid(mapReports, archiveSummaryReport);
 		return reports;
 	}
 
@@ -1027,7 +1030,16 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 						HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS, "totalattrs");
 
 				// Archive Summary Fields (Vault, Bucket, Size)
-				setArchiveSummaryFieldForGrid(isBasePathReport, mapReports, dateLongArgs);
+				List<HpcArchiveSummaryReport> archiveSummaryReport;
+				if (isBasePathReport) {
+					archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL,
+							archiveSummaryReportRowMapper2, dateLongArgs);
+				} else {
+					archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_DOCS_SQL, archiveSummaryReportRowMapper2,
+							dateLongArgs);
+				}
+
+				setArchiveSummaryFieldForGrid(mapReports, archiveSummaryReport);
 
 				List<Map<String, Object>> fileRangeList;
 				if (isBasePathReport) {
@@ -1093,19 +1105,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		}
 	}
 
-	private boolean setArchiveSummaryFieldForGrid(boolean isBasePathReport, Map<String, HpcReport> mapReports,
-			Object[] dateLongArgs) {
+	private boolean setArchiveSummaryFieldForGrid( Map<String, HpcReport> mapReports, List<HpcArchiveSummaryReport>  archiveSummaryReport) {
 		List<HpcArchiveSummaryReport> archiveSummaryDetailsList = new ArrayList();
 		Map<String, List<HpcArchiveSummaryReport>> archiveSummaryByDocMap = new HashMap();
 		try {
-			List<HpcArchiveSummaryReport> archiveSummaryReport;
-			if (isBasePathReport) {
-				archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL,
-						archiveSummaryReportRowMapper2, dateLongArgs);
-			} else {
-				archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_DOCS_SQL, archiveSummaryReportRowMapper2,
-						dateLongArgs);
-			}
 			for (int i = 0; i < archiveSummaryReport.size(); i++) {
 				archiveSummaryDetailsList = new ArrayList();
 				HpcArchiveSummaryReport rec = archiveSummaryReport.get(i);
@@ -1134,12 +1137,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 				}
 			}); // archiveSummaryByDocMap.forEach
 		} catch (Exception e) {
-			if (isBasePathReport) {
-				logger.info("Error setting Assay Summary Field in BasePath Grid Report", e);
-			} else {
-				logger.info("Error setting Assay Summary Field in DOC Grid Report", e);
-			}
-			return false;
+				logger.info("Error setting Assay Summary Field in Grid Report", e);
+				return false;
 		}
 		return true;
 	}
