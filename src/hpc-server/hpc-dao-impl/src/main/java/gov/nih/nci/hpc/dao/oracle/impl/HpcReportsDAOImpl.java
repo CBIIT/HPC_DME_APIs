@@ -406,11 +406,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and CAST(a.create_ts as double precision) BETWEEN ? AND ? "
 			+ "group by c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_BUCKET, c.S3_ARCHIVE_STORAGE_CLASS, b.base_path";
 
-	private static final String ARCHIVE_SUMMARY_BY_ALL_DATA_OWNER_SQL = "select d.data_owner as repName, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
+	private static final String ARCHIVE_SUMMARY_BY_ALL_DATA_OWNER_SQL = "select d.data_owner as data_owner, d.object_path as object_path, sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
 			+ "count(a.object_id) as count, c.S3_ARCHIVE_PROVIDER as archive_provider, c.S3_ARCHIVE_STORAGE_CLASS as archive_storage_class, c.S3_ARCHIVE_BUCKET as archive_bucket "
 			+ "from r_report_source_file_size a, r_report_collection_path b, r_report_registered_by_s3_archive_configuration c, r_coll_hierarchy_data_owner d "
 			+ "where a.object_id = b.object_id and a.object_id = c.object_id and (b.coll_name like (d.object_path || '%') or b.coll_name = d.object_path) "
-			+ "group by d.data_owner, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
+			+ "group by d.data_owner, d.object_path, c.S3_ARCHIVE_PROVIDER, c.S3_ARCHIVE_STORAGE_CLASS, c.S3_ARCHIVE_BUCKET";
 
 
 	// ---------------------------------------------------------------------//
@@ -853,17 +853,31 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			// Initializing Archive Summary field
 			reportEntry = new HpcReportEntry();
 			reportEntry.setAttribute(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
-			reportEntry.setValue("");
+			reportEntry.setValue("0");
 			report.getReportEntries().add(reportEntry);
 			reports.add(report);
-			mapReports.put(dataOwner, report);
+			mapReports.put(dataOwner + report.getUser(), report);
 		}
 		// Populate the Archive Summary field for all the data owners
 		List<HpcArchiveSummaryReport> archiveSummaryReport;
-		archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_BY_ALL_DATA_OWNER_SQL, archiveSummaryReportRowMapper2);
+		archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_BY_ALL_DATA_OWNER_SQL, archiveSummaryReportRowMapper_dataOwner);
 		setArchiveSummaryFieldForGrid(mapReports, archiveSummaryReport);
 		return reports;
 	}
+
+	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper_dataOwner = (rs, rowNum) -> {
+		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
+		String data_owner = rs.getString("data_owner");
+		String object_path = rs.getString("object_path").replaceFirst(iRodsBasePath, "");
+		archiveSummaryReport.repName = data_owner + object_path;
+		// archiveSummaryReport.count = rs.getLong("count");
+		archiveSummaryReport.size = rs.getLong("total_size");
+		archiveSummaryReport.vault = rs.getString("archive_provider");
+		archiveSummaryReport.bucket = rs.getString("archive_bucket");
+		archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
+		return archiveSummaryReport;
+	};
+
 
 	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper2 = (rs, rowNum) -> {
 		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
