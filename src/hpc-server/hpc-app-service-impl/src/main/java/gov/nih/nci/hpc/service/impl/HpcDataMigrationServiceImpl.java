@@ -407,6 +407,14 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		if (updated) {
 			dataObjectMigrationTask.setInProcess(inProcess);
 			dataObjectMigrationTask.setServerId(serverId);
+		} else {
+			try {
+				dataObjectMigrationTask
+						.setServerId(dataMigrationDAO.getDataMigrationTaskServerId(dataObjectMigrationTask.getId()));
+
+			} catch (HpcException e) {
+				logger.error("Data migration: task - {} failed to get server-id", dataObjectMigrationTask.getId(), e);
+			}
 		}
 
 		return updated;
