@@ -91,6 +91,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String SET_MIGRATION_TASK_IN_PROCESS_SQL = "update HPC_DATA_MIGRATION_TASK set IN_PROCESS = ?, SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
+	private static final String GET_MIGRATION_TASK_SERVER_ID_SQL = "select SERVER_ID from HPC_DATA_MIGRATION_TASK where ID = ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -355,4 +357,14 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		}
 	}
 
+	@Override
+	public String getDataMigrationTaskServerId(String id) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_MIGRATION_TASK_SERVER_ID_SQL, String.class, id);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get a task server-id: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
 }
