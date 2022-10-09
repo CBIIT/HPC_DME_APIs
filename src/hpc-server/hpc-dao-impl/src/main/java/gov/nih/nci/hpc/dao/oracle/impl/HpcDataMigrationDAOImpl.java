@@ -79,7 +79,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String DELETE_DATA_MIGRATION_TASK_SQL = "delete from HPC_DATA_MIGRATION_TASK where ID = ?";
 
-	private static final String GET_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where STATUS = ? and TYPE = ?";
+	private static final String GET_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where STATUS = ? and TYPE = ? and SERVER_ID = ?";
 
 	private static final String GET_DATA_OBJECT_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK  where PARENT_ID = ?";
 
@@ -89,9 +89,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String GET_COLLECTION_MIGRATION_RESULT_COUNT_SQL = "select RESULT, count(RESULT) as COUNT from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? group by RESULT";
 
-	private static final String SET_MIGRATION_TASK_IN_PROCESS_SQL = "update HPC_DATA_MIGRATION_TASK set IN_PROCESS = ?, SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
+	private static final String SET_MIGRATION_TASK_IN_PROCESS_SQL = "update HPC_DATA_MIGRATION_TASK set IN_PROCESS = ? where ID = ? and IN_PROCESS != ?";
 
-	private static final String GET_MIGRATION_TASK_SERVER_ID_SQL = "select SERVER_ID from HPC_DATA_MIGRATION_TASK where ID = ?";
+	private static final String SET_MIGRATION_TASK_SERVER_ID_SQL = "update HPC_DATA_MIGRATION_TASK set SERVER_ID = ? where ID = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -191,11 +191,11 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	}
 
 	@Override
-	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
-			throws HpcException {
+	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type,
+			String serverId) throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_DATA_MIGRATION_TASKS_SQL, dataMigrationTaskRowMapper, status.value(),
-					type.value());
+					type.value(), serverId);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get a data migration tasks: " + e.getMessage(),
@@ -301,16 +301,10 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			logger.info("updated result CLOB[{}]: {}", dataMigrationTask.getType(), dataMigrationTask.getId());
 
 		} catch (DataAccessException e) {
-			// TODO - remove logging after debugging why unique constraint violation
-			// exception is thrown.
-			logger.error("Failed to upsert a data migration task result", e);
 			throw new HpcException("Failed to upsert a data migration task result: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 
 		} catch (Exception e) {
-			// TODO - remove complete catch block after debugging why unique constraint
-			// violation exception is thrown.
-			logger.error("Failed to upsert a data migration task result", e);
 			throw new HpcException("Failed to upsert a data migration task result: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
@@ -347,24 +341,24 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	}
 
 	@Override
-	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess, String serverId) throws HpcException {
+	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess) throws HpcException {
 		try {
-			return jdbcTemplate.update(SET_MIGRATION_TASK_IN_PROCESS_SQL, inProcess, serverId, id, inProcess) > 0;
+			return jdbcTemplate.update(SET_MIGRATION_TASK_IN_PROCESS_SQL, inProcess, id, inProcess) > 0;
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to set a datamigration task w/ in-process value: " + e.getMessage(),
+			throw new HpcException("Failed to set a data migration task w/ in-process value: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
 	@Override
-	public String getDataMigrationTaskServerId(String id) throws HpcException {
+	public void setDataMigrationTaskServerId(String id, String serverId) throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_MIGRATION_TASK_SERVER_ID_SQL, String.class, id);
+			jdbcTemplate.update(SET_MIGRATION_TASK_SERVER_ID_SQL, serverId, id);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get a task server-id: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
-					HpcIntegratedSystem.ORACLE, e);
+			throw new HpcException("Failed to set a data migration task w/ server-id value: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 }
