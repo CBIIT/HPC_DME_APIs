@@ -352,10 +352,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	public void resetMigrationTasksInProcess() throws HpcException {
 		// If needed, re-setting the cycle iterator of migration server IDs.
 		if (dataMigrationServerIdCycleIter == null) {
+			logger.info("Data migration servers: {}", dataMigrationServerIds);
 			dataMigrationServerIdCycleIter = Iterables.cycle(dataMigrationServerIds.split(",")).iterator();
 		}
 
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false,
+				HpcDataMigrationStatus.RECEIVED);
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false,
 				HpcDataMigrationStatus.RECEIVED);
 	}
 
