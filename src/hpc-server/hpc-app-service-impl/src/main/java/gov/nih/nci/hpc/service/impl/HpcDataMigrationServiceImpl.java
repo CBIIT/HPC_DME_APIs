@@ -88,7 +88,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	private String serverId = null;
 
 	// A list of servers running the data migration scheduled tasks
-	@Value("${hpc.service.dataMigration.serverIds")
+	@Value("${hpc.service.dataMigration.serverIds}")
 	private String dataMigrationServerIds = null;
 
 	// A cycle iterator (round robin) of data migration server IDs to assign
