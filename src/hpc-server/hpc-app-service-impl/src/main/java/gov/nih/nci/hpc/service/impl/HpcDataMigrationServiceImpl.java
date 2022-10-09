@@ -161,12 +161,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void assignDataMigrationTasks() throws HpcException {
-		for (HpcDataMigrationType dataMigrationType : HpcDataMigrationType.values()) {
-			for (HpcDataMigrationTask dataMigrationTask : dataMigrationDAO
-					.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, dataMigrationType, null)) {
-				dataMigrationDAO.setDataMigrationTaskServerId(dataMigrationTask.getId(),
-						dataMigrationServerIdCycleIter.next());
-			}
+		for (HpcDataMigrationTask dataMigrationTask : dataMigrationDAO.getUnassignedDataMigrationTasks()) {
+			String assignedServerId = dataMigrationServerIdCycleIter.next();
+			dataMigrationDAO.setDataMigrationTaskServerId(dataMigrationTask.getId(), assignedServerId);
+
+			logger.info("Data migration: task - {} assigned to {}", dataMigrationTask.getId(), assignedServerId);
 		}
 	}
 
