@@ -43,7 +43,7 @@ public interface HpcDataMigrationService {
 			throws HpcException;
 
 	/**
-	 * Get a list of data object migration tasks in specific status and type.
+	 * Get a list of migration tasks in specific status and type.
 	 *
 	 * @param status The data migration status to query for.
 	 * @param type   The data migration type to query for.
@@ -52,6 +52,13 @@ public interface HpcDataMigrationService {
 	 */
 	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
 			throws HpcException;
+
+	/**
+	 * Assign data migration tasks to servers
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void assignDataMigrationTasks() throws HpcException;
 
 	/**
 	 * Migrate a data object.

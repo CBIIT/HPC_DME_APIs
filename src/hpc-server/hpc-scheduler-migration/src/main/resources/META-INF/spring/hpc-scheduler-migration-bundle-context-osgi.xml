@@ -27,6 +27,7 @@
 		<prop key="hpc.scheduler.migration.cron.processDataObjectListMigrationReceived.delay">25 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.migration.cron.processCollectionListMigrationReceived.delay">35 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.migration.cron.completeBulkMigrationInProgress.delay">20 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.migration.cron.assignMigrationServer.delay">40 0/1 * * * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

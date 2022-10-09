@@ -41,7 +41,7 @@ public class HpcScheduledTasksImpl {
 	// The Data Search Business Service instance.
 	@Autowired
 	private HpcDataSearchBusService dataSearchBusService = null;
-		
+
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -205,11 +205,12 @@ public class HpcScheduledTasksImpl {
 	private void completeCollectionDownloadTasksTask() {
 		execute("completeCollectionDownloadTasksTask()", systemBusService::completeCollectionDownloadTasks, logger);
 	}
-	
+
 	/** Complete Globus bunching of collection download tasks **/
 	@Scheduled(cron = "${hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay}")
 	private void completeGlobusBunchingCollectionDownloadTasksTask() {
-		execute("completeGlobusBunchingCollectionDownloadTasksTask()", systemBusService::completeGlobusBunchingCollectionDownloadTasks, logger);
+		execute("completeGlobusBunchingCollectionDownloadTasksTask()",
+				systemBusService::completeGlobusBunchingCollectionDownloadTasks, logger);
 	}
 
 	/** Process bulk data object registration tasks. */
@@ -291,14 +292,13 @@ public class HpcScheduledTasksImpl {
 	private void sendMonthlyQueryResults() {
 		execute("sendMonthlyQueryResults()", dataSearchBusService::sendMonthlyQueryResults, logger);
 	}
-	
+
 	/** Send Weekly user stored query results. */
 	@Scheduled(cron = "${hpc.scheduler.cron.sendWeeklyUserQueryResults.delay}")
 	private void sendWeeklyQueryResults() {
 		execute("sendWeeklyQueryResults()", dataSearchBusService::sendWeeklyQueryResults, logger);
 	}
-	
-	
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

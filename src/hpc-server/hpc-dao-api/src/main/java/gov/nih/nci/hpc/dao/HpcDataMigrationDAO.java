@@ -38,13 +38,14 @@ public interface HpcDataMigrationDAO {
 	/**
 	 * Get a list of data migration tasks in specific status and type.
 	 *
-	 * @param status The data migration status to query for.
-	 * @param type   The data migration type to query for.
+	 * @param status   The data migration status to query for.
+	 * @param type     The data migration type to query for.
+	 * @param serverId The server ID to get tasks to be processed
 	 * @return A List of data migration tasks
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
-			throws HpcException;
+	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type,
+			String serverId) throws HpcException;
 
 	/**
 	 * Get a list of data object migration tasks that associated with specific a
@@ -125,18 +126,17 @@ public interface HpcDataMigrationDAO {
 	 *
 	 * @param id        The data migration task ID.
 	 * @param inProcess The value to set.
-	 * @param serverId  The server ID executing the migration task.
 	 * @return True if the value of inProcess was actually updated.
 	 * @throws HpcException on database error.
 	 */
-	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess, String serverId) throws HpcException;
-
+	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess) throws HpcException;
+	
 	/**
-	 * Get a migration task's server ID.
+	 * Set a migration task server-id.
 	 *
-	 * @param id The data migration task ID.
-	 * @returnThe task's server-id
+	 * @param id        The data migration task ID.
+	 * @param serverId The server ID to work this task.
 	 * @throws HpcException on database error.
 	 */
-	public String getDataMigrationTaskServerId(String id) throws HpcException;
+	public void setDataMigrationTaskServerId(String id, String serverId) throws HpcException;
 }

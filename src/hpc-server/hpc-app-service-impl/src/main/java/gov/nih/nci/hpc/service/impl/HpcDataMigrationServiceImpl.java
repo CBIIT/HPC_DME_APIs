@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+
+import com.google.common.collect.Iterables;
 
 import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
@@ -84,6 +87,14 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Value("${hpc.service.serverId}")
 	private String serverId = null;
 
+	// A list of servers running the data migration scheduled tasks
+	@Value("${hpc.service.dataMigration.serverIds")
+	private String dataMigrationServerIds = null;
+
+	// A cycle iterator (round robin) of data migration server IDs to assign
+	// migration tasks to.
+	private Iterator<String> dataMigrationServerIdCycleIter = null;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -145,7 +156,18 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
 			throws HpcException {
-		return dataMigrationDAO.getDataMigrationTasks(status, type);
+		return dataMigrationDAO.getDataMigrationTasks(status, type, serverId);
+	}
+
+	@Override
+	public void assignDataMigrationTasks() throws HpcException {
+		for (HpcDataMigrationType dataMigrationType : HpcDataMigrationType.values()) {
+			for (HpcDataMigrationTask dataMigrationTask : dataMigrationDAO
+					.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, dataMigrationType, null)) {
+				dataMigrationDAO.setDataMigrationTaskServerId(dataMigrationTask.getId(),
+						dataMigrationServerIdCycleIter.next());
+			}
+		}
 	}
 
 	@Override
@@ -329,6 +351,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void resetMigrationTasksInProcess() throws HpcException {
+		// If needed, re-setting the cycle iterator of migration server IDs.
+		if (dataMigrationServerIdCycleIter == null) {
+			dataMigrationServerIdCycleIter = Iterables.cycle(dataMigrationServerIds.split(",")).iterator();
+		}
+
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false,
 				HpcDataMigrationStatus.RECEIVED);
 	}
@@ -400,21 +427,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		if (!inProcess || (!dataObjectMigrationTask.getInProcess()
 				&& dataObjectMigrationTask.getStatus().equals(HpcDataMigrationStatus.RECEIVED))) {
-			updated = dataMigrationDAO.setDataMigrationTaskInProcess(dataObjectMigrationTask.getId(), inProcess,
-					serverId);
+			updated = dataMigrationDAO.setDataMigrationTaskInProcess(dataObjectMigrationTask.getId(), inProcess);
 		}
 
 		if (updated) {
 			dataObjectMigrationTask.setInProcess(inProcess);
-			dataObjectMigrationTask.setServerId(serverId);
-		} else {
-			try {
-				dataObjectMigrationTask
-						.setServerId(dataMigrationDAO.getDataMigrationTaskServerId(dataObjectMigrationTask.getId()));
-
-			} catch (HpcException e) {
-				logger.error("Data migration: task - {} failed to get server-id", dataObjectMigrationTask.getId(), e);
-			}
 		}
 
 		return updated;
