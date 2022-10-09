@@ -75,20 +75,27 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void processDataObjectListMigrationReceived() throws HpcException;
-	
+
 	/**
 	 * Process received collection list migration tasks
 	 *
 	 * @throws HpcException on service failure.
 	 */
 	public void processCollectionListMigrationReceived() throws HpcException;
-	
+
 	/**
 	 * Complete in-progress bulk migration tasks.
 	 *
 	 * @throws HpcException on service failure.
 	 */
 	public void completeBulkMigrationInProgress() throws HpcException;
+
+	/**
+	 * Assign a migration server to process migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void assignMigrationServer() throws HpcException;
 
 	/**
 	 * Restart data object and collection migration tasks that are in progress.

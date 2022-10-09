@@ -337,6 +337,12 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void assignMigrationServer() throws HpcException {
+		dataMigrationService.assignDataMigrationTasks();
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void restartDataMigrationTasks() throws HpcException {
 		dataMigrationService.resetMigrationTasksInProcess();
 	}
