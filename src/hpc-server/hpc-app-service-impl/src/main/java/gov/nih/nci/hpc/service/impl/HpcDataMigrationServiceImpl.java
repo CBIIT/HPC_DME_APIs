@@ -156,7 +156,12 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
 			throws HpcException {
-		return dataMigrationDAO.getDataMigrationTasks(status, type, serverId);
+
+		List<HpcDataMigrationTask> dataMigrationTasks = dataMigrationDAO.getDataMigrationTasks(status, type, serverId);
+		logger.info("{} Data Migration Tasks retrieved for [{}, {}, {}]", dataMigrationTasks.size(), status, type,
+				serverId);
+
+		return dataMigrationTasks;
 	}
 
 	@Override
