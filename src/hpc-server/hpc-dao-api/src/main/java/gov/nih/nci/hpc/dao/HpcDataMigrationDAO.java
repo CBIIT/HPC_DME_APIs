@@ -48,6 +48,14 @@ public interface HpcDataMigrationDAO {
 			String serverId) throws HpcException;
 
 	/**
+	 * Get a list of unassigned data migration tasks.
+	 *
+	 * @return A List of data migration tasks
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTask> getUnassignedDataMigrationTasks() throws HpcException;
+
+	/**
 	 * Get a list of data object migration tasks that associated with specific a
 	 * collection migration task
 	 *
@@ -130,11 +138,11 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess) throws HpcException;
-	
+
 	/**
 	 * Set a migration task server-id.
 	 *
-	 * @param id        The data migration task ID.
+	 * @param id       The data migration task ID.
 	 * @param serverId The server ID to work this task.
 	 * @throws HpcException on database error.
 	 */
