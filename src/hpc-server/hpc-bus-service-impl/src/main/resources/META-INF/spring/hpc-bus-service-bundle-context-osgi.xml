@@ -22,7 +22,6 @@
 
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 		<prop key="hpc.bus.ldapAuthentication">true</prop>
 		<prop key="hpc.bus.createLdapAccountOnly">true</prop>
 		<prop key="hpc.bus.collectionDownloadTaskExecutorThreadPoolSize">100</prop>
@@ -33,6 +32,7 @@
 		<prop key="hpc.bus.sendReviewNotificationToUser">false</prop>
 		<prop key="hpc.bus.maxPermittedInProcessDownloadTasksPerUser">1</prop>
 		<prop key="hpc.bus.exportDirectory">/mnt/IRODsScratch/data</prop>
+	
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 	</osgix:cm-properties>
 
