@@ -67,11 +67,11 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, RESULT = ?, CREATED = ?, COMPLETED = ?, MESSAGE = ?, "
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, FROM_S3_ARCHIVE_LOCATION_FILE_ID = ?, "
-			+ "TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, TO_S3_ARCHIVE_LOCATION_FILE_ID = ? "
+			+ "TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, TO_S3_ARCHIVE_LOCATION_FILE_ID = ?, SERVER_ID = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, RESULT, CREATED, COMPLETED, MESSAGE, FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, "
-			+ "FROM_S3_ARCHIVE_LOCATION_FILE_ID, TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, TO_S3_ARCHIVE_LOCATION_FILE_ID) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "FROM_S3_ARCHIVE_LOCATION_FILE_ID, TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, TO_S3_ARCHIVE_LOCATION_FILE_ID, SERVER_ID) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -295,13 +295,14 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					result.value(), dataMigrationTask.getCreated(), completed, message,
 					fromS3ArchiveLocation.getFileContainerId(), fromS3ArchiveLocation.getFileId(),
 					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId(),
-					dataMigrationTask.getId(), dataMigrationTask.getParentId(), dataMigrationTask.getUserId(),
-					dataMigrationTask.getPath(), dataMigrationTask.getConfigurationId(),
+					dataMigrationTask.getServerId(), dataMigrationTask.getId(), dataMigrationTask.getParentId(),
+					dataMigrationTask.getUserId(), dataMigrationTask.getPath(), dataMigrationTask.getConfigurationId(),
 					dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
 					result.value(), dataMigrationTask.getCreated(), completed, message,
 					fromS3ArchiveLocation.getFileContainerId(), fromS3ArchiveLocation.getFileId(),
-					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId());
+					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId(),
+					dataMigrationTask.getServerId());
 
 			logger.info("upserted result[{}]: {} {}-{}", dataMigrationTask.getType(), dataMigrationTask.getId(),
 					result.value(), message);
