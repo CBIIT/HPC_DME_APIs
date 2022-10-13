@@ -357,6 +357,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	public void resetMigrationTasksInProcess() throws HpcException {
 		// If needed, re-setting the cycle iterator of migration server IDs.
 		if (dataMigrationServerIdCycleIter == null) {
+			if (StringUtils.isEmpty(dataMigrationServerIds)) {
+				throw new HpcException(
+						"No migration servers are configured. Check hpc.service.dataMigration.serverIds property",
+						HpcErrorType.SPRING_CONFIGURATION_ERROR);
+			}
 			String[] serverIds = dataMigrationServerIds.split(",");
 			logger.info("{} Data migration servers configured: {}", serverIds.length, dataMigrationServerIds);
 			dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
