@@ -189,6 +189,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_ALL_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT where COMPLETION_EVENT = '1'";
 
+	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_STATUS_AND_TYPE_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
+			+ "DATA_TRANSFER_TYPE = ? and DESTINATION_TYPE = ? and DATA_TRANSFER_STATUS = ? and S3_DOWNLOAD_TASK_SERVER_ID = ?";
+
 	private static final String GET_GLOBUS_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_IN_PROGRESS_FOR_USER_BY_PATH_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
 			+ "(DATA_TRANSFER_STATUS = 'IN_PROGRESS' OR DATA_TRANSFER_TYPE = 'GLOBUS') and DESTINATION_TYPE = 'GLOBUS' and USER_ID = ? and PATH = ? ";
 
@@ -1016,6 +1019,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException(
 					"Failed to count collection download tasks for user " + userId + ": " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public int getDataObjectDownloadTasksCountByStatusAndType(HpcDataTransferType dataTransferType,
+			HpcDataTransferType destinationType, HpcDataTransferDownloadStatus status, String s3DownloadTaskServerId) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_STATUS_AND_TYPE_SQL,
+					Integer.class, dataTransferType.value(), destinationType.value(), status.value(), s3DownloadTaskServerId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get inprocess data object download tasks count: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}

@@ -25,6 +25,7 @@
 		<prop key="hpc.service.dataTransfer.downloadDirectory">/mnt/IRODsScratch/data/S3</prop>
 		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize">5368709120</prop>
 		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
+		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">7</prop>
 		<prop key="hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId">s3-download-task-server-id</prop>
 		<prop key="hpc.service.dataTransfer.globusTokenExpirationPeriod">120</prop>
 		<prop key="hpc.service.dataTransfer.globusCollectionDownloadBunching">true</prop>

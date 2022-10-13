@@ -205,6 +205,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.globusTokenExpirationPeriod}")
 	private int globusTokenExpirationPeriod = 0;
 
+	// Max downloads that the transfer manager can perform
+	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
+	private Integer maxPermittedS3DownloadsForGlobus = null;
+
 	// A configured ID representing the server performing a download task.
 	@Value("${hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId}")
 	private String s3DownloadTaskServerId = null;
@@ -3073,6 +3077,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
 	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
+
+	  int inProcessS3DownloadsForGlobus = dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(
+			HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS, HpcDataTransferDownloadStatus.IN_PROGRESS,
+			s3DownloadTaskServerId);
+
+	  if (maxPermittedS3DownloadsForGlobus <= 0
+				|| inProcessS3DownloadsForGlobus <= maxPermittedS3DownloadsForGlobus) {
+
 		int inProgressDownloadsForUserbyPath = dataDownloadDAO
 				.getGlobusDataObjectDownloadTasksCountInProgressForUserByPath(
 						secondHopDownload.getDownloadTask().getUserId(), secondHopDownload.getDownloadTask().getPath());
@@ -3102,6 +3114,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					secondHopDownload.getDownloadTask().getPath(), secondHopDownload.getDownloadTask().getUserId());
 			return false;
 		}
+	  } else {
+		  // We are over the allowed number of transactions
+		  logger.info(
+				"Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
+				inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus,
+				secondHopDownload.getDownloadTask().getPath());
+		  return false;
+	  }
 
 		return true;
 	}
