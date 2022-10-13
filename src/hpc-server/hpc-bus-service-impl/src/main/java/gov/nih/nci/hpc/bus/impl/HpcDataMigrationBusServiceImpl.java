@@ -146,7 +146,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	public void processDataObjectMigrationReceived() throws HpcException {
 		dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.DATA_OBJECT)
 				.forEach(dataObjectMigrationTask -> {
-					if (claimDataMigrationTask(dataObjectMigrationTask)) {
+					if (markInProcess(dataObjectMigrationTask)) {
 						try {
 							logger.info("Migrating Data Object: task - {}, path - {}", dataObjectMigrationTask.getId(),
 									dataObjectMigrationTask.getPath());
@@ -175,7 +175,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	public void processCollectionMigrationReceived() throws HpcException {
 		dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.COLLECTION)
 				.forEach(collectionMigrationTask -> {
-					if (claimDataMigrationTask(collectionMigrationTask)) {
+					if (markInProcess(collectionMigrationTask)) {
 						try {
 							logger.info("Migrating Collection: task - {}, path - {}", collectionMigrationTask.getId(),
 									collectionMigrationTask.getPath());
@@ -217,7 +217,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataMigrationService
 				.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.DATA_OBJECT_LIST)
 				.forEach(dataObjectListMigrationTask -> {
-					if (claimDataMigrationTask(dataObjectListMigrationTask)) {
+					if (markInProcess(dataObjectListMigrationTask)) {
 						try {
 							logger.info("Migrating Data Object List: task - {}, path - {}",
 									dataObjectListMigrationTask.getId(),
@@ -262,7 +262,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataMigrationService
 				.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.COLLECTION_LIST)
 				.forEach(collectionListMigrationTask -> {
-					if (claimDataMigrationTask(collectionListMigrationTask)) {
+					if (markInProcess(collectionListMigrationTask)) {
 						try {
 							logger.info("Migrating Collection list: task - {}, path - {}",
 									collectionListMigrationTask.getId(),
@@ -596,14 +596,14 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	}
 
 	/**
-	 * Claims a migration task to work on.
+	 * Mark a data migration task in-process to be worked on.
 	 *
-	 * @param dataMigrationTask The migration task to claim
+	 * @param dataMigrationTask The migration task to mark in-process
 	 * @return true if the task was claimed, or false otherwise - i.e. another
 	 *         process/thread already working on the task.
 	 *
 	 */
-	private boolean claimDataMigrationTask(HpcDataMigrationTask dataMigrationTask) {
+	private boolean markInProcess(HpcDataMigrationTask dataMigrationTask) {
 		if (Optional.ofNullable(dataMigrationTask.getInProcess()).orElse(false)) {
 			logger.info("Data migration: task - {} already in-process by {}", dataMigrationTask.getId(),
 					dataMigrationTask.getServerId());
@@ -612,18 +612,18 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		// Try to claim the task
 		try {
-			logger.info("Data migration: task - {} attempting to claim.", dataMigrationTask.getId());
+			logger.info("Data migration: task - {} attempting to mark in-process.", dataMigrationTask.getId());
 			if (!dataMigrationService.markInProcess(dataMigrationTask, true)) {
-				logger.info("Data migration: task - {} failed to claim. Already in-process by {}",
+				logger.info("Data migration: task - {} failed to mark in-process. Already in-process by {}",
 						dataMigrationTask.getId(), dataMigrationTask.getServerId());
 				return false;
 			}
 		} catch (HpcException e) {
-			logger.error("Data migration: task - {} failed to claim", dataMigrationTask.getId(), e);
+			logger.error("Data migration: task - {} failed to mark in-process", dataMigrationTask.getId(), e);
 			return false;
 		}
 
-		logger.info("Data migration: task - {} claimed", dataMigrationTask.getId());
+		logger.info("Data migration: task - {} marked in-process", dataMigrationTask.getId());
 		return true;
 	}
 
