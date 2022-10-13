@@ -26,7 +26,6 @@
 		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize">5368709120</prop>
 		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
 		<prop key="hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus">7</prop>
-		<prop key="hpc.service.dataTransfer.s3DataObjectDownloadTaskServerId">s3-download-task-server-id</prop>
 		<prop key="hpc.service.dataTransfer.globusTokenExpirationPeriod">120</prop>
 		<prop key="hpc.service.dataTransfer.globusCollectionDownloadBunching">true</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
@@ -56,6 +55,7 @@
 		<prop key="hpc.service.dataManagement.deletedBasePath">/DME_Deleted_Archive</prop>
 		<prop key="hpc.service.dataManagement.deletedDataObjectRetentionDays">730</prop>
 		<prop key="hpc.service.event.invokerCollectionUpdateNotification">false</prop>
+		<prop key="hpc.service.serverId">server-id</prop>
 		
 	</osgix:cm-properties>
 
