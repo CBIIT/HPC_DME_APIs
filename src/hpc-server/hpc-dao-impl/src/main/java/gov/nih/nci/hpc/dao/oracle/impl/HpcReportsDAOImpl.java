@@ -850,33 +850,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			reportEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
 			reportEntry.setValue(collection_size + "");
 			report.getReportEntries().add(reportEntry);
-			// Initializing Archive Summary field
-			reportEntry = new HpcReportEntry();
-			reportEntry.setAttribute(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
-			reportEntry.setValue("0");
-			report.getReportEntries().add(reportEntry);
 			reports.add(report);
 			mapReports.put(dataOwner + report.getUser(), report);
 		}
-		// Populate the Archive Summary field for all the data owners
-		List<HpcArchiveSummaryReport> archiveSummaryReport;
-		archiveSummaryReport = jdbcTemplate.query(ARCHIVE_SUMMARY_BY_ALL_DATA_OWNER_SQL, archiveSummaryReportRowMapper_dataOwner);
-		setArchiveSummaryFieldForGrid(mapReports, archiveSummaryReport);
 		return reports;
 	}
-
-	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper_dataOwner = (rs, rowNum) -> {
-		HpcArchiveSummaryReport archiveSummaryReport = new HpcArchiveSummaryReport();
-		String data_owner = rs.getString("data_owner");
-		String object_path = rs.getString("object_path").replaceFirst(iRodsBasePath, "");
-		archiveSummaryReport.repName = data_owner + object_path;
-		// archiveSummaryReport.count = rs.getLong("count");
-		archiveSummaryReport.size = rs.getLong("total_size");
-		archiveSummaryReport.vault = rs.getString("archive_provider");
-		archiveSummaryReport.bucket = rs.getString("archive_bucket");
-		archiveSummaryReport.storageClass = rs.getString("archive_storage_class");
-		return archiveSummaryReport;
-	};
 
 
 	private RowMapper<HpcArchiveSummaryReport> archiveSummaryReportRowMapper2 = (rs, rowNum) -> {
