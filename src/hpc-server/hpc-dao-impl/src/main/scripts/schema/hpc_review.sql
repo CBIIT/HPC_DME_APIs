@@ -51,11 +51,11 @@ FROM r_coll_main coll
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main data_owner ON data_owner.meta_id = map.meta_id AND
                                    data_owner.meta_attr_name = 'data_owner')
-                   ON map.object_id = parent_coll.coll_id
-         JOIN (r_objt_metamap map
+                   ON map.object_id in (coll.coll_id, parent_coll.coll_id)
+        JOIN (r_objt_metamap map
     JOIN r_meta_main data_curator ON data_curator.meta_id = map.meta_id AND
                                      data_curator.meta_attr_name = 'data_generator_userid')
-              ON map.object_id = parent_coll.coll_id
+              ON map.object_id in (parent_coll.COLL_ID, (select coll_id from r_coll_main where coll_name=parent_coll.parent_coll_name))
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main project_status ON project_status.meta_id = map.meta_id AND
                                        project_status.meta_attr_name = 'project_status')
@@ -75,11 +75,11 @@ FROM r_coll_main coll
                    ON map.object_id = coll.coll_id
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main retention_years ON retention_years.meta_id = map.meta_id AND
-                                    retention_years.meta_attr_name = 'retention_years')
+                                        retention_years.meta_attr_name = 'retention_years')
                    ON map.object_id = coll.coll_id
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main project_completed_date ON project_completed_date.meta_id = map.meta_id AND
-                                    project_completed_date.meta_attr_name = 'project_completed_date')
+                                               project_completed_date.meta_attr_name = 'project_completed_date')
                    ON map.object_id = coll.coll_id
          LEFT JOIN (r_objt_metamap map
     JOIN r_meta_main last_reviewed ON last_reviewed.meta_id = map.meta_id AND
