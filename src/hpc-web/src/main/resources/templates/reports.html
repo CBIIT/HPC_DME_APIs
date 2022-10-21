@@ -302,6 +302,9 @@ label {
 							<div class="col-md-5">&nbsp;</div>
 						</div>
 					</div> <!-- Second Row end -->
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
 				<div style="width: 1000px; height: 1000px; margin-left: 1%;"
@@ -437,7 +440,7 @@ label {
 							   <td id='path3' th:text="${report.getUser()}"></td>
 							   <td id='path4' th:text="${report.getDataOwner()}"></td>
 							   <td id='path5' th:text="${report.getDataCurator()}"></td>
-							   <td id='attr0' th:text="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
+							   <td id='attr0' th:utext="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
 							</tr>
 						</tbody>
 						<tfoot>
@@ -534,6 +537,7 @@ label {
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
 				reportHeaderTitle = "DME Data Owner Summary Report";
+				noSortColumns = [7]; // The human readable columns.
 				visibleColumns = [ 1, 2, 3, 4, 5, 7];
 				break;
 			default:
@@ -549,7 +553,7 @@ label {
  
 	    var table = $('#report_grid').DataTable( {
 				responsive: true,
-				dom: 'lfrtipB',
+				dom: 'Blfrtip',
 				fixedHeader: true,
 				buttons: [
 				{

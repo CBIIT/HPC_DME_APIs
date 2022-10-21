@@ -275,6 +275,24 @@ public class HpcReportsController extends AbstractHpcController {
     long size;
   }
 
+  private void setArchiveSummary(HpcReportEntryDTO entry){
+    if (entry.getValue().equals("0")) {
+      entry.setValue("NA");
+    } else {
+      Type empMapType = new TypeToken<List<HpcArchiveSummaryDocReport>>() {}.getType();
+      List<HpcArchiveSummaryDocReport> assaySummaryList = gson.fromJson(entry.getValue(), empMapType);
+      String assaySummaryString = "";
+      for(int i=0 ; i < assaySummaryList.size(); i++) {
+        String size = String.valueOf(assaySummaryList.get(i).size);
+        String hrSize = MiscUtil.getHumanReadableSize(size , true);
+        assaySummaryString = assaySummaryString + assaySummaryList.get(i).vault + ", " +
+            assaySummaryList.get(i).bucket + ", " +
+            hrSize + "<br/><br/>";
+      }
+      entry.setValue(assaySummaryString);
+    }
+  }
+
   private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
     List<HpcReportDTO> tReports = new ArrayList<>();
     for (HpcReportDTO dto : reports) {
@@ -302,7 +320,10 @@ public class HpcReportsController extends AbstractHpcController {
                 total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
                 entry.setAttribute(env.getProperty("COLLECTION_SIZE_HUMAN_READABLE"));
                 entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
-              } else {
+              } else if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
+                entry.setAttribute(env.getProperty(entry.getAttribute()));
+                setArchiveSummary(entry);
+              }else {
                 entry.setAttribute(env.getProperty(entry.getAttribute()));
               }
            } else {
@@ -311,21 +332,7 @@ public class HpcReportsController extends AbstractHpcController {
                   entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
               }
               if (entry.getAttribute().equals(env.getProperty("ARCHIVE_SUMMARY"))) {
-                if (entry.getValue().equals("0")) {
-                  entry.setValue("NA");
-                } else {
-                  Type empMapType = new TypeToken<List<HpcArchiveSummaryDocReport>>() {}.getType();
-                  List<HpcArchiveSummaryDocReport> assaySummaryList = gson.fromJson(entry.getValue(), empMapType);
-                  String assaySummaryString = "";
-                  for(int i=0 ; i < assaySummaryList.size(); i++) {
-                    String size = String.valueOf(assaySummaryList.get(i).size);
-                    String hrSize = MiscUtil.getHumanReadableSize(size , true);
-                    assaySummaryString = assaySummaryString + assaySummaryList.get(i).vault + ", " +
-                        assaySummaryList.get(i).bucket + ", " +
-                        hrSize + "<br/><br/>";
-                  }
-                  entry.setValue(assaySummaryString);
-                }
+                setArchiveSummary(entry);
               }
               if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
                   dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1 ){
