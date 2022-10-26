@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
 
 /**
  * HPC Data Management REST Service Interface.
@@ -194,12 +195,13 @@ public interface HpcDataManagementRestService {
 	 *
 	 * @param path            The collection path.
 	 * @param destinationPath The destination path to move to.
+	 * @param moveRequest     The move request DTO
 	 * @return The REST service response.
 	 */
 	@POST
 	@Path("/collection/{path:.*}/move/{destinationPath}")
-	public Response moveCollection(@PathParam("path") String path,
-			@PathParam("destinationPath") String destinationPath);
+	public Response moveCollection(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath,
+			HpcMoveRequestDTO moveRequest);
 
 	/**
 	 * Recover a collection.
@@ -556,12 +558,13 @@ public interface HpcDataManagementRestService {
 	 *
 	 * @param path            The data object path.
 	 * @param destinationPath The destination path to move to.
+	 * @param moveRequest     The move request DTO
 	 * @return The REST service response.
 	 */
 	@POST
 	@Path("/dataObject/{path:.*}/move/{destinationPath}")
-	public Response moveDataObject(@PathParam("path") String path,
-			@PathParam("destinationPath") String destinationPath);
+	public Response moveDataObject(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath,
+			HpcMoveRequestDTO moveRequest);
 
 	/**
 	 * Recover a data object.
