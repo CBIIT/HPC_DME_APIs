@@ -49,12 +49,18 @@
 <script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
 <script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css"></script>
+<!-- script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css"></script -->
 
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.html5.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.print.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.colVis.min.js"></script>
-
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link
+	href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css"
+	rel="stylesheet" />
+<link
+	href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css"
+	rel="stylesheet" />
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -538,7 +544,7 @@ label {
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
 				reportHeaderTitle = "DME Data Owner Summary Report";
 				noSortColumns = [7]; // The human readable columns.
-				visibleColumns = [ 1, 2, 3, 4, 5, 7];
+				visibleColumns = [ 1, 2, 3, 4, 5, 7, 8];
 				break;
 			default:
 				break;
@@ -597,7 +603,12 @@ label {
 								{
 								"targets": '_all', // The rest of the columns will not visible at start up
 								"visible": false
-								}
+								},
+								{
+								"targets": -1,
+								"data": null,
+								"defaultContent": '<button>View</button>',
+            					},
 								],
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
 			} );
@@ -619,7 +630,24 @@ label {
 			// Toggle the visibility
 			column.visible( ! column.visible() );
 		} );
-	} );
+
+		$('#report_grid tbody').on('click', 'button', function () {
+        var data = table.row($(this).parents('tr')).data();
+		let uri = '/reports/getArchiveSummary?path=' + data[3];
+		$.ajax({
+                type: 'GET',
+                url: uri,
+				dataType: 'json'
+            }).done(function (result) {
+                console.log(typeof result);
+				let archSumm = JSON.stringify(result.message);
+				alert("Data owner: " + data[4] + "\n\nPath: " + data[3] + "\n\nArchive Summary: " + archSumm + "\n");
+                //result = JSON.parse(result);
+                //table.clear();
+                //table.rows.add(result.data).draw();
+			});
+		});
+	});
 
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
