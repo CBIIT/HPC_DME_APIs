@@ -33,6 +33,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
@@ -527,9 +529,12 @@ public interface HpcDataManagementBusService {
 	 * @param pathType        If true, the path is a of a collection, otherwise the
 	 *                        path is of a data object.
 	 * @param destinationPath The destination path to move to.
+	 * @param moveRequest     The move request DTO
+	 * @return A response DTO containing result of this move request
 	 * @throws HpcException on service failure.
 	 */
-	public void movePath(String path, boolean pathType, String destinationPath) throws HpcException;
+	public HpcMoveResponseDTO movePath(String path, boolean pathType, String destinationPath,
+			HpcMoveRequestDTO moveRequest) throws HpcException;
 
 	/**
 	 * Move a list of data objects and/or collections.

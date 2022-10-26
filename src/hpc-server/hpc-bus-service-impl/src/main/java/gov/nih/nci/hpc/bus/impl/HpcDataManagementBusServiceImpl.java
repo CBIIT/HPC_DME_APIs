@@ -128,7 +128,9 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
@@ -1408,9 +1410,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							? true
 							: null);
 			if (Optional.ofNullable(downloadStatus.getStagingInProgress()).orElse(false)) {
-				downloadStatus.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
+				downloadStatus
+						.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
 			}
-	        downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
+			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
@@ -1904,15 +1907,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public void movePath(String path, boolean pathType, String destinationPath) throws HpcException {
+	public HpcMoveResponseDTO movePath(String path, boolean pathType, String destinationPath,
+			HpcMoveRequestDTO moveRequest) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path) || StringUtils.isEmpty(destinationPath)) {
 			throw new HpcException("Empty path or destinationPath in move request: [path: " + path
 					+ "] [destinationPath: " + destinationPath + "]", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		// The alignArchivePath is true by default if not requested by the caller.
+		boolean alignArchivePath = // moveRequest == null ? true :
+				Optional.ofNullable(moveRequest.getAlignArchivePath()).orElse(true);
+
 		// Move the path.
 		dataManagementService.move(path, destinationPath, Optional.of(pathType));
+
+		HpcMoveResponseDTO moveResponse = null;
+		// if (!StringUtils.isEmpty(taskId)) {
+		// // The archive file path was aligned. return the migration task ID
+		// moveResponse = new HpcMoveResponseDTO();
+		// moveResponse.setTaskId(taskId);
+		// }
+
+		return moveResponse;
 	}
 
 	@Override
@@ -1926,13 +1943,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("No move request items in bulk request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		if (bulkMoveRequest.getAlignArchivePath() != null) {
+			throw new HpcException("alignArchivePath not supported", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		// Validate the move requests.
-		for (HpcMoveRequestDTO moveRequest : bulkMoveRequest.getMoveRequests()) {
-			if (StringUtils.isEmpty(moveRequest.getSourcePath())
-					|| StringUtils.isEmpty(moveRequest.getDestinationPath())) {
+		for (HpcMoveRequestItemDTO moveRequestItem : bulkMoveRequest.getMoveRequests()) {
+			if (StringUtils.isEmpty(moveRequestItem.getSourcePath())
+					|| StringUtils.isEmpty(moveRequestItem.getDestinationPath())) {
 				throw new HpcException(
-						"Empty source/destination path in move request: [path: " + moveRequest.getSourcePath()
-								+ "] [Name: " + moveRequest.getDestinationPath() + "]",
+						"Empty source/destination path in move request: [path: " + moveRequestItem.getSourcePath()
+								+ "] [Name: " + moveRequestItem.getDestinationPath() + "]",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
@@ -1941,35 +1962,34 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcBulkMoveResponseDTO bulkMoveResponse = new HpcBulkMoveResponseDTO();
 		bulkMoveResponse.setResult(true);
 
-		bulkMoveRequest.getMoveRequests().forEach(moveRequest -> {
+		bulkMoveRequest.getMoveRequests().forEach(moveRequestItem -> {
 			// Normalize the paths.
-			moveRequest.setSourcePath(toNormalizedPath(moveRequest.getSourcePath()));
-			moveRequest.setDestinationPath(toNormalizedPath(moveRequest.getDestinationPath()));
+			moveRequestItem.setSourcePath(toNormalizedPath(moveRequestItem.getSourcePath()));
+			moveRequestItem.setDestinationPath(toNormalizedPath(moveRequestItem.getDestinationPath()));
 
 			// Create a response for this move request.
-			HpcMoveResponseDTO moveResponse = new HpcMoveResponseDTO();
-			moveResponse.setRequest(moveRequest);
+			HpcMoveResponseItemDTO moveResponseItem = new HpcMoveResponseItemDTO();
+			moveResponseItem.setRequest(moveRequestItem);
 
 			try {
-				dataManagementService.move(moveRequest.getSourcePath(), moveRequest.getDestinationPath(),
+				dataManagementService.move(moveRequestItem.getSourcePath(), moveRequestItem.getDestinationPath(),
 						Optional.ofNullable(null));
 
 				// Move request is successful.
-				moveResponse.setResult(true);
+				moveResponseItem.setResult(true);
 
 			} catch (HpcException e) {
 				// Move request failed.
-				moveResponse.setResult(false);
+				moveResponseItem.setResult(false);
+				moveResponseItem.setMessage(e.getMessage());
 
 				// If at least one request failed, we consider the entire bulk request to be
 				// failed
 				bulkMoveResponse.setResult(false);
-
-				moveResponse.setMessage(e.getMessage());
 			}
 
 			// Add this response to the bulk response.
-			bulkMoveResponse.getMoveResponses().add(moveResponse);
+			bulkMoveResponse.getMoveResponses().add(moveResponseItem);
 		});
 
 		return bulkMoveResponse;
