@@ -421,6 +421,7 @@ public class HpcReportsController extends AbstractHpcController {
         client.header("Authorization", "Bearer " + authToken);
         Response restResponse = client.invoke("POST", requestDTO);
         if (restResponse.getStatus() == 200) {
+            result.setCode(Integer.toString(200));
             //result.setMessage("Successfully generated report.");
             MappingJsonFactory factory = new MappingJsonFactory();
             JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
@@ -432,13 +433,13 @@ public class HpcReportsController extends AbstractHpcController {
                 if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
                   setArchiveSummary(entry, "\n\n");
                   result.setMessage(entry.getValue());
-                  model.addAttribute("archiveSummary", entry.getValue());
                   break;
                 }
               }
             }
   	    } else {
           result.setMessage("Failed to generate report");
+          result.setCode(Integer.toString(400));
         }
   } catch (Exception e) {
 			log.error(e.getMessage(), e);

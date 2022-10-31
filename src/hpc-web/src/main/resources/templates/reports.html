@@ -606,8 +606,10 @@ label {
 								},
 								{
 								"targets": -1,
-								"data": null,
-								"defaultContent": '<button>View</button>',
+								className: 'dt-control',
+								orderable: false,
+								data: null,
+								defaultContent: '',
             					},
 								],
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
@@ -631,23 +633,45 @@ label {
 			column.visible( ! column.visible() );
 		} );
 
-		$('#report_grid tbody').on('click', 'button', function () {
-        var data = table.row($(this).parents('tr')).data();
-		let uri = '/reports/getArchiveSummary?path=' + data[3];
-		$.ajax({
-                type: 'GET',
-                url: uri,
-				dataType: 'json'
-            }).done(function (result) {
-                console.log(typeof result);
-				let archSumm = JSON.stringify(result.message);
-				alert("Data owner: " + data[4] + "\n\nPath: " + data[3] + "\n\nArchive Summary: " + archSumm + "\n");
-                //result = JSON.parse(result);
-                //table.clear();
-                //table.rows.add(result.data).draw();
-			});
+	    $('#report_grid tbody').on('click', 'td.dt-control', function () {
+			var data = table.row($(this).parents('tr')).data();
+			var tr = $(this).closest('tr');
+			var row = table.row(tr);
+			if (row.child.isShown()) {
+	            // This row is already open - close it
+	            row.child.hide();
+				tr.removeClass('shown');
+	        } else {
+	            // Open this row
+				let archiveSummary = "";
+				let uri = '/reports/getArchiveSummary?path=' + data[3];
+				$.ajax({
+		            type: 'GET',
+		            url: uri,
+					dataType: 'json'
+		        }).done(function (result) {
+					archiveSummary = JSON.stringify(result.message);
+					row.child(archiveSummary).show();
+					tr.addClass('shown');
+				});
+	        }
 		});
 	});
+
+	/* Formatting function for row details showing Archive Summary */
+	function format(d) {
+	    // `d` is the original data object for the row
+	    return (
+	        '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+	        '<tr>' +
+	        '<td>Archive Summary:</td>' +
+	        '<td>' +
+	        d +
+	        '</td>' +
+	        '</tr>' +
+	        '</table>'
+	    );
+}
 
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
