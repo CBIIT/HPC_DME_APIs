@@ -527,29 +527,51 @@ label {
 		const d = new Date();
 		let pretag = "NCI_DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
+		var colDefs = [];
 		switch (reportType) {
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
 				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
 				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right. 
 				visibleColumns = [ 1, 2, 4, 7, 9];
+				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
+						{"targets": 4, "type": 'file-size'}, // not sortable
+						{"targets": noSortColumns, "orderable": false},
+						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
+						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						];
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
 				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right.
 				visibleColumns = [ 1, 2, 4, 7, 9];
+				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
+						{"targets": 4, "type": 'file-size'}, // not sortable
+						{"targets": noSortColumns, "orderable": false},
+						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
+						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						];
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
 				reportHeaderTitle = "DME Data Owner Summary Report";
-				noSortColumns = [7]; // The human readable columns.
-				visibleColumns = [ 1, 2, 3, 4, 5, 7, 8];
+				colDefs = [
+						{ "data": "index",   "targets": 0, "searchable": false, "orderable": false, "visible": true},
+						{ "data": "doc",  "targets": 1, "visible": true },
+						{ "data": "basepath", "targets": 2, "visible": true },
+						{ "data": "collection_path", "targets": 3, "visible": true},
+						{ "data": "data_owner", "targets": 4, "visible": true },
+						{ "data": "data_generator", "targets": 5, "visible": true },
+						{ "data": "collection_size", "targets": 6, "visible": false },
+						{ "data": "collection_size_hr", "targets": 7, "orderable": false, "visible": true },
+						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "className": 'dt-control', "data":null, "defaultContent": ''}
+					];
 				break;
 			default:
 				break;
 		}
-		
+
 		var fromDate = document.getElementById("fromDate").value;
 		var toDate = document.getElementById("toDate").value;
 		var messageTopDateRange = reportHeaderTitle + "  (Date Range: " +  fromDate + "-" + toDate + ")";
@@ -586,32 +608,7 @@ label {
 	            },
 				],
 				"order": [[ 1, 'asc' ]],
-				"columnDefs": [ {
-								"targets": 0, // The first column - index
-								"searchable": false,
-								"orderable": false,
-								"visible": true
-								},
-								{
-								"targets": noSortColumns, // These columns should not be sortable. For e.g, Human readable values.
-								"orderable": false
-								},
-								{
-								"targets": visibleColumns, // Visible columns at start up(include 0 specified above)
-								"visible": true
-	  							},
-								{
-								"targets": '_all', // The rest of the columns will not visible at start up
-								"visible": false
-								},
-								{
-								"targets": -1,
-								className: 'dt-control',
-								orderable: false,
-								data: null,
-								defaultContent: '',
-            					},
-								],
+				"columnDefs": colDefs,
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
 			} );
 	    
@@ -644,7 +641,7 @@ label {
 	        } else {
 	            // Open this row
 				let archiveSummary = "";
-				let uri = '/reports/getArchiveSummary?path=' + data[3];
+				let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
 				$.ajax({
 		            type: 'GET',
 		            url: uri,
