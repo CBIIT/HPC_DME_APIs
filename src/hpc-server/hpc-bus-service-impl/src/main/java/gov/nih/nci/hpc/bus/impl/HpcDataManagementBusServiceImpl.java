@@ -34,6 +34,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -202,6 +203,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// Report Application Service Instance.
 	@Autowired
 	private HpcReportService reportService = null;
+
+	// Migration Business Service Instance.
+	@Autowired
+	private HpcDataMigrationBusService migrationBusService;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -1915,19 +1920,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					+ "] [destinationPath: " + destinationPath + "]", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// The alignArchivePath is true by default if not requested by the caller.
-		boolean alignArchivePath = // moveRequest == null ? true :
-				Optional.ofNullable(moveRequest.getAlignArchivePath()).orElse(true);
-
-		// Move the path.
+		// Move the path in iRODs.
 		dataManagementService.move(path, destinationPath, Optional.of(pathType));
 
+		// Optionally align the archive path (also done by default if caller did not
+		// specify).
 		HpcMoveResponseDTO moveResponse = null;
-		// if (!StringUtils.isEmpty(taskId)) {
-		// // The archive file path was aligned. return the migration task ID
-		// moveResponse = new HpcMoveResponseDTO();
-		// moveResponse.setTaskId(taskId);
-		// }
+		if (Optional.ofNullable(moveRequest.getAlignArchivePath()).orElse(true)) {
+			moveResponse = new HpcMoveResponseDTO();
+			if (pathType) {
+				moveResponse.setTaskId(migrationBusService.migrateCollection(destinationPath, null, true).getTaskId());
+			} else {
+				moveResponse.setTaskId(migrationBusService.migrateDataObject(destinationPath, null, true).getTaskId());
+			}
+		}
 
 		return moveResponse;
 	}

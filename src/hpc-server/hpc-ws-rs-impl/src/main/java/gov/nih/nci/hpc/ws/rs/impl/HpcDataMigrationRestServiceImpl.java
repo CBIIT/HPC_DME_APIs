@@ -57,7 +57,8 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 	public Response migrateDataObject(String path, HpcMigrationRequestDTO migrationRequest) {
 		HpcMigrationResponseDTO migrationResponse = null;
 		try {
-			migrationResponse = dataMigrationBusService.migrateDataObject(toNormalizedPath(path), migrationRequest);
+			migrationResponse = dataMigrationBusService.migrateDataObject(toNormalizedPath(path), migrationRequest,
+					false);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -70,7 +71,8 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 	public Response migrateCollection(String path, HpcMigrationRequestDTO migrationRequest) {
 		HpcMigrationResponseDTO migrationResponse = null;
 		try {
-			migrationResponse = dataMigrationBusService.migrateCollection(toNormalizedPath(path), migrationRequest);
+			migrationResponse = dataMigrationBusService.migrateCollection(toNormalizedPath(path), migrationRequest,
+					false);
 
 		} catch (HpcException e) {
 			return errorResponse(e);

@@ -26,22 +26,26 @@ public interface HpcDataMigrationBusService {
 	 *
 	 * @param path             The data object path.
 	 * @param migrationRequest The migration request DTO.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @return Migration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcMigrationResponseDTO migrateDataObject(String path, HpcMigrationRequestDTO migrationRequest)
-			throws HpcException;
+	public HpcMigrationResponseDTO migrateDataObject(String path, HpcMigrationRequestDTO migrationRequest,
+			boolean alignArchivePath) throws HpcException;
 
 	/**
 	 * Migrate a collection to another archive.
 	 *
 	 * @param path             The collection path.
 	 * @param migrationRequest The migration request DTO.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @return Migration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcMigrationResponseDTO migrateCollection(String path, HpcMigrationRequestDTO migrationRequest)
-			throws HpcException;
+	public HpcMigrationResponseDTO migrateCollection(String path, HpcMigrationRequestDTO migrationRequest,
+			boolean alignArchivePath) throws HpcException;
 
 	/**
 	 * Migrate data objects or collections. Note: API doesn't support mixed, so user
