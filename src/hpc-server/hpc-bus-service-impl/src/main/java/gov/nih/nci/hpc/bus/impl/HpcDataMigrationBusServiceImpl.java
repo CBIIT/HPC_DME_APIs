@@ -92,15 +92,15 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public HpcMigrationResponseDTO migrateDataObject(String path, HpcMigrationRequestDTO migrationRequest)
-			throws HpcException {
+	public HpcMigrationResponseDTO migrateDataObject(String path, HpcMigrationRequestDTO migrationRequest,
+			boolean alignArchivePath) throws HpcException {
 		return migrateDataObject(path, securityService.getRequestInvoker().getNciAccount().getUserId(), null,
 				migrationRequest);
 	}
 
 	@Override
-	public HpcMigrationResponseDTO migrateCollection(String path, HpcMigrationRequestDTO migrationRequest)
-			throws HpcException {
+	public HpcMigrationResponseDTO migrateCollection(String path, HpcMigrationRequestDTO migrationRequest,
+			boolean alignArchivePath) throws HpcException {
 		// Input validation.
 		HpcSystemGeneratedMetadata metadata = validateCollectionMigrationRequest(path, migrationRequest);
 
