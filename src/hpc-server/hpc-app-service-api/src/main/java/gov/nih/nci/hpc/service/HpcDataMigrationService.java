@@ -35,12 +35,15 @@ public interface HpcDataMigrationService {
 	 * @param collectionMigrationTaskId    (Optional) The collection migration task
 	 *                                     ID that is associated w/ this data object
 	 *                                     migration task
+	 * @param alignArchivePath             If true, the file is moved within its
+	 *                                     current archive to align w/ the iRODs
+	 *                                     path.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
-			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId)
-			throws HpcException;
+			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
+			boolean alignArchivePath) throws HpcException;
 
 	/**
 	 * Get a list of migration tasks in specific status and type.
@@ -109,11 +112,14 @@ public interface HpcDataMigrationService {
 	 * @param configurationId            The The data object configuration ID.
 	 * @param toS3ArchiveConfigurationId The migration target S3 archive
 	 *                                   configuration ID.
+	 *                                   @param alignArchivePath             If true, the file is moved within its
+	 *                                     current archive to align w/ the iRODs
+	 *                                     path.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId) throws HpcException;
+			String toS3ArchiveConfigurationId, boolean alignArchivePath) throws HpcException;
 
 	/**
 	 * Create a data object list migration task.

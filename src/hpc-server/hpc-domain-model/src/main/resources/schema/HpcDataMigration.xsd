@@ -53,6 +53,7 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="serverId" type="xsd:string" />
+				<xsd:element name="alignArchivePath" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

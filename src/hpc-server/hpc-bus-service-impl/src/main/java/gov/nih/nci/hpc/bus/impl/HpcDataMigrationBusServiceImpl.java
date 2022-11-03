@@ -95,20 +95,21 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	public HpcMigrationResponseDTO migrateDataObject(String path, HpcMigrationRequestDTO migrationRequest,
 			boolean alignArchivePath) throws HpcException {
 		return migrateDataObject(path, securityService.getRequestInvoker().getNciAccount().getUserId(), null,
-				migrationRequest);
+				migrationRequest, alignArchivePath);
 	}
 
 	@Override
 	public HpcMigrationResponseDTO migrateCollection(String path, HpcMigrationRequestDTO migrationRequest,
 			boolean alignArchivePath) throws HpcException {
 		// Input validation.
-		HpcSystemGeneratedMetadata metadata = validateCollectionMigrationRequest(path, migrationRequest);
+		HpcSystemGeneratedMetadata metadata = validateCollectionMigrationRequest(path, migrationRequest,
+				alignArchivePath);
 
 		// Create a migration task.
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
 		migrationResponse.setTaskId(dataMigrationService
 				.createCollectionMigrationTask(path, securityService.getRequestInvoker().getNciAccount().getUserId(),
-						metadata.getConfigurationId(), migrationRequest.getS3ArchiveConfigurationId())
+						metadata.getConfigurationId(), migrationRequest.getS3ArchiveConfigurationId(), alignArchivePath)
 				.getId());
 
 		return migrationResponse;
@@ -229,7 +230,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 								migrationRequest.setS3ArchiveConfigurationId(
 										dataObjectListMigrationTask.getToS3ArchiveConfigurationId());
 								migrateDataObject(dataObjectPath, dataObjectListMigrationTask.getUserId(),
-										dataObjectListMigrationTask.getId(), migrationRequest);
+										dataObjectListMigrationTask.getId(), migrationRequest,
+										dataObjectListMigrationTask.getAlignArchivePath());
 							}
 
 							// Mark the collection migration task - in-progress
@@ -356,11 +358,13 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 *
 	 * @param path             The data object path.
 	 * @param migrationRequest The migration request.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @return The data object system metadata
 	 * @throws HpcException If the request is invalid.
 	 */
 	private HpcSystemGeneratedMetadata validateDataObjectMigrationRequest(String path,
-			HpcMigrationRequestDTO migrationRequest) throws HpcException {
+			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath) throws HpcException {
 
 		// Validate the following:
 		// 1. Path is not empty.
@@ -370,7 +374,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// 5. Migration is supported only from S3 archive to S3 Archive.
 		// 6. Data Object is archived (i.e. registration completed).
 
-		validateMigrationRequest(path, migrationRequest);
+		validateMigrationRequest(path, migrationRequest, alignArchivePath);
 
 		// Validate that data object exists.
 		if (dataManagementService.getDataObject(path) == null) {
@@ -409,19 +413,22 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 *
 	 * @param path             The data object path.
 	 * @param migrationRequest The migration request.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @return The data object system metadata
 	 * @throws HpcException If the request is invalid.
 	 */
 	private HpcSystemGeneratedMetadata validateCollectionMigrationRequest(String path,
-			HpcMigrationRequestDTO migrationRequest) throws HpcException {
+			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath) throws HpcException {
 
 		// Validate the following:
 		// 1. Path is not empty.
-		// 2. Migration request is not empty.
-		// 2. Collection exists.
-		// 3. Collection is not empty
+		// 2. Migration is not supported for links.
+		// 3. Migration is supported only from S3 archive to S3 Archive.
+		// 4. Collection exists.
+		// 5. Collection is not empty
 
-		validateMigrationRequest(path, migrationRequest);
+		validateMigrationRequest(path, migrationRequest, alignArchivePath);
 
 		// Validate collection exists.
 		HpcCollection collection = dataManagementService.getCollection(path, true);
@@ -467,12 +474,12 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		for (String path : bulkMigrationRequest.getDataObjectPaths()) {
 			migrationRequest.setS3ArchiveConfigurationId(bulkMigrationRequest.getS3ArchiveConfigurationId());
-			systemGenerateMetadata = validateDataObjectMigrationRequest(path, migrationRequest);
+			systemGenerateMetadata = validateDataObjectMigrationRequest(path, migrationRequest, false);
 		}
 
 		for (String path : bulkMigrationRequest.getCollectionPaths()) {
 			migrationRequest.setS3ArchiveConfigurationId(bulkMigrationRequest.getS3ArchiveConfigurationId());
-			systemGenerateMetadata = validateCollectionMigrationRequest(path, migrationRequest);
+			systemGenerateMetadata = validateCollectionMigrationRequest(path, migrationRequest, false);
 		}
 
 		if (systemGenerateMetadata == null) {
@@ -487,35 +494,45 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 * Validate a migration request
 	 *
 	 * @param path             The data object path.
-	 * @param migrationRequest The migration request. Google Drive.
+	 * @param migrationRequest The migration request.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @throws HpcException If the request is invalid.
 	 */
-	private void validateMigrationRequest(String path, HpcMigrationRequestDTO migrationRequest) throws HpcException {
+	private void validateMigrationRequest(String path, HpcMigrationRequestDTO migrationRequest,
+			boolean alignArchivePath) throws HpcException {
 
 		// Validate the following:
 		// 1. Path is not empty.
-		// 2. Migration request is not empty.
-		// 3. Target S3 archive exists.
-		//
+		// 2. Migration request is not empty if alignArchivePath is false
+		// 3. Migration request is empty if alignArchivePath is true
+		// 3. Target S3 archive configuration exists.
 
 		// Validate the path,
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / Empty path for migration", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Validate the migration target S3 archive configuration.
-		if (migrationRequest == null || StringUtils.isEmpty(migrationRequest.getS3ArchiveConfigurationId())) {
-			throw new HpcException("Null / Empty migration request / s3ArchiveConfigurationId",
-					HpcErrorType.INVALID_REQUEST_INPUT);
-		}
+		if (!alignArchivePath) {
+			// Validate the migration target S3 archive configuration.
+			if (migrationRequest == null || StringUtils.isEmpty(migrationRequest.getS3ArchiveConfigurationId())) {
+				throw new HpcException("Null / Empty migration request / s3ArchiveConfigurationId",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 
-		try {
-			// If target S3 archive configuration not found, an exception will be raised.
-			dataManagementService.getS3ArchiveConfiguration(migrationRequest.getS3ArchiveConfigurationId());
-		} catch (HpcException e) {
-			throw new HpcException(
-					"S3 archive configuration ID not found: " + migrationRequest.getS3ArchiveConfigurationId(),
-					HpcErrorType.INVALID_REQUEST_INPUT);
+			try {
+				// If target S3 archive configuration not found, an exception will be raised.
+				dataManagementService.getS3ArchiveConfiguration(migrationRequest.getS3ArchiveConfigurationId());
+			} catch (HpcException e) {
+				throw new HpcException(
+						"S3 archive configuration ID not found: " + migrationRequest.getS3ArchiveConfigurationId(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} else {
+			if (migrationRequest != null) {
+				throw new HpcException("migration request provided w/ alignArchivePath set to true",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 	}
 
@@ -527,16 +544,18 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 * @param collectionMigrationTaskId (Optional) A collection migration task id
 	 *                                  that this data object migration is part of.
 	 * @param migrationRequest          The migration request.
+	 * @param alignArchivePath          If true, the file is moved within its
+	 *                                  current archive to align w/ the iRODs path.
 	 * @return A data migration response DTO.
 	 * @throws HpcException If failed to process the request.
 	 */
 	private HpcMigrationResponseDTO migrateDataObject(String path, String userId, String collectionMigrationTaskId,
-			HpcMigrationRequestDTO migrationRequest) throws HpcException {
+			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath) throws HpcException {
 		// Input validation.
 		HpcSystemGeneratedMetadata metadata = null;
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
 		try {
-			metadata = validateDataObjectMigrationRequest(path, migrationRequest);
+			metadata = validateDataObjectMigrationRequest(path, migrationRequest, alignArchivePath);
 
 		} catch (Exception e) {
 			if (!StringUtils.isEmpty(collectionMigrationTaskId)) {
@@ -545,7 +564,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(path,
 						userId, null, null,
 						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
-						collectionMigrationTaskId);
+						collectionMigrationTaskId, alignArchivePath);
 				dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
 						HpcDataMigrationResult.IGNORED, "Invalid migration request: " + e.getMessage(), null, null);
 				migrationResponse.setTaskId(dataObjectMigrationTask.getId());
@@ -558,7 +577,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// Create a migration task.
 		migrationResponse.setTaskId(dataMigrationService.createDataObjectMigrationTask(path, userId,
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
-				migrationRequest.getS3ArchiveConfigurationId(), collectionMigrationTaskId).getId());
+				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
+				collectionMigrationTaskId, alignArchivePath).getId());
 
 		return migrationResponse;
 	}
@@ -581,7 +601,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			HpcMigrationRequestDTO migrationRequest = new HpcMigrationRequestDTO();
 			migrationRequest.setS3ArchiveConfigurationId(collectionMigrationTask.getToS3ArchiveConfigurationId());
 			migrateDataObject(dataObjectEntry.getPath(), collectionMigrationTask.getUserId(),
-					collectionMigrationTask.getId(), migrationRequest);
+					collectionMigrationTask.getId(), migrationRequest, collectionMigrationTask.getAlignArchivePath());
 		}
 
 		// Iterate through the sub-collections and migrate them.
