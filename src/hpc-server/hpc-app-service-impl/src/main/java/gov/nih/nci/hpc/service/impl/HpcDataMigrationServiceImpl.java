@@ -120,8 +120,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
-			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId)
-			throws HpcException {
+			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
+			boolean alignArchivePath) throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -147,6 +147,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT);
 		migrationTask.setParentId(collectionMigrationTaskId);
+		migrationTask.setAlignArchivePath(alignArchivePath);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -375,7 +376,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId) throws HpcException {
+			String toS3ArchiveConfigurationId, boolean alignArchivePath) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.setPath(path);
@@ -385,6 +386,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setCreated(Calendar.getInstance());
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.COLLECTION);
+		migrationTask.setAlignArchivePath(alignArchivePath);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -403,6 +405,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setCreated(Calendar.getInstance());
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT_LIST);
+		migrationTask.setAlignArchivePath(false);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -421,6 +424,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setCreated(Calendar.getInstance());
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.COLLECTION_LIST);
+		migrationTask.setAlignArchivePath(false);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
