@@ -177,7 +177,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void migrateDataObject(HpcDataMigrationTask dataObjectMigrationTask) throws HpcException {
-		if (dataObjectMigrationTask.getToS3ArchiveConfigurationId()
+		if (!dataObjectMigrationTask.getAlignArchivePath() && dataObjectMigrationTask.getToS3ArchiveConfigurationId()
 				.equals(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
 			// Migration not needed.
 			completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, null, null, null);
@@ -185,7 +185,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		}
 
 		// Get the data transfer configuration for both source and target S3 archives in
-		// this migration task.
+		// this migration task. Note that it's the same in the case of archive path
+		// alignment
 		HpcDataTransferConfiguration fromS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getFromS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
@@ -193,9 +194,12 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			dataObjectMigrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveDataTransferConfiguration.getId());
 		}
 
-		HpcDataTransferConfiguration toS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
-				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
-						dataObjectMigrationTask.getToS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
+		HpcDataTransferConfiguration toS3ArchiveDataTransferConfiguration = !dataObjectMigrationTask
+				.getAlignArchivePath()
+						? dataManagementConfigurationLocator.getDataTransferConfiguration(
+								dataObjectMigrationTask.getConfigurationId(),
+								dataObjectMigrationTask.getToS3ArchiveConfigurationId(), HpcDataTransferType.S_3)
+						: fromS3ArchiveDataTransferConfiguration;
 
 		// Get the data transfer system accounts to access both source and target
 		// S3 archives in
