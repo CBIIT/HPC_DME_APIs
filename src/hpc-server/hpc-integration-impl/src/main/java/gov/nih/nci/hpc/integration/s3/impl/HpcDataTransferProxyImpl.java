@@ -269,8 +269,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 
 		} catch (AmazonClientException ace) {
-			throw new HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, ace);
+			throw new HpcException("[S3] Failed to get object metadata: " + fileLocation.getFileContainerId() + ":"
+					+ fileLocation.getFileId() + ace.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR, ace);
 		}
 
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
