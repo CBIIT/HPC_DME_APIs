@@ -260,6 +260,12 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				toS3ArchiveDataTransferConfiguration.getEncryptedTransfer(),
 				toS3ArchiveDataTransferConfiguration.getStorageClass()).getArchiveLocation());
 
+		logger.info("Archive migration started: {} - {}:{} -> {}:{}", dataObjectMigrationTask.getId(),
+				dataObjectMigrationTask.getFromS3ArchiveLocation().getFileContainerId(),
+				dataObjectMigrationTask.getFromS3ArchiveLocation().getFileId(),
+				dataObjectMigrationTask.getToS3ArchiveLocation().getFileContainerId(),
+				dataObjectMigrationTask.getToS3ArchiveLocation().getFileId());
+
 		// Update the task and persist.
 		dataObjectMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
 		dataMigrationDAO.upsertDataMigrationTask(dataObjectMigrationTask);
