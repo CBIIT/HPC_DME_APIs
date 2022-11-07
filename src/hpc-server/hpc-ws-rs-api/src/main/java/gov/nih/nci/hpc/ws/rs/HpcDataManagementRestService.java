@@ -200,6 +200,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@POST
 	@Path("/collection/{path:.*}/move/{destinationPath}")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response moveCollection(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath,
 			HpcMoveRequestDTO moveRequest);
 
@@ -563,6 +565,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@POST
 	@Path("/dataObject/{path:.*}/move/{destinationPath}")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response moveDataObject(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath,
 			HpcMoveRequestDTO moveRequest);
 
