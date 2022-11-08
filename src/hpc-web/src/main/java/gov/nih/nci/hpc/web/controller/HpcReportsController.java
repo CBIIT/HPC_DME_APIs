@@ -400,12 +400,17 @@ public class HpcReportsController extends AbstractHpcController {
       return type;
   }
 
-
+  /**
+    * GET operation responding to an AJAX request to retrieve the Archive Summary based on the path
+    *
+    * @param path
+    * @param session
+    * @param request
+    * @return The Archive summary value
+  */
   @GetMapping(value = "/getArchiveSummary")
   @ResponseBody
-  public AjaxResponseBody getArchiveSummary(@RequestBody(required = false) String body, @RequestParam("path") String path,
-      BindingResult bindingResult, Model model, HttpSession session, HttpServletRequest request,
-      HttpServletResponse response) {
+  public AjaxResponseBody getArchiveSummary(@RequestParam("path") String path, HttpSession session, HttpServletRequest request) {
       String authToken = (String) session.getAttribute("hpcUserToken");
       AjaxResponseBody result = new AjaxResponseBody();
       HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
@@ -437,10 +442,10 @@ public class HpcReportsController extends AbstractHpcController {
                 }
               }
             }
-          } else { // restResponse.getStatus() != 200
+        } else { // restResponse.getStatus() != 200
             result.setMessage("");
             result.setCode(Integer.toString(400));
-          }
+        }
       } catch (Exception e) {
         log.error(e.getMessage(), e);
       }
