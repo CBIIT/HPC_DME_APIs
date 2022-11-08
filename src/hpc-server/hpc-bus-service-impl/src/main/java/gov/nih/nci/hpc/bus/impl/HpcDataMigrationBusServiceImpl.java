@@ -598,8 +598,11 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
 			// Iterate through the data objects directly under this collection and submit a
 			// migration task for each
-			HpcMigrationRequestDTO migrationRequest = new HpcMigrationRequestDTO();
-			migrationRequest.setS3ArchiveConfigurationId(collectionMigrationTask.getToS3ArchiveConfigurationId());
+			HpcMigrationRequestDTO migrationRequest = null;
+			if (!collectionMigrationTask.getAlignArchivePath()) {
+				migrationRequest = new HpcMigrationRequestDTO();
+				migrationRequest.setS3ArchiveConfigurationId(collectionMigrationTask.getToS3ArchiveConfigurationId());
+			}
 			migrateDataObject(dataObjectEntry.getPath(), collectionMigrationTask.getUserId(),
 					collectionMigrationTask.getId(), migrationRequest, collectionMigrationTask.getAlignArchivePath());
 		}
