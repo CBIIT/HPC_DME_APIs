@@ -36,6 +36,9 @@
 				<xsd:element name="fromDate" type="xsd:string" />
 				<xsd:element name="toDate" type="xsd:string" />
 				<xsd:element name="path" type="xsd:string" />
+				<xsd:element name="reportColumns"
+							type="hpc-domain-report:HpcReportEntryAttribute"
+							minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
