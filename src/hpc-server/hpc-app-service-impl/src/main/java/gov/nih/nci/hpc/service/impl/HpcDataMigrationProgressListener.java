@@ -79,6 +79,16 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 	public void transferCompleted(Long bytesTransferred) {
 		logger.info("Migration completed for: {} [task-id: {}]", dataObjectMigrationTask.getPath(),
 				dataObjectMigrationTask.getId());
+
+		if (dataObjectMigrationTask.getAlignArchivePath()) {
+			logger.error("ERAN: before sleep {} ", dataObjectMigrationTask.getId());
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException ie) {
+
+			}
+			logger.error("ERAN: after sleep {} ", dataObjectMigrationTask.getId());
+		}
 		try {
 			dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
 					HpcDataMigrationResult.COMPLETED, null, fromS3ArchiveAuthToken, toS3ArchiveAuthToken);
