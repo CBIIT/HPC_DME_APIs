@@ -59,6 +59,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -399,54 +400,55 @@ public class HpcReportsController extends AbstractHpcController {
       return type;
   }
 
-
-	@GetMapping(value = "/getArchiveSummary")
-	@ResponseBody
-	public AjaxResponseBody getArchiveSummary(@RequestBody(required = false) String body, @RequestParam("path") String path,
-			BindingResult bindingResult, Model model, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response) {
-		String authToken = (String) session.getAttribute("hpcUserToken");
-		AjaxResponseBody result = new AjaxResponseBody();
-		HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
-		requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
-    requestDTO.setPath(path);
-    try {
+  /**
+    * GET operation responding to an AJAX request to retrieve the Archive Summary based on the path
+    *
+    * @param path
+    * @param session
+    * @param request
+    * @return The Archive summary value
+  */
+  @GetMapping(value = "/getArchiveSummary")
+  @ResponseBody
+  public AjaxResponseBody getArchiveSummary(@RequestParam("path") String path, HttpSession session, HttpServletRequest request) {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      AjaxResponseBody result = new AjaxResponseBody();
+      HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
+      requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+      requestDTO.setPath(path);
+      requestDTO.getReportColumns().add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
+      try {
         UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(serviceURL);
         if (ucBuilder == null) {
           return null;
         }
         final String requestURL = ucBuilder.build().encode().toUri().toURL().toExternalForm();
-
         WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
         client.header("Authorization", "Bearer " + authToken);
         Response restResponse = client.invoke("POST", requestDTO);
         if (restResponse.getStatus() == 200) {
-            result.setCode(Integer.toString(200));
-            //result.setMessage("Successfully generated report.");
-            MappingJsonFactory factory = new MappingJsonFactory();
-            JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-            HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
-            List <HpcReportDTO> dto = reports.getReports();
-            List<HpcReportEntryDTO> entries = dto.get(0).getReportEntries();
-            for (HpcReportEntryDTO entry : entries) {
-              if (env.getProperty(entry.getAttribute()) != null) {
-                if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
-                  setArchiveSummary(entry, "\n\n");
+          result.setCode(Integer.toString(200));
+          MappingJsonFactory factory = new MappingJsonFactory();
+          JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+          HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
+          List <HpcReportDTO> dto = reports.getReports();
+          List<HpcReportEntryDTO> entries = dto.get(0).getReportEntries();
+          for (HpcReportEntryDTO entry : entries) {
+            if (env.getProperty(entry.getAttribute()) != null) {
+              if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
+                  setArchiveSummary(entry, ",");
                   result.setMessage(entry.getValue());
                   break;
                 }
               }
             }
-  	    } else {
-          result.setMessage("Failed to generate report");
-          result.setCode(Integer.toString(400));
+        } else { // restResponse.getStatus() != 200
+            result.setMessage("");
+            result.setCode(Integer.toString(400));
         }
-  } catch (Exception e) {
-			log.error(e.getMessage(), e);
-
-	}
-    
-  return result;
+      } catch (Exception e) {
+        log.error(e.getMessage(), e);
+      }
+      return result;
+    }
   }
-
-}
