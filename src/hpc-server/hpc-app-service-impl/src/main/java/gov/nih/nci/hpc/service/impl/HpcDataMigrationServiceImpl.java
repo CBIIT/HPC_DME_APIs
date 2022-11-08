@@ -281,18 +281,22 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		if (result.equals(HpcDataMigrationResult.COMPLETED)) {
 			try {
+
 				// Add metadata to the object in the target S3 archive.
-				HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
-						dataObjectMigrationTask.getToS3ArchiveLocation(), HpcDataTransferType.S_3,
-						dataObjectMigrationTask.getConfigurationId(),
-						dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
-						dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId());
+				HpcArchiveObjectMetadata objectMetadata = !dataObjectMigrationTask.getAlignArchivePath()
+						? dataTransferService.addSystemGeneratedMetadataToDataObject(
+								dataObjectMigrationTask.getToS3ArchiveLocation(), HpcDataTransferType.S_3,
+								dataObjectMigrationTask.getConfigurationId(),
+								dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
+								dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId())
+						: new HpcArchiveObjectMetadata();
 
 				// Update the system metadata w/ the new S3 archive id, location and
 				// deep-archive status/date after migration.
 				String checksum = objectMetadata.getChecksum();
 				HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
 				Calendar deepArchiveDate = deepArchiveStatus != null ? Calendar.getInstance() : null;
+
 				securityService.executeAsSystemAccount(Optional.empty(),
 						() -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
 								dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
