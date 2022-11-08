@@ -21,6 +21,7 @@ import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportEntry;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
@@ -171,6 +172,11 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
     criteria.setType(criteriaDTO.getType());
     criteria.setPath(criteriaDTO.getPath());
     criteria.setIsMachineReadable(true);
+    if (criteriaDTO.getReportColumns() != null && !criteriaDTO.getReportColumns().isEmpty()) {
+      for(HpcReportEntryAttribute reportColumn : criteriaDTO.getReportColumns()) {
+        criteria.getAttributes().add(reportColumn);
+      }
+    }
     Calendar fromcal = null;
     Calendar tocal = null;
     try {
