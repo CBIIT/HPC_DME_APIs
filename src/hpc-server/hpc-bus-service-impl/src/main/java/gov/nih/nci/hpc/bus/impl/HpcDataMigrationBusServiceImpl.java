@@ -107,9 +107,9 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		// Create a migration task.
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
-		migrationResponse.setTaskId(dataMigrationService
-				.createCollectionMigrationTask(path, securityService.getRequestInvoker().getNciAccount().getUserId(),
-						metadata.getConfigurationId(), migrationRequest.getS3ArchiveConfigurationId(), alignArchivePath)
+		migrationResponse.setTaskId(dataMigrationService.createCollectionMigrationTask(path,
+				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
+				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null, alignArchivePath)
 				.getId());
 
 		return migrationResponse;
