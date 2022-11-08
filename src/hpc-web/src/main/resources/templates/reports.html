@@ -634,7 +634,7 @@ label {
 	        } else {
 	            // Open this row
 				if(row.data().archive_summary != null && row.data().archive_summary != "") {
-					row.child(row.data().archive_summary).show();
+					row.child(format(row.data().archive_summary)).show();
 					tr.addClass('shown');
 				} else {
 					let archiveSummary = "";
@@ -646,7 +646,7 @@ label {
 					}).done(function (result) {
 						archiveSummary = JSON.stringify(result.message);
 						data.archive_summary = archiveSummary;
-						row.child(format(row.data())).show();
+						row.child(format(archiveSummary)).show();
 						tr.addClass('shown');
 					});
 				}
@@ -655,19 +655,23 @@ label {
 	});
 
 	/* Formatting function for row details showing Archive Summary */
-	function format(d) {
-	    // `d` is the original data object for the row
-	    return (
-	        '<table cellpadding="5" cellspacing="0" border="0" style="width:100%;">' +
-	        '<tr>' +
-	        '<td>&nbsp;</td>' +
-	        '<td>' +
-	        d.archive_summary +
-	        '</td>' +
-	        '</tr>' +
-	        '</table>'
-	    );
-}
+	function format(archiveSummary) {
+		let archiveSummaryStr = archiveSummary.slice(1, -1);
+		var splitStr = archiveSummaryStr.split(",");
+		var output = "<table cellpadding='5' border='0' width='100%'>"
+		output+= "<tr>" + "<td width='70%'>&nbsp;</td>" + "<td><b>Vault</b></td>" + "<td><b>Bucket</b></td>" + "<td><b>Size</b></td>" + "</tr>";
+		for(x=0;x < splitStr.length-1; x++){
+			if(x % 3 == 0) {
+				output+= "<tr>" + "<td width='70%'>&nbsp;</td>";
+			}
+			output+= "<td>" + splitStr[x] + "</td>";
+			if( (x + 1) % 3 == 0) {
+				output+= "</tr>";
+			}
+		}
+		output += "</table>";
+	    return  output;
+	}
 
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
