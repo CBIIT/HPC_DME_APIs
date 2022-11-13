@@ -521,6 +521,8 @@ label {
 		let pretag = "NCI_DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
 		var colDefs = [];
+		var exportOptions = {};
+		var showHideCols = [];
 		switch (reportType) {
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
 				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
@@ -533,6 +535,8 @@ label {
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
 						];
+				exportOptions = {columns: [[0,1], ':visible' ]};
+				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
@@ -545,6 +549,8 @@ label {
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
 						];
+				exportOptions = {columns: [[0,1], ':visible' ]};
+				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
@@ -552,14 +558,19 @@ label {
 				colDefs = [
 						{ "data": "index",   "targets": 0, "searchable": false, "orderable": false, "visible": true},
 						{ "data": "doc",  "targets": 1, "visible": true },
-						{ "data": "basepath", "targets": 2, "visible": true },
+						{ "data": "basepath", "targets": 2, "visible": false },
 						{ "data": "collection_path", "targets": 3, "visible": true},
 						{ "data": "data_owner", "targets": 4, "visible": true },
 						{ "data": "data_generator", "targets": 5, "visible": true },
 						{ "data": "collection_size", "targets": 6, "visible": false },
 						{ "data": "collection_size_hr", "targets": 7, "orderable": false, "visible": true },
-						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "className": 'dt-control', "data":null, "defaultContent": ''}
+						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "className": 'dt-control', "data":null, "defaultContent": ''},
+						{ "data": "archive_summary_value", "targets": 9, "orderable": false, "visible": true},
 					];
+				//$('#report_grid thead th').eq(8).addClass('controlbutton');
+				//exportOptions = ':visible:not(.controlbutton)'
+				exportOptions = {columns: [':not(:nth-last-child(2))'],} // Donot export the 8th column, contains button for displaying Archive Summary
+				showHideCols = [2,3,4,5,6,7,9]; // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude 8th column - the Archive Summary button
 				break;
 			default:
 				break;
@@ -568,9 +579,6 @@ label {
 		var fromDate = document.getElementById("fromDate").value;
 		var toDate = document.getElementById("toDate").value;
 		var messageTopDateRange = reportHeaderTitle + "  (Date Range: " +  fromDate + "-" + toDate + ")";
-		var eo = {
-		    columns: [ [0,1], ':visible' ]
-		    };
  
 	    var table = $('#report_grid').DataTable( {
 				responsive: true,
@@ -579,7 +587,7 @@ label {
 				buttons: [
 				{
 					extend: 'copyHtml5',
-					exportOptions: eo,
+					exportOptions: exportOptions,
 					//text: '<i class="fa fa-files-o"> Copy</i>',
 					text: 'Copy',
 					titleAttr: 'Copy to Clipboard',
@@ -587,17 +595,16 @@ label {
 				{
 					extend: 'excelHtml5',
 					title: exportFileName,
-					//text:  '<i class="fa fa-file-excel-o"> Excel</i>',
 					text: 'Excel',
 					messageTop: messageTopDateRange,
 					titleAttr: 'Export to Excel',
-					exportOptions: eo
+					exportOptions: exportOptions
 				},
 				{
 	                extend: 'colvis',
 	                text: 'Show/Hide Columns',
 	                titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
-	                columns: ':nth-child(n+3)' // Exclude first two columns from show/hide. It starts from 3rd column
+	                columns: showHideCols
 	            },
 				],
 				"order": [[ 1, 'asc' ]],
@@ -627,15 +634,16 @@ label {
 			var data = table.row($(this).parents('tr')).data();
 			var tr = $(this).closest('tr');
 			var row = table.row(tr);
-			if (row.child.isShown()) {
-	            // This row is already open - close it
-	            row.child.hide();
-				tr.removeClass('shown');
-	        } else {
+			//if (row.child.isShown()) {
+			// This row is already open - close it
+			//	row.child.hide();
+			//	tr.removeClass('shown');
+			//} else {
 	            // Open this row
 				if(row.data().archive_summary != null && row.data().archive_summary != "") {
-					row.child(format(row.data().archive_summary)).show();
-					tr.addClass('shown');
+					//row.child(format(row.data().archive_summary)).show();
+					//tr.addClass('shown');
+					//Do nothing
 				} else {
 					let archiveSummary = "";
 					let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
@@ -645,11 +653,15 @@ label {
 						dataType: 'json'
 					}).done(function (result) {
 						archiveSummary = JSON.stringify(result.message);
-						data.archive_summary = archiveSummary;
-						row.child(format(archiveSummary)).show();
-						tr.addClass('shown');
+						let archiveSummaryStr = archiveSummary.slice(1, -1);
+						data.archive_summary_value = archiveSummaryStr;
+						// Show expansion
+						//row.child(format(archiveSummary)).show();
+						// Show in extra column
+						table.cell(row.index(), 9).data(data.archive_summary_value);
+						//tr.addClass('shown');
 					});
-				}
+				//}
 	        }
 		});
 	});
