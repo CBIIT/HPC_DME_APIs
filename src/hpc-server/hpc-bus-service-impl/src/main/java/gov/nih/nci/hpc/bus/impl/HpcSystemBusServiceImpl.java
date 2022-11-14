@@ -1452,10 +1452,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								"addDataTransferUploadEvent: {} - Failed to generate presigned download URL [transfer-type={}, transfer-status={}]",
 								path, dataTransferType, dataTransferStatus, e);
 					}
+
 				} else {
 					logger.info("Generating download URL not required for {}", path);
 				}
-				
+
 				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
 						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
 						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null,
