@@ -360,6 +360,9 @@
 						|| endPointName.trim().length == 0) {
 					alert("Please enter asynchronous download values");
 					return false;
+				} else if (endPointLocation.startsWith("http://") || endPointLocation.startsWith("https://")) {
+					alert("A URL is not acceptable as the Globus Endpoint (Destination) Path. Enter a valid Globus folder path.");
+					return false;
 				}
 			} else if (radioValue == 's3') {
 				var bucketName = document.getElementById("bucketName").value;
