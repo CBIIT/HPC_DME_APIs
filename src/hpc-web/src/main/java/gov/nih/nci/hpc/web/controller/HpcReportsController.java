@@ -335,7 +335,7 @@ public class HpcReportsController extends AbstractHpcController {
                   entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
               }
               if (entry.getAttribute().equals(env.getProperty("ARCHIVE_SUMMARY"))) {
-                setArchiveSummary(entry,  "<br/><br/>");
+                setArchiveSummary(entry,  " <br/>");
               }
               if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
                   dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1 ){
@@ -374,6 +374,10 @@ public class HpcReportsController extends AbstractHpcController {
         newEntry = new HpcReportEntryDTO();
         newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY"));
         newEntry.setValue("0");
+        dto.getReportEntries().add(newEntry);
+        newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY_VALUES"));
+        newEntry.setValue("");
         dto.getReportEntries().add(newEntry);
       }
       if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
@@ -436,7 +440,8 @@ public class HpcReportsController extends AbstractHpcController {
           for (HpcReportEntryDTO entry : entries) {
             if (env.getProperty(entry.getAttribute()) != null) {
               if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
-                  setArchiveSummary(entry, ",");
+                 // setArchiveSummary(entry, ",");
+                  setArchiveSummary(entry,  "  <br/>");
                   result.setMessage(entry.getValue());
                   break;
                 }
