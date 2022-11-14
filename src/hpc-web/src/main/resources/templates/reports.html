@@ -140,7 +140,22 @@ label {
   display:inline-block;
   box-sizing:border-box;
   }
-
+.overlay{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: rgba(255,255,255,0.8) url("img/spinner.gif") center no-repeat;
+}
+body.loading{
+    overflow: hidden;
+}
+body.loading .overlay{
+    display: block;
+}
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -431,6 +446,7 @@ label {
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
+            <div class="overlay"></div>
 						<tbody>
 							<tr id='attrCol2' th:each="report : ${reports}">
 							   <td id='index01'></td>
@@ -567,10 +583,8 @@ label {
 						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "className": 'dt-control', "data":null, "defaultContent": ''},
 						{ "data": "archive_summary_value", "targets": 9, "orderable": false, "visible": true},
 					];
-				//$('#report_grid thead th').eq(8).addClass('controlbutton');
-				//exportOptions = ':visible:not(.controlbutton)'
 				exportOptions = {columns: [':not(:nth-last-child(2))'],} // Donot export the 8th column, contains button for displaying Archive Summary
-				showHideCols = [2,3,4,5,6,7,9]; // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude 8th column - the Archive Summary button
+				showHideCols = [2,4,5,6,7]; // Exclude first three columns from show/hide. It starts from 4th column. Also exclude 8th column - the Archive Summary button
 				break;
 			default:
 				break;
@@ -601,11 +615,11 @@ label {
 					exportOptions: exportOptions
 				},
 				{
-	                extend: 'colvis',
-	                text: 'Show/Hide Columns',
-	                titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
-	                columns: showHideCols
-	            },
+          extend: 'colvis',
+          text: 'Show/Hide Columns',
+          titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
+          columns: showHideCols
+        },
 				],
 				"order": [[ 1, 'asc' ]],
 				"columnDefs": colDefs,
@@ -634,35 +648,23 @@ label {
 			var data = table.row($(this).parents('tr')).data();
 			var tr = $(this).closest('tr');
 			var row = table.row(tr);
-			//if (row.child.isShown()) {
-			// This row is already open - close it
-			//	row.child.hide();
-			//	tr.removeClass('shown');
-			//} else {
-	            // Open this row
-				if(row.data().archive_summary != null && row.data().archive_summary != "") {
-					//row.child(format(row.data().archive_summary)).show();
-					//tr.addClass('shown');
-					//Do nothing
-				} else {
-					let archiveSummary = "";
-					let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
-					$.ajax({
-						type: 'GET',
-						url: uri,
-						dataType: 'json'
-					}).done(function (result) {
-						archiveSummary = JSON.stringify(result.message);
-						let archiveSummaryStr = archiveSummary.slice(1, -1);
-						data.archive_summary_value = archiveSummaryStr;
-						// Show expansion
-						//row.child(format(archiveSummary)).show();
-						// Show in extra column
-						table.cell(row.index(), 9).data(data.archive_summary_value);
-						//tr.addClass('shown');
-					});
-				//}
-	        }
+      if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
+        //Change or disable icon
+      } else {
+        let archiveSummary = "";
+        let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
+        $.ajax({
+          type: 'GET',
+          url: uri,
+          dataType: 'json'
+        }).done(function (result) {
+          archiveSummary = JSON.stringify(result.message);
+          let archiveSummaryStr = archiveSummary.slice(1, -1);
+          data.archive_summary_value = archiveSummaryStr;
+          table.cell(row.index(), 9).data(data.archive_summary_value);
+          //tr.addClass('shown');
+        });
+	    }
 		});
 	});
 
@@ -684,6 +686,15 @@ label {
 		output += "</table>";
 	    return  output;
 	}
+  // Spinner for Ajax
+  $(document).on({
+      ajaxStart: function(){
+      $("body").addClass("loading");
+    },
+      ajaxStop: function(){
+      $("body").removeClass("loading");
+    }
+  });
 
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
