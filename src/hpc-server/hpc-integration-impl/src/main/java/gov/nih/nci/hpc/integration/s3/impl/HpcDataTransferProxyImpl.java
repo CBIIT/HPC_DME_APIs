@@ -35,6 +35,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Rule;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Transition;
@@ -186,7 +187,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (uploadParts == 1) {
 				// Generate an upload request URL for the caller to use to upload directly.
 				return generateUploadRequestURL(authenticatedToken, archiveDestinationLocation,
-						uploadRequestURLExpiration, uploadRequest.getUploadRequestURLChecksum());
+						uploadRequestURLExpiration, metadataEntries, uploadRequest.getUploadRequestURLChecksum(), storageClass);
 			} else {
 				return generateMultipartUploadRequestURLs(authenticatedToken, archiveDestinationLocation,
 						uploadRequestURLExpiration, uploadParts, metadataEntries, storageClass);
@@ -851,13 +852,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param authenticatedToken         An authenticated token.
 	 * @param archiveDestinationLocation The archive destination location.
 	 * @param uploadRequestURLExpiration The URL expiration (in hours).
+	 * @param metadataEntries            The metadata entries to attach to the
+	 *                                   data-object in S3 archive.
 	 * @param uploadRequestURLChecksum   An optional user provided checksum value to
 	 *                                   attach to the generated url.
+	 * @param storageClass               (Optional) The storage class to upload the
+	 *                                   file.
 	 * @return A data object upload response containing the upload request URL.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	private HpcDataObjectUploadResponse generateUploadRequestURL(Object authenticatedToken,
-			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, String uploadRequestURLChecksum)
+			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, 
+			List<HpcMetadataEntry> metadataEntries, String uploadRequestURLChecksum, String storageClass)
 			throws HpcException {
 
 		// Calculate the URL expiration date.
@@ -868,6 +874,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
 				archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
 						.withMethod(HttpMethod.PUT).withExpiration(expiration);
+
+		// Add the storage class.
+		generatePresignedUrlRequest.addRequestParameter(Headers.STORAGE_CLASS, storageClass);
+		
+		// Add user metadata.
+		if (metadataEntries != null) {
+			for (HpcMetadataEntry metadataEntry : metadataEntries) {
+				generatePresignedUrlRequest.addRequestParameter(
+						Headers.S3_USER_METADATA_PREFIX + metadataEntry.getAttribute(), metadataEntry.getValue());
+			}
+		}
 
 		// Optionally add a checksum header.
 		if (!StringUtils.isEmpty(uploadRequestURLChecksum)) {
