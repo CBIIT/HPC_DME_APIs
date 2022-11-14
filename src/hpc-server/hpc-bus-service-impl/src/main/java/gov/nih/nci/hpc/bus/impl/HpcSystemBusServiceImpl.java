@@ -67,6 +67,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -1438,19 +1439,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		try {
 			switch (dataTransferStatus) {
 			case ARCHIVED:
+				HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
+						.getDataManagementConfiguration(configurationId);
 				// Generate the download URL.
 				HpcDataObjectDownloadResponseDTO downloadRequestURL = null;
-				try {
-					downloadRequestURL = dataManagementBusService.generateDownloadRequestURL(path);
-				} catch (HpcException e) {
-					logger.error(
-							"addDataTransferUploadEvent: {} - Failed to generate presigned download URL [transfer-type={}, transfer-status={}]",
-							path, dataTransferType, dataTransferStatus, e);
+				if (dataManagementConfiguration.getRegistrationEventWithDownloadRequestURL()) {
+					try {
+						downloadRequestURL = dataManagementBusService.generateDownloadRequestURL(path);
+
+					} catch (HpcException e) {
+						logger.error(
+								"addDataTransferUploadEvent: {} - Failed to generate presigned download URL [transfer-type={}, transfer-status={}]",
+								path, dataTransferType, dataTransferStatus, e);
+					}
+				} else {
+					logger.info("Generating download URL not required for {}", path);
 				}
+				
 				eventService.addDataTransferUploadArchivedEvent(userId, path, sourceLocation, dataTransferCompleted,
 						downloadRequestURL != null ? downloadRequestURL.getDownloadRequestURL() : null,
 						downloadRequestURL != null ? downloadRequestURL.getSize().toString() : null,
-						dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+						dataManagementConfiguration.getDoc());
 				break;
 
 			case IN_TEMPORARY_ARCHIVE:
@@ -1600,7 +1609,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			Set<String> excludedPaths) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
-		logger.info("Processing collection download retry task {}: Excluded Paths: {}", collectionDownloadTaskId,
+		logger.info("Processing collection download task {}: Excluded Paths: {}", collectionDownloadTaskId,
 				excludedPaths);
 
 		// Iterate through the data objects in the collection and download them.
