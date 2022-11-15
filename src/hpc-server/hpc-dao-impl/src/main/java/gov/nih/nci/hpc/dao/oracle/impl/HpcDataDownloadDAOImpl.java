@@ -85,7 +85,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
-	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set DATA_TRANSFER_STATUS = ? where ID = ?";
+	private static final String UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_STATUS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set DATA_TRANSFER_STATUS = ? where COLLECTION_DOWNLOAD_TASK_ID = ?";
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (DATA_TRANSFER_STATUS = ? and DESTINATION_TYPE = ?)";
 
@@ -627,15 +627,15 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public boolean updateDataObjectDownloadTaskStatus(String id, List<HpcDataObjectDownloadTaskStatusFilter> filters,
+	public void updateDataObjectDownloadTasksStatus(String collectionDownloadTaskId, List<HpcDataObjectDownloadTaskStatusFilter> filters,
 			HpcDataTransferDownloadStatus toStatus) throws HpcException {
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
 
 		// Add the task-id and to-status values to the query.
-		sqlQueryBuilder.append(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_SQL);
+		sqlQueryBuilder.append(UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_STATUS_SQL);
 		args.add(toStatus.value());
-		args.add(id);
+		args.add(collectionDownloadTaskId);
 
 		// Add each pair of the from-status and destination-type as a filter to the
 		// query.
@@ -651,7 +651,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		// Execute the query.
 		try {
-			return (jdbcTemplate.update(sqlQueryBuilder.toString(), args.toArray()) > 0);
+			jdbcTemplate.update(sqlQueryBuilder.toString(), args.toArray());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to update a data object download task status: " + e.getMessage(),
