@@ -59,15 +59,15 @@ public interface HpcDataDownloadDAO {
 	public void deleteDataObjectDownloadTask(String id) throws HpcException;
 
 	/**
-	 * Update data object download task status.
+	 * Update data object download tasks status.
 	 *
-	 * @param id       The data object download task ID to update.
+	 * @param collectionDownloadTaskId      The collection download task ID that contains the data object tasks to be updated
 	 * @param filters  list of query filters (combined w/ 'or').
 	 * @param toStatus status to update to.
-	 * @return true if the status was updated.
 	 * @throws HpcException on database error.
 	 */
-	public boolean updateDataObjectDownloadTaskStatus(String id, List<HpcDataObjectDownloadTaskStatusFilter> filters,
+	public void updateDataObjectDownloadTasksStatus(
+			String collectionDownloadTaskId, List<HpcDataObjectDownloadTaskStatusFilter> filters,
 			HpcDataTransferDownloadStatus toStatus) throws HpcException;
 
 	/**
