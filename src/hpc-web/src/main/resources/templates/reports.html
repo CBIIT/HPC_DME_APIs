@@ -580,7 +580,7 @@ body.loading .overlay{
 						{ "data": "data_generator", "targets": 5, "visible": true },
 						{ "data": "collection_size", "targets": 6, "visible": false },
 						{ "data": "collection_size_hr", "targets": 7, "orderable": false, "visible": true },
-						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null, defaultContent: '<button><i class="fa fa-plus-circle" style="color:blue"></i></button>',
+						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null, defaultContent: '<button title="Click for Archive Summary"><i class="fa fa-plus-circle" style="color:blue"></i></button>',
             "render": function ( data, type, row ) {
                 if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
                     return '<button><i class="fa fa-check" style="color:green" /></button>';
