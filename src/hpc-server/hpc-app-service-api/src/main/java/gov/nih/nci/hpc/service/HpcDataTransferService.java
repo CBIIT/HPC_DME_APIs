@@ -20,7 +20,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
@@ -665,10 +664,10 @@ public interface HpcDataTransferService {
 	 * items (i.e. items in RECEIVED state) in this collection download task for
 	 * cancellation.
 	 *
-	 * @param downloadItems The collection download task items to cancel.
+	 * @param taskId The collection download task ID to cancel items for.
 	 * @throws HpcException on service failure.
 	 */
-	public void cancelCollectionDownloadTaskItems(List<HpcCollectionDownloadTaskItem> downloadItems)
+	public void cancelCollectionDownloadTaskItems(String taskId)
 			throws HpcException;
 
 	/**

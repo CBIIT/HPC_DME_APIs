@@ -1313,6 +1313,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							break;
 						}
 
+						if (!StringUtils.isEmpty(downloadTask.getCollectionDownloadTaskId())
+								&& dataTransferService.getCollectionDownloadTaskCancellationRequested(
+										downloadTask.getCollectionDownloadTaskId())) {
+							// A cancellation request was submitted for the collection download task
+							// containing this request.
+							// We don't pick it up as it will get cancelled soon.
+							logger.info(
+									"download task: {} - A cancelleation request submitted for the collection download task {} [transfer-type={}, destination-type={}]",
+									downloadTask.getId(), downloadTask.getCollectionDownloadTaskId(),
+									downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+							markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
+							break;
+						}
+
 						if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 							try {
 								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
@@ -1326,16 +1340,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType(), e);
 							} finally {
-								try {
-									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
-											dataTransferType, false);
-
-								} catch (HpcException e) {
-									logger.error(
-											"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
-											downloadTask.getId(), downloadTask.getDataTransferType(),
-											downloadTask.getDestinationType(), e);
-								}
+								markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 							}
 							break;
 						}
@@ -1633,7 +1638,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Need to abort collection download processing. Cancel and return the items
 					// processed so
 					// far.
-					dataTransferService.cancelCollectionDownloadTaskItems(downloadItems);
+					dataTransferService.cancelCollectionDownloadTaskItems(collectionDownloadTaskId);
 					logger.info("Processing collection download task [{}] aborted", collection.getAbsolutePath());
 					return downloadItems;
 				}
@@ -2835,6 +2840,26 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		} catch (HpcException e) {
 			logger.error("Failed to check deep archive status", e);
+		}
+	}
+
+	/**
+	 * Invoke markProcessedDataObjectDownloadTask w/o throwing exception
+	 *
+	 * @param downloadTask     The download type
+	 * @param dataTransferType The data transfer type.
+	 * @param inProcess        The inProcess indicator
+	 */
+	private void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			HpcDataTransferType dataTransferType, boolean inProcess) {
+
+		try {
+			dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
+
+		} catch (HpcException e) {
+			logger.error(
+					"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(), e);
 		}
 	}
 
