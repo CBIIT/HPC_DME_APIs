@@ -663,12 +663,15 @@ body.loading .overlay{
           url: uri,
           dataType: 'json'
         }).done(function (result) {
-          archiveSummary = JSON.stringify(result.message);
-          let archiveSummaryStr = archiveSummary.slice(1, -1);
-          data.archive_summary_value = archiveSummaryStr;
+          if(result.message != null && result.message != "") {
+            archiveSummary = JSON.stringify(result.message);
+            let archiveSummaryStr = archiveSummary.slice(1, -1);
+            data.archive_summary_value = archiveSummaryStr;
+          } else {
+            data.archive_summary_value = "NA";
+          }
           table.cell(row.index(), 9).data(data.archive_summary_value);
           table.cell(row.index(), 8).data("");
-          //tr.addClass('shown');
         });
 	    }
 		});
