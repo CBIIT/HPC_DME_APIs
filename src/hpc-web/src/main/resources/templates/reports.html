@@ -580,7 +580,12 @@ body.loading .overlay{
 						{ "data": "data_generator", "targets": 5, "visible": true },
 						{ "data": "collection_size", "targets": 6, "visible": false },
 						{ "data": "collection_size_hr", "targets": 7, "orderable": false, "visible": true },
-						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "className": 'dt-control', "data":null, "defaultContent": ''},
+						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null, defaultContent: '<button><i class="fa fa-plus-circle" style="color:blue"></i></button>',
+            "render": function ( data, type, row ) {
+                if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+                    return '<button><i class="fa fa-check" style="color:green" /></button>';
+                }
+            }},
 						{ "data": "archive_summary_value", "targets": 9, "orderable": false, "visible": true},
 					];
 				exportOptions = {columns: [':not(:nth-last-child(2))'],} // Donot export the 8th column, contains button for displaying Archive Summary
@@ -644,7 +649,7 @@ body.loading .overlay{
 			column.visible( ! column.visible() );
 		} );
 
-	    $('#report_grid tbody').on('click', 'td.dt-control', function () {
+	    $('#report_grid tbody').on('click', 'button', function () {
 			var data = table.row($(this).parents('tr')).data();
 			var tr = $(this).closest('tr');
 			var row = table.row(tr);
@@ -662,6 +667,7 @@ body.loading .overlay{
           let archiveSummaryStr = archiveSummary.slice(1, -1);
           data.archive_summary_value = archiveSummaryStr;
           table.cell(row.index(), 9).data(data.archive_summary_value);
+          table.cell(row.index(), 8).data("");
           //tr.addClass('shown');
         });
 	    }
