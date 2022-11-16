@@ -296,7 +296,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
-			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
+			String path, String dataObjectId, String userId, String callerObjectId, String configurationId, HpcPathAttributes pathAttributes)
 			throws HpcException {
 		// Input Validation. One and only one of the first 6 parameters is expected to
 		// be provided.
@@ -439,9 +439,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// Validate source location exists and accessible.
-		HpcPathAttributes pathAttributes = validateUploadSourceFileLocation(globusUploadSource, s3UploadSource,
+		if(pathAttributes == null) {
+			pathAttributes = validateUploadSourceFileLocation(globusUploadSource, s3UploadSource,
 				googleDriveUploadSource, googleCloudStorageUploadSource, fileSystemUploadSource, sourceFile,
 				configurationId);
+		}
 
 		// Create an upload request.
 		HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
@@ -2240,7 +2242,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @throws HpcException if the upload source location doesn't exist, or not
 	 *                      accessible, or it's a directory.
 	 */
-	private HpcPathAttributes validateUploadSourceFileLocation(HpcUploadSource globusUploadSource,
+	public HpcPathAttributes validateUploadSourceFileLocation(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, String configurationId) throws HpcException {
