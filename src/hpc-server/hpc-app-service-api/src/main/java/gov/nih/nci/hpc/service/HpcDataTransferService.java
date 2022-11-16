@@ -84,7 +84,6 @@ public interface HpcDataTransferService {
 	 * @param configurationId                The configuration ID (needed to
 	 *                                       determine the archive connection
 	 *                                       config).
-	 * @param pathAttributes                 The path attributes of the file to upload.
 	 * @return A data object upload response.
 	 * @throws HpcException on service failure.
 	 */
@@ -92,7 +91,7 @@ public interface HpcDataTransferService {
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
-			String path, String dataObjectId, String userId, String callerObjectId, String configurationId, HpcPathAttributes hpcPathAttributes)
+			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
 			throws HpcException;
 
 	/**
