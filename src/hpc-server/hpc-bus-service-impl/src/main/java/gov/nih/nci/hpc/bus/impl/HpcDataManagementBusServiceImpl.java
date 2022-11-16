@@ -128,7 +128,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseItemDTO;
@@ -1912,8 +1911,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcMoveResponseDTO movePath(String path, boolean pathType, String destinationPath,
-			HpcMoveRequestDTO moveRequest) throws HpcException {
+	public HpcMoveResponseDTO movePath(String path, boolean pathType, String destinationPath, Boolean alignArchivePath)
+			throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path) || StringUtils.isEmpty(destinationPath)) {
 			throw new HpcException("Empty path or destinationPath in move request: [path: " + path
@@ -1926,7 +1925,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Optionally align the archive path (also done by default if caller did not
 		// specify).
 		HpcMoveResponseDTO moveResponse = null;
-		if (Optional.ofNullable(moveRequest.getAlignArchivePath()).orElse(true)) {
+		if (Optional.ofNullable(alignArchivePath).orElse(true)) {
 			moveResponse = new HpcMoveResponseDTO();
 			if (pathType) {
 				moveResponse.setTaskId(migrationBusService.migrateCollection(destinationPath, null, true).getTaskId());
