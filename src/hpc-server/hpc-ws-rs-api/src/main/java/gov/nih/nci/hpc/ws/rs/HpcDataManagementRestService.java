@@ -37,7 +37,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
 
 /**
  * HPC Data Management REST Service Interface.
@@ -193,9 +192,10 @@ public interface HpcDataManagementRestService {
 	/**
 	 * Move a collection.
 	 *
-	 * @param path            The collection path.
-	 * @param destinationPath The destination path to move to.
-	 * @param moveRequest     The move request DTO
+	 * @param path             The collection path.
+	 * @param destinationPath  The destination path to move to.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @return The REST service response.
 	 */
 	@POST
@@ -203,7 +203,7 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response moveCollection(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath,
-			HpcMoveRequestDTO moveRequest);
+			@QueryParam("alignArchivePath") Boolean alignArchivePath);
 
 	/**
 	 * Recover a collection.
@@ -558,9 +558,10 @@ public interface HpcDataManagementRestService {
 	/**
 	 * Move a data object.
 	 *
-	 * @param path            The data object path.
-	 * @param destinationPath The destination path to move to.
-	 * @param moveRequest     The move request DTO
+	 * @param path             The data object path.
+	 * @param destinationPath  The destination path to move to.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @return The REST service response.
 	 */
 	@POST
@@ -568,7 +569,7 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response moveDataObject(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath,
-			HpcMoveRequestDTO moveRequest);
+			@QueryParam("alignArchivePath") Boolean alignArchivePath);
 
 	/**
 	 * Recover a data object.
