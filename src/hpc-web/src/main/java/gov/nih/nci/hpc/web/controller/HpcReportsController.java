@@ -441,7 +441,7 @@ public class HpcReportsController extends AbstractHpcController {
             if (env.getProperty(entry.getAttribute()) != null) {
               if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
                  // setArchiveSummary(entry, ",");
-                  setArchiveSummary(entry,  "  <br/>");
+                  setArchiveSummary(entry,  "    <br/>");
                   result.setMessage(entry.getValue());
                   break;
                 }

@@ -676,14 +676,6 @@
 	</xsd:element>
 
 	<!-- Data Object / Collection Move DTO -->
-	<xsd:element name="HpcMoveRequestDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="alignArchivePath" type="xsd:boolean" minOccurs="0"/>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-	
 	<xsd:element name="HpcMoveResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
