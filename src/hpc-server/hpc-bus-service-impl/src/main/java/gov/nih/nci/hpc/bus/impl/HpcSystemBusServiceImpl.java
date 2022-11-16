@@ -200,7 +200,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null, null,
 						false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
-						systemGeneratedMetadata.getConfigurationId());
+						systemGeneratedMetadata.getConfigurationId(), null);
 
 				// Update system metadata of the data object.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
@@ -450,7 +450,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
 						null, null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
-						systemGeneratedMetadata.getConfigurationId());
+						systemGeneratedMetadata.getConfigurationId(), null);
 
 				// Update the transfer status and request id.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
@@ -2669,7 +2669,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
 					null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 					systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
-					systemGeneratedMetadata.getConfigurationId());
+					systemGeneratedMetadata.getConfigurationId(), null);
 
 			// Generate archive system generated metadata.
 			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
