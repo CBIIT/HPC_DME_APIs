@@ -33,7 +33,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -525,16 +524,17 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Move a path of either a data object or a collection.
 	 *
-	 * @param path            The path to move.
-	 * @param pathType        If true, the path is a of a collection, otherwise the
-	 *                        path is of a data object.
-	 * @param destinationPath The destination path to move to.
-	 * @param moveRequest     The move request DTO
+	 * @param path             The path to move.
+	 * @param pathType         If true, the path is a of a collection, otherwise the
+	 *                         path is of a data object.
+	 * @param destinationPath  The destination path to move to.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
 	 * @return A response DTO containing result of this move request
 	 * @throws HpcException on service failure.
 	 */
-	public HpcMoveResponseDTO movePath(String path, boolean pathType, String destinationPath,
-			HpcMoveRequestDTO moveRequest) throws HpcException;
+	public HpcMoveResponseDTO movePath(String path, boolean pathType, String destinationPath, Boolean alignArchivePath)
+			throws HpcException;
 
 	/**
 	 * Move a list of data objects and/or collections.
