@@ -66,7 +66,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
@@ -270,11 +269,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response moveCollection(String path, String destinationPath, HpcMoveRequestDTO moveRequest) {
+	public Response moveCollection(String path, String destinationPath, Boolean alignArchivePath) {
 		HpcMoveResponseDTO moveResponse = null;
 		try {
 			moveResponse = dataManagementBusService.movePath(toNormalizedPath(path), true,
-					toNormalizedPath(destinationPath), moveRequest);
+					toNormalizedPath(destinationPath), alignArchivePath);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -662,11 +661,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response moveDataObject(String path, String destinationPath, HpcMoveRequestDTO moveRequest) {
+	public Response moveDataObject(String path, String destinationPath, Boolean alignArchivePath) {
 		HpcMoveResponseDTO moveResponse = null;
 		try {
 			moveResponse = dataManagementBusService.movePath(toNormalizedPath(path), false,
-					toNormalizedPath(destinationPath), moveRequest);
+					toNormalizedPath(destinationPath), alignArchivePath);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
