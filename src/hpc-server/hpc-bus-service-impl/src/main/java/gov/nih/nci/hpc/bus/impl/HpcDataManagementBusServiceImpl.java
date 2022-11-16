@@ -966,6 +966,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 								dataObjectRegistration.getExtractedMetadataEntries(), configurationId, collectionType);
 					}
 
+					// Validate source location exists and accessible.
+					HpcPathAttributes pathAttributes = dataTransferService.validateUploadSourceFileLocation(
+							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
+							dataObjectRegistration.getGoogleDriveUploadSource(),
+							dataObjectRegistration.getGoogleCloudStorageUploadSource(),
+							dataObjectRegistration.getFileSystemUploadSource(), dataObjectFile,
+							configurationId);
+
 					// Transfer the data file.
 					uploadResponse = dataTransferService.uploadDataObject(
 							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
@@ -975,7 +983,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
-							configurationId);
+							configurationId, pathAttributes);
 
 					// Set the upload request URL / Multipart upload URLs (if one was generated).
 					responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
@@ -2994,7 +3002,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Re-generate the upload request URL.
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
 					null, null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId,
-					callerObjectId, systemGeneratedMetadata.getConfigurationId());
+					callerObjectId, systemGeneratedMetadata.getConfigurationId(), null);
 
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
