@@ -296,7 +296,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
-			String path, String dataObjectId, String userId, String callerObjectId, String configurationId, HpcPathAttributes pathAttributes)
+			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
 			throws HpcException {
 		// Input Validation. One and only one of the first 6 parameters is expected to
 		// be provided.
@@ -439,11 +439,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// Validate source location exists and accessible.
-		if(pathAttributes == null) {
-			pathAttributes = validateUploadSourceFileLocation(globusUploadSource, s3UploadSource,
+		HpcPathAttributes pathAttributes = validateUploadSourceFileLocation(globusUploadSource, s3UploadSource,
 				googleDriveUploadSource, googleCloudStorageUploadSource, fileSystemUploadSource, sourceFile,
 				configurationId);
-		}
 
 		// Create an upload request.
 		HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
