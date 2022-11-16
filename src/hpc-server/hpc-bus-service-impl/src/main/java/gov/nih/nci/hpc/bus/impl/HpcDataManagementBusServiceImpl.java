@@ -984,7 +984,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
-							configurationId, pathAttributes);
+							configurationId);
 
 					// Set the upload request URL / Multipart upload URLs (if one was generated).
 					responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
@@ -3003,7 +3003,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Re-generate the upload request URL.
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
 					null, null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId,
-					callerObjectId, systemGeneratedMetadata.getConfigurationId(), null);
+					callerObjectId, systemGeneratedMetadata.getConfigurationId());
 
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
