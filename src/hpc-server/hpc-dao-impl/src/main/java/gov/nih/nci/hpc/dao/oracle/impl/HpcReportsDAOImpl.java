@@ -332,6 +332,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ " where coll_size.COLL_NAME(+) = object_path "
 			+ " group by DOC, BASE_PATH, OBJECT_PATH, DATA_OWNER, DATA_CURATOR "
 			+ " ORDER BY DOC, BASE_PATH, OBJECT_PATH ";
+	
+	private static final String DATA_OWNER_BY_DOC_SQL = "SELECT DOC, BASE_PATH, OBJECT_PATH as USER_PATH, DATA_OWNER, DATA_CURATOR, SUM(coll_size.TOTALSIZE) as collection_size "
+			+ " FROM r_coll_hierarchy_data_owner, " + " r_report_collection_size coll_size "
+			+ " where coll_size.COLL_NAME(+) = object_path and DOC = ?"
+			+ " group by DOC, BASE_PATH, OBJECT_PATH, DATA_OWNER, DATA_CURATOR "
+			+ " ORDER BY DOC, BASE_PATH, OBJECT_PATH ";
 
 	/////////////////////////// Archive summary report.
 	private static final String ARCHIVE_SUMMARY_BY_DOC_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) total_size, "
@@ -815,7 +821,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	public List<HpcReport> generateDataOwnerGridReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
 		Map<String, HpcReport> mapReports = new HashMap<>();
-		List<Map<String, Object>> piList = jdbcTemplate.queryForList(DATA_OWNER_SQL);
+		List<Map<String, Object>> piList = null;
+		if(criteria.getDocs().isEmpty())
+			piList = jdbcTemplate.queryForList(DATA_OWNER_SQL);
+		else
+			piList = jdbcTemplate.queryForList(DATA_OWNER_BY_DOC_SQL, criteria.getDocs().get(0));
 		for (Map<String, Object> map : piList) {
 			HpcReport report = new HpcReport();
 			report.setGeneratedOn(Calendar.getInstance());
