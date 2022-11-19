@@ -966,14 +966,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 								dataObjectRegistration.getExtractedMetadataEntries(), configurationId, collectionType);
 					}
 
-					// Validate source location exists and accessible.
-					HpcPathAttributes pathAttributes = dataTransferService.validateUploadSourceFileLocation(
-							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
-							dataObjectRegistration.getGoogleDriveUploadSource(),
-							dataObjectRegistration.getGoogleCloudStorageUploadSource(),
-							dataObjectRegistration.getFileSystemUploadSource(), dataObjectFile,
-							configurationId);
-
 					// Transfer the data file.
 					uploadResponse = dataTransferService.uploadDataObject(
 							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),

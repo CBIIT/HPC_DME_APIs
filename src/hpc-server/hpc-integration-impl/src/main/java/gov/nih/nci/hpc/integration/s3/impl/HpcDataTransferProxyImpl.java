@@ -48,6 +48,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -1211,8 +1212,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				// Check if this is a directory. Use V2 listObjects API.
 				ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
 						.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId());
-				return s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-						.listObjectsV2(listObjectsRequest).getKeyCount() > 0;
+				ListObjectsV2Result objectsList = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+						.listObjectsV2(listObjectsRequest);
+						
+				return objectsList.getKeyCount() > 0 || !objectsList.getObjectSummaries().isEmpty();
 
 			} catch (AmazonServiceException ase) {
 				if (ase.getStatusCode() == 400) {
