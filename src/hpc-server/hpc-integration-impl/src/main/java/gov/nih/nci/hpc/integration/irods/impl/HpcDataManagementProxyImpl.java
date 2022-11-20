@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.InvalidGroupException;
@@ -48,7 +49,6 @@ import org.irods.jargon.core.query.QueryConditionOperators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -272,8 +272,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		}
 	}
 
+	// TODO - remove synchronized after testing if this resolved the duplicated metadata
 	@Override
-	public void addMetadataToDataObject(Object authenticatedToken, String path, List<HpcMetadataEntry> metadataEntries)
+	public synchronized void addMetadataToDataObject(Object authenticatedToken, String path, List<HpcMetadataEntry> metadataEntries)
 			throws HpcException {
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
@@ -838,7 +839,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		String relativePath = getAbsolutePath(absolutePath).substring((irodsConnection.getBasePath()).length());
 
 		// Remove trailing '/'.
-		relativePath = StringUtils.trimTrailingCharacter(relativePath, '/');
+		relativePath = org.springframework.util.StringUtils.trimTrailingCharacter(relativePath, '/');
 		return !relativePath.isEmpty() ? relativePath : "/";
 	}
 

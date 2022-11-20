@@ -35,15 +35,18 @@ public interface HpcDataMigrationService {
 	 * @param collectionMigrationTaskId    (Optional) The collection migration task
 	 *                                     ID that is associated w/ this data object
 	 *                                     migration task
+	 * @param alignArchivePath             If true, the file is moved within its
+	 *                                     current archive to align w/ the iRODs
+	 *                                     path.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
-			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId)
-			throws HpcException;
+			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
+			boolean alignArchivePath) throws HpcException;
 
 	/**
-	 * Get a list of data object migration tasks in specific status and type.
+	 * Get a list of migration tasks in specific status and type.
 	 *
 	 * @param status The data migration status to query for.
 	 * @param type   The data migration type to query for.
@@ -52,6 +55,13 @@ public interface HpcDataMigrationService {
 	 */
 	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
 			throws HpcException;
+
+	/**
+	 * Assign data migration tasks to servers
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void assignDataMigrationTasks() throws HpcException;
 
 	/**
 	 * Migrate a data object.
@@ -67,22 +77,25 @@ public interface HpcDataMigrationService {
 	 * @param dataObjectMigrationTask The data migration task.
 	 * @param result                  The data migration result.
 	 * @param message                 (Optional) An error message in case the
-	 *                                migration failed
+	 *                                migration failed.
+	 * @param fromS3ArchiveAuthToken  The from S3 archive token
+	 * @param toS3ArchiveAuthToken    The to S3 archive token
 	 * @throws HpcException on service failure.
 	 */
 	public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
-			HpcDataMigrationResult result, String message) throws HpcException;
+			HpcDataMigrationResult result, String message, Object fromS3ArchiveAuthToken, Object toS3ArchiveAuthToken)
+			throws HpcException;
 
 	/**
-	 * Complete a collection migration task.
+	 * Complete a bulk migration task (Collection, Data Object List or Collection
+	 * List).
 	 *
-	 * @param collectionMigrationTask The collection migration task.
-	 * @param message                 (Optional) An error message in case the
-	 *                                migration failed
+	 * @param bulkMigrationTask The bulk migration task.
+	 * @param message           (Optional) An error message in case the migration
+	 *                          failed
 	 * @throws HpcException on service failure.
 	 */
-	public void completeCollectionMigrationTask(HpcDataMigrationTask collectionMigrationTask, String message)
-			throws HpcException;
+	public void completeBulkMigrationTask(HpcDataMigrationTask bulkMigrationTask, String message) throws HpcException;
 
 	/**
 	 * Reset migration tasks that are in-progress
@@ -99,11 +112,42 @@ public interface HpcDataMigrationService {
 	 * @param configurationId            The The data object configuration ID.
 	 * @param toS3ArchiveConfigurationId The migration target S3 archive
 	 *                                   configuration ID.
+	 *                                   @param alignArchivePath             If true, the file is moved within its
+	 *                                     current archive to align w/ the iRODs
+	 *                                     path.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId) throws HpcException;
+			String toS3ArchiveConfigurationId, boolean alignArchivePath) throws HpcException;
+
+	/**
+	 * Create a data object list migration task.
+	 *
+	 * @param dataObjectPaths            The data object paths.
+	 * @param userId                     The user Id requested the migration.
+	 * @param configurationId            The The data object configuration ID.
+	 * @param toS3ArchiveConfigurationId The migration target S3 archive
+	 *                                   configuration ID.
+	 * @return A migration task ID.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
+			String configurationId, String toS3ArchiveConfigurationId) throws HpcException;
+
+	/**
+	 * Create a collection list migration task.
+	 *
+	 * @param dataObjectPaths            The collection paths.
+	 * @param userId                     The user Id requested the migration.
+	 * @param configurationId            The The data object configuration ID.
+	 * @param toS3ArchiveConfigurationId The migration target S3 archive
+	 *                                   configuration ID.
+	 * @return A migration task ID.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
+			String configurationId, String toS3ArchiveConfigurationId) throws HpcException;
 
 	/**
 	 * Update a migration task.
@@ -112,5 +156,18 @@ public interface HpcDataMigrationService {
 	 * @throws HpcException on service failure.
 	 */
 	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException;
+
+	/**
+	 * Mark a migration task that is in a RECEIVED state 'in-process', so that the
+	 * task can be started. This enables multiple threads to read off of the
+	 * migration task
+	 *
+	 * @param dataObjectMigrationTask The data migration task to mark
+	 * @param inProcess               Indicator whether the task is being actively
+	 *                                processed.
+	 * @return true if the inProcess value was actually updated in the DB.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean markInProcess(HpcDataMigrationTask dataObjectMigrationTask, boolean inProcess) throws HpcException;
 
 }

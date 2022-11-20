@@ -14,12 +14,12 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -315,9 +316,11 @@ public interface HpcDataTransferService {
 	 * Get path attributes for a given file in Google Drive or Google Cloud
 	 * Storage(using user provided Google Drive token).
 	 *
-	 * @param accessToken  Google Drive / Storage access token.
-	 * @param fileLocation The file to get attributes for.
-	 * @param getSize      If set to true, the file/directory size will be returned.
+	 * @param dataTransferType Google Drive / Google Cloud Storage.
+	 * @param accessToken      The user provided access token.
+	 * @param fileLocation     The bucket/object-id to get attributes for.
+	 * @param getSize          If set to true, the file/directory size will be
+	 *                         returned.
 	 * @return The path attributes.
 	 * @throws HpcException on service failure.
 	 */
@@ -388,6 +391,17 @@ public interface HpcDataTransferService {
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
 
 	/**
+	 * Get all data object download tasks associated with the given collection
+	 * download task.
+	 * 
+	 * @param taskId The collection download task Id
+	 * @return A list of data object download tasks.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasksByCollectionDownloadTaskId(String taskId)
+			throws HpcException;
+
+	/**
 	 * Get next data object download task to process given data transfer status and
 	 * data transfer type.
 	 *
@@ -416,6 +430,17 @@ public interface HpcDataTransferService {
 	public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType) throws HpcException;
 
 	/**
+	 * Get current status of active (result not captured yet) download items in a
+	 * collection download task.
+	 *
+	 * @param downloadTask The collection download task to get items status for
+	 * @return A map from download item ID to the status
+	 * @throws HpcException on service failure.
+	 */
+	public Map<String, HpcDownloadTaskStatus> getDownloadItemsStatus(HpcCollectionDownloadTask downloadTask)
+			throws HpcException;
+
+	/**
 	 * Get a collection download task cancellation request.
 	 *
 	 * @param taskId The collection download task ID.
@@ -423,6 +448,26 @@ public interface HpcDataTransferService {
 	 *         download task. False on any error (task doesn't exist, etc)
 	 */
 	public boolean getCollectionDownloadTaskCancellationRequested(String taskId);
+
+	/**
+	 *
+	 * @param globusUploadSource             (Optional) The Globus upload source.
+	 * @param s3UploadSource                 (Optional) The S3 upload source.
+	 * @param googleDriveUploadSource        (Optional) The Google Drive upload
+	 *                                       source.
+	 * @param googleCloudStorageUploadSource (Optional) The Google Cloud Storage
+	 *                                       upload source.
+	 * @param fileSystemUploadSource         (Optional) The File System (DME Server
+	 *                                       NAS) upload source.
+	 * @param sourceFile                     (Optional) The source file.
+	 * @param configurationId                The archive configuration ID
+	 * @return The path attributes of the file to upload
+	 * @throws HpcException
+	 */
+	public HpcPathAttributes validateUploadSourceFileLocation(HpcUploadSource globusUploadSource,
+			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
+			File sourceFile, String configurationId) throws HpcException;
 
 	/**
 	 * Complete an async (Globus / S3 / Google Drive) data object download task : 1.
@@ -639,10 +684,10 @@ public interface HpcDataTransferService {
 	 * items (i.e. items in RECEIVED state) in this collection download task for
 	 * cancellation.
 	 *
-	 * @param downloadItems The collection download task items to cancel.
+	 * @param taskId The collection download task ID to cancel items for.
 	 * @throws HpcException on service failure.
 	 */
-	public void cancelCollectionDownloadTaskItems(List<HpcCollectionDownloadTaskItem> downloadItems)
+	public void cancelCollectionDownloadTaskItems(String taskId)
 			throws HpcException;
 
 	/**
@@ -655,11 +700,20 @@ public interface HpcDataTransferService {
 	 * @param s3Account            (Optional) s3Account for S3 destinations.
 	 * @param googleAccessToken    (Optional) access token for Google Drive / Cloud
 	 *                             storage destinations.
+	 * @param retryUserId          The User who is re-initiating the task
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken) throws HpcException;
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, String retryUserId) throws HpcException;
+
+	/**
+	 * Get collection download tasks in process.
+	 *
+	 * @return A list of collection download tasks.
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess() throws HpcException;
 
 	/**
 	 * Get collection download tasks.
@@ -697,8 +751,8 @@ public interface HpcDataTransferService {
 	/**
 	 * Get collection download requests count for a path and endpoint.
 	 *
-	 * @param path   The archive path to download from.
-	 * @param status The destination endpoint.
+	 * @param path     The collection path to query for.
+	 * @param endpoint The download destination container ID to query for.
 	 * @return Count of collection download requests.
 	 * @throws HpcException on database error.
 	 */
@@ -707,7 +761,7 @@ public interface HpcDataTransferService {
 	/**
 	 * Get collection download tasks count for a specific user and path.
 	 *
-	 * @userId The userId to query for.
+	 * @param userId    The userId to query for.
 	 * @param path      The archive path to download from.
 	 * @param inProcess True for collections that are under processing.
 	 * @return Count of collection download tasks.
@@ -719,7 +773,7 @@ public interface HpcDataTransferService {
 	/**
 	 * Get collection download tasks count for a specific user.
 	 *
-	 * @userId The userId to query for.
+	 * @param userId    The userId to query for.
 	 * @param inProcess True for collections that are under processing.
 	 * @return Count of collection download tasks.
 	 * @throws HpcException on database error.
@@ -855,10 +909,26 @@ public interface HpcDataTransferService {
 	 *                                 data-object is stored in. This is only
 	 *                                 applicable for S3 archives, not POSIX.
 	 * @param dataTransferType         The data transfer type.
-	 * @param fileId                   The file ID. (Can be a directory)
+	 * @param fileId                   The file ID. (Can be a directory).
+	 * @param permissions              The permissions to set.
 	 * @throws HpcException on service failure.
 	 */
 	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType, String fileId, HpcPathPermissions permissions) throws HpcException;
+
+	/**
+	 * Generate metadata to attach to the data object in the archive: 1. UUID - the
+	 * data object UUID in the DM system (iRODS) 2. User ID - the user id that
+	 * registered the data object.
+	 * 
+	 * Note: creating archive metadata is configurable in
+	 * data-management-configuration.
+	 *
+	 * @param configurationId The data management configuration ID.
+	 * @param objectId        The data object UUID.
+	 * @param registrarId     The user-id uploaded the data.
+	 * @return a List of the 2 metadata.
+	 */
+	public List<HpcMetadataEntry> generateArchiveMetadata(String configurationId, String objectId, String registrarId);
 
 }

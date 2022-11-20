@@ -11,6 +11,34 @@
 
 source $HPC_DM_UTILS/scripts/utilities
 
+#dm_list_commands function
+function dm_list_commands {
+  read -d  '' usage <<- EOF
+
+  List of DME CLU commands.  
+  
+	dm_add_bookmark                   dm_get_dataobject
+	dm_delete_collection              dm_list_commands
+	dm_delete_datafile                dm_query_dataobject
+	dm_download_collection            dm_register_collection
+	dm_download_collection_globus     dm_register_dataobject
+	dm_download_collection_s3         dm_register_dataobject_multipart
+	dm_download_dataobject            dm_register_dataobject_presigned
+	dm_download_dataobject_globus     dm_register_directory
+	dm_download_dataobject_presigned  dm_register_user
+	dm_download_dataobject_s3         dm_rename
+	dm_generate_token                 dm_update_user
+	dm_get_collection
+  
+To see the detailed information on each command, use '<command name> -h'
+
+To get started with CLU commands, refer to the DME CLU Quick Reference page:
+https://wiki.nci.nih.gov/x/wIqhH
+
+EOF
+  echo "$usage"
+}
+
 #Print Usage of dm_generate_token function
 function dm_show_generate_token_usage {
   read -d  '' usage <<- EOF
@@ -204,6 +232,7 @@ function dm_show_register_collection_usage {
   [description.json]          Path to the JSON file containing the metadata for the new collection.
   [archive-path]              Destination path in the archive
 
+For a sample description.json file, refer to templates/collection-metadata-template.json.
 For detailed information on creating a collection, refer to the following page: 
 https://wiki.nci.nih.gov/x/g4JeFw
 
@@ -286,6 +315,8 @@ For files larger than 2GB, use dm_register_dataobject_multipart.
   description-json            Path to the JSON file containing the metadata for the new dataobject
   archive-path                Destination path in the archive
   [source-file]               Path of the file to upload
+
+For a sample description.json file, refer to templates/dataobject-presigned-metadata-template.json.
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/KohzFw
@@ -402,6 +433,9 @@ function dm_show_register_dataobject_usage {
   [archive-path]              Destination path in the archive
   [source-file]               Path to the source file for synchronous uploads. Omit the parameter for asynchronous upload (Globus and S3).
 
+For sample description.json files for synchronous uploads, refer to templates/dataobject-sync-metadata-template.json and templates/dataobject-sync-metadata-extraction-template.json.
+For sample description.json files for asynchronous uploads, refer to templates/dataobject-globus-metadata-template.json and templates/dataobject-s3-metadata-template.json.
+
 For detailed information on registering a data file, refer to the following page: 
 https://wiki.nci.nih.gov/x/ARtGFw
 
@@ -481,6 +515,8 @@ function dm_register_dataobject_multipart_usage {
   description-json            Path to the JSON file containing the metadata for the new dataobject
   destination-path            Destination path in the archive
   source-path                 Path of the file to upload
+
+For a sample description.json file, refer to templates/dataobject-multipart-metadata-template.json.
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/7AIFGg
@@ -1118,8 +1154,8 @@ function dm_download_dataobject {
   then
     if [ ! -e "$template_file" ]
     then
-        printf '{\n}' > $HPC_DM_UTILS/templates/download-sync-template.json.tmp
-        TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json.tmp"
+        printf '{\n}' > $HPC_DM_UTILS/download-sync-template.json.tmp
+        TEMPLATE="$HPC_DM_UTILS/download-sync-template.json.tmp"
     else
     	TEMPLATE="$template_file"
     fi
@@ -1160,7 +1196,7 @@ function dm_download_dataobject {
       2> $HPC_DM_UTILS/temp/curl-status
     check_connection $RESPONSE_HEADER
     CODE=$(get_http_code "$RESPONSE_HEADER")
-    rm -f $HPC_DM_UTILS/templates/download-sync-template.json.tmp
+    rm -f $HPC_DM_UTILS/download-sync-template.json.tmp
     if [ "$CODE" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
@@ -1804,7 +1840,7 @@ function dm_register_directory {
     command_args+=" --checksum $checksum"
 
     #Generate the command for the client: 
-    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local command_file=$HPC_DM_UTILS/temp/cmd-file-$(uuidgen)
     echo "registerFromFilePath  " $command_args >  $command_file
 
     case "$(uname -s)" in
@@ -2975,6 +3011,8 @@ function dm_show_rename_usage {
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   [description-json]          Path to the JSON file containing the source and destination path in the archive
 
+For a sample description.json file, refer to templates/rename-template.json.
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/Lg5GFw
 
@@ -3093,6 +3131,8 @@ function dm_show_add_bookmark_usage {
   bookmark_name               Display name for the bookmark 
   description-json            Path to the JSON file containing the bookmark path in the archive
 
+For a sample description.json file, refer to templates/add_bookmark_group_admin-template.json.
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/ooheFw
 
@@ -3210,6 +3250,8 @@ function dm_show_register_user_usage {
   user_id                     NIH user ID of the user
   description.json            Path to the JSON file containing input data for registration
 
+For a sample description.json file, refer to templates/register-user-template.json.
+
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/xh5GFw
 
@@ -3325,6 +3367,8 @@ function dm_show_update_user_usage {
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   user_id                     NIH user ID of the user
   description-json            Path to the JSON file containing additional command parameters
+
+For a sample description.json file, refer to templates/update-user-template.json.
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/yB5GFw

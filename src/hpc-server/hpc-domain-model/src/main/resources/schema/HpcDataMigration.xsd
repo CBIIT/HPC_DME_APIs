@@ -31,6 +31,10 @@
 				<xsd:element name="parentId" type="xsd:string" />
 				<xsd:element name="userId" type="xsd:string" />
 				<xsd:element name="path" type="xsd:string" />
+				<xsd:element name="dataObjectPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="dataObjectId" type="xsd:string" />
 				<xsd:element name="registrarId" type="xsd:string" />
 				<xsd:element name="configurationId" type="xsd:string" />
@@ -47,6 +51,9 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="toS3ArchiveLocation"
 					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="serverId" type="xsd:string" />
+				<xsd:element name="alignArchivePath" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -73,6 +73,8 @@ public class HpcLoginController extends AbstractHpcController {
     protected String version;
 	@Value("${app.env:}")
     protected String env;
+	@Value("${gov.nih.nci.hpc.server.collection.acl}")
+	private String collectionAclsURL;
 	
 	@Autowired
 	private HpcModelBuilder hpcModelBuilder;
@@ -129,13 +131,14 @@ public class HpcLoginController extends AbstractHpcController {
 				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
 				//Get DOC Models, go to server only if not available in cache
 				HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-				
+
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
-				//Not required here, this is being populated on an as needed basis elsewhere
-				//HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),
-					//collectionAclURL, sslCertPath, sslCertPassword);
-				
+
+                //Cache all permissions for all base paths, if not already cached
+                hpcModelBuilder.getModelPermissions(
+                        modelDTO, authToken, collectionAclsURL, sslCertPath, sslCertPassword);
+
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
 				model.addAttribute("loginOutput", "Invalid login");
@@ -145,7 +148,7 @@ public class HpcLoginController extends AbstractHpcController {
 				return "index";
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error during login: ", e);
 			model.addAttribute("loginStatus", false);
 			model.addAttribute("loginOutput", "Invalid login" + e.getMessage());
 			ObjectError error = new ObjectError("hpcLogin", "Authentication failed. " + e.getMessage());

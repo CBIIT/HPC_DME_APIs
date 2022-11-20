@@ -86,6 +86,7 @@ public class HpcSearchController extends AbstractHpcController {
 			search.setQueryName(queryName);
 			hpcSaveSearch.setCriteriaName(queryName);
 			search.setPageNumber(Integer.parseInt(page));
+			search.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 			if(StringUtils.isNotEmpty(pageSize))
 			  search.setPageSize(Integer.parseInt(pageSize));
 			query = processSearch(search, session, request, model, bindingResult);
@@ -118,7 +119,13 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("source", "search");
 		model.addAttribute("queryName", queryName);
 		model.addAttribute("pageNumber", new Integer(page).intValue());
-		model.addAttribute("pageSize", search.getPageSize());
+		model.addAttribute("totalSize", search.getTotalSize());
+		if(query != null) {
+			model.addAttribute("selectedColumns", query.getNamedCompoundQuery().getSelectedColumns());
+			search.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+			hpcSaveSearch.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+			hpcSaveSearch.setFrequency(query.getNamedCompoundQuery().getFrequency());
+		}
 		session.setAttribute("hpcSearch", search);
 		session.setAttribute("hpcSaveSearch", hpcSaveSearch);
 		HpcSearchUtil.cacheSelectedRows(session, request, model);
@@ -191,6 +198,11 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("queryName", search.getQueryName());
         model.addAttribute("pageNumber", new Integer(search.getPageNumber()).intValue());
 		model.addAttribute("pageSize", new Integer(search.getPageSize()).intValue());
+		model.addAttribute("totalSize", search.getTotalSize());
+		if(query != null) {
+			model.addAttribute("selectedColumns", query.getNamedCompoundQuery().getSelectedColumns());
+			search.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+		}
 		session.setAttribute("hpcSearch", search);
 
 		if (query == null)
@@ -225,12 +237,12 @@ public class HpcSearchController extends AbstractHpcController {
 			int totalPages = 1;
 			do {
 				exportSearch.setPageNumber(pageNumber++);
-				exportSearch.setPageSize(100);
+				exportSearch.setPageSize(10000);
 				query = processSearch(search, session, request, model, bindingResult);
 				totalPages = (int) session.getAttribute("totalPages");
 			} while (pageNumber <= totalPages);
 			String searchType = query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) ? "collection" : "datafile";
-			HpcSearchUtil.exportResponseResults(searchType, session, request, response);
+			HpcSearchUtil.exportResponseResults(searchType, session, request, response, exportSearch.getSelectedColumns());
 			
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -12,9 +12,9 @@ package gov.nih.nci.hpc.service.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.dao.HpcQueryConfigDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcQueryConfiguration;
@@ -36,16 +36,13 @@ public class HpcQueryConfigurationLocator extends HashMap<String, HpcQueryConfig
 	// The Data Management Proxy instance.
 	@Autowired
 	private HpcDataManagementProxy dataManagementProxy = null;
-		
+
 	// The Query Configuration DAO instance.
 	@Autowired
 	private HpcQueryConfigDAO queryConfigDAO = null;
 
 	// A map of all base paths that has entries in query config
 	private Map<String, HpcQueryConfiguration> queryConfigurations = new HashMap<>();
-
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -61,8 +58,7 @@ public class HpcQueryConfigurationLocator extends HashMap<String, HpcQueryConfig
 	// ---------------------------------------------------------------------//
 
 	/**
-	 * Load the query configurations from the DB. Called by spring as
-	 * init-method.
+	 * Load the query configurations from the DB. Called by spring as init-method.
 	 *
 	 * @throws HpcException On configuration error.
 	 */
@@ -71,14 +67,14 @@ public class HpcQueryConfigurationLocator extends HashMap<String, HpcQueryConfig
 		queryConfigurations.clear();
 
 		// Load the query configurations.
-		for (HpcQueryConfiguration queryConfiguration : queryConfigDAO
-				.getQueryConfigurations()) {
+		for (HpcQueryConfiguration queryConfiguration : queryConfigDAO.getQueryConfigurations()) {
 			// Ensure the base path is in the form of a relative path, and one level deep
 			// (i.e.
 			// /base-path).
 			String basePath = dataManagementProxy.getRelativePath(queryConfiguration.getBasePath());
 			if (basePath.split("/").length != 2) {
-				throw new HpcException("Invalid base path in query config [" + basePath + "]. Only one level path supported.",
+				throw new HpcException(
+						"Invalid base path in query config [" + basePath + "]. Only one level path supported.",
 						HpcErrorType.UNEXPECTED_ERROR);
 			}
 			queryConfiguration.setBasePath(basePath);
@@ -86,8 +82,9 @@ public class HpcQueryConfigurationLocator extends HashMap<String, HpcQueryConfig
 			// Ensure base path is unique (i.e. no 2 configurations share the same base
 			// path).
 			if (queryConfigurations.put(basePath, queryConfiguration) != null) {
-				throw new HpcException("Duplicate base-path in query configurations:"
-						+ queryConfiguration.getBasePath(), HpcErrorType.UNEXPECTED_ERROR);
+				throw new HpcException(
+						"Duplicate base-path in query configurations:" + queryConfiguration.getBasePath(),
+						HpcErrorType.UNEXPECTED_ERROR);
 			}
 		}
 

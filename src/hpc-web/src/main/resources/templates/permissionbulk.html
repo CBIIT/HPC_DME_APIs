@@ -73,6 +73,7 @@
 /*<![CDATA[*/
     var assignedNames = [[${names}]];
     var searchType = [[${hpcSearch.getSearchType()}]];
+    var selectedColumns = [[${hpcSearch.getSelectedColumns()}]];
 /*]]>*/
 </script>
 </head>
@@ -339,7 +340,11 @@
 													 th:value="${hpcSearch.getPageNumber()}"/>
 												<input type="hidden"
 													class="form-control" name="pageSize" id="pageSizeId"
-													 th:value="${hpcSearch.getPageSize()}"/>			
+													 th:value="${hpcSearch.getPageSize()}"/>
+												 <input type="hidden" name="totalSize" id="totalSizeId"
+												 	th:value="${hpcSearch.getTotalSize()}"/>
+												 <input type="hidden"
+													class="form-control" name="selectedColumns" id="selectedColumnsId"/>		
 											</form>
 											<form class="form-horizontal" id="searchForm"
 												th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -349,6 +354,10 @@
 													 th:value="${hpcSearch.getPageNumber()}"/> <input type="hidden"
 													class="form-control" name="pageSize" id="pageSize"
 													 th:value="${hpcSearch.getPageSize()}"/>
+												<input type="hidden" name="totalSize" id="totalSize"
+													 th:value="${hpcSearch.getTotalSize()}"/>
+												<input type="hidden"
+													class="form-control" name="selectedColumns" id="selectedColumns"/>
 											</form>
 										</div>
 									</div>
@@ -505,10 +514,14 @@
 		
 		function goBack()
 		{
-			if(searchType == "search")
+			if(searchType == "search") {
+			    document.getElementById("searchForm").elements.namedItem("selectedColumns").value = selectedColumns;
 				document.getElementById("searchForm").submit();
-			else
+			}
+			else {
+			    document.getElementById("criteriaForm").elements.namedItem("selectedColumns").value = selectedColumns;
 				document.getElementById("criteriaForm").submit();
+			}
 		}
 		
 		function enableUserGroup(selection) {

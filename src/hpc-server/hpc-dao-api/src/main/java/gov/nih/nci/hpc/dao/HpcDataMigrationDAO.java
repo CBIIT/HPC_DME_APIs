@@ -38,13 +38,22 @@ public interface HpcDataMigrationDAO {
 	/**
 	 * Get a list of data migration tasks in specific status and type.
 	 *
-	 * @param status The data migration status to query for.
-	 * @param type   The data migration type to query for.
+	 * @param status   The data migration status to query for.
+	 * @param type     The data migration type to query for.
+	 * @param serverId The server ID to get tasks to be processed
 	 * @return A List of data migration tasks
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
-			throws HpcException;
+	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type,
+			String serverId) throws HpcException;
+
+	/**
+	 * Get a list of unassigned data migration tasks.
+	 *
+	 * @return A List of data migration tasks
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTask> getUnassignedDataMigrationTasks() throws HpcException;
 
 	/**
 	 * Get a list of data object migration tasks that associated with specific a
@@ -55,6 +64,29 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataMigrationTask> getDataObjectMigrationTasks(String collectionMigrationTaskId) throws HpcException;
+
+	/**
+	 * Get a data object migration task that associated with specific a collection
+	 * migration task and path
+	 *
+	 * @param collectionMigrationTaskId The collection migration task id.
+	 * @param path                      The data object path.
+	 * @return A data object migration task if found, or null otherwise.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask getDataObjectMigrationTask(String collectionMigrationTaskId, String path)
+			throws HpcException;
+
+	/**
+	 * Get a data object migration task result ID that associated with specific a
+	 * collection migration task and path
+	 *
+	 * @param collectionMigrationTaskId The collection migration task id.
+	 * @param path                      The data object path.
+	 * @return A data object migration task result ID if found, or null otherwise.
+	 * @throws HpcException on service failure.
+	 */
+	public String getDataObjectMigrationTaskResultId(String collectionMigrationTaskId, String path) throws HpcException;
 
 	/**
 	 * Delete a data Migration task.
@@ -80,19 +112,39 @@ public interface HpcDataMigrationDAO {
 	 * Update the status of all data migration tasks
 	 *
 	 * @param fromStatus Only update tasks in this status
+	 * @param inProcess  The in-process value to set
 	 * @param toStatus   The status to set
 	 * @throws HpcException on database error.
 	 */
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, HpcDataMigrationStatus toStatus)
-			throws HpcException;
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess,
+			HpcDataMigrationStatus toStatus) throws HpcException;
 
 	/**
 	 * Get result counts for items in a collection migration task
 	 *
 	 * @param collectionMigrationTaskId The collection migration task id.
+	 * @return Map of migration result values to counts.
 	 * @throws HpcException on database error.
 	 */
 	public Map<HpcDataMigrationResult, Integer> getCollectionMigrationResultCount(String collectionMigrationTaskId)
 			throws HpcException;
 
+	/**
+	 * Set a migration task in-process value.
+	 *
+	 * @param id        The data migration task ID.
+	 * @param inProcess The value to set.
+	 * @return True if the value of inProcess was actually updated.
+	 * @throws HpcException on database error.
+	 */
+	public boolean setDataMigrationTaskInProcess(String id, boolean inProcess) throws HpcException;
+
+	/**
+	 * Set a migration task server-id.
+	 *
+	 * @param id       The data migration task ID.
+	 * @param serverId The server ID to work this task.
+	 * @throws HpcException on database error.
+	 */
+	public void setDataMigrationTaskServerId(String id, String serverId) throws HpcException;
 }

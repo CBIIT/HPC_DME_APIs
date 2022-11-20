@@ -36,6 +36,7 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link href="css/select2-4.0.11.min.css" rel="stylesheet" />
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -110,12 +111,12 @@
 										<tr>
 											<th class="text-center">ID</th>
 											<th class="text-center" style="width: 10%;">Exclude Parent Metadata</th>
-											<th th:if="${userInSecGroup}" class="text-center">Encrypted</th>
-											<th class="text-center">Level</th>
-											<th class="text-center">Attribute Name</th>
-											<th class="text-center">Operator</th>
+											<th th:if="${userInSecGroup}" class="text-center" style="width: 5%;">Encrypted</th>
+											<th class="text-center" style="width: 15%;">Level</th>
+											<th class="text-center" style="width: 20%;">Attribute Name</th>
+											<th class="text-center" style="width: 10%;">Operator</th>
 											<th class="text-center">Attribute Value</th>
-											<th class="text-center">&nbsp;</th>
+											<th class="text-center" style="width: 5%;">&nbsp;</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -132,9 +133,8 @@
 												<input type="hidden" id="attributeEncryptedHidden1" name="encrypted" value="false"/>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
-												id="level1" name="level" class="form-control"
-												th:required="required"
-												onChange="populateLevelAttributes(this.value, this.id)">
+												id="level1" name="level" class="form-control simple-select2 sl"
+												th:required="required" style="width: 100%" >
 													<option value="ANY">ANY</option>
 													<option
 														th:each="entry : ${hierarchy.getCollectionLevels()}"
@@ -142,8 +142,8 @@
 														Wireframe</option>
 											</select></td>
 											<td style="white-space: nowrap"><select size="1"
-												id="attrName1" name="attrName" class="form-control"
-												th:required="required">
+												id="attrName1" name="attrName" class="form-control simple-select2 sl"
+												th:required="required" style="width: 100%" >
 													<option value="ANY">ANY</option>
 													<option
 														th:each="attrName : ${hierarchy.getCollectionAttrsSet()}"
@@ -209,6 +209,8 @@
 							<div class="col-sm-10">
 								<label><input type="checkbox" th:field="*{detailed}"
 									id="detailed" />&nbsp;&nbsp;Detailed Results</label>
+								<a href="#" data-toggle="tooltip" data-placement="right" title="Uncheck this checkbox to return search results without metadata.">
+								<img style="width: 25px; height: 25px;vertical-align: top;" src="img/help.png"/></a>
 							</div>
 						</div>
 						
@@ -289,10 +291,17 @@
 	<script src="js/charts.js"></script>
 	<script src="js/jquery.slimscroll.min.js"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
-
+	<script src="js/select2-4.0.11.min.js"></script>
+	
 	<script>
 	$(document).ready(function(){
 		$('#sub-menu-search').addClass("active");
+		$('[data-toggle="tooltip"]').tooltip();
+		document.getElementById("detailed").checked = true;
+		$('#level1').select2().on("change", function(e) {
+		  populateLevelAttributes($("#level1").val(), "level1")
+        });
+		$('#attrName1').select2();
 	});
 	
   $('#createdDate').datepicker({
@@ -575,8 +584,8 @@ function addRow() {
     	cell1_a.innerHTML = '<input id="attributeEncrypted'+(rows+1)+'" type="checkbox" name="attributeEncrypted" class="encrypted" />'+
     						'<input id="attributeEncryptedHidden'+(rows+1)+'" type="hidden" name="encrypted" value="false"/>';
     }
-    cell2.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
-    cell3.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
+    cell2.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control simple-select2 sl" style="width: 100%" th:required="required"></select>';
+    cell3.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control simple-select2 sl" style="width: 100%" th:required="required"> <option value="ANY">ANY</option></select>';
     cell4.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
     cell5.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/><div class="input-group date" data-provide="datepicker" style="display: none;"><input type="text" class="form-control" id="attrValue'+(rows+1)+'X" name="attrValueX"><div class="input-group-addon"><span class="glyphicon glyphicon-th"></span></div></div>';
    	cell6.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\''+(row.id)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
@@ -586,12 +595,17 @@ function addRow() {
     $('#level'+(rows+1)).empty();
     $('#level'+(rows+1)).append($leveloptions);
     $('#level'+(rows+1)).val($('#level1').val());
-
+    $('#level'+(rows+1)).select2();
+    $('#level'+(rows+1)).select2().on("change", function(e) {
+		populateLevelAttributes($('#level'+(rows+1)).val(), 'level'+(rows+1))
+    });
+    
    	var namesEle = document.getElementById('attrName1');
    	var $attroptions = $("#attrName1 > option").clone();
     $('#attrName'+(rows+1)).empty();
     $('#attrName'+(rows+1)).append($attroptions);
     $('#attrName'+(rows+1)).val($('#attrName1').val());
+    $('#attrName'+(rows+1)).select2();
     
    	var operatorEle = document.getElementById('operator1');
    	var $operatoroptions = $("#operator1 > option").clone();
