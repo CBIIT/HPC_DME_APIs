@@ -76,6 +76,7 @@
 				<xsd:element name="dataHierarchy"
 					type="hpc-domain-datamanagement:HpcDataHierarchy" />
 				<xsd:element name="createArchiveMetadata" type="xsd:boolean" />
+				<xsd:element name="registrationEventWithDownloadRequestURL" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

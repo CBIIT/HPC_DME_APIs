@@ -65,11 +65,13 @@
     var currentPageSize = "[[${currentPageSize}]]";
     var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
     var selectedRowsData = [];
+    var totalSize = [[${totalSize}]];
+    var selectedColumns = [[${selectedColumns}]];
 /*]]>*/
 </script>
 <script>
 //<![CDATA[
-var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection']);
+var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection']);
 
 app.filter('dmePathEncoding', function () {
   return function (dmePathValue) {
@@ -77,7 +79,7 @@ app.filter('dmePathEncoding', function () {
   };
 });
 
-app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
+app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval, uiGridGroupingConstants ) {
 
 	$scope.gridOptions1 = {
 	exporterMenuPdf: false,
@@ -100,7 +102,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD | dmePathEncoding}}">{{COL_FIELD}}</a></div>'
       },
       {
-        field : 'uuid',
+        field : 'uniqueId',
         width : 200,
         displayName : 'UUID'
       },
@@ -138,7 +140,36 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         enableSorting: false
       }
 	 	],
-    treeRowHeaderAlwaysVisible: false,
+	 gridMenuCustomItems: [
+	      {
+	        title: 'Hide All Columns',
+	        action: function ($event) {
+	        	selectedColumns = [];
+	        	this.grid.columns.forEach(function(col){
+	                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission') {
+	                	   col.hideColumn();
+	                 }  
+	        	});
+	        	this.grid.api.core.notifyDataChange("column");
+	        },
+	        order: 210
+	      },
+	      {
+	        title: 'Show All Columns',
+	        action: function ($event) {
+	        	var grid = this.grid;
+	        	
+	        	this.grid.columns.forEach(function(col){
+	                   if(!col.visible){
+	                	   col.showColumn();
+	                	   selectedColumns.push(col.field);
+	                   }
+	        	});
+	        	this.grid.api.core.notifyDataChange("column");
+	        },
+	        order: 211
+	      }
+	],
     onRegisterApi : function(gridApi) {
     	$scope.gridApi = gridApi;
     }
@@ -154,10 +185,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
   
   $scope.selectAll = function() {
   	$scope.gridApi.selection.selectAllRows();
-  };
-
-  $scope.expandAll = function() {
-  	$scope.gridApi.treeBase.expandAllRows();
   };
   
   function getTableHeight(totalPage, currentPage, pageSize, dataLen) {  
@@ -198,28 +225,29 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	          for(var i=0;i<hpcSelectedDatafileList.length;i++)
 	            {
 	            var row = hpcSelectedDatafileList[i];
-	            //alert(row);
 	              var pageRow = row.substring(0,row.lastIndexOf(":"));
-//									    		  alert(pageRow);
 	              var page = pageRow.substring(0,pageRow.indexOf(":"));
-//									    		  alert(page);
 	              var row = pageRow.substring(pageRow.indexOf(":")+1);
-//								    		  alert(row);
-//							    		  alert($scope.currentPage);
 	              if(page == $scope.currentPage)
-	               $scope.gridApi.selection.selectRow($scope.gridOptions1.data[row]);
+	               $scope.gridApi.selection.selectRow($scope.gridOptions1.data[row], "preselect");
 	            }
 	          }
 	                        }, 0, 1);
 
       gridApi.selection.on.rowSelectionChanged($scope, function(
-	          row) {
+	          row, preselect) {
 	        var selectedRowIndex = $scope.gridOptions1.data.indexOf(row.entity);
 	        if(row.isSelected)
 	        {
 	          if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
 	            $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
 	          selectedRowsData = $scope.selectedRows;
+	          if(preselect != "preselect" && row.entity.collection_size != null && !isNaN(row.entity.collection_size * 1))
+	          	totalSize += row.entity.collection_size * 1;
+	          $("#totalSize").val(totalSize);
+	          if(totalSize > 0)
+	  			$("#totalSizeLabel").show();
+	          $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
 	        }
 	        else
 	        {
@@ -232,13 +260,25 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	          }
 	          //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
 	          $scope.selectedRows.splice(indexFromSelectedRows, 1);
+	          if(preselect != "preselect"  && row.entity.collection_size != null && !isNaN(row.entity.collection_size * 1))
+		          totalSize -= row.entity.collection_size * 1;
+	          $("#totalSize").val(totalSize);
+	          $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
 	        }
 	        selectedRowsData = $scope.selectedRows;
 	        console.log('SUCCESS: ', $scope.selectedRows);
       });
       
       gridApi.pagination.on.paginationChanged($scope, function (newPage, pageSize) {
-          if(pageSize != parseInt(currentPageSize))
+    	  selectedColumns = [];
+      	
+    	  $scope.gridOptions1.columnDefs.forEach(function(col){
+            if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
+            	selectedColumns.push(col.field);
+            }  
+ 		  });
+    	  
+    	  if(pageSize != parseInt(currentPageSize))
               updatePage('first', pageSize);
           else if(newPage == parseInt(currentPage) + 1)
         	  updatePage('next', pageSize);
@@ -261,8 +301,11 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
                 gridApi.selection.getSelectedRows().forEach(function(row) {
                   console.log('SUCCESS: ', row);
                   var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
-                  if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
+                  if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path)) {
                     $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
+                    if(row.collection_size != null && !isNaN(row.collection_size * 1))
+      		          totalSize += row.collection_size * 1;
+                  }
                 });
               if(!selectAll)
               {
@@ -280,12 +323,24 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
                   }
                   //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
                   $scope.selectedRows.splice(indexFromSelectedRows, 1);
+                  if(row.collection_size != null && !isNaN(row.collection_size * 1))
+    		          totalSize -= row.collection_size * 1;
                 }
               }
             console.log('SUCCESS: ', $scope.selectedRows);
             selectedRowsData = $scope.selectedRows;
+            $("#totalSize").val(totalSize);
+            $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
           });
       
+	      gridApi.core.on.columnVisibilityChanged($scope, function(col) {
+	    	  if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
+	           	selectedColumns.push(col.field);
+	          } else {
+	        	selectedColumns = selectedColumns.filter(e => e !== col.field);
+	          }
+	      });
+	      
 	      var metaSet = new Set(); 
 	      for(var i=0; i<$scope.gridOptions1.data.length; i++){
 	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries.length; j++){
@@ -315,7 +370,18 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		    	  }
 	    	  }
 	      }
-      
+	      
+	      var len = selectedColumns.length;
+	      $scope.gridOptions1.columnDefs.forEach(function(col){
+          	if(len != 0 && col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download' && col.displayName != 'Permission') {
+          		if(selectedColumns != null && selectedColumns.length && selectedColumns.indexOf(col.field) < 0)
+           	 		col.visible = false;
+          	} else {
+          		selectedColumns.push(col.field);
+          	}
+		  });
+	      gridApi.core.notifyDataChange("column");
+   	
     };
   
     Array.prototype.contains = function(obj) {
@@ -333,6 +399,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     };
     
     $scope.export = function() {
+    	var selectedColumns = [];
+    	
+    	$scope.gridOptions1.columnDefs.forEach(function(col){
+            if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
+            	selectedColumns.push(col.field);
+          }  
+ 		});
+    	
 		if(source == "'search'" || source == 'search')
 			document.getElementById("simplesearchform").action = "/search/export";
 		else
@@ -341,6 +415,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(currentPageSize);
 		document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = parseInt(currentPage);
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
+		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
 		document.getElementById("simplesearchform").submit();
     };
     
@@ -387,6 +462,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
 	        document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
+	        document.getElementById("downloadFilesform").elements.namedItem("selectedColumns").value = selectedColumns;
 	        document.getElementById("downloadType").value = "collections";
 	        document.getElementById("downloadFilesform").submit();
         } else {
@@ -398,6 +475,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        document.getElementById("bulkPermissionsform").elements.namedItem("pageNumber").value =  currentPage;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
+	        document.getElementById("bulkPermissionsform").elements.namedItem("selectedColumns").value = selectedColumns;
 	        document.getElementById("downloadType2").value = "collections";
 	        document.getElementById("bulkPermissionsform").submit();
         }
@@ -475,6 +554,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 									<a data-toggle="modal" id="bulkPermissionlink"
 										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('permission')"
 										><i class="fa fa-users" title="Manage Permissions on Selected Collections"></i></a>
+									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Collections: <strong id="totalSizeDisplay"></strong></label>
 								</div>
 							  </div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -496,7 +576,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body">
-								<div ng-controller="MainCtrl">
+								<div>
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true" 
@@ -514,6 +594,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="pageSize" name="pageSize"/>
 						<input type="hidden" id="queryName" name="queryName"/>
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="totalSize" name="totalSize"/>
+						<input type="hidden" id="selectedColumns" name="selectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
@@ -524,6 +606,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="pageNumber1" name="pageNumber"/>
 						<input type="hidden" id="pageSize1" name="pageSize"/>
 						<input type="hidden" id="queryName1" name="queryName"/>
+						<input type="hidden" id="totalSize1" name="totalSize"/>
+						<input type="hidden" id="selectedColumns1" name="selectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -534,6 +618,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="pageNumber2" name="pageNumber"/>
 						<input type="hidden" id="pageSize2" name="pageSize"/>
 						<input type="hidden" id="queryName2" name="queryName"/>
+						<input type="hidden" id="totalSize2" name="totalSize"/>
+						<input type="hidden" id="selectedColumns2" name="selectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -560,6 +646,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	$(document).ready(function(){
 		$('[data-toggle="tooltip"]').tooltip();
 		$('#sub-menu-search').addClass("active");
+		$("#totalSize").val(totalSize);
+		if(totalSize > 0)
+			$("#totalSizeLabel").show();
+		$("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
 	});
 	
     function updatePage(action, newPageSize)
@@ -611,8 +701,19 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
+		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
 		document.getElementById("simplesearchform").submit();
     }
+    
+    function formatBytes(bytes,decimals) {
+   	   if(bytes == 0) return '0 Bytes';
+   	   var k = 1000,
+   	       dm = decimals || 2,
+   	       sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+   	       i = Math.floor(Math.log(bytes) / Math.log(k));
+   	   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+   	}
+
     
 /*]]>*/
 </script>

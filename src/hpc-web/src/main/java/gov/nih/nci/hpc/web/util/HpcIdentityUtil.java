@@ -22,7 +22,6 @@ public class HpcIdentityUtil {
             session.getAttribute("hpcUser") instanceof HpcUserDTO)
         {
             HpcUserDTO userDto = (HpcUserDTO) session.getAttribute("hpcUser");
-            //TODO query against data_curator metadata
             retVal = "GROUP_ADMIN".equals(userDto.getUserRole());
         }
         return retVal;

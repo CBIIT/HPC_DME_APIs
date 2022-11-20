@@ -10,9 +10,11 @@ package gov.nih.nci.hpc.util;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -51,7 +53,8 @@ public class HpcUtil {
 	 */
 	public static String toNormalizedPath(String path) {
 		// Normalize the path - i.e. remove duplicate and trailing '/'
-		String absolutePath = StringUtils.trimTrailingCharacter(path, '/').replaceAll("/+", "/");
+		String absolutePath = org.springframework.util.StringUtils.trimTrailingCharacter(path, '/').replaceAll("/+",
+				"/");
 
 		StringBuilder buf = new StringBuilder();
 		if (absolutePath.isEmpty() || absolutePath.charAt(0) != '/') {
@@ -133,6 +136,57 @@ public class HpcUtil {
 	 */
 	public static String decodeGroupName(String groupName) {
 		return groupName.replace(GROUP_NAME_SPACE_CODE, " ");
+	}
+
+	/**
+	 * Map a list of paths to a comma separated string
+	 * 
+	 * @param paths A list of paths.
+	 * @return comma separated string.
+	 */
+	public static String toPathsString(List<String> paths) {
+		StringBuilder pathsStr = new StringBuilder();
+		paths.forEach(path -> pathsStr.append(path + ","));
+		return pathsStr.toString();
+	}
+
+	/**
+	 * Map a comma separated string of paths to a list
+	 * 
+	 * @param pathsStr A comma separated string of paths.
+	 * @return list of paths.
+	 */
+	public static List<String> fromPathsString(String pathsStr) {
+		List<String> paths = new ArrayList<>();
+		if (!StringUtils.isEmpty(pathsStr)) {
+			for (String path : pathsStr.split(",")) {
+				paths.add(path);
+			}
+		}
+		return paths;
+	}
+
+	/*
+	 * Enum fromValue implementation that doesn't throw an exception if value
+	 * provided not found.
+	 *
+	 * @param enumType The enum class
+	 * 
+	 * @param name The value string to convert
+	 * 
+	 * @return The Enum value of the name
+	 */
+	public static <T extends Enum<T>> T fromValue(Class<T> enumType, String name) {
+		if (enumType == null || StringUtils.isEmpty(name)) {
+			return null;
+		}
+
+		try {
+			return T.valueOf(enumType, name);
+
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private static final String[] SI_UNITS = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
