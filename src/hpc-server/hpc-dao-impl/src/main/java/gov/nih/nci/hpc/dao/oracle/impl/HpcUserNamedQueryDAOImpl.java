@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,11 +26,11 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryFrequency;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -55,15 +56,17 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_USER_QUERY_SQL = "merge into HPC_USER_QUERY using dual on (USER_ID = ? and QUERY_NAME = ?) "
-			+ "when matched then update set QUERY = ?, DETAILED_RESPONSE = ?, TOTAL_COUNT = ?, QUERY_TYPE = ?, CREATED = ?, UPDATED = ? "
-			+ "when not matched then insert (USER_ID, QUERY_NAME, QUERY, DETAILED_RESPONSE, TOTAL_COUNT, QUERY_TYPE, CREATED, UPDATED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "when matched then update set QUERY = ?, DETAILED_RESPONSE = ?, TOTAL_COUNT = ?, QUERY_TYPE = ?, CREATED = ?, UPDATED = ?, SELECTED_COLUMNS = ?, FREQUENCY = ? "
+			+ "when not matched then insert (USER_ID, QUERY_NAME, QUERY, DETAILED_RESPONSE, TOTAL_COUNT, QUERY_TYPE, CREATED, UPDATED, SELECTED_COLUMNS, FREQUENCY) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private static final String DELETE_USER_QUERY_SQL = "delete from HPC_USER_QUERY where USER_ID = ? and QUERY_NAME = ?";
 
 	private static final String GET_USER_QUERIES_SQL = "select * from HPC_USER_QUERY where USER_ID = ?";
 
 	private static final String GET_USER_QUERY_SQL = "select * from HPC_USER_QUERY where USER_ID = ? and QUERY_NAME = ?";
+	
+	private static final String GET_USER_QUERIES_BY_FREQUENCY_SQL = "select * from HPC_USER_QUERY where FREQUENCY = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -80,6 +83,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	// Row mappers.
 	private RowMapper<HpcNamedCompoundMetadataQuery> userQueryRowMapper = (rs, rowNum) -> {
 		HpcNamedCompoundMetadataQuery namedCompoundQuery = new HpcNamedCompoundMetadataQuery();
+		namedCompoundQuery.setUserId(rs.getString("USER_ID"));
 		namedCompoundQuery.setCompoundQuery(fromJSON(encryptor.decrypt(rs.getBytes("QUERY"))));
 		namedCompoundQuery.setName(rs.getString("QUERY_NAME"));
 		namedCompoundQuery.setDetailedResponse(rs.getBoolean("DETAILED_RESPONSE"));
@@ -91,6 +95,15 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 		Calendar updated = Calendar.getInstance();
 		updated.setTime(rs.getTimestamp("UPDATED"));
 		namedCompoundQuery.setUpdated(updated);
+		String selectedColumns = rs.getString("SELECTED_COLUMNS");
+		if(selectedColumns != null) {
+			for (String selectedColumn : selectedColumns.split(",")) {
+				namedCompoundQuery.getSelectedColumns().add(selectedColumn);
+			}
+		}
+		if(rs.getString("FREQUENCY") != null) {
+		namedCompoundQuery.setFrequency(HpcCompoundMetadataQueryFrequency.fromValue(rs.getString("FREQUENCY")));
+		}
 		return namedCompoundQuery;
 	};
 
@@ -124,11 +137,14 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 			jdbcTemplate.update(UPSERT_USER_QUERY_SQL, nciUserId, namedCompoundMetadataQuery.getName(), encryptedQuery,
 					namedCompoundMetadataQuery.getDetailedResponse(), namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated(), nciUserId, namedCompoundMetadataQuery.getName(),
+					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getSelectedColumns()),
+					namedCompoundMetadataQuery.getFrequency() == null ? "" : namedCompoundMetadataQuery.getFrequency().value(), 
+					nciUserId, namedCompoundMetadataQuery.getName(),
 					encryptedQuery, namedCompoundMetadataQuery.getDetailedResponse(),
 					namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated());
+					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getSelectedColumns()),
+					namedCompoundMetadataQuery.getFrequency() == null ? "" : namedCompoundMetadataQuery.getFrequency().value());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a user query " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
@@ -176,6 +192,20 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 		}
 	}
 
+	@Override
+	public List<HpcNamedCompoundMetadataQuery> getQueriesByFrequency(HpcCompoundMetadataQueryFrequency frequency) throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_USER_QUERIES_BY_FREQUENCY_SQL, userQueryRowMapper, frequency.value());
+
+		} catch (IncorrectResultSizeDataAccessException notFoundEx) {
+			return null;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get user queries: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -339,5 +369,20 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 		}
 
 		return metadataQuery;
+	}
+	
+	/**
+	 * Map an array of selected columns to a single string.
+	 * 
+	 * @param selectedColumns A list of selected columns.
+	 * @return A comma separated selected columns string.
+	 */
+	private String toString(List<String> selectedColumns) {
+		StringBuilder selectedColumnsStr = new StringBuilder();
+		for (String selectedColumn : selectedColumns) {
+			selectedColumnsStr.append(selectedColumn + ",");
+		}
+
+		return selectedColumnsStr.toString();
 	}
 }

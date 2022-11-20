@@ -61,11 +61,31 @@ public class HpcScheduledTasksImpl {
 				logger);
 	}
 
+	/** Process received data object list migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectListMigrationReceived.delay}")
+	private void processDataObjectListMigrationReceivedTask() {
+		execute("processDataObjectListMigrationReceivedTask()",
+				dataMigrationBusService::processDataObjectListMigrationReceived, logger);
+	}
+
+	/** Process received collection list migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processCollectionListMigrationReceived.delay}")
+	private void processCollectionListMigrationReceivedTask() {
+		execute("processDataObjectListMigrationReceivedTask()",
+				dataMigrationBusService::processCollectionListMigrationReceived, logger);
+	}
+
 	/** Complete collection migration tasks that are in-progress. */
-	@Scheduled(cron = "${hpc.scheduler.migration.cron.completeCollectionMigrationInProgress.delay}")
-	private void completeCollectionMigrationInProgressTask() {
-		execute("completeCollectionMigrationInProgressTask()",
-				dataMigrationBusService::completeCollectionMigrationInProgress, logger);
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.completeBulkMigrationInProgress.delay}")
+	private void completeBulkMigrationInProgressTask() {
+		execute("completeBulkMigrationInProgressTask()", dataMigrationBusService::completeBulkMigrationInProgress,
+				logger);
+	}
+
+	/** Assign server ID to process migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.assignMigrationServer.delay}")
+	private void assignMigrationServerTask() {
+		execute("assignMigrationServer()", dataMigrationBusService::assignMigrationServer, logger);
 	}
 
 	/**
