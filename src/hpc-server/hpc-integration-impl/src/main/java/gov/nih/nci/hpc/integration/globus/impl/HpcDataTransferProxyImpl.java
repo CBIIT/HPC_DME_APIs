@@ -565,8 +565,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	/**
 	 * Create a 'transfer item' JSON
 	 *
-	 * @param source      The source endpoint.
-	 * @param destination The destination endpoint.
+	 * @param items List of transfer items
+	 * @return Transfer items JSON.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	private JSONArray toTransferItemsJson(List<HpcGlobusTransferItem> items) throws HpcException {
