@@ -135,7 +135,7 @@ app
     	for(i = 1; i < paths.length; i++){
     		if(html.length == 0) {
         		if(paths.length == 2)  //The path has just one part and ends here, so display the human readable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + node.children.length + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		} else {
@@ -143,7 +143,7 @@ app
     			if(i < paths.length - 1)
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else //The last part of the path ends here, so display human redable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + node.children.length + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		}
     	}
     	$('.breadcrumb.folderpath').html(html);
@@ -186,6 +186,34 @@ app
     }
     
 }]);
+var isResizing = false,
+lastDownX = 0;
+
+$(function () {
+var container = $('#panel-body'),
+    left = $('#left'),
+    right = $('#right'),
+    handle = $('#drag');
+
+handle.on('mousedown', function (e) {
+    isResizing = true;
+    lastDownX = e.clientX;
+});
+
+$(document).on('mousemove', function (e) {
+    // we don't want to do anything if we aren't resizing.
+    if (!isResizing) 
+        return;
+    
+    var offsetRight = container.width() - (e.clientX - container.offset().left);
+
+    left.css('right', offsetRight);
+    right.css('width', offsetRight);
+}).on('mouseup', function (e) {
+    // stop resizing
+    isResizing = false;
+});
+});
 /*]]>*/
 </script>
 
@@ -272,20 +300,40 @@ div.ui-grid-cell-contents > i.fa-folder {
 div.ui-grid-cell-contents.folder {
 	cursor: pointer;
 }
+#panel-body {
+    width: 100%;
+    height: 815px;
+    
+}
 
 @media (min-width: 768px){
   #left {
-  	position: relative;
-    width: 50%;
+  	position: absolute;
+    left: 25px;
+    top: 35px;
+    bottom: 0;
+    right: 50%;
     overflow-y: scroll; 
     height: 780px;
   }
   
   #right {
-    position: relative;
+    position: absolute;
+    right: 0;
+    top: 35px;
+    bottom: 0;
     width: 50%;
     height: 780px;
   }
+}
+
+#drag {
+    position: absolute;
+    left: -4px;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: w-resize;
 }
 
 .ui-grid-cell-contents:hover {
@@ -355,7 +403,7 @@ cursor: pointer;
 								</div>
 							</div>
 								<!--panel-body start-->
-								<div class="panel-body">
+								<div class="panel-body" id="panel-body">
 									<div class="modal fade" id="bookmarksTarget" tabindex="-1" role="dialog"
 										aria-labelledby="bookmarksLabel" aria-hidden="true">
 										<div class="modal-dialog">
@@ -372,7 +420,7 @@ cursor: pointer;
 										</div>
 										<!-- /.modal-dialog -->
 									</div>
-									<div class="row"><div id="left" class="col-md-6 grid">
+									<div class="row"><div id="left" class="grid">
 									<div class="form-group">
 										<div id="tree1"></div>
                     <div id="bookmarksContent">
@@ -396,8 +444,9 @@ cursor: pointer;
 											<li><a href="#refreshNode">Refresh Node</a></li>
 									</ul>	
 								</div>
-									<div id="right" class="col-md-6">
-								  		<div ng-controller="MainCtrl">
+									<div id="right" class="">
+										<div id="drag"></div>
+								  		<div ng-controller="MainCtrl" style="width:95%">
 								  			<div>
 												<ol class="breadcrumb folderpath">
 												</ol>
@@ -453,20 +502,22 @@ cursor: pointer;
 
 <script th:inline="javascript">
 /*<![CDATA[*/
-           
+
 //Invoked after the server side code is executed when 
 //- the browse menu is first accessed
 //- A bookmark is clicked on the Browse page
 $(document).ready(function(){
 	$('#sub-menu-browse').addClass("active");
 });
-		
+
+//Invoked whe the node is programmatically created
+//Specifically,when we come click browse icon on detail screen or select a bookmark
 $(function() {
     $('#tree1').tree({
     	closedIcon: $('<i class="fa fa-folder" />'),
         openedIcon: $('<i class="fa fa-folder-open" />'),
         data: data,
-        saveState: true,
+        saveState: false,
         usecontextmenu: true,
         onCreateLi: function(node, $li) {
             if (node.collection) {
@@ -518,6 +569,7 @@ function refreshNode(node) {
 }
 
 //bind 'tree.click' event
+//Invoked when the node (label) is manually selected
 $('#tree1').bind(
     'tree.click',
     function(event) {
@@ -529,8 +581,12 @@ $('#tree1').bind(
         var node = event.node;
         $('#tree1').tree('toggle', node);
         if(!refresh && node.populated && node.collection) {
-	        data[0] = node;
-			angular.element('#refreshGrid').triggerHandler('click');
+            if(node.partial && event.hasOwnProperty('click_event')) {
+                browseNode(node);
+            } else {
+                data[0] = node;
+		        angular.element('#refreshGrid').triggerHandler('click');
+            }
 	    } else if (!node.collection && !node.populated) {
 	    	browseDataobject(node);
 	    }
@@ -549,6 +605,8 @@ function scrollWindow()
 
 
  //Invoked when we click on a node to open it or progammatically open it.
+ //Specifically, invoked to open the parent node programmatically when selectNode is called on a node,
+ //or when a node is opened manually by clicking the folder icon
  $('#tree1').bind('tree.open', function (e,data1) {  
 	//document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
@@ -556,15 +614,20 @@ function scrollWindow()
 	//when browse menu was invoked. If we are coming from onCreateLi when a
 	//bookmark or browser dialog was selected, then the node would already
 	//be populated so dont want to go to the server.
-	if(!refresh && !node.populated) {
+	//Additionally, if selectedNodePath is populated with something other than it's
+	//own fullPath, then it means this is a parent node populated with the child's
+	//fullPath (done in the controller) and we got here to while populating the child node,
+	//when bookmark or browse was selected, so we don't want to populate it fully
+	if(!refresh && (node.selectedNodePath == null || node.selectedNodePath == node.fullPath) && (!node.populated || node.partial)) {
 		browseNode(node);
 		node = $('#tree1').tree('getNodeById', node.id);
 	} else {
 		refresh = null;
+		//Reset it so that going forward when we manually click on the node, it gets populated
+		node.selectedNodePath = null;
 	}
 	
-	$('#tree1').tree('selectNode', node);
-	angular.element('#refreshGrid').triggerHandler('click');
+	
 }
 );
 
@@ -591,6 +654,7 @@ function browseDataobject(node) {
 function browseNode1(id, path) {  
 	  node = $('#tree1').tree('getNodeById', id);
 	  $('#tree1').tree('closeNode', node, false);
+	  document.getElementById("processingIcon"+ id).scrollIntoView();
 	  $(document.getElementById("processingIcon"+ id)).parent().click();
 };
 

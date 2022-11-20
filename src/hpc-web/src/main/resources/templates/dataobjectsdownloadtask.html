@@ -87,6 +87,13 @@
 								<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
 								</h2>
 								</div>
+								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED') 
+									and (hpcDataObjectsDownloadStatusDTO.getFailedItems() == null or hpcDataObjectsDownloadStatusDTO.getFailedItems().size() == 0) 
+									and (hpcDataObjectsDownloadStatusDTO.getCanceledItems() == null or hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() == 0)}">
+								  <h2>
+								    <strong> <a class="downloadfailed btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								  </h2>
+							    </div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() == null or (hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0) }">
 									<h2>
 										<strong> <a id="cancelDownload"
@@ -121,7 +128,7 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>
-								<div class="form-group" style="word-break: break-all;}">
+								<div class="form-group" style="word-break: break-all;">
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() == null}">
 										<label for="Name">Task ID:</label> <label
 											for="${taskId}"
@@ -131,6 +138,11 @@
 										<label for="Name">Re-initiated Task ID:</label> <label
 											for="${taskId}"
 											th:text="${taskId}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryUserId() != null}">
+											<label for="Name">Retry User ID:</label> <label
+											for="${hpcDataObjectsDownloadStatusDTO.getRetryUserId()}"
+											th:text="${hpcDataObjectsDownloadStatusDTO.getRetryUserId()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getRetryTaskId() != null}">
 										<label for="Name">Previous Task ID:</label>
@@ -176,6 +188,11 @@
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() == null}">
 										<label for="Name">Transfer Completed:</label> <label id="regComplete">In Progress</label>
 									</div>
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadBytesTransferred != null and !#strings.startsWith(hpcDataObjectsDownloadBytesTransferred,'0')}">
+										<label for="BytesTransferred">Bytes Transferred:</label> <label
+											for="${hpcDataObjectsDownloadBytesTransferred}"
+											th:text="${hpcDataObjectsDownloadBytesTransferred}"></label>
+									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getPercentComplete() != null
 												and hpcDataObjectsDownloadStatusDTO.getPercentComplete() > 0}">
 										<div class="progress">
@@ -218,8 +235,8 @@
 							<div class="panel-body"
 								th:if="${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems()}" style="margin-top:5px" >
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems()}" style="margin-top:5px;word-break: break-all;" >
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -241,6 +258,45 @@
 										<div class="progress">
     										<div class="progress-bar" id="progressBar" role="progressbar" th:attr="aria-valuenow=${hpcCollectionDownloadTaskItem.getPercentComplete()}" aria-valuemin="0" aria-valuemax="100"  th:style="'width:'+ ${hpcCollectionDownloadTaskItem.getPercentComplete()}+'%;'">
       											<span th:text="${hpcCollectionDownloadTaskItem.getPercentComplete()}"></span>
+    											%
+    										</div>
+  										</div>
+									</div>
+								</div>
+							</div>
+							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems().size() > 0}">
+								<div class="col-md-3">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Staging In Progress</strong>
+									</h2>
+								</div>
+							</div>
+							<div class="panel-body"
+								th:if="${hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems().size() > 0}">
+								<div class="panel panel-default"
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems()}" style="margin-top:5px;word-break: break-all;" >
+									<div class="col-md-12 form-group">
+										<label for="Name">Path:</label> 
+										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
+                      					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
+                     					  </label>
+                    					</a>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="Name">Task ID:</label><a th:href="@{'/downloadtask?type=DATA_OBJECT&amp;taskId=' + ${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}}"> <label
+											for="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"
+											th:text="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"></label></a>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getMessage() != null}">
+										<label for="Name">Message:</label> <label
+											for="${hpcCollectionDownloadTaskItem.getMessage()}"
+											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getStagingPercentComplete() != null
+												and hpcCollectionDownloadTaskItem.getStagingPercentComplete() > 0}">
+										<div class="progress">
+    										<div class="progress-bar" id="progressBar" role="progressbar" th:attr="aria-valuenow=${hpcCollectionDownloadTaskItem.getStagingPercentComplete()}" aria-valuemin="0" aria-valuemax="100"  th:style="'width:'+ ${hpcCollectionDownloadTaskItem.getStagingPercentComplete()}+'%;'">
+      											<span th:text="${hpcCollectionDownloadTaskItem.getStagingPercentComplete()}"></span>
     											%
     										</div>
   										</div>
@@ -250,15 +306,15 @@
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0}">
 								<div class="col-md-3">
 									<h2>
-										<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
+										<i class="fa fa-list-alt red"></i><strong>Download In Progress</strong>
 									</h2>
 								</div>
 							</div>
 							<div class="panel-body"
 								th:if="${hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getInProgressItems()}" style="margin-top:5px" >
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getInProgressItems()}" style="margin-top:5px;word-break: break-all;" >
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -286,7 +342,9 @@
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
+							<div class="panel-heading"
+								th:if="${(hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0) or
+										 (hpcDataObjectsDownloadStatusDTO.getCanceledItems() != null and hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() > 0)}">
 							  <div class="col-md-3">	
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
@@ -294,15 +352,27 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
 								  <h2>
-								    <strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								    <strong> <a class="downloadfailed btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
 								  </h2>
 							   </div>
 							</div>
 							<div class="panel-body">
+							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary() != null and hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary().size() > 0}">
+								  <strong>Collections Failed: </strong>
+								  <div th:each="hpcCollectionResultSummary : ${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary()}"  style="margin-top:5px;word-break: break-all;">
+									<div th:if="${#strings.equals(hpcCollectionResultSummary.getResult(),'FAILED')}" class="col-md-12 form-group">
+										<a th:href="@{/collection(action=view,path=${hpcCollectionResultSummary.getPath()})}">
+                      					  <label for="${hpcCollectionResultSummary.getPath()}" th:text="${hpcCollectionResultSummary.getPath()}">
+                     					 </label>
+                    				    </a>
+									</div>
+								  </div>
+							  </div>
 							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
+								<strong>Data Objects Failed: </strong>
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getFailedItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getFailedItems()}"  style="margin-top:5px;word-break: break-all;">
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -319,8 +389,8 @@
 							  <div 
 								th:if="${hpcDataObjectsDownloadStatusDTO.getCanceledItems() != null and hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCanceledItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCanceledItems()}"  style="margin-top:5px;word-break: break-all;">
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -335,7 +405,7 @@
 							  </div>
 							</div>
 							<div class="panel-heading" th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
-								or (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
+								or (hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Completed</strong>
@@ -344,11 +414,23 @@
 							</div>
 							<div class="panel-body"
 								th:if="${(hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0)
-								or  (!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
+								or  (hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty())}">
 							  <div class="panel panel-default">
+							    <div th:if="${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary() != null and hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary().size() > 0}">
+								  <strong>Collections Completed: </strong>
+								  <div th:each="hpcCollectionResultSummary : ${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary()}"  style="margin-top:5px;word-break: break-all;">
+									<div th:if="${#strings.equals(hpcCollectionResultSummary.getResult(),'COMPLETED')}" class="col-md-12 form-group">
+										<a th:href="@{/collection(action=view,path=${hpcCollectionResultSummary.getPath()})}">
+                      					  <label for="${hpcCollectionResultSummary.getPath()}" th:text="${hpcCollectionResultSummary.getPath()}">
+                     					 </label>
+                    				    </a>
+									</div>
+								  </div>
+							    </div>
 							    <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
-								  <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group" style="word-break: break-all;">
+								  <strong>Data Objects Completed: </strong>
+								  <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px;word-break: break-all;">
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> 
 										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -367,11 +449,11 @@
 									</div>
 								  </div>
 							    </div>
-							    <div th:if="${!hpcOrigDataObjectsDownloadStatusDTOs.isEmpty()}">
+							    <div th:if="${hpcOrigDataObjectsDownloadStatusDTOs != null and !hpcOrigDataObjectsDownloadStatusDTOs.isEmpty()}">
 							      <div th:each="hpcDataObjectsDownloadStatusDTO : ${hpcOrigDataObjectsDownloadStatusDTOs.subList(0, hpcOrigDataObjectsDownloadStatusDTOs.size())}">
 							        <div th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
-								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
-									    <div class="col-md-12 form-group" style="word-break: break-all;">
+								      <div th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCompletedItems()}"  style="margin-top:5px;word-break: break-all;">
+									    <div class="col-md-12 form-group">
 										  <label for="Name">Path:</label> 
 										  <a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
                       					    <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
@@ -442,7 +524,7 @@ $(document).ready(function(){
 	
 function retryDownload(task, taskType)
 {
-	$('#downloadfailed').addClass('disabled');
+	$('.downloadfailed').addClass('disabled');
 	document.getElementById("taskId").value = task;
 	document.getElementById("taskType").value = taskType;
 	$("#downloadForm").submit();
@@ -484,7 +566,7 @@ var pollPercentComplete = setInterval(
 				}
 			});
 			
-		}, 10000);	
+		}, 5000);
            
 /*]]>*/
 </script>

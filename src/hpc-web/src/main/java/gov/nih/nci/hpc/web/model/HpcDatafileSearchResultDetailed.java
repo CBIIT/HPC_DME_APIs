@@ -4,7 +4,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 
 public class HpcDatafileSearchResultDetailed {
 	private String path;
-	private String uuid;
+	private String uniqueId;
 	private String registeredBy;
 	private String collectionType;
 	private String createdOn;
@@ -46,12 +46,12 @@ public class HpcDatafileSearchResultDetailed {
 		this.path = path;
 	}
 
-	public String getUuid() {
-		return uuid;
+	public String getUniqueId() {
+		return uniqueId;
 	}
 
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
+	public void setUniqueId(String uniqueId) {
+		this.uniqueId = uniqueId;
 	}
 
 	public String getRegisteredBy() {

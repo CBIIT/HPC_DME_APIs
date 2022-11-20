@@ -107,19 +107,18 @@
 /*]]>*/
 </script>
 <script>
-var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
+var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
 
-app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
+app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval ) {
 
 	$scope.gridOptions1 = {
     enableSorting: true,
     enableFiltering: true,
     paginationPageSize: 100,
     enablePaginationControls: false,
-    treeRowHeaderAlwaysVisible: false,
     columnDefs: [
 		 		 { field: 'userId', width:150, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
-                 { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="uploadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'taskId', minWidth:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="uploadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
                  { field: 'result', width:200, displayName: 'Transfer Result'},
                  { field: 'created', width:200, displayName : 'Created On' },
                  { field: 'completed', width:200, displayName : 'Completed On'}
