@@ -73,6 +73,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		dataManagementConfiguration
 				.setS3DefaultDownloadConfigurationId(rs.getString("S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID"));
 		dataManagementConfiguration.setCreateArchiveMetadata(rs.getBoolean("CREATE_ARCHIVE_METADATA"));
+		dataManagementConfiguration.setRegistrationEventWithDownloadRequestURL(rs.getBoolean("REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL"));
 
 		// Map the Globus configuration.
 		HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
