@@ -10,8 +10,6 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
-import java.net.URLEncoder;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -46,6 +44,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -70,6 +69,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class HpcSaveSearchController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryServiceURL;
+	@Value("${gov.nih.nci.hpc.server.query}")
+	private String queryURL;
 	private String hpcMetadataAttrsURL;
 
 	/**
@@ -88,8 +89,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 		HpcSaveSearch hpcSaveSearch = (HpcSaveSearch) session.getAttribute("hpcSaveSearch");
 		if(hpcSaveSearch == null)
 			hpcSaveSearch = new HpcSaveSearch();
-		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
+		String queryName = request.getParameter("queryName");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -97,6 +99,17 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/login";
 		}
+		if(StringUtils.isNotBlank(queryName)) {
+			HpcNamedCompoundMetadataQueryDTO query = null;
+			query = HpcClientUtil.getQuery(authToken, queryURL, queryName, sslCertPath, sslCertPassword);
+			session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
+			hpcSaveSearch.setCriteriaName(query.getNamedCompoundQuery().getName());
+			hpcSaveSearch.getSelectedColumns().clear();
+			hpcSaveSearch.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+			hpcSaveSearch.setFrequency(query.getNamedCompoundQuery().getFrequency());
+		}
+		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
+		session.setAttribute("hpcSaveSearch", hpcSaveSearch);
 		return "savesearch";
 	}
 
@@ -142,6 +155,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 				compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
 				compoundQuery.setTotalCount(namedCompoundQuery.getTotalCount());
 			}
+			compoundQuery.getSelectedColumns().clear();
+			compoundQuery.getSelectedColumns().addAll(search.getSelectedColumns());
+			compoundQuery.setFrequency(search.getFrequency());
 
 			if (search.getCriteriaName() == null || search.getCriteriaName().isEmpty()) {
 				result.setCode("400");

@@ -41,8 +41,6 @@ public class HpcQueryConfigDAOImpl implements HpcQueryConfigDAO {
 
 	private static final String GET_CONFIGS_SQL = "select * from HPC_QUERY_CONFIGURATION where ENCRYPT = '1'";
 	
-	private static final String GET_CONFIG_SQL = "select * from HPC_QUERY_CONFIGURATION where BASE_PATH = ?";
-	
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//

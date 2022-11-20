@@ -37,6 +37,7 @@
     var authorized = [[${authorized}]];
 	var authorizedGC = [[${authorizedGC}]];
     var oauthToken = [[${accessToken}]];
+    var selectedColumns = [[${selectedColumns}]];
 /*]]>*/
 </script>
 </head>
@@ -118,7 +119,7 @@
 										<div class="pull-left" style="margin-left: 15px" th:if="${downloadType == 'datafile'}">
 											<label class="radio-inline"><input type="radio"
 											id="searchTypeSync" name="searchType" value="sync"
-											onChange="display('sync')" checked="checked" />File System</label>
+											onChange="display('sync')" checked="checked" />Local System</label>
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
 											<label class="radio-inline"><input type="radio"
@@ -295,7 +296,12 @@
 						 th:value="${hpcSearch.getPageNumber()}"/>
 					<input type="hidden"
 						class="form-control" name="pageSize" id="pageSizeId"
-						 th:value="${hpcSearch.getPageSize()}"/>			
+						 th:value="${hpcSearch.getPageSize()}"/>
+					<input type="hidden"
+						class="form-control" name="totalSize" id="totalSizeId"
+						 th:value="${hpcSearch.getTotalSize()}"/>
+					<input type="hidden"
+						class="form-control" name="selectedColumns" id="selectedColumnsId"/>		
 				</form>
 				<form class="form-horizontal" id="searchForm"
 					th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -305,6 +311,11 @@
 						 th:value="${hpcSearch.getPageNumber()}"/> <input type="hidden"
 						class="form-control" name="pageSize" id="pageSize"
 						 th:value="${hpcSearch.getPageSize()}"/>
+					<input type="hidden"
+						class="form-control" name="totalSize" id="totalSize"
+						 th:value="${hpcSearch.getTotalSize()}"/>
+					<input type="hidden"
+						class="form-control" name="selectedColumns" id="selectedColumns"/>
 				</form>
             </div>
           </div>
@@ -348,6 +359,9 @@
 						|| endPointName == null
 						|| endPointName.trim().length == 0) {
 					alert("Please enter asynchronous download values");
+					return false;
+				} else if (endPointLocation.startsWith("http://") || endPointLocation.startsWith("https://")) {
+					alert("A URL is not acceptable as the Globus Endpoint (Destination) Path. Enter a valid Globus folder path.");
 					return false;
 				}
 			} else if (radioValue == 's3') {
@@ -486,10 +500,14 @@
 
 		function goBack()
 		{
-			if(source != null && source == "search")
+			if(source != null && source == "search") {
+				document.getElementById("searchForm").elements.namedItem("selectedColumns").value = selectedColumns;
 				document.getElementById("searchForm").submit();
-			else if(source != null && source == "criteria")
+			}
+			else if(source != null && source == "criteria") {
+				document.getElementById("criteriaForm").elements.namedItem("selectedColumns").value = selectedColumns;
 				document.getElementById("criteriaForm").submit();
+			}
 			else if(downloadType == "collection")
 				window.location.href = '../collection?action=view&path=' + downloadFilePath;
 			else

@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.web.controller;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +31,7 @@ import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -46,16 +50,25 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 
 /**
@@ -84,7 +97,10 @@ public class HpcBrowseController extends AbstractHpcController {
 
 	@Value("${gov.nih.nci.hpc.server.pathreftype}")
 	private String hpcPathRefTypeURL;
-	
+
+	@Autowired
+	private HpcModelBuilder hpcModelBuilder;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -247,6 +263,7 @@ public class HpcBrowseController extends AbstractHpcController {
     // Verify User session
     HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
     String authToken = (String) session.getAttribute("hpcUserToken");
+
     if (user == null || authToken == null) {
       ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
       bindingResult.addError(error);
@@ -258,12 +275,23 @@ public class HpcBrowseController extends AbstractHpcController {
     // Get User DOC model for base path
     HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
     if (modelDTO == null) {
-      modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+      //go to server only if not available in cache
+      modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
       session.setAttribute("userDOCModel", modelDTO);
     }
+
+    //Get user permissioned basePaths for Browse dialog
+    if(session.getAttribute("userBasePaths") == null) {
+        String userId = (String) session.getAttribute("hpcUserId");
+        HpcPermission[] hpcPermissions = {HpcPermission.OWN, HpcPermission.WRITE, HpcPermission.READ};
+        populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "userBasePaths",
+            sslCertPath, sslCertPassword, session, hpcModelBuilder);
+    }
+    model.addAttribute("userBasePaths", (Set<String>) session.getAttribute("userBasePaths"));
+
     String partial = request.getParameter("partial");
     String refresh = request.getParameter("refresh");
-    
+
     String path = null;
     if (partial != null)
       return "browsepartial";
@@ -271,7 +299,7 @@ public class HpcBrowseController extends AbstractHpcController {
     if (refresh != null) {
       session.removeAttribute("browserEntry");
     }
-    
+
     try {
 	    if (path == null || path.isEmpty()) {
 	      path = request.getParameter("path");
@@ -425,7 +453,10 @@ public class HpcBrowseController extends AbstractHpcController {
     entry.setId(entryPath);
     entry.setFullPath(entryPath);
     entry.setPopulated(true);
+    //Indicate that this entry is only partially populated
+    entry.setPartial(true);
     entry.setName(path);
+    entry.setSelectedNodePath(fullPath);
     entry.getChildren().add(childEntry);
     return entry;
   }
@@ -497,23 +528,13 @@ public class HpcBrowseController extends AbstractHpcController {
 			boolean getChildren, boolean partial, boolean refresh) {
 
 		path = path.trim();
-		//HpcBrowserEntry selectedEntry = null;
-		
-		//If partial is true, it means we came here from browse dialog,
-		//while building the initial tree, from bookmark, or browse
-		//icon in detail view, so no relative selected entry 
-		//will be found anyways, so skip this. 
-		//If node refresh is true, then we will be re-populating 
-		//selectEntry from irods anyways, so skip this.
-		//if(!partial && !refresh) {		
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
-		//}
 
 		if(refresh & selectedEntry != null) {
 			selectedEntry.setPopulated(false);
 		}
 
-		if (selectedEntry != null && selectedEntry.isPopulated())
+		if (selectedEntry != null && selectedEntry.isPopulated() && !selectedEntry.isPartial())
 			return partial ? selectedEntry : browserEntry;
 		if (selectedEntry != null && selectedEntry.getChildren() != null)
 			selectedEntry.getChildren().clear();
@@ -559,6 +580,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				//we dont read again from DB, unless an explicit refresh 
 				//request has been made
 				selectedEntry.setPopulated(true);
+				selectedEntry.setPartial(false);
 				
 				selectedEntry.setCollection(true);
 				for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
@@ -639,7 +661,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			if (childPath == null || childPath.equals(""))
 				continue;
 			if (childPath.indexOf(parentPath) != -1) {
-				String childName = childPath.substring(childPath.indexOf(parentPath) + parentPath.length() + 1);
+				String childName = Paths.get(childPath).getFileName().toString();
 				child.setName(childName);
 			}
 			trimPath(child, childPath);

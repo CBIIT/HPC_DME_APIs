@@ -33,7 +33,14 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 	private HpcDataMigrationTask dataObjectMigrationTask = null;
 
 	// The data migration service.
-	HpcDataMigrationService dataMigrationService = null;
+	private HpcDataMigrationService dataMigrationService = null;
+
+	// The from/To archive tokens
+	private Object fromS3ArchiveAuthToken = null;
+	private Object toS3ArchiveAuthToken = null;
+
+	// Indicator to mark transfer failed event received.
+	boolean transferFailed = false;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -48,12 +55,16 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 	 *
 	 * @param dataObjectMigrationTask The migration task.
 	 * @param dataMigrationService    The data migration service to callback when
-	 *                                migration completed/failed
+	 *                                migration completed/failed.
+	 * @param fromS3ArchiveAuthToken  The from S3 archive token
+	 * @param toS3ArchiveAuthToken    The to S3 archive token
 	 */
 	public HpcDataMigrationProgressListener(HpcDataMigrationTask dataObjectMigrationTask,
-			HpcDataMigrationService dataMigrationService) {
+			HpcDataMigrationService dataMigrationService, Object fromS3ArchiveAuthToken, Object toS3ArchiveAuthToken) {
 		this.dataObjectMigrationTask = dataObjectMigrationTask;
 		this.dataMigrationService = dataMigrationService;
+		this.fromS3ArchiveAuthToken = fromS3ArchiveAuthToken;
+		this.toS3ArchiveAuthToken = toS3ArchiveAuthToken;
 	}
 
 	// ---------------------------------------------------------------------//
@@ -70,7 +81,7 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 				dataObjectMigrationTask.getId());
 		try {
 			dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
-					HpcDataMigrationResult.COMPLETED, null);
+					HpcDataMigrationResult.COMPLETED, null, fromS3ArchiveAuthToken, toS3ArchiveAuthToken);
 
 		} catch (HpcException e) {
 			logger.error("Failed to complete a migration task for {} [task-id: {}]", dataObjectMigrationTask.getPath(),
@@ -80,11 +91,19 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 
 	@Override
 	public void transferFailed(String message) {
+		synchronized (this) {
+			if (transferFailed) {
+				// Failure event already received and processed.
+				return;
+			}
+			transferFailed = true;
+		}
+
 		logger.error("Migration failed for: {} [task-id: {}]", dataObjectMigrationTask.getPath(),
 				dataObjectMigrationTask.getId());
 		try {
-			dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
-					HpcDataMigrationResult.FAILED, message);
+			dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.FAILED,
+					message, fromS3ArchiveAuthToken, toS3ArchiveAuthToken);
 
 		} catch (HpcException e) {
 			logger.error("Failed to complete a migration task for {} [task-id: {}]", dataObjectMigrationTask.getPath(),

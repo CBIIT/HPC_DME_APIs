@@ -14,8 +14,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
@@ -32,9 +35,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -52,6 +59,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -60,8 +68,15 @@ import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcReportRequest;
+import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import org.springframework.web.util.UriComponentsBuilder;
+
 
 /**
  * <p>
@@ -90,6 +105,7 @@ public class HpcReportsController extends AbstractHpcController {
 
   //The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+  private Gson gson = new Gson();
 
   /**
    * GET Operation to prepare reports page
@@ -105,11 +121,11 @@ public class HpcReportsController extends AbstractHpcController {
   public String home(@RequestBody(required = false) String q, Model model,
       BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
     model.addAttribute("reportRequest", new HpcReportRequest());
-    return init(model, bindingResult, session, request);
+    return init(model, bindingResult, session);
   }
 
-  private String init(Model model, BindingResult bindingResult, HttpSession session,
-      HttpServletRequest request) {
+
+  private String init(Model model, BindingResult bindingResult, HttpSession session) {
     String authToken = (String) session.getAttribute("hpcUserToken");
     if (authToken == null) {
       return "redirect:/login?returnPath=reports";
@@ -122,6 +138,7 @@ public class HpcReportsController extends AbstractHpcController {
       model.addAttribute("hpcLogin", hpcLogin);
       return "redirect:/login?returnPath=reports";
     }
+
     model.addAttribute("userRole", user.getUserRole());
     model.addAttribute("userDOC", user.getDoc());
     HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
@@ -131,25 +148,29 @@ public class HpcReportsController extends AbstractHpcController {
         .thenComparing(HpcUserListEntry::getLastName, String.CASE_INSENSITIVE_ORDER);
     users.getUsers().sort(firstLastComparator);
     model.addAttribute("docUsers", users.getUsers());
-    List<String> docs = new ArrayList<String>();
-    if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
+    List<String> docs = new ArrayList<>();
+
+
+    boolean canSeeAllDocs = false;
+    if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER")) {
       docs.add(user.getDoc());
+    }
     else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
       docs.addAll(
           HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
+      canSeeAllDocs = true;
     }
+    model.addAttribute("canSeeAllDocs", canSeeAllDocs);
     docs.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("docs", docs);
-    HpcDataManagementModelDTO modelDTO =
-        (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-    if (modelDTO == null) {
-      modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-      session.setAttribute("userDOCModel", modelDTO);
-    }
-    List<String> basepaths = new ArrayList<String>();
-    for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-      for (HpcDataManagementRulesDTO rule : docRule.getRules())
-        basepaths.add(rule.getBasePath());
+
+    List<String> basepaths = new ArrayList<>();
+    for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
+      if (docs.contains(docRule.getDoc())){
+        for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+          basepaths.add(rule.getBasePath());
+        }
+      }
     }
     basepaths.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("basepaths", basepaths);
@@ -167,7 +188,7 @@ public class HpcReportsController extends AbstractHpcController {
    * @return
    */
   @SuppressWarnings("finally")
-  @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public String generate(@Valid @ModelAttribute("reportRequest") HpcReportRequest reportRequest,
       Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 
@@ -176,45 +197,59 @@ public class HpcReportsController extends AbstractHpcController {
       model.addAttribute("reportRequest", reportRequest);
       String authToken = (String) session.getAttribute("hpcUserToken");
       requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
-      if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) {
-        if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
-            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-          requestDTO.getDoc().add(reportRequest.getDoc());
+      if ( (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) &&
+        (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
+            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))) {
+        requestDTO.getDoc().add(reportRequest.getDoc());
       }
-      if (reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) {
-        if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
-            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))
-          requestDTO.setPath(reportRequest.getBasepath());
+      if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER)) {
+          requestDTO.setPath("ALL");
       }
-      else if (reportRequest.getPath() != null && !reportRequest.getPath().equals("-1")) {
-        if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
-            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
-          try {
-            HpcClientUtil.getCollection(authToken, hpcCollectionlURL, reportRequest.getPath(), true,
-                sslCertPath, sslCertPassword);
-          } catch (HpcWebException e) {
-            model.addAttribute("message", "Invalid collection path: " + reportRequest.getPath() +". Please re-enter valid path.");
-            return init(model, bindingResult, session, request);
-          }
+      if ((reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) &&
+        (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
+            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))) {
+        requestDTO.setPath(reportRequest.getBasepath());
+          //Also populate DOC from Model for display purposes
+        requestDTO.getDoc().add(HpcClientUtil.getDocByBasePath(getModelDTO(session), reportRequest.getBasepath()));
+      }
+      else if ( (reportRequest.getPath() != null && !reportRequest.getPath().equals("-1")) &&
+        (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
+            || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))) {
+        try {
+          HpcClientUtil.getCollection(authToken, hpcCollectionlURL, reportRequest.getPath(), true,
+               sslCertPath, sslCertPassword);
+        } catch (HpcWebException e) {
+          model.addAttribute(ATTR_MESSAGE, "Invalid collection path: " + reportRequest.getPath() +". Please re-enter valid path.");
+          return init(model, bindingResult, session);
+        }
         requestDTO.setPath(reportRequest.getPath());
       }
-      if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1"))
-        requestDTO.getUser().add(reportRequest.getUser());
-      if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty())
-        requestDTO.setFromDate(reportRequest.getFromDate());
-      if (reportRequest.getToDate() != null && !reportRequest.getToDate().isEmpty())
-        requestDTO.setToDate(reportRequest.getToDate());
 
+      if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1")) {
+        requestDTO.getUser().add(reportRequest.getUser());
+      }
+      if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty()) {
+        requestDTO.setFromDate(reportRequest.getFromDate());
+      }
+      if (reportRequest.getToDate() != null && !reportRequest.getToDate().isEmpty()) {
+        requestDTO.setToDate(reportRequest.getToDate());
+      }
       WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
       client.header("Authorization", "Bearer " + authToken);
-
       Response restResponse = client.invoke("POST", requestDTO);
       if (restResponse.getStatus() == 200) {
         MappingJsonFactory factory = new MappingJsonFactory();
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
         HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
         model.addAttribute("reports", translate(reports.getReports()));
-        model.addAttribute("reportName", getReportName(reportRequest.getReportType()));
+        if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
+            && reportRequest.getDoc().equals("All")) || (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
+                && reportRequest.getBasepath().equals("All"))) {
+          model.addAttribute("reportName", getReportName(reportRequest.getReportType() + "_GRID"));
+        }
+        else {
+          model.addAttribute("reportName", getReportName(reportRequest.getReportType()));
+        }     
       } else {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -227,19 +262,45 @@ public class HpcReportsController extends AbstractHpcController {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        model.addAttribute("message", "Failed to generate report: " + exception.getMessage());
-        logger.info("Failed to generate report" + requestDTO.getType() + " for " + requestDTO.getPath() + ": ", exception);
+        model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + exception.getMessage());
+        logger.info("Failed to generate report {} for {}: {}", requestDTO.getType(), requestDTO.getPath(), exception);
       }
     } catch (HttpStatusCodeException e) {
-      model.addAttribute("message", "Failed to generate report: " + e.getMessage());
-      logger.info("Failed to generate report" + requestDTO.getType() + " for " + requestDTO.getPath() + ": ", e);
+        model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + e.getMessage());
+        logger.info("Failed to generate report {} for path {}", requestDTO.getType(), requestDTO.getPath(), e);
     } finally {
-      return init(model, bindingResult, session, request);
+      return init(model, bindingResult, session);
+    }
+  }
+
+  private class HpcArchiveSummaryDocReport {
+    String doc;
+    String vault;
+    String bucket;
+    long count;
+    long size;
+  }
+
+  private void setArchiveSummary(HpcReportEntryDTO entry, String separator){
+    if (entry.getValue().equals("0")) {
+      entry.setValue("NA");
+    } else {
+      Type empMapType = new TypeToken<List<HpcArchiveSummaryDocReport>>() {}.getType();
+      List<HpcArchiveSummaryDocReport> assaySummaryList = gson.fromJson(entry.getValue(), empMapType);
+      String assaySummaryString = "";
+      for(int i=0 ; i < assaySummaryList.size(); i++) {
+        String size = String.valueOf(assaySummaryList.get(i).size);
+        String hrSize = MiscUtil.getHumanReadableSize(size , true);
+        assaySummaryString = assaySummaryString + assaySummaryList.get(i).vault + ", " +
+            assaySummaryList.get(i).bucket + ", " +
+            hrSize + separator;
+      }
+      entry.setValue(assaySummaryString);
     }
   }
 
   private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
-    List<HpcReportDTO> tReports = new ArrayList<HpcReportDTO>();
+    List<HpcReportDTO> tReports = new ArrayList<>();
     for (HpcReportDTO dto : reports) {
       if(dto.getFromDate() != null) {
         DateTimeFormatter dtoFormat = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
@@ -250,23 +311,91 @@ public class HpcReportsController extends AbstractHpcController {
         dto.setToDate(formatter.format(toDate.minusDays(1)));
       }
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
+      // Loop through to add the entries for the Human Readable fields
+      int index = 0;
+      int total_data_size_index = 0;
+      int largest_file_size_index = 0;
+      String total_data_size = "";
+      String largest_file_size = "";
       for (HpcReportEntryDTO entry : entries) {
         if (env.getProperty(entry.getAttribute()) != null) {
-          entry.setAttribute(env.getProperty(entry.getAttribute()));
-          if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
-        	  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br>"));
-          }
-          if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
-              || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
-              || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))){
-              entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
-          }
+          // Data Owner Grid: we are reusing an existing attribute TOTAL_DATA_SIZE, therefore we are using the proper property for this Grid
+           if (dto.getType().equals("USAGE_SUMMARY_BY_DATA_OWNER")) {
+              if (entry.getAttribute().equals("TOTAL_DATA_SIZE")) {
+                total_data_size_index = index;
+                total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
+                entry.setAttribute(env.getProperty("COLLECTION_SIZE_HUMAN_READABLE"));
+                entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+              } else {
+                entry.setAttribute(env.getProperty(entry.getAttribute()));
+              }
+           } else {
+              entry.setAttribute(env.getProperty(entry.getAttribute()));
+              if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
+                  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
+              }
+              if (entry.getAttribute().equals(env.getProperty("ARCHIVE_SUMMARY"))) {
+                setArchiveSummary(entry,  " <br/>");
+              }
+              if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
+                  dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1 ){
+                // In Grid Reports, the TOTAL_DATA_SIZE contains only the Byte value
+                if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))) {
+                  total_data_size_index = index;
+                  total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
+                  entry.setAttribute(env.getProperty("TOTAL_DATA_SIZE_HUMAN_READABLE_FOR_GRID"));
+                  entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+                }
+                // In Grid Reports, the LARGEST_FILE_SIZE contains only the Byte value
+                if (entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))) {
+                  largest_file_size_index = index;
+                  largest_file_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
+                  entry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_HUMAN_READABLE_FOR_GRID"));
+                  entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+                }
+              } else {
+                // For rest of the Single Reports, the value displayed is always a human readable value.
+                if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
+                      || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
+                      || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))) {
+                      entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
+                }
+              }
+           }
         }
+        index = index + 1;
+      }
+      // A new column will be added to the Data Owner grid next to the Collection size column showing the Human readable value
+      if (dto.getType().equals("USAGE_SUMMARY_BY_DATA_OWNER")) {
+        HpcReportEntryDTO newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("COLLECTION_SIZE"));
+        newEntry.setValue(total_data_size);
+        dto.getReportEntries().add(total_data_size_index, newEntry);
+        newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY"));
+        newEntry.setValue("0");
+        dto.getReportEntries().add(newEntry);
+        newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY_VALUES"));
+        newEntry.setValue("");
+        dto.getReportEntries().add(newEntry);
+      }
+      if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
+        dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1  ){
+        HpcReportEntryDTO newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("TOTAL_DATA_SIZE_VALUE_ONLY_FOR_GRID"));
+        newEntry.setValue(total_data_size);
+        dto.getReportEntries().add(total_data_size_index, newEntry);
+        newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_VALUE_ONLY_FOR_GRID"));
+        newEntry.setValue(largest_file_size);
+        dto.getReportEntries().add(largest_file_size_index + 1, newEntry);
       }
       tReports.add(dto);
     }
     return tReports;
   }
+
 
   private String getReportName(String type) {
     if (env.getProperty(type) != null)
@@ -274,4 +403,57 @@ public class HpcReportsController extends AbstractHpcController {
     else
       return type;
   }
-}
+
+  /**
+    * GET operation responding to an AJAX request to retrieve the Archive Summary based on the path
+    *
+    * @param path
+    * @param session
+    * @param request
+    * @return The Archive summary value
+  */
+  @GetMapping(value = "/getArchiveSummary")
+  @ResponseBody
+  public AjaxResponseBody getArchiveSummary(@RequestParam("path") String path, HttpSession session, HttpServletRequest request) {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      AjaxResponseBody result = new AjaxResponseBody();
+      HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
+      requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+      requestDTO.setPath(path);
+      requestDTO.getReportColumns().add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
+      try {
+        UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(serviceURL);
+        if (ucBuilder == null) {
+          return null;
+        }
+        final String requestURL = ucBuilder.build().encode().toUri().toURL().toExternalForm();
+        WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
+        client.header("Authorization", "Bearer " + authToken);
+        Response restResponse = client.invoke("POST", requestDTO);
+        if (restResponse.getStatus() == 200) {
+          result.setCode(Integer.toString(200));
+          MappingJsonFactory factory = new MappingJsonFactory();
+          JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+          HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
+          List <HpcReportDTO> dto = reports.getReports();
+          List<HpcReportEntryDTO> entries = dto.get(0).getReportEntries();
+          for (HpcReportEntryDTO entry : entries) {
+            if (env.getProperty(entry.getAttribute()) != null) {
+              if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
+                 // setArchiveSummary(entry, ",");
+                  setArchiveSummary(entry,  "    <br/>");
+                  result.setMessage(entry.getValue());
+                  break;
+                }
+              }
+            }
+        } else { // restResponse.getStatus() != 200
+            result.setMessage("");
+            result.setCode(Integer.toString(400));
+        }
+      } catch (Exception e) {
+        log.error(e.getMessage(), e);
+      }
+      return result;
+    }
+  }

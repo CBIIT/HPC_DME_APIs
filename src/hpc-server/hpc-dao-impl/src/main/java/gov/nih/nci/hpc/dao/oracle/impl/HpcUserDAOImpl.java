@@ -78,7 +78,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 
 	private static final String GET_USERS_ACTIVE_FILTER = " and ACTIVE = '1' ";
 	
-	private static final String GET_USER_DATA_CURATOR_SQL = "select 1 from r_meta_main where meta_attr_name = 'data_curator' and meta_attr_value = ? FETCH FIRST 1 ROWS ONLY";
+	private static final String GET_USER_DATA_CURATOR_SQL = "select 1 from r_meta_main where meta_attr_name = 'data_generator_userid' and meta_attr_value = ? FETCH FIRST 1 ROWS ONLY";
 
 	// ---------------------------------------------------------------------//
 	// Instance members

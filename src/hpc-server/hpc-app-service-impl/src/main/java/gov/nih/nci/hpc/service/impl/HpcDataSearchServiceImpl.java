@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryFrequency;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
@@ -447,6 +448,11 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     return userNamedQueryDAO.getQuery(nciUserId, queryName);
   }
 
+  @Override
+  public List<HpcNamedCompoundMetadataQuery> getQueriesByFrequency(HpcCompoundMetadataQueryFrequency frequency) throws HpcException {
+    return userNamedQueryDAO.getQueriesByFrequency(frequency);
+  }
+  
   @Override
   public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel)
       throws HpcException {
