@@ -12,8 +12,8 @@ import org.junit.runner.RunWith;
 		 features="src/test/java/Register/Features"
 		, glue={"Register.Steps", "Auth"}
 		, dryRun = false
-		, monochrome=true
-		
+		//, monochrome=true
+,plugin = ("json:target/cucumber-reports/CucumberTestReport.json")
 		)
 public class RegisterRunner {
 
