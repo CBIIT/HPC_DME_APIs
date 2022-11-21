@@ -12,8 +12,9 @@ import org.junit.runner.RunWith;
 		 features="src/test/java/Bookmark/Features"
 		, glue="Bookmark.Steps"
 		, dryRun = false
-		, monochrome=true
-		
+		//, monochrome=true
+//,format= {"pretty","html:test-output_1", "json:target/cucumber-reports/CucumberTestReport.json"}
+,plugin = ("json:target/cucumber-reports/CucumberTestReport.json")
 		)
 public class BookmarkRunner {
 
