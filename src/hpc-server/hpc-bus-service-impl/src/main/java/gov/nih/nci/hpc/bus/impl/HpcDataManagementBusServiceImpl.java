@@ -2745,14 +2745,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					throw new HpcException("Null / Empty from/to folder in directory scan folder map",
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
-				pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
-				if (directoryScanRegistrationItem.getS3ScanDirectory() != null
-						|| directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
-					// The 'path' in S3 and Google Cloud Storage(which is really object key) don't
-					// start with a '/', so need to remove it after normalization.
-					pathMap.setFromPath(pathMap.getFromPath().substring(1));
+				if (pathMap.getRegexPathMap() == null) {
+					pathMap.setRegexPathMap(false);
 				}
-				pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
+
+				if (!Boolean.TRUE.equals(pathMap.getRegexPathMap())) {
+					pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
+					if (directoryScanRegistrationItem.getS3ScanDirectory() != null
+							|| directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
+						// The 'path' in S3 and Google Cloud Storage(which is really object key) don't
+						// start with a '/', so need to remove it after normalization.
+						pathMap.setFromPath(pathMap.getFromPath().substring(1));
+					}
+					pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
+				}
 			}
 
 			// Get the configuration ID.
@@ -2870,7 +2876,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// path).
 		String scanItemFilePath = scanItem.getFilePath();
 		if (pathMap != null) {
-			scanItemFilePath = scanItemFilePath.replace(pathMap.getFromPath(), pathMap.getToPath());
+			scanItemFilePath = Boolean.TRUE.equals(pathMap.getRegexPathMap())
+					? scanItemFilePath.replaceAll(pathMap.getFromPath(), pathMap.getToPath())
+					: scanItemFilePath.replace(pathMap.getFromPath(), pathMap.getToPath());
 		}
 
 		// Calculate the data object path to register.
