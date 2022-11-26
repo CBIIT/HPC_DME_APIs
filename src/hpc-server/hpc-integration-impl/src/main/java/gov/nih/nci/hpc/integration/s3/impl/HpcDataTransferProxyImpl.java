@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 
 import java.io.File;
 import java.io.IOException;
@@ -1190,12 +1191,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @return read limit
 	 */
 	private int getReadLimit(long fileSize) {
-		try {
-			return Math.toIntExact(fileSize + 1);
-
-		} catch (ArithmeticException e) {
-			return Integer.MAX_VALUE;
-		}
+			return toIntExact(fileSize + 1);
 	}
 
 	/**

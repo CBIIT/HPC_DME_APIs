@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
 import static gov.nih.nci.hpc.util.HpcUtil.fromValue;
+import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
@@ -1140,7 +1141,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
 
 		// Calculate the effective transfer speed (Bytes per second).
-		taskResult.setEffectiveTransferSpeed(Math.toIntExact(bytesTransferred * 1000
+		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
 				/ (taskResult.getCompleted().getTimeInMillis() - taskResult.getCreated().getTimeInMillis())));
 
 		// Get the file container name.
@@ -1177,7 +1178,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (result.equals(HpcDownloadResult.COMPLETED) && taskResult.getSize() != null) {
 			// Calculate the effective transfer speed (Bytes per second).
-			taskResult.setEffectiveTransferSpeed(Math.toIntExact(taskResult.getSize() * 1000
+			taskResult.setEffectiveTransferSpeed(toIntExact(taskResult.getSize() * 1000
 					/ (taskResult.getCompleted().getTimeInMillis() - taskResult.getCreated().getTimeInMillis())));
 		}
 

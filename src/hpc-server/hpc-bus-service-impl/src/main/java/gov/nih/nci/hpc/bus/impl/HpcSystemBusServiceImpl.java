@@ -10,6 +10,8 @@
  */
 package gov.nih.nci.hpc.bus.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -2431,8 +2433,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					if (transferTime <= 0) {
 						transferTime = 1;
 					}
-					registrationTask
-							.setEffectiveTransferSpeed(Math.toIntExact(metadata.getSourceSize() * 1000 / transferTime));
+					try {
+						registrationTask
+								.setEffectiveTransferSpeed(toIntExact(metadata.getSourceSize() * 1000 / transferTime));
+					} catch (ArithmeticException e) {
+						logger.info("Effective transfer speed larger than max int for task {}",
+								registrationTask.getPath());
+						registrationTask.setEffectiveTransferSpeed(Integer.MAX_VALUE);
+					}
 
 				} else {
 					// Registration still in progress. Update % complete.
