@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.service;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -205,14 +206,14 @@ public interface HpcSecurityService {
 	/**
 	 * Perform a function using user account.
 	 *
-	 * @param userId   				UserId of the user to be executed as.
-	 * @param userAccountFunction   The function to perform as user account.
-	 * @param <T>                   The class of the user account function
+	 * @param userId              UserId of the user to be executed as.
+	 * @param userAccountFunction The function to perform as user account.
+	 * @param <T>                 The class of the user account function
 	 * @return T The functional interface return type
 	 * @throws HpcException thrown by the function.
 	 */
-	public <T> T executeAsUserAccount(String userId,
-			HpcSystemAccountFunction<T> userAccountFunction) throws HpcException;
+	public <T> T executeAsUserAccount(String userId, HpcSystemAccountFunction<T> userAccountFunction)
+			throws HpcException;
 
 	/**
 	 * Authenticate a user (via LDAP).
@@ -347,4 +348,19 @@ public interface HpcSecurityService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcQueryConfiguration getQueryConfig(String basePath) throws HpcException;
+
+	/**
+	 * Add an API call record
+	 *
+	 * * @param userId The user who initiated the API call.
+	 * 
+	 * @param httpRequestMethod The HTTP request method.
+	 * @param endpoint          The API endpoint.
+	 * @param serverId          The server handled the request
+	 * @param created           The time the request was created.
+	 * @param completed         The time the request was completed.
+	 * @throws HpcException on database error.
+	 */
+	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
+			String serverId, Calendar created, Calendar completed) throws HpcException;
 }
