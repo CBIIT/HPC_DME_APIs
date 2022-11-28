@@ -79,10 +79,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			+ "order by CREATED";
 
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, RESULT = ?, MESSAGE = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
-			+ "ITEMS = ?, CREATED = ?, COMPLETED = ? "
-			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, ITEMS, "
-			+ "CREATED, COMPLETED) values (?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "when matched then update set USER_ID = ?, RESULT = ?, MESSAGE = ?, EFFECTIVE_TRANSFER_SPEED = ?, CREATED = ?, COMPLETED = ? "
+			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, CREATED, COMPLETED) values (?, ?, ?, ?, ?, ?, ?, ?) ";
+
+	private static final String UPDATE_BULK_DATA_OBJECT_REGISTRATION_RESULT_ITEMS_SQL = "update HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT set ITEMS = ? where ID = ?";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where ID = ?";
 
@@ -262,14 +262,17 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	public void upsertBulkDataObjectRegistrationResult(HpcBulkDataObjectRegistrationResult registrationResult)
 			throws HpcException {
 		try {
-			String items = toJSON(registrationResult.getItems());
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
-					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
+					registrationResult.getEffectiveTransferSpeed(), registrationResult.getCreated(),
 					registrationResult.getCompleted(), registrationResult.getId(), registrationResult.getUserId(),
 					registrationResult.getResult(), registrationResult.getMessage(),
-					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
+					registrationResult.getEffectiveTransferSpeed(), registrationResult.getCreated(),
 					registrationResult.getCompleted());
+
+			jdbcTemplate.update(UPDATE_BULK_DATA_OBJECT_REGISTRATION_RESULT_ITEMS_SQL, new Object[] {
+					new SqlLobValue(toJSON(registrationResult.getItems()), lobHandler), registrationResult.getId() },
+					new int[] { Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a bulk data object registration result: " + e.getMessage(),
