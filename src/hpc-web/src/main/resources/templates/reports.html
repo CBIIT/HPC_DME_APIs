@@ -48,6 +48,7 @@
 <script src="js/popper.min.js"></script>
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
 <script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" charset="utf8" src="js/jszip.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.html5.min.js"></script>
@@ -543,10 +544,11 @@ body.loading .overlay{
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
 				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
-				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right. 
+				noSortColumns = [9];
+				fileSizeColumns = [4,6];
 				visibleColumns = [ 1, 2, 4, 7, 9];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
-						{"targets": 4, "type": 'file-size'}, // not sortable
+						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
@@ -557,10 +559,11 @@ body.loading .overlay{
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
-				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right.
+				noSortColumns = [9];
+				fileSizeColumns = [4,6];
 				visibleColumns = [ 1, 2, 4, 7, 9];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
-						{"targets": 4, "type": 'file-size'}, // not sortable
+						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
@@ -579,13 +582,15 @@ body.loading .overlay{
 						{ "data": "data_owner", "targets": 4, "visible": true },
 						{ "data": "data_generator", "targets": 5, "visible": true },
 						{ "data": "collection_size", "targets": 6, "visible": false },
-						{ "data": "collection_size_hr", "targets": 7, "orderable": false, "visible": true },
-						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null, defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
-            "render": function ( data, type, row ) {
-                if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
-                    return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
-                }
-            }},
+						{ "data": "collection_size_hr", "targets": 7, "visible": true, type: 'file-size'}, // sort based on human readable file sizes
+						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						},
 						{ "data": "archive_summary_value", "targets": 9, "orderable": false, "visible": true},
 					];
 				exportOptions = {columns: [':not(:nth-last-child(2))'],} // Donot export the 8th column, contains button for displaying Archive Summary
