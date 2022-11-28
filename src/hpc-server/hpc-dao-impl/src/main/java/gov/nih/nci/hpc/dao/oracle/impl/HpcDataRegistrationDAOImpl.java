@@ -80,7 +80,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, RESULT = ?, MESSAGE = ?, EFFECTIVE_TRANSFER_SPEED = ?, CREATED = ?, COMPLETED = ? "
-			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, CREATED, COMPLETED) values (?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, CREATED, COMPLETED) values (?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_BULK_DATA_OBJECT_REGISTRATION_RESULT_ITEMS_SQL = "update HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT set ITEMS = ? where ID = ?";
 
