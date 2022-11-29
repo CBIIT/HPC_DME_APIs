@@ -761,13 +761,14 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
 
 		if ((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
-				&& criteria.getPath().equals("All"))) {
-			reports = generateDocOrBasepathGridReport(criteria);
+			|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
+				&& criteria.getPath().equals("All")) {
+			reports = generateGridReport(criteria);
 			return reports;
 		}
 
 		if ((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER))) {
-			reports = generateDataOwnerGridReport(criteria);
+			reports = generateGridReport(criteria);
 			return reports;
 		}
 
@@ -790,7 +791,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			for (String doc : docs) {
 				criteria.getDocs().clear();
 				if (doc.equals("All")) {
-					reports = generateDocOrBasepathGridReport(criteria);
+					reports = generateGridReport(criteria);
 				} else {
 					criteria.getDocs().add(doc);
 					HpcReport report = getReport(criteria);
@@ -815,6 +816,27 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			}
 		}
 
+		return reports;
+	}
+
+	public List<HpcReport> generateGridReport(HpcReportCriteria criteria) {
+		List<HpcReport> reports = new ArrayList<HpcReport>();
+		switch (criteria.getType()) {
+			case USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE:
+			case USAGE_SUMMARY_BY_BASEPATH:
+				reports = generateDocOrBasepathGridReport(criteria);
+				break;
+			case USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE:
+			case USAGE_SUMMARY_BY_DOC:
+				reports = generateDocOrBasepathGridReport(criteria);
+				break;
+			case USAGE_SUMMARY_BY_DATA_OWNER:
+				reports = generateDataOwnerGridReport(criteria);
+				break;
+			default:
+				logger.info("Unknown Grid type for generating reports.");
+				break;
+		}
 		return reports;
 	}
 
