@@ -1162,6 +1162,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	 * @return The Calendar instance.
 	 */
 	private Calendar toCalendar(String calendarStr) {
+		if(!StringUtils.isEmpty(calendarStr)) {
+			return null;
+		}
+		
 		Calendar cal = Calendar.getInstance();
 		try {
 			cal.setTime(dateFormat.parse(calendarStr));
