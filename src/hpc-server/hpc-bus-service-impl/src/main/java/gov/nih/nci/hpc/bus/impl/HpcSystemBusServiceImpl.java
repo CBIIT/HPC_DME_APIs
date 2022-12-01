@@ -378,7 +378,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadStreamingInProgress();
 		for (HpcDataObject dataObject : dataObjectsInProgress) {
 			String path = dataObject.getAbsolutePath();
-			logger.info("Processing data object uploaded via Streaming: {}", path);
+			logger.info("Processing data object uploaded via Streaming [streaming-stopped = {}]: {}", streamingStopped, path);
 			try {
 				if (!streamingStopped) {
 					// Get the system metadata.
@@ -2553,6 +2553,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
 			// The data object is found in archive. i.e. upload was completed successfully.
+			logger.info("Upload from S3 (Streaming / pre-sign URL) completed: {}", path);
 
 			// Update the archive data object's system-metadata.
 			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
@@ -2587,6 +2588,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			return true;
 		}
 
+		logger.info("Upload from S3 (Streaming / pre-sign URL) still in-progress: {}", path);
+		
 		return false;
 	}
 
