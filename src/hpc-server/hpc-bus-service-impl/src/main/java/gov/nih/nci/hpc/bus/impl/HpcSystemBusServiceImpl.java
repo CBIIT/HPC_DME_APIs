@@ -454,6 +454,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
+				logger.info("ERAN: {} {} {}", uploadResponse.getArchiveLocation().getFileContainerId(), uploadResponse.getArchiveLocation().getFileId(), uploadResponse.getDataTransferStarted());
+				
 				// Update the transfer status and request id.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(), null,
