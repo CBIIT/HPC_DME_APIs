@@ -454,12 +454,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
-				logger.info("ERAN: {} {} {}", uploadResponse.getArchiveLocation().getFileContainerId(), uploadResponse.getArchiveLocation().getFileId(), uploadResponse.getDataTransferStarted());
-				
 				// Update the transfer status and request id.
-				metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(), null,
-						null, null, null, null, null, null, null);
+						uploadResponse.getDataTransferStarted(), null, null, null, null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process restart upload streaming for data object:" + path, e);
