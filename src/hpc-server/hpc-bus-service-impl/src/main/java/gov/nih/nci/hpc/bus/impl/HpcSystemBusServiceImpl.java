@@ -378,7 +378,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadStreamingInProgress();
 		for (HpcDataObject dataObject : dataObjectsInProgress) {
 			String path = dataObject.getAbsolutePath();
-			logger.info("Processing data object uploaded via Streaming [streaming-stopped = {}]: {}", streamingStopped, path);
+			logger.info("Processing data object uploaded via Streaming [streaming-stopped = {}]: {}", streamingStopped,
+					path);
 			try {
 				if (!streamingStopped) {
 					// Get the system metadata.
@@ -1027,6 +1028,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// active.
 		dataManagementService.getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE)
 				.forEach(bulkRegistrationTask -> {
+					logger.info("Completing bulk registration request: {}", bulkRegistrationTask.getId());
+
 					// Update status of items in this bulk registration task.
 					bulkRegistrationTask.getItems().forEach(this::updateRegistrationItemStatus);
 
@@ -1039,12 +1042,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
 
 							} catch (HpcException e) {
-								logger.error("Failed to update data object list task: " + bulkRegistrationTask.getId());
+								logger.error("Failed to update data object list task: {}",
+										bulkRegistrationTask.getId());
 							}
 							return;
 						}
 
-						if (registrationItem.getTask().getResult()) {
+						if (Boolean.TRUE.equals(registrationItem.getTask().getResult())) {
 							completedItemsCount++;
 						}
 					}
@@ -1054,6 +1058,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					boolean result = completedItemsCount == itemsCount;
 					completeBulkDataObjectRegistrationTask(bulkRegistrationTask, result, result ? null
 							: completedItemsCount + " items registered successfully out of " + itemsCount);
+
+					logger.info("Bulk registration {} - result = {} - completed-items-count = {}",
+							bulkRegistrationTask.getId(), result, completedItemsCount);
 				});
 	}
 
@@ -2589,7 +2596,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 
 		logger.info("Upload from S3 (Streaming / pre-sign URL) still in-progress: {}", path);
-		
+
 		return false;
 	}
 
