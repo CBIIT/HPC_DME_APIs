@@ -1030,10 +1030,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				.forEach(bulkRegistrationTask -> {
 					logger.info("Completing bulk registration task: {}", bulkRegistrationTask.getId());
 
-logger.info("ERAN 1");
 					// Update status of items in this bulk registration task.
 					bulkRegistrationTask.getItems().forEach(this::updateRegistrationItemStatus);
-logger.info("ERAN 2");
+
 					// Check if registration task completed.
 					int completedItemsCount = 0;
 					for (HpcBulkDataObjectRegistrationItem registrationItem : bulkRegistrationTask.getItems()) {
@@ -1041,14 +1040,13 @@ logger.info("ERAN 2");
 							// Task still in progress. Update progress.
 							try {
 								dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
-logger.info("ERAN 3");
+
 							} catch (HpcException e) {
 								logger.error("Failed to update data object list task: {}",
 										bulkRegistrationTask.getId());
 							}
 							return;
 						}
-logger.info("ERAN 4");
 						if (Boolean.TRUE.equals(registrationItem.getTask().getResult())) {
 							completedItemsCount++;
 						}
@@ -1057,7 +1055,6 @@ logger.info("ERAN 4");
 					// Bulk registration task completed.
 					int itemsCount = bulkRegistrationTask.getItems().size();
 					boolean result = completedItemsCount == itemsCount;
-logger.info("ERAN 5");
 					completeBulkDataObjectRegistrationTask(bulkRegistrationTask, result, result ? null
 							: completedItemsCount + " items registered successfully out of " + itemsCount);
 
@@ -2446,6 +2443,11 @@ logger.info("ERAN 5");
 						registrationTask
 								.setEffectiveTransferSpeed(toIntExact(metadata.getSourceSize() * 1000 / transferTime));
 					}
+
+				} else if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.FAILED)) {
+					registrationTask.setResult(false);
+					registrationTask.setPercentComplete(null);
+
 				} else {
 					// Registration still in progress. Update % complete.
 					registrationTask.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadata));
