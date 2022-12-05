@@ -40,7 +40,7 @@ public interface HpcDataMigrationDAO {
 	 *
 	 * @param status   The data migration status to query for.
 	 * @param type     The data migration type to query for.
-	 * @param serverId The server ID to get tasks to be processed
+	 * @param serverId The server ID to get tasks to be processed.
 	 * @return A List of data migration tasks
 	 * @throws HpcException on service failure.
 	 */
@@ -109,14 +109,15 @@ public interface HpcDataMigrationDAO {
 			HpcDataMigrationResult result, String message) throws HpcException;
 
 	/**
-	 * Update the status of all data migration tasks
+	 * Update the status of all data migration tasks.
 	 *
-	 * @param fromStatus Only update tasks in this status
-	 * @param inProcess  The in-process value to set
+	 * @param fromStatus Only update tasks in this status.
+	 * @param inProcess  The in-process value to set.
+	 * @param serverId The server ID to update task status for.
 	 * @param toStatus   The status to set
 	 * @throws HpcException on database error.
 	 */
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess,
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess, String serverId,
 			HpcDataMigrationStatus toStatus) throws HpcException;
 
 	/**

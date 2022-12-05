@@ -110,4 +110,14 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 					dataObjectMigrationTask.getId(), e);
 		}
 	}
+	
+	@Override
+	public void transferProgressed(long bytesTransferred) {
+		//try {
+			//dataMigrationService.updateDataObjectDownloadTask(dataObjectMigrationTask, bytesTransferred);
+
+		//} catch (HpcException e) {
+		//	logger.error("Failed to update Streaming download task progress", e);
+		//}
+	}
 }
