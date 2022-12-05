@@ -110,14 +110,15 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 					dataObjectMigrationTask.getId(), e);
 		}
 	}
-	
+
 	@Override
 	public void transferProgressed(long bytesTransferred) {
-		//try {
-			//dataMigrationService.updateDataObjectDownloadTask(dataObjectMigrationTask, bytesTransferred);
+		try {
+			dataMigrationService.updateDataMigrationTaskProgress(dataObjectMigrationTask, bytesTransferred);
 
-		//} catch (HpcException e) {
-		//	logger.error("Failed to update Streaming download task progress", e);
-		//}
+		} catch (HpcException e) {
+			logger.error("Failed to update a migration task progress for {} [task-id: {}]",
+					dataObjectMigrationTask.getPath(), dataObjectMigrationTask.getId(), e);
+		}
 	}
 }
