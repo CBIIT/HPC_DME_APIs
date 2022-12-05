@@ -132,6 +132,7 @@ body.loading{
 body.loading .overlay{
     display: block;
 }
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -290,6 +291,7 @@ body.loading .overlay{
 									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
 							</div>
 							<div class="col-md-5">&nbsp;</div>
+							<div id="dataownerspinner" class="overlay"></div>
 						</div>
 					</div> <!-- Second Row end -->
 					<div class="row">
@@ -362,7 +364,7 @@ body.loading .overlay{
 						<div class="col-md-12">&nbsp;</div>
 					</div>
 
-					<table id="report_grid" class="display" style="width:100%">
+					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
 						<thead>
 							<tr id='attrRow0'>
@@ -372,6 +374,7 @@ body.loading .overlay{
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
+						<!-- div id="dataownerspinner" class="overlay"></div-->
 						<tbody>
 							<tr id='attrCol0' th:each="report : ${reports}">
 							   <td id='index1'></td>
@@ -394,7 +397,7 @@ body.loading .overlay{
 				<!-- Start Data Owner Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
-					<table id="report_grid" class="display" style="width:100%">
+					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
 						<thead>
 							<tr id='attrRow2'>
@@ -407,7 +410,6 @@ body.loading .overlay{
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
-            <div class="overlay"></div>
 						<tbody>
 							<tr id='attrCol2' th:each="report : ${reports}">
 							   <td id='index01'></td>
@@ -563,11 +565,11 @@ body.loading .overlay{
 		var fromDate = document.getElementById("fromDate").value;
 		var toDate = document.getElementById("toDate").value;
 		var messageTopDateRange = reportHeaderTitle + "  (Date Range: " +  fromDate + "-" + toDate + ")";
- 
-	    var table = $('#report_grid').DataTable( {
+	    var table = $('#' + 'reportgrid').DataTable( {
 				responsive: true,
 				dom: 'Blfrtip',
 				fixedHeader: true,
+				//processing: $("#dataownerspinner").show(),
 				buttons: [
 				{
 					extend: 'copyHtml5',
@@ -585,15 +587,20 @@ body.loading .overlay{
 					exportOptions: exportOptions
 				},
 				{
-          extend: 'colvis',
-          text: 'Show/Hide Columns',
-          titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
-          columns: showHideCols
-        },
+					extend: 'colvis',
+					text: 'Show/Hide Columns',
+					titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
+					columns: showHideCols
+				},
 				],
 				"order": [[ 1, 'asc' ]],
 				"columnDefs": colDefs,
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
+				"initComplete": function() {
+					$("body").removeClass("loading");
+					//$("#dataownerspinner").hide();
+					$(this).show();
+				},
 			} );
 	    
 			table.on( 'order.dt search.dt', function () {
@@ -614,52 +621,37 @@ body.loading .overlay{
 			column.visible( ! column.visible() );
 		} );
 
-	    $('#report_grid tbody').on('click', 'button', function () {
+	    $('#reportgrid tbody').on('click', 'button', function () {
 			var data = table.row($(this).parents('tr')).data();
 			var tr = $(this).closest('tr');
 			var row = table.row(tr);
-      if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
-        //Change or disable icon
-      } else {
-        let archiveSummary = "";
-        let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
-        $.ajax({
-          type: 'GET',
-          url: uri,
-          dataType: 'json'
-        }).done(function (result) {
-          if(result.message != null && result.message != "") {
-            archiveSummary = JSON.stringify(result.message);
-            let archiveSummaryStr = archiveSummary.slice(1, -1);
-            data.archive_summary_value = archiveSummaryStr;
-          } else {
-            data.archive_summary_value = "NA";
-          }
-          table.cell(row.index(), 9).data(data.archive_summary_value);
-          table.cell(row.index(), 8).data("");
-        });
-	    }
+			if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
+				//Change or disable icon
+			} else {
+				$("#dataownerspinner").show();
+				let archiveSummary = "";
+				let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
+				$.ajax({
+					type: 'GET',
+					url: uri,
+					dataType: 'json'
+				}).done(function (result) {
+					$("#dataownerspinner").hide();
+					if(result.message != null && result.message != "") {
+						archiveSummary = JSON.stringify(result.message);
+						let archiveSummaryStr = archiveSummary.slice(1, -1);
+						data.archive_summary_value = archiveSummaryStr;
+					} else {
+						data.archive_summary_value = "NA";
+					}
+					table.cell(row.index(), 9).data(data.archive_summary_value);
+					table.cell(row.index(), 8).data("");
+				});
+			}
 		});
 	});
 
-	/* Formatting function for row details showing Archive Summary */
-	function format(archiveSummary) {
-		let archiveSummaryStr = archiveSummary.slice(1, -1);
-		var splitStr = archiveSummaryStr.split(",");
-		var output = "<table cellpadding='5' border='0' width='100%'>"
-		output+= "<tr>" + "<td width='70%'>&nbsp;</td>" + "<td><b>Vault</b></td>" + "<td><b>Bucket</b></td>" + "<td><b>Size</b></td>" + "</tr>";
-		for(x=0;x < splitStr.length-1; x++){
-			if(x % 3 == 0) {
-				output+= "<tr>" + "<td width='70%'>&nbsp;</td>";
-			}
-			output+= "<td>" + splitStr[x] + "</td>";
-			if( (x + 1) % 3 == 0) {
-				output+= "</tr>";
-			}
-		}
-		output += "</table>";
-	    return  output;
-	}
+
   // Spinner for Ajax
   $(document).on({
       ajaxStart: function(){
@@ -737,8 +729,8 @@ body.loading .overlay{
     	var pathEle = document.getElementById("collectionPath");
       	var selectedValue = reportType;
       	if(selected != reportType) {
-      		$('#fromDate').datepicker('setDate', '01/01/2016');
-      		$('#toDate').datepicker('setDate', new Date());
+			$('#fromDate').datepicker('setDate', '01/01/2016');
+			$('#toDate').datepicker('setDate', new Date());
       	}
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
       	{
@@ -893,6 +885,7 @@ body.loading .overlay{
 				$("#path").val(updatedPath);
 			}
 		}
+		$("#dataownerspinner").show();
 		document.getElementById("reportsform").submit();
       }
 
