@@ -460,6 +460,26 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	}
 
 	@Override
+	public void updateDataMigrationTaskProgress(HpcDataMigrationTask dataMigrationTask, long bytesTransferred)
+			throws HpcException {
+		// Input validation.
+		if (dataMigrationTask == null || !HpcDataMigrationType.DATA_OBJECT.equals(dataMigrationTask.getType())
+				|| dataMigrationTask.getSize() <= 0 || bytesTransferred <= 0
+				|| bytesTransferred > dataMigrationTask.getSize()) {
+			return;
+		}
+
+		// Calculate the percent complete.
+		dataMigrationTask.setPercentComplete(Math.round(100 * (float) bytesTransferred / dataMigrationTask.getSize()));
+
+		// Persist.
+		dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+
+		logger.info("Migration task: {} - % complete - {}", dataMigrationTask.getId(),
+				dataMigrationTask.getPercentComplete());
+	}
+
+	@Override
 	public boolean markInProcess(HpcDataMigrationTask dataObjectMigrationTask, boolean inProcess) throws HpcException {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
