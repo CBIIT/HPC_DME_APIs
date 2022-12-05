@@ -158,6 +158,16 @@ public interface HpcDataMigrationService {
 	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException;
 
 	/**
+	 * Update a migration task progress (percent complete)
+	 *
+	 * @param dataMigrationTask The migration task.
+	 * @param bytesTransferred  The bytes transferred so far.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateDataMigrationTaskProgress(HpcDataMigrationTask dataMigrationTask, long bytesTransferred)
+			throws HpcException;
+
+	/**
 	 * Mark a migration task that is in a RECEIVED state 'in-process', so that the
 	 * task can be started. This enables multiple threads to read off of the
 	 * migration task
