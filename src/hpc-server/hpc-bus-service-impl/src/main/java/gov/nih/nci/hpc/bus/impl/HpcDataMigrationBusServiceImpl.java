@@ -401,8 +401,10 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
 		}
 		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-			throw new HpcException("Object is not in archived state yet. It is in "
-					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+			throw new HpcException(
+					"Data Object [" + path + "] is not in archived state yet. It is in "
+							+ metadata.getDataTransferStatus().value() + " state",
+					HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
 
 		return metadata;
@@ -564,7 +566,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(path,
 						userId, null, null,
 						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
-						collectionMigrationTaskId, alignArchivePath);
+						collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize());
 				dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
 						HpcDataMigrationResult.IGNORED, "Invalid migration request: " + e.getMessage(), null, null);
 				migrationResponse.setTaskId(dataObjectMigrationTask.getId());
@@ -578,7 +580,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		migrationResponse.setTaskId(dataMigrationService.createDataObjectMigrationTask(path, userId,
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
 				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
-				collectionMigrationTaskId, alignArchivePath).getId());
+				collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize()).getId());
 
 		return migrationResponse;
 	}

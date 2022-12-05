@@ -38,12 +38,13 @@ public interface HpcDataMigrationService {
 	 * @param alignArchivePath             If true, the file is moved within its
 	 *                                     current archive to align w/ the iRODs
 	 *                                     path.
+	 * @param size                         The data object size.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath) throws HpcException;
+			boolean alignArchivePath, long size) throws HpcException;
 
 	/**
 	 * Get a list of migration tasks in specific status and type.
@@ -112,9 +113,8 @@ public interface HpcDataMigrationService {
 	 * @param configurationId            The The data object configuration ID.
 	 * @param toS3ArchiveConfigurationId The migration target S3 archive
 	 *                                   configuration ID.
-	 *                                   @param alignArchivePath             If true, the file is moved within its
-	 *                                     current archive to align w/ the iRODs
-	 *                                     path.
+	 * @param alignArchivePath           If true, the file is moved within its
+	 *                                   current archive to align w/ the iRODs path.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
