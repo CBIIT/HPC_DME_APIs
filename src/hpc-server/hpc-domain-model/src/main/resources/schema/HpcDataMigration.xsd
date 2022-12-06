@@ -54,6 +54,8 @@
 				<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="serverId" type="xsd:string" />
 				<xsd:element name="alignArchivePath" type="xsd:boolean" />
+				<xsd:element name="percentComplete" type="xsd:int" />
+				<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
