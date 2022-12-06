@@ -57,9 +57,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	// SQL Queries.
 	private static final String UPSERT_DATA_MIGRATION_TASK_SQL = "merge into HPC_DATA_MIGRATION_TASK using dual on (ID = ?) "
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
-			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ? "
+			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, PERCENT_COMPLETE = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
-			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED, ALIGN_ARCHIVE_PATH) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED, ALIGN_ARCHIVE_PATH, DATA_SIZE, PERCENT_COMPLETE) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -67,15 +67,15 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, RESULT = ?, CREATED = ?, COMPLETED = ?, MESSAGE = ?, "
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, FROM_S3_ARCHIVE_LOCATION_FILE_ID = ?, "
-			+ "TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, TO_S3_ARCHIVE_LOCATION_FILE_ID = ?, SERVER_ID = ?, ALIGN_ARCHIVE_PATH = ? "
+			+ "TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, TO_S3_ARCHIVE_LOCATION_FILE_ID = ?, SERVER_ID = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, RESULT, CREATED, COMPLETED, MESSAGE, FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, "
-			+ "FROM_S3_ARCHIVE_LOCATION_FILE_ID, TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, TO_S3_ARCHIVE_LOCATION_FILE_ID, SERVER_ID, ALIGN_ARCHIVE_PATH) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "FROM_S3_ARCHIVE_LOCATION_FILE_ID, TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, TO_S3_ARCHIVE_LOCATION_FILE_ID, SERVER_ID, ALIGN_ARCHIVE_PATH, DATA_SIZE) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
-	private static final String SET_DATA_MIGRATION_TASKS_STATUS_SQL = "update HPC_DATA_MIGRATION_TASK set STATUS = ?, IN_PROCESS = ? where STATUS = ?";
+	private static final String SET_DATA_MIGRATION_TASKS_STATUS_SQL = "update HPC_DATA_MIGRATION_TASK set STATUS = ?, IN_PROCESS = ? where STATUS = ? and SERVER_ID = ?";
 
 	private static final String DELETE_DATA_MIGRATION_TASK_SQL = "delete from HPC_DATA_MIGRATION_TASK where ID = ?";
 
@@ -123,6 +123,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		dataMigrationTask.setInProcess(rs.getBoolean("IN_PROCESS"));
 		dataMigrationTask.setServerId(rs.getString("SERVER_ID"));
 		dataMigrationTask.setAlignArchivePath(rs.getBoolean("ALIGN_ARCHIVE_PATH"));
+		dataMigrationTask.setPercentComplete(rs.getInt("PERCENT_COMPLETE"));
+		dataMigrationTask.setSize(rs.getLong("DATA_SIZE"));
 
 		Calendar created = Calendar.getInstance();
 		created.setTime(rs.getTimestamp("CREATED"));
@@ -177,12 +179,14 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
 					dataMigrationTask.getStatus().value(), dataMigrationTask.getCreated(),
-					dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getId(), dataMigrationTask.getParentId(),
+					dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getSize(),
+					dataMigrationTask.getPercentComplete(), dataMigrationTask.getId(), dataMigrationTask.getParentId(),
 					dataMigrationTask.getUserId(), dataMigrationTask.getPath(), dataMigrationTask.getConfigurationId(),
 					dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
 					dataMigrationTask.getStatus().value(), dataMigrationTask.getCreated(),
-					dataMigrationTask.getAlignArchivePath());
+					dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getSize(),
+					dataMigrationTask.getPercentComplete());
 
 			jdbcTemplate.update(UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL,
 					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler),
@@ -298,14 +302,16 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					result.value(), dataMigrationTask.getCreated(), completed, message,
 					fromS3ArchiveLocation.getFileContainerId(), fromS3ArchiveLocation.getFileId(),
 					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId(),
-					dataMigrationTask.getServerId(), dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getId(),
-					dataMigrationTask.getParentId(), dataMigrationTask.getUserId(), dataMigrationTask.getPath(),
-					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
+					dataMigrationTask.getServerId(), dataMigrationTask.getAlignArchivePath(),
+					dataMigrationTask.getSize(), dataMigrationTask.getId(), dataMigrationTask.getParentId(),
+					dataMigrationTask.getUserId(), dataMigrationTask.getPath(), dataMigrationTask.getConfigurationId(),
+					dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
 					result.value(), dataMigrationTask.getCreated(), completed, message,
 					fromS3ArchiveLocation.getFileContainerId(), fromS3ArchiveLocation.getFileId(),
 					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId(),
-					dataMigrationTask.getServerId(), dataMigrationTask.getAlignArchivePath());
+					dataMigrationTask.getServerId(), dataMigrationTask.getAlignArchivePath(),
+					dataMigrationTask.getSize());
 
 			logger.info("upserted result[{}]: {} {}-{}", dataMigrationTask.getType(), dataMigrationTask.getId(),
 					result.value(), message);
@@ -328,10 +334,11 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	}
 
 	@Override
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess,
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess, String serverId,
 			HpcDataMigrationStatus toStatus) throws HpcException {
 		try {
-			jdbcTemplate.update(SET_DATA_MIGRATION_TASKS_STATUS_SQL, toStatus.value(), inProcess, fromStatus.value());
+			jdbcTemplate.update(SET_DATA_MIGRATION_TASKS_STATUS_SQL, toStatus.value(), inProcess, fromStatus.value(),
+					serverId);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to update data migration tasks status: " + e.getMessage(),
