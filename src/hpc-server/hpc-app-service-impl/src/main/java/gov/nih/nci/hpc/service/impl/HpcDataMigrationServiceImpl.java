@@ -387,7 +387,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0, 
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
 	}
 
@@ -476,6 +476,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 			// Persist.
 			dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+
+			if (!StringUtils.isEmpty(dataMigrationTask.getParentId())) {
+				// Update the parent migration task percent complete.
+				dataMigrationDAO.updateBulkDataMigrationTaskPercentComplete(dataMigrationTask.getParentId());
+			}
 
 			logger.debug("Migration task: {} - % complete - {}", dataMigrationTask.getId(),
 					dataMigrationTask.getPercentComplete());
