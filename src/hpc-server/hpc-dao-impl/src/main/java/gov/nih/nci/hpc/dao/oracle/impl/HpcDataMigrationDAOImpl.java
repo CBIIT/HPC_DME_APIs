@@ -95,6 +95,12 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String SET_MIGRATION_TASK_SERVER_ID_SQL = "update HPC_DATA_MIGRATION_TASK set SERVER_ID = ? where ID = ?";
 
+	private static final String UPDATE_BULK_MIGRATION_TASK_PERCENT_COMPLETE_SQL = "update HPC_DATA_MIGRATION_TASK set PERCENT_COMPLETE = "
+			+ "(select FLOOR(sum(transferred) / sum(total)) * 100 from "
+			+ "(select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? "
+			+ "union all select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(PERCENT_COMPLETE / 100 * DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK where PARENT_ID = ?)) "
+			+ "where ID = ? and STATUS = ? and TYPE != ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -382,6 +388,18 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to set a data migration task w/ server-id value: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void updateBulkDataMigrationTaskPercentComplete(String id) throws HpcException {
+		try {
+			jdbcTemplate.update(UPDATE_BULK_MIGRATION_TASK_PERCENT_COMPLETE_SQL, id, id, id,
+					HpcDataMigrationStatus.IN_PROGRESS.value(), HpcDataMigrationType.DATA_OBJECT.value());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to update bulk data migration percent complete: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
