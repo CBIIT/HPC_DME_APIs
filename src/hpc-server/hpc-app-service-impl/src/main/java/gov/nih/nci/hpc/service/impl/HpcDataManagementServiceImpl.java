@@ -947,7 +947,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		int effectiveTransferSpeed = 0;
 		int completedItems = 0;
 		for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
-			if (Boolean.TRUE.equals(item.getTask().getResult()) && item.getRequest().getLinkSourcePath() == null) {
+			if (Boolean.TRUE.equals(item.getTask().getResult()) && item.getRequest().getLinkSourcePath() == null
+					&& item.getTask().getEffectiveTransferSpeed() != null) {
 				effectiveTransferSpeed += item.getTask().getEffectiveTransferSpeed();
 				completedItems++;
 			}
