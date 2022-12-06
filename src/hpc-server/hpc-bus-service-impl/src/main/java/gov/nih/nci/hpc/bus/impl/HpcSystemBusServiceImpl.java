@@ -378,7 +378,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadStreamingInProgress();
 		for (HpcDataObject dataObject : dataObjectsInProgress) {
 			String path = dataObject.getAbsolutePath();
-			logger.info("Processing data object uploaded via Streaming: {}", path);
+			logger.info("Processing data object uploaded via Streaming [streaming-stopped = {}]: {}", streamingStopped,
+					path);
 			try {
 				if (!streamingStopped) {
 					// Get the system metadata.
@@ -455,9 +456,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getConfigurationId());
 
 				// Update the transfer status and request id.
-				metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(), null,
-						null, null, null, null, null, null, null);
+						uploadResponse.getDataTransferStarted(), null, null, null, null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process restart upload streaming for data object:" + path, e);
@@ -1027,6 +1028,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// active.
 		dataManagementService.getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE)
 				.forEach(bulkRegistrationTask -> {
+					logger.info("Completing bulk registration task: {}", bulkRegistrationTask.getId());
+
 					// Update status of items in this bulk registration task.
 					bulkRegistrationTask.getItems().forEach(this::updateRegistrationItemStatus);
 
@@ -1039,12 +1042,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
 
 							} catch (HpcException e) {
-								logger.error("Failed to update data object list task: " + bulkRegistrationTask.getId());
+								logger.error("Failed to update data object list task: {}",
+										bulkRegistrationTask.getId());
 							}
 							return;
 						}
-
-						if (registrationItem.getTask().getResult()) {
+						if (Boolean.TRUE.equals(registrationItem.getTask().getResult())) {
 							completedItemsCount++;
 						}
 					}
@@ -1054,6 +1057,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					boolean result = completedItemsCount == itemsCount;
 					completeBulkDataObjectRegistrationTask(bulkRegistrationTask, result, result ? null
 							: completedItemsCount + " items registered successfully out of " + itemsCount);
+
+					logger.info("Bulk registration task {} - result = {} - completed-items-count = {}",
+							bulkRegistrationTask.getId(), result, completedItemsCount);
 				});
 	}
 
@@ -2428,19 +2434,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Calculate the effective transfer speed. Note: there is no transfer in
 					// registration w/
 					// link
-					long transferTime = metadata.getDataTransferCompleted().getTimeInMillis()
-							- metadata.getDataTransferStarted().getTimeInMillis();
-					if (transferTime <= 0) {
-						transferTime = 1;
-					}
-					try {
+					if (metadata.getDataTransferCompleted() != null && metadata.getDataTransferStarted() != null) {
+						long transferTime = metadata.getDataTransferCompleted().getTimeInMillis()
+								- metadata.getDataTransferStarted().getTimeInMillis();
+						if (transferTime <= 0) {
+							transferTime = 1;
+						}
 						registrationTask
 								.setEffectiveTransferSpeed(toIntExact(metadata.getSourceSize() * 1000 / transferTime));
-					} catch (ArithmeticException e) {
-						logger.info("Effective transfer speed larger than max int for task {}",
-								registrationTask.getPath());
-						registrationTask.setEffectiveTransferSpeed(Integer.MAX_VALUE);
 					}
+
+				} else if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.FAILED)) {
+					registrationTask.setResult(false);
+					registrationTask.setPercentComplete(null);
 
 				} else {
 					// Registration still in progress. Update % complete.
@@ -2553,6 +2559,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
 			// The data object is found in archive. i.e. upload was completed successfully.
+			logger.info("Upload from S3 (Streaming / pre-sign URL) completed: {}", path);
 
 			// Update the archive data object's system-metadata.
 			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
@@ -2586,6 +2593,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			return true;
 		}
+
+		logger.info("Upload from S3 (Streaming / pre-sign URL) still in-progress: {}", path);
 
 		return false;
 	}
