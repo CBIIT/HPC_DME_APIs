@@ -75,7 +75,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
-	private static final String SET_DATA_MIGRATION_TASKS_STATUS_SQL = "update HPC_DATA_MIGRATION_TASK set STATUS = ?, IN_PROCESS = ? where STATUS = ? and SERVER_ID = ?";
+	private static final String SET_DATA_MIGRATION_TASKS_STATUS_SQL = "update HPC_DATA_MIGRATION_TASK set STATUS = ?, IN_PROCESS = ?, PERCENT_COMPLETE = ? where STATUS = ? and SERVER_ID = ?";
 
 	private static final String DELETE_DATA_MIGRATION_TASK_SQL = "delete from HPC_DATA_MIGRATION_TASK where ID = ?";
 
@@ -335,10 +335,10 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	@Override
 	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess, String serverId,
-			HpcDataMigrationStatus toStatus) throws HpcException {
+			int percentComplete, HpcDataMigrationStatus toStatus) throws HpcException {
 		try {
-			jdbcTemplate.update(SET_DATA_MIGRATION_TASKS_STATUS_SQL, toStatus.value(), inProcess, fromStatus.value(),
-					serverId);
+			jdbcTemplate.update(SET_DATA_MIGRATION_TASKS_STATUS_SQL, toStatus.value(), inProcess, percentComplete,
+					fromStatus.value(), serverId);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to update data migration tasks status: " + e.getMessage(),

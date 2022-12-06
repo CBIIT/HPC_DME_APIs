@@ -385,9 +385,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
 		}
 
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false, serverId,
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId,
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0, 
 				HpcDataMigrationStatus.RECEIVED);
 	}
 
@@ -470,13 +470,16 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		}
 
 		// Calculate the percent complete.
-		dataMigrationTask.setPercentComplete(Math.round(100 * (float) bytesTransferred / dataMigrationTask.getSize()));
+		int percentComplete = Math.round(100 * (float) bytesTransferred / dataMigrationTask.getSize());
+		if (percentComplete != dataMigrationTask.getPercentComplete()) {
+			dataMigrationTask.setPercentComplete(percentComplete);
 
-		// Persist.
-		dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+			// Persist.
+			dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
 
-		logger.info("Migration task: {} - % complete - {}", dataMigrationTask.getId(),
-				dataMigrationTask.getPercentComplete());
+			logger.debug("Migration task: {} - % complete - {}", dataMigrationTask.getId(),
+					dataMigrationTask.getPercentComplete());
+		}
 	}
 
 	@Override
