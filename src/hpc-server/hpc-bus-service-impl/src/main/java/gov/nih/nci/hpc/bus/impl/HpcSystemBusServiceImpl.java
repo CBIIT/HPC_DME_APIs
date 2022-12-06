@@ -2425,7 +2425,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Registration w/ link completed.
 					registrationTask.setResult(true);
 
-				} else if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+				} else if (HpcDataTransferUploadStatus.ARCHIVED.equals(metadata.getDataTransferStatus())) {
 					// Registration completed successfully for this item.
 					registrationTask.setResult(true);
 					registrationTask.setCompleted(metadata.getDataTransferCompleted());
@@ -2444,7 +2444,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								.setEffectiveTransferSpeed(toIntExact(metadata.getSourceSize() * 1000 / transferTime));
 					}
 
-				} else if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.FAILED)) {
+				} else if (HpcDataTransferUploadStatus.FAILED.equals(metadata.getDataTransferStatus())) {
 					registrationTask.setResult(false);
 					registrationTask.setPercentComplete(null);
 
