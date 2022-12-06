@@ -149,4 +149,13 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void setDataMigrationTaskServerId(String id, String serverId) throws HpcException;
+
+	/**
+	 * Update a bulk data migration precent complete.
+	 *
+	 * @param id The bulk data migration task ID (collection, list of objects, list
+	 *           of collections)
+	 * @throws HpcException on database error.
+	 */
+	public void updateBulkDataMigrationTaskPercentComplete(String id) throws HpcException;
 }
