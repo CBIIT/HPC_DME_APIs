@@ -401,8 +401,10 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
 		}
 		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-			throw new HpcException("Object is not in archived state yet. It is in "
-					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+			throw new HpcException(
+					"Data Object [" + path + "] is not in archived state yet. It is in "
+							+ metadata.getDataTransferStatus().value() + " state",
+					HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
 
 		return metadata;
