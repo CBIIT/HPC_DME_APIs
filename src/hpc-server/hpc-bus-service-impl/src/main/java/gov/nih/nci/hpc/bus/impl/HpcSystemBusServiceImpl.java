@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -164,6 +165,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// Max download tasks that can be in-process for a user
 	@Value("${hpc.bus.maxPermittedInProcessDownloadTasksPerUser}")
 	private int maxPermittedInProcessDownloadTasksPerUser = 0;
+
+	// Max number of files in pre-signed url upload to process in one run of the
+	// scheduled task. This is a temp solution
+	@Value("${hpc.bus.maxDataTranferUploadInProgressWithGeneratedUrlToProcess}")
+	private int maxDataTranferUploadInProgressWithGeneratedUrlToProcess = 0;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -322,7 +328,25 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the data objects that their data transfer is in-progress.
 		List<HpcDataObject> dataObjectsInProgress = dataManagementService
 				.getDataTranferUploadInProgressWithGeneratedURL();
-		for (HpcDataObject dataObject : dataObjectsInProgress) {
+
+		// This is a temporary solution (HPCDATAMGM-1696).
+		// We sort the list of data objects in reveresed order and pick the top
+		// 'maxDataTranferUploadInProgressWithGeneratedUrlToProcess'
+		int size = dataObjectsInProgress.size();
+		logger.info("{} data object uploads via URL to process. Max allowed - {}", size,
+				maxDataTranferUploadInProgressWithGeneratedUrlToProcess);
+		dataObjectsInProgress.sort((HpcDataObject dataObject1, HpcDataObject dataObject2) -> dataObject1
+				.getAbsolutePath().compareTo(dataObject2.getAbsolutePath()));
+		Collections.reverse(dataObjectsInProgress);
+
+		int toIndex = 0;
+		if (size > 0) {
+			toIndex = dataObjectsInProgress.size() > maxDataTranferUploadInProgressWithGeneratedUrlToProcess
+					? maxDataTranferUploadInProgressWithGeneratedUrlToProcess - 1
+					: size - 1;
+		}
+
+		for (HpcDataObject dataObject : dataObjectsInProgress.subList(0, toIndex)) {
 			String path = dataObject.getAbsolutePath();
 			logger.info("Processing data object uploaded via URL: {}", path);
 
