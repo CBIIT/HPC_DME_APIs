@@ -330,23 +330,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				.getDataTranferUploadInProgressWithGeneratedURL();
 
 		// This is a temporary solution (HPCDATAMGM-1696).
-		// We sort the list of data objects in reveresed order and pick the top
+		// We sort the list of data objects in reversed order and pick the top
 		// 'maxDataTranferUploadInProgressWithGeneratedUrlToProcess'
-		int size = dataObjectsInProgress.size();
-		logger.info("{} data object uploads via URL to process. Max allowed - {}", size,
+		logger.info("{} data object uploads via URL to process. Max allowed - {}", dataObjectsInProgress.size(),
 				maxDataTranferUploadInProgressWithGeneratedUrlToProcess);
 		dataObjectsInProgress.sort((HpcDataObject dataObject1, HpcDataObject dataObject2) -> dataObject1
 				.getAbsolutePath().compareTo(dataObject2.getAbsolutePath()));
 		Collections.reverse(dataObjectsInProgress);
 
-		int toIndex = 0;
-		if (size > 0) {
-			toIndex = dataObjectsInProgress.size() > maxDataTranferUploadInProgressWithGeneratedUrlToProcess
-					? maxDataTranferUploadInProgressWithGeneratedUrlToProcess - 1
-					: size - 1;
-		}
-
-		for (HpcDataObject dataObject : dataObjectsInProgress.subList(0, toIndex)) {
+		for (HpcDataObject dataObject : dataObjectsInProgress.subList(0,
+				Math.min(dataObjectsInProgress.size(), maxDataTranferUploadInProgressWithGeneratedUrlToProcess))) {
 			String path = dataObject.getAbsolutePath();
 			logger.info("Processing data object uploaded via URL: {}", path);
 
