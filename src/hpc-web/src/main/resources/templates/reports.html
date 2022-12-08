@@ -535,7 +535,7 @@ body.loading .overlay{
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
-				reportHeaderTitle = "DME Data Owner Summary Report";
+				reportHeaderTitle = "DME Data Owner Report";
 				colDefs = [
 						{ "data": "index",   "targets": 0, "searchable": false, "orderable": false, "visible": true},
 						{ "data": "doc",  "targets": 1, "visible": true },
@@ -580,7 +580,8 @@ body.loading .overlay{
 				},
 				{
 					extend: 'excelHtml5',
-					title: exportFileName,
+					filename: exportFileName,
+					title: null,
 					text: 'Excel',
 					messageTop: messageTopDateRange,
 					titleAttr: 'Export to Excel',
