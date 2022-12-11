@@ -353,6 +353,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getS3ArchiveConfigurationId())) {
 					// The data object was not found in archive. i.e. user did not complete the
 					// upload and the upload URL has expired.
+					logger.info("Upload URL expired [transfer-started: {}, config-id: {}, s3-config-id: {}] - {}",
+							systemGeneratedMetadata.getDataTransferStarted(),
+							systemGeneratedMetadata.getConfigurationId(),
+							systemGeneratedMetadata.getS3ArchiveConfigurationId(), path);
 
 					// Delete the data object.
 					dataManagementService.delete(path, true);
