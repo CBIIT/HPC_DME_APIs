@@ -1162,7 +1162,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	 * @return The Calendar instance.
 	 */
 	private Calendar toCalendar(String calendarStr) {
-		if(!StringUtils.isEmpty(calendarStr)) {
+		if(StringUtils.isEmpty(calendarStr)) {
 			return null;
 		}
 		
