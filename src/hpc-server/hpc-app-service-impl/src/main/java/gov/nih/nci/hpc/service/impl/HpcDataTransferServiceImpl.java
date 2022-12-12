@@ -1882,7 +1882,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public boolean uploadURLExpired(Calendar urlCreated, String configurationId, String s3ArchiveConfigurationId) {
 		if (urlCreated == null || StringUtils.isEmpty(configurationId)) {
-			return true;
+			logger.error("url-created {} or config-id {} is null", urlCreated, configurationId);
+			return false;
 		}
 
 		// Get the URL expiration period (in hours) from the configuration.
@@ -1894,7 +1895,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} catch (HpcException e) {
 			logger.error("Failed to get URL expiration from config", e);
-			return true;
+			return false;
 		}
 
 		// Calculate the expiration time.
