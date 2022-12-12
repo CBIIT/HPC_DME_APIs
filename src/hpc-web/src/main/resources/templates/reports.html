@@ -116,6 +116,12 @@ label {
   padding-top: 6px;
 }
 
+.select2-container .select2-selection--single {height: 33px; width:100% !important;}
+
+.select2-search--dropdown .select2-search__field {
+ width: 98%;
+ }
+
 .overlay{
     display: none;
     position: fixed;
@@ -179,11 +185,11 @@ body.loading .overlay{
 					
 					<!-- First Row Begin -->
 					<div class="row">
-						<div class="col-6 col-md-3">
+						<div class="col-md-2">
 							<label><b>Report Type:</b></label>
 							<select name="reportType" id="reportType" class="form-control"
 								onchange="show(this.value)">
-								<option value="-1">----Select----</option>
+								<option value="-1">---Select Report Type---</option>
 
 								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
 								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
@@ -194,31 +200,31 @@ body.loading .overlay{
 								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
 							</select>
 						</div>
-						<div class="col-6 col-md-1">&nbsp;</div>
+						<div class="col-md-1">&nbsp;</div>
 						<div style="display: none" id="docList">
-							<div class="col-6 col-md-2">
-								<label><b>DOC:</b></label>
-								<select size="1"
-									id="doc" name="doc" class="form-control"
-									th:required="required">
-										<option value="-1">----------Select----------</option>
-										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
-										<option
-											th:each="entry : ${docs}"
-											th:value="${entry}" th:text="${entry}" 
-											th:selected="${reportRequest.getDoc() == entry}">
-											Wireframe</option>
-								</select>
+							<div class="col-md-4">
+								<label for="doc"><b>DOC:</b>
+									<select size="1"
+										id="doc" name="doc" class="docList" style="width: 100%"
+										th:required="required">
+											<option></option>
+											<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
+											<option
+												th:each="entry : ${docs}"
+												th:value="${entry}" th:text="${entry}" 
+												th:selected="${reportRequest.getDoc() == entry}">
+												Wireframe</option>
+									</select>
+								</label>
 							</div>
-							<div class="col-6 col-md-4">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
+							<div class="col-md-5">&nbsp;&nbsp;</div>
 						</div>
 						
 						<div style="display: none" id="userList">
-							<div class="col-6 col-md-4">
+							<div class="col-md-4">
 								<label for="user"><b>Users:</b>
 								<select size="1"
-									id="user" name="user" class="userSelect">
+									id="user" name="user" class="userSelect" style="width: 100%">
 										<option></option>
 										<option
 											th:each="entry : ${docUsers}"
@@ -228,15 +234,15 @@ body.loading .overlay{
 								</select>
 								</label>
 							</div>
-							<div class="col-6 col-md-4">&nbsp;</div>
+							<div class="col-md-5">&nbsp;</div>
 						</div>
 						<div style="display: none" id="basepathList">
-							<div class="col-6 col-md-3">
+							<div class="col-md-4">
 								<label><b>Base Path:</b></label>
 								<select size="1"
-									id="basepath" name="basepath" class="form-control"
+									id="basepath" name="basepath" class="basepathList" style="width: 75%"
 									th:required="required">
-										<option value="-1">------------------Select------------------</option>
+										<option></option>
 										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
 										<option
 											th:each="entry : ${basepaths}"
@@ -245,10 +251,10 @@ body.loading .overlay{
 											Wireframe</option>
 								</select>
 							</div>
-							<div class="col-6 col-md-5">&nbsp;&nbsp;</div>
+							<div class="col-md-5">&nbsp;&nbsp;</div>
 						</div>
 						<div style="display: none" id="collectionPath">
-							<div class="col-6 col-md-6">
+							<div class="col-6 col-md-7">
 								<label><b>Collection Path:</b></label>
 								<input type="text" name="path" id="id_collection_path" class="form-control" th:value="${reportRequest.getPath()}" size="75"/>
 							</div>
@@ -668,8 +674,13 @@ body.loading .overlay{
 		$('.userSelect').select2({
 			width: 'auto',
 			dropdownAutoWidth: true,
-			//allowClear: true,
 			placeholder: '-----------------Select User-----------------'
+		});
+		$(".docList").select2({
+			placeholder: "--Select DOC--",
+		});
+		$(".basepathList").select2({
+			placeholder: "----------Select Base Path----------",
 		});
 	});
 		
