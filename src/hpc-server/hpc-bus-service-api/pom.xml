@@ -53,5 +53,10 @@
 			<artifactId>hpc-dto</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpc-domain-model</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>

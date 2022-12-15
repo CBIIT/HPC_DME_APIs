@@ -44,7 +44,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -206,7 +205,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Transfer the data file.
 				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
 						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null, null,
-						false, null, null, path, systemGeneratedMetadata.getObjectId(),
+						false, null, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
@@ -348,7 +347,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					.getDataObjectSystemGeneratedMetadata(path);
 
 			try {
-				if (!updateS3UploadStatus(path, systemGeneratedMetadata) && dataTransferService.uploadURLExpired(
+				// Complete a single-part-upload. Note that multi-part and
+				// single-part-with-completion, the user is making an API
+				// call to complete the registration.
+				boolean uploadCompleted = false;
+				HpcDataTransferUploadMethod dataTransferMathod = systemGeneratedMetadata.getDataTransferMethod();
+				if (HpcDataTransferUploadMethod.URL_SINGLE_PART.equals(dataTransferMathod)) {
+					uploadCompleted = dataManagementBusService.completeS3Upload(path, systemGeneratedMetadata);
+				}
+
+				if (!uploadCompleted && dataTransferService.uploadURLExpired(
 						systemGeneratedMetadata.getDataTransferStarted(), systemGeneratedMetadata.getConfigurationId(),
 						systemGeneratedMetadata.getS3ArchiveConfigurationId())) {
 					// The data object was not found in archive. i.e. user did not complete the
@@ -357,6 +365,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							systemGeneratedMetadata.getDataTransferStarted(),
 							systemGeneratedMetadata.getConfigurationId(),
 							systemGeneratedMetadata.getS3ArchiveConfigurationId(), path);
+
+					if (HpcDataTransferUploadMethod.URL_SINGLE_PART_WITH_COMPLETION.equals(dataTransferMathod)
+							|| HpcDataTransferUploadMethod.URL_MULTI_PART.equals(dataTransferMathod)) {
+						// Attempting to complete the upload for multi-part and
+						// single-part-with-completion on behalf of the user (this should be done via
+						// API call)
+						uploadCompleted = dataManagementBusService.completeS3Upload(path, systemGeneratedMetadata);
+						logger.info("URL expired for {} upload. Attempted to complete for the user result: {} - {}",
+								dataTransferMathod, uploadCompleted, path);
+						if (uploadCompleted) {
+							continue;
+						}
+					}
 
 					// Delete the data object.
 					dataManagementService.delete(path, true);
@@ -408,7 +429,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							.getDataObjectSystemGeneratedMetadata(path);
 
 					// Check if the S3 upload completed, and update upload status accordingly.
-					updateS3UploadStatus(path, systemGeneratedMetadata);
+					dataManagementBusService.completeS3Upload(path, systemGeneratedMetadata);
 				} else {
 					// Streaming stopped (server shutdown). We just update the status accordingly.
 					logger.info("Upload streaming stopped for: {}", path);
@@ -472,7 +493,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
 						toGoogleCloudStorageUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
-						null, null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+						null, null, false, null, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
@@ -2561,66 +2582,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	/**
-	 * Check if an upload from S3 (either via URL upload or streaming) has
-	 * completed.
-	 *
-	 * @param path                    The path of the data object to check if an
-	 *                                upload from S3 completed.
-	 * @param systemGeneratedMetadata The system generated metadata for the data
-	 *                                object.
-	 * @return true if the uploaded completed, or false otherwise.
-	 * @throws HpcException If failed to check/update upload status.
-	 */
-	private boolean updateS3UploadStatus(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata)
-			throws HpcException {
-		// Lookup the archive for this data object.
-		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
-				systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
-				systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
-
-		if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
-			// The data object is found in archive. i.e. upload was completed successfully.
-			logger.info("Upload from S3 (Streaming / pre-sign URL) completed: {}", path);
-
-			// Update the archive data object's system-metadata.
-			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
-					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
-					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-					systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
-
-			// Update the data management (iRODS) data object's system-metadata.
-			Calendar dataTransferCompleted = Calendar.getInstance();
-
-			Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null
-					&& objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS)
-							? Calendar.getInstance()
-							: null;
-			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
-					HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
-					archivePathAttributes.getSize(), null, null, objectMetadata.getDeepArchiveStatus(),
-					deepArchiveDate);
-
-			// Add an event if needed.
-			if (systemGeneratedMetadata.getRegistrationEventRequired()) {
-				addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path,
-						HpcDataTransferUploadStatus.ARCHIVED, systemGeneratedMetadata.getSourceLocation(),
-						dataTransferCompleted, systemGeneratedMetadata.getDataTransferType(),
-						systemGeneratedMetadata.getConfigurationId(), HpcDataTransferType.S_3);
-			}
-
-			// Record a registration result.
-			systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
-			dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, true, null);
-
-			return true;
-		}
-
-		logger.info("Upload from S3 (Streaming / pre-sign URL) still in-progress: {}", path);
-
-		return false;
-	}
-
-	/**
 	 * Upload a list data object files that are located on the local DME server file
 	 * system to the archive.
 	 *
@@ -2705,7 +2666,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Transfer the data file from the temporary archive / File system into the
 			// archive.
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
-					null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+					null, file, false, null, null, null, path, systemGeneratedMetadata.getObjectId(),
 					systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 					systemGeneratedMetadata.getConfigurationId());
 
