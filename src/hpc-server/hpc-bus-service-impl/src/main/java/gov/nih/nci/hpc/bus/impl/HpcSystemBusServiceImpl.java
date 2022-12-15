@@ -351,8 +351,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// single-part-with-completion, the user is making an API
 				// call to complete the registration.
 				boolean uploadCompleted = false;
-				if (HpcDataTransferUploadMethod.URL_SINGLE_PART
-						.equals(systemGeneratedMetadata.getDataTransferMethod())) {
+				HpcDataTransferUploadMethod dataTransferMathod = systemGeneratedMetadata.getDataTransferMethod();
+				if (HpcDataTransferUploadMethod.URL_SINGLE_PART.equals(dataTransferMathod)) {
 					uploadCompleted = dataManagementBusService.completeS3Upload(path, systemGeneratedMetadata);
 				}
 
@@ -361,6 +361,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getS3ArchiveConfigurationId())) {
 					// The data object was not found in archive. i.e. user did not complete the
 					// upload and the upload URL has expired.
+
+					if (HpcDataTransferUploadMethod.URL_SINGLE_PART_WITH_COMPLETION.equals(dataTransferMathod)
+							|| HpcDataTransferUploadMethod.URL_MULTI_PART.equals(dataTransferMathod)) {
+						// Attempting to complete the upload for multi-part and
+						// single-part-with-completion on behalf of the user (this should be done via
+						// API call)
+						uploadCompleted = dataManagementBusService.completeS3Upload(path, systemGeneratedMetadata);
+						logger.info("URL expired for {} upload. Attempted to complete for the user result: {} - {}",
+								dataTransferMathod, uploadCompleted, path);
+						if (uploadCompleted) {
+							continue;
+						}
+					}
 
 					// Delete the data object.
 					dataManagementService.delete(path, true);
