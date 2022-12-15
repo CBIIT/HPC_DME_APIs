@@ -189,7 +189,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (uploadParts == 1) {
 				// Generate an upload request URL for the caller to use to upload directly.
 				return generateUploadRequestURL(authenticatedToken, archiveDestinationLocation,
-						uploadRequestURLExpiration, metadataEntries, uploadRequest.getUploadRequestURLChecksum(), storageClass);
+						uploadRequestURLExpiration, metadataEntries, uploadRequest.getUploadRequestURLChecksum(),
+						storageClass, Optional.ofNullable(uploadRequest.getUploadCompletion()).orElse(false));
 			} else {
 				return generateMultipartUploadRequestURLs(authenticatedToken, archiveDestinationLocation,
 						uploadRequestURLExpiration, uploadParts, metadataEntries, storageClass);
@@ -860,13 +861,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 *                                   attach to the generated url.
 	 * @param storageClass               (Optional) The storage class to upload the
 	 *                                   file.
+	 * @param uploadCompletion           An indicator whether the user will call an
+	 *                                   API to complete the registration once the
+	 *                                   file is uploaded via the generated URL.
 	 * @return A data object upload response containing the upload request URL.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	private HpcDataObjectUploadResponse generateUploadRequestURL(Object authenticatedToken,
-			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, 
-			List<HpcMetadataEntry> metadataEntries, String uploadRequestURLChecksum, String storageClass)
-			throws HpcException {
+			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration,
+			List<HpcMetadataEntry> metadataEntries, String uploadRequestURLChecksum, String storageClass,
+			boolean uploadCompletion) throws HpcException {
 
 		// Calculate the URL expiration date.
 		Date expiration = new Date();
@@ -879,7 +883,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Add the storage class.
 		generatePresignedUrlRequest.addRequestParameter(Headers.STORAGE_CLASS, storageClass);
-		
+
 		// Add user metadata.
 		if (metadataEntries != null) {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
@@ -906,7 +910,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		uploadResponse.setDataTransferRequestId(String.valueOf(generatePresignedUrlRequest.hashCode()));
 		uploadResponse.setUploadRequestURL(url.toString());
 		uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
-		uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.URL_SINGLE_PART);
+		uploadResponse
+				.setDataTransferMethod(uploadCompletion ? HpcDataTransferUploadMethod.URL_SINGLE_PART_WITH_COMPLETION
+						: HpcDataTransferUploadMethod.URL_SINGLE_PART);
 
 		return uploadResponse;
 	}
@@ -1191,7 +1197,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @return read limit
 	 */
 	private int getReadLimit(long fileSize) {
-			return toIntExact(fileSize + 1);
+		return toIntExact(fileSize + 1);
 	}
 
 	/**
@@ -1208,9 +1214,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				// Check if this is a directory. Use V2 listObjects API.
 				ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
 						.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId());
-				ListObjectsV2Result objectsList = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-						.listObjectsV2(listObjectsRequest);
-						
+				ListObjectsV2Result objectsList = s3Connection.getTransferManager(authenticatedToken)
+						.getAmazonS3Client().listObjectsV2(listObjectsRequest);
+
 				return objectsList.getKeyCount() > 0 || !objectsList.getObjectSummaries().isEmpty();
 
 			} catch (AmazonServiceException ase) {

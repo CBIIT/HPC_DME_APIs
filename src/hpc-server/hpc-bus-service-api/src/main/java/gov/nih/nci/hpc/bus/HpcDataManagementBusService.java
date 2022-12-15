@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import java.io.File;
 
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -316,7 +317,20 @@ public interface HpcDataManagementBusService {
 			String userName, String configurationId, boolean registrationEventRequired) throws HpcException;
 
 	/**
-	 * Complete S3 multipart upload for a Data Object.
+	 * Complete an upload from S3 (either via URL upload or streaming). Checks if the data object is present in the S3 archive
+	 * and update the data management system accordingly.
+	 *
+	 * @param path                    The path of the data object to check if an
+	 *                                upload from S3 completed.
+	 * @param systemGeneratedMetadata The system generated metadata for the data
+	 *                                object.
+	 * @return true if the uploaded completed, or false otherwise (i.e. the data object upload is still in progress).
+	 * @throws HpcException If failed to check/update upload status.
+	 */
+	public boolean completeS3Upload(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata) throws HpcException;
+		
+	/**
+	 * Complete S3 URL upload for a Data Object.
 	 *
 	 * @param path                           The data object path.
 	 * @param completeMultipartUploadRequest The multipart upload completion request
@@ -324,7 +338,7 @@ public interface HpcDataManagementBusService {
 	 * @return A DTO w/ checksum of the uploaded data object
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCompleteMultipartUploadResponseDTO completeMultipartUpload(String path,
+	public HpcCompleteMultipartUploadResponseDTO completeUrlUpload(String path,
 			HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) throws HpcException;
 
 	/**
