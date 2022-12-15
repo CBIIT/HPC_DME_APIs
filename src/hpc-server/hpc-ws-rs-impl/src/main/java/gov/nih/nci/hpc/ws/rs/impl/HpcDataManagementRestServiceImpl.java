@@ -411,7 +411,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		HpcCompleteMultipartUploadResponseDTO responseDTO = null;
 
 		try {
-			responseDTO = dataManagementBusService.completeMultipartUpload(toNormalizedPath(path),
+			// Note that the completion of upload w/ URL was extended to single part URLs.
+			// However, for now - we kept the endpoint as-is and it will be updated in a
+			// future change
+			responseDTO = dataManagementBusService.completeUrlUpload(toNormalizedPath(path),
 					completeMultipartUploadRequest);
 
 		} catch (HpcException e) {
