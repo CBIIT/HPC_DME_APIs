@@ -296,9 +296,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
-			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
-			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
-			throws HpcException {
+			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
+			String uploadRequestURLChecksum, String path, String dataObjectId, String userId, String callerObjectId,
+			String configurationId) throws HpcException {
 		// Input Validation. One and only one of the first 6 parameters is expected to
 		// be provided.
 
@@ -434,8 +434,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (uploadParts != null && uploadParts < 1) {
 				throw new HpcException("Invalid upload parts: " + uploadParts, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-		} else if (uploadParts != null) {
-			throw new HpcException("Upload parts provided w/o request to generate upload URL",
+		} else if (uploadParts != null || uploadCompletion != null) {
+			throw new HpcException("Upload parts or completion provided w/o request to generate upload URL",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -464,6 +464,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
 		uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
 		uploadRequest.setUploadParts(uploadParts);
+		uploadRequest.setUploadCompletion(uploadCompletion);
 		if (pathAttributes != null) {
 			uploadRequest.setSourceSize(pathAttributes.getSize());
 			uploadRequest.setSourcePermissions(pathAttributes.getPermissions());

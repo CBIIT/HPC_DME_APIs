@@ -126,6 +126,8 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="checksum" type="xsd:string" />
+				<xsd:element name="registrationCompletion" type="xsd:boolean" />
+				<xsd:element name="registrationCompletionMessage" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

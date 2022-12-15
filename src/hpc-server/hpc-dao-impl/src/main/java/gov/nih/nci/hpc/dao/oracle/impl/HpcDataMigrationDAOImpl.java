@@ -96,7 +96,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	private static final String SET_MIGRATION_TASK_SERVER_ID_SQL = "update HPC_DATA_MIGRATION_TASK set SERVER_ID = ? where ID = ?";
 
 	private static final String UPDATE_BULK_MIGRATION_TASK_PERCENT_COMPLETE_SQL = "update HPC_DATA_MIGRATION_TASK set PERCENT_COMPLETE = "
-			+ "(select FLOOR(sum(transferred) / sum(total)) * 100 from "
+			+ "(select FLOOR(sum(transferred) / sum(total) * 100) from "
 			+ "(select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? "
 			+ "union all select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(PERCENT_COMPLETE / 100 * DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK where PARENT_ID = ?)) "
 			+ "where ID = ? and STATUS = ? and TYPE != ?";
