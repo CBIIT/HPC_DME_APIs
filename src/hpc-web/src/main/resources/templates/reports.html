@@ -499,8 +499,8 @@ body.loading .overlay{
 		var showHideCols = [];
 		switch (reportType) {
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
-				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
+				exportFileName= pretag + "Base_Path" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all Base Paths";
 				noSortColumns = [9];
 				fileSizeColumns = [4,6];
 				visibleColumns = [ 1, 2, 4, 7, 9];
@@ -514,8 +514,8 @@ body.loading .overlay{
 				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
-				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
+				exportFileName= pretag + "DOC" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
 				noSortColumns = [9];
 				fileSizeColumns = [4,6];
 				visibleColumns = [ 1, 2, 4, 7, 9];
