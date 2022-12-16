@@ -54,6 +54,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.SetBucketLifecycleConfigurationRequest;
 import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter;
@@ -385,16 +386,35 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// List all the files and directories (including nested) under this directory.
 			ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
 					.withBucketName(directoryLocation.getFileContainerId()).withPrefix(directoryLocation.getFileId());
-			s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().listObjectsV2(listObjectsRequest)
-					.getObjectSummaries().forEach(s3ObjectSummary -> {
-						if (s3ObjectSummary.getSize() > 0) {
-							HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
-							directoryScanItem.setFilePath(s3ObjectSummary.getKey());
-							directoryScanItem.setFileName(FilenameUtils.getName(s3ObjectSummary.getKey()));
-							directoryScanItem.setLastModified(dateFormat.format(s3ObjectSummary.getLastModified()));
-							directoryScanItems.add(directoryScanItem);
-						}
-					});
+
+			ListObjectsV2Result listObjectsResult = s3Connection.getTransferManager(authenticatedToken)
+					.getAmazonS3Client().listObjectsV2(listObjectsRequest);
+			List<S3ObjectSummary> s3Objects = listObjectsResult.getObjectSummaries();
+
+			// Paginate through all results.
+			while (listObjectsResult.isTruncated()) {
+				String continuationToken = listObjectsResult.getNextContinuationToken();
+				listObjectsRequest.setContinuationToken(continuationToken);
+				listObjectsResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+						.listObjectsV2(listObjectsRequest);
+				if (continuationToken.equals(listObjectsResult.getNextContinuationToken())) {
+					// Pagination over list objects is not working w/ Cleversafe storage, we keep
+					// getting the same set of results. This code is to protect against infinite
+					// loop.
+					break;
+				}
+				s3Objects.addAll(listObjectsResult.getObjectSummaries());
+			}
+
+			s3Objects.forEach(s3ObjectSummary -> {
+				if (s3ObjectSummary.getSize() > 0) {
+					HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
+					directoryScanItem.setFilePath(s3ObjectSummary.getKey());
+					directoryScanItem.setFileName(FilenameUtils.getName(s3ObjectSummary.getKey()));
+					directoryScanItem.setLastModified(dateFormat.format(s3ObjectSummary.getLastModified()));
+					directoryScanItems.add(directoryScanItem);
+				}
+			});
 
 			return directoryScanItems;
 
