@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.bus;
 
+import java.util.Calendar;
+
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
@@ -242,4 +244,18 @@ public interface HpcSecurityBusService {
 	 */
 	public void refreshDataManagementConfigurations() throws HpcException;
 
+	/**
+	 * Add an API call record
+	 *
+	 * * @param userId The user who initiated the API call.
+	 * 
+	 * @param httpRequestMethod The HTTP request method.
+	 * @param endpoint          The API endpoint.
+	 * @param serverId          The server handled the request
+	 * @param created           The time the request was created.
+	 * @param completed         The time the request was completed.
+	 * @throws HpcException on database error.
+	 */
+	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
+			String serverId, Calendar created, Calendar completed) throws HpcException;
 }
