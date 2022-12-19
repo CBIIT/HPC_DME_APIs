@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
 import static gov.nih.nci.hpc.util.HpcUtil.fromValue;
+import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
@@ -295,9 +296,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
-			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
-			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
-			throws HpcException {
+			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
+			String uploadRequestURLChecksum, String path, String dataObjectId, String userId, String callerObjectId,
+			String configurationId) throws HpcException {
 		// Input Validation. One and only one of the first 6 parameters is expected to
 		// be provided.
 
@@ -433,8 +434,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (uploadParts != null && uploadParts < 1) {
 				throw new HpcException("Invalid upload parts: " + uploadParts, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-		} else if (uploadParts != null) {
-			throw new HpcException("Upload parts provided w/o request to generate upload URL",
+		} else if (uploadParts != null || uploadCompletion != null) {
+			throw new HpcException("Upload parts or completion provided w/o request to generate upload URL",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -463,6 +464,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
 		uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
 		uploadRequest.setUploadParts(uploadParts);
+		uploadRequest.setUploadCompletion(uploadCompletion);
 		if (pathAttributes != null) {
 			uploadRequest.setSourceSize(pathAttributes.getSize());
 			uploadRequest.setSourcePermissions(pathAttributes.getPermissions());
@@ -1140,7 +1142,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
 
 		// Calculate the effective transfer speed (Bytes per second).
-		taskResult.setEffectiveTransferSpeed(Math.toIntExact(bytesTransferred * 1000
+		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
 				/ (taskResult.getCompleted().getTimeInMillis() - taskResult.getCreated().getTimeInMillis())));
 
 		// Get the file container name.
@@ -1177,7 +1179,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (result.equals(HpcDownloadResult.COMPLETED) && taskResult.getSize() != null) {
 			// Calculate the effective transfer speed (Bytes per second).
-			taskResult.setEffectiveTransferSpeed(Math.toIntExact(taskResult.getSize() * 1000
+			taskResult.setEffectiveTransferSpeed(toIntExact(taskResult.getSize() * 1000
 					/ (taskResult.getCompleted().getTimeInMillis() - taskResult.getCreated().getTimeInMillis())));
 		}
 
@@ -1881,7 +1883,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public boolean uploadURLExpired(Calendar urlCreated, String configurationId, String s3ArchiveConfigurationId) {
 		if (urlCreated == null || StringUtils.isEmpty(configurationId)) {
-			return true;
+			logger.error("url-created {} or config-id {} is null", urlCreated, configurationId);
+			return false;
 		}
 
 		// Get the URL expiration period (in hours) from the configuration.
@@ -1893,7 +1896,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} catch (HpcException e) {
 			logger.error("Failed to get URL expiration from config", e);
-			return true;
+			return false;
 		}
 
 		// Calculate the expiration time.

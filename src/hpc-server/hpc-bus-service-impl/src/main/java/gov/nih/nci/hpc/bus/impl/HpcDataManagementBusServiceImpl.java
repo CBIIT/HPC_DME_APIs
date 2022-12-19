@@ -57,6 +57,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -966,14 +967,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 								dataObjectRegistration.getExtractedMetadataEntries(), configurationId, collectionType);
 					}
 
-					// Validate source location exists and accessible.
-					HpcPathAttributes pathAttributes = dataTransferService.validateUploadSourceFileLocation(
-							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
-							dataObjectRegistration.getGoogleDriveUploadSource(),
-							dataObjectRegistration.getGoogleCloudStorageUploadSource(),
-							dataObjectRegistration.getFileSystemUploadSource(), dataObjectFile,
-							configurationId);
-
 					// Transfer the data file.
 					uploadResponse = dataTransferService.uploadDataObject(
 							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
@@ -981,6 +974,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							dataObjectRegistration.getGoogleCloudStorageUploadSource(),
 							dataObjectRegistration.getFileSystemUploadSource(), dataObjectFile,
 							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
+							dataObjectRegistration.getUploadCompletion(),
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
 							configurationId);
@@ -1080,10 +1074,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Update metadata and optionally re-generate upload URL (if data was not
 			// uploaded yet).
-			HpcDataObjectUploadResponse uploadResponse = Optional
-					.ofNullable(updateDataObject(path, dataObjectRegistration.getMetadataEntries(), collectionType,
-							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
-							dataObjectRegistration.getChecksum(), userId, dataObjectRegistration.getCallerObjectId()))
+			HpcDataObjectUploadResponse uploadResponse = Optional.ofNullable(updateDataObject(path,
+					dataObjectRegistration.getMetadataEntries(), collectionType, generateUploadRequestURL,
+					dataObjectRegistration.getUploadParts(), dataObjectRegistration.getUploadCompletion(),
+					dataObjectRegistration.getChecksum(), userId, dataObjectRegistration.getCallerObjectId()))
 					.orElse(new HpcDataObjectUploadResponse());
 			responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 			responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
@@ -1100,7 +1094,55 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcCompleteMultipartUploadResponseDTO completeMultipartUpload(String path,
+	public boolean completeS3Upload(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata)
+			throws HpcException {
+		// Lookup the archive for this data object.
+		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
+				systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
+				systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+
+		if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
+			// The data object is found in archive. i.e. upload was completed successfully.
+
+			// Update the archive data object's system-metadata.
+			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
+					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
+					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+					systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+
+			// Update the data management (iRODS) data object's system-metadata.
+			Calendar dataTransferCompleted = Calendar.getInstance();
+
+			Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null
+					&& objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS)
+							? Calendar.getInstance()
+							: null;
+			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
+					HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
+					archivePathAttributes.getSize(), null, null, objectMetadata.getDeepArchiveStatus(),
+					deepArchiveDate);
+
+			// Add an event if needed.
+			if (Boolean.TRUE.equals(systemGeneratedMetadata.getRegistrationEventRequired())) {
+				HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
+						.getDataManagementConfiguration(systemGeneratedMetadata.getConfigurationId());
+				eventService.addDataTransferUploadArchivedEvent(systemGeneratedMetadata.getRegistrarId(), path,
+						systemGeneratedMetadata.getSourceLocation(), dataTransferCompleted, null, null,
+						dataManagementConfiguration.getDoc());
+			}
+
+			// Record a registration result.
+			systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
+			dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, true, null);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public HpcCompleteMultipartUploadResponseDTO completeUrlUpload(String path,
 			HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) throws HpcException {
 		// input validation.
 		if (completeMultipartUploadRequest == null) {
@@ -1116,12 +1158,39 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
-		// Complete the multipart upload.
+		if (!HpcDataTransferUploadStatus.URL_GENERATED.equals(metadata.getDataTransferStatus())) {
+			throw new HpcException("URL upload completion request is invalid for data transfer status: "
+					+ metadata.getDataTransferStatus(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Upload w/ URL completion is only for multipart or single-part-with-completion
+		// uploads.
+		HpcDataTransferUploadMethod dataTransferMethod = metadata.getDataTransferMethod();
+		if (!HpcDataTransferUploadMethod.URL_MULTI_PART.equals(dataTransferMethod)
+				&& !HpcDataTransferUploadMethod.URL_SINGLE_PART_WITH_COMPLETION.equals(dataTransferMethod)) {
+			throw new HpcException("URL upload completion request is invalid for upload method: " + dataTransferMethod,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		HpcCompleteMultipartUploadResponseDTO responseDTO = new HpcCompleteMultipartUploadResponseDTO();
-		responseDTO.setChecksum(dataTransferService.completeMultipartUpload(metadata.getArchiveLocation(),
-				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
-				completeMultipartUploadRequest.getMultipartUploadId(),
-				completeMultipartUploadRequest.getUploadPartETags()));
+		responseDTO.setRegistrationCompletion(false);
+
+		// Complete the multipart upload into the archive.
+		if (HpcDataTransferUploadMethod.URL_MULTI_PART.equals(metadata.getDataTransferMethod())) {
+			responseDTO.setChecksum(dataTransferService.completeMultipartUpload(metadata.getArchiveLocation(),
+					metadata.getDataTransferType(), metadata.getConfigurationId(),
+					metadata.getS3ArchiveConfigurationId(), completeMultipartUploadRequest.getMultipartUploadId(),
+					completeMultipartUploadRequest.getUploadPartETags()));
+		}
+
+		// Complete the data object registration w/ the data management system.
+		try {
+			responseDTO.setRegistrationCompletion(completeS3Upload(path, metadata));
+
+		} catch (HpcException e) {
+			logger.error("Failed to complete S3 upload: {}", path, e);
+			responseDTO.setRegistrationCompletionMessage(e.getMessage());
+		}
 
 		return responseDTO;
 	}
@@ -2753,14 +2822,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					throw new HpcException("Null / Empty from/to folder in directory scan folder map",
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
-				pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
-				if (directoryScanRegistrationItem.getS3ScanDirectory() != null
-						|| directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
-					// The 'path' in S3 and Google Cloud Storage(which is really object key) don't
-					// start with a '/', so need to remove it after normalization.
-					pathMap.setFromPath(pathMap.getFromPath().substring(1));
+				if (pathMap.getRegexPathMap() == null) {
+					pathMap.setRegexPathMap(false);
 				}
-				pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
+
+				if (!Boolean.TRUE.equals(pathMap.getRegexPathMap())) {
+					pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
+					if (directoryScanRegistrationItem.getS3ScanDirectory() != null
+							|| directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null) {
+						// The 'path' in S3 and Google Cloud Storage(which is really object key) don't
+						// start with a '/', so need to remove it after normalization.
+						pathMap.setFromPath(pathMap.getFromPath().substring(1));
+					}
+					pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
+				}
 			}
 
 			// Get the configuration ID.
@@ -2878,7 +2953,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// path).
 		String scanItemFilePath = scanItem.getFilePath();
 		if (pathMap != null) {
-			scanItemFilePath = scanItemFilePath.replace(pathMap.getFromPath(), pathMap.getToPath());
+			scanItemFilePath = Boolean.TRUE.equals(pathMap.getRegexPathMap())
+					? scanItemFilePath.replaceAll(pathMap.getFromPath(), pathMap.getToPath())
+					: scanItemFilePath.replace(pathMap.getFromPath(), pathMap.getToPath());
 		}
 
 		// Calculate the data object path to register.
@@ -2945,25 +3022,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Update data object metadata and optionally re-generate upload request URL.
 	 *
-	 * @param path                     The data object path.
-	 * @param metadataEntries          The list of metadata entries to update.
-	 * @param collectionType           The type of collection containing the data
-	 *                                 object.
-	 * @param generateUploadRequestURL Indicator whether to re-generate the request
-	 *                                 upload URL.
-	 * @param uploadParts(Optional)    The number of parts when generating upload
-	 *                                 request URL.
-	 * @param checksum                 The data object checksum provided to check
-	 *                                 upload integrity.
-	 * @param userId                   The userId updating the data object.
-	 * @param callerObjectId           The caller's object ID.
+	 * @param path                       The data object path.
+	 * @param metadataEntries            The list of metadata entries to update.
+	 * @param collectionType             The type of collection containing the data
+	 *                                   object.
+	 * @param generateUploadRequestURL   Indicator whether to re-generate the
+	 *                                   request upload URL.
+	 * @param uploadParts(Optional)      The number of parts when generating upload
+	 *                                   request URL.
+	 * @param uploadCompletion(Optional) An indicator whether the user will call an
+	 *                                   API to complete the upload.
+	 * @param checksum                   The data object checksum provided to check
+	 *                                   upload integrity.
+	 * @param userId                     The userId updating the data object.
+	 * @param callerObjectId             The caller's object ID.
 	 * @return HpcDataObjectUploadResponse w/generated URL or multipart upload URLs
 	 *         if such generated, otherwise null.
 	 * @throws HpcException on service failure.
 	 */
 	private HpcDataObjectUploadResponse updateDataObject(String path, List<HpcMetadataEntry> metadataEntries,
-			String collectionType, boolean generateUploadRequestURL, Integer uploadParts, String checksum,
-			String userId, String callerObjectId) throws HpcException {
+			String collectionType, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
+			String checksum, String userId, String callerObjectId) throws HpcException {
 		// Get the metadata for this data object.
 		HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(path);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
@@ -3001,8 +3080,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Re-generate the upload request URL.
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
-					null, null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId,
-					callerObjectId, systemGeneratedMetadata.getConfigurationId());
+					null, null, true, uploadParts, uploadCompletion, checksum, path,
+					systemGeneratedMetadata.getObjectId(), userId, callerObjectId,
+					systemGeneratedMetadata.getConfigurationId());
 
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
