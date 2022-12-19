@@ -131,6 +131,8 @@
 		
 		<prop key="hpc.ws.rs.auth.restrictedIPAddress"></prop>
 		<prop key="hpc.ws.rs.auth.metadataOnlyUsers"></prop>
+		
+		<prop key="hpc.service.serverId">server-id</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

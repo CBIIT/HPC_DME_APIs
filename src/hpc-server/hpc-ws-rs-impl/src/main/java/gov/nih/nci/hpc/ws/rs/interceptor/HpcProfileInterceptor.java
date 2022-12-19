@@ -8,6 +8,9 @@
  */
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
+import java.util.Calendar;
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.message.Message;
@@ -17,6 +20,7 @@ import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -36,6 +40,7 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 	// The attribue name to save the service invoke time.
 	private static String SERVICE_INVOKE_TIME_MC_ATTRIBUTE = "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceInvokeTime";
 	private static String SERVICE_URI_MC_ATTRIBUTE = "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceURI";
+	private static String SERVICE_METHOD_MC_ATTRIBUTE = "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceMethod";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -47,6 +52,10 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 	// The Security Business Service instance.
 	@Autowired
 	private HpcSecurityBusService securityBusService = null;
+
+	// A configured ID representing the server performing a migration task.
+	@Value("${hpc.service.serverId}")
+	private String serverId = null;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -105,12 +114,13 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 			HttpServletRequest request = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
 
 			// Construct a string w/ the service URI.
-			String serviceURI = request.getMethod() + " " + request.getRequestURI()
+			String serviceURI = request.getRequestURI()
 					+ (request.getQueryString() != null ? "?" + request.getQueryString() : "");
 
-			logger.info("RS called: {}", serviceURI);
+			logger.info("RS called: {} {}", request.getMethod(), serviceURI);
 			message.getExchange().put(SERVICE_INVOKE_TIME_MC_ATTRIBUTE, System.currentTimeMillis());
 			message.getExchange().put(SERVICE_URI_MC_ATTRIBUTE, serviceURI);
+			message.getExchange().put(SERVICE_METHOD_MC_ATTRIBUTE, request.getMethod());
 
 		} else if (phase.equals(Phase.SEND_ENDING)) {
 
@@ -131,10 +141,30 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 
 			// Log the service completion time
 			Long startTime = (Long) message.getExchange().get(SERVICE_INVOKE_TIME_MC_ATTRIBUTE);
+			Long completedTime = System.currentTimeMillis();
 			String serviceURI = (String) message.getExchange().get(SERVICE_URI_MC_ATTRIBUTE);
+			String serviceMethod = (String) message.getExchange().get(SERVICE_METHOD_MC_ATTRIBUTE);
 			if (startTime != null && serviceURI != null) {
-				logger.info("RS completed: {} - Service execution time: {} milliseconds. RS invoker: {}", serviceURI,
-						System.currentTimeMillis() - startTime, serviceInvoker);
+				logger.info("RS completed: {} {} - Service execution time: {} milliseconds. RS invoker: {}",
+						serviceMethod, serviceURI, completedTime - startTime, serviceInvoker);
+			}
+
+			// Add an API call audit record
+			Calendar created = Calendar.getInstance();
+			created.setTimeInMillis(startTime);
+
+			Calendar completed = Calendar.getInstance();
+			completed.setTimeInMillis(completedTime);
+
+			String responseCode = Optional.ofNullable(message.get(Message.RESPONSE_CODE)).orElse("Unknown").toString();
+			String userId = authenticationResponse != null ? authenticationResponse.getUserId() : "Unknown";
+
+			try {
+				securityBusService.addApiCallAuditRecord(userId, serviceMethod, serviceURI, responseCode, serverId,
+						created, completed);
+
+			} catch (HpcException e) {
+				logger.info("failed to add API call audit record", e);
 			}
 		}
 	}
