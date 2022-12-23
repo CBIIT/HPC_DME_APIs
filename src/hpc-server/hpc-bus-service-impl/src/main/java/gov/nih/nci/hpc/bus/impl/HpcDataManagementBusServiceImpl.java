@@ -1485,8 +1485,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setSize(taskStatus.getDataObjectDownloadTask().getSize());
 			downloadStatus.setRestoreInProgress(taskStatus.getDataObjectDownloadTask().getDataTransferStatus()
 					.equals(HpcDataTransferDownloadStatus.RESTORE_REQUESTED));
-			downloadStatus.setStagingInProgress(HpcDataTransferType.GLOBUS
-					.equals(taskStatus.getDataObjectDownloadTask().getDestinationType())
+			downloadStatus.setStagingInProgress(Boolean.FALSE.equals(downloadStatus.getRestoreInProgress())
+					&& HpcDataTransferType.GLOBUS.equals(taskStatus.getDataObjectDownloadTask().getDestinationType())
 					&& HpcDataTransferType.S_3.equals(taskStatus.getDataObjectDownloadTask().getDataTransferType())
 							? true
 							: null);
