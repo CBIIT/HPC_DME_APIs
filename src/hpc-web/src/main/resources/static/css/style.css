@@ -541,7 +541,7 @@ ul.sidebar-menu li.active a i {
 
 .logoImg {
   max-width: 600px;
-  height: 82px;
+  height: 62px;
 }
 
 .header {
@@ -1921,7 +1921,7 @@ div[data-role="editor-toolbar"] {
 
 #main-content {
 	position: absolute;
-    top: 130px;
+    top: 125px;
     bottom: 0px;
     overflow: auto;
     width: 100%;
