@@ -120,6 +120,9 @@
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>My Searches</strong>
 								</h2>
+							</div>
+							<!--panel-body start-->
+							<div class="panel-body">
 								<div id="grid1" ui-grid="gridOptions1" class="grid">
 									<div class="no-data" ng-hide="!searchesloading">
 										<div class="msg">
@@ -129,10 +132,12 @@
 									</div>
 								</div>
 							</div>
+
 						</div>
 
 					</div>
 					<!--/col-->
+
 				</div>
 				<div class="row">
 					<div class="col-lg-9 col-md-12">
@@ -142,6 +147,9 @@
 									<i class="fa fa-list-alt red"></i><strong>My
 										Notifications</strong>
 								</h2>
+							</div>
+							<!--panel-body start-->
+							<div class="panel-body">
 								<div id="grid2" ui-grid="gridOptions2" class="grid">
 									<div class="no-data" ng-hide="!notificationsloading">
 										<div class="msg">
@@ -151,9 +159,12 @@
 									</div>
 								</div>
 							</div>
+
 						</div>
+
 					</div>
 					<!--/col-->
+
 				</div>
 				<form class="form-horizontal" id="searchForm" th:action="@{/savedSearchList}" method="POST">
 					<input type="hidden" name="searchName" id="searchName" />
