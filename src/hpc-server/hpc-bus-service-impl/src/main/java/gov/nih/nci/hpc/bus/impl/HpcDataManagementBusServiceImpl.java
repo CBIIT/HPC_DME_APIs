@@ -1646,6 +1646,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Delete all the links to this data object.
 		List<HpcDataObject> links = dataManagementService.getDataObjectLinks(path);
 		if (!links.isEmpty()) {
+			dataObjectDeleteResponse.setLinksDeleteStatus(true);
 			for (HpcDataObject link : links) {
 				try {
 					dataManagementService.delete(link.getAbsolutePath(), false);
@@ -1658,7 +1659,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					break;
 				}
 			}
-			dataObjectDeleteResponse.setLinksDeleteStatus(true);
 		}
 
 		// Delete the file from the archive (if it's archived and not a link and it is a
@@ -1702,7 +1702,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					securityService.executeAsSystemAccount(Optional.empty(),
 							() -> dataManagementService.softDelete(path, Optional.of(false)));
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+					dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 				} catch (HpcException e) {
 					logger.error("Failed to soft delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
