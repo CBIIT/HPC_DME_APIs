@@ -1702,10 +1702,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					securityService.executeAsSystemAccount(Optional.empty(),
 							() -> dataManagementService.softDelete(path, Optional.of(false)));
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
 				} catch (HpcException e) {
 					logger.error("Failed to soft delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+					dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 					dataObjectDeleteResponse.setMessage(e.getMessage());
 				}
 			} else
