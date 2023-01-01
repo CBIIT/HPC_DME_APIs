@@ -550,7 +550,7 @@ body.loading .overlay{
 						},
 						{ "data": "archive_summary_value", "targets": 9, "orderable": false, "visible": true},
 					];
-				exportOptions = {columns: [':not(:nth-last-child(2))'],} // Donot export the 8th column, contains button for displaying Archive Summary
+				exportOptions = {columns: [':visible:not(:nth-last-child(2))']} // Donot export the 8th column, contains button for displaying Archive Summary
 				showHideCols = [2,4,5,6,7]; // Exclude first three columns from show/hide. It starts from 4th column. Also exclude 8th column - the Archive Summary button
 				break;
 			default:
