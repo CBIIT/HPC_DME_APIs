@@ -390,6 +390,14 @@ public class HpcReportsController extends AbstractHpcController {
         newEntry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_VALUE_ONLY_FOR_GRID"));
         newEntry.setValue(largest_file_size);
         dto.getReportEntries().add(largest_file_size_index + 1, newEntry);
+        newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY"));
+        newEntry.setValue("0");
+        dto.getReportEntries().add(newEntry);
+        newEntry = new HpcReportEntryDTO();
+        newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY_VALUES"));
+        newEntry.setValue("");
+        dto.getReportEntries().add(newEntry);
       }
       tReports.add(dto);
     }
@@ -414,12 +422,28 @@ public class HpcReportsController extends AbstractHpcController {
   */
   @GetMapping(value = "/getArchiveSummary")
   @ResponseBody
-  public AjaxResponseBody getArchiveSummary(@RequestParam("path") String path, HttpSession session, HttpServletRequest request) {
+  public AjaxResponseBody getArchiveSummary(@RequestParam("path") String path, @RequestParam("reportType") String reportType, @RequestParam("fromDate") String fromDate,  @RequestParam("toDate") String toDate, HttpSession session, HttpServletRequest request) {
       String authToken = (String) session.getAttribute("hpcUserToken");
       AjaxResponseBody result = new AjaxResponseBody();
       HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
-      requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
-      requestDTO.setPath(path);
+      switch (reportType) {
+            case "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE);
+                    requestDTO.setPath(path);
+                    requestDTO.setFromDate(fromDate);
+                    requestDTO.setToDate(toDate);
+                    break;
+            case "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE);
+                    requestDTO.getDoc().add(path);
+                    requestDTO.setFromDate(fromDate);
+                    requestDTO.setToDate(toDate);
+                    break;
+            case "USAGE_SUMMARY_BY_DATA_OWNER":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+                    requestDTO.setPath(path);
+                    break;
+      }
       requestDTO.getReportColumns().add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
       try {
         UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(serviceURL);
@@ -444,9 +468,9 @@ public class HpcReportsController extends AbstractHpcController {
                   setArchiveSummary(entry,  "    <br/>");
                   result.setMessage(entry.getValue());
                   break;
-                }
               }
             }
+          }
         } else { // restResponse.getStatus() != 200
             result.setMessage("");
             result.setCode(Integer.toString(400));

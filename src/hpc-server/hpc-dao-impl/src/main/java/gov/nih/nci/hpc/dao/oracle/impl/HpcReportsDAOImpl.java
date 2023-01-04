@@ -926,7 +926,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		fields.add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
 		fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
 		fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-		fields.add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
 
 		List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
 		fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
@@ -1035,18 +1034,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 				}
 				setGridFieldValue(isBasePathReport, mapReports, avgDataObjMetaAttrsList,
 						HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS, "totalattrs");
-
-				// Archive Summary Fields (Vault, Bucket, Size)
-				List<HpcArchiveSummary> archiveSummary;
-				if (isBasePathReport) {
-					archiveSummary = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_BASEPATHS_SQL,
-							archiveSummaryByReportTypeRowMapper, dateLongArgs);
-				} else {
-					archiveSummary = jdbcTemplate.query(ARCHIVE_SUMMARY_ALL_DOCS_SQL, archiveSummaryByReportTypeRowMapper,
-							dateLongArgs);
-				}
-
-				setArchiveSummaryFieldForGrid(mapReports, archiveSummary);
 
 				List<Map<String, Object>> fileRangeList;
 				if (isBasePathReport) {
