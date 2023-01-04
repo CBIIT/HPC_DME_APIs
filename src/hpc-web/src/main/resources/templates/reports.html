@@ -503,12 +503,21 @@ body.loading .overlay{
 				reportHeaderTitle = "DME Data Archival Usage Report for all Base Paths";
 				noSortColumns = [9];
 				fileSizeColumns = [4,6];
-				visibleColumns = [ 1, 2, 4, 7, 9];
+				visibleColumns = [ 1, 2, 4, 7, 17, 18];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
 						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						{"targets": 1, "data": "base_path"},
+						{"targets": 17, "searchable": false, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						 },
 						];
 				exportOptions = {columns: [[0,1], ':visible' ]};
 				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
@@ -518,12 +527,21 @@ body.loading .overlay{
 				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
 				noSortColumns = [9];
 				fileSizeColumns = [4,6];
-				visibleColumns = [ 1, 2, 4, 7, 9];
+				visibleColumns = [ 1, 2, 4, 7, 17, 18];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
 						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						{"targets": 1, "data": "doc"},
+						{"targets": 17, "searchable": false, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						 },
 						];
 				exportOptions = {columns: [[0,1], ':visible' ]};
 				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
@@ -622,8 +640,42 @@ body.loading .overlay{
 			column.visible( ! column.visible() );
 		} );
 
+		/** The following code is executed when you click on the Assay Summary button on the Grid **/
 	    $('#reportgrid tbody').on('click', 'button', function () {
 			var data = table.row($(this).parents('tr')).data();
+			var path = "";
+			var dataJson = {};
+			var reportType = document.getElementById("reportType").value;
+			var fromDate = document.getElementById("fromDate").value;
+			var toDate = document.getElementById("toDate").value;
+			let emptyDate = "";
+
+			switch (reportType) {
+				case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
+					dataJson = {
+						path: data.base_path,
+						reportType: reportType,
+						fromDate: fromDate,
+						toDate: toDate,
+					};
+					break;
+				case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
+					dataJson = {
+						path: data.doc,
+						reportType: reportType,
+						fromDate: fromDate,
+						toDate: toDate,
+					};
+					break;
+				case 'USAGE_SUMMARY_BY_DATA_OWNER':
+					dataJson = {
+						path: data.collection_path,
+						reportType: reportType,
+						fromDate: emptyDate, // The Data owner report does not use dates
+						toDate: emptyDate
+					};
+					break;
+			}
 			var tr = $(this).closest('tr');
 			var row = table.row(tr);
 			if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
@@ -631,10 +683,11 @@ body.loading .overlay{
 			} else {
 				$("#dataownerspinner").show();
 				let archiveSummary = "";
-				let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
+				let uri = '/reports/getArchiveSummary';
 				$.ajax({
 					type: 'GET',
 					url: uri,
+					data: dataJson,
 					dataType: 'json'
 				}).done(function (result) {
 					$("#dataownerspinner").hide();
@@ -645,8 +698,13 @@ body.loading .overlay{
 					} else {
 						data.archive_summary_value = "NA";
 					}
-					table.cell(row.index(), 9).data(data.archive_summary_value);
-					table.cell(row.index(), 8).data("");
+					if (reportType === "USAGE_SUMMARY_BY_DATA_OWNER"){
+						table.cell(row.index(), 9).data(data.archive_summary_value);
+						table.cell(row.index(), 8).data("");
+					} else { // The BasePath and DOC grid positions for Archive Summary(both button and value) are different
+						table.cell(row.index(), 18).data(data.archive_summary_value);
+						table.cell(row.index(), 17).data("");
+					}
 				});
 			}
 		});
