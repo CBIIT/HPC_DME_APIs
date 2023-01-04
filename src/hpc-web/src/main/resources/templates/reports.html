@@ -286,7 +286,7 @@ body.loading .overlay{
 									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
 							</div>
 							<div class="col-md-5">&nbsp;</div>
-							<div id="dataownerspinner" class="overlay"></div>
+							<div id="spinner" class="overlay"></div>
 						</div>
 					</div> <!-- Second Row end -->
 					<div class="row">
@@ -369,7 +369,6 @@ body.loading .overlay{
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
-						<!-- div id="dataownerspinner" class="overlay"></div-->
 						<tbody>
 							<tr id='attrCol0' th:each="report : ${reports}">
 							   <td id='index1'></td>
@@ -519,8 +518,8 @@ body.loading .overlay{
 							}
 						 },
 						];
-				exportOptions = {columns: [[0,1], ':visible' ]};
-				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
+				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]}; // Export visible columns but do not export the Archive Summary Button column
+				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))']; // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "DOC" + tag;
@@ -543,8 +542,8 @@ body.loading .overlay{
 							}
 						 },
 						];
-				exportOptions = {columns: [[0,1], ':visible' ]};
-				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
+				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]};  // Export visible columns but do not export the Archive Summary Button column
+				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))'];  // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
 				exportFileName= pretag + "Data_Owner" + tag;
@@ -587,7 +586,6 @@ body.loading .overlay{
 				responsive: true,
 				dom: 'Blfrtip',
 				fixedHeader: true,
-				//processing: $("#dataownerspinner").show(),
 				buttons: [
 				{
 					extend: 'copyHtml5',
@@ -617,7 +615,6 @@ body.loading .overlay{
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
 				"initComplete": function() {
 					$("body").removeClass("loading");
-					//$("#dataownerspinner").hide();
 					$(this).show();
 				},
 			} );
@@ -681,7 +678,7 @@ body.loading .overlay{
 			if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
 				//Change or disable icon
 			} else {
-				$("#dataownerspinner").show();
+				$("#spinner").show();
 				let archiveSummary = "";
 				let uri = '/reports/getArchiveSummary';
 				$.ajax({
@@ -690,7 +687,7 @@ body.loading .overlay{
 					data: dataJson,
 					dataType: 'json'
 				}).done(function (result) {
-					$("#dataownerspinner").hide();
+					$("#spinner").hide();
 					if(result.message != null && result.message != "") {
 						archiveSummary = JSON.stringify(result.message);
 						let archiveSummaryStr = archiveSummary.slice(1, -1);
@@ -948,7 +945,7 @@ body.loading .overlay{
 				$("#path").val(updatedPath);
 			}
 		}
-		$("#dataownerspinner").show();
+		$("#spinner").show();
 		document.getElementById("reportsform").submit();
       }
 
