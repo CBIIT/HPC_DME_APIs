@@ -176,6 +176,21 @@ public class HpcReportsController extends AbstractHpcController {
     model.addAttribute("basepaths", basepaths);
     return "reports";
   }
+  
+  private HpcReportRequestDTO setReportColumnsForIndividualReports(HpcReportRequestDTO requestDTO, boolean showArchiveSummaryForNonGrid) {
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
+    requestDTO.getReportColumns().add(HpcReportEntryAttribute.FILE_SIZES);
+    if (showArchiveSummaryForNonGrid){
+      requestDTO.getReportColumns().add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
+    }
+    return requestDTO;
+  }
 
   /**
    * POST operation to generate report based on given request input
@@ -201,6 +216,9 @@ public class HpcReportsController extends AbstractHpcController {
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))) {
         requestDTO.getDoc().add(reportRequest.getDoc());
+        if (!(reportRequest.getDoc().toString().equals("All"))){
+          requestDTO = setReportColumnsForIndividualReports(requestDTO, reportRequest.getShowArchiveSummary());
+        }
       }
       if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER)) {
           requestDTO.setPath("ALL");
@@ -209,12 +227,16 @@ public class HpcReportsController extends AbstractHpcController {
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))) {
         requestDTO.setPath(reportRequest.getBasepath());
-          //Also populate DOC from Model for display purposes
+        if (!reportRequest.getBasepath().toString().equals("All")){
+          requestDTO = setReportColumnsForIndividualReports(requestDTO, reportRequest.getShowArchiveSummary());
+        }
+        //Also populate DOC from Model for display purposes
         requestDTO.getDoc().add(HpcClientUtil.getDocByBasePath(getModelDTO(session), reportRequest.getBasepath()));
       }
       else if ( (reportRequest.getPath() != null && !reportRequest.getPath().equals("-1")) &&
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))) {
+        requestDTO = setReportColumnsForIndividualReports(requestDTO, reportRequest.getShowArchiveSummary());
         try {
           HpcClientUtil.getCollection(authToken, hpcCollectionlURL, reportRequest.getPath(), true,
                sslCertPath, sslCertPassword);
@@ -225,7 +247,7 @@ public class HpcReportsController extends AbstractHpcController {
         requestDTO.setPath(reportRequest.getPath());
       }
 
-      if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1")) {
+     if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1")) {
         requestDTO.getUser().add(reportRequest.getUser());
       }
       if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty()) {
@@ -273,7 +295,7 @@ public class HpcReportsController extends AbstractHpcController {
     }
   }
 
-  private class HpcArchiveSummaryDocReport {
+  private class HpcArchiveSummaryReport {
     String doc;
     String vault;
     String bucket;
@@ -281,12 +303,12 @@ public class HpcReportsController extends AbstractHpcController {
     long size;
   }
 
-  private void setArchiveSummary(HpcReportEntryDTO entry, String separator){
+  private HpcReportEntryDTO setArchiveSummary(HpcReportEntryDTO entry, String separator){
     if (entry.getValue().equals("0")) {
       entry.setValue("NA");
     } else {
-      Type empMapType = new TypeToken<List<HpcArchiveSummaryDocReport>>() {}.getType();
-      List<HpcArchiveSummaryDocReport> assaySummaryList = gson.fromJson(entry.getValue(), empMapType);
+      Type empMapType = new TypeToken<List<HpcArchiveSummaryReport>>() {}.getType();
+      List<HpcArchiveSummaryReport> assaySummaryList = gson.fromJson(entry.getValue(), empMapType);
       String assaySummaryString = "";
       for(int i=0 ; i < assaySummaryList.size(); i++) {
         String size = String.valueOf(assaySummaryList.get(i).size);
@@ -297,6 +319,7 @@ public class HpcReportsController extends AbstractHpcController {
       }
       entry.setValue(assaySummaryString);
     }
+    return entry;
   }
 
   private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
@@ -335,7 +358,7 @@ public class HpcReportsController extends AbstractHpcController {
                   entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
               }
               if (entry.getAttribute().equals(env.getProperty("ARCHIVE_SUMMARY"))) {
-                setArchiveSummary(entry,  " <br/>");
+                entry = setArchiveSummary(entry,  " <br/>");
               }
               if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
                   dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1 ){
@@ -465,7 +488,7 @@ public class HpcReportsController extends AbstractHpcController {
             if (env.getProperty(entry.getAttribute()) != null) {
               if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
                  // setArchiveSummary(entry, ",");
-                  setArchiveSummary(entry,  "    <br/>");
+                  entry = setArchiveSummary(entry,  "    <br/>");
                   result.setMessage(entry.getValue());
                   break;
               }

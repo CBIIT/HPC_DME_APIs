@@ -9,6 +9,7 @@ public class HpcReportRequest {
 	private String path;
 	private String fromDate;
 	private String toDate;
+	public boolean showArchiveSummary;
 
 	public String getReportType() {
 		return reportType;
@@ -65,5 +66,4 @@ public class HpcReportRequest {
   public void setPath(String path) {
     this.path = path;
   }
-
 }
