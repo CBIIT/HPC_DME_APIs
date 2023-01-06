@@ -2482,8 +2482,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						if (transferTime <= 0) {
 							transferTime = 1;
 						}
-						registrationTask
-								.setEffectiveTransferSpeed(toIntExact(metadata.getSourceSize() * 1000 / transferTime));
+						registrationTask.setEffectiveTransferSpeed(toIntExact(
+								Optional.ofNullable(metadata.getSourceSize()).orElse(0L) * 1000 / transferTime));
 					}
 
 				} else if (HpcDataTransferUploadStatus.FAILED.equals(metadata.getDataTransferStatus())) {
