@@ -1044,6 +1044,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		dataManagementService.getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED)
 				.forEach(bulkRegistrationTask -> {
 					try {
+						logger.info("Processing bulk registration task: {}", bulkRegistrationTask.getId());
+
 						// 'Activate' the registration task.
 						bulkRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE);
 
@@ -1053,6 +1055,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 						// Persist the bulk data object registration task.
 						dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
+
+						logger.info("Completed processing bulk registration task: {}. items-count = {}",
+								bulkRegistrationTask.getId(), bulkRegistrationTask.getItems().size());
 
 					} catch (HpcException e) {
 						logger.error(
@@ -2482,8 +2487,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						if (transferTime <= 0) {
 							transferTime = 1;
 						}
-						registrationTask
-								.setEffectiveTransferSpeed(toIntExact(metadata.getSourceSize() * 1000 / transferTime));
+						registrationTask.setEffectiveTransferSpeed(toIntExact(
+								Optional.ofNullable(metadata.getSourceSize()).orElse(0L) * 1000 / transferTime));
 					}
 
 				} else if (HpcDataTransferUploadStatus.FAILED.equals(metadata.getDataTransferStatus())) {
