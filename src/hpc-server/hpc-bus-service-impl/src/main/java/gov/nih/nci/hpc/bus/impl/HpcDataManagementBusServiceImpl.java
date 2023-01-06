@@ -355,8 +355,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Set the permission if requested
-		if (includeAcl) {
-			collectionDTO.setPermission(dataManagementService.getCollectionPermission(path).getPermission());
+		if (Boolean.TRUE.equals(includeAcl)) {
+			HpcSubjectPermission subjectPermission = dataManagementService.getCollectionPermission(path);
+			if (subjectPermission == null) {
+				logger.error("Received null collection permission for: {}", path);
+			} else {
+				collectionDTO.setPermission(subjectPermission.getPermission());
+			}
 		}
 
 		return collectionDTO;
