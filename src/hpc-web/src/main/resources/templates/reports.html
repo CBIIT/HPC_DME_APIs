@@ -198,7 +198,7 @@ body.loading .overlay{
 							<div class="col-sm-2">
 								<label><b>DOC:</b></label>
 									<select size="1"
-										id="doc" name="doc" class="docList" style="width: 100%">
+										id="doc" name="doc" class="docList" style="width: 100%" onchange="showArchiveSummaryCheckbox(this.value)">
 											<option></option>
 											<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
 											<option
@@ -232,7 +232,7 @@ body.loading .overlay{
 							<div class="col-sm-4">
 								<label for="basepathList"><b>Base Path:</b></label>
 								<select size="1"
-									id="basepath" name="basepath" class="basepathList" style="width: 100%">
+									id="basepath" name="basepath" class="basepathList" style="width: 100%" onchange="showArchiveSummaryCheckbox(this.value)">
 										<option></option>
 										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
 										<option
@@ -279,13 +279,19 @@ body.loading .overlay{
 							</div>
 							<div class="col-md-1">&nbsp;</div>						
 						</div>
+						<div style="display: none" id="assaySummaryCheckbox" class="item">
+							<div class="col-md-1">
+								<input type="checkbox" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+            					Assay Summary Checkbox
+							</div>
+						</div>
 						<div style="display: block" id="gen" class="item">
 							<div class="col-md-1">
 								<label>&nbsp;</label>
 								<button type="submit" class="btn btn-md btn-primary"
 									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
 							</div>
-							<div class="col-md-5">&nbsp;</div>
+							<div class="col-md-4">&nbsp;</div>
 							<div id="spinner" class="overlay"></div>
 						</div>
 					</div> <!-- Second Row end -->
@@ -779,6 +785,15 @@ body.loading .overlay{
           show(selected);
       });
 
+	  function showArchiveSummaryCheckbox(pathOrDocType) {
+		var assaySummaryCheckbox = document.getElementById("assaySummaryCheckbox");
+		if (pathOrDocType === "All"){
+			assaySummaryCheckbox.style.display = "none";
+		} else {
+			assaySummaryCheckbox.style.display = "block";
+		}
+	  }
+
       var toggle = true;
       function show(reportType) {
     	var fromDateEle = document.getElementById("fromDateDiv");
@@ -787,6 +802,7 @@ body.loading .overlay{
     	var userListEle = document.getElementById("userList");
     	var basepathListEle = document.getElementById("basepathList");
     	var pathEle = document.getElementById("collectionPath");
+		var assaySummaryCheckboxEle = document.getElementById("assaySummaryCheckbox");
       	var selectedValue = reportType;
       	if(selected != reportType) {
 			$('#fromDate').datepicker('setDate', '01/01/2016');
@@ -800,6 +816,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC")
       	{
@@ -809,6 +826,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
       	{
@@ -818,6 +836,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER")
       	{
@@ -827,6 +846,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
       	{
@@ -836,6 +856,7 @@ body.loading .overlay{
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH")
       	{
@@ -845,6 +866,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		pathEle.style.display = "none";
       		basepathListEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
       	{
@@ -854,6 +876,7 @@ body.loading .overlay{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH")
       	{
@@ -863,6 +886,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
       	{
@@ -872,6 +896,7 @@ body.loading .overlay{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		pathEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else
       	{
@@ -882,6 +907,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	
       }
