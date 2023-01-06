@@ -66,4 +66,13 @@ public class HpcReportRequest {
   public void setPath(String path) {
     this.path = path;
   }
+
+  public boolean getShowArchiveSummary() {
+		return showArchiveSummary;
+  }
+
+  public void setShowArchiveSummary(boolean showArchiveSummary) {
+		this.showArchiveSummary = showArchiveSummary;
+  }
+
 }
