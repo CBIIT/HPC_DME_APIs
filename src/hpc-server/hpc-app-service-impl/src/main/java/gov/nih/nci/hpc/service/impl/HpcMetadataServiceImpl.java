@@ -55,7 +55,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1170,8 +1169,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		try {
 			cal.setTime(dateFormat.parse(calendarStr));
 
-		} catch (ParseException e) {
-			logger.error("Failed to parse calendar string: " + calendarStr);
+		} catch (Exception e) {
+			logger.error("Failed to parse calendar string: {}", calendarStr);
 			return null;
 		}
 
