@@ -54,6 +54,8 @@
 		<prop key="hpc.scheduler.cron.removeDeletedDataObjects.delay">0 0 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.sendWeeklyUserQueryResults.delay">0 0 0 * * 4</prop>
 		<prop key="hpc.scheduler.cron.sendMonthlyUserQueryResults.delay">0 0 0 1 * ?</prop>
+		
+		<prop key="hpc.scheduler.processCollectionDownloadTasksPerformer">false</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
