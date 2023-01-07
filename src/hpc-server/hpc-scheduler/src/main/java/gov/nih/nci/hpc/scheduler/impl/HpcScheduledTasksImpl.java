@@ -19,7 +19,6 @@ import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcReviewBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.exception.HpcException;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * HPC Scheduled tasks implementation.
@@ -42,11 +41,6 @@ public class HpcScheduledTasksImpl {
 	// The Data Search Business Service instance.
 	@Autowired
 	private HpcDataSearchBusService dataSearchBusService = null;
-
-	// Indicator whether this server performs the 'processCollectionDownloadTasks'
-	// task. Note that just one server is expected to perform this task
-	@Value("${hpc.scheduler.processCollectionDownloadTasksPerformer")
-	private Boolean processCollectionDownloadTasksPerformer;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -327,10 +321,7 @@ public class HpcScheduledTasksImpl {
 			systemBusService.restartDataObjectDownloadTasks();
 
 			// All in-process collection download tasks needs to be restarted.
-			if (Boolean.TRUE.equals(processCollectionDownloadTasksPerformer)) {
-				logger.info("Restarting collection download tasks");
-				systemBusService.restartCollectionDownloadTasks();
-			}
+			systemBusService.restartCollectionDownloadTasks();
 
 		} catch (HpcException e) {
 			logger.error("Scheduler failed to initialize", e);
