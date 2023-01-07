@@ -176,7 +176,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	// Indicator whether this server performs the 'processCollectionDownloadTasks'
 	// task. Note that just one server is expected to perform this task
-	@Value("${hpc.scheduler.processCollectionDownloadTasksPerformer")
+	@Value("${hpc.bus.processCollectionDownloadTasksPerformer")
 	private Boolean processCollectionDownloadTasksPerformer;
 
 	// The logger instance.
