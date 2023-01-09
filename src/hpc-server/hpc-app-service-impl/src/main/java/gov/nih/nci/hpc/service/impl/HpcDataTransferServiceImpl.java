@@ -1374,7 +1374,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void resetDataObjectDownloadTasksInProcess() throws HpcException {
-		dataDownloadDAO.resetDataObjectDownloadTaskInProcess();
+		dataDownloadDAO.resetDataObjectDownloadTaskInProcess(s3DownloadTaskServerId);
 	}
 
 	@Override
