@@ -279,11 +279,11 @@ body.loading .overlay{
 							</div>
 						</div>
 						<div style="display: block" id="gen" class="item">
-								<div style="display: none" class="col-sm-1" id="assaySummaryCheckbox">
-									<label><b>Assay Summary:          </b></label>
-									&nbsp;&nbsp;<input type="checkbox" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
-								</div>
-								<div class="col-sm-1">&nbsp;</div>
+							<div class="col-sm-1" id="assaySummaryCheckbox">
+								<label><b>Assay Summary:          </b></label>
+								&nbsp;&nbsp;<input type="checkbox" id="assaySummaryCheckboxId" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+							</div>
+							<div class="col-sm-1">&nbsp;</div>
 							<div class="col-sm-2">
 								<label>&nbsp;</label>
 								<button type="submit" class="btn btn-md btn-primary"
@@ -784,12 +784,11 @@ body.loading .overlay{
       });
 
 	  function showArchiveSummaryCheckbox(pathOrDocType) {
-		var assaySummaryCheckbox = document.getElementById("assaySummaryCheckbox");
+		$("#assaySummaryCheckboxId").prop('checked', false);
 		if (pathOrDocType === "All"){
-			assaySummaryCheckbox.style.display = "none";
+			document.getElementById("assaySummaryCheckbox").style.display = "none";
 		} else {
-			assaySummaryCheckbox.style.display = "block";
-			assaySummaryCheckbox.checked = false;
+			document.getElementById("assaySummaryCheckbox").style.display = "block";
 		}
 	  }
 
@@ -804,6 +803,7 @@ body.loading .overlay{
 		var assaySummaryCheckboxEle = document.getElementById("assaySummaryCheckbox");
       	var selectedValue = reportType;
       	if(selected != reportType) {
+			$("#assaySummaryCheckboxId").prop('checked', false);
 			$('#fromDate').datepicker('setDate', '01/01/2016');
 			$('#toDate').datepicker('setDate', new Date());
       	}
@@ -825,7 +825,12 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
-			assaySummaryCheckboxEle.style.display = "none";
+			var doc = document.getElementById("doc").value;
+			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+				assaySummaryCheckboxEle.style.display = "none";
+			} else {
+				assaySummaryCheckboxEle.style.display = "block";
+			}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
       	{
@@ -835,7 +840,12 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
-			assaySummaryCheckboxEle.style.display = "none";
+			var doc = document.getElementById("doc").value;
+			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+				assaySummaryCheckboxEle.style.display = "none";
+			} else {
+				assaySummaryCheckboxEle.style.display = "block";
+			}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER")
       	{
@@ -865,15 +875,13 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		pathEle.style.display = "none";
       		basepathListEle.style.display = "block";
-			let basePathEle = document.getElementById("basepath").value;
-			if (basePathEle === null) {
-				assaySummaryCheckboxEle.style.display = "none";
-			} else if(basePathEle === "All") {
-				assaySummaryCheckboxEle.style.display = "none";
+			var basepath = document.getElementById("basepath").value;
+			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
+				assaySummaryCheckbox.style.display = "none";
 			} else {
-				assaySummaryCheckboxEle.style.display = "block";
+				assaySummaryCheckbox.style.display = "block";
 			}
-      	}
+		}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
       	{
       		userListEle.style.display = "none";
@@ -882,13 +890,11 @@ body.loading .overlay{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "block";
-			let basePathEle = document.getElementById("basepath").value;
-			if (basePathEle === null) {
-				assaySummaryCheckboxEle.style.display = "none";
-			} else if(basePathEle === "All") {
-				assaySummaryCheckboxEle.style.display = "none";
+			var basepath = document.getElementById("basepath").value;
+			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
+				assaySummaryCheckbox.style.display = "none";
 			} else {
-				assaySummaryCheckboxEle.style.display = "block";
+				assaySummaryCheckbox.style.display = "block";
 			}
         }
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH")
