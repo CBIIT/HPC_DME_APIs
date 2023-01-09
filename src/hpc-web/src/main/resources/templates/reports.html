@@ -279,11 +279,11 @@ body.loading .overlay{
 							</div>
 						</div>
 						<div style="display: block" id="gen" class="item">
-							<div class="col-sm-1" id="assaySummaryCheckbox">
-								<label><b>Assay Summary:          </b></label>
-								&nbsp;&nbsp;<input type="checkbox" id="assaySummaryCheckboxId" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+							<div class="col-sm-2" id="assaySummaryCheckbox">
+								<label style="padding-left: 50px;"> <b>Assay Summary</b>
+									<input type="checkbox" id="assaySummaryCheckboxId" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+								</label>
 							</div>
-							<div class="col-sm-1">&nbsp;</div>
 							<div class="col-sm-2">
 								<label>&nbsp;</label>
 								<button type="submit" class="btn btn-md btn-primary"
