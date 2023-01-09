@@ -170,6 +170,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Value("${hpc.bus.maxDataTranferUploadInProgressWithGeneratedUrlToProcess}")
 	private int maxDataTranferUploadInProgressWithGeneratedUrlToProcess = 0;
 
+	// A configured ID representing the server performing a scheduled task.
+	@Value("${hpc.service.serverId}")
+	private String serverId = null;
+
+	// Indicator whether this server performs the 'processCollectionDownloadTasks'
+	// task. Note that just one server is expected to perform this task
+	@Value("${hpc.bus.processCollectionDownloadTasksPerformer}")
+	private Boolean processCollectionDownloadTasksPerformer;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -622,9 +631,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// transfer.
 		for (HpcDataObjectDownloadTask downloadTask : dataTransferService.getDataObjectDownloadTasks()) {
 			try {
-				if ((downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE)
-						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE))
+				String assignedServerId = downloadTask.getS3DownloadTaskServerId();
+				if ((StringUtils.isEmpty(assignedServerId) || assignedServerId.equals(serverId))
+						&& (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
+								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: {}", downloadTask.getId());
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);
@@ -642,16 +653,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void restartCollectionDownloadTasks() throws HpcException {
-		// Iterate through all the collection download tasks that are in-process
-		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, true)
-				.forEach(downloadTask -> {
-					try {
-						dataTransferService.resetCollectionDownloadTaskInProgress(downloadTask.getId());
+		// Iterate through all the collection download tasks that are in-process.
+		if (Boolean.TRUE.equals(processCollectionDownloadTasksPerformer)) {
+			logger.info("Restarting collection download tasks");
 
-					} catch (HpcException e) {
-						logger.error("Failed to restart collection download task: " + downloadTask.getId(), e);
-					}
-				});
+			dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, true)
+					.forEach(downloadTask -> {
+						try {
+							dataTransferService.resetCollectionDownloadTaskInProgress(downloadTask.getId());
+
+						} catch (HpcException e) {
+							logger.error("Failed to restart collection download task: " + downloadTask.getId(), e);
+						}
+					});
+		}
 	}
 
 	@Override

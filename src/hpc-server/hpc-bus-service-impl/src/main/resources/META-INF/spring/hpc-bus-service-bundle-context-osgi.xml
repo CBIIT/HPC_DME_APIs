@@ -33,8 +33,10 @@
 		<prop key="hpc.bus.maxPermittedInProcessDownloadTasksPerUser">1</prop>
 		<prop key="hpc.bus.exportDirectory">/mnt/IRODsScratch/data</prop>
 		<prop key="hpc.bus.maxDataTranferUploadInProgressWithGeneratedUrlToProcess">100</prop>
+		<prop key="hpc.bus.processCollectionDownloadTasksPerformer">false</prop>
 	
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
+		<prop key="hpc.service.serverId">server-id</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
