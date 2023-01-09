@@ -223,6 +223,9 @@ public class HpcReportsController extends AbstractHpcController {
       if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER)) {
           requestDTO.setPath("ALL");
       }
+      if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)) {
+          requestDTO = setReportColumnsForIndividualReports(requestDTO, reportRequest.getShowArchiveSummary());
+      }
       if ((reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) &&
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))) {
