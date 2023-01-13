@@ -1173,7 +1173,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		HpcCompleteMultipartUploadResponseDTO responseDTO = new HpcCompleteMultipartUploadResponseDTO();
-		responseDTO.setRegistrationCompletion(false);
+		responseDTO.setRegistrationCompletion(true);
 
 		// Complete the multipart upload into the archive.
 		if (HpcDataTransferUploadMethod.URL_MULTI_PART.equals(metadata.getDataTransferMethod())) {
@@ -1184,13 +1184,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Complete the data object registration w/ the data management system.
-		try {
-			responseDTO.setRegistrationCompletion(completeS3Upload(path, metadata));
-
-		} catch (HpcException e) {
-			logger.error("Failed to complete S3 upload: {}", path, e);
-			responseDTO.setRegistrationCompletionMessage(e.getMessage());
-		}
+		if(!completeS3Upload(path, metadata)) {
+			throw new HpcException("Upload is incomplete. File not found in archive", HpcErrorType.INVALID_REQUEST_INPUT);
+		} 
 
 		return responseDTO;
 	}
