@@ -506,4 +506,166 @@ public class HpcReportsController extends AbstractHpcController {
       }
       return result;
     }
+
+private class HpcUserLite {
+    String userId;
+    String displayName;
+  }
+
+ /**
+    * GET operation responding to an AJAX request to retrieve all the Users
+    * @param session
+    * @param request
+    * @return result with serialized list of users
+  */
+  @GetMapping(value = "/getUsers")
+  @ResponseBody
+  public AjaxResponseBody getUsers(HttpSession session, HttpServletRequest request) {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+      HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
+          null, user.getUserRole().equals("SYSTEM_ADMIN") ? null : user.getDoc(), sslCertPath,
+          sslCertPassword);
+      Comparator<HpcUserListEntry> firstLastComparator = Comparator.comparing(HpcUserListEntry::getFirstName, String.CASE_INSENSITIVE_ORDER)
+          .thenComparing(HpcUserListEntry::getLastName, String.CASE_INSENSITIVE_ORDER);
+      users.getUsers().sort(firstLastComparator);
+
+      List<HpcUserLite> userLitelist = new ArrayList<>();
+      for (HpcUserListEntry userx : users.getUsers()) {
+        HpcUserLite u = new HpcUserLite();
+        u.userId = userx.getUserId();
+        u.displayName = userx.getFirstName() + ' ' + userx.getLastName();
+        userLitelist.add(u);
+      }
+      AjaxResponseBody result = new AjaxResponseBody();
+      result.setMessage(gson.toJson(userLitelist));
+      logger.info(gson.toJson(userLitelist));
+      return result;
+    }
+
+/**
+    * GET operation responding to an AJAX request to retrieve all the Users
+    * @param session
+    * @param request
+    * @return result with serialized list of docs
+  */
+  @GetMapping(value = "/getDocs")
+  @ResponseBody
+  public AjaxResponseBody getDocs(HttpSession session, HttpServletRequest request) {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+      List<String> docs = new ArrayList<>();
+      boolean canSeeAllDocs = false;
+      if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER")) {
+        docs.add(user.getDoc());
+      }
+      else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
+        docs.addAll(
+            HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
+        canSeeAllDocs = true;
+      }
+      docs.sort(String.CASE_INSENSITIVE_ORDER);
+      AjaxResponseBody result = new AjaxResponseBody();
+      result.setMessage(gson.toJson(docs));
+      logger.info(gson.toJson(docs));
+      return result;
+    }
+
+private class HpcSingleReportJson {
+    List<HpcReportDTO> reports;
+    String reportName;
+  }
+
+
+  /**
+    * GET operation responding to an AJAX request to retrieve the Archive Summary based on the path
+    *
+    * @param path
+    * @param session
+    * @param request
+    * @return The Archive summary value
+  */
+  @GetMapping(value = "/getReport")
+  @ResponseBody
+  public AjaxResponseBody getReport(@RequestParam("path") String path, @RequestParam("reportType") String reportType, @RequestParam("fromDate") String fromDate,
+  @RequestParam("toDate") String toDate, @RequestParam("archiveSummaryCheckbox") boolean archiveSummaryCheckbox, HttpSession session, HttpServletRequest request) {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      AjaxResponseBody result = new AjaxResponseBody();
+      HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
+      switch (reportType) {
+            case "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE);
+                    requestDTO.setPath(path);
+                    requestDTO.setFromDate(fromDate);
+                    requestDTO.setToDate(toDate);
+                    //Also populate DOC from Model for display purposes
+                    requestDTO.getDoc().add(HpcClientUtil.getDocByBasePath(getModelDTO(session), path));
+                    requestDTO = setReportColumnsForIndividualReports(requestDTO, archiveSummaryCheckbox);
+                    break;
+            case "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE);
+                    requestDTO.getDoc().add(path);
+                    requestDTO.setFromDate(fromDate);
+                    requestDTO.setToDate(toDate);
+                    requestDTO = setReportColumnsForIndividualReports(requestDTO, archiveSummaryCheckbox);
+                    break;
+            case "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE);
+                    requestDTO.setPath(path);
+                    requestDTO.setFromDate(fromDate);
+                    requestDTO.setToDate(toDate);
+                    requestDTO = setReportColumnsForIndividualReports(requestDTO, archiveSummaryCheckbox);
+                    break;
+            case "USAGE_SUMMARY_BY_DATE_RANGE":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE);
+                    requestDTO.setFromDate(fromDate);
+                    requestDTO.setToDate(toDate);
+                    requestDTO = setReportColumnsForIndividualReports(requestDTO, archiveSummaryCheckbox);
+                    break;
+            case "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE);
+                    requestDTO.setFromDate(fromDate);
+                    requestDTO.setToDate(toDate);
+                    //System.out.println(path);
+                    requestDTO.getUser().add(path);
+                    break;
+            case "USAGE_SUMMARY_BY_DATA_OWNER":
+                    requestDTO.setType(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER);
+                    break;
+      }
+      //requestDTO.getReportColumns().add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
+      try {
+        UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(serviceURL);
+        if (ucBuilder == null) {
+          return null;
+        }
+        final String requestURL = ucBuilder.build().encode().toUri().toURL().toExternalForm();
+        WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
+        client.header("Authorization", "Bearer " + authToken);
+        Response restResponse = client.invoke("POST", requestDTO);
+        if (restResponse.getStatus() == 200) {
+          MappingJsonFactory factory = new MappingJsonFactory();
+          JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+          HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
+          List<HpcReportDTO> translatedReports = translate(reports.getReports());
+          HpcSingleReportJson reportJson = new HpcSingleReportJson();
+          reportJson.reports = translatedReports;
+          reportJson.reportName = getReportName(reportType);
+          result.setCode(Integer.toString(200));
+          result.setMessage(gson.toJson(reportJson));
+        } else { // restResponse.getStatus() != 200
+            //model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + e.getMessage());
+            //logger.info("Failed to generate report {} for path {}", requestDTO.getType(), requestDTO.getPath(), e);
+            result.setMessage("Error Retrieving report");
+            result.setCode(Integer.toString(400));
+        }
+      } catch (Exception e) {
+        //model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + e.getMessage());
+        //logger.info("Failed to generate report {} for path {}", requestDTO.getType(), requestDTO.getPath(), e);
+        result.setMessage("Error Retrieving report");
+        result.setCode(Integer.toString(400));
+      }
+      return result;
+    }
+
   }
