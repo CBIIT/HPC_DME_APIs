@@ -173,9 +173,6 @@ body.loading .overlay{
 
 				</div>
 
-				<form  id="reportsform" action="#"
-					role="form" th:action="@{/reports}" th:object="${reportRequest}"
-					method="post" enctype="multipart/form-data">
 					
 					<!-- First Row Begin -->
 					<div class="row">
@@ -293,61 +290,23 @@ body.loading .overlay{
 							<div id="spinner" class="overlay"></div>
 						</div>
 					</div> <!-- Second Row end -->
-					<div class="row">
-						<div class="col-sm-12">&nbsp;</div>
-					</div>
-					<input type="hidden" id="actionType" name="actionType" />	 
-				</form>
-				<div style="width: 1000px; height: 1000px; margin-left: 1%;"
-					th:if="${reports != null and reports.size() == 1}">
+				<div class="row">
+					<div class="col-sm-12">&nbsp;</div>
+				</div>
+				<input type="hidden" id="actionType" name="actionType" />
+				<div style="width: 1000px; height: 1000px; margin-left: 1%;">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
-					<table class="table">
-						<caption style="font-weight:bold" th:text="${reportName}"></caption>
+					<table class="table" id="singleReport">
+						<caption id="singleReportTitleId" style="font-weight:bold"></caption>
 						<tbody>
-							<tr id='attrRow0' th:each="report : ${reports}">
+							<tr id='attrRow0'>
 								<td style="white-space: nowrap" align="right" colspan="2">
 									<table class="table">
-										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
-											<tr>
-												<td align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'DOC: ' + ${report.doc}">
-												</td>
-											</tr>
-										</div>
-										<div th:if="${report.user != null and !report.user.isEmpty()}">
-											<tr>
-												<td align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'User: ' + ${report.user}">
-												</td>
-											</tr>
-										</div>
-										<div th:if="${report.path != null and !report.path.isEmpty()}">
-											<tr>
-												<td align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'Base Path: ' + ${report.path}">
-												</td>
-											</tr>
-										</div>
-										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
-											<tr>
-												<td align="center"
-													style="background-color: #006DCC; color: white;" colspan="2"
-													th:text="'Reporting Period to Date: From ' + ${report.fromDate} + ' to ' + ${report.toDate}">
-												</td>
-											</tr>
-										</div>
-										<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
-											<td th:text="${entry.attribute}">value</td>
-											<td th:utext="${entry.value}">value</td>
-										</tr>
 									</table>
 								</td>
 							</tr>
@@ -489,6 +448,7 @@ body.loading .overlay{
 	//<![CDATA[
 	
 	$(document).ready(function() {
+		//alert("ready first");
 		var reportType = document.getElementById("reportType").value;
 		var exportFileName = "";
 		var reportHeaderTitle = "";
@@ -723,6 +683,7 @@ body.loading .overlay{
 	});
 
 	$(document).ready(function(){
+		//alert("ready select 2")
 		$('#sub-menu-reports').addClass("active");
 		$('.userSelect').select2({
 			placeholder: '-----------------Select User-----------------'
@@ -767,6 +728,7 @@ body.loading .overlay{
 
       //carousel
       $(document).ready(function() {
+			//alert("ready carousel");
           $("#owl-slider").owlCarousel({
               navigation : true,
               slideSpeed : 300,
@@ -794,6 +756,7 @@ body.loading .overlay{
 
       var toggle = true;
       function show(reportType) {
+		//alert("show");
     	var fromDateEle = document.getElementById("fromDateDiv");
     	var toDateEle = document.getElementById("toDateDiv");
     	var docListEle = document.getElementById("docList");
@@ -807,136 +770,84 @@ body.loading .overlay{
 			$('#fromDate').datepicker('setDate', '01/01/2016');
 			$('#toDate').datepicker('setDate', new Date());
       	}
-      	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
-      	{
-      		fromDateEle.style.display = "block";
-      		toDateEle.style.display = "block";
-      		docListEle.style.display = "none";
-      		userListEle.style.display = "none";
-      		basepathListEle.style.display = "none";
-      		pathEle.style.display = "none";
-			assaySummaryCheckboxEle.style.display = "block";
-      	}
-      	else if(selectedValue == "USAGE_SUMMARY_BY_DOC")
-      	{
-      		docListEle.style.display = "block";
-      		fromDateEle.style.display = "none";
-      		toDateEle.style.display = "none";
-      		userListEle.style.display = "none";
-      		basepathListEle.style.display = "none";
-      		pathEle.style.display = "none";
-			var doc = document.getElementById("doc").value;
-			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
-				assaySummaryCheckboxEle.style.display = "none";
-			} else {
+		switch (selectedValue) {
+			case "USAGE_SUMMARY_BY_DATE_RANGE":
+				fromDateEle.style.display = "block";
+				toDateEle.style.display = "block";
+				docListEle.style.display = "none";
+				userListEle.style.display = "none";
+				basepathListEle.style.display = "none";
+				pathEle.style.display = "none";
 				assaySummaryCheckboxEle.style.display = "block";
-			}
-      	}
-      	else if(selectedValue == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
-      	{
-      		fromDateEle.style.display = "block";
-      		toDateEle.style.display = "block";
-      		docListEle.style.display = "block";
-      		userListEle.style.display = "none";
-      		basepathListEle.style.display = "none";
-      		pathEle.style.display = "none";
-			var doc = document.getElementById("doc").value;
-			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+				  break;
+			case "USAGE_SUMMARY_BY_DOC":
+			case "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE":
+				fromDateEle.style.display = "block";
+				toDateEle.style.display = "block";
+				docListEle.style.display = "block";
+				userListEle.style.display = "none";
+				basepathListEle.style.display = "none";
+				pathEle.style.display = "none";
+				var doc = document.getElementById("doc").value;
+				if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+					assaySummaryCheckboxEle.style.display = "none";
+				} else {
+					assaySummaryCheckboxEle.style.display = "block";
+				}
+				break;
+			case "USAGE_SUMMARY_BY_USER":
+			case "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE":
+				userListEle.style.display = "block";
+				docListEle.style.display = "none";
+				fromDateEle.style.display = "block";
+				toDateEle.style.display = "block";
+				basepathListEle.style.display = "none";
+				pathEle.style.display = "none";
 				assaySummaryCheckboxEle.style.display = "none";
-			} else {
+				break;
+			case "USAGE_SUMMARY_BY_BASEPATH":
+			case "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE":
+				userListEle.style.display = "none";
+				docListEle.style.display = "none";
+				pathEle.style.display = "none";
+				fromDateEle.style.display = "block";
+				toDateEle.style.display = "block";
+				basepathListEle.style.display = "block";
+				var basepath = document.getElementById("basepath").value;
+				if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
+					assaySummaryCheckbox.style.display = "none";
+				} else {
+					assaySummaryCheckbox.style.display = "block";
+				}
+				break;
+			case "USAGE_SUMMARY_BY_PATH":
+			case "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE":
+				userListEle.style.display = "none";
+				docListEle.style.display = "none";
+				basepathListEle.style.display = "none";
+				fromDateEle.style.display = "block";
+				toDateEle.style.display = "block";
+				pathEle.style.display = "block";
 				assaySummaryCheckboxEle.style.display = "block";
-			}
-      	}
-      	else if(selectedValue == "USAGE_SUMMARY_BY_USER")
-      	{
-      		userListEle.style.display = "block";
-      		docListEle.style.display = "none";
-      		fromDateEle.style.display = "none";
-      		toDateEle.style.display = "none";
-      		basepathListEle.style.display = "none";
-      		pathEle.style.display = "none";
-			assaySummaryCheckboxEle.style.display = "none";
-      	}
-      	else if(selectedValue == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
-      	{
-      		userListEle.style.display = "block";
-      		docListEle.style.display = "none";
-      		fromDateEle.style.display = "block";
-      		toDateEle.style.display = "block";
-      		basepathListEle.style.display = "none";
-      		pathEle.style.display = "none";
-			assaySummaryCheckboxEle.style.display = "none";
-      	}
-      	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH")
-      	{
-      		userListEle.style.display = "none";
-      		docListEle.style.display = "none";
-      		fromDateEle.style.display = "none";
-      		toDateEle.style.display = "none";
-      		pathEle.style.display = "none";
-      		basepathListEle.style.display = "block";
-			var basepath = document.getElementById("basepath").value;
-			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
-				assaySummaryCheckbox.style.display = "none";
-			} else {
-				assaySummaryCheckbox.style.display = "block";
-			}
-		}
-      	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
-      	{
-      		userListEle.style.display = "none";
-      		docListEle.style.display = "none";
-      		pathEle.style.display = "none";
-      		fromDateEle.style.display = "block";
-      		toDateEle.style.display = "block";
-      		basepathListEle.style.display = "block";
-			var basepath = document.getElementById("basepath").value;
-			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
-				assaySummaryCheckbox.style.display = "none";
-			} else {
-				assaySummaryCheckbox.style.display = "block";
-			}
-        }
-      	else if(selectedValue == "USAGE_SUMMARY_BY_PATH")
-      	{
-      		userListEle.style.display = "none";
-      		docListEle.style.display = "none";
-      		fromDateEle.style.display = "none";
-      		toDateEle.style.display = "none";
-      		basepathListEle.style.display = "none";
-      		pathEle.style.display = "block";
-			assaySummaryCheckboxEle.style.display = "block";
-      	}
-      	else if(selectedValue == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
-      	{
-      		userListEle.style.display = "none";
-      		docListEle.style.display = "none";
-      		basepathListEle.style.display = "none";
-      		fromDateEle.style.display = "block";
-      		toDateEle.style.display = "block";
-      		pathEle.style.display = "block";
-			assaySummaryCheckboxEle.style.display = "block";
-      	}
-      	else
-      	{
-      		docListEle.style.display = "none";
-      		toDateEle.style.display = "none";
-      		fromDateEle.style.display = "none";
-      		docListEle.style.display = "none";
-      		userListEle.style.display = "none";
-      		basepathListEle.style.display = "none";
-      		pathEle.style.display = "none";
-			assaySummaryCheckboxEle.style.display = "none";
-      	}
-      	
-      }
+ 				break;
+			default:
+				docListEle.style.display = "none";
+				toDateEle.style.display = "none";
+				fromDateEle.style.display = "none";
+				docListEle.style.display = "none";
+				userListEle.style.display = "none";
+				basepathListEle.style.display = "none";
+				pathEle.style.display = "none";
+				assaySummaryCheckboxEle.style.display = "none";
+		} // end of switch
+      } // end of show function
 	
       function validateAndSubmit() {
+		//alert("validateAndSubmit");
 		var reportType = document.getElementById("reportType").value;
+		//alert(reportType);
 		var fromDateVal = document.getElementById("fromDate").value;
 		var toDateVal = document.getElementById("toDate").value;
-		var docListValue = document.getElementById("docList").value;
-		var userListValue = document.getElementById("userList").value;
     	  
 		var fromDate = new Date(fromDateVal);
 		var toDate = new Date(toDateVal);
@@ -979,20 +890,126 @@ body.loading .overlay{
 			document.getElementById("doc").value = "-1";
 			document.getElementById("user").value = "-1";
 			document.getElementById("basepath").value = "-1";
-			if(document.getElementById("path").value == null || document.getElementById("path").value == ""){
+			//alert(document.getElementById("id_collection_path").value);
+			if(document.getElementById("id_collection_path").value == null || document.getElementById("id_collection_path").value == ""){
 				alert("Please enter path");
 				return false;
 			}
 			//Strip trailing "/" if present
-			var lastChar = $("#path").val().substr(-1);
+			var lastChar = $("#id_collection_path").val().substr(-1);
 			if(lastChar === '/') {
-				var updatedPath = $("#path").val().slice(0, -1);
-				$("#path").val(updatedPath);
+				var updatedPath = $("#id_collection_path").val().slice(0, -1);
+				$("#id_collection_path").val(updatedPath);
 			}
 		}
-		$("#spinner").show();
-		document.getElementById("reportsform").submit();
-      }
+		//$("#spinner").show();
+		//document.getElementById("reportsform").submit();
+
+		//Get Report via Ajax Start
+		let archiveSummary = "";
+		var path = "";
+		var dataJson = {};
+		var reportType = document.getElementById("reportType").value;
+		var fromDate = document.getElementById("fromDate").value;
+		var toDate = document.getElementById("toDate").value;
+		let emptyDate = "";
+		let uri = '/reports/getReport';
+
+		switch (reportType) {
+			case "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE":
+				dataJson = {
+							path: document.getElementById("basepath").value,
+							reportType: reportType,
+							fromDate: fromDate,
+							toDate: toDate,
+							archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")
+						}
+				break;
+			case "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE":
+				dataJson = {
+							path: document.getElementById("doc").value,
+							reportType: reportType,
+							fromDate: fromDate,
+							toDate: toDate,
+							archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")
+						}
+				break;
+			case "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE":
+				dataJson = {
+							path: document.getElementById("id_collection_path").value,
+							reportType: reportType,
+							fromDate: fromDate,
+							toDate: toDate,
+							archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")
+						}
+				break;
+			case "USAGE_SUMMARY_BY_DATE_RANGE":
+				dataJson = {
+							path: "",
+							reportType: reportType,
+							fromDate: fromDate,
+							toDate: toDate,
+							archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")
+						}
+				break;
+			case "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE":
+				dataJson = {
+							path: $( "#user").val(),
+							reportType: reportType,
+							fromDate: fromDate,
+							toDate: toDate,
+							archiveSummaryCheckbox: false
+						}
+				break;
+		}
+
+		$.ajax({
+			type: 'GET',
+			url: uri,
+			data: dataJson,
+			dataType: 'json'
+		}).done(function (result) {
+			//$("#spinner").hide();
+			//alert(JSON.stringify(result.message));
+			const json = JSON.parse(result.message);
+			//alert(json.reportName);
+			//alert(json.reports[0].type);
+			$table = $('#singleReport');
+			//$table.find("tbody").empty();
+			$table.empty();
+
+			var pre_html = '<table class="table"> <caption style="font-weight:bold">' + json.reportName + '</caption>' + '<tbody><tr id="attrRow0"><td style="white-space: nowrap" align="right" colspan="2"><table class="table">';
+			var doc_html = "";
+			if(json.reports[0].doc != undefined && json.reports[0].doc.trim() != "") {
+				doc_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'DOC: ' + json.reports[0].doc + '</td> </tr>';
+			}
+			var user_html = "";
+			if(json.reports[0].user != undefined && json.reports[0].user.trim() != "") {
+				user_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'User: ' + json.reports[0].user + '</td> </tr> ';
+			}
+			var path_html = "";
+			if(json.reports[0].path != undefined && json.reports[0].path.trim() != "") {
+				path_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'Base Path: ' + json.reports[0].path + '</td> </tr> ';
+			}
+			var dates_html = "";
+			if(json.reports[0].fromDate != undefined && json.reports[0].fromDate.trim() != "") {
+				dates_html =  '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'Reporting Period to Date: From ' + json.reports[0].fromDate + ' to ' + json.reports[0].fromDate + '</td> </tr> ';
+			}
+			var entries_html = "";
+			$.each(json.reports[0].reportEntries, function (i, report) {
+				entries_html += '<tr><td>' + report.attribute + '</td><td>' + report.value + '</td></tr>';
+			});
+			$table.append(pre_html + doc_html + user_html + path_html + dates_html + entries_html + '</table></td></tr></tbody></table>');
+			if(result.message != null && result.message != "") {
+				//archiveSummary = JSON.stringify(result.message);
+				//let archiveSummaryStr = archiveSummary.slice(1, -1);
+				//data.archive_summary_value = archiveSummaryStr;
+			} else {
+				//data.archive_summary_value = "NA";
+			}
+		});
+		//End of Get Report via Ajax Start
+      } // End of validateAndSubmit
 
 
       function validateDateRange(){
