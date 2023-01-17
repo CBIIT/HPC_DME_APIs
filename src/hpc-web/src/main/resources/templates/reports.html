@@ -215,11 +215,6 @@ body.loading .overlay{
 								<select size="1"
 									id="user" name="user" class="userSelect" style="width: 100%">
 										<option></option>
-										<option
-											th:each="entry : ${docUsers}"
-											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
-											th:selected="${reportRequest.getUser() == entry.getUserId()}">
-											Wireframe</option>
 								</select>
 							</div>
 						</div>
@@ -316,81 +311,21 @@ body.loading .overlay{
 				<!-- Start of Grid code -->
 				<!-- Start BasePath or DOC Grid -->
 				
-				<div 
-				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+				
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
 
-					<table id="reportgrid" class="display" style="width:100%; display: none">
-						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
+					<table id="reportgrid" class="display" style="width:100%;">
 						<thead>
-							<tr id='attrRow0'>
+							<tr id='attrDocRow0'>
 								<td style="color: black; font-weight:bold" id='index0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
-								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
-						<tbody>
-							<tr id='attrCol0' th:each="report : ${reports}">
-							   <td id='index1'></td>
-							   <td id='path1'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="${report.getPath()}"></td>
-							   <td id='path2'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="${report.getDoc()}"></td>
-							   <td id='attr0' th:utext="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
-							</tr>
-						</tbody>
-						<tfoot>
-							<tr id='attrFooter0'>
-								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
-								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
-							</tr>
-						</tfoot>
 					</table>
-				</div>
+				
 				<!-- End BasePath or DOC Grid -->
 				<!-- Start Data Owner Grid -->
-				<div 
-				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
-					<table id="reportgrid" class="display" style="width:100%; display: none">
-						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
-						<thead>
-							<tr id='attrRow2'>
-								<td style="color: black; font-weight:bold" id='index001' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path001' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path002' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path003' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path004' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Generator'"></td>
-								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr id='attrCol2' th:each="report : ${reports}">
-							   <td id='index01'></td>
-							   <td id='path1'  th:text="${report.getDoc()}"></td>
-							   <td id='path2' th:text="${report.getPath()}"></td>
-							   <td id='path3' th:text="${report.getUser()}"></td>
-							   <td id='path4' th:text="${report.getDataOwner()}"></td>
-							   <td id='path5' th:text="${report.getDataCurator()}"></td>
-							   <td id='attr0' th:utext="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
-							</tr>
-						</tbody>
-						<tfoot>
-							<tr id='attrFooter2'>
-								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0011' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path0022' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0033' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Generator'"></td>
-								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
-							</tr>
-						</tfoot>
-					</table>
-				</div>
 				<!-- End Data Owner Grid -->
 				<!-- End of Grid code -->
 			</section>
@@ -804,6 +739,19 @@ body.loading .overlay{
 				basepathListEle.style.display = "none";
 				pathEle.style.display = "none";
 				assaySummaryCheckboxEle.style.display = "none";
+				if ($('#user option').length == 1) {
+					let uri = '/reports/getUsers';
+					$.ajax({
+							type: 'GET',
+							url: uri,
+							dataType: 'json'
+						}).done(function (result) {
+							var data = JSON.parse(result.message.replace("\\", ""));
+							$.each(data, function (index, value) {
+								$('#user').append('<option value="' + value.userId + '">' + value.displayName + '</option>');
+						});
+					});
+				}
 				break;
 			case "USAGE_SUMMARY_BY_BASEPATH":
 			case "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE":
@@ -914,25 +862,37 @@ body.loading .overlay{
 		var toDate = document.getElementById("toDate").value;
 		let emptyDate = "";
 		let uri = '/reports/getReport';
+		let grid = false;
 
 		switch (reportType) {
 			case "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE":
+				path = document.getElementById("basepath").value;
 				dataJson = {
-							path: document.getElementById("basepath").value,
+							path: path,
 							reportType: reportType,
 							fromDate: fromDate,
-							toDate: toDate,
-							archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")
-						}
+							toDate: toDate
+							};
+				if (path != 'All'){
+					dataJson = Object.assign(dataJson, {archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")});
+				} else {
+					grid = true;
+				}
+				//alert(JSON.stringify(dataJson));
 				break;
 			case "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE":
+				path = document.getElementById("doc").value;
 				dataJson = {
-							path: document.getElementById("doc").value,
+							path: path,
 							reportType: reportType,
 							fromDate: fromDate,
-							toDate: toDate,
-							archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")
+							toDate: toDate
 						}
+				if (path != 'All'){
+					dataJson = Object.assign(dataJson, {archiveSummaryCheckbox: $("#assaySummaryCheckboxId").prop("checked")});
+				} else {
+					grid = true;
+				}
 				break;
 			case "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE":
 				dataJson = {
@@ -958,56 +918,102 @@ body.loading .overlay{
 							reportType: reportType,
 							fromDate: fromDate,
 							toDate: toDate,
-							archiveSummaryCheckbox: false
+							archiveSummaryCheckbox: false // The User Report does not use the checkbox for Archive Summary
 						}
+				break;
+			case "USAGE_SUMMARY_BY_DATA_OWNER":
+				dataJson = {
+							reportType: reportType,
+							fromDate: fromDate,
+							toDate: toDate,
+						}
+				grid = true;
 				break;
 		}
 
-		$.ajax({
-			type: 'GET',
-			url: uri,
-			data: dataJson,
-			dataType: 'json'
-		}).done(function (result) {
-			//$("#spinner").hide();
-			//alert(JSON.stringify(result.message));
-			const json = JSON.parse(result.message);
-			//alert(json.reportName);
-			//alert(json.reports[0].type);
-			$table = $('#singleReport');
-			//$table.find("tbody").empty();
-			$table.empty();
+		if(!grid) {
+			$.ajax({
+				type: 'GET',
+				url: uri,
+				data: dataJson,
+				dataType: 'json'
+			}).done(function (result) {
+				//$("#spinner").hide();
+				const json = JSON.parse(result.message);
+				document.getElementById("reportgrid").style.display = "none";
+				$table = $('#singleReport');
+				//$table.find("tbody").empty();
+				$table.empty();
+				document.getElementById("singleReport").style.display = "block";
 
-			var pre_html = '<table class="table"> <caption style="font-weight:bold">' + json.reportName + '</caption>' + '<tbody><tr id="attrRow0"><td style="white-space: nowrap" align="right" colspan="2"><table class="table">';
-			var doc_html = "";
-			if(json.reports[0].doc != undefined && json.reports[0].doc.trim() != "") {
-				doc_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'DOC: ' + json.reports[0].doc + '</td> </tr>';
-			}
-			var user_html = "";
-			if(json.reports[0].user != undefined && json.reports[0].user.trim() != "") {
-				user_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'User: ' + json.reports[0].user + '</td> </tr> ';
-			}
-			var path_html = "";
-			if(json.reports[0].path != undefined && json.reports[0].path.trim() != "") {
-				path_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'Base Path: ' + json.reports[0].path + '</td> </tr> ';
-			}
-			var dates_html = "";
-			if(json.reports[0].fromDate != undefined && json.reports[0].fromDate.trim() != "") {
-				dates_html =  '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'Reporting Period to Date: From ' + json.reports[0].fromDate + ' to ' + json.reports[0].fromDate + '</td> </tr> ';
-			}
-			var entries_html = "";
-			$.each(json.reports[0].reportEntries, function (i, report) {
-				entries_html += '<tr><td>' + report.attribute + '</td><td>' + report.value + '</td></tr>';
+				var pre_html = '<table class="table"> <caption style="font-weight:bold">' + json.reportName + '</caption>' + '<tbody><tr id="attrRow0"><td style="white-space: nowrap" align="right" colspan="2"><table class="table">';
+				var doc_html = "";
+				if(json.reports[0].doc != undefined && json.reports[0].doc.trim() != "") {
+					doc_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'DOC: ' + json.reports[0].doc + '</td> </tr>';
+				}
+				var user_html = "";
+				if(json.reports[0].user != undefined && json.reports[0].user.trim() != "") {
+					user_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'User: ' + json.reports[0].user + '</td> </tr> ';
+				}
+				var path_html = "";
+				if(json.reports[0].path != undefined && json.reports[0].path.trim() != "") {
+					path_html = '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'Base Path: ' + json.reports[0].path + '</td> </tr> ';
+				}
+				var dates_html = "";
+				if(json.reports[0].fromDate != undefined && json.reports[0].fromDate.trim() != "") {
+					dates_html =  '<tr> <td align="center" style="background-color: #006DCC; color: white;" colspan="2">' + 'Reporting Period to Date: From ' + json.reports[0].fromDate + ' to ' + json.reports[0].fromDate + '</td> </tr> ';
+				}
+				var entries_html = "";
+				$.each(json.reports[0].reportEntries, function (i, report) {
+					entries_html += '<tr><td>' + report.attribute + '</td><td>' + report.value + '</td></tr>';
+				});
+				$table.append(pre_html + doc_html + user_html + path_html + dates_html + entries_html + '</table></td></tr></tbody></table>');
+				if(result.message != null && result.message != "") {
+					//archiveSummary = JSON.stringify(result.message);
+					//let archiveSummaryStr = archiveSummary.slice(1, -1);
+					//data.archive_summary_value = archiveSummaryStr;
+				} else {
+					//const json = JSON.parse(result.message);
+					//alert(json.reportName);
+					//alert(json.reports[0].type);
+					
+				}
 			});
-			$table.append(pre_html + doc_html + user_html + path_html + dates_html + entries_html + '</table></td></tr></tbody></table>');
-			if(result.message != null && result.message != "") {
-				//archiveSummary = JSON.stringify(result.message);
-				//let archiveSummaryStr = archiveSummary.slice(1, -1);
-				//data.archive_summary_value = archiveSummaryStr;
-			} else {
-				//data.archive_summary_value = "NA";
-			}
-		});
+		} else {
+			//Grid Code
+			//alert('GRID');
+			//alert(dataJson);
+			$.ajax({
+				type: 'GET',
+				url: '/reports/getGridReport',
+				data: dataJson,
+				dataType: 'json'
+			}).done(function (result) {
+				//$("#spinner").hide();
+				const json = JSON.parse(result.message);
+				//alert(JSON.stringify(json.reports[0]));
+				document.getElementById("singleReport").style.display = "none";
+				document.getElementById("reportgrid").style.display = "block";
+				$table = $('#reportgrid');
+				$tr =  $('#attrDocRow0');
+				//$table.empty();
+				//document.getElementById("reportgrid").style.display = "block";
+				var header_html = "";
+				/*var pre_html = '<table class="table"> <caption style="font-weight:bold">' + json.reportName + '</caption>' + '<thead><tr id="attrRow0">';
+				let header_html = pre_html + '<td style="color: black; font-weight:bold" id="index0">Index</td>';
+				header_html = header_html + '<td style="color: black; font-weight:bold" id="path0">Base Path</td>';*/
+				if(reportType === 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'){
+					header_html += '<td style="color: black; font-weight:bold">' + 'Base Path' + '</td>';
+				} else {
+					header_html += '<td style="color: black; font-weight:bold">' + 'Doc' + '</td>';
+				}
+				$.each(json.reports[0].reportEntries, function (i, report) {
+					header_html += '<td style="color: black; font-weight:bold">' + report.attribute + '</td>';
+				});
+				//alert(header_html);
+				$tr.append(header_html);
+			});
+		}
 		//End of Get Report via Ajax Start
       } // End of validateAndSubmit
 
