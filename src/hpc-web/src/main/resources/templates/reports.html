@@ -102,7 +102,7 @@ label {
     width: 10em;
     margin-right: 0em;
     padding-top: 1.5em;
-    text-align:center;
+    text-align:left;
 }
 
 
@@ -278,23 +278,24 @@ body.loading .overlay{
     							</div>
 							</div>
 						</div>
-						<div style="display: block" id="gen" class="item">
-							<div class="col-sm-2" id="assaySummaryCheckbox">
-								<label style="padding-left: 50px;"> <b>Archive Summary</b>
-									<input type="checkbox" id="assaySummaryCheckboxId" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+						<div style="display: block" id="gen" class="form-group">
+							<div class="col-sm-7" id="assaySummaryCheckbox" style="padding-top: 37px">
+								&nbsp;&nbsp;<input type="checkbox" id="assaySummaryCheckboxId" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+								<label style="padding-left: 3px;" for="assaySummaryCheckboxId">
+									<b>Include&nbsp;Archive&nbsp;Summary</b>
 								</label>
 							</div>
-							<div class="col-sm-2">
-								<label>&nbsp;</label>
-								<button type="submit" class="btn btn-md btn-primary"
-									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
-							</div>
-							<div class="col-sm-1">&nbsp;</div>
 							<div id="spinner" class="overlay"></div>
 						</div>
 					</div> <!-- Second Row end -->
+					<div class="row"  th:if="${reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
 					<div class="row">
-						<div class="col-sm-12">&nbsp;</div>
+						<div class="col-sm-12">
+							<button type="submit" class="btn btn-md btn-primary"
+								id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
+						</div>
 					</div>
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
@@ -362,6 +363,9 @@ body.loading .overlay{
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
 
 					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
@@ -395,6 +399,9 @@ body.loading .overlay{
 				<!-- Start Data Owner Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
 					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
 						<thead>
