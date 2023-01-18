@@ -188,9 +188,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
 			if (!validationResult.getValid()) {
 				if (StringUtils.isEmpty(validationResult.getMessage())) {
-					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException(INVALID_METADATA_MSG + ". Path - " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
 				} else {
-					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException(validationResult.getMessage() + ". Path - " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 			}
 		}
@@ -1161,10 +1163,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	 * @return The Calendar instance.
 	 */
 	private Calendar toCalendar(String calendarStr) {
-		if(StringUtils.isEmpty(calendarStr)) {
+		if (StringUtils.isEmpty(calendarStr)) {
 			return null;
 		}
-		
+
 		Calendar cal = Calendar.getInstance();
 		try {
 			cal.setTime(dateFormat.parse(calendarStr));
