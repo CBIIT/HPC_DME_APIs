@@ -146,6 +146,7 @@ body.loading .overlay{
 .tableFixHead thead th {
         position: sticky; /* make the table heads sticky */
         top: 0px; /* table head will be placed from the top of the table and sticks to it */
+		text-align: center;
       }
 
 </style>
@@ -326,34 +327,34 @@ body.loading .overlay{
 										<thead>
 										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
 											<tr>
-												<td align="center"
+												<th align="center"
 													style="background-color: #006DCC; color: white;"
 													colspan="2" th:text="'DOC: ' + ${report.doc}">
-												</td>
+												</th>
 											</tr>
 										</div>
 										<div th:if="${report.user != null and !report.user.isEmpty()}">
 											<tr>
-												<td align="center"
+												<th align="center"
 													style="background-color: #006DCC; color: white;"
 													colspan="2" th:text="'User: ' + ${report.user}">
-												</td>
+												</th>
 											</tr>
 										</div>
 										<div th:if="${report.path != null and !report.path.isEmpty()}">
 											<tr>
-												<td align="center"
+												<th align="center"
 													style="background-color: #006DCC; color: white;"
 													colspan="2" th:text="'Base Path: ' + ${report.path}">
-												</td>
+												</th>
 											</tr>
 										</div>
 										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
 											<tr>
-												<td align="center"
+												<th align="center"
 													style="background-color: #006DCC; color: white;" colspan="2"
 													th:text="'Reporting Period to Date: From ' + ${report.fromDate} + ' to ' + ${report.toDate}">
-												</td>
+												</th>
 											</tr>
 										</div>
 										</thead>
