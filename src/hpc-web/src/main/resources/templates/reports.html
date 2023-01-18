@@ -139,6 +139,15 @@ body.loading .overlay{
     display: block;
 }
 
+.tableFixHead {
+        overflow-y: auto; /* make the table scrollable if height is more than 800 px  */
+        height: 800px; /* gives an initial height of 800px to the table */
+      }
+.tableFixHead thead th {
+        position: sticky; /* make the table heads sticky */
+        top: 0px; /* table head will be placed from the top of the table and sticks to it */
+      }
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -312,7 +321,9 @@ body.loading .overlay{
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
 								<td style="white-space: nowrap" align="right" colspan="2">
+								<div class="tableFixHead">
 									<table class="table">
+										<thead>
 										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
 											<tr>
 												<td align="center"
@@ -345,11 +356,15 @@ body.loading .overlay{
 												</td>
 											</tr>
 										</div>
-										<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
-											<td th:text="${entry.attribute}">value</td>
-											<td th:utext="${entry.value}">value</td>
-										</tr>
+										</thead>
+										<tbody>
+											<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
+												<td th:text="${entry.attribute}">value</td>
+												<td th:utext="${entry.value}">value</td>
+											</tr>
+										</tbody>
 									</table>
+								</div>
 								</td>
 							</tr>
 						</tbody>
