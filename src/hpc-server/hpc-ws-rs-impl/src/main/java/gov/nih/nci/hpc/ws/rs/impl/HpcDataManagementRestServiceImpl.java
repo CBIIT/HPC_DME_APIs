@@ -66,6 +66,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -268,17 +269,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response moveCollection(String path, String destinationPath) {
+	public Response moveCollection(String path, String destinationPath, Boolean alignArchivePath) {
+		HpcMoveResponseDTO moveResponse = null;
 		try {
-			dataManagementBusService.movePath(toNormalizedPath(path), true, toNormalizedPath(destinationPath));
+			moveResponse = dataManagementBusService.movePath(toNormalizedPath(path), true,
+					toNormalizedPath(destinationPath), alignArchivePath);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
 		}
 
-		return okResponse(null, false);
+		return okResponse(moveResponse, false);
 	}
-	
+
 	@Override
 	public Response recoverCollection(String path) {
 		try {
@@ -408,7 +411,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		HpcCompleteMultipartUploadResponseDTO responseDTO = null;
 
 		try {
-			responseDTO = dataManagementBusService.completeMultipartUpload(toNormalizedPath(path),
+			// Note that the completion of upload w/ URL was extended to single part URLs.
+			// However, for now - we kept the endpoint as-is and it will be updated in a
+			// future change
+			responseDTO = dataManagementBusService.completeUrlUpload(toNormalizedPath(path),
 					completeMultipartUploadRequest);
 
 		} catch (HpcException e) {
@@ -631,12 +637,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response retryDataObjectDownloadTask(String taskId,
-			HpcDownloadRetryRequestDTO downloadRetryRequest) {
+	public Response retryDataObjectDownloadTask(String taskId, HpcDownloadRetryRequestDTO downloadRetryRequest) {
 		HpcDataObjectDownloadResponseDTO downloadResponse = null;
 		try {
-			downloadResponse = dataManagementBusService.retryDataObjectDownloadTask(taskId,
-					downloadRetryRequest);
+			downloadResponse = dataManagementBusService.retryDataObjectDownloadTask(taskId, downloadRetryRequest);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -644,7 +648,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 		return okResponse(downloadResponse, false);
 	}
-	
+
 	@Override
 	public Response deleteDataObject(String path, Boolean force) {
 		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = null;
@@ -660,15 +664,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response moveDataObject(String path, String destinationPath) {
+	public Response moveDataObject(String path, String destinationPath, Boolean alignArchivePath) {
+		HpcMoveResponseDTO moveResponse = null;
 		try {
-			dataManagementBusService.movePath(toNormalizedPath(path), false, toNormalizedPath(destinationPath));
+			moveResponse = dataManagementBusService.movePath(toNormalizedPath(path), false,
+					toNormalizedPath(destinationPath), alignArchivePath);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
 		}
 
-		return okResponse(null, false);
+		return okResponse(moveResponse, false);
 	}
 
 	@Override
@@ -682,7 +688,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 		return okResponse(null, false);
 	}
-	
+
 	@Override
 	public Response setDataObjectPermissions(String path, HpcEntityPermissionsDTO dataObjectPermissionsRequest) {
 		HpcEntityPermissionsResponseDTO permissionsResponse = null;
@@ -848,7 +854,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	public Response getDataManagementModel(String basePath, Boolean metadataRules) {
 		HpcDataManagementModelDTO docModel = null;
 		try {
-			docModel = dataManagementBusService.getDataManagementModel(toNormalizedPath(basePath), metadataRules != null ? metadataRules : true);
+			docModel = dataManagementBusService.getDataManagementModel(toNormalizedPath(basePath),
+					metadataRules != null ? metadataRules : true);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
