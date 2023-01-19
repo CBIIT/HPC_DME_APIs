@@ -99,7 +99,7 @@
 										<div class="col-md-6 form-group">
 											<label for="Name">ID:</label> <label
 												for="${receipt.getEventType().value()}"
-												th:text="${receipt.getEventType().value()}"></label>
+												th:text="${#strings.replace(receipt.getEventType().value(),'_',' ')}"></label>
 										</div>
 										<div class="col-md-6 form-group">
 											<label for="Name">Created On:</label> <label
@@ -133,9 +133,9 @@
 										</thead>
 										<tbody>
 											<tr th:each="entry : ${receipt.getEventPayloadEntries()}">
-												<td><label th:text="${entry.getAttribute()}"></label></td>
-												<td><label for="${entry.getAttribute()}"
-													th:text="${entry.getValue()}"></label></td>
+												<td><label th:text="${#strings.replace(entry.getAttribute(),'_',' ')}"></label></td>
+												<td><label th:for="${entry.getAttribute()}"
+													th:utext="${entry.getValue()}"></label></td>
 											</tr>
 										</tbody>
 									</table>

@@ -112,4 +112,9 @@ public class MiscUtil {
         return value + " (" + humanReadableSize + ")";
     }
 
+	public static String getHumanReadableSize(String value, boolean useSIUnits) {
+	    String humanReadableSize = humanReadableByteCount(Double.parseDouble(value), useSIUnits);
+	    return humanReadableSize;
+	}
+
 }

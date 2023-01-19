@@ -46,6 +46,7 @@
 			<xsd:enumeration value="GOOGLE_CLOUD_STORAGE" />
 			<xsd:enumeration value="SYNC" />
 			<xsd:enumeration value="URL_SINGLE_PART" />
+			<xsd:enumeration value="URL_SINGLE_PART_WITH_COMPLETION" />
 			<xsd:enumeration value="URL_MULTI_PART" />
 			<xsd:enumeration value="FILE_SYSTEM" />
 		</xsd:restriction>
@@ -314,6 +315,7 @@
 			<xsd:element name="collectionDownloadTaskId" type="xsd:string" />
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -361,10 +363,13 @@
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="processed" type="xsd:dateTime" />
 			<xsd:element name="percentComplete" type="xsd:int" />
+			<xsd:element name="stagingPercentComplete" type="xsd:int" minOccurs="0" />
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="s3DownloadTaskServerId" type="xsd:string" />
+			<xsd:element name="firstHopRetried" type="xsd:boolean" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -373,6 +378,8 @@
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="collectionPaths" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="type"
 				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
 			<xsd:element name="dataTransferRequestId"
@@ -398,6 +405,8 @@
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
+			<xsd:element name="firstHopRetried" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -432,6 +441,7 @@
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
@@ -443,6 +453,7 @@
 			<xsd:element name="dataObjectDownloadTaskId"
 				type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="collectionPath" type="xsd:string" />
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="result"
@@ -454,6 +465,8 @@
 				minOccurs="0" />
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			<xsd:element name="restoreInProgress" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="stagingInProgress" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="stagingPercentComplete" type="xsd:int" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -482,6 +495,7 @@
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result"
 				type="hpc-domain-datatransfer:HpcDownloadResult" />
+			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />

@@ -294,7 +294,7 @@ public class HpcReviewController extends AbstractHpcController {
 		levelFilter1.setLabel("PI_Lab");
 		levelFilter1.setOperator(HpcMetadataQueryOperator.EQUAL);
 		q1.setLevelFilter(levelFilter1);
-		q1.setAttribute("data_curator");
+		q1.setAttribute("data_curator"); //The view column name remains data_curator but pulling data_generator_userid attribute.
 		q1.setValue("%");
 		q1.setOperator(HpcMetadataQueryOperator.LIKE);
 		queries.add(q1);
@@ -323,45 +323,6 @@ public class HpcReviewController extends AbstractHpcController {
 
 		return returnResults;
 
-	}
-
-	@SuppressWarnings("unused")
-	private List<HpcReviewSearchResult> processCollectionResults(Response restResponse) throws IOException {
-		MappingJsonFactory factory = new MappingJsonFactory();
-		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
-
-		List<HpcCollectionDTO> searchResults = collections.getCollections();
-		List<HpcReviewSearchResult> returnResults = new ArrayList<HpcReviewSearchResult>();
-
-		for (HpcCollectionDTO result : searchResults) {
-
-			HpcReviewSearchResult returnResult = new HpcReviewSearchResult();
-			returnResult.setPath(result.getCollection().getAbsolutePath());
-			String projectTitle = getAttributeValue("project_title", result.getMetadataEntries());
-			if (projectTitle == null)
-				projectTitle = getAttributeValue("project_name", result.getMetadataEntries());
-			returnResult.setProjectTitle(projectTitle);
-			String projectDescription = getAttributeValue("project_description", result.getMetadataEntries());
-			if (projectDescription == null)
-				projectDescription = getAttributeValue("description", result.getMetadataEntries());
-			returnResult.setProjectDescription(projectDescription);
-			returnResult.setStartDate(getAttributeValue("start_date", result.getMetadataEntries()));
-			returnResult.setDataOwner(getAttributeValue("data_owner", result.getMetadataEntries()));
-			returnResult.setDataCurator(getAttributeValue("data_curator", result.getMetadataEntries()));
-			returnResult.setProjectStatus(getAttributeValue("project_status", result.getMetadataEntries()));
-			String publications = getAttributeValue("publication", result.getMetadataEntries());
-			if (publications == null)
-				publications = getAttributeValue("publications", result.getMetadataEntries());
-			returnResult.setPublications(publications);
-			returnResult.setSunsetDate(getAttributeValue("sunset_date", result.getMetadataEntries()));
-			returnResult.setLastReviewed(getAttributeValue("last_reviewed", result.getMetadataEntries()));
-
-			returnResults.add(returnResult);
-
-		}
-
-		return returnResults;
 	}
 
 	private List<HpcReviewSearchResult> processReviewResults(Response restResponse) throws IOException {

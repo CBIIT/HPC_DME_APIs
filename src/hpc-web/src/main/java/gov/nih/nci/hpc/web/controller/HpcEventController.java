@@ -32,7 +32,7 @@ import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
-
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -84,8 +84,15 @@ public class HpcEventController extends AbstractHpcController {
 						.readValueAs(HpcNotificationDeliveryReceiptListDTO.class);
 				if (receiptsDTO != null) {
 					List<HpcNotificationDeliveryReceiptDTO> receipts = receiptsDTO.getNotificationDeliveryReceipts();
-					if (receipts != null && receipts.size() > 0)
+					if (receipts != null && receipts.size() > 0) {
+					    for(HpcNotificationDeliveryReceiptDTO receipt: receipts) {
+					      for(HpcEventPayloadEntry entry : receipt.getEventPayloadEntries()) {
+					        if(entry.getValue().startsWith("<br>"))
+					          entry.setValue(entry.getValue().substring("<br>".length()));
+					      }
+					    }
 						model.addAttribute("receipt", receipts.get(0));
+					}
 				}
 			} else {
 				String message = "No matching results!";

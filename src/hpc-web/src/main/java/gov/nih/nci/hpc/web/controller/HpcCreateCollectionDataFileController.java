@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.ui.Model;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
@@ -59,6 +61,7 @@ import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -79,8 +82,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
-	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
-	private String collectionAclURL;
+
+	@Autowired
+	private HpcModelBuilder hpcModelBuilder;
 
 	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
 	private Gson gson = new Gson();
@@ -137,8 +141,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 				session.setAttribute("userDOCModel", modelDTO);
 			}
-			HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, collectionAclURL, sslCertPath,
-					sslCertPassword);
+
+			HpcPermission[] hpcPermissions = {HpcPermission.OWN, HpcPermission.WRITE};
+			populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "basePaths",
+			sslCertPath, sslCertPassword, session, hpcModelBuilder);
 			basePaths = (Set<String>) session.getAttribute("basePaths");
 		}
 

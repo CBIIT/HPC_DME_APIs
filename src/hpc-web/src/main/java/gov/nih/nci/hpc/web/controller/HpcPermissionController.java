@@ -20,6 +20,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -35,6 +36,7 @@ import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
 import gov.nih.nci.hpc.web.model.HpcPermissions;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -48,7 +50,11 @@ import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -94,6 +100,16 @@ public class HpcPermissionController extends AbstractHpcController {
 	private String groupServiceURL;
 	@Value("${hpc.serviceaccount}")
 	private String serviceAccount;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
+	@Value("${gov.nih.nci.hpc.server.collection.acl}")
+	private String collectionAclsURL;
+
+	@Autowired
+	private HpcModelBuilder hpcModelBuilder;
+
+	//The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	/**
 	 * GET action to populate user permissions
@@ -180,6 +196,26 @@ public class HpcPermissionController extends AbstractHpcController {
 				Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 				if (restResponse.getStatus() == 200) {
 					redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
+
+					//Reload the base path permissions if this is a base path permission change
+
+					String path = permissionsRequest.getPath();
+					String basePath = path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2) < 0 ? path.length() : StringUtils.ordinalIndexOf(path, "/", 2));
+				     if(basePath.contentEquals(path)) {
+
+				        //Get DOC Models, goes to server only if cache does not have it
+				        HpcDataManagementModelDTO modelDTO =
+				        hpcModelBuilder.getDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
+				        if(modelDTO != null) {
+				            //Overwrite session attribute
+			                session.setAttribute("userDOCModel", modelDTO);
+
+			                //Reload the base paths permissions
+			                hpcModelBuilder.updateModelPermissions(modelDTO, authToken, collectionAclsURL,
+			                this.sslCertPath, this.sslCertPassword);
+				        }
+				     }
+
 					return "redirect:/permissions?assignType=User&type="
 							+ MiscUtil.performUrlEncoding(permissionsRequest.getType()) + "&path="
 							+ MiscUtil.performUrlEncoding(permissionsRequest.getPath());
@@ -198,15 +234,9 @@ public class HpcPermissionController extends AbstractHpcController {
 					model.addAttribute("updateStatus", "Failed to save criteria! Reason: " + exception.getMessage());
 				}
 			}
-		} catch (HttpStatusCodeException e) {
-			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-			e.printStackTrace();
-		} catch (RestClientException e) {
-			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-			e.printStackTrace();
 		} catch (Exception e) {
 			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-			e.printStackTrace();
+			logger.error(String.format("Failed to update permissions for path %s",permissionsRequest.getPath()), e);
 		} finally {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			if (user == null) {
@@ -225,6 +255,8 @@ public class HpcPermissionController extends AbstractHpcController {
 				sslCertPassword);
 		model.addAttribute("ownpermission",
 				(userPermission != null && userPermission.getPermission().equals(HpcPermission.OWN)) ? true : false);
+
+
 		return "permission";
 	}
 	

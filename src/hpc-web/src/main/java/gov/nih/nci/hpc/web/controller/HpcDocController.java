@@ -62,6 +62,9 @@ public class HpcDocController extends AbstractHpcController {
 	private String hpcModelURL;
 	@Value("${gov.nih.nci.hpc.server.refresh.model}")
 	private String hpcRefreshModelURL;
+	@Value("${gov.nih.nci.hpc.server.collection.acl}")
+	private String collectionAclsURL;
+
 
 	@Autowired
 	private HpcModelBuilder hpcModelBuilder;
@@ -95,7 +98,6 @@ public class HpcDocController extends AbstractHpcController {
 		return "doc";
 	}
 
-
 	@RequestMapping(method = RequestMethod.POST)
 	public String update(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcUser,
 			Model model, BindingResult bindingResult, HttpSession session) {
@@ -107,14 +109,18 @@ public class HpcDocController extends AbstractHpcController {
 		//Refresh DOC Models on the server
 		HpcClientUtil.refreshDOCModels(authToken, this.hpcRefreshModelURL,
 	            this.sslCertPath, this.sslCertPassword);
+
 		//Reload DOC Models
 		HpcDataManagementModelDTO modelDTO =
             hpcModelBuilder.updateDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
 		session.setAttribute("userDOCModel", modelDTO);
-
 		model.addAttribute("userDOCModel", modelDTO);
-		return "doc";
 
+		//Reload the base path permissions
+		hpcModelBuilder.updateModelPermissions(modelDTO, authToken, collectionAclsURL,
+				this.sslCertPath, this.sslCertPassword);
+
+		return "doc";
 	}
 
 }
