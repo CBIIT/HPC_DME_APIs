@@ -16,6 +16,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -946,7 +947,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		int effectiveTransferSpeed = 0;
 		int completedItems = 0;
 		for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
-			if (Boolean.TRUE.equals(item.getTask().getResult()) && item.getRequest().getLinkSourcePath() == null) {
+			if (Boolean.TRUE.equals(item.getTask().getResult()) && item.getRequest().getLinkSourcePath() == null
+					&& item.getTask().getEffectiveTransferSpeed() != null) {
 				effectiveTransferSpeed += item.getTask().getEffectiveTransferSpeed();
 				completedItems++;
 			}
@@ -1098,15 +1100,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		HpcDataObjectRegistrationResult dataObjectRegistrationResult = new HpcDataObjectRegistrationResult();
+		Calendar now = Calendar.getInstance();
 		dataObjectRegistrationResult.setId(systemGeneratedMetadata.getObjectId());
 		dataObjectRegistrationResult.setPath(path);
 		dataObjectRegistrationResult.setResult(result);
 		dataObjectRegistrationResult.setMessage(message);
 		dataObjectRegistrationResult.setUploadMethod(systemGeneratedMetadata.getDataTransferMethod());
 		dataObjectRegistrationResult.setUserId(systemGeneratedMetadata.getRegistrarId());
-		dataObjectRegistrationResult.setCreated(systemGeneratedMetadata.getDataTransferStarted());
-		dataObjectRegistrationResult.setCompleted(
-				Optional.ofNullable(systemGeneratedMetadata.getDataTransferCompleted()).orElse(Calendar.getInstance()));
+		dataObjectRegistrationResult
+				.setCreated(Optional.ofNullable(systemGeneratedMetadata.getDataTransferStarted()).orElse(now));
+		dataObjectRegistrationResult
+				.setCompleted(Optional.ofNullable(systemGeneratedMetadata.getDataTransferCompleted()).orElse(now));
 		dataObjectRegistrationResult.setDataTransferRequestId(systemGeneratedMetadata.getDataTransferRequestId());
 		dataObjectRegistrationResult.setSourceLocation(systemGeneratedMetadata.getSourceLocation());
 
@@ -1139,7 +1143,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				&& created != null && completed != null) {
 			long transferTime = completed.getTimeInMillis() - created.getTimeInMillis();
 			if (transferTime > 0) {
-				dataObjectRegistrationResult.setEffectiveTransferSpeed(Math.toIntExact(size * 1000 / (transferTime)));
+				dataObjectRegistrationResult.setEffectiveTransferSpeed(toIntExact(size * 1000 / (transferTime)));
 			}
 		}
 

@@ -35,7 +35,7 @@ WHERE (meta_main.object_id IN (SELECT r_coll_hierarchy_meta_main.object_id
   AND objt_access.USER_ID = user_main.USER_ID
   AND hpc_user.USER_ID(+) = user_main.USER_NAME
   AND user_main.user_name not in ('SYSTEM_ADMIN_GROUP','ncifhpcdmsvcp', 'rods')
-  AND config."BASE_PATH" not in ('/TEST_Archive','/TEST_NO_HIER_Archive')
+  AND config."BASE_PATH" not in ('/TEST_Archive','/TEST_NO_HIER_Archive','/DME_Deleted_Archive')
   AND meta_main2.OBJECT_ID(+)=meta_main.OBJECT_ID
   AND meta_main2.META_ATTR_NAME(+)='data_curator'
 ORDER BY config."DOC",

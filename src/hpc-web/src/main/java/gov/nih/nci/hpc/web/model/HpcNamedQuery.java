@@ -17,6 +17,9 @@ public class HpcNamedQuery {
 	
 	@JsonView(Views.Public.class)
 	private String edit;
+	
+	@JsonView(Views.Public.class)
+	private String frequency;
 
 	public String getSearchName() {
 		return searchName;
@@ -56,5 +59,13 @@ public class HpcNamedQuery {
 
 	public void setEdit(String edit) {
 		this.edit = edit;
+	}
+
+	public String getFrequency() {
+		return frequency;
+	}
+
+	public void setFrequency(String frequency) {
+		this.frequency = frequency;
 	}
 }

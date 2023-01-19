@@ -27,6 +27,8 @@
 	<div class="modal-body">
 		<form class="form-horizontal" id="saveCriteriaForm"
 			th:object="${hpcSaveSearch}">
+			<input type="hidden" th:field="*{selectedColumns}" id="selectedColumns"/>
+			<input type="hidden" th:value="${hpcSaveSearch.frequency}" id="savedFrequency"/>
 			<div th:if="${!#strings.isEmpty(hpcSaveSearch.getCriteriaName())}" class="pull-center" id="note">
 				<p>You can save a query with a new name by changing the name below.<br/>
 					Note: Saving with the same name replaces the existing query.</p>
@@ -49,6 +51,20 @@
 									<label for="criteriaName">Name:</label> <input type="text"
 										class="form-control" th:field="*{criteriaName}" id="criteriaName"
 										placeholder="Enter Name" />
+								  </div>
+								</div>
+								<div class="form-group">
+								  <div class="col-sm-12 column">
+									<label for="frequency">Auto Run Frequency:</label>
+										<label style="margin-left:15px;"><input type="radio"
+										th:field="*{frequency}" id="frequency_monthly"
+										value="MONTHLY" />&nbsp;Monthly</label>
+										<label style="margin-left:15px;"><input type="radio"
+										th:field="*{frequency}" id="frequency_weekly"
+										value="WEEKLY" />&nbsp;Weekly</label>
+										<label style="margin-left:15px;"><input type="radio"
+										th:field="*{frequency}" id="frequency_none"
+										value="" />&nbsp;None</label>
 								  </div>
 								</div>
 								<div class="modal-footer">
@@ -83,7 +99,10 @@
 		 	alert ("The only special characters allowed are underscore (_) and dash (-).");
 		 	return false;
 		 }
-		 	
+	 
+	 if(selectedColumns != null)
+	 	document.getElementById("saveCriteriaForm").elements.namedItem("selectedColumns").value = selectedColumns;
+	 
 	 $.ajax({
      type: "POST",
 	 url: "/savesearch",
@@ -92,6 +111,7 @@
 	     console.log('SUCCESS: ', msg);
 	     $('#message').html(msg.message);
  	     ele.style.display = "block";
+ 	     $('#updatedField').val('true').trigger('change');
 	 },
 	 error: function(e){
 	 console.log('ERROR: ', e);
@@ -122,7 +142,19 @@
 	 $('#saveCriteriaForm').on('close', function(e){	 
 		 $('#myModal-event').modal('hide');
 	 });
+	 $('.modal').on('hidden.bs.modal', function(e){ 
+        $(this).removeData();
+     });
  });
+ $(document).ready(function(){
+     if($('#savedFrequency').val() == 'MONTHLY') {
+         $("#frequency_monthly").prop("checked", true);
+     } else if ($('#savedFrequency').val() == 'WEEKLY') {
+         $("#frequency_weekly").prop("checked", true);
+     } else {
+    	 $("#frequency_none").prop("checked", true);
+     }
+  });
  /*]]>*/
 </script>
 

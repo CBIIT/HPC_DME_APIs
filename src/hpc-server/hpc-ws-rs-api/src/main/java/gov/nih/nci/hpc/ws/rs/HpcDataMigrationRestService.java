@@ -17,6 +17,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
 
 /**
@@ -51,5 +52,17 @@ public interface HpcDataMigrationRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response migrateCollection(@PathParam("path") String path, HpcMigrationRequestDTO migrationRequest);
+	
+	/**
+	 * Migrate a list of data objects or a list of collections.
+	 *
+	 * @param migrationRequest The migration request.
+	 * @return The REST service response w/ HpcMigrationResponseDTO entity.
+	 */
+	@POST
+	@Path("/migrate")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response migrateDataObjectsOrCollections(HpcBulkMigrationRequestDTO migrationRequest);
 
 }

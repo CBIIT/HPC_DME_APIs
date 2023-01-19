@@ -8,61 +8,50 @@
  */
 package gov.nih.nci.hpc.service;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.review.HpcReviewEntry;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
 
 /**
  * HPC Review Application Service Interface.
  *
  * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
- * @version $Id$
  */
 public interface HpcReviewService {
 	/**
 	 * Get review entry matching the criteria.
 	 *
-	 * @param projectStatus
-	 *            project status
-	 * @param dataCurator
-	 *            data curator
+	 * @param projectStatus project status
+	 * @param dataCurator   data curator
 	 * @return A list of review entries.
-	 * @throws HpcException
-	 *             on service failure.
+	 * @throws HpcException on service failure.
 	 */
 	public List<HpcReviewEntry> getReview(String projectStatus, String dataCurator) throws HpcException;
 
 	/**
 	 * Get count of review matching the criteria.
 	 *
-	 * @param projectStatus
-	 *            project status
-	 * @param dataCurator
-	 *            data curator
+	 * @param projectStatus project status
+	 * @param dataCurator   data curator
 	 * @return The count of review entries matching the query.
-	 * @throws HpcException
-	 *             on service failure.
+	 * @throws HpcException on service failure.
 	 */
 	public int getReviewCount(String projectStatus, String dataCurator) throws HpcException;
 
 	/**
 	 * Add a review notification sent.
 	 *
-	 * @param userId
-	 *            The user ID.
-	 * @throws HpcException
-	 *             on service failure.
+	 * @param userId The user ID.
+	 * @throws HpcException on service failure.
 	 */
 	public void addReviewSentNotification(String userId) throws HpcException;
 
 	/**
 	 * Add a review reminder notification sent.
 	 *
-	 * @param userId
-	 *            The user ID.
-	 * @throws HpcException
-	 *             on service failure.
+	 * @param userId The user ID.
+	 * @throws HpcException on service failure.
 	 */
 	public void addReviewReminderSentNotification(String userId) throws HpcException;
 
@@ -70,13 +59,15 @@ public interface HpcReviewService {
 	 * Get a list of data curators to send Annual Review notification
 	 * 
 	 * @return list of data curators
+	 * @throws HpcException on service failure.
 	 */
 	public List<String> getCuratorsForAnnualReview() throws HpcException;
-	
+
 	/**
 	 * Get a list of data curators to send Annual Review Reminder notification
 	 * 
 	 * @return list of data curators
+	 * @throws HpcException on service failure.
 	 */
 	public List<String> getCuratorsForAnnualReviewReminder() throws HpcException;
 }

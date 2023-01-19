@@ -66,6 +66,7 @@
     var currentPageSize = "[[${currentPageSize}]]";
     var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
     var selectedRowsData = [];
+    var selectedColumns = null;
 /*]]>*/
 </script>
 
@@ -97,7 +98,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     paginationCurrentPage: parseInt(currentPage),
     columnDefs: [
       { field : 'path',
-        width : 500,
+    	minWidth : 500,
         displayName : 'Path',
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD | dmePathEncoding}}">{{COL_FIELD}}</a></div>'
       },

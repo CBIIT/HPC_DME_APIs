@@ -58,6 +58,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     protected String env;
     @Value("${dme.token.expiration.period:120}")
     private int tokenExpirationPeriod;
+    @Value("${gov.nih.nci.hpc.server.collection.acl}")
+	private String collectionAclURL;
     
     @Autowired
     private HpcModelBuilder hpcModelBuilder;
@@ -101,21 +103,28 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     	                    authenticateURL);
     	            session.setAttribute("hpcUserToken", authToken);
     	            try {
-    	              user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
-    	                if (user == null)
-    	                    throw new HpcWebException("Invalid User");
-    	                log.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());            
+                        user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
+                        if (user == null) {
+                           throw new HpcWebException("Invalid User ");
+                        }
+
+                        log.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());
     	                //Get DOC Models, go to server only if not available in cache
     	                HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+
+                        if (modelDTO != null) {
+                            session.setAttribute("userDOCModel", modelDTO);
     	                
-    	                if (modelDTO != null)
-    	                    session.setAttribute("userDOCModel", modelDTO);
-    	                
+                            //Cache all permissions for all base paths, if not already cached
+                            hpcModelBuilder.getModelPermissions(
+                              modelDTO, authToken, collectionAclURL, sslCertPath, sslCertPassword);
+                        }
+
     	            } catch (HpcWebException e) {
-    	                log.error("Authentication failed. " + e.getMessage());
+                        log.error("Authentication failed. ", e);
     	                throw new HpcAuthorizationException("You are not authorized to view this page.");
     	            }
-    	            
+
     	            // Calculate the token expiration date.
     	    		Calendar tokenExpirationDate = Calendar.getInstance();
     	    		tokenExpirationDate.add(Calendar.MINUTE, tokenExpirationPeriod);
@@ -132,8 +141,7 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     	                return false;
     	            }
     	        } catch (Exception e) {
-    	            e.printStackTrace();
-    	            log.error("Authentication failed. " + e.getMessage());
+                    log.error("Authentication failed. ", e);
     	            throw new HpcAuthorizationException("You are not authorized to view this page.");
     	        }
 			}

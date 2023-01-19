@@ -40,6 +40,7 @@
 			<xsd:enumeration value="RESTORE_REQUEST_FAILED" />
 			<xsd:enumeration value="REVIEW_SENT" />
 			<xsd:enumeration value="REVIEW_REMINDER_SENT" />
+			<xsd:enumeration value="USER_QUERY_SENT" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	

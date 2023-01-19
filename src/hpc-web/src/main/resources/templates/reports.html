@@ -36,6 +36,25 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link href="css/select2-4.0.11.min.css" rel="stylesheet" />
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
+<link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
+<link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
+
+<script src="js/jquery/3.1.1/jquery.min.js"></script>
+<script src="js/jquery.scrollTo.min.js"></script>
+<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+<script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="js/jszip.min.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.print.min.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.colVis.min.js"></script>
+
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -48,6 +67,88 @@
 .datepicker { 
     z-index: 1002 !important;
 }
+legend {text-align:center}
+
+body {
+  font: 90%/1.45em "Helvetica Neue", HelveticaNeue, Verdana, Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  background-color: #f0f0f0;
+}
+
+.dt-buttons .dt-button-collection {
+  margin: 5px 0 !important;
+}
+
+.dt-button.buttons-columnVisibility {
+  background-color: #CC5500;
+  color: white;
+}
+
+.dt-button.buttons-columnVisibility.active {
+  background-color: #002366;
+  color: white;
+}
+.item {
+    display: inline-block;
+}
+
+input, select {
+    display: inline-block;
+}
+label {
+    display: inline-block;
+    width: 10em;
+    margin-right: 0em;
+    padding-top: 1.5em;
+    text-align:left;
+}
+
+
+.select2-container .select2-choice, .select2-result-label {
+  font-size: 1.5em;
+  height: 41px;
+  overflow: auto;
+}
+
+.select2-arrow, .select2-chosen {
+  padding-top: 6px;
+}
+
+.select2-container .select2-selection--single {height: 33px; width:100% !important;}
+
+.select2-search--dropdown .select2-search__field {
+ width: 98%;
+ }
+
+.overlay{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: rgba(255,255,255,0.8) url("img/spinner.gif") center no-repeat;
+}
+body.loading{
+    overflow: hidden;
+}
+body.loading .overlay{
+    display: block;
+}
+
+.tableFixHead {
+        overflow-y: auto; /* make the table scrollable if height is more than 800 px  */
+        height: 800px; /* gives an initial height of 800px to the table */
+      }
+.tableFixHead thead th {
+        position: sticky; /* make the table heads sticky */
+        top: 0px; /* table head will be placed from the top of the table and sticks to it */
+		text-align: center;
+      }
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -63,221 +164,299 @@
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
-				<!--Title start-->
-				<div class="row">
-					<div class="col-lg-12">
-						<h4>
-							<i class="fa fa-list-alt"></i> Reports
-						</h4>
-					</div>
-				</div>
-				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<br />
-					<br />
-					<div th:if="${error != null}">
-						<div class="alert alert-error">
-							<a class="close" data-dismiss="alert">×</a> <label for="${error}"
-								th:text="${error}"></label>
+					<div class="col-md-12">
+						<div th:if="${error != null}">
+							<div class="alert alert-error">
+								<a class="close" data-dismiss="alert">×</a> <p for="${error}"
+									th:text="${error}"></p>
+							</div>
 						</div>
-					</div>
-					<div th:if="${message != null}">
-						<div class="alert alert-error">
-							<a class="close" data-dismiss="alert">×</a> <label
-								for="${message}" th:text="${message}"></label>
+						<div th:if="${message != null}">
+							<div class="alert alert-error">
+								<a class="close" data-dismiss="alert">×</a> <p
+									for="${message}" th:text="${message}"></p>
+							</div>
 						</div>
 					</div>
 
-					<form class="form-horizontal" id="reportsform" action="#"
-						role="form" th:action="@{/reports}" th:object="${reportRequest}"
-						method="post" enctype="multipart/form-data">
-						<div class="form-group">
-							<label class="control-label col-sm-2" for="level">Report
-								Type:</label>
-							<div class="col-sm-6">
-								<select name="reportType" id="reportType" class="form-control"
-									onchange="show(this.value)">
-									<option value="-1">----Select----</option>
+				</div>
 
-									<option value="USAGE_SUMMARY_BY_BASEPATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH'}">Base Path Report</option>
-									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path
-										Report by Date Range</option>
-									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Collection Path Report</option>
-									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path
-										Report by Date Range</option>
-									<option value="USAGE_SUMMARY_BY_DOC" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC'}">DOC Report</option>
-									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC
-										Report by Date Range</option>
-									<option value="USAGE_SUMMARY"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY'}">Summary Report</option>
-									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report
-										by Date Range</option>
-									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User Report</option>
-									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User
-										Report by Date Range</option>
-									
+				<form  id="reportsform" action="#"
+					role="form" th:action="@{/reports}" th:object="${reportRequest}"
+					method="post" enctype="multipart/form-data">
+					
+					<!-- First Row Begin -->
+					<div class="row">
+						<div class="col-sm-3"><label><b>Report Type:</b></label>
+							<select name="reportType" id="reportType" class="form-control"
+								onchange="show(this.value)">
+								<option value="-1">---Select Report Type---</option>
+								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
+								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
+								<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
+								<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
+								<option value="USAGE_SUMMARY_BY_DATE_RANGE"
+									th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
+								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
+							</select>
+							<div class="col-sm-2"></div>
+						</div>
+						<!---  DOC List Begin -->
+						<div style="display: none" id="docList" >
+							<div class="col-sm-2">
+								<label><b>DOC:</b></label>
+									<select size="1"
+										id="doc" name="doc" class="docList" style="width: 100%" onchange="showArchiveSummaryCheckbox(this.value)">
+											<option></option>
+											<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
+											<option
+												th:each="entry : ${docs}"
+												th:value="${entry}" th:text="${entry}" 
+												th:selected="${reportRequest.getDoc() == entry}">
+												Wireframe</option>
+									</select>
+							</div>
+							<div class="col-sm-4"></div>
+						</div>
+						<!---  DOC List End -->
+						<!---  User List Begin -->
+						<div style="display: none" id="userList">
+							<div class="col-sm-4">
+								<label><b>Users:</b> </label>
+								<select size="1"
+									id="user" name="user" class="userSelect" style="width: 100%">
+										<option></option>
+										<option
+											th:each="entry : ${docUsers}"
+											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
+											th:selected="${reportRequest.getUser() == entry.getUserId()}">
+											Wireframe</option>
 								</select>
 							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
-						<div class="form-group" style="display: none" id="docList">
-							<label class="control-label col-sm-2" for="level">DOC:</label>
+						<!---  User List End -->
+						<!---  BasePath List Begin -->
+						<div style="display: none" id="basepathList">
+							<div class="col-sm-4">
+								<label for="basepathList"><b>Base Path:</b></label>
+								<select size="1"
+									id="basepath" name="basepath" class="basepathList" style="width: 100%" onchange="showArchiveSummaryCheckbox(this.value)">
+										<option></option>
+										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+										<option
+											th:each="entry : ${basepaths}"
+											th:value="${entry}" th:text="${entry}" 
+											th:selected="${reportRequest.getBasepath() == entry}">
+											Wireframe</option>
+								</select>
+							</div>
+						</div>
+						<!---  BasePath List End -->
+						<!---  Collection Path Begin -->
+						<div style="display: none" id="collectionPath">
 							<div class="col-sm-6">
-											<select size="1"
-												id="doc" name="doc" class="form-control"
-												th:required="required">
-													<option value="-1">----Select----</option>
-													<option
-														th:each="entry : ${docs}"
-														th:value="${entry}" th:text="${entry}" 
-														th:selected="${reportRequest.getDoc() == entry}">
-														Wireframe</option>
-											</select>
-							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
-						</div>
-						<div class="form-group" style="display: none" id="userList">
-							<label class="control-label col-sm-2" for="level">Users:</label>
-							<div class="col-sm-6">
-											<select size="1"
-												id="user" name="user" class="form-control"
-												th:required="required">
-													<option value="-1">----Select----</option>
-													<option
-														th:each="entry : ${docUsers}"
-														th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
-														th:selected="${reportRequest.getUser() == entry.getUserId()}">
-														Wireframe</option>
-											</select>
-							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
-						</div>
-						<div class="form-group" style="display: none" id="basepathList">
-							<label class="control-label col-sm-2" for="level">Base Path:</label>
-							<div class="col-sm-6">
-											<select size="1"
-												id="basepath" name="basepath" class="form-control"
-												th:required="required">
-													<option value="-1">----Select----</option>
-													<option
-														th:each="entry : ${basepaths}"
-														th:value="${entry}" th:text="${entry}" 
-														th:selected="${reportRequest.getBasepath() == entry}">
-														Wireframe</option>
-											</select>
-							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
-						</div>
-						<div class="form-group" style="display: none" id="collectionPath">
-							<label class="control-label col-sm-2" for="level">Collection Path:</label>
-							<div class="col-sm-6">
-								<input type="text" name="path" id="path" th:value="${reportRequest.getPath()}" size="100"/>
-							</div>
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
-						</div>
-						<div class="form-group" style="display: none" id="fromDateDiv">
-							<label class="control-label col-sm-2" for="level">From
-								Date:</label>
-<div class="input-group date col-sm-6" data-provide="datepicker">
-    <input type="text" class="form-control" id="fromDate" name="fromDate" th:value="${reportRequest.getFromDate()}"/>
-    <div class="input-group-addon">
-        <span class="glyphicon glyphicon-th"></span>
-    </div>
-</div>								
-<!-- 
-							<div class="col-sm-6">
-								<input type="text" class="form-control" id="fromDate"
-									name="fromDate"></input>
-							</div>
- -->							
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
-						</div>
-						<div class="form-group" style="display: none" id="toDateDiv">
-							<label class="control-label col-sm-2" for="level">To
-								Date:</label>
-<div class="input-group date col-sm-6" data-provide="datepicker">
-    <input type="text" class="form-control" id="toDate" name="toDate" th:value="${reportRequest.getToDate()}"/>
-    <div class="input-group-addon">
-        <span class="glyphicon glyphicon-th"></span>
-    </div>
-</div>								
-<!-- 
-							<div class="col-sm-6">
-								<input type="text" class="form-control" id="toDate"
-									name="toDate"></input>
-							</div>
- -->							
-							<label class="control-label col-sm-4" for="level">&nbsp;</label>
-						</div>
-
-						<div class="form-group">
-							<div class="col-sm-offset-2 col-sm-10">
-								<br />
-								<button type="submit" class="btn btn-md btn-primary"
-									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
+								<label><b>Collection Path:</b></label>
+								<input type="text" name="path" id="id_collection_path" class="form-control" th:value="${reportRequest.getPath()}" size="75"/>
 							</div>
 						</div>
-						<input type="hidden" id="actionType" name="actionType" />
-					</form>
-				</div>
-				<div style="width: 800px; height: 800px; overflow-y: scroll; margin-left: 15%;"
-					th:if="${reports != null}">
+						<!---  Collection Path End -->
+					</div> <!-- First Row End -->
+					<!-- Second Row Begin -->
+					<div class="row">			
+						<div style="display: none" id="fromDateDiv" class="item">
+							<div class="col-sm-2">
+								<label><b>From Date:</b></label>
+								<div class="input-group date" data-provide="datepicker">	
+	    							<input type="text" class="form-control" id="fromDate" name="fromDate" th:value="${reportRequest.getFromDate()}"/>
+	    							<div class="input-group-addon">
+	        							<span class="glyphicon glyphicon-th"></span>
+	    							</div>
+								</div>
+							</div>
+						</div>						
+						<div style="display: none" id="toDateDiv" class="item">
+							<div class="col-sm-1">&nbsp;</div>
+							<div class="col-sm-2">
+								<label><b>To Date:</b></label>						
+								<div class="input-group date" data-provide="datepicker">
+    								<input type="text" class="form-control" id="toDate" name="toDate" th:value="${reportRequest.getToDate()}"/>
+    								<div class="input-group-addon">
+        								<span class="glyphicon glyphicon-th"></span>
+    								</div>
+    							</div>
+							</div>
+						</div>
+						<div style="display: block" id="gen" class="form-group">
+							<div class="col-sm-7" id="assaySummaryCheckbox" style="padding-top: 37px">
+								&nbsp;&nbsp;<input type="checkbox" id="assaySummaryCheckboxId" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+								<label style="padding-left: 3px;" for="assaySummaryCheckboxId">
+									<b>Include&nbsp;Archive&nbsp;Summary</b>
+								</label>
+							</div>
+							<div id="spinner" class="overlay"></div>
+						</div>
+					</div> <!-- Second Row end -->
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12">
+							<button type="submit" class="btn btn-md btn-primary"
+								id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
+						</div>
+					</div>
+					<input type="hidden" id="actionType" name="actionType" />	 
+				</form>
+				<div style="width: 1000px; height: 1000px; margin-left: 1%;"
+					th:if="${reports != null and reports.size() == 1}">
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
 					<table class="table">
-						<caption th:text="${reportName}">Basic Table Layout</caption>
-
+						<caption style="font-weight:bold" th:text="${reportName}"></caption>
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
 								<td style="white-space: nowrap" align="right" colspan="2">
+								<div class="tableFixHead">
 									<table class="table">
+										<thead>
 										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
-										<tr>
-											<td align="center"
-												style="background-color: #006DCC; color: white;" colspan="2">
-												<label for="doc">DOC:&nbsp;</label><label for="doc"
-												th:text="${report.doc}">DOC</label>
-											</td>
-										</tr>
+											<tr>
+												<th align="center"
+													style="background-color: #006DCC; color: white;"
+													colspan="2" th:text="'DOC: ' + ${report.doc}">
+												</th>
+											</tr>
 										</div>
 										<div th:if="${report.user != null and !report.user.isEmpty()}">
 											<tr>
-												<td align="center"
+												<th align="center"
 													style="background-color: #006DCC; color: white;"
-													colspan="2"><label for="user">User:&nbsp;</label><label
-													for="user" th:text="${report.user}">User</label></td>
+													colspan="2" th:text="'User: ' + ${report.user}">
+												</th>
 											</tr>
 										</div>
 										<div th:if="${report.path != null and !report.path.isEmpty()}">
 											<tr>
-												<td align="center"
+												<th align="center"
 													style="background-color: #006DCC; color: white;"
-													colspan="2"><label for="path">Base Path:&nbsp;</label><label
-													for="user" th:text="${report.path}">Base Path</label></td>
+													colspan="2" th:text="'Base Path: ' + ${report.path}">
+												</th>
 											</tr>
 										</div>
 										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
-										<tr>
-											<td align="center"
-												style="background-color: #006DCC; color: white;" colspan="2">
-												<label for="fromDate">Reporting Period from Date: </label> <label
-												for="fromDate" th:text="${report.fromDate}">date</label> <br />
-												<label for="toDate">Reporting Period to Date: </label> <label
-												for="toDate" th:text="${report.toDate}">date</label>
-											</td>
-										</tr>
+											<tr>
+												<th align="center"
+													style="background-color: #006DCC; color: white;" colspan="2"
+													th:text="'Reporting Period to Date: From ' + ${report.fromDate} + ' to ' + ${report.toDate}">
+												</th>
+											</tr>
 										</div>
-										<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
-											<td th:text="${entry.attribute}">value</td>
-											<td th:utext="${entry.value}">value</td>
-										</tr>
+										</thead>
+										<tbody>
+											<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
+												<td th:text="${entry.attribute}">value</td>
+												<td th:utext="${entry.value}">value</td>
+											</tr>
+										</tbody>
 									</table>
+								</div>
 								</td>
 							</tr>
 						</tbody>
-
 					</table>
 				</div>
+				<!-- Start of Grid code -->
+				<!-- Start BasePath or DOC Grid -->
+				
+				<div 
+				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+
+					<table id="reportgrid" class="display" style="width:100%; display: none">
+						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
+						<thead>
+							<tr id='attrRow0'>
+								<td style="color: black; font-weight:bold" id='index0' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr id='attrCol0' th:each="report : ${reports}">
+							   <td id='index1'></td>
+							   <td id='path1'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="${report.getPath()}"></td>
+							   <td id='path2'  th:if="${report.getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="${report.getDoc()}"></td>
+							   <td id='attr0' th:utext="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr id='attrFooter0'>
+								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+				<!-- End BasePath or DOC Grid -->
+				<!-- Start Data Owner Grid -->
+				<div 
+				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+					<table id="reportgrid" class="display" style="width:100%; display: none">
+						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
+						<thead>
+							<tr id='attrRow2'>
+								<td style="color: black; font-weight:bold" id='index001' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path001' th:text="DOC"></td>
+								<td style="color: black; font-weight:bold" id='path002' th:text="'Base Path'"></td>
+								<td style="color: black; font-weight:bold" id='path003' th:text="'Collection Path'"></td>
+								<td style="color: black; font-weight:bold" id='path004' th:text="'Data Owner'"></td>
+								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Generator'"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr id='attrCol2' th:each="report : ${reports}">
+							   <td id='index01'></td>
+							   <td id='path1'  th:text="${report.getDoc()}"></td>
+							   <td id='path2' th:text="${report.getPath()}"></td>
+							   <td id='path3' th:text="${report.getUser()}"></td>
+							   <td id='path4' th:text="${report.getDataOwner()}"></td>
+							   <td id='path5' th:text="${report.getDataCurator()}"></td>
+							   <td id='attr0' th:utext="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr id='attrFooter2'>
+								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
+								<td style="color: black; font-weight:bold" id='path0011' th:text="DOC"></td>
+								<td style="color: black; font-weight:bold" id='path0022' th:text="'Base Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0033' th:text="'Collection Path'"></td>
+								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
+								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Generator'"></td>
+								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+				<!-- End Data Owner Grid -->
+				<!-- End of Grid code -->
 			</section>
 			<div th:include="footer :: footer"></div>
 		</section>
@@ -290,9 +469,7 @@
 		type="text/javascript"></script>
 	<script src="js/metawidget/metawidget-bootstrap.min.js"
 		type="text/javascript"></script>
-	<script src="js/jquery.js"></script>
 	<script src="js/jquery-ui-1.10.4.min.js"></script>
-	<script src="js/jquery-1.8.3.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui-1.9.2.custom.min.js"></script>
 	<!-- bootstrap -->
 	<script src="js/bootstrap.min.js"></script>
@@ -329,22 +506,268 @@
 	<script src="js/charts.js"></script>
 	<script src="js/jquery.slimscroll.min.js"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
+	<script src="js/select2-4.0.11.min.js"></script>
 
 	<script>
 	//<![CDATA[
+	
+	$(document).ready(function() {
+		var reportType = document.getElementById("reportType").value;
+		var exportFileName = "";
+		var reportHeaderTitle = "";
+		var noSortColumns = [-1];
+		var visibleColumns = [1];
+		const d = new Date();
+		let pretag = "DME_";
+		let tag = `_${(new Date().toJSON().slice(0,10))}`;
+		var colDefs = [];
+		var exportOptions = {};
+		var showHideCols = [];
+		switch (reportType) {
+			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
+				exportFileName= pretag + "Base_Path" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all Base Paths";
+				noSortColumns = [9];
+				fileSizeColumns = [4,6];
+				visibleColumns = [ 1, 2, 4, 7, 17, 18];
+				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
+						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
+						{"targets": noSortColumns, "orderable": false},
+						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
+						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						{"targets": 1, "data": "base_path"},
+						{"targets": 17, "searchable": false, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						 },
+						];
+				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]}; // Export visible columns but do not export the Archive Summary Button column
+				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))']; // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
+				break;
+			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
+				exportFileName= pretag + "DOC" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				noSortColumns = [9];
+				fileSizeColumns = [4,6];
+				visibleColumns = [ 1, 2, 4, 7, 17, 18];
+				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
+						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
+						{"targets": noSortColumns, "orderable": false},
+						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
+						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						{"targets": 1, "data": "doc"},
+						{"targets": 17, "searchable": false, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						 },
+						];
+				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]};  // Export visible columns but do not export the Archive Summary Button column
+				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))'];  // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
+				break;
+			case 'USAGE_SUMMARY_BY_DATA_OWNER':
+				exportFileName= pretag + "Data_Owner" + tag;
+				reportHeaderTitle = "DME Data Owner Report";
+				colDefs = [
+						{ "data": "index",   "targets": 0, "searchable": false, "orderable": false, "visible": true},
+						{ "data": "doc",  "targets": 1, "visible": true },
+						{ "data": "basepath", "targets": 2, "visible": false },
+						{ "data": "collection_path", "targets": 3, "visible": true},
+						{ "data": "data_owner", "targets": 4, "visible": true },
+						{ "data": "data_generator", "targets": 5, "visible": true },
+						{ "data": "collection_size", "targets": 6, "visible": false },
+						{ "data": "collection_size_hr", "targets": 7, "visible": true, type: 'file-size'}, // sort based on human readable file sizes
+						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						},
+						{ "data": "archive_summary_value", "targets": 9, "orderable": false, "visible": true},
+					];
+				exportOptions = {columns: [':visible:not(:nth-last-child(2))']} // Donot export the 8th column, contains button for displaying Archive Summary
+				showHideCols = [2,4,5,6,7]; // Exclude first three columns from show/hide. It starts from 4th column. Also exclude 8th column - the Archive Summary button
+				break;
+			default:
+				break;
+		}
+
+		var fromDate = document.getElementById("fromDate").value;
+		var toDate = document.getElementById("toDate").value;
+		var messageTopDateRange = "";
+		if(reportType == "USAGE_SUMMARY_BY_DATA_OWNER") {
+			messageTopDateRange = reportHeaderTitle;
+		} else {
+			messageTopDateRange = reportHeaderTitle + "  (Date Range: " +  fromDate + "-" + toDate + ")";
+		}
+	    var table = $('#' + 'reportgrid').DataTable( {
+				responsive: true,
+				dom: 'Blfrtip',
+				fixedHeader: true,
+				buttons: [
+				{
+					extend: 'copyHtml5',
+					exportOptions: exportOptions,
+					//text: '<i class="fa fa-files-o"> Copy</i>',
+					text: 'Copy',
+					titleAttr: 'Copy to Clipboard',
+				},
+				{
+					extend: 'excelHtml5',
+					filename: exportFileName,
+					title: null,
+					text: 'Excel',
+					messageTop: messageTopDateRange,
+					titleAttr: 'Export to Excel',
+					exportOptions: exportOptions
+				},
+				{
+					extend: 'colvis',
+					text: 'Show/Hide Columns',
+					titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
+					columns: showHideCols
+				},
+				],
+				"order": [[ 1, 'asc' ]],
+				"columnDefs": colDefs,
+				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
+				"initComplete": function() {
+					$("body").removeClass("loading");
+					$(this).show();
+				},
+			} );
+	    
+			table.on( 'order.dt search.dt', function () {
+					let i = 1;
+					table.cells(null, 0, {search:'applied', order:'applied'}).every( function (cell) {
+					this.data(i++);
+				} );
+			} ).draw();
+
+
+		$('a.toggle-vis').on( 'click', function (e) {
+			e.preventDefault();
+
+			// Get the column API object
+			var column = table.column( $(this).attr('data-column') );
+
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+		} );
+
+		/** The following code is executed when you click on the Assay Summary button on the Grid **/
+	    $('#reportgrid tbody').on('click', 'button', function () {
+			var data = table.row($(this).parents('tr')).data();
+			var path = "";
+			var dataJson = {};
+			var reportType = document.getElementById("reportType").value;
+			var fromDate = document.getElementById("fromDate").value;
+			var toDate = document.getElementById("toDate").value;
+			let emptyDate = "";
+
+			switch (reportType) {
+				case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
+					dataJson = {
+						path: data.base_path,
+						reportType: reportType,
+						fromDate: fromDate,
+						toDate: toDate,
+					};
+					break;
+				case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
+					dataJson = {
+						path: data.doc,
+						reportType: reportType,
+						fromDate: fromDate,
+						toDate: toDate,
+					};
+					break;
+				case 'USAGE_SUMMARY_BY_DATA_OWNER':
+					dataJson = {
+						path: data.collection_path,
+						reportType: reportType,
+						fromDate: emptyDate, // The Data owner report does not use dates
+						toDate: emptyDate
+					};
+					break;
+			}
+			var tr = $(this).closest('tr');
+			var row = table.row(tr);
+			if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
+				//Change or disable icon
+			} else {
+				$("#spinner").show();
+				let archiveSummary = "";
+				let uri = '/reports/getArchiveSummary';
+				$.ajax({
+					type: 'GET',
+					url: uri,
+					data: dataJson,
+					dataType: 'json'
+				}).done(function (result) {
+					$("#spinner").hide();
+					if(result.message != null && result.message != "") {
+						archiveSummary = JSON.stringify(result.message);
+						let archiveSummaryStr = archiveSummary.slice(1, -1);
+						data.archive_summary_value = archiveSummaryStr;
+					} else {
+						data.archive_summary_value = "NA";
+					}
+					if (reportType === "USAGE_SUMMARY_BY_DATA_OWNER"){
+						table.cell(row.index(), 9).data(data.archive_summary_value);
+						table.cell(row.index(), 8).data("");
+					} else { // The BasePath and DOC grid positions for Archive Summary(both button and value) are different
+						table.cell(row.index(), 18).data(data.archive_summary_value);
+						table.cell(row.index(), 17).data("");
+					}
+				});
+			}
+		});
+	});
+
+
+  // Spinner for Ajax
+	$(document).on({
+		ajaxStart: function(){
+		$("body").addClass("loading");
+		},
+		ajaxStop: function(){
+		$("body").removeClass("loading");
+		}
+	});
+
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
+		$('.userSelect').select2({
+			placeholder: '-----------------Select User-----------------'
+		});
+		$('.docList').select2({
+			placeholder: '-------Select DOC-------'
+		});
+		$('.basepathList').select2({
+			placeholder: '-----------------Select Base Path-----------------'
+		});
+
 	});
 		
   $('#fromDate').datepicker({
 	    format: 'mm/dd/yyyy',
-	    defaultDate: 'now',
+	    defaultDate: '01/01/2016'
 	}).on('change', function(){
         $('.datepicker').hide();
     });
  
   if($('#fromDate').val() == '')
-  	$('#fromDate').datepicker('setDate', new Date());
+  	$('#fromDate').datepicker('setDate', '01/01/2016');
   
   $('#toDate').datepicker({
 	    format: 'mm/dd/yyyy',
@@ -383,6 +806,15 @@
           show(selected);
       });
 
+	  function showArchiveSummaryCheckbox(pathOrDocType) {
+		$("#assaySummaryCheckboxId").prop('checked', false);
+		if (pathOrDocType === "All"){
+			document.getElementById("assaySummaryCheckbox").style.display = "none";
+		} else {
+			document.getElementById("assaySummaryCheckbox").style.display = "block";
+		}
+	  }
+
       var toggle = true;
       function show(reportType) {
     	var fromDateEle = document.getElementById("fromDateDiv");
@@ -391,10 +823,12 @@
     	var userListEle = document.getElementById("userList");
     	var basepathListEle = document.getElementById("basepathList");
     	var pathEle = document.getElementById("collectionPath");
+		var assaySummaryCheckboxEle = document.getElementById("assaySummaryCheckbox");
       	var selectedValue = reportType;
       	if(selected != reportType) {
-      		$('#fromDate').datepicker('setDate', new Date());
-      		$('#toDate').datepicker('setDate', new Date());
+			$("#assaySummaryCheckboxId").prop('checked', false);
+			$('#fromDate').datepicker('setDate', '01/01/2016');
+			$('#toDate').datepicker('setDate', new Date());
       	}
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
       	{
@@ -404,6 +838,7 @@
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC")
       	{
@@ -413,6 +848,12 @@
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			var doc = document.getElementById("doc").value;
+			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+				assaySummaryCheckboxEle.style.display = "none";
+			} else {
+				assaySummaryCheckboxEle.style.display = "block";
+			}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
       	{
@@ -422,6 +863,12 @@
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			var doc = document.getElementById("doc").value;
+			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+				assaySummaryCheckboxEle.style.display = "none";
+			} else {
+				assaySummaryCheckboxEle.style.display = "block";
+			}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER")
       	{
@@ -431,6 +878,7 @@
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
       	{
@@ -440,6 +888,7 @@
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH")
       	{
@@ -449,7 +898,13 @@
       		toDateEle.style.display = "none";
       		pathEle.style.display = "none";
       		basepathListEle.style.display = "block";
-      	}
+			var basepath = document.getElementById("basepath").value;
+			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
+				assaySummaryCheckbox.style.display = "none";
+			} else {
+				assaySummaryCheckbox.style.display = "block";
+			}
+		}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
       	{
       		userListEle.style.display = "none";
@@ -458,7 +913,13 @@
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "block";
-      	}
+			var basepath = document.getElementById("basepath").value;
+			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
+				assaySummaryCheckbox.style.display = "none";
+			} else {
+				assaySummaryCheckbox.style.display = "block";
+			}
+        }
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH")
       	{
       		userListEle.style.display = "none";
@@ -467,6 +928,7 @@
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
       	{
@@ -476,6 +938,7 @@
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		pathEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else
       	{
@@ -486,137 +949,83 @@
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	
       }
 	
-      function validateAndSubmit()
-      {
-    	  var reportType = document.getElementById("reportType").value;
-    	  var fromDateVal = document.getElementById("fromDate").value;
-    	  var toDateVal = document.getElementById("toDate").value;
-      	  var docListValue = document.getElementById("docList").value;
-    	  var userListValue = document.getElementById("userList").value;
+      function validateAndSubmit() {
+		var reportType = document.getElementById("reportType").value;
+		var fromDateVal = document.getElementById("fromDate").value;
+		var toDateVal = document.getElementById("toDate").value;
+		var docListValue = document.getElementById("docList").value;
+		var userListValue = document.getElementById("userList").value;
     	  
-    	  var fromDate = new Date(fromDateVal);
-    	  var toDate = new Date(toDateVal);
-	      	if(reportType == "USAGE_SUMMARY")
-	      	{
-	    		document.getElementById("doc").value = "-1";
-	      		document.getElementById("user").value = "-1";
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-	      	}
-	      	else if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE")
-          	{
-        		document.getElementById("doc").value = "-1";
-          		document.getElementById("user").value = "-1";
-          		if(!validateDateRange())
-          			return false;
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_DOC")
-          	{
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-          		document.getElementById("user").value = "-1";
-        	  	if(document.getElementById("doc").value == "-1")
-        	  		alert("Please select a DOC");
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
-          	{
-          		document.getElementById("user").value = "-1";
-        	  	if(document.getElementById("doc").value == "-1")
-        	  		alert("Please select a DOC");
-        	  	if(!validateDateRange())
-          			return false;
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_USER")
-          	{
-        		document.getElementById("doc").value = "-1";
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-        	  	if(document.getElementById("user").value == "-1")
-        	  		alert("Please select a user");
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
-          	{
-        	  	if(document.getElementById("user").value == "-1")
-        	  		alert("Please select a user");
-        		document.getElementById("doc").value = "-1";
-        		if(!validateDateRange())
-          			return false;
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_BASEPATH")
-          	{
-        		document.getElementById("doc").value = "-1";
-        		document.getElementById("user").value = "-1";
-          	  	document.getElementById("fromDate").value = null;
-        	  	document.getElementById("toDate").value = null;
-        	  	if(document.getElementById("basepath").value == "-1")
-        	  		alert("Please select a Base path");
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
-          	{
-        	  	if(document.getElementById("basepath").value == "-1")
-        	  		alert("Please select a Base path");
-        		document.getElementById("doc").value = "-1";
-        		document.getElementById("user").value = "-1";
-        		if(!validateDateRange())
-          			return false;
-          	}
-          	else if(reportType == "USAGE_SUMMARY_BY_PATH" || 
-          			reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
-          	{
-        		document.getElementById("doc").value = "-1";
-        		document.getElementById("user").value = "-1";
-        		document.getElementById("basepath").value = "-1";
-        		
-        		if(reportType == "USAGE_SUMMARY_BY_PATH") {
-        			document.getElementById("fromDate").value = null;
-        	  		document.getElementById("toDate").value = null;
-        		} else {
-        			if(!validateDateRange())
-              			return false;
-        		}
-        		
-        	  	if(document.getElementById("path").value == null || document.getElementById("path").value == "")
-        	  		alert("Please enter path");
-          	
-	      
-	      		//Strip trailing "/" if present
-				var lastChar = $("#path").val().substr(-1);
-			 	if(lastChar === '/') {
-					var updatedPath = $("#path").val().slice(0, -1);
-					$("#path").val(updatedPath);
-				}
-          	}
-      
-    	  if(fromDate.valueOf() > toDate.valueOf())
-    	  {
-    		  alert("Invalid date range");
-    		  return false;
-    	  }
-    	  if(reportType == "-1")
-    	  {
-    		  alert("Please select report type");
-    		  return false;
-    	  }
-    	  
-	      document.getElementById("reportsform").submit();
+		var fromDate = new Date(fromDateVal);
+		var toDate = new Date(toDateVal);
+		if(fromDate.valueOf() > toDate.valueOf()){
+			alert("Invalid date range");
+			return false;
+		}
+		if(reportType == "-1"){
+			alert("Please select report type");
+			return false;
+		}
+		validateDateRange();
+		if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			document.getElementById("user").value = "-1";
+		}
+		else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE"){
+			document.getElementById("user").value = "-1";
+			if(document.getElementById("doc").value == "" || document.getElementById("doc").value == "-1"){
+				alert("Please select a DOC");
+				return false;
+			}
+		}
+		else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			if(document.getElementById("user").value == "-1" || document.getElementById("user").value == ""){
+				alert("Please select a user");
+				return false;
+			}
+        }
+		else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			document.getElementById("user").value = "-1";
+			if(document.getElementById("basepath").value == "" || document.getElementById("basepath").value == "-1"){
+				alert("Please select a Base path");
+				return false;
+			}
+		}
+		else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE"){
+			document.getElementById("doc").value = "-1";
+			document.getElementById("user").value = "-1";
+			document.getElementById("basepath").value = "-1";
+			if(document.getElementById("path").value == null || document.getElementById("path").value == ""){
+				alert("Please enter path");
+				return false;
+			}
+			//Strip trailing "/" if present
+			var lastChar = $("#path").val().substr(-1);
+			if(lastChar === '/') {
+				var updatedPath = $("#path").val().slice(0, -1);
+				$("#path").val(updatedPath);
+			}
+		}
+		$("#spinner").show();
+		document.getElementById("reportsform").submit();
       }
-      function validateDateRange()
-      {
-    	  if($('#fromDate').val() == '' && $('#toDate').val() == '') {
-    		  alert("Please enter a date range");
-    		  return false;
+
+
+      function validateDateRange(){
+		if($('#fromDate').val() == '')
+			$('#fromDate').val('01/01/2016');
+		if($('#toDate').val() == '') {
+			var now = new Date();
+			$('#toDate').val($.datepicker.formatDate("mm/dd/yy", new Date()));
     	  }
-    	  if($('#fromDate').val() == '')
-    		  $('#fromDate').val('01/01/2016');
-    	  if($('#toDate').val() == '') {
-    		  var now = new Date();
-    		  $('#toDate').val($.datepicker.formatDate("mm/dd/yy", new Date()));
-    	  }
-    	  return true;
+		return true;
       }
     //]]>
   </script>

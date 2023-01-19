@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryFrequency;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
@@ -209,5 +210,15 @@ public interface HpcDataSearchService {
    */
   public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel)
       throws HpcException;
+
+  /**
+   * Get all saved queries with the scheduled frequency.
+   *
+   * @param HpcCompoundMetadataQueryFrequency The scheduled frequency.
+   * @return A list of queries saved by the user with this frequency.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcNamedCompoundMetadataQuery> getQueriesByFrequency(HpcCompoundMetadataQueryFrequency frequency)
+		throws HpcException;
 
 }

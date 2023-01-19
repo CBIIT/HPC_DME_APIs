@@ -2,6 +2,7 @@ var app = angular.module('DashBoard', ['ngTouch', 'ui.grid', 'ui.grid.pagination
 var linkSearchNameCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 '  <a href="search?queryName={{row.getProperty(\'message\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
+var selectedColumns = null;
 
 app.filter('percentEncoding', function () {
   return function (argStr) {
@@ -32,39 +33,43 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
     columnDefs: [
       {
         field : 'searchName',
-        width : 300,
+        width: '45%',
         displayName : 'Search Name',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a title="Run Search" href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a>&nbsp;&nbsp;&nbsp;<a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}_edit" onclick="editSearch(this)"><i class="fa fa-edit" title="Edit Search Criteria"></i></a></div>'
       },
       {
         field : 'searchType',
-        width : 200,
+        width: '15%',
         displayName : 'Search Type'
       },
       {
         field : 'createdOn',
-        width : 200,
+        width: '15%',
         displayName : 'Created On',
         type:'date'
       },
       {
-        field : 'edit',
-        width : 200,
-        displayName : 'Edit',
+        field : 'frequency',
+        width: '15%',
+        displayName : 'Auto Run Frequency',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}_edit" onclick="editSearch(this)">Edit</a></div>'
-      },
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}&nbsp;&nbsp;&nbsp;<a href="/savesearch?queryName={{row.entity.searchName}}" data-toggle="modal" data-target="#saveModal" id="{{COL_FIELD CUSTOM_FILTERS}}_frequency"><i class="fa fa-edit" title="Modify Settings"></a></div>'
+       },
       {
         field : 'delete',
-        width : 200,
+        width: '10%',
         displayName : 'Delete',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)">Delete</a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)"><i class="fa fa-trash" title="Delete"></i></a></div>'
       }
-    ],
+    ]
   };
 
+  $("#updatedField").on("change", function(){
+	  location.reload() 
+  });
+	     
 $scope.notificationsloading = true;
 $http.get('/notificationList').
   success(function(data, status, headers, config) {

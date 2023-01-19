@@ -191,15 +191,26 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 	
+	<xsd:simpleType name="HpcCompoundMetadataQueryFrequency">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="WEEKLY" />
+			<xsd:enumeration value="MONTHLY" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
 	<xsd:complexType name="HpcNamedCompoundMetadataQuery">
 		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="name" type="xsd:string" />
-			<xsd:element name="compoundQueryType" type="hpc-domain-metadata:HpcCompoundMetadataQueryType" />
+			<xsd:element name="compoundQueryType" type="hpc-domain-metadata:HpcCompoundMetadataQueryType" minOccurs="0" />
 			<xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="compoundQuery" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="updated" type="xsd:dateTime" />
+			<xsd:element name="selectedColumns" type="xsd:string"
+						minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="frequency" type="hpc-domain-metadata:HpcCompoundMetadataQueryFrequency" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

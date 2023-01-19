@@ -209,8 +209,6 @@ public interface HpcDataRegistrationDAO {
 	 * Delete a google access token.
 	 * 
 	 * @param dataObjectId The data object ID (uuid) to delete the token for.
-	 * @return HpcAccessToken if found, or null otherwise
-	 *
 	 * @throws HpcException on database error.
 	 */
 	public void deleteGoogleAccessToken(String dataObjectId) throws HpcException;

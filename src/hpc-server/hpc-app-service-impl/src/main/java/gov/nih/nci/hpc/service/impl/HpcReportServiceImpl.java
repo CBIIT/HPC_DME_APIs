@@ -75,6 +75,10 @@ public class HpcReportServiceImpl implements HpcReportService {
                 HpcErrorType.UNAUTHORIZED_REQUEST);
         }
       }
+      if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER)
+    	 && invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+    	  criteria.getDocs().add(invoker.getNciAccount().getDoc());
+      }
     }
     return reportsDAO.generatReport(criteria);
   }

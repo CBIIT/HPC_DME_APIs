@@ -541,7 +541,7 @@ ul.sidebar-menu li.active a i {
 
 .logoImg {
   max-width: 600px;
-  height: 82px;
+  height: 52px;
 }
 
 .header {
@@ -550,7 +550,7 @@ ul.sidebar-menu li.active a i {
 }
 
 .header, .footer {
-    min-height: 60px;
+    min-height: 50px;
     /*padding: 0 15px;*/
 }
 
@@ -597,6 +597,7 @@ ul.sidebar-menu li.active a i {
     width: 100%;
 }
 
+
 #appnavbar.navbar {
     border-radius: 0px;
     margin-bottom: 0px;
@@ -609,7 +610,7 @@ header #toolTitle {
   background-color: #2a72a5;
   color: #fff;
   font-weight: bold;
-  padding-left: 5em;
+  padding-left: 1em;
   min-height: 50px;
   height: 50px;
 }
@@ -620,7 +621,7 @@ header .navbar-header {
 
 header #toolTitle a {
   color: inherit;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: bold;
 }
 
@@ -1921,7 +1922,7 @@ div[data-role="editor-toolbar"] {
 
 #main-content {
 	position: absolute;
-    top: 188px;
+    top: 140px;
     bottom: 0px;
     overflow: auto;
     width: 100%;

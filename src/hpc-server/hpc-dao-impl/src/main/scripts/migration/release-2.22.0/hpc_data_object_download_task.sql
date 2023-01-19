@@ -1,0 +1,4 @@
+                 
+ALTER TABLE HPC_DATA_OBJECT_DOWNLOAD_TASK add (STAGING_PERCENT_COMPLETE NUMBER(10));
+COMMENT ON COLUMN HPC_DATA_OBJECT_DOWNLOAD_TASK.STAGING_PERCENT_COMPLETE IS
+                 'The % complete of staging - i.e. 1st hop download to Globus';

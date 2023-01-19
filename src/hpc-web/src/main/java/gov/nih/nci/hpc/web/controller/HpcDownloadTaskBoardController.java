@@ -115,6 +115,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setCompleted(
 							download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
 					task.setResult(getResultDisplayText(download.getResult()));
+					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					result.add(task);
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
@@ -128,6 +129,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				task.setCompleted(
 						download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
 				task.setResult(getResultDisplayText(download.getResult()));
+				task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 				result.add(task);
 			}
 			model.addAttribute("currentPage", Integer.toString(page));

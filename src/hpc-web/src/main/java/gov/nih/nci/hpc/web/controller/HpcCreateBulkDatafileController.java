@@ -39,6 +39,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -57,6 +58,7 @@ import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcExcelUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -90,6 +92,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	private String webServerName;
 	@Value("${dme.archive.naming.forbidden.chararacters}")
 	private String forbiddenChars;
+
+	@Autowired
+	private HpcModelBuilder hpcModelBuilder;
 
 	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
 	private Gson gson = new Gson();
@@ -432,8 +437,10 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 					session.setAttribute("userDOCModel", modelDTO);
 				}
-				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, serviceURL, sslCertPath,
-						sslCertPassword);
+
+				HpcPermission[] hpcPermissions = {HpcPermission.OWN, HpcPermission.WRITE};
+				populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "basePaths",
+				sslCertPath, sslCertPassword, session, hpcModelBuilder);
 				basePaths = (Set<String>) session.getAttribute("basePaths");
 			}
 			
