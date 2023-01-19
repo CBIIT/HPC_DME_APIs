@@ -65,6 +65,13 @@ public class HpcSearchRequest implements Callable<HpcDataObjectListDTO> {
 	/**
 	 * Default Constructor.
 	 * 
+	 * @param dataSearchService      Data search service instance.
+	 * @param securityService        Security service instance.
+	 * @param dataManagementUsername user name.
+	 * @param path                   The search path.
+	 * @param offset                 The search offset.
+	 * @param pageSize               The search page size.
+	 * @param encrypt                Encryption indicator
 	 */
 	HpcSearchRequest(HpcDataSearchService dataSearchService, HpcSecurityService securityService,
 			String dataManagementUsername, String path, int offset, int pageSize, boolean encrypt) {

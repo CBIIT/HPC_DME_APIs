@@ -55,7 +55,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,9 +188,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
 			if (!validationResult.getValid()) {
 				if (StringUtils.isEmpty(validationResult.getMessage())) {
-					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException(INVALID_METADATA_MSG + ". Path - " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
 				} else {
-					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException(validationResult.getMessage() + ". Path - " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 			}
 		}
@@ -239,8 +240,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
-	public void copyMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries)
-			throws HpcException {
+	public void copyMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -259,7 +259,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
 	}
-	
+
 	@Override
 	public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(String path, String userId,
 			String userName, String configurationId) throws HpcException {
@@ -411,7 +411,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
 		}
-		
+
 		if (metadataMap.get(DELETED_DATE_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setDeletedDate(toCalendar(metadataMap.get(DELETED_DATE_ATTRIBUTE)));
 		}
@@ -491,7 +491,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Override
 	public List<HpcMetadataEntry> getDefaultDataObjectMetadataEntries(HpcDirectoryScanItem scanItem) {
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-		//Presently empty, placeholder
+		// Presently empty, placeholder
 
 		return metadataEntries;
 	}
@@ -680,8 +680,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		addMetadataEntry(metadataEntries, toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, callerObjectId));
 
 		// Create the Registration Completion Event Indicator metadata.
-		addMetadataEntry(metadataEntries, toMetadataEntry(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE,
-				Boolean.toString(registrationEventRequired)));
+		addMetadataEntry(metadataEntries,
+				toMetadataEntry(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE, Boolean.toString(registrationEventRequired)));
 
 		// Create the S3 Archive Configuration ID.
 		addMetadataEntry(metadataEntries,
@@ -777,9 +777,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			} else {
 				addMetadataEntry(metadataEntries,
 						toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
-				if(dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
-						addMetadataEntry(metadataEntries,
-								toMetadataEntry(DELETED_DATE_ATTRIBUTE, dateFormat.format(Calendar.getInstance().getTime())));
+				if (dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
+					addMetadataEntry(metadataEntries, toMetadataEntry(DELETED_DATE_ATTRIBUTE,
+							dateFormat.format(Calendar.getInstance().getTime())));
 				}
 			}
 		}
@@ -1163,12 +1163,16 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	 * @return The Calendar instance.
 	 */
 	private Calendar toCalendar(String calendarStr) {
+		if (StringUtils.isEmpty(calendarStr)) {
+			return null;
+		}
+
 		Calendar cal = Calendar.getInstance();
 		try {
 			cal.setTime(dateFormat.parse(calendarStr));
 
-		} catch (ParseException e) {
-			logger.error("Failed to parse calendar string: " + calendarStr);
+		} catch (Exception e) {
+			logger.error("Failed to parse calendar string: {}", calendarStr);
 			return null;
 		}
 

@@ -49,6 +49,8 @@ public class HpcDomainValidator {
 
 	private static final int MAX_COMPOUND_METADATA_QUERY_DEPTH = 10;
 
+	private static final String EMPTY_METADATA_MSG = "Empty metadata entry in request";
+
 	// ---------------------------------------------------------------------//
 	// Class members
 	// ---------------------------------------------------------------------//
@@ -213,6 +215,7 @@ public class HpcDomainValidator {
 			HpcMetadataEntry metadataEntry = metadataEntries.get(i);
 			if(StringUtils.isEmpty(metadataEntry.getAttribute())) {
 				validationResult.setValid(false);
+				validationResult.setMessage(EMPTY_METADATA_MSG);
 				return validationResult;
 
 			} else {

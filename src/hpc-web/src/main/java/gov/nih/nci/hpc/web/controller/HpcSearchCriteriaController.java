@@ -184,6 +184,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch.setPageNumber(search.getPageNumber());
 			hpcSearch.setPageSize(search.getPageSize());
 			hpcSearch.setTotalSize(search.getTotalSize());
+			hpcSearch.setSelectedColumns(search.getSelectedColumns());
 			search = hpcSearch;
 		}
 
@@ -191,6 +192,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("pageNumber", search.getPageNumber());
 		model.addAttribute("pageSize", search.getPageSize());
 		model.addAttribute("totalSize", search.getTotalSize());
+		model.addAttribute("selectedColumns", search.getSelectedColumns());
 		boolean success = false;
 		try {
 
@@ -278,6 +280,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
 			hpcSearch.setPageNumber(search.getPageNumber());
 			hpcSearch.setPageSize(search.getPageSize());
+			hpcSearch.setSelectedColumns(search.getSelectedColumns());
 			search = hpcSearch;
 		}
 		try {
@@ -302,14 +305,14 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			int totalPages = 1;
 			do {
 				compoundQuery.setPage(pageNumber++);
-				compoundQuery.setPageSize(100);
+				compoundQuery.setPageSize(10000);
 				Response restResponse = client.invoke("POST", compoundQuery);
 				if (restResponse.getStatus() == 200) {
 					HpcSearchUtil.processResponseResults(hpcSearch != null ? hpcSearch : search, restResponse, model, session);
 					totalPages = (int) session.getAttribute("totalPages");
 				}
 			} while (pageNumber <= totalPages);
-			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response);
+			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response, exportSearch.getSelectedColumns());
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -336,6 +339,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		dto.setDetailedResponse(search.isDetailed());
 		dto.setPage(search.getPageNumber());
 		dto.setPageSize(search.getPageSize());
+		dto.getSelectedColumns().addAll(search.getSelectedColumns());
 		return dto;
 	}
 

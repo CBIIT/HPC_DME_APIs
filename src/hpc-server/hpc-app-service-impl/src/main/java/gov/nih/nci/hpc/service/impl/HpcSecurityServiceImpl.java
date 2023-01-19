@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import gov.nih.nci.hpc.dao.HpcApiCallsAuditDAO;
 import gov.nih.nci.hpc.dao.HpcGroupDAO;
 import gov.nih.nci.hpc.dao.HpcQueryConfigDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
@@ -92,17 +93,21 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	@Autowired
 	private HpcUserDAO userDAO = null;
 
-	//The User DAO instance.
+	// The User DAO instance.
 	@Autowired
 	private HpcGroupDAO groupDAO = null;
 
 	// The System Account DAO instance.
 	@Autowired
 	private HpcSystemAccountDAO systemAccountDAO = null;
-	
+
 	// The Query Config DAO instance.
 	@Autowired
 	private HpcQueryConfigDAO queryConfigDAO = null;
+
+	// The Query Config DAO instance.
+	@Autowired
+	private HpcApiCallsAuditDAO apiCallsAuditDAO = null;
 
 	// The LDAP authenticator instance.
 	@Autowired
@@ -130,7 +135,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	// Query configuration locator.
 	@Autowired
 	private HpcQueryConfigurationLocator queryConfigurationLocator = null;
-		
+
 	// The authentication token signature key.
 	@Value("${hpc.service.security.authenticationTokenSignatureKey}")
 	private String authenticationTokenSignatureKey = null;
@@ -468,6 +473,31 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	}
 
 	@Override
+	public <T> T executeAsUserAccount(String userId, HpcSystemAccountFunction<T> userAccountFunction)
+			throws HpcException {
+		// Get the current request invoker, and authentication type.
+		HpcRequestInvoker currentRequestInvoker = getRequestInvoker();
+
+		// Switch to the user account
+		setUserRequestInvoker(userId);
+
+		// Execute the function as user account.
+		try {
+			return userAccountFunction.execute();
+
+		} finally {
+			// We may need to close the connection to data management.
+			if (getRequestInvoker().getDataManagementAuthenticatedToken() != null) {
+				// Data management system account was used, so need to close this connection.
+				dataManagementProxy.disconnect(getRequestInvoker().getDataManagementAuthenticatedToken());
+			}
+
+			// Switch back to the original request invoker.
+			HpcRequestContext.setRequestInvoker(currentRequestInvoker);
+		}
+	}
+
+	@Override
 	public boolean authenticate(String userName, String password) throws HpcException {
 		// Input validation.
 		if (userName == null || userName.trim().length() == 0) {
@@ -513,9 +543,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	}
 
 	@Override
-	public  HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) throws HpcException {
+	public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) throws HpcException {
 		return systemAccountLocator.getSystemAccount(system);
-		
+
 	}
 
 	@Override
@@ -622,20 +652,26 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 
 		return userDAO.isUserDataCurator(nciUserId);
 	}
-	
+
 	@Override
 	public void updateQueryConfig(String basePath, String encryptionKey) throws HpcException {
-		
+
 		queryConfigDAO.upsert(basePath, encryptionKey);
 		queryConfigurationLocator.reload();
 	}
-	
+
 	@Override
 	public HpcQueryConfiguration getQueryConfig(String basePath) throws HpcException {
-		
+
 		return queryConfigurationLocator.getConfig(basePath);
 	}
-	
+
+	@Override
+	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
+			String serverId, Calendar created, Calendar completed) throws HpcException {
+		apiCallsAuditDAO.insert(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created, completed);
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -737,6 +773,37 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 		invoker.setDataManagementAuthenticatedToken(null);
 		invoker.setLdapAuthentication(ldapAuthentication);
 		invoker.setAuthenticationType(HpcAuthenticationType.SYSTEM_ACCOUNT);
+
+		HpcRequestContext.setRequestInvoker(invoker);
+	}
+
+	/**
+	 * Set the service call invoker in the request context using user account.
+	 *
+	 * @param userId The userId of the user account to switch to.
+	 * @throws HpcException on service failure.
+	 */
+	private void setUserRequestInvoker(String userId) throws HpcException {
+		HpcUser user = getUser(userId);
+		if (user == null) {
+			throw new HpcException("User is not registered with HPC-DM: " + userId, HpcErrorType.UNAUTHORIZED_REQUEST);
+		}
+		if (!user.getActive()) {
+			throw new HpcException(
+					"User is inactive. Please contact system administrator to activate account: " + userId,
+					HpcErrorType.UNAUTHORIZED_REQUEST);
+		}
+		// Instantiate a Data Management account.
+		HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
+		dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
+		dataManagementAccount.setUsername(userId);
+
+		HpcRequestInvoker invoker = new HpcRequestInvoker();
+		invoker.setNciAccount(user.getNciAccount());
+		invoker.setDataManagementAccount(dataManagementAccount);
+		invoker.setDataManagementAuthenticatedToken(null);
+		invoker.setUserRole(getUserRole(dataManagementAccount.getUsername()));
+		invoker.setAuthenticationType(HpcAuthenticationType.TOKEN);
 
 		HpcRequestContext.setRequestInvoker(invoker);
 	}

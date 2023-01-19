@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcReviewBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -36,6 +37,10 @@ public class HpcScheduledTasksImpl {
 	// The Review Business Service instance.
 	@Autowired
 	private HpcReviewBusService reviewBusService = null;
+
+	// The Data Search Business Service instance.
+	@Autowired
+	private HpcDataSearchBusService dataSearchBusService = null;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -200,11 +205,12 @@ public class HpcScheduledTasksImpl {
 	private void completeCollectionDownloadTasksTask() {
 		execute("completeCollectionDownloadTasksTask()", systemBusService::completeCollectionDownloadTasks, logger);
 	}
-	
+
 	/** Complete Globus bunching of collection download tasks **/
 	@Scheduled(cron = "${hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay}")
 	private void completeGlobusBunchingCollectionDownloadTasksTask() {
-		execute("completeGlobusBunchingCollectionDownloadTasksTask()", systemBusService::completeGlobusBunchingCollectionDownloadTasks, logger);
+		execute("completeGlobusBunchingCollectionDownloadTasksTask()",
+				systemBusService::completeGlobusBunchingCollectionDownloadTasks, logger);
 	}
 
 	/** Process bulk data object registration tasks. */
@@ -279,6 +285,18 @@ public class HpcScheduledTasksImpl {
 	@Scheduled(cron = "${hpc.scheduler.cron.removeDeletedDataObjects.delay}")
 	private void removeDeletedDataObjectsTask() {
 		execute("removeDeletedDataObjectsTask()", systemBusService::removeDeletedDataObjects, logger);
+	}
+
+	/** Send Monthly user stored query results. */
+	@Scheduled(cron = "${hpc.scheduler.cron.sendMonthlyUserQueryResults.delay}")
+	private void sendMonthlyQueryResults() {
+		execute("sendMonthlyQueryResults()", dataSearchBusService::sendMonthlyQueryResults, logger);
+	}
+
+	/** Send Weekly user stored query results. */
+	@Scheduled(cron = "${hpc.scheduler.cron.sendWeeklyUserQueryResults.delay}")
+	private void sendWeeklyQueryResults() {
+		execute("sendWeeklyQueryResults()", dataSearchBusService::sendWeeklyQueryResults, logger);
 	}
 
 	// ---------------------------------------------------------------------//

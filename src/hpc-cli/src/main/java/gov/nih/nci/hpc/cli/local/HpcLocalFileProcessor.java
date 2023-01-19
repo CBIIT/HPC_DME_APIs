@@ -367,6 +367,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     }
     
     hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(true);
+    hpcDataObjectRegistrationDTO.setUploadCompletion(true);
     if(multipartUpload) {
     	hpcDataObjectRegistrationDTO.setUploadParts(parts);
     }
@@ -443,7 +444,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
         HpcDataObjectRegistrationResponseDTO responseDTO = (HpcDataObjectRegistrationResponseDTO) HpcClientUtil
             .getObject(restResponse, HpcDataObjectRegistrationResponseDTO.class);
         if (!multipartUpload && responseDTO != null && responseDTO.getUploadRequestURL() != null) {
-          uploadToUrl(responseDTO.getUploadRequestURL(), new File(entity.getAbsolutePath()),
+          uploadToUrl(HpcClientUtil.constructPathString(basePath, objectPath), responseDTO.getUploadRequestURL(), new File(entity.getAbsolutePath()),
               connection.getBufferSize(), md5Checksum);
         } else if (multipartUpload && responseDTO != null && responseDTO.getMultipartUpload() != null) {
             uploadToUrls(HpcClientUtil.constructPathString(basePath, objectPath), responseDTO.getMultipartUpload(), new File(entity.getAbsolutePath()),
@@ -574,7 +575,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
   }
 
 
-	public void uploadToUrl(String urlStr, File file, int bufferSize, String checksum) throws HpcBatchException {
+	public int uploadToUrl(String destinationPath, String urlStr, File file, int bufferSize, String checksum) throws HpcBatchException {
 
 		HttpURLConnection httpConnection;
 		try {
@@ -629,6 +630,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			logger.debug("responseCode {}", responseCode);
 			if (responseCode == 200) {
 				System.out.println("Successfully registered " + file.getAbsolutePath());
+				return completeMultipartUpload(destinationPath, null);
 			}
 			else
 			{
@@ -697,7 +699,12 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			client.type(MediaType.APPLICATION_JSON).accept(
 				      "application/json; charset=UTF-8");
 			
-			restResponse = client.post(dto);
+			if (dto == null) 
+				restResponse = client.post("{}");
+			else
+				restResponse = client.post(dto);
+			
+			
 
 			if (restResponse.getStatus() == 200) {
 				MappingJsonFactory factory = new MappingJsonFactory();
