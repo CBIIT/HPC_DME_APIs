@@ -441,27 +441,35 @@ public interface HpcDataManagementRestService {
 	 * Get a data object.
 	 *
 	 * @deprecated
-	 * @param path       The data object path.
-	 * @param includeAcl Flag to include ACL.
+	 * @param path              The data object path.
+	 * @param includeAcl        Flag to include ACL.
+	 * @param excludeAttributes (Optional) if true, the data object attributes will
+	 *                          not be returned, just metadata. This is false by
+	 *                          default
 	 * @return The REST service response w/ HpcDataObjectListDTO entity.
 	 */
 	@Deprecated
 	@GET
 	@Path("/dataObject/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataObjectV1(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl);
+	public Response getDataObjectV1(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl,
+			@QueryParam("excludeAttributes") Boolean excludeAttributes);
 
 	/**
 	 * Get a data object.
 	 *
-	 * @param path       The data object path.
-	 * @param includeAcl Flag to include ACL.
+	 * @param path              The data object path.
+	 * @param includeAcl        Flag to include ACL.
+	 * @param excludeAttributes (Optional) if true, the data object attributes will
+	 *                          not be returned, just metadata. This is false by
+	 *                          default
 	 * @return The REST service response w/ HpcDataObjectListDTO entity.
 	 */
 	@GET
 	@Path("/v2/dataObject/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataObject(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl);
+	public Response getDataObject(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl,
+			@QueryParam("excludeAttributes") Boolean excludeAttributes);
 
 	/**
 	 * Download a data object.
