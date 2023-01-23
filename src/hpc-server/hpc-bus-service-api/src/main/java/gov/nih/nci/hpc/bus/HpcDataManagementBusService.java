@@ -317,18 +317,21 @@ public interface HpcDataManagementBusService {
 			String userName, String configurationId, boolean registrationEventRequired) throws HpcException;
 
 	/**
-	 * Complete an upload from S3 (either via URL upload or streaming). Checks if the data object is present in the S3 archive
-	 * and update the data management system accordingly.
+	 * Complete an upload from S3 (either via URL upload or streaming). Checks if
+	 * the data object is present in the S3 archive and update the data management
+	 * system accordingly.
 	 *
 	 * @param path                    The path of the data object to check if an
 	 *                                upload from S3 completed.
 	 * @param systemGeneratedMetadata The system generated metadata for the data
 	 *                                object.
-	 * @return true if the uploaded completed, or false otherwise (i.e. the data object upload is still in progress).
+	 * @return true if the uploaded completed, or false otherwise (i.e. the data
+	 *         object upload is still in progress).
 	 * @throws HpcException If failed to check/update upload status.
 	 */
-	public boolean completeS3Upload(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata) throws HpcException;
-		
+	public boolean completeS3Upload(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata)
+			throws HpcException;
+
 	/**
 	 * Complete S3 URL upload for a Data Object.
 	 *
@@ -380,24 +383,29 @@ public interface HpcDataManagementBusService {
 	 * Get Data Object.
 	 *
 	 * @deprecated
-	 * @param path       The data object's path.
-	 * @param includeAcl An indicator to obtain user permission.
+	 * @param path              The data object's path.
+	 * @param includeAcl        An indicator to obtain user permission.
+	 * @param excludeAttributes If true, the data objects attributes will not be
+	 *                          returned.
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
 	@Deprecated
-	public HpcDataObjectDTO getDataObjectV1(String path, Boolean includeAcl) throws HpcException;
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes)
+			throws HpcException;
 
 	/**
 	 * Get Data Object.
 	 *
-	 * @param path       The data object's path.
-	 * @param includeAcl An indicator to obtain user permission.
+	 * @param path              The data object's path.
+	 * @param includeAcl        An indicator to obtain user permission.
+	 * @param excludeAttributes If true, the data objects attributes will not be
+	 *                          returned.
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, Boolean includeAcl)
-			throws HpcException;
+	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, boolean includeAcl,
+			boolean excludeAttributes) throws HpcException;
 
 	/**
 	 * Download Data Object. In this overloaded method, the request invoker will be

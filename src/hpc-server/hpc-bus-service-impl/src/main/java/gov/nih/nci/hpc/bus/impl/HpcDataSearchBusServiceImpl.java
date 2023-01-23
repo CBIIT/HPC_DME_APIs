@@ -78,9 +78,9 @@ import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
-	
+
 	private static final int USER_QUERY_SEARCH_RESULTS_PAGE_SIZE = 10000;
-			
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -104,11 +104,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	// Notification Application service instance.
 	@Autowired
 	private HpcNotificationService notificationService = null;
-	
+
 	// Excel Exporter.
 	@Autowired
 	private HpcExporter exporter = null;
-		
+
 	// The collection download task executor.
 	@Autowired
 	@Qualifier("hpcGetAllDataObjectsExecutorService")
@@ -120,7 +120,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	// Directory to create the user query excel export.
 	@Value("${hpc.bus.exportDirectory}")
 	private String exportDirectory = null;
-		
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -442,8 +442,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (compoundMetadataQueryDTO.getCompoundQueryType() != null) {
 			namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
 		}
-		if (compoundMetadataQueryDTO.getSelectedColumns() != null && !compoundMetadataQueryDTO.getSelectedColumns().isEmpty()) {
-			if(namedCompoundMetadataQuery.getSelectedColumns() != null)
+		if (compoundMetadataQueryDTO.getSelectedColumns() != null
+				&& !compoundMetadataQueryDTO.getSelectedColumns().isEmpty()) {
+			if (namedCompoundMetadataQuery.getSelectedColumns() != null)
 				namedCompoundMetadataQuery.getSelectedColumns().clear();
 			namedCompoundMetadataQuery.getSelectedColumns().addAll(compoundMetadataQueryDTO.getSelectedColumns());
 		}
@@ -530,7 +531,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		return catalogsDTO;
 
 	}
-	
+
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void sendWeeklyQueryResults() throws HpcException {
@@ -542,8 +543,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	public void sendMonthlyQueryResults() throws HpcException {
 		sendQueryResults(HpcCompoundMetadataQueryFrequency.MONTHLY);
 	}
-	
-	
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -579,9 +579,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		HpcCollectionListDTO collectionDTO = new HpcCollectionListDTO();
 		if (!CollectionUtils.isEmpty(collectionPaths)) {
-			collectionPaths.sort(Comparator
-					.comparing(HpcSearchMetadataEntryForCollection::getAbsolutePath, String::compareTo)
-					.thenComparing(HpcSearchMetadataEntryForCollection::getLevel));
+			collectionPaths
+					.sort(Comparator.comparing(HpcSearchMetadataEntryForCollection::getAbsolutePath, String::compareTo)
+							.thenComparing(HpcSearchMetadataEntryForCollection::getLevel));
 		}
 		int prevId = 0;
 		HpcCollectionDTO collection = null;
@@ -648,7 +648,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		if (detailedResponse) {
 			for (String dataObjectPath : dataObjectPaths) {
-				dataObjectsDTO.getDataObjects().add(dataManagementBusService.getDataObjectV1(dataObjectPath, false));
+				dataObjectsDTO.getDataObjects()
+						.add(dataManagementBusService.getDataObjectV1(dataObjectPath, false, false));
 			}
 		} else {
 			dataObjectsDTO.getDataObjectPaths().addAll(dataObjectPaths);
@@ -664,9 +665,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
 
 		if (!CollectionUtils.isEmpty(dataObjectPaths)) {
-			dataObjectPaths
-					.sort(Comparator.comparing(HpcSearchMetadataEntry::getAbsolutePath, String::compareTo)
-							.thenComparing(HpcSearchMetadataEntry::getLevel));
+			dataObjectPaths.sort(Comparator.comparing(HpcSearchMetadataEntry::getAbsolutePath, String::compareTo)
+					.thenComparing(HpcSearchMetadataEntry::getLevel));
 		}
 		int prevId = 0;
 		HpcDataObjectDTO dataObject = null;
@@ -752,7 +752,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		return compoundMetadataQueryDTO;
 	}
-	
+
 	/**
 	 * Run and send all scheduled user stored query for the specified frequency
 	 *
@@ -763,8 +763,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	private void sendQueryResults(HpcCompoundMetadataQueryFrequency frequency) throws HpcException {
 		// Get a list of user stored queries where auto run is scheduled.
 		List<HpcNamedCompoundMetadataQuery> queryList = dataSearchService.getQueriesByFrequency(frequency);
-		
-		// For each query, send user an email with the stored query results as an attachment.
+
+		// For each query, send user an email with the stored query results as an
+		// attachment.
 		for (HpcNamedCompoundMetadataQuery query : queryList) {
 			// Send query result of a namedQuery
 			try {
@@ -773,47 +774,50 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 				logger.error(e.getMessage(), e);
 				notificationService.sendNotification(e);
 			}
-			
+
 		}
 	}
-	
+
 	/**
-	 *  Run and construct the excel export of the specified query results and send to the user
-	 *  This needs to run with correct user account to get the search results with user permissions
-	 *  
-	 * @param userId The userId of the stored query that is being run
+	 * Run and construct the excel export of the specified query results and send to
+	 * the user This needs to run with correct user account to get the search
+	 * results with user permissions
+	 * 
+	 * @param userId    The userId of the stored query that is being run
 	 * @param queryName The query name to be run
 	 * @throws HpcException If the user query failed or failed to export
 	 */
 	private void sendQuery(String userId, String queryName) throws HpcException {
-		
+
 		logger.info("Running query {} for user {}", queryName, userId);
 		HpcNamedCompoundMetadataQuery query = dataSearchService.getQuery(userId, queryName);
-		//Construct the excel file name
+		// Construct the excel file name
 		String exportFileName = exportDirectory + File.separator + "Search_Results_" + queryName
-                + MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xls";
-        
-		//Construct the query
+				+ MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xls";
+
+		// Construct the query
 		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
 		compoundMetadataQueryDTO.setCompoundQuery(query.getCompoundQuery());
 		compoundMetadataQueryDTO.setDetailedResponse(query.getDetailedResponse());
 		compoundMetadataQueryDTO.setPageSize(USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
 		compoundMetadataQueryDTO.setTotalCount(true);
-		
+
 		try {
-			if(query.getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)) {
+			if (query.getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)) {
 				HpcDataObjectListDTO dataobjectListDTO = new HpcDataObjectListDTO();
 				int pageNumber = 1;
 				int totalPages = 1;
 				do {
 					compoundMetadataQueryDTO.setPage(pageNumber++);
-					//Switch context to the query user
-					HpcDataObjectListDTO dataobjectsDTO = executeAsUserAccount(() -> getDataObjects(null, compoundMetadataQueryDTO), userId);
+					// Switch context to the query user
+					HpcDataObjectListDTO dataobjectsDTO = executeAsUserAccount(
+							() -> getDataObjects(null, compoundMetadataQueryDTO), userId);
 					dataobjectListDTO.getDataObjectPaths().addAll(dataobjectsDTO.getDataObjectPaths());
 					dataobjectListDTO.getDataObjects().addAll(dataobjectsDTO.getDataObjects());
 					totalPages = getTotalPages(dataobjectsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
 				} while (pageNumber <= totalPages);
-				if(CollectionUtils.isEmpty(dataobjectListDTO.getDataObjectPaths()) && CollectionUtils.isEmpty(dataobjectListDTO.getDataObjects())) {
+				if (CollectionUtils.isEmpty(dataobjectListDTO.getDataObjectPaths())
+						&& CollectionUtils.isEmpty(dataobjectListDTO.getDataObjects())) {
 					logger.info("No results found from query {} for user {}", queryName, userId);
 					return;
 				}
@@ -824,13 +828,15 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 				int totalPages = 1;
 				do {
 					compoundMetadataQueryDTO.setPage(pageNumber++);
-					//Switch context to the query user
-					HpcCollectionListDTO collectionsDTO = executeAsUserAccount(() -> getCollections(compoundMetadataQueryDTO), userId);
+					// Switch context to the query user
+					HpcCollectionListDTO collectionsDTO = executeAsUserAccount(
+							() -> getCollections(compoundMetadataQueryDTO), userId);
 					collectionListDTO.getCollectionPaths().addAll(collectionsDTO.getCollectionPaths());
 					collectionListDTO.getCollections().addAll(collectionsDTO.getCollections());
 					totalPages = getTotalPages(collectionsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
 				} while (pageNumber <= totalPages);
-				if(CollectionUtils.isEmpty(collectionListDTO.getCollectionPaths()) && CollectionUtils.isEmpty(collectionListDTO.getCollections())) {
+				if (CollectionUtils.isEmpty(collectionListDTO.getCollectionPaths())
+						&& CollectionUtils.isEmpty(collectionListDTO.getCollections())) {
 					logger.info("No results found from query {} for user {}", queryName, userId);
 					return;
 				}
@@ -838,32 +844,34 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			}
 			// Send the file to the user
 			sendQueryNotification(userId, exportFileName, queryName, query.getFrequency().value());
-			
+
 		} catch (IOException e) {
-			throw new HpcException("Error exporting search result for query: " + queryName, HpcErrorType.UNEXPECTED_ERROR, e);
+			throw new HpcException("Error exporting search result for query: " + queryName,
+					HpcErrorType.UNEXPECTED_ERROR, e);
 		} finally {
 			// Delete the file
 			Path path = FileSystems.getDefault().getPath(exportFileName);
-	        try {
-	            Files.deleteIfExists(path);
-	        } catch (IOException e) {
-	        	logger.error("Failed to delete file: {}", exportFileName, e);
-	        }
-        }
+			try {
+				Files.deleteIfExists(path);
+			} catch (IOException e) {
+				logger.error("Failed to delete file: {}", exportFileName, e);
+			}
+		}
 
 	}
-	
+
 	/**
 	 * Email the exported user query results to the user.
 	 *
-	 * @param nciUserId The NCI user ID.
+	 * @param nciUserId      The NCI user ID.
 	 * @param exportFileName The exported query results.
-	 * @param queryName  The query name.
-	 * @param frequency The scheduled frequency.
-	 * @throws HpcException 
+	 * @param queryName      The query name.
+	 * @param frequency      The scheduled frequency.
+	 * @throws HpcException
 	 */
-	private void sendQueryNotification(String nciUserId, String exportFileName, String queryName, String frequency) throws HpcException {
-		
+	private void sendQueryNotification(String nciUserId, String exportFileName, String queryName, String frequency)
+			throws HpcException {
+
 		logger.info("Sending {} query result for {} to {}", frequency, queryName, nciUserId);
 		if (nciUserId == null) {
 			throw new HpcException("Null nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -873,13 +881,13 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (user == null) {
 			throw new HpcException("User doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+
 		List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
 		HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
 		payloadEntry.setAttribute("QUERY_NAME");
 		payloadEntry.setValue(queryName);
 		payloadEntries.add(payloadEntry);
-		
+
 		payloadEntry = new HpcEventPayloadEntry();
 		payloadEntry.setAttribute("FREQUENCY");
 		payloadEntry.setValue(frequency);
@@ -888,17 +896,17 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		notificationService.sendNotification(nciUserId, HpcEventType.USER_QUERY_SENT, payloadEntries,
 				HpcNotificationDeliveryMethod.EMAIL, exportFileName);
 	}
-	
+
 	/**
-	 * When the scheduler job is running using system account, the query results 
+	 * When the scheduler job is running using system account, the query results
 	 * will be different based on user's permissions. As a workaround, if the
-	 * invoker is a system account then we simulate running as user account. 
-	 * If the invoker is not a group-admin, then its own credentials are used.
+	 * invoker is a system account then we simulate running as user account. If the
+	 * invoker is not a group-admin, then its own credentials are used.
 	 *
 	 * @param userAccountFunction The functional interface to execute as user
-	 *                              account with return value.
-	 * @param userId               The userId of the user account to be executed as.
-	 * @param <T>                   A generic returned type.
+	 *                            account with return value.
+	 * @param userId              The userId of the user account to be executed as.
+	 * @param <T>                 A generic returned type.
 	 * @return A generic returned type.
 	 * @throws HpcException If it failed to identify the request invoker, or the
 	 *                      function raised an exception.
@@ -912,21 +920,20 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		return securityService.executeAsUserAccount(userId, userAccountFunction);
 	}
-	
+
 	/**
 	 * Compute the total number of pages for search results
 	 * 
 	 * @param totalCount The total result count
-	 * @param limit The page size
+	 * @param limit      The page size
 	 * @return
 	 */
-	private static int getTotalPages(int totalCount, int limit)
-	{
+	private static int getTotalPages(int totalCount, int limit) {
 		int total = 0;
-		if(limit <=0)
+		if (limit <= 0)
 			limit = 100;
 		total = totalCount / limit;
-		if(totalCount % limit != 0)
+		if (totalCount % limit != 0)
 			total++;
 		return total;
 	}
