@@ -572,7 +572,7 @@ function dm_register_dataobject_multipart {
     command_args+=" --sourceFilePath \"$source_path\" --destinationArchivePath \"$destination_path\" --metadataFile \"$description\""
   
     #Generate the command for the client: 
-    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local command_file=$HPC_DM_UTILS/temp/cmd-file-$(uuidgen)
     echo "putDatafile  " $command_args >  $command_file
 
     case "$(uname -s)" in
