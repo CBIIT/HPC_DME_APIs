@@ -178,13 +178,15 @@ public class HpcReportsController extends AbstractHpcController {
   }
   
   private HpcReportRequestDTO setReportColumnsForIndividualReports(HpcReportRequestDTO requestDTO, boolean showArchiveSummaryForNonGrid) {
-    requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
+    if (!requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
+            && !requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE)) {
+      requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
+    }
     requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
     requestDTO.getReportColumns().add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
     requestDTO.getReportColumns().add(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
     requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
     requestDTO.getReportColumns().add(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
-    requestDTO.getReportColumns().add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
     requestDTO.getReportColumns().add(HpcReportEntryAttribute.FILE_SIZES);
     if (showArchiveSummaryForNonGrid){
       requestDTO.getReportColumns().add(HpcReportEntryAttribute.ARCHIVE_SUMMARY);
