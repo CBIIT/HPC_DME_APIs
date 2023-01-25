@@ -527,16 +527,16 @@ body.loading .overlay{
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
 				exportFileName= pretag + "Base_Path" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Report for all Base Paths";
-				noSortColumns = [9];
+				noSortColumns = [16, 17];
 				fileSizeColumns = [4,6];
-				visibleColumns = [ 1, 2, 4, 7, 17, 18];
+				visibleColumns = [ 1, 2, 4, 7, 16, 17];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
 						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
 						{"targets": 1, "data": "base_path"},
-						{"targets": 17, "searchable": false, "orderable": false, "visible": true, "data":null,
+						{"targets": 16, "searchable": false, "orderable": false, "visible": true, "data":null,
 							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
 							"render": function ( data, type, row ) {
 								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
@@ -551,16 +551,16 @@ body.loading .overlay{
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "DOC" + tag;
 				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
-				noSortColumns = [9];
+				noSortColumns = [16, 17];
 				fileSizeColumns = [4,6];
-				visibleColumns = [ 1, 2, 4, 7, 17, 18];
+				visibleColumns = [ 1, 2, 4, 7, 16, 17];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
 						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
 						{"targets": 1, "data": "doc"},
-						{"targets": 17, "searchable": false, "orderable": false, "visible": true, "data":null,
+						{"targets": 16, "searchable": false, "orderable": false, "visible": true, "data":null,
 							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
 							"render": function ( data, type, row ) {
 								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
@@ -726,8 +726,8 @@ body.loading .overlay{
 						table.cell(row.index(), 9).data(data.archive_summary_value);
 						table.cell(row.index(), 8).data("");
 					} else { // The BasePath and DOC grid positions for Archive Summary(both button and value) are different
-						table.cell(row.index(), 18).data(data.archive_summary_value);
-						table.cell(row.index(), 17).data("");
+						table.cell(row.index(), 17).data(data.archive_summary_value);
+						table.cell(row.index(), 16).data("");
 					}
 				});
 			}
