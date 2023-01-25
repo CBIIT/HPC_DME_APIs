@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.InvalidGroupException;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.InvalidUserException;
@@ -272,10 +273,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		}
 	}
 
-	// TODO - remove synchronized after testing if this resolved the duplicated metadata
+	// TODO - remove synchronized after testing if this resolved the duplicated
+	// metadata
 	@Override
-	public synchronized void addMetadataToDataObject(Object authenticatedToken, String path, List<HpcMetadataEntry> metadataEntries)
-			throws HpcException {
+	public synchronized void addMetadataToDataObject(Object authenticatedToken, String path,
+			List<HpcMetadataEntry> metadataEntries) throws HpcException {
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
 		try {
@@ -480,6 +482,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			return toHpcMetadata(irodsConnection.getDataObjectAO(authenticatedToken)
 					.findMetadataValuesForDataObject(getAbsolutePath(path)));
+
+		} catch (FileNotFoundException e) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 
 		} catch (Exception e) {
 			throw new HpcException("Failed to get metadata of a data object at path " + path + ": " + e.getMessage(),
