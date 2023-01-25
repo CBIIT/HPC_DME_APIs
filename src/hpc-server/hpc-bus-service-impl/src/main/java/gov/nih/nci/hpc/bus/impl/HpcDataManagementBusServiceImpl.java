@@ -1179,9 +1179,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Complete the data object registration w/ the data management system.
-		if(!completeS3Upload(path, metadata)) {
-			throw new HpcException("Upload is incomplete. File not found in archive", HpcErrorType.INVALID_REQUEST_INPUT);
-		} 
+		if (!completeS3Upload(path, metadata)) {
+			throw new HpcException("Upload is incomplete. File not found in archive",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		return responseDTO;
 	}
@@ -1331,20 +1332,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Deprecated
 	@Override
-	public HpcDataObjectDTO getDataObjectV1(String path, Boolean includeAcl) throws HpcException {
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl,
+			boolean excludeAttributes) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the data object.
-		HpcDataObject dataObject = dataManagementService.getDataObject(path);
-		if (dataObject == null) {
-			return null;
+		HpcDataObject dataObject = null;
+		if (!excludeAttributes) {
+			dataObject = dataManagementService.getDataObject(path);
+			if (dataObject == null) {
+				throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(dataObject.getAbsolutePath());
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
 		HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
@@ -1362,22 +1367,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, Boolean includeAcl)
-			throws HpcException {
+	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, boolean includeAcl,
+			boolean excludeAttributes) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the data object.
-		HpcDataObject dataObject = dataManagementService.getDataObject(path);
-		if (dataObject == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		HpcDataObject dataObject = null;
+		if (!excludeAttributes) {
+			dataObject = dataManagementService.getDataObject(path);
+			if (dataObject == null) {
+				throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 
 		// Get the metadata for this data object.
 		HpcGroupedMetadataEntries metadataEntries = metadataService
-				.getDataObjectGroupedMetadataEntries(dataObject.getAbsolutePath());
+				.getDataObjectGroupedMetadataEntries(path);
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
