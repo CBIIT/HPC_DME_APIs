@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
@@ -538,11 +539,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 	@Deprecated
 	@Override
-	public Response getDataObjectV1(String path, Boolean includeAcl) {
+	public Response getDataObjectV1(String path, Boolean includeAcl, Boolean excludeAttributes) {
 		HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
 		try {
 			HpcDataObjectDTO dataObject = dataManagementBusService.getDataObjectV1(toNormalizedPath(path),
-					includeAcl != null ? includeAcl : false);
+					Optional.ofNullable(includeAcl).orElse(false),
+					Optional.ofNullable(excludeAttributes).orElse(false));
 			if (dataObject != null) {
 				dataObjects.getDataObjects().add(dataObject);
 			}
@@ -555,11 +557,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getDataObject(String path, Boolean includeAcl) {
+	public Response getDataObject(String path, Boolean includeAcl, Boolean excludeAttributes) {
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObject = null;
 		try {
 			dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path),
-					includeAcl != null ? includeAcl : false);
+					Optional.ofNullable(includeAcl).orElse(false),
+					Optional.ofNullable(excludeAttributes).orElse(false));
 
 		} catch (HpcException e) {
 			return errorResponse(e);
