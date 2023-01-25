@@ -925,7 +925,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		fields.add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
 		fields.add(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
 		fields.add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
-		fields.add(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
 
 		List<HpcReportEntryAttribute> fileSizeFields = new ArrayList<>();
 		fileSizeFields.add(HpcReportEntryAttribute.FILE_SIZE_BELOW_10_MB);
@@ -1023,18 +1022,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 				setGridFieldValue(isBasePathReport, mapReports, totalObjList,
 						HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS, "TOTALOBJS");
 
-				// AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS
-				List<Map<String, Object>> avgDataObjMetaAttrsList;
-				if (isBasePathReport) {
-					avgDataObjMetaAttrsList = jdbcTemplate
-							.queryForList(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_BASEPATH_SQL, dateLongArgs);
-				} else {
-					avgDataObjMetaAttrsList = jdbcTemplate
-							.queryForList(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_GROUPBY_DOC_SQL, dateLongArgs);
-				}
-				setGridFieldValue(isBasePathReport, mapReports, avgDataObjMetaAttrsList,
-						HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS, "totalattrs");
-
+				// FILE_SIZES
 				List<Map<String, Object>> fileRangeList;
 				if (isBasePathReport) {
 					fileRangeList = jdbcTemplate.queryForList(FILESIZE_SELECT_BASEPATH_GRID + BASEPATH_FROM_SQL
@@ -1047,6 +1035,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 				}
 				setFilesFieldsForGrid(isBasePathReport, mapReports, fileRangeList);
 
+				// TOTAL_NUM_OF_COLLECTIONS
 				List<Map<String, Object>> numCollectionList;
 				if (isBasePathReport) {
 					numCollectionList = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_GROUPBY_BASEPATH_SQL,
@@ -1436,16 +1425,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			numOfCollEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
 			numOfCollEntry.setValue(str.toString());
 			report.getReportEntries().add(numOfCollEntry);
-		}
-
-		// Total Meta attributes Size - TOTAL_NUMBER_OF_META_ATTRS
-		if (allAttributes
-				|| criteria.getAttributes().contains(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS)) {
-			HpcReportEntry metasizeEntry = new HpcReportEntry();
-			metasizeEntry.setAttribute(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-			metasizeEntry.setValue(getTotalMetaAttrCount(criteria, dateLongArgs, docArg, docDateArgs, userArg,
-					userDateArgs, basepathArg, basepathDateLongArgs, pathArg, pathDateLongArgs));
-			report.getReportEntries().add(metasizeEntry);
 		}
 
 		// File size ranges
