@@ -22,7 +22,7 @@ public class HpcSearch {
 	private int pageSize=100;
 	private String queryName;
 	private long totalSize=0;
-	private List<String> selectedColumns;
+	private List<String> deselectedColumns;
 	
 	public String getQueryName() {
 		return queryName;
@@ -160,13 +160,13 @@ public class HpcSearch {
 	  this.totalSize = totalSize;
 	}
 
-	public List<String> getSelectedColumns() {
-		if(selectedColumns == null)
-			selectedColumns = new ArrayList<String>();
-		return selectedColumns;
+	public List<String> getDeselectedColumns() {
+		if(deselectedColumns == null)
+			deselectedColumns = new ArrayList<String>();
+		return deselectedColumns;
 	}
 
-	public void setSelectedColumns(List<String> selectedColumns) {
-		this.selectedColumns = selectedColumns;
+	public void setDeselectedColumns(List<String> deselectedColumns) {
+		this.deselectedColumns = deselectedColumns;
 	}
 }
