@@ -48,11 +48,11 @@ public class HpcSearchUtil {
 	}
 	
 	public static void exportResponseResults(String searchType, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response, List<String> selectedColumns) throws IOException {
+			HttpServletResponse response, List<String> deselectedColumns) throws IOException {
 		if (searchType.equalsIgnoreCase("collection"))
-			exportCollectionResults(session, request, response, selectedColumns);
+			exportCollectionResults(session, request, response, deselectedColumns);
 		else
-			exportDataObjectResults(session, request, response, selectedColumns);
+			exportDataObjectResults(session, request, response, deselectedColumns);
 	}
 
 	private static void processCollectionResults(HpcSearch search, Response restResponse, Model model, HttpSession session)
@@ -189,7 +189,7 @@ public class HpcSearchUtil {
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
 			model.addAttribute("currentPageSize", search.getPageSize());
 			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
-			model.addAttribute("selectedColumns", search.getSelectedColumns());
+			model.addAttribute("deselectedColumns", search.getDeselectedColumns());
 		}
 	}
 
@@ -273,7 +273,7 @@ public class HpcSearchUtil {
 	}
 	
 	public static void exportCollectionResults(HttpSession session, HttpServletRequest request,
-			HttpServletResponse response, List<String> selectedColumns) throws IOException {
+			HttpServletResponse response, List<String> deselectedColumns) throws IOException {
 		
 		List<HpcCollectionSearchResultDetailed> collectionResults = (List<HpcCollectionSearchResultDetailed>) session.getAttribute("searchresults");
 		
@@ -282,12 +282,7 @@ public class HpcSearchUtil {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
 			headers.add("uuid");
-			for (String selectedColumn : selectedColumns) {
-				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission")
-						&& !selectedColumn.equals("uniqueId"))
-					headers.add(selectedColumn);
-			}
+          
 			for (HpcCollectionSearchResultDetailed collection : collectionResults) {
 				List<String> result = new ArrayList<String>();
 				result.add(collection.getPath());
@@ -296,6 +291,15 @@ public class HpcSearchUtil {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getSelfMetadataEntries());
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getParentMetadataEntries());
+					for(HpcMetadataEntry entry : combinedMetadataEntries) {
+					  if(entry.getAttribute().equals("registered_by"))
+					    entry.setAttribute("registeredBy");
+					  if(entry.getAttribute().equals("collection_type"))
+					    entry.setAttribute("collectionType");
+                      if(!headers.contains(entry.getAttribute()) && deselectedColumns == null || 
+                         !headers.contains(entry.getAttribute()) && deselectedColumns != null && !deselectedColumns.contains(entry.getAttribute()))
+                          headers.add(entry.getAttribute());
+                    }
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
@@ -332,7 +336,7 @@ public class HpcSearchUtil {
 	}
 	
 	public static void exportDataObjectResults(HttpSession session, HttpServletRequest request,
-			HttpServletResponse response, List<String> selectedColumns) throws IOException {
+			HttpServletResponse response, List<String> deselectedColumns) throws IOException {
 		
 		List<HpcDatafileSearchResultDetailed> datafileResults = (List<HpcDatafileSearchResultDetailed>) session.getAttribute("searchresults");
 		
@@ -341,12 +345,7 @@ public class HpcSearchUtil {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
 			headers.add("uuid");
-			for (String selectedColumn : selectedColumns) {
-				if (!selectedColumn.equals("path") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission") && !selectedColumn.equals("link")
-						&& !selectedColumn.equals("uniqueId"))
-					headers.add(selectedColumn);
-			}
+			
 			for (HpcDatafileSearchResultDetailed datafile : datafileResults) {
 				List<String> result = new ArrayList<String>();
 				result.add(datafile.getPath());
@@ -355,6 +354,13 @@ public class HpcSearchUtil {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getParentMetadataEntries());
+					for(HpcMetadataEntry entry : combinedMetadataEntries) {
+                      if(entry.getAttribute().equals("registered_by"))
+                        entry.setAttribute("registeredBy");
+                      if(!headers.contains(entry.getAttribute()) && deselectedColumns == null || 
+                         !headers.contains(entry.getAttribute()) && deselectedColumns != null && !deselectedColumns.contains(entry.getAttribute()))
+                          headers.add(entry.getAttribute());
+                    }
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
