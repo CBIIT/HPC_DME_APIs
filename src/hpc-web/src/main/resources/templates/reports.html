@@ -622,6 +622,7 @@ body.loading .overlay{
 	    var table = $('#' + 'reportgrid').DataTable( {
 				responsive: true,
 				dom: 'Blfrtip',
+				language: {"lengthMenu" : "Show _MENU_ Entries"},
 				fixedHeader: true,
 				buttons: [
 				{
@@ -761,7 +762,7 @@ body.loading .overlay{
 			placeholder: '-----------------Select User-----------------'
 		});
 		$('.docList').select2({
-			placeholder: '-------Select DOC-------'
+			placeholder: '-----Select DOC-----'
 		});
 		$('.basepathList').select2({
 			placeholder: '-----------------Select Base Path-----------------'
