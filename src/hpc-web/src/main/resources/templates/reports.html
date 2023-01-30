@@ -138,15 +138,25 @@ body.loading{
 body.loading .overlay{
     display: block;
 }
-
+/* The tableFixHeader is used by Single Reports for fixed header scrolling */
 .tableFixHead {
-        overflow-y: auto; /* make the table scrollable if height is more than 800 px  */
-        height: 800px; /* gives an initial height of 800px to the table */
+        overflow-y: auto;
+      }
+.tableFixHead tbody {
+        display: block;
+        width: 1000px;
+        overflow: auto;
+        height: 505px;
       }
 .tableFixHead thead th {
         position: sticky; /* make the table heads sticky */
-        top: 0px; /* table head will be placed from the top of the table and sticks to it */
+        top: 0; /* table head will be placed from the top of the table and sticks to it */
 		text-align: center;
+      }
+.tableFixHead td {
+        padding: 5px;
+        text-align: left;
+        width: 1000px;
       }
 
 </style>
@@ -309,7 +319,7 @@ body.loading .overlay{
 					</div>
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 1000px; height: 1000px; margin-left: 1%;"
+				<div style="width: 1000px; height: 700px; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
@@ -322,7 +332,7 @@ body.loading .overlay{
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
 								<td style="white-space: nowrap" align="right" colspan="2">
-								<div class="tableFixHead">
+								<div class="tableFixHead" style="border-collapse: collapse;">
 									<table class="table">
 										<thead>
 										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
@@ -612,6 +622,7 @@ body.loading .overlay{
 	    var table = $('#' + 'reportgrid').DataTable( {
 				responsive: true,
 				dom: 'Blfrtip',
+				language: {"lengthMenu" : "Show _MENU_ Entries"},
 				fixedHeader: true,
 				buttons: [
 				{
@@ -751,7 +762,7 @@ body.loading .overlay{
 			placeholder: '-----------------Select User-----------------'
 		});
 		$('.docList').select2({
-			placeholder: '-------Select DOC-------'
+			placeholder: '-----Select DOC-----'
 		});
 		$('.basepathList').select2({
 			placeholder: '-----------------Select Base Path-----------------'
