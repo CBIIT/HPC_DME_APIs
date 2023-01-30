@@ -73,7 +73,7 @@
 /*<![CDATA[*/
     var assignedNames = [[${names}]];
     var searchType = [[${hpcSearch.getSearchType()}]];
-    var selectedColumns = [[${hpcSearch.getSelectedColumns()}]];
+    var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
 /*]]>*/
 </script>
 </head>
@@ -344,7 +344,7 @@
 												 <input type="hidden" name="totalSize" id="totalSizeId"
 												 	th:value="${hpcSearch.getTotalSize()}"/>
 												 <input type="hidden"
-													class="form-control" name="selectedColumns" id="selectedColumnsId"/>		
+													class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>		
 											</form>
 											<form class="form-horizontal" id="searchForm"
 												th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -357,7 +357,7 @@
 												<input type="hidden" name="totalSize" id="totalSize"
 													 th:value="${hpcSearch.getTotalSize()}"/>
 												<input type="hidden"
-													class="form-control" name="selectedColumns" id="selectedColumns"/>
+													class="form-control" name="deselectedColumns" id="deselectedColumns"/>
 											</form>
 										</div>
 									</div>
@@ -515,11 +515,11 @@
 		function goBack()
 		{
 			if(searchType == "search") {
-			    document.getElementById("searchForm").elements.namedItem("selectedColumns").value = selectedColumns;
+			    document.getElementById("searchForm").elements.namedItem("deselectedColumns").value = deselectedColumns;
 				document.getElementById("searchForm").submit();
 			}
 			else {
-			    document.getElementById("criteriaForm").elements.namedItem("selectedColumns").value = selectedColumns;
+			    document.getElementById("criteriaForm").elements.namedItem("deselectedColumns").value = deselectedColumns;
 				document.getElementById("criteriaForm").submit();
 			}
 		}

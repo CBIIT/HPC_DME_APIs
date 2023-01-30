@@ -104,8 +104,8 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			query = HpcClientUtil.getQuery(authToken, queryURL, queryName, sslCertPath, sslCertPassword);
 			session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
 			hpcSaveSearch.setCriteriaName(query.getNamedCompoundQuery().getName());
-			hpcSaveSearch.getSelectedColumns().clear();
-			hpcSaveSearch.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+			hpcSaveSearch.getDeselectedColumns().clear();
+			hpcSaveSearch.getDeselectedColumns().addAll(query.getNamedCompoundQuery().getDeselectedColumns());
 			hpcSaveSearch.setFrequency(query.getNamedCompoundQuery().getFrequency());
 		}
 		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
@@ -155,8 +155,8 @@ public class HpcSaveSearchController extends AbstractHpcController {
 				compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
 				compoundQuery.setTotalCount(namedCompoundQuery.getTotalCount());
 			}
-			compoundQuery.getSelectedColumns().clear();
-			compoundQuery.getSelectedColumns().addAll(search.getSelectedColumns());
+			compoundQuery.getDeselectedColumns().clear();
+			compoundQuery.getDeselectedColumns().addAll(search.getDeselectedColumns());
 			compoundQuery.setFrequency(search.getFrequency());
 
 			if (search.getCriteriaName() == null || search.getCriteriaName().isEmpty()) {
