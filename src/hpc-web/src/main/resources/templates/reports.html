@@ -138,7 +138,7 @@ body.loading{
 body.loading .overlay{
     display: block;
 }
-
+/* The tableFixHeader is used by Single Reports for fixed header scrolling */
 .tableFixHead {
         overflow-y: auto;
       }
@@ -146,7 +146,7 @@ body.loading .overlay{
         display: block;
         width: 1000px;
         overflow: auto;
-        height: 610px;
+        height: 505px;
       }
 .tableFixHead thead th {
         position: sticky; /* make the table heads sticky */
@@ -319,7 +319,7 @@ body.loading .overlay{
 					</div>
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 1000px; height: 860px; margin-left: 1%;"
+				<div style="width: 1000px; height: 700px; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
