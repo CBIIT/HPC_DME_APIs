@@ -1337,8 +1337,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Deprecated
 	@Override
-	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl,
-			boolean excludeAttributes) throws HpcException {
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes)
+			throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1389,8 +1389,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcGroupedMetadataEntries metadataEntries = metadataService
-				.getDataObjectGroupedMetadataEntries(path);
+		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path);
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
@@ -1760,11 +1759,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Validate the data object exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			return null;
-		}
-
 		boolean excludeSysAdminGroup = securityService.getRequestInvoker().getUserRole()
 				.equals(HpcUserRole.METADATA_ONLY)
 				|| securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.USER);
@@ -1783,10 +1777,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Validate the collection exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			return null;
-		}
 		HpcSubjectPermission permission = dataManagementService.getDataObjectPermission(path, userId);
 
 		return toUserPermissionDTO(permission);
@@ -2088,13 +2078,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Empty path in recover request: [path: " + path + "]",
 					HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		HpcDataObject dataObject = dataManagementService.getDataObject(path);
-
-		// Validate the data object exists.
-		if (dataObject == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the metadata for this data object.
@@ -2440,7 +2423,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 */
 	private HpcEntityPermissionsDTO toEntityPermissionsDTO(List<HpcSubjectPermission> subjectPermissions,
 			boolean excludeSysAdmins) throws HpcException {
-		if (subjectPermissions == null) {
+		if (subjectPermissions == null || subjectPermissions.isEmpty()) {
 			return null;
 		}
 
@@ -3190,11 +3173,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null / Empty path for download", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Validate the data object exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -3426,9 +3404,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Validate the link source data object exist.
 		String linkSourcePath = toNormalizedPath(dataObjectRegistration.getLinkSourcePath());
-		if (dataManagementService.getDataObject(linkSourcePath) == null) {
-			throw new HpcException("link source doesn't exist: " + linkSourcePath, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
 
 		// Validate the link source is not a link itself. Linking to a link is not
 		// allowed.
@@ -3608,10 +3583,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw new HpcException("Directory path is not a parent of the data object:  "
 						+ archiveDirectoryPermissionsRequest.getPath(), HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-		}
-		// Validate that data object exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the System generated metadata.
