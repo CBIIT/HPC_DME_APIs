@@ -135,6 +135,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Autowired
 	private HpcKeyGenerator keyGenerator = null;
 
+	// Metadata Retriever.
+	@Autowired
+	private HpcMetadataRetriever metadataRetriever = null;
+
 	// Prepared query to get data objects that have their data transfer in-progress
 	// to archive.
 	private List<HpcMetadataQuery> dataTransferReceivedQuery = new ArrayList<>();
@@ -1050,8 +1054,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public String getCollectionType(String path) throws HpcException {
-		for (HpcMetadataEntry metadataEntry : dataManagementProxy
-				.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path)) {
+		for (HpcMetadataEntry metadataEntry : metadataRetriever.getCollectionMetadata(path)) {
 			if (metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
 				return metadataEntry.getValue();
 			}
@@ -1126,7 +1129,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		if (StringUtils.isEmpty(dataObjectRegistrationResult.getId())) {
-			// In case of some failure scenarios, the data object UUID was not created, so we
+			// In case of some failure scenarios, the data object UUID was not created, so
+			// we
 			// create it here
 			// just to record a valid ID in the DB table.
 			dataObjectRegistrationResult.setId(keyGenerator.generateKey());
