@@ -1126,7 +1126,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		if (StringUtils.isEmpty(dataObjectRegistrationResult.getId())) {
-			// In case of some failure scenrios, the data object UUID was not created, so we
+			// In case of some failure scenarios, the data object UUID was not created, so we
 			// create it here
 			// just to record a valid ID in the DB table.
 			dataObjectRegistrationResult.setId(keyGenerator.generateKey());
