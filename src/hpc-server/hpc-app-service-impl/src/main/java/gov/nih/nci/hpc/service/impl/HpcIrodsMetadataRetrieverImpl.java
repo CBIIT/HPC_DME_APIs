@@ -11,59 +11,44 @@ package gov.nih.nci.hpc.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
 
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcEventType;
-import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
 /**
- * HPC Email Notification Sender
+ * HPC Metadata retriever from iRODS
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public class HpcIrodsMetadataRetrieverImpl implements HpcNotificationSender {
+public class HpcIrodsMetadataRetrieverImpl implements HpcMetadataRetriever {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
 
-	// Mail Sender.
+	// The Data Management Authenticator.
 	@Autowired
-	JavaMailSender mailSender = null;
+	private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 
-	// MIME Message Preparator.
+	// The Data Management Proxy instance.
 	@Autowired
-	HpcMimeMessagePreparator messagePreparator = null;
+	private HpcDataManagementProxy dataManagementProxy = null;
 
 	// ---------------------------------------------------------------------//
 	// Methods
 	// ---------------------------------------------------------------------//
 
 	// ---------------------------------------------------------------------//
-	// HpcNotificationSender Interface Implementation
+	// HpcMetadataRetriever Interface Implementation
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public void sendNotification(String userId, HpcEventType eventType, String doc, List<HpcEventPayloadEntry> payloadEntries, String attachment)
-			throws HpcException {
-		try {
-			mailSender.send(messagePreparator.getPreparator(userId, eventType, doc, payloadEntries, attachment));
-
-		} catch (MailException e) {
-			throw new HpcException(e.getMessage(), e);
-		}
+	public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException {
+		return dataManagementProxy.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path);
 	}
 
 	@Override
-	public void sendNotification(String userId, HpcSystemAdminNotificationType notificationType,
-			List<HpcEventPayloadEntry> payloadEntries) throws HpcException {
-		try {
-			mailSender.send(messagePreparator.getPreparator(userId, notificationType, payloadEntries));
-
-		} catch (MailException e) {
-			throw new HpcException(e.getMessage(), e);
-		}
+	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException {
+		return dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path);
 	}
 }
