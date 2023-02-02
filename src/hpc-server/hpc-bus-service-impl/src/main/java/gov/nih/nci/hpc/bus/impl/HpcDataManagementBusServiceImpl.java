@@ -620,7 +620,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public void deleteCollection(String path, Boolean recursive, Boolean force) throws HpcException {
-
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -907,6 +906,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
 			HpcDataObjectRegistrationRequestDTO dataObjectRegistration, File dataObjectFile, String userId,
 			String userName, String configurationId, boolean registrationEventRequired) throws HpcException {
+		registrationProfilingLog(path, "Registration started", null);
+
 		// Input validation.
 		validatePath(path);
 
@@ -918,13 +919,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		validateChecksum(dataObjectFile, dataObjectRegistration.getChecksum());
 
 		// Create parent collections if requested to.
+		long timeBefore = System.currentTimeMillis();
 		createParentCollections(path, dataObjectRegistration.getCreateParentCollections(),
 				dataObjectRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
+		registrationProfilingLog(path, "Parent collections created", System.currentTimeMillis() - timeBefore);
 
 		// Create a data object file (in the data management system).
 		HpcDataObjectRegistrationResponseDTO responseDTO = new HpcDataObjectRegistrationResponseDTO();
+		timeBefore = System.currentTimeMillis();
 		responseDTO.setRegistered(dataManagementService.createFile(path));
-
+		registrationProfilingLog(path, "File created in iRODS", System.currentTimeMillis() - timeBefore);
+		
 		// Get the collection type containing the data object.
 		String collectionPath = path.substring(0, path.lastIndexOf('/'));
 		String collectionType = dataManagementService.getCollectionType(collectionPath);
@@ -939,7 +944,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataObjectUploadResponse uploadResponse = null;
 			try {
 				// Assign system account as an additional owner of the data-object.
+				timeBefore = System.currentTimeMillis();
 				dataManagementService.setCoOwnership(path, userId);
+				registrationProfilingLog(path, "File permissions set in iRODS", System.currentTimeMillis() - timeBefore);
 
 				// Validate the new data object complies with the hierarchy definition.
 				securityService.executeAsSystemAccount(Optional.empty(),
@@ -958,8 +965,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							.orElse(false);
 
 					// Attach the user provided metadata.
+					timeBefore = System.currentTimeMillis();
 					HpcMetadataEntry dataObjectMetadataEntry = metadataService.addMetadataToDataObject(path,
 							dataObjectRegistration.getMetadataEntries(), configurationId, collectionType);
+					registrationProfilingLog(path, "User metadata set in iRODS", System.currentTimeMillis() - timeBefore);
 
 					// Attach the user provided extracted metadata (from the physical file)
 					if (!dataObjectRegistration.getExtractedMetadataEntries().isEmpty()) {
@@ -973,6 +982,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					}
 
 					// Transfer the data file.
+					timeBefore = System.currentTimeMillis();
 					uploadResponse = dataTransferService.uploadDataObject(
 							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
 							dataObjectRegistration.getGoogleDriveUploadSource(),
@@ -983,6 +993,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
 							configurationId);
+					registrationProfilingLog(path, "Upload request / URL generation completed", System.currentTimeMillis() - timeBefore);
 
 					// Set the upload request URL / Multipart upload URLs (if one was generated).
 					responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
@@ -990,6 +1001,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 					// Generate data management (iRODS) system metadata and attach to the data
 					// object.
+					timeBefore = System.currentTimeMillis();
 					HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 							.addSystemGeneratedMetadataToDataObject(path, dataObjectMetadataEntry,
 									uploadResponse.getArchiveLocation(), uploadResponse.getUploadSource(),
@@ -1002,6 +1014,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
 									registrationEventRequired);
+					registrationProfilingLog(path, "System metadata set in iRODS", System.currentTimeMillis() - timeBefore);
 
 					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
@@ -1095,6 +1108,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
+		registrationProfilingLog(path, "Registration finished", null);
 		return responseDTO;
 	}
 
@@ -3763,5 +3777,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				}
 			}
 		}
+	}
+
+	/**
+	 * Helper method to log profiling messages in data registration
+	 *
+	 * @param path The data object path
+	 * @param time execution time
+	 */
+	private void registrationProfilingLog(String path, String message, Long time) {
+		logger.info("Registration Profiling [{}]: {}{}", path, message,
+				time != null ? "[" + time.toString() + " ms]" : "");
 	}
 }
