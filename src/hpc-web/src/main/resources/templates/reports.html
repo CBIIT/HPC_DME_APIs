@@ -138,26 +138,6 @@ body.loading{
 body.loading .overlay{
     display: block;
 }
-/* The tableFixHeader is used by Single Reports for fixed header scrolling */
-.tableFixHead {
-        overflow-y: auto;
-      }
-.tableFixHead tbody {
-        display: block;
-        width: 1000px;
-        overflow: auto;
-        height: 505px;
-      }
-.tableFixHead thead th {
-        position: sticky; /* make the table heads sticky */
-        top: 0; /* table head will be placed from the top of the table and sticks to it */
-		text-align: center;
-      }
-.tableFixHead td {
-        padding: 5px;
-        text-align: left;
-        width: 1000px;
-      }
 
 </style>
 <script th:inline="javascript">
@@ -319,7 +299,7 @@ body.loading .overlay{
 					</div>
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 1000px; height: 700px; margin-left: 1%;"
+				<div style="width: 1000px; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
@@ -328,13 +308,27 @@ body.loading .overlay{
 						<div class="col-md-12">&nbsp;</div>
 					</div>
 					<table class="table">
-						<caption style="font-weight:bold" th:text="${reportName}"></caption>
+						<caption style="font-weight:bold" th:text="${reportName} + ': ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate}"></caption>
+						<div th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}">
+							<caption style="font-weight:bold" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
+						</div>
+						<div th:if="${reports[0].user != null and !reports[0].user.isEmpty()}">
+							<caption style="font-weight:bold" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
+						</div>
+						<div th:if="${reports[0].path != null and !reports[0].path.isEmpty()}">
+							<caption style="font-weight:bold" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
+						</div>
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
 								<td style="white-space: nowrap" align="right" colspan="2">
-								<div class="tableFixHead" style="border-collapse: collapse;">
-									<table class="table">
+									<table class="table" id="singlereportgrid">
 										<thead>
+											<tr id='attrRow0'>
+												<td style="color: black; font-weight:bold" id='index0' th:text="Name"></td>
+												<td style="color: black; font-weight:bold" id='path0' th:text="'Value'"></td>
+											</tr>
+										</thead>
+										<!-- thead>
 										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
 											<tr>
 												<th align="center"
@@ -367,7 +361,7 @@ body.loading .overlay{
 												</th>
 											</tr>
 										</div>
-										</thead>
+										</thead -->
 										<tbody>
 											<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
 												<td th:text="${entry.attribute}">value</td>
@@ -375,7 +369,7 @@ body.loading .overlay{
 											</tr>
 										</tbody>
 									</table>
-								</div>
+
 								</td>
 							</tr>
 						</tbody>
@@ -520,7 +514,62 @@ body.loading .overlay{
 
 	<script>
 	//<![CDATA[
+
+	// Single Report Datatable
+	$(document).ready(function () {
+		var reportType = document.getElementById("reportType").value;
+		var exportFileName = "";
+		var reportHeaderTitle = "";
+		let pretag = "DME_";
+		let tag = `_${(new Date().toJSON().slice(0,10))}`;
+		switch (reportType) {
+			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
+				exportFileName= pretag + "Base_Path" + tag;
+				break;
+			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
+				exportFileName= pretag + "DOC" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				break;
+			case 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE':
+				exportFileName= pretag + "User" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				break;
+			case 'USAGE_SUMMARY_BY_DATE_RANGE':
+				exportFileName= pretag + "Summary" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				break;
+			case 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE':
+				exportFileName= pretag + "User" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				break;
+		}
+		$('#singlereportgrid').DataTable({
+			"pageLength": -1,
+			 "order": [],
+			 "lengthMenu": [[5, 10, -1], [5, 10, "All"]],
+			dom: 'Blfrtip',
+			buttons: [
+							{
+								extend: 'copyHtml5',
+								//exportOptions: exportOptions,
+								text: '<i class="fa fa-files-o">Copy</i>',
+								titleAttr: 'Copy to Clipboard',
+							},
+							{
+								extend: 'excelHtml5',
+								filename: exportFileName,
+								title: null,
+								text: '<i class="fa fa-file-excel-o">Excel</i>',
+								messageTop: reportHeaderTitle,
+								titleAttr: 'Export to Excel',
+								//exportOptions: exportOptions
+							}
+					],
+			"columnDefs": [{"targets": [0,1], "orderable": false}],
+		});
+	});
 	
+	// Grid Report Datatable
 	$(document).ready(function() {
 		var reportType = document.getElementById("reportType").value;
 		var exportFileName = "";
