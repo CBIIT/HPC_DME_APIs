@@ -308,60 +308,30 @@ body.loading .overlay{
 						<div class="col-md-12">&nbsp;</div>
 					</div>
 					<table class="table">
-						<caption style="font-weight:bold" th:text="${reportName} + ': ' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate}"></caption>
-						<div th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}">
-							<caption style="font-weight:bold" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
-						</div>
-						<div th:if="${reports[0].user != null and !reports[0].user.isEmpty()}">
-							<caption style="font-weight:bold" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
-						</div>
-						<div th:if="${reports[0].path != null and !reports[0].path.isEmpty()}">
-							<caption style="font-weight:bold" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
-						</div>
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
 								<td style="white-space: nowrap" align="right" colspan="2">
 									<table class="table" id="singlereportgrid">
+										<caption style="font-weight:bold" th:text="${reportName}"></caption>
+										<div th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}">
+											<caption style="background-color: #006DCC; color: white; font-weight:bold" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
+										</div>
+										<div th:if="${reports[0].user != null and !reports[0].user.isEmpty()}">
+											<caption style="background-color: #006DCC; color: white; font-weight:bold" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
+										</div>
+										<div th:if="${reports[0].path != null and !reports[0].path.isEmpty()}">
+											<caption style="background-color: #006DCC; color: white; font-weight:bold" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
+										</div>
+										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
+											<caption style="background-color: #006DCC; color: white; font-weight:bold" colspan="2" th:text="'Reporting Period: From ' + ${report.fromDate} + ' to ' + ${report.toDate}">></caption>
+										</div>
+
 										<thead>
-											<tr id='attrRow0'>
+											<tr id='attrRowhead'>
 												<td style="color: black; font-weight:bold" id='index0' th:text="Name"></td>
 												<td style="color: black; font-weight:bold" id='path0' th:text="'Value'"></td>
 											</tr>
 										</thead>
-										<!-- thead>
-										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'DOC: ' + ${report.doc}">
-												</th>
-											</tr>
-										</div>
-										<div th:if="${report.user != null and !report.user.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'User: ' + ${report.user}">
-												</th>
-											</tr>
-										</div>
-										<div th:if="${report.path != null and !report.path.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'Base Path: ' + ${report.path}">
-												</th>
-											</tr>
-										</div>
-										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;" colspan="2"
-													th:text="'Reporting Period to Date: From ' + ${report.fromDate} + ' to ' + ${report.toDate}">
-												</th>
-											</tr>
-										</div>
-										</thead -->
 										<tbody>
 											<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
 												<td th:text="${entry.attribute}">value</td>
@@ -369,7 +339,6 @@ body.loading .overlay{
 											</tr>
 										</tbody>
 									</table>
-
 								</td>
 							</tr>
 						</tbody>
@@ -522,25 +491,27 @@ body.loading .overlay{
 		var reportHeaderTitle = "";
 		let pretag = "DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
+		let messageTopDateRange = "(Date Range: " +  document.getElementById("fromDate").value + "-" + document.getElementById("toDate").value + ")";
 		switch (reportType) {
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
-				exportFileName= pretag + "Base_Path" + tag;
+				exportFileName= pretag + "Basepath" + tag;
+				reportHeaderTitle= "Data Archival Usage Report for Basepath " + document.getElementById("basepath").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
 				exportFileName= pretag + "DOC" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				reportHeaderTitle = "Data Archival Usage Report for DOC " + document.getElementById("doc").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE':
 				exportFileName= pretag + "User" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				reportHeaderTitle = "Data Archival Usage Report for User" + document.getElementById("user").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_DATE_RANGE':
 				exportFileName= pretag + "Summary" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				reportHeaderTitle = "Data Archival Usage Report" + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE':
-				exportFileName= pretag + "User" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				exportFileName= pretag + "Path" + tag;
+				reportHeaderTitle = "Data Archival Usage Report for Path" + document.getElementById("id_collection_path").value + ", " + messageTopDateRange;
 				break;
 		}
 		$('#singlereportgrid').DataTable({
@@ -552,14 +523,16 @@ body.loading .overlay{
 							{
 								extend: 'copyHtml5',
 								//exportOptions: exportOptions,
-								text: '<i class="fa fa-files-o">Copy</i>',
+								//text: '<i class="fa fa-files-o">Copy</i>',
+								text: 'Copy',
 								titleAttr: 'Copy to Clipboard',
 							},
 							{
 								extend: 'excelHtml5',
 								filename: exportFileName,
 								title: null,
-								text: '<i class="fa fa-file-excel-o">Excel</i>',
+								//text: '<i class="fa fa-file-excel-o">Excel</i>',
+								text: 'Excel',
 								messageTop: reportHeaderTitle,
 								titleAttr: 'Export to Excel',
 								//exportOptions: exportOptions
