@@ -657,6 +657,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			return toHpcSubjectPermissions(authenticatedToken, irodsConnection.getDataObjectAO(authenticatedToken)
 					.listPermissionsForDataObject(getAbsolutePath(path)));
 
+		} catch (FileNotFoundException e) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+
 		} catch (Exception e) {
 			throw new HpcException("Failed to get data object permissions for path " + path + ": " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
@@ -669,6 +672,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			return toHpcSubjectPermission(authenticatedToken, irodsConnection.getDataObjectAO(authenticatedToken)
 					.getPermissionForDataObjectForUserName((getAbsolutePath(path)), userId), false);
+
+		} catch (FileNotFoundException e) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 
 		} catch (Exception e) {
 			throw new HpcException("Failed to get data object permission for user " + userId + ": " + e.getMessage(),
@@ -724,6 +730,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 									: "Invalid group: ")
 							+ permissionRequest.getSubject(),
 					HpcErrorType.INVALID_REQUEST_INPUT, iue);
+
+		} catch (FileNotFoundException e) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 
 		} catch (Exception e) {
 			throw new HpcException("Failed to set data object permission for path " + path + ": " + e.getMessage(),

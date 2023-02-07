@@ -376,11 +376,6 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		validateMigrationRequest(path, migrationRequest, alignArchivePath);
 
-		// Validate that data object exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
