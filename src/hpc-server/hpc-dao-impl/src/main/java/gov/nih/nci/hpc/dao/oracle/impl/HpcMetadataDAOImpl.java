@@ -184,7 +184,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_DATA_OBJECT_METADATA_SQL = "select META_ATTR_NAME, META_ATTR_VALUE, META_ATTR_UNIT, 1 as DATA_LEVEL, null as LEVEL_LABEL "
 			+ "from R_META_MAIN meta_main, R_OBJT_METAMAP metamap, R_DATA_MAIN data_main, R_COLL_MAIN coll_main "
-			+ "where concat(concat(coll_main.COLL_NAME, '/'), data_main.DATA_NAME) = ? "
+			+ "where coll_main.COLL_NAME = ? and data_main.DATA_NAME = ? "
 			+ "and data_main.COLL_ID = coll_main.COLL_ID and meta_main.META_ID = metamap.META_ID and data_main.DATA_ID = metamap.OBJECT_ID";
 
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main main1 "
@@ -608,7 +608,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, path);
+			String collectionPath = path.substring(0, path.lastIndexOf('/'));
+			String dataObjectName = path.substring(path.lastIndexOf('/') + 1);
+			return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, collectionPath,
+					dataObjectName);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data object metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
