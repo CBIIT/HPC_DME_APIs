@@ -39,6 +39,10 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 		boolean checksum = true;
 		if(checksumStr != null && checksumStr.equalsIgnoreCase("false"))
 			checksum = false;
+		boolean replaceModifiedFiles = false;
+		String replaceModifiedFilesStr = criteriaMap.get("replaceModifiedFiles");
+		if(replaceModifiedFilesStr != null && replaceModifiedFilesStr.equalsIgnoreCase("true"))
+		  replaceModifiedFiles = true;
 		
 		String archiveType = criteriaMap.get("archiveType");
 		boolean metadataOnly = metadata != null && metadata.equals("true");
@@ -52,11 +56,13 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 				HpcLocalFileProcessor fileProcess;
 				fileProcess = new HpcLocalFileProcessor(dataObject);
 				fileProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
-						dataObject.getErrorRecordsFile(), metadataOnly, extractMetadata, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
+						dataObject.getErrorRecordsFile(), metadataOnly, extractMetadata, 
+						(archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, replaceModifiedFiles, null);
 			} else {
 				HpcLocalFolderProcessor folderProcess = new HpcLocalFolderProcessor(dataObject.getConnection());
 				folderProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
-						dataObject.getErrorRecordsFile(), metadataOnly, extractMetadata, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
+						dataObject.getErrorRecordsFile(), metadataOnly, extractMetadata, 
+						(archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, replaceModifiedFiles, null);
 			}
 		} catch (RecordProcessingException e) {
 		  logger.error("RecordProcessingException " + e.getMessage());

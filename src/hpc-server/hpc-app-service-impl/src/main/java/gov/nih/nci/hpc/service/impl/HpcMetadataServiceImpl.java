@@ -147,6 +147,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Autowired
 	private HpcMetadataDAO metadataDAO = null;
 
+	// Metadata Retriever.
+	@Autowired
+	private HpcMetadataRetriever metadataRetriever = null;
+
 	// Date formatter to format metadata entries of type Calendar (like data
 	// transfer start/completion time).
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
@@ -223,8 +227,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		// Validate collection type is not in the update request.
-		List<HpcMetadataEntry> existingMetadataEntries = dataManagementProxy
-				.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path);
+		List<HpcMetadataEntry> existingMetadataEntries = metadataRetriever.getCollectionMetadata(path);
 		validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
 
 		// Validate the metadata.
@@ -297,8 +300,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		return toSystemGeneratedMetadata(
-				dataManagementProxy.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		return toSystemGeneratedMetadata(metadataRetriever.getCollectionMetadata(path));
 	}
 
 	@Override
@@ -468,8 +470,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
 
 		// Get the metadata associated with the collection itself.
-		metadataEntries.getSelfMetadataEntries().addAll(
-				dataManagementProxy.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		metadataEntries.getSelfMetadataEntries().addAll(metadataRetriever.getCollectionMetadata(path));
 
 		// Get the hierarchical metadata.
 		metadataEntries.getParentMetadataEntries()
@@ -729,8 +730,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		return toSystemGeneratedMetadata(
-				dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		return toSystemGeneratedMetadata(metadataRetriever.getDataObjectMetadata(path));
 	}
 
 	@Override
@@ -853,8 +853,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		// Validate the metadata.
-		metadataValidator.validateDataObjectMetadata(configurationId,
-				dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path),
+		metadataValidator.validateDataObjectMetadata(configurationId, metadataRetriever.getDataObjectMetadata(path),
 				metadataEntries, collectionType);
 
 		// Update the 'metadata updated' system-metadata to record the time of this
@@ -874,8 +873,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
 
 		// Get the metadata associated with the data object itself.
-		metadataEntries.getSelfMetadataEntries().addAll(
-				dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		metadataEntries.getSelfMetadataEntries().addAll(metadataRetriever.getDataObjectMetadata(path));
 
 		// Get the hierarchical metadata.
 		metadataEntries.getParentMetadataEntries()
@@ -890,8 +888,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		HpcSelfMetadataEntries selfMetadataEntries = new HpcSelfMetadataEntries();
 
 		// Get the metadata associated with the data object itself.
-		List<HpcMetadataEntry> metadataEntries = dataManagementProxy
-				.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path);
+		List<HpcMetadataEntry> metadataEntries = metadataRetriever.getDataObjectMetadata(path);
 
 		// Get the system metadata attributes.
 		List<String> systemMetadataAttributeNames = metadataValidator
