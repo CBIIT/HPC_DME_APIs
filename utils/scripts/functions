@@ -1637,6 +1637,7 @@ function dm_show_register_directory_usage {
                           All collections should be registered before using this option.
   -m                      Register metadata only. Do not register files.
   -x                      Extract metadata automatically from files.
+  -r                      Replace files if modified date is newer than DME file creation date 
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
   -t[NUM_THREADS]         The number of threads to use while uploading files to the archive. This number should be between [1, 32].
@@ -1663,7 +1664,7 @@ function dm_register_directory {
     archiveType=S3
     checksum=false
 
-    while getopts ":a:b:cde:i:l:hmp:st:x" option
+    while getopts ":a:b:cde:i:l:hmp:rst:x" option
     do
       case "${option}" in
         a)
@@ -1714,6 +1715,9 @@ function dm_register_directory {
           ;;
         x)
           extract_metadata=1
+          ;;
+        r)
+          replace_files=1
           ;;
         s)
           skip_confirmation=1
@@ -1833,7 +1837,12 @@ function dm_register_directory {
     then
       command_args+=" --extractMetadata true "
     fi
-	
+    
+    if [ "$replace_files" ]
+    then
+      command_args+=" --replaceModifiedFiles true "
+    fi
+
     #Add all other options
     command_args+=" --threads $numthreads"
     command_args+=" --archiveType $archiveType"
