@@ -172,11 +172,20 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_ALL_DATA_OBJECT_COUNT2_SQL = " and exists(select 1 from r_data_hierarchy_user_meta_main where OBJECT_ID=data_id) ";
 
-	private static final String GET_COLLECTION_METADATA_SQL = "select coll_id, meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
+	private static final String GET_HIERARCHICAL_COLLECTION_METADATA_SQL = "select coll_id, meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_coll_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
-	private static final String GET_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
+	private static final String GET_COLLECTION_METADATA_SQL = "select META_ATTR_NAME, META_ATTR_VALUE, META_ATTR_UNIT, 1 as DATA_LEVEL, null as LEVEL_LABEL "
+			+ "from R_META_MAIN meta_main, R_OBJT_METAMAP metamap, R_COLL_MAIN coll_main "
+			+ "where coll_main.COLL_NAME = ? and meta_main.META_ID = metamap.META_ID and coll_main.COLL_ID = metamap.OBJECT_ID";
+
+	private static final String GET_HIERARCHICAL_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_data_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
+
+	private static final String GET_DATA_OBJECT_METADATA_SQL = "select META_ATTR_NAME, META_ATTR_VALUE, META_ATTR_UNIT, 1 as DATA_LEVEL, null as LEVEL_LABEL "
+			+ "from R_META_MAIN meta_main, R_OBJT_METAMAP metamap, R_DATA_MAIN data_main, R_COLL_MAIN coll_main "
+			+ "where concat(concat(coll_main.COLL_NAME, '/'), data_main.DATA_NAME) = ? "
+			+ "and data_main.COLL_ID = coll_main.COLL_ID and meta_main.META_ID = metamap.META_ID and data_main.DATA_ID = metamap.OBJECT_ID";
 
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main main1 "
 			+ "where exists " + USER_ACCESS_SQL;
@@ -361,6 +370,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	/** Constructor for Spring Dependency Injection. */
 	private HpcMetadataDAOImpl(int fetchSize) {
 		this.fetchSize = fetchSize;
+
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.EQUAL, GET_DATA_OBJECT_IDS_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.NOT_EQUAL, GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.LIKE, GET_DATA_OBJECT_IDS_LIKE_SQL);
@@ -563,7 +573,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public List<HpcMetadataEntry> getCollectionMetadata(String path, int minLevel) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, collectionMetadataEntryRowMapper, path, minLevel);
+			return jdbcTemplate.query(GET_HIERARCHICAL_COLLECTION_METADATA_SQL, collectionMetadataEntryRowMapper, path,
+					minLevel);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection hierarchical metadata: " + e.getMessage(),
@@ -572,13 +583,36 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 
 	@Override
+	public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, metadataEntryRowMapper, path);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get collection metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
 	public List<HpcMetadataEntry> getDataObjectMetadata(String path, int minLevel) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, path, minLevel);
+			return jdbcTemplate.query(GET_HIERARCHICAL_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, path,
+					minLevel);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data object hierarchical metadata: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, path);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get data object metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
