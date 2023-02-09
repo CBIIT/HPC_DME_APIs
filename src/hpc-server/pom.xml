@@ -434,7 +434,7 @@
 		<pluginRepository>
 			<id>duraspace.repository</id>
 			<name>duraspace.repository</name>
-			<url>http://m2.duraspace.org/content/repositories/releases</url>
+			<url>https://m2.duraspace.org/content/repositories/releases</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
