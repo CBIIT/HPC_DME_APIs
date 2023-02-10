@@ -139,6 +139,13 @@ body.loading .overlay{
     display: block;
 }
 
+.singlereportcaption{
+	background-color: #006DCC; color: white; font-weight:bold; border-bottom: 2px solid #dddddd; padding: 8px;
+}
+.column-heading{
+	color: black; font-weight:bold
+}
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -313,14 +320,14 @@ body.loading .overlay{
 								<td style="white-space: nowrap; border: none" align="right" colspan="2">
 									<table class="table" id="singlereportgrid">
 										<caption style="font-weight:bold" th:text="${reportName}"></caption>
-										<caption th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}" style="background-color: #006DCC; color: white; font-weight:bold; border-bottom: 2px solid #dddddd; padding: 8px" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
-										<caption th:if="${reports[0].user != null and !reports[0].user.isEmpty()}" style="background-color: #006DCC; color: white; font-weight:bold; border-bottom: 2px solid #dddddd; padding: 8px" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
-										<caption th:if="${reports[0].path != null and !reports[0].path.isEmpty()}" style="background-color: #006DCC; color: white; font-weight:bold; border-bottom: 2px solid #dddddd; padding: 8px" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
-										<caption th:if="${report.fromDate != null and !report.fromDate.isEmpty()}" style="background-color: #006DCC; color: white; font-weight:bold; border-bottom: 2px solid #dddddd; padding: 8px" colspan="2" th:text="'Reporting Period: From ' + ${report.fromDate} + ' to ' + ${report.toDate}"></caption>
+										<caption th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
+										<caption th:if="${reports[0].user != null and !reports[0].user.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
+										<caption th:if="${reports[0].path != null and !reports[0].path.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
+										<caption th:if="${report.fromDate != null and !report.fromDate.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Reporting Period: From ' + ${report.fromDate} + ' to ' + ${report.toDate}"></caption>
 										<thead>
 											<tr id='attrRowhead'>
-												<td style="color: black; font-weight:bold" id='index0' th:text="Name"></td>
-												<td style="color: black; font-weight:bold" id='path0' th:text="'Value'"></td>
+												<td class="column-heading" id='index0' th:text="Name"></td>
+												<td class="column-heading" id='path0' th:text="'Value'"></td>
 											</tr>
 										</thead>
 										<tbody>
@@ -351,9 +358,9 @@ body.loading .overlay{
 						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
 						<thead>
 							<tr id='attrRow0'>
-								<td style="color: black; font-weight:bold" id='index0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<td class="column-heading" id='index0' th:text="Index"></td>
+								<td class="column-heading" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
@@ -367,9 +374,9 @@ body.loading .overlay{
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter0'>
-								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<td class="column-heading" id='indexf0' th:text="Index"></td>
+								<td class="column-heading" th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -386,12 +393,12 @@ body.loading .overlay{
 						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
 						<thead>
 							<tr id='attrRow2'>
-								<td style="color: black; font-weight:bold" id='index001' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path001' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path002' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path003' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path004' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Generator'"></td>
+								<td class="column-heading" id='index001' th:text="Index"></td>
+								<td class="column-heading" id='path001' th:text="DOC"></td>
+								<td class="column-heading" id='path002' th:text="'Base Path'"></td>
+								<td class="column-heading" id='path003' th:text="'Collection Path'"></td>
+								<td class="column-heading" id='path004' th:text="'Data Owner'"></td>
+								<td class="column-heading" id='path005' th:text="'Data Generator'"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
@@ -408,12 +415,12 @@ body.loading .overlay{
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter2'>
-								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0011' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path0022' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0033' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Generator'"></td>
+								<td class="column-heading" id='index0000' th:text="Index"></td>
+								<td class="column-heading" id='path0011' th:text="DOC"></td>
+								<td class="column-heading" id='path0022' th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0033' th:text="'Collection Path'"></td>
+								<td class="column-heading" id='path0044' th:text="'Data Owner'"></td>
+								<td class="column-heading" id='path0055' th:text="'Data Generator'"></td>
 								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -639,7 +646,7 @@ body.loading .overlay{
 				{
 					extend: 'copyHtml5',
 					exportOptions: exportOptions,
-					//text: '<i class="fa fa-files-o"> Copy</i>',
+					title: "",
 					text: 'Copy',
 					titleAttr: 'Copy to Clipboard',
 				},
