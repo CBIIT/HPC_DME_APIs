@@ -216,30 +216,37 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
         if(replaceModifiedFiles) {
           //If files needs to be replaced, check to see if data object is modified.
           String dmePath = HpcClientUtil.constructPathString(basePath, objectPath);
-          HpcDataObjectDTO dataObjectDTO = getDataObject(dmePath);
-          SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-          Date modifiedTimestamp;
+          HpcDataObjectDTO dataObjectDTO = null;
           try {
-            modifiedTimestamp = sdf.parse(entity.getUpdatedDate());
-          } catch (ParseException e) {
-            String message = "Can't parse file modified date. Skipping: " + entity.getAbsolutePath();
-            System.out.println(message);
-            HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
-            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
-            throw new RecordProcessingException(message);
-          }
-          Date uploadedTimestamp = dataObjectDTO.getDataObject().getCreatedAt().getTime();
-          if(uploadedTimestamp.compareTo(modifiedTimestamp) > 0) {
-            //Modified is before the last upload, here we don't need to throw exception... TODO
-            String message =
-                "Skipping file: " + entity.getAbsolutePath() + " Reason: File is not modified";
-            System.out.println(message);
-            HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
-            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
-            throw new RecordProcessingException(message);
-          } else {
-            //Modified after the last upload, so we need to delete and re-upload
-            deleteDataObject(dmePath);
+			dataObjectDTO = getDataObject(dmePath);
+          } catch (Exception e) {
+  			// Continue with uploading the file.
+  		  }
+          if(dataObjectDTO != null) {
+	          SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+	          Date modifiedTimestamp;
+	          try {
+	            modifiedTimestamp = sdf.parse(entity.getUpdatedDate());
+	          } catch (ParseException e) {
+	            String message = "Can't parse file modified date. Skipping: " + entity.getAbsolutePath();
+	            System.out.println(message);
+	            HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
+	            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
+	            throw new RecordProcessingException(message);
+	          }
+	          Date uploadedTimestamp = dataObjectDTO.getDataObject().getCreatedAt().getTime();
+	          if(uploadedTimestamp.compareTo(modifiedTimestamp) > 0) {
+	            //Modified is before the last upload, here we don't need to throw exception... TODO
+	            String message =
+	                "Skipping file: " + entity.getAbsolutePath() + " Reason: File is not modified";
+	            System.out.println(message);
+	            HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
+	            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
+	            throw new RecordProcessingException(message);
+	          } else {
+	            //Modified after the last upload, so we need to delete and re-upload
+	            deleteDataObject(dmePath);
+	          }
           }
           
         }
