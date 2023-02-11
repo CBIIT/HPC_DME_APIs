@@ -10,6 +10,8 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -382,8 +384,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				Calendar createdAt = Calendar.getInstance();
 				createdAt.setTimeInMillis(Long.valueOf(createdAtStr));
 				dataObject.setCreatedAt(createdAt);
-				
+
 				logger.error("ERAN *** : {} {}", createdAtStr, Long.valueOf(createdAtStr));
+				DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+
+				logger.error("ERAN *** : {} * {} * {} ", dateFormat.format(dataObject.getCreatedAt().getTime()),
+						dateFormat.format(createdAt.getTime()), dataObject.getCreatedAt().getTimeInMillis());
 
 			} catch (NumberFormatException e) {
 				logger.error("Unexpected timestamp value: [{}] - {}", dataObject.getAbsolutePath(), createdAtStr);
