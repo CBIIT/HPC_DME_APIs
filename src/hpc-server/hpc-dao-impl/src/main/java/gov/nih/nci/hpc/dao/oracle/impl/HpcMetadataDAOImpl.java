@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
@@ -207,6 +209,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String REFRESH_VIEWS_SQL = "call REFRESH_HIERARCHY_META_VIEW()";
 
+	private static final String GET_DATA_OBJECTS_SQL = "select data_main.DATA_ID, data_main.COLL_ID, data_main.DATA_NAME, coll_main.COLL_NAME, "
+			+ "data_main.DATA_SIZE, data_main.DATA_PATH, data_main.DATA_OWNER_NAME, data_main.CREATE_TS "
+			+ "from R_META_MAIN meta_main, R_OBJT_METAMAP metamap, R_DATA_MAIN data_main, R_COLL_MAIN coll_main "
+			+ "where data_main.COLL_ID = coll_main.COLL_ID and meta_main.META_ID = metamap.META_ID and data_main.DATA_ID = metamap.OBJECT_ID "
+			+ "and meta_main.META_ATTR_NAME = ? and meta_main.META_ATTR_VALUE = ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -357,6 +365,31 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			metadataEntry.setCreatedAt(cal);
 		}
 		return metadataEntry;
+	};
+	private RowMapper<HpcDataObject> dataObjectRowMapper = (rs, rowNum) -> {
+		HpcDataObject dataObject = new HpcDataObject();
+
+		dataObject.setId(rs.getInt("DATA_ID"));
+		dataObject.setCollectionId(rs.getInt("COLL_ID"));
+		dataObject.setCollectionName(rs.getString("COLL_NAME"));
+		dataObject.setAbsolutePath(rs.getString("COLL_NAME") + "/" + rs.getString("DATA_NAME"));
+		dataObject.setDataSize(rs.getLong("DATA_SIZE"));
+		dataObject.setDataPath(rs.getString("DATA_PATH"));
+		dataObject.setDataOwnerName(rs.getString("DATA_OWNER_NAME"));
+
+		String createdAtStr = rs.getString("CREATE_TS");
+		if (createdAtStr != null) {
+			try {
+				Calendar createdAt = Calendar.getInstance();
+				createdAt.setTime(new Date(Long.valueOf(createdAtStr)));
+				dataObject.setCreatedAt(createdAt);
+
+			} catch (NumberFormatException e) {
+				logger.error("Unexpected timestamp value: [{}] - {}", dataObject.getAbsolutePath(), createdAtStr);
+			}
+		}
+
+		return dataObject;
 	};
 
 	// SQL Maps from operators to queries and filters.
@@ -617,6 +650,24 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			throw new HpcException("Failed to get data object metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
 		}
+	}
+
+	@Override
+	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException {
+		// Input validation
+		if (metadataQueries.size() != 1) {
+			throw new HpcException("Unexpected number of metadata queries received: " + metadataQueries.size(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		HpcMetadataQuery metadataQuery = metadataQueries.get(0);
+		if (!HpcMetadataQueryOperator.EQUAL.equals(metadataQuery.getOperator())) {
+			throw new HpcException("Unexpected operator in metadata received: " + metadataQuery.getOperator(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		return jdbcTemplate.query(GET_DATA_OBJECTS_SQL, dataObjectRowMapper, metadataQuery.getAttribute(),
+				metadataQuery.getValue());
 	}
 
 	@Override
