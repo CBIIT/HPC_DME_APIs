@@ -10,10 +10,14 @@ package gov.nih.nci.hpc.service.impl;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -35,6 +39,9 @@ public class HpcOracleMetadataRetrieverImpl implements HpcMetadataRetriever {
 	@Autowired
 	private HpcDataManagementProxy dataManagementProxy = null;
 
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
 	// ---------------------------------------------------------------------//
 	// Methods
 	// ---------------------------------------------------------------------//
@@ -51,5 +58,22 @@ public class HpcOracleMetadataRetrieverImpl implements HpcMetadataRetriever {
 	@Override
 	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException {
 		return metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
+	}
+
+	@Override
+	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException {
+		List<HpcDataObject> dataObjects = metadataDAO.getDataObjects(metadataQueries);
+		dataObjects.forEach(dataObject -> {
+			dataObject.setAbsolutePath(dataManagementProxy.getRelativePath(dataObject.getAbsolutePath()));
+			dataObject.setCollectionName(dataManagementProxy.getRelativePath(dataObject.getCollectionName()));
+
+			logger.error(
+					"ERAN ** id: {}, collectionId: {}, collectionName: {}, absolutePath: {}, dataSize: {}, dataPath: {}, owner: {}, createdAt: {}",
+					dataObject.getId(), dataObject.getCollectionId(), dataObject.getCollectionName(),
+					dataObject.getAbsolutePath(), dataObject.getDataSize(), dataObject.getDataPath(),
+					dataObject.getDataOwnerName(), dataObject.getCreatedAt());
+		});
+
+		return dataObjects;
 	}
 }
