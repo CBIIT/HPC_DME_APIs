@@ -14,9 +14,11 @@ import java.util.Calendar;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection;
@@ -221,6 +223,15 @@ public interface HpcMetadataDAO {
 	 * @throws HpcException on data management system failure.
 	 */
 	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
+	
+	/**
+	 * Get data objects by metadata query.
+	 *
+	 * @param metadataQueries The metadata entries to query for.
+	 * @return List of data objects.
+	 * @throws HpcException on search failure.
+	 */
+	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException;
 
 	/**
 	 * Get metadata of a collection.
