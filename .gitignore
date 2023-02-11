@@ -137,3 +137,8 @@ src/hpc-jmeter/hpc-dme-load-test-output/sbadmin2-1.0.7/less/variables.less
 src/hpc-server/hpc-scheduler-migration/target/hpc-scheduler-migration-2.28.1.jar
 src/hpc-server/hpc-scheduler-migration/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
 src/hpc-server/hpc-scheduler-migration/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+src/hpc-server/hpc-scheduler-migration/target/hpc-scheduler-migration-2.29.0.jar
+src/hpc-server/hpc-scheduler-migration/target/classes/gov/nih/nci/hpc/scheduler/migration/impl/HpcScheduledTasksImpl.class
+src/hpc-server/hpc-scheduler-migration/target/classes/META-INF/MANIFEST.MF
+src/hpc-server/hpc-scheduler-migration/target/classes/META-INF/spring/hpc-scheduler-migration-beans-configuration.xml
+src/hpc-server/hpc-scheduler-migration/target/classes/META-INF/spring/hpc-scheduler-migration-bundle-context-osgi.xml
