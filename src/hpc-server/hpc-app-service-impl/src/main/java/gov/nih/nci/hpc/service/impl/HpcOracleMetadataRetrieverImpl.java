@@ -13,7 +13,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -51,5 +53,17 @@ public class HpcOracleMetadataRetrieverImpl implements HpcMetadataRetriever {
 	@Override
 	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException {
 		return metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
+	}
+
+	@Override
+	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException {
+		List<HpcDataObject> dataObjects = metadataDAO.getDataObjects(metadataQueries);
+
+		dataObjects.forEach(dataObject -> {
+			dataObject.setAbsolutePath(dataManagementProxy.getRelativePath(dataObject.getAbsolutePath()));
+			dataObject.setCollectionName(dataManagementProxy.getRelativePath(dataObject.getCollectionName()));
+		});
+
+		return dataObjects;
 	}
 }
