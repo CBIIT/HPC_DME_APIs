@@ -8,12 +8,8 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
@@ -41,9 +37,6 @@ public class HpcOracleMetadataRetrieverImpl implements HpcMetadataRetriever {
 	@Autowired
 	private HpcDataManagementProxy dataManagementProxy = null;
 
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
 	// ---------------------------------------------------------------------//
 	// Methods
 	// ---------------------------------------------------------------------//
@@ -65,18 +58,10 @@ public class HpcOracleMetadataRetrieverImpl implements HpcMetadataRetriever {
 	@Override
 	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException {
 		List<HpcDataObject> dataObjects = metadataDAO.getDataObjects(metadataQueries);
-		
-		DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
-		
+
 		dataObjects.forEach(dataObject -> {
 			dataObject.setAbsolutePath(dataManagementProxy.getRelativePath(dataObject.getAbsolutePath()));
 			dataObject.setCollectionName(dataManagementProxy.getRelativePath(dataObject.getCollectionName()));
-
-			logger.error(
-					"ERAN ** id: {}, collectionId: {}, collectionName: {}, absolutePath: {}, dataSize: {}, dataPath: {}, owner: {}, createdAt: {}",
-					dataObject.getId(), dataObject.getCollectionId(), dataObject.getCollectionName(),
-					dataObject.getAbsolutePath(), dataObject.getDataSize(), dataObject.getDataPath(),
-					dataObject.getDataOwnerName(), dateFormat.format(dataObject.getCreatedAt().getTime()));
 		});
 
 		return dataObjects;
