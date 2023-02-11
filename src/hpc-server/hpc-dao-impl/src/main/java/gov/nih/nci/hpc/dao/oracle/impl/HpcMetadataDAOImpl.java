@@ -382,7 +382,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		if (createdAtStr != null) {
 			try {
 				Calendar createdAt = Calendar.getInstance();
-				createdAt.setTimeInMillis(Long.valueOf(createdAtStr));
+				createdAt.setTimeInMillis(Long.valueOf(createdAtStr) * 1000L);
 				dataObject.setCreatedAt(createdAt);
 
 				logger.error("ERAN *** : {} {}", createdAtStr, Long.valueOf(createdAtStr));
