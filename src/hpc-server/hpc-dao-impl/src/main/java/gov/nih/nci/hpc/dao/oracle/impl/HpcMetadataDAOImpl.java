@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -381,7 +380,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		if (createdAtStr != null) {
 			try {
 				Calendar createdAt = Calendar.getInstance();
-				createdAt.setTime(new Date(Long.valueOf(createdAtStr)));
+				createdAt.setTimeInMillis(Long.valueOf(createdAtStr));
 				dataObject.setCreatedAt(createdAt);
 
 			} catch (NumberFormatException e) {
