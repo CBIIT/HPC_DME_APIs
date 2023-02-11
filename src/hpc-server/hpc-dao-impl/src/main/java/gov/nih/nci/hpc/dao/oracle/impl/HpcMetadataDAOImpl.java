@@ -382,6 +382,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				Calendar createdAt = Calendar.getInstance();
 				createdAt.setTimeInMillis(Long.valueOf(createdAtStr));
 				dataObject.setCreatedAt(createdAt);
+				
+				logger.error("ERAN *** : {} {}", createdAtStr, Long.valueOf(createdAtStr));
 
 			} catch (NumberFormatException e) {
 				logger.error("Unexpected timestamp value: [{}] - {}", dataObject.getAbsolutePath(), createdAtStr);
