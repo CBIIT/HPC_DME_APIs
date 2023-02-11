@@ -773,62 +773,51 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadReceived() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferReceivedQuery);
+		return metadataRetriever.getDataObjects(dataTransferReceivedQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException {
-		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 		List<HpcDataObject> objectsInProgress = new ArrayList<>();
-		objectsInProgress
-				.addAll(dataManagementProxy.getDataObjects(authenticatedToken, dataTransferInProgressToArchiveQuery));
-		objectsInProgress.addAll(
-				dataManagementProxy.getDataObjects(authenticatedToken, dataTransferInProgressToTemporaryArchiveQuery));
+		objectsInProgress.addAll(metadataRetriever.getDataObjects(dataTransferInProgressToArchiveQuery));
+		objectsInProgress.addAll(metadataRetriever.getDataObjects(dataTransferInProgressToTemporaryArchiveQuery));
 
 		return objectsInProgress;
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferInProgressWithGeneratedURLQuery);
+		return metadataRetriever.getDataObjects(dataTransferInProgressWithGeneratedURLQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferStreamingInProgressQuery);
+		return metadataRetriever.getDataObjects(dataTransferStreamingInProgressQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadStreamingFailed() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferStreamingFailedQuery);
+		return metadataRetriever.getDataObjects(dataTransferStreamingFailedQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadStreamingStopped() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferStreamingStoppedQuery);
+		return metadataRetriever.getDataObjects(dataTransferStreamingStoppedQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferInTemporaryArchiveQuery);
+		return metadataRetriever.getDataObjects(dataTransferInTemporaryArchiveQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadFileSystemReady() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferFileSystemReadyQuery);
+		return metadataRetriever.getDataObjects(dataTransferFileSystemReadyQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadFileSystemInProgress() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferFileSystemInProgressQuery);
+		return metadataRetriever.getDataObjects(dataTransferFileSystemInProgressQuery);
 	}
 
 	@Override
@@ -836,8 +825,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		List<HpcMetadataQuery> dataObjectLinksQuery = new ArrayList<>();
 		dataObjectLinksQuery.add(toMetadataQuery(LINK_SOURCE_PATH_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL, path));
 
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataObjectLinksQuery);
+		return metadataRetriever.getDataObjects(dataObjectLinksQuery);
 	}
 
 	@Override
@@ -1175,14 +1163,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public List<HpcDataObject> getDataObjectsDeepArchiveInProgress() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				deepArchiveInProgressQuery);
+		return metadataRetriever.getDataObjects(deepArchiveInProgressQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDeletedDataObjects() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				deletedDataObjectsQuery);
+		return metadataRetriever.getDataObjects(deletedDataObjectsQuery);
 	}
 
 	@Override
