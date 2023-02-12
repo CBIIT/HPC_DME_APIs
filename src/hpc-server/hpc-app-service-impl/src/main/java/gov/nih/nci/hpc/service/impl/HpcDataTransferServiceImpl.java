@@ -3546,6 +3546,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// The second hop download's source file.
 		private File sourceFile = null;
+		
+		private int counter = 0;
 
 		// ---------------------------------------------------------------------//
 		// Constructors
@@ -3694,6 +3696,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// This callback method is called when the first hop download failed.
 		@Override
 		public void transferFailed(String message) {
+			logger.error("ERAN *** failed");
+			
 			if (!downloadTask.getFirstHopRetried()) {
 				// First hop failed, but was not retried yet. Give it a second chance.
 				logger.info("download task: {} - 1 Hop download failed and will be retried. Path at scratch space: {}",
@@ -3702,6 +3706,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				try {
 					resetDataObjectDownloadTask(downloadTask);
 					return;
+					
 				} catch (HpcException e) {
 					downloadTask.setFirstHopRetried(false);
 					logger.error("download task: {} - failed to reset", downloadTask.getId(), e);
@@ -3743,6 +3748,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// This callback method is called when the first hop download progressed.
 		@Override
 		public void transferProgressed(long bytesTransferred) {
+			logger.error("ERAN *** progress - {}", counter++);
+			
 			try {
 				updateDataObjectDownloadTask(downloadTask, bytesTransferred);
 
