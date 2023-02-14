@@ -769,7 +769,6 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
                   
                   exception = parser.readValueAs(HpcExceptionDTO.class);
                   if (response != null) {
-                      System.out.println("Failed to get data object: " + destinationPath + " Reason: " + exception.getMessage());
                       throw new HpcBatchException(
                               "Failed to get data object: " + destinationPath + " Reason: " + exception.getMessage());
                   }
