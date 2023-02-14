@@ -3751,7 +3751,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			logger.error("ERAN *** progress - {}", counter++);
 			if(counter == 50) {
 				logger.error("ERAN *** progress - thread interrupted");
-				Thread.currentThread().interrupt();
+				//Thread.currentThread().interrupt();
 				return;
 			}
 				
