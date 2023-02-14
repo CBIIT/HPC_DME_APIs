@@ -3749,6 +3749,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		@Override
 		public void transferProgressed(long bytesTransferred) {
 			logger.error("ERAN *** progress - {}", counter++);
+			if(counter == 50) {
+				logger.error("ERAN *** progress - thread interrupted");
+				Thread.currentThread().interrupt();
+				return;
+			}
+				
 			
 			try {
 				updateDataObjectDownloadTask(downloadTask, bytesTransferred);
