@@ -508,4 +508,41 @@ public class HpcReportsController extends AbstractHpcController {
       }
       return result;
     }
+
+private class HpcUserLite {
+    String userId;
+    String displayName;
+  }
+
+ /**
+    * GET operation responding to an AJAX request to retrieve all the Users
+    * @param session
+    * @param request
+    * @return result with serialized list of users
+  */
+  @GetMapping(value = "/getUsers")
+  @ResponseBody
+  public AjaxResponseBody getUsers(HttpSession session, HttpServletRequest request) {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+      HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
+          null, user.getUserRole().equals("SYSTEM_ADMIN") ? null : user.getDoc(), sslCertPath,
+          sslCertPassword);
+      Comparator<HpcUserListEntry> firstLastComparator = Comparator.comparing(HpcUserListEntry::getFirstName, String.CASE_INSENSITIVE_ORDER)
+          .thenComparing(HpcUserListEntry::getLastName, String.CASE_INSENSITIVE_ORDER);
+      users.getUsers().sort(firstLastComparator);
+
+      List<HpcUserLite> userLitelist = new ArrayList<>();
+      for (HpcUserListEntry userx : users.getUsers()) {
+        HpcUserLite u = new HpcUserLite();
+        u.userId = userx.getUserId();
+        u.displayName = userx.getFirstName() + ' ' + userx.getLastName();
+        userLitelist.add(u);
+      }
+      AjaxResponseBody result = new AjaxResponseBody();
+      result.setMessage(gson.toJson(userLitelist));
+      logger.info(gson.toJson(userLitelist));
+      return result;
+    }
+
   }
