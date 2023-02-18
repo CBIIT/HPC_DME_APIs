@@ -305,8 +305,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			boolean updated = true;
 			String message = null;
 			try {
-				metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
-						systemGeneratedMetadata.getConfigurationId());
+				if (!contained(collectionRegistration.getMetadataEntries(), metadataBefore.getSelfMetadataEntries())) {
+					synchronized (this) {
+						metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
+								systemGeneratedMetadata.getConfigurationId());
+					}
+				} else {
+					logger.info(
+							"Collection metadata update skipped - request contains no metadata updates to current state: {}",
+							path);
+				}
 
 			} catch (HpcException e) {
 				// Collection metadata update failed. Capture this in the audit record.
@@ -315,7 +323,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw (e);
 
 			} finally {
-				// Add an audit record of this deletion attempt.
+				// Add an audit record of this update collection attempt.
 				dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
 						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
 			}
@@ -929,7 +937,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		timeBefore = System.currentTimeMillis();
 		responseDTO.setRegistered(dataManagementService.createFile(path));
 		registrationProfilingLog(path, "File created in iRODS", System.currentTimeMillis() - timeBefore);
-		
+
 		// Get the collection type containing the data object.
 		String collectionPath = path.substring(0, path.lastIndexOf('/'));
 		String collectionType = dataManagementService.getCollectionType(collectionPath);
@@ -946,7 +954,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Assign system account as an additional owner of the data-object.
 				timeBefore = System.currentTimeMillis();
 				dataManagementService.setCoOwnership(path, userId);
-				registrationProfilingLog(path, "File permissions set in iRODS", System.currentTimeMillis() - timeBefore);
+				registrationProfilingLog(path, "File permissions set in iRODS",
+						System.currentTimeMillis() - timeBefore);
 
 				// Validate the new data object complies with the hierarchy definition.
 				securityService.executeAsSystemAccount(Optional.empty(),
@@ -968,7 +977,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					timeBefore = System.currentTimeMillis();
 					HpcMetadataEntry dataObjectMetadataEntry = metadataService.addMetadataToDataObject(path,
 							dataObjectRegistration.getMetadataEntries(), configurationId, collectionType);
-					registrationProfilingLog(path, "User metadata set in iRODS", System.currentTimeMillis() - timeBefore);
+					registrationProfilingLog(path, "User metadata set in iRODS",
+							System.currentTimeMillis() - timeBefore);
 
 					// Attach the user provided extracted metadata (from the physical file)
 					if (!dataObjectRegistration.getExtractedMetadataEntries().isEmpty()) {
@@ -993,7 +1003,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
 							configurationId);
-					registrationProfilingLog(path, "Upload request / URL generation completed", System.currentTimeMillis() - timeBefore);
+					registrationProfilingLog(path, "Upload request / URL generation completed",
+							System.currentTimeMillis() - timeBefore);
 
 					// Set the upload request URL / Multipart upload URLs (if one was generated).
 					responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
@@ -1014,7 +1025,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
 									registrationEventRequired);
-					registrationProfilingLog(path, "System metadata set in iRODS", System.currentTimeMillis() - timeBefore);
+					registrationProfilingLog(path, "System metadata set in iRODS",
+							System.currentTimeMillis() - timeBefore);
 
 					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
@@ -2286,7 +2298,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                                             ID.
 	 * @throws HpcException on service failure.
 	 */
-	synchronized private void createParentCollections(String path, Boolean createParentCollections,
+	private void createParentCollections(String path, Boolean createParentCollections,
 			HpcBulkMetadataEntries parentCollectionsBulkMetadataEntries, String userId, String userName,
 			String configurationId) throws HpcException {
 		// Create parent collections if requested and needed to.
@@ -3789,4 +3801,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		logger.info("Registration Profiling [{}]: {}{}", path, message,
 				time != null ? "[" + time.toString() + " ms]" : "");
 	}
+
+	/**
+	 * Check if a sublist of metadata is fully contained within a list.
+	 *
+	 * @param sublist sublist of metadata entries
+	 * @param list    full list of metadata
+	 * @return true if the sublist if fully contained - all metadata attribute and
+	 *         value match
+	 */
+	private boolean contained(List<HpcMetadataEntry> sublist, List<HpcMetadataEntry> list) {
+		if ((sublist == null || sublist.size() == 0) && (list == null || list.size() == 0)) {
+			return true;
+		}
+
+		Map<String, String> metadataMap = metadataService.toMap(list);
+		for (HpcMetadataEntry metadataEntryInSublist : sublist) {
+			String value = metadataMap.get(Optional.ofNullable(metadataEntryInSublist.getAttribute()).orElse(""));
+			if (value == null || !value.equals(metadataEntryInSublist.getValue())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 }
