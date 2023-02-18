@@ -306,8 +306,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			String message = null;
 			try {
 				if (!contained(collectionRegistration.getMetadataEntries(), metadataBefore.getSelfMetadataEntries())) {
-					metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
-							systemGeneratedMetadata.getConfigurationId());
+					synchronized (this) {
+						metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
+								systemGeneratedMetadata.getConfigurationId());
+					}
 				} else {
 					logger.info(
 							"Collection metadata update skipped - request contains no metadata updates to current state: {}",
@@ -2296,7 +2298,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                                             ID.
 	 * @throws HpcException on service failure.
 	 */
-	synchronized private void createParentCollections(String path, Boolean createParentCollections,
+	private void createParentCollections(String path, Boolean createParentCollections,
 			HpcBulkMetadataEntries parentCollectionsBulkMetadataEntries, String userId, String userName,
 			String configurationId) throws HpcException {
 		// Create parent collections if requested and needed to.
