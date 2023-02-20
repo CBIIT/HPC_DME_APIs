@@ -138,43 +138,40 @@ public class HpcReportsController extends AbstractHpcController {
       model.addAttribute("hpcLogin", hpcLogin);
       return "redirect:/login?returnPath=reports";
     }
-
     model.addAttribute("userRole", user.getUserRole());
     model.addAttribute("userDOC", user.getDoc());
-    HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
-        null, user.getUserRole().equals("SYSTEM_ADMIN") ? null : user.getDoc(), sslCertPath,
-        sslCertPassword);
-    Comparator<HpcUserListEntry> firstLastComparator = Comparator.comparing(HpcUserListEntry::getFirstName, String.CASE_INSENSITIVE_ORDER)
-        .thenComparing(HpcUserListEntry::getLastName, String.CASE_INSENSITIVE_ORDER);
-    users.getUsers().sort(firstLastComparator);
-    model.addAttribute("docUsers", users.getUsers());
+    // Based on the role, the user can see their docs or all docs
+    if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER")) {
+      model.addAttribute("canSeeAllDocs", false);
+    } else {
+       model.addAttribute("canSeeAllDocs", true);
+    }
+    // Populate Docs
     List<String> docs = new ArrayList<>();
-
-
-    boolean canSeeAllDocs = false;
     if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER")) {
       docs.add(user.getDoc());
-    }
-    else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-      docs.addAll(
-          HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
-      canSeeAllDocs = true;
-    }
-    model.addAttribute("canSeeAllDocs", canSeeAllDocs);
-    docs.sort(String.CASE_INSENSITIVE_ORDER);
-    model.addAttribute("docs", docs);
-
-    List<String> basepaths = new ArrayList<>();
-    for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
-      if (docs.contains(docRule.getDoc())){
-        for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-          basepaths.add(rule.getBasePath());
-        }
+      model.addAttribute("docs", docs);
+    } else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
+      if(!model.containsAttribute("docs")) {
+        docs.addAll(HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
+        docs.sort(String.CASE_INSENSITIVE_ORDER);
+        model.addAttribute("docs", docs);
       }
     }
-    basepaths.sort(String.CASE_INSENSITIVE_ORDER);
-    model.addAttribute("basepaths", basepaths);
-    return "reports";
+    // Populate Basepaths
+    if (!model.containsAttribute("basepaths")) {
+      List<String> basepaths = new ArrayList<>();
+      for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
+        if (docs.contains(docRule.getDoc())){
+          for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+            basepaths.add(rule.getBasePath());
+          }
+        }
+      }
+      basepaths.sort(String.CASE_INSENSITIVE_ORDER);
+      model.addAttribute("basepaths", basepaths);
+    }
+   return "reports";
   }
   
   private HpcReportRequestDTO setReportColumnsForIndividualReports(HpcReportRequestDTO requestDTO, boolean showArchiveSummaryForNonGrid) {
@@ -213,6 +210,7 @@ public class HpcReportsController extends AbstractHpcController {
     try {
       model.addAttribute("reportRequest", reportRequest);
       String authToken = (String) session.getAttribute("hpcUserToken");
+      HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
       requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
       if ( (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) &&
         (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
@@ -292,6 +290,15 @@ public class HpcReportsController extends AbstractHpcController {
         model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + exception.getMessage());
         logger.info("Failed to generate report {} for {}: {}", requestDTO.getType(), requestDTO.getPath(), exception);
       }
+      // The list of docs for the UI dropdown is repopulated with the docs from hidden variables in request.
+      // This is to prevent another query for retrieving the list of docs
+      if (user.getUserRole().equals("SYSTEM_ADMIN")){
+        model.addAttribute("docs", reportRequest.getDocs());
+      }
+      // The list of basepaths for the UI dropdown is repopulated with the basepaths from hidden variables in request.
+      // This is to prevent another query for retrieving the list of basepaths
+     model.addAttribute("basepaths", reportRequest.getBasepaths());
+
     } catch (HttpStatusCodeException e) {
         model.addAttribute(ATTR_MESSAGE, "Failed to generate report: " + e.getMessage());
         logger.info("Failed to generate report {} for path {}", requestDTO.getType(), requestDTO.getPath(), e);
@@ -508,4 +515,41 @@ public class HpcReportsController extends AbstractHpcController {
       }
       return result;
     }
+
+private class HpcUserLite {
+    String userId;
+    String displayName;
+  }
+
+ /**
+    * GET operation responding to an AJAX request to retrieve all the Users
+    * @param session
+    * @param request
+    * @return result with serialized list of users
+  */
+  @GetMapping(value = "/getUsers")
+  @ResponseBody
+  public AjaxResponseBody getUsers(HttpSession session, HttpServletRequest request) {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+      HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
+          null, user.getUserRole().equals("SYSTEM_ADMIN") ? null : user.getDoc(), sslCertPath,
+          sslCertPassword);
+      Comparator<HpcUserListEntry> firstLastComparator = Comparator.comparing(HpcUserListEntry::getFirstName, String.CASE_INSENSITIVE_ORDER)
+          .thenComparing(HpcUserListEntry::getLastName, String.CASE_INSENSITIVE_ORDER);
+      users.getUsers().sort(firstLastComparator);
+
+      List<HpcUserLite> userLitelist = new ArrayList<>();
+      for (HpcUserListEntry userx : users.getUsers()) {
+        HpcUserLite u = new HpcUserLite();
+        u.userId = userx.getUserId();
+        u.displayName = userx.getFirstName() + ' ' + userx.getLastName();
+        userLitelist.add(u);
+      }
+      AjaxResponseBody result = new AjaxResponseBody();
+      result.setMessage(gson.toJson(userLitelist));
+      logger.info(gson.toJson(userLitelist));
+      return result;
+    }
+
   }
