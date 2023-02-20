@@ -150,6 +150,9 @@ body.loading .overlay{
 <script th:inline="javascript">
 /*<![CDATA[*/
     var selected = [[${reportRequest.getReportType()}]];
+	var userselected = [[${reportRequest.getUser()}]];
+	var listOfDocs = [[${docs}]];
+	var listOfBasepaths = [[${basepaths}]];
 /*]]>*/
 </script>
 </head>
@@ -225,11 +228,6 @@ body.loading .overlay{
 								<select size="1"
 									id="user" name="user" class="userSelect" style="width: 100%">
 										<option></option>
-										<option
-											th:each="entry : ${docUsers}"
-											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
-											th:selected="${reportRequest.getUser() == entry.getUserId()}">
-											Wireframe</option>
 								</select>
 							</div>
 						</div>
@@ -298,6 +296,8 @@ body.loading .overlay{
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
+					<input type="hidden" id="docs"  name="docs" />
+					<input type="hidden" id="basepaths"  name="basepaths" />
 					<div class="row">
 						<div class="col-sm-12">
 							<button type="submit" class="btn btn-md btn-primary"
@@ -918,6 +918,25 @@ body.loading .overlay{
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "none";
+			if ($('#user option').length == 1) {
+					let uri = '/reports/getUsers';
+					$.ajax({
+							type: 'GET',
+							url: uri,
+							dataType: 'json'
+						}).done(function (result) {
+							var data = JSON.parse(result.message.replace("\\", ""));
+							$.each(data, function (index, value) {
+								if(value.userId === userselected){
+									$('#user').append('<option value="' + value.userId + '" selected=true>' + value.displayName + '</option>');
+									/*$('#user option[value=value.user.id]').attr("selected", "selected");*/
+								} else {
+									$('#user').append('<option value="' + value.userId + '">' + value.displayName + '</option>');
+								}
+						});
+						$('#user option[value=userselected]').attr("selected", "selected");
+					});
+				}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH")
       	{
@@ -1042,6 +1061,8 @@ body.loading .overlay{
 				$("#path").val(updatedPath);
 			}
 		}
+		$("input[name=docs]").val(listOfDocs);
+		$("input[name=basepaths]").val(listOfBasepaths);
 		$("#spinner").show();
 		document.getElementById("reportsform").submit();
       }
