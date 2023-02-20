@@ -151,6 +151,8 @@ body.loading .overlay{
 /*<![CDATA[*/
     var selected = [[${reportRequest.getReportType()}]];
 	var userselected = [[${reportRequest.getUser()}]];
+	var listOfDocs = [[${docs}]];
+	var listOfBasepaths = [[${basepaths}]];
 /*]]>*/
 </script>
 </head>
@@ -294,6 +296,8 @@ body.loading .overlay{
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
+					<input type="hidden" id="docs"  name="docs" />
+					<input type="hidden" id="basepaths"  name="basepaths" />
 					<div class="row">
 						<div class="col-sm-12">
 							<button type="submit" class="btn btn-md btn-primary"
@@ -1057,6 +1061,8 @@ body.loading .overlay{
 				$("#path").val(updatedPath);
 			}
 		}
+		$("input[name=docs]").val(listOfDocs);
+		$("input[name=basepaths]").val(listOfBasepaths);
 		$("#spinner").show();
 		document.getElementById("reportsform").submit();
       }
