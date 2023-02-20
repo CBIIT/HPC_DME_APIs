@@ -305,7 +305,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			boolean updated = true;
 			String message = null;
 			try {
-				if (!contained(collectionRegistration.getMetadataEntries(), metadataBefore.getSelfMetadataEntries())) {
+				if (!metadataContained(collectionRegistration.getMetadataEntries(), metadataBefore.getSelfMetadataEntries())) {
 					synchronized (this) {
 						metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
 								systemGeneratedMetadata.getConfigurationId());
@@ -3810,7 +3810,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return true if the sublist if fully contained - all metadata attribute and
 	 *         value match
 	 */
-	private boolean contained(List<HpcMetadataEntry> sublist, List<HpcMetadataEntry> list) {
+	private boolean metadataContained(List<HpcMetadataEntry> sublist, List<HpcMetadataEntry> list) {
 		if ((sublist == null || sublist.size() == 0) && (list == null || list.size() == 0)) {
 			return true;
 		}
