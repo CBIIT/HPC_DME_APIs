@@ -261,41 +261,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Create parent collections if requested to.
 		createParentCollections(path, collectionRegistration.getCreateParentCollections(),
 				collectionRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
-
-		// Create a collection directory.
-		boolean created = dataManagementService.createDirectory(path);
-
-		// Attach the metadata.
-		if (created) {
-			boolean registrationCompleted = false;
-			try {
-				// Assign system account as an additional owner of the collection.
-				dataManagementService.setCoOwnership(path, userId);
-
-				// Add user provided metadata.
-				metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
-						configurationId);
-
-				// Generate system metadata and attach to the collection.
-				metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
-
-				// Validate the collection hierarchy.
-				securityService.executeAsSystemAccount(Optional.empty(),
-						() -> dataManagementService.validateHierarchy(path, configurationId, false));
-
-				// Add collection update event.
-				addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
-
-				registrationCompleted = true;
-
-			} finally {
-				if (!registrationCompleted) {
-					// Collection registration failed. Remove it from Data Management.
-					dataManagementService.delete(path, true);
+		boolean created = false;
+		synchronized (this) {	
+			// Create a collection directory.
+			created = dataManagementService.createDirectory(path);
+	
+			// Attach the metadata.
+			if (created) {
+				boolean registrationCompleted = false;
+				try {
+					// Assign system account as an additional owner of the collection.
+					dataManagementService.setCoOwnership(path, userId);
+	
+					// Add user provided metadata.
+					metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
+							configurationId);
+	
+					// Generate system metadata and attach to the collection.
+					metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
+	
+					// Validate the collection hierarchy.
+					securityService.executeAsSystemAccount(Optional.empty(),
+							() -> dataManagementService.validateHierarchy(path, configurationId, false));
+	
+					// Add collection update event.
+					addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
+	
+					registrationCompleted = true;
+	
+				} finally {
+					if (!registrationCompleted) {
+						// Collection registration failed. Remove it from Data Management.
+						dataManagementService.delete(path, true);
+					}
 				}
-			}
-
-		} else {
+	
+			} 
+		}
+		if (!created) {
 			// Get the metadata for this collection.
 			HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
 			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
