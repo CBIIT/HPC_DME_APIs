@@ -3817,7 +3817,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		Map<String, String> metadataMap = metadataService.toMap(list);
 		for (HpcMetadataEntry metadataEntryInSublist : sublist) {
-			String value = metadataMap.get(Optional.ofNullable(metadataEntryInSublist.getAttribute()).orElse(""));
+			String attribute = metadataEntryInSublist.getAttribute();
+			if(attribute == null) {
+				attribute = "";
+			}
+			String value = metadataMap.get(attribute);
 			if (value == null || !value.equals(metadataEntryInSublist.getValue())) {
 				return false;
 			}
