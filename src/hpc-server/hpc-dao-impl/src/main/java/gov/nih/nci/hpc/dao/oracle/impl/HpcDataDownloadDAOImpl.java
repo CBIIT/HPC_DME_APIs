@@ -69,19 +69,20 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL = "merge into HPC_DATA_OBJECT_DOWNLOAD_TASK using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, S3_ARCHIVE_CONFIGURATION_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, "
-			+ "DATA_TRANSFER_TYPE = ?, DATA_TRANSFER_STATUS = ?, DOWNLOAD_FILE_PATH = ?, ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
-			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_TYPE = ?, S3_ACCOUNT_ACCESS_KEY = ?, "
-			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_ACCESS_TOKEN = ?, "
-			+ "COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, PERCENT_COMPLETE = ?, STAGING_PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ?, "
-			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_USER_ID = ? "
-			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, S3_ARCHIVE_CONFIGURATION_ID, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, "
+	private static final String CREATE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "insert into HPC_DATA_OBJECT_DOWNLOAD_TASK (ID, USER_ID, PATH, CONFIGURATION_ID, S3_ARCHIVE_CONFIGURATION_ID, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, "
 			+ "DATA_TRANSFER_STATUS, DOWNLOAD_FILE_PATH, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, "
 			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_ACCESS_TOKEN, COMPLETION_EVENT, COLLECTION_DOWNLOAD_TASK_ID, PERCENT_COMPLETE, STAGING_PERCENT_COMPLETE, DATA_SIZE, CREATED, "
 			+ "PROCESSED, IN_PROCESS, PRIORITY, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_USER_ID) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+
+	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK "
+			+ "set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, S3_ARCHIVE_CONFIGURATION_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, "
+			+ "DATA_TRANSFER_TYPE = ?, DATA_TRANSFER_STATUS = ?, DOWNLOAD_FILE_PATH = ?, ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
+			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_TYPE = ?, S3_ACCOUNT_ACCESS_KEY = ?, "
+			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_ACCESS_TOKEN = ?, "
+			+ "COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, PERCENT_COMPLETE = ?, STAGING_PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ?, "
+			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_USER_ID = ? where ID = ?";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -520,10 +521,77 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public void upsertDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException {
+	public void createDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException {
+		try {
+			if (dataObjectDownloadTask.getId() != null) {
+				throw new HpcException("Task ID provided in download task creation: " + dataObjectDownloadTask.getId(),
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
+			dataObjectDownloadTask.setId(UUID.randomUUID().toString());
+
+			HpcFileLocation destinationLocation = null;
+			byte[] s3AccountAccessKey = null;
+			byte[] s3AccountSecretKey = null;
+			String s3AccountRegion = null;
+			String s3AccountUrl = null;
+			Boolean s3AccountPathStyleAccessEnabled = null;
+			byte[] googleAccessToken = null;
+			if (dataObjectDownloadTask.getGlobusDownloadDestination() != null) {
+				destinationLocation = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
+			} else if (dataObjectDownloadTask.getS3DownloadDestination() != null) {
+				destinationLocation = dataObjectDownloadTask.getS3DownloadDestination().getDestinationLocation();
+				HpcS3Account s3Account = dataObjectDownloadTask.getS3DownloadDestination().getAccount();
+				s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
+				s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
+				s3AccountRegion = s3Account.getRegion();
+				s3AccountUrl = s3Account.getUrl();
+				s3AccountPathStyleAccessEnabled = s3Account.getPathStyleAccessEnabled();
+			} else if (dataObjectDownloadTask.getGoogleDriveDownloadDestination() != null) {
+				destinationLocation = dataObjectDownloadTask.getGoogleDriveDownloadDestination()
+						.getDestinationLocation();
+				googleAccessToken = encryptor
+						.encrypt(dataObjectDownloadTask.getGoogleDriveDownloadDestination().getAccessToken());
+			} else if (dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
+				destinationLocation = dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination()
+						.getDestinationLocation();
+				googleAccessToken = encryptor
+						.encrypt(dataObjectDownloadTask.getGoogleCloudStorageDownloadDestination().getAccessToken());
+
+			} else {
+				throw new HpcException("No download destination in a download task", HpcErrorType.UNEXPECTED_ERROR);
+			}
+
+			jdbcTemplate.update(CREATE_DATA_OBJECT_DOWNLOAD_TASK_SQL, dataObjectDownloadTask.getId(),
+					dataObjectDownloadTask.getUserId(), dataObjectDownloadTask.getPath(),
+					dataObjectDownloadTask.getConfigurationId(), dataObjectDownloadTask.getS3ArchiveConfigurationId(),
+					dataObjectDownloadTask.getDataTransferRequestId(),
+					dataObjectDownloadTask.getDataTransferType().value(),
+					dataObjectDownloadTask.getDataTransferStatus().value(),
+					dataObjectDownloadTask.getDownloadFilePath(),
+					dataObjectDownloadTask.getArchiveLocation().getFileContainerId(),
+					dataObjectDownloadTask.getArchiveLocation().getFileId(), destinationLocation.getFileContainerId(),
+					destinationLocation.getFileId(), dataObjectDownloadTask.getDestinationType().value(),
+					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
+					s3AccountPathStyleAccessEnabled, googleAccessToken, dataObjectDownloadTask.getCompletionEvent(),
+					dataObjectDownloadTask.getCollectionDownloadTaskId(), dataObjectDownloadTask.getPercentComplete(),
+					dataObjectDownloadTask.getStagingPercentComplete(), dataObjectDownloadTask.getSize(),
+					dataObjectDownloadTask.getCreated(), dataObjectDownloadTask.getProcessed(),
+					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
+					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
+					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
+					dataObjectDownloadTask.getRetryUserId());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public boolean updateDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException {
 		try {
 			if (dataObjectDownloadTask.getId() == null) {
-				dataObjectDownloadTask.setId(UUID.randomUUID().toString());
+				throw new HpcException("Task ID not provided in download task update", HpcErrorType.UNEXPECTED_ERROR);
 			}
 
 			HpcFileLocation destinationLocation = null;
@@ -558,9 +626,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				throw new HpcException("No download destination in a download task", HpcErrorType.UNEXPECTED_ERROR);
 			}
 
-			jdbcTemplate.update(UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL, dataObjectDownloadTask.getId(),
-					dataObjectDownloadTask.getUserId(), dataObjectDownloadTask.getPath(),
-					dataObjectDownloadTask.getConfigurationId(), dataObjectDownloadTask.getS3ArchiveConfigurationId(),
+			return jdbcTemplate.update(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_SQL, dataObjectDownloadTask.getUserId(),
+					dataObjectDownloadTask.getPath(), dataObjectDownloadTask.getConfigurationId(),
+					dataObjectDownloadTask.getS3ArchiveConfigurationId(),
 					dataObjectDownloadTask.getDataTransferRequestId(),
 					dataObjectDownloadTask.getDataTransferType().value(),
 					dataObjectDownloadTask.getDataTransferStatus().value(),
@@ -576,29 +644,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getId(),
-					dataObjectDownloadTask.getUserId(), dataObjectDownloadTask.getPath(),
-					dataObjectDownloadTask.getConfigurationId(), dataObjectDownloadTask.getS3ArchiveConfigurationId(),
-					dataObjectDownloadTask.getDataTransferRequestId(),
-					dataObjectDownloadTask.getDataTransferType().value(),
-					dataObjectDownloadTask.getDataTransferStatus().value(),
-					dataObjectDownloadTask.getDownloadFilePath(),
-					dataObjectDownloadTask.getArchiveLocation().getFileContainerId(),
-					dataObjectDownloadTask.getArchiveLocation().getFileId(), destinationLocation.getFileContainerId(),
-					destinationLocation.getFileId(), dataObjectDownloadTask.getDestinationType().value(),
-					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
-					s3AccountPathStyleAccessEnabled, googleAccessToken, dataObjectDownloadTask.getCompletionEvent(),
-					dataObjectDownloadTask.getCollectionDownloadTaskId(), dataObjectDownloadTask.getPercentComplete(),
-					dataObjectDownloadTask.getStagingPercentComplete(), dataObjectDownloadTask.getSize(),
-					dataObjectDownloadTask.getCreated(), dataObjectDownloadTask.getProcessed(),
-					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
-					this.getMaxDownloadTaskPriority(dataObjectDownloadTask.getConfigurationId()) + 1,
-					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
-					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryUserId());
+					dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getId()) > 0;
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
+			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
