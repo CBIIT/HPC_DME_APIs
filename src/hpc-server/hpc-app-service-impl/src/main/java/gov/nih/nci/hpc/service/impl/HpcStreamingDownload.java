@@ -178,7 +178,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
 		
-		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+		dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			this.downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
 
-		dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
+		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 	}
 
 	/**
