@@ -122,7 +122,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
 			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, RETRY_USER_ID, FIRST_HOP_RETRIED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -216,8 +216,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set CANCELLATION_REQUESTED = ? where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "select CANCELLATION_REQUESTED from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
-
-	private static final String GET_MAX_DOWNLOAD_TASK_PRIORITY_SQL = "select COALESCE(max(priority), 99) from HPC_DATA_OBJECT_DOWNLOAD_TASK where CONFIGURATION_ID = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -1447,23 +1445,5 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 
 		return downloadItems;
-	}
-
-	/**
-	 * Get the max download task priority in the download task table for a given
-	 * configuration ID.
-	 * 
-	 * @param configurationId The data management configuration ID.
-	 * @return The max priority
-	 * @throws HpcException On SQL error
-	 */
-	private long getMaxDownloadTaskPriority(String configurationId) throws HpcException {
-		try {
-			return jdbcTemplate.queryForObject(GET_MAX_DOWNLOAD_TASK_PRIORITY_SQL, Integer.class, configurationId);
-
-		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get max download task priority: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-		}
 	}
 }
