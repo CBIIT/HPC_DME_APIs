@@ -261,41 +261,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Create parent collections if requested to.
 		createParentCollections(path, collectionRegistration.getCreateParentCollections(),
 				collectionRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
-
-		// Create a collection directory.
-		boolean created = dataManagementService.createDirectory(path);
-
-		// Attach the metadata.
-		if (created) {
-			boolean registrationCompleted = false;
-			try {
-				// Assign system account as an additional owner of the collection.
-				dataManagementService.setCoOwnership(path, userId);
-
-				// Add user provided metadata.
-				metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
-						configurationId);
-
-				// Generate system metadata and attach to the collection.
-				metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
-
-				// Validate the collection hierarchy.
-				securityService.executeAsSystemAccount(Optional.empty(),
-						() -> dataManagementService.validateHierarchy(path, configurationId, false));
-
-				// Add collection update event.
-				addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
-
-				registrationCompleted = true;
-
-			} finally {
-				if (!registrationCompleted) {
-					// Collection registration failed. Remove it from Data Management.
-					dataManagementService.delete(path, true);
+		boolean created = false;
+		synchronized (this) {	
+			// Create a collection directory.
+			created = dataManagementService.createDirectory(path);
+	
+			// Attach the metadata.
+			if (created) {
+				boolean registrationCompleted = false;
+				try {
+					// Assign system account as an additional owner of the collection.
+					dataManagementService.setCoOwnership(path, userId);
+	
+					// Add user provided metadata.
+					metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
+							configurationId);
+	
+					// Generate system metadata and attach to the collection.
+					metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
+	
+					// Validate the collection hierarchy.
+					securityService.executeAsSystemAccount(Optional.empty(),
+							() -> dataManagementService.validateHierarchy(path, configurationId, false));
+	
+					// Add collection update event.
+					addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
+	
+					registrationCompleted = true;
+	
+				} finally {
+					if (!registrationCompleted) {
+						// Collection registration failed. Remove it from Data Management.
+						dataManagementService.delete(path, true);
+					}
 				}
-			}
-
-		} else {
+	
+			} 
+		}
+		if (!created) {
 			// Get the metadata for this collection.
 			HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
 			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
@@ -305,7 +308,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			boolean updated = true;
 			String message = null;
 			try {
-				if (!contained(collectionRegistration.getMetadataEntries(), metadataBefore.getSelfMetadataEntries())) {
+				if (!metadataContained(collectionRegistration.getMetadataEntries(), metadataBefore.getSelfMetadataEntries())) {
 					synchronized (this) {
 						metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
 								systemGeneratedMetadata.getConfigurationId());
@@ -3810,14 +3813,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return true if the sublist if fully contained - all metadata attribute and
 	 *         value match
 	 */
-	private boolean contained(List<HpcMetadataEntry> sublist, List<HpcMetadataEntry> list) {
+	private boolean metadataContained(List<HpcMetadataEntry> sublist, List<HpcMetadataEntry> list) {
 		if ((sublist == null || sublist.size() == 0) && (list == null || list.size() == 0)) {
 			return true;
 		}
 
 		Map<String, String> metadataMap = metadataService.toMap(list);
 		for (HpcMetadataEntry metadataEntryInSublist : sublist) {
-			String value = metadataMap.get(Optional.ofNullable(metadataEntryInSublist.getAttribute()).orElse(""));
+			String attribute = metadataEntryInSublist.getAttribute();
+			if(attribute == null) {
+				attribute = "";
+			}
+			String value = metadataMap.get(attribute);
 			if (value == null || !value.equals(metadataEntryInSublist.getValue())) {
 				return false;
 			}
