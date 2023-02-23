@@ -383,15 +383,16 @@ public interface HpcDataManagementBusService {
 	 * Get Data Object.
 	 *
 	 * @deprecated
-	 * @param path              The data object's path.
-	 * @param includeAcl        An indicator to obtain user permission.
-	 * @param excludeAttributes If true, the data objects attributes will not be
-	 *                          returned.
+	 * @param path                   The data object's path.
+	 * @param includeAcl             An indicator to obtain user permission.
+	 * @param excludeAttributes      If true, the data objects attributes will not be
+	 *                               returned.
+	 * @param excludesParentMetadata If true, the parent metadata will not be returned.                     
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
 	@Deprecated
-	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes)
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes, boolean excludeParentMetadata)
 			throws HpcException;
 
 	/**

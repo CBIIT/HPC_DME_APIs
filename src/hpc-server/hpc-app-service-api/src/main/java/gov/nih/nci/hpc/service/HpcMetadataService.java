@@ -319,11 +319,12 @@ public interface HpcMetadataService {
 	/**
 	 * Get metadata of a data object.
 	 *
-	 * @param path The data object's path.
-	 * @return HpcMetadataEntries The data object's metadata entries.
+	 * @param path                  The data object's path.
+	 * @param excludeParentMetadata True if parent metadata is to be excluded.
+	 * @return HpcMetadataEntries   The data object's metadata entries.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
+	public HpcMetadataEntries getDataObjectMetadataEntries(String path, Boolean excludeParentMetadata) throws HpcException;
 
 	/**
 	 * Get metadata of a data object grouped by user / extracted / system

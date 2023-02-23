@@ -1366,7 +1366,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Deprecated
 	@Override
-	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes)
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes, boolean excludeParentMetadata)
 			throws HpcException {
 		taskProfilingLog("Retrieval", path, "DataObject Retrieval started", null);
 		// Input validation.
@@ -1387,7 +1387,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Get the metadata for this data object.
 		long timeBefore = System.currentTimeMillis();
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, excludeParentMetadata);
 		taskProfilingLog("Retrieval", path, "Retrieved metadata entries", System.currentTimeMillis() - timeBefore);
 
 		HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
@@ -1642,7 +1642,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
@@ -2121,7 +2121,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 
@@ -3072,7 +3072,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			String collectionType, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
 			String checksum, String userId, String callerObjectId) throws HpcException {
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(path);
+		HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
 
@@ -3092,7 +3092,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
-					metadataService.getDataObjectMetadataEntries(path), systemGeneratedMetadata.getArchiveLocation(),
+					metadataService.getDataObjectMetadataEntries(path, false), systemGeneratedMetadata.getArchiveLocation(),
 					updated, null, message, null);
 		}
 
@@ -3447,7 +3447,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Validate the link source is not a link itself. Linking to a link is not
 		// allowed.
-		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService.getDataObjectMetadataEntries(linkSourcePath)
+		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService.getDataObjectMetadataEntries(linkSourcePath, false)
 				.getSelfMetadataEntries();
 		HpcSystemGeneratedMetadata linkSourceSystemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(linkSourceMetadataEntries);

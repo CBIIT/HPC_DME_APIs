@@ -539,12 +539,13 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 	@Deprecated
 	@Override
-	public Response getDataObjectV1(String path, Boolean includeAcl, Boolean excludeAttributes) {
+	public Response getDataObjectV1(String path, Boolean includeAcl, Boolean excludeAttributes, Boolean excludeParentMetadata) {
 		HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
 		try {
 			HpcDataObjectDTO dataObject = dataManagementBusService.getDataObjectV1(toNormalizedPath(path),
 					Optional.ofNullable(includeAcl).orElse(false),
-					Optional.ofNullable(excludeAttributes).orElse(false));
+					Optional.ofNullable(excludeAttributes).orElse(false),
+					Optional.ofNullable(excludeParentMetadata).orElse(false));
 			if (dataObject != null) {
 				dataObjects.getDataObjects().add(dataObject);
 			}
