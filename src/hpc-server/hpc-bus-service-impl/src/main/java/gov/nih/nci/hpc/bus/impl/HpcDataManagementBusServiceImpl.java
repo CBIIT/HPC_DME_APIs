@@ -1413,7 +1413,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, boolean includeAcl,
-			boolean excludeAttributes) throws HpcException {
+			boolean excludeAttributes, boolean excludeParentMetadata) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1429,7 +1429,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path);
+		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path, excludeParentMetadata);
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
