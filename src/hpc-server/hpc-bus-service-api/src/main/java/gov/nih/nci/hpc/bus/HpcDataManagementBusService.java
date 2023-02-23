@@ -387,26 +387,27 @@ public interface HpcDataManagementBusService {
 	 * @param includeAcl             An indicator to obtain user permission.
 	 * @param excludeAttributes      If true, the data objects attributes will not be
 	 *                               returned.
-	 * @param excludesParentMetadata If true, the parent metadata will not be returned.                     
+	 * @param excludeParentMetadata  If true, the parent metadata will not be returned.
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
 	@Deprecated
-	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes, boolean excludeParentMetadata)
-			throws HpcException;
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes,
+			boolean excludeParentMetadata) throws HpcException;
 
 	/**
 	 * Get Data Object.
 	 *
-	 * @param path              The data object's path.
-	 * @param includeAcl        An indicator to obtain user permission.
-	 * @param excludeAttributes If true, the data objects attributes will not be
-	 *                          returned.
+	 * @param path                  The data object's path.
+	 * @param includeAcl            An indicator to obtain user permission.
+	 * @param excludeAttributes     If true, the data objects attributes will not be
+	 *                              returned.
+	 * @param excludeParentMetadata If true, the parent metadata will not be returned.
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
 	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, boolean includeAcl,
-			boolean excludeAttributes) throws HpcException;
+			boolean excludeAttributes, boolean excludeParentMetadata) throws HpcException;
 
 	/**
 	 * Download Data Object. In this overloaded method, the request invoker will be
