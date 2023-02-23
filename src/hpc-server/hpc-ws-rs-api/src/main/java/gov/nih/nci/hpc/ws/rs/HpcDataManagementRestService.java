@@ -453,7 +453,8 @@ public interface HpcDataManagementRestService {
 	@Path("/dataObject/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response getDataObjectV1(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl,
-			@QueryParam("excludeNonMetadataAttributes") Boolean excludeAttributes);
+			@QueryParam("excludeNonMetadataAttributes") Boolean excludeAttributes,
+			@QueryParam("excludeParentMetadata") Boolean excludeParentMetadata);
 
 	/**
 	 * Get a data object.
@@ -469,7 +470,8 @@ public interface HpcDataManagementRestService {
 	@Path("/v2/dataObject/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response getDataObject(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl,
-			@QueryParam("excludeNonMetadataAttributes") Boolean excludeAttributes);
+			@QueryParam("excludeNonMetadataAttributes") Boolean excludeAttributes,
+			@QueryParam("excludeParentMetadata") Boolean excludeParentMetadata);
 
 	/**
 	 * Download a data object.
