@@ -323,7 +323,7 @@ body.loading .overlay{
 										<caption th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
 										<caption th:if="${reports[0].user != null and !reports[0].user.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
 										<caption th:if="${reports[0].path != null and !reports[0].path.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
-										<caption th:if="${report.fromDate != null and !report.fromDate.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Reporting Period: From ' + ${report.fromDate} + ' to ' + ${report.toDate}"></caption>
+										<caption th:if="${report.fromDate != null and !report.fromDate.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Reporting Period: ' + ${report.fromDate} + ' to ' + ${report.toDate}"></caption>
 										<thead>
 											<tr id='attrRowhead'>
 												<td class="column-heading" id='index0' th:text="Name"></td>
