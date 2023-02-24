@@ -564,7 +564,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 			dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path),
 					Optional.ofNullable(includeAcl).orElse(false),
 					Optional.ofNullable(excludeAttributes).orElse(false),
-					Optional.ofNullable(excludeAttributes).orElse(false));
+					Optional.ofNullable(excludeParentMetadata).orElse(false));
 
 		} catch (HpcException e) {
 			return errorResponse(e);
