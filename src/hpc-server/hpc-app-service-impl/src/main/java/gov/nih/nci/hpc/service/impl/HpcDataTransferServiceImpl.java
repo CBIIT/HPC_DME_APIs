@@ -3759,6 +3759,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				if (!updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
 					// The task was cancelled / removed from the DB. Stop 1st hop download thread.
 					taskCancelled = true;
+					logger.info("Interrupting thread due to task cancellation");
 					Thread.currentThread().interrupt();
 				}
 
