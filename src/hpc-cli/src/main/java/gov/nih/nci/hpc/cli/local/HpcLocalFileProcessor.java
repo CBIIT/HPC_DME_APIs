@@ -21,9 +21,11 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import java.io.BufferedInputStream;
@@ -38,7 +40,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -47,7 +52,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -111,7 +115,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
   public boolean process(HpcPathAttributes entity, String filePath, String filePathBaseName,
       String destinationBasePath,
       String logFile, String recordFile, boolean metadataOnly, boolean extractMetadata, boolean directUpload,
-      boolean checksum, String metadataFile)
+      boolean checksum, boolean replaceModifiedFiles, String metadataFile)
       throws RecordProcessingException {
     logger.debug("HpcPathAttributes {}", entity);
     logger.debug("filePath {}", filePath);
@@ -123,6 +127,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("extractMetadata {}", extractMetadata);
     logger.debug("directUpload {}", directUpload);
     logger.debug("checksum {}", checksum);
+    logger.debug("replaceModifiedFiles {}", replaceModifiedFiles);
     
     HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
     HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
@@ -206,6 +211,44 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
         if(file.length() > multipartThresholdSize) {
         	multipartUpload = true;
         	
+        }
+        
+        if(replaceModifiedFiles) {
+          //If files needs to be replaced, check to see if data object is modified.
+          String dmePath = HpcClientUtil.constructPathString(basePath, objectPath);
+          HpcDataObjectDTO dataObjectDTO = null;
+          try {
+			dataObjectDTO = getDataObject(dmePath);
+          } catch (Exception e) {
+  			// Continue with uploading the file.
+  		  }
+          if(dataObjectDTO != null) {
+	          SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+	          Date modifiedTimestamp;
+	          try {
+	            modifiedTimestamp = sdf.parse(entity.getUpdatedDate());
+	          } catch (ParseException e) {
+	            String message = "Can't parse file modified date. Skipping: " + entity.getAbsolutePath();
+	            System.out.println(message);
+	            HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
+	            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
+	            throw new RecordProcessingException(message);
+	          }
+	          Date uploadedTimestamp = dataObjectDTO.getDataObject().getCreatedAt().getTime();
+	          if(uploadedTimestamp.compareTo(modifiedTimestamp) > 0) {
+	            //Modified is before the last upload, here we don't need to throw exception... TODO
+	            String message =
+	                "Skipping file: " + entity.getAbsolutePath() + " Reason: File is not modified";
+	            System.out.println(message);
+	            HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
+	            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
+	            throw new RecordProcessingException(message);
+	          } else {
+	            //Modified after the last upload, so we need to delete and re-upload
+	            deleteDataObject(dmePath);
+	          }
+          }
+          
         }
         
     	if(multipartUpload) {
@@ -681,6 +724,120 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		return completeMultipartUpload(destinationPath, dto);
 	}
   
+	private HpcDataObjectDTO getDataObject(String destinationPath) {
+	  
+	    HpcDataObjectDTO dataObjectDTO = null;
+	    //Call GET dataObject and return the object.
+	    try {
+	      
+	      //Call dataObject API
+	      String dataObjectUrl =
+	          UriComponentsBuilder.fromHttpUrl(connection.getHpcServerURL())
+	              .path("/dataObject".concat(destinationPath))
+	              .build().encode().toUri().toURL().toExternalForm();
+
+	      WebClient client = HpcClientUtil.getWebClient(dataObjectUrl,
+              connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
+              connection.getHpcCertPath(), connection.getHpcCertPassword());
+          client.header("Authorization", "Bearer " + connection.getAuthToken());
+          client.header("Connection", "Keep-Alive");
+          client.type(MediaType.APPLICATION_JSON).accept(
+                    "application/json; charset=UTF-8");
+
+          Response response = client.get();
+          
+	      if (response.getStatus() == 200) {
+	        MappingJsonFactory factory = new MappingJsonFactory();
+	        HpcDataObjectListDTO dataObjectListDTO = null;
+            try (JsonParser parser = factory.createParser((InputStream) response.getEntity())){
+                
+                dataObjectListDTO = parser.readValueAs(HpcDataObjectListDTO.class);
+                if (dataObjectListDTO != null) {
+                  dataObjectDTO = dataObjectListDTO.getDataObjects().get(0);
+                }
+            } catch (Exception e) {
+                HpcLogWriter.getInstance().WriteLog(logFile, destinationPath + "|"
+                        + "Unable to parse the response for get data object");
+                throw new HpcBatchException(
+                        "Unable to parse the response for get data object: " + destinationPath);
+            }
+              
+          } else {
+              MappingJsonFactory factory = new MappingJsonFactory();
+              HpcExceptionDTO exception = null;
+              try (JsonParser parser = factory.createParser((InputStream) response.getEntity())){
+                  
+                  exception = parser.readValueAs(HpcExceptionDTO.class);
+                  if (response != null) {
+                      throw new HpcBatchException(
+                              "Failed to get data object: " + destinationPath + " Reason: " + exception.getMessage());
+                  }
+              } catch (Exception e) {
+                  HpcLogWriter.getInstance().WriteLog(logFile, destinationPath + "|"
+                          + "Unable to process error response for get data object: response status is: " + response.getStatus());
+                  throw new HpcBatchException(
+                          "Unable to process error response for get data object: response status is: " + response.getStatus());
+              }
+          }
+      } catch (Exception e) {
+          throw new HpcBatchException("Get data object failed - " + e.getMessage(), e);
+      }
+	    
+	  return dataObjectDTO;
+
+	}
+	
+	private boolean deleteDataObject(String destinationPath) {
+
+      boolean results = false;
+      
+    //Call DELETE dataObject
+      try {
+          //Call delete API
+          String dataObjectUrl =
+              UriComponentsBuilder.fromHttpUrl(connection.getHpcServerURL())
+                  .path("/dataObject".concat(destinationPath))
+                  .build().encode().toUri().toURL().toExternalForm();
+          
+      
+          WebClient client = HpcClientUtil.getWebClient(dataObjectUrl,
+              connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
+              connection.getHpcCertPath(), connection.getHpcCertPassword());
+          client.header("Authorization", "Bearer " + connection.getAuthToken());
+          client.header("Connection", "Keep-Alive");
+          client.type(MediaType.APPLICATION_JSON).accept(
+                    "application/json; charset=UTF-8");
+    
+          Response response = client.delete();
+      
+          if (response.getStatus() == 200) {
+            logger.info("Soft delete success for {}", destinationPath);
+            results = true;
+          } else {
+            MappingJsonFactory factory = new MappingJsonFactory();
+            HpcExceptionDTO exception = null;
+            try (JsonParser parser = factory.createParser((InputStream) response.getEntity())){
+                
+                exception = parser.readValueAs(HpcExceptionDTO.class);
+                if (response != null) {
+                    System.out.println("Failed to delete data object: " + destinationPath + " Reason: " + exception.getMessage());
+                    throw new HpcBatchException(
+                            "Failed to delete data object: " + destinationPath + " Reason: " + exception.getMessage());
+                }
+            } catch (Exception e) {
+                HpcLogWriter.getInstance().WriteLog(logFile, destinationPath + "|"
+                        + "Unable to process error response for delete data object: response status is: " + response.getStatus());
+                throw new HpcBatchException(
+                        "Unable to process error response for delete data object: response status is: " + response.getStatus());
+            }
+          }
+        } catch (Exception e) {
+          throw new HpcBatchException("Delete data object failed - " + e.getMessage(), e);
+      }
+      return results;
+    
+    }
+	
 	private int completeMultipartUpload(String destinationPath, HpcCompleteMultipartUploadRequestDTO dto) {
 
 		Response restResponse;

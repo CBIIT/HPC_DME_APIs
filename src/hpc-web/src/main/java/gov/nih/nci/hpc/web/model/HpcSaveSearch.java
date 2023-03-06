@@ -7,7 +7,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryFrequency;
 
 public class HpcSaveSearch {
 	private String criteriaName;
-	private List<String> selectedColumns;
+	private List<String> deselectedColumns;
 	private HpcCompoundMetadataQueryFrequency frequency;
 
 	public String getCriteriaName() {
@@ -18,14 +18,14 @@ public class HpcSaveSearch {
 		this.criteriaName = criteriaName;
 	}
 
-	public List<String> getSelectedColumns() {
-		if(selectedColumns == null)
-			selectedColumns = new ArrayList<String>();
-		return selectedColumns;
+	public List<String> getDeselectedColumns() {
+		if(deselectedColumns == null)
+			deselectedColumns = new ArrayList<String>();
+		return deselectedColumns;
 	}
 
-	public void setSelectedColumns(List<String> selectedColumns) {
-		this.selectedColumns = selectedColumns;
+	public void setDeselectedColumns(List<String> deselectedColumns) {
+		this.deselectedColumns = deselectedColumns;
 	}
 
 	public HpcCompoundMetadataQueryFrequency getFrequency() {

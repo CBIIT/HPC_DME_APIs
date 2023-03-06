@@ -65,7 +65,7 @@ public class HpcExporter
      * @param text The text to encrypt.
      */
 	public void exportCollections(String exportFileName, HpcCollectionListDTO collectionsDTO,
-			List<String> selectedColumns) throws IOException {
+			List<String> deselectedColumns) throws IOException {
 		
 		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 		List<String> headers = new ArrayList<String>();
@@ -73,19 +73,15 @@ public class HpcExporter
 				CollectionUtils.isNotEmpty(collectionsDTO.getCollectionPaths())) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
-			if (selectedColumns != null && selectedColumns.contains(("createdOn")))
+			if (deselectedColumns != null && !deselectedColumns.contains(("createdOn")))
 				headers.add("created_on");
-			for (String selectedColumn : selectedColumns) {
-				if (selectedColumn.equals("uniqueId"))
-					headers.add("uuid");
-				else if (selectedColumn.equals("registeredBy"))
-					headers.add("registered_by");
-				else if (selectedColumn.equals("collectionType"))
-					headers.add("collection_type");
-				else if (!selectedColumn.equals("path") && !selectedColumn.equals("createdOn") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission"))
-					headers.add(selectedColumn);
-			}
+			if (deselectedColumns != null && !deselectedColumns.contains(("uniqueId")))
+              headers.add("uuid");
+			if (deselectedColumns != null && !deselectedColumns.contains(("registeredBy")))
+              headers.add("registered_by");
+			if (deselectedColumns != null && !deselectedColumns.contains(("collectionType")))
+              headers.add("collection_type");
+          
 			// For non-detailed search
 			for (String path: collectionsDTO.getCollectionPaths()) {
 				List<String> result = new ArrayList<String>();
@@ -102,11 +98,10 @@ public class HpcExporter
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getSelfMetadataEntries());
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getParentMetadataEntries());
-					if(selectedColumns != null && selectedColumns.isEmpty()) {
-						for(HpcMetadataEntry entry : combinedMetadataEntries) {
-							if(!headers.contains(entry.getAttribute()))
-								headers.add(entry.getAttribute());
-						}
+					for(HpcMetadataEntry entry : combinedMetadataEntries) {
+						if(!headers.contains(entry.getAttribute()) && deselectedColumns == null || 
+						   !headers.contains(entry.getAttribute()) && deselectedColumns != null && !deselectedColumns.contains(entry.getAttribute()))
+							headers.add(entry.getAttribute());
 					}
 					for (String header : headers) {
 						boolean found = false;
@@ -134,7 +129,7 @@ public class HpcExporter
      * @param text The text to encrypt.
      */
 	public void exportDataObjects(String exportFileName, HpcDataObjectListDTO dataObjectsDTO,
-			List<String> selectedColumns) throws IOException {
+			List<String> deselectedColumns) throws IOException {
 		
 		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 		List<String> headers = new ArrayList<String>();
@@ -142,17 +137,13 @@ public class HpcExporter
 				CollectionUtils.isNotEmpty(dataObjectsDTO.getDataObjectPaths())) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
-			if (selectedColumns != null && selectedColumns.contains(("createdOn")))
-				headers.add("created_on");
-			for (String selectedColumn : selectedColumns) {
-				if (selectedColumn.equals("uniqueId"))
-					headers.add("uuid");
-				else if (selectedColumn.equals("registeredBy"))
-					headers.add("registered_by");
-				else if (!selectedColumn.equals("path") && !selectedColumn.equals("createdOn") && !selectedColumn.equals("download")
-						&& !selectedColumn.equals("permission") && !selectedColumn.equals("link"))
-					headers.add(selectedColumn);
-			}
+			if (deselectedColumns != null && !deselectedColumns.contains(("createdOn")))
+              headers.add("created_on");
+            if (deselectedColumns != null && !deselectedColumns.contains(("uniqueId")))
+              headers.add("uuid");
+            if (deselectedColumns != null && !deselectedColumns.contains(("registeredBy")))
+              headers.add("registered_by");
+
 			// For non-detailed search
 			for (String path: dataObjectsDTO.getDataObjectPaths()) {
 				List<String> result = new ArrayList<String>();
@@ -169,12 +160,11 @@ public class HpcExporter
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getParentMetadataEntries());
-					if(selectedColumns != null && selectedColumns.isEmpty()) {
-						for(HpcMetadataEntry entry : combinedMetadataEntries) {
-							if(!headers.contains(entry.getAttribute()))
-								headers.add(entry.getAttribute());
-						}
-					}
+					for(HpcMetadataEntry entry : combinedMetadataEntries) {
+                      if(!headers.contains(entry.getAttribute()) && deselectedColumns == null || 
+                         !headers.contains(entry.getAttribute()) && deselectedColumns != null && !deselectedColumns.contains(entry.getAttribute()))
+                          headers.add(entry.getAttribute());
+                    }
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {

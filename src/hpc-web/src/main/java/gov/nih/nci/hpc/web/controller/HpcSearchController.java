@@ -121,9 +121,9 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("pageNumber", new Integer(page).intValue());
 		model.addAttribute("totalSize", search.getTotalSize());
 		if(query != null) {
-			model.addAttribute("selectedColumns", query.getNamedCompoundQuery().getSelectedColumns());
-			search.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
-			hpcSaveSearch.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+			model.addAttribute("deselectedColumns", query.getNamedCompoundQuery().getDeselectedColumns());
+			search.getDeselectedColumns().addAll(query.getNamedCompoundQuery().getDeselectedColumns());
+			hpcSaveSearch.getDeselectedColumns().addAll(query.getNamedCompoundQuery().getDeselectedColumns());
 			hpcSaveSearch.setFrequency(query.getNamedCompoundQuery().getFrequency());
 		}
 		session.setAttribute("hpcSearch", search);
@@ -200,8 +200,8 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("pageSize", new Integer(search.getPageSize()).intValue());
 		model.addAttribute("totalSize", search.getTotalSize());
 		if(query != null) {
-			model.addAttribute("selectedColumns", query.getNamedCompoundQuery().getSelectedColumns());
-			search.getSelectedColumns().addAll(query.getNamedCompoundQuery().getSelectedColumns());
+			model.addAttribute("deselectedColumns", query.getNamedCompoundQuery().getDeselectedColumns());
+			search.getDeselectedColumns().addAll(query.getNamedCompoundQuery().getDeselectedColumns());
 		}
 		session.setAttribute("hpcSearch", search);
 
@@ -242,7 +242,7 @@ public class HpcSearchController extends AbstractHpcController {
 				totalPages = (int) session.getAttribute("totalPages");
 			} while (pageNumber <= totalPages);
 			String searchType = query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) ? "collection" : "datafile";
-			HpcSearchUtil.exportResponseResults(searchType, session, request, response, exportSearch.getSelectedColumns());
+			HpcSearchUtil.exportResponseResults(searchType, session, request, response, exportSearch.getDeselectedColumns());
 			
 		} catch (Exception e) {
 			e.printStackTrace();
