@@ -75,8 +75,10 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
-		model.addAttribute("queryAll", queryAll == null ? false : true);
-		model.addAttribute("canQueryAll", HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session));
+		boolean canQueryAll = HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session);
+		boolean queryAllOption = (queryAll == null || queryAll.contentEquals("true")) && canQueryAll ? true : false;
+		model.addAttribute("queryAll", queryAllOption);
+		model.addAttribute("canQueryAll", canQueryAll);
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
 		if (authToken == null) {
@@ -103,7 +105,7 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
       paramsMap.set("page", Integer.toString(page));
       paramsMap.set("totalCount", Boolean.TRUE.toString());
 			HpcRegistrationSummaryDTO registrations = HpcClientUtil
-        .getRegistrationSummary(authToken, (queryAll == null ? queryServiceURL : queryAllServiceURL), paramsMap,
+        .getRegistrationSummary(authToken, (queryAllOption == false ? queryServiceURL : queryAllServiceURL), paramsMap,
         this.sslCertPath, this.sslCertPassword);
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			if (registrations.getActiveTasks() != null && !registrations.getActiveTasks().isEmpty())
