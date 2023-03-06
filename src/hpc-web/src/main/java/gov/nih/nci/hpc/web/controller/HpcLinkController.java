@@ -98,7 +98,7 @@ public class HpcLinkController extends AbstractHpcController {
 		session.setAttribute("hpcSearch", hpcSearch);
 		model.addAttribute("source", source);
 		model.addAttribute("linkFilePath", linkFilePath);
-		model.addAttribute("selectedColumns", hpcSearch.getSelectedColumns());
+		model.addAttribute("deselectedColumns", hpcSearch.getDeselectedColumns());
 		
 		return "link";
 	}
