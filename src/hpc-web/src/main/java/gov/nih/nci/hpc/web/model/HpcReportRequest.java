@@ -1,4 +1,5 @@
 package gov.nih.nci.hpc.web.model;
+import java.util.List;
 
 public class HpcReportRequest {
 
@@ -10,6 +11,8 @@ public class HpcReportRequest {
 	private String fromDate;
 	private String toDate;
 	public boolean showArchiveSummary;
+	private List<String> docs;
+	private List<String> basepaths;
 
 	public String getReportType() {
 		return reportType;
@@ -75,4 +78,19 @@ public class HpcReportRequest {
 		this.showArchiveSummary = showArchiveSummary;
   }
 
+  public List<String> getDocs() {
+    return docs;
+  }
+
+  public void setDocs(List<String> docs) {
+    this.docs = docs;
+  }
+
+  public List<String> getBasepaths() {
+	return basepaths;
+  }
+
+  public void setBasepaths(List<String> basepaths) {
+	this.basepaths = basepaths;
+  }
 }

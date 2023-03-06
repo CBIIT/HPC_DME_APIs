@@ -2,7 +2,7 @@ var app = angular.module('DashBoard', ['ngTouch', 'ui.grid', 'ui.grid.pagination
 var linkSearchNameCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 '  <a href="search?queryName={{row.getProperty(\'message\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
-var selectedColumns = null;
+var deselectedColumns = null;
 
 app.filter('percentEncoding', function () {
   return function (argStr) {

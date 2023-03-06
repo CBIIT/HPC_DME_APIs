@@ -404,7 +404,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		namedCompoundMetadataQuery.setTotalCount(
 				compoundMetadataQueryDTO.getTotalCount() != null ? compoundMetadataQueryDTO.getTotalCount() : false);
 		namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
-		namedCompoundMetadataQuery.getSelectedColumns().addAll(compoundMetadataQueryDTO.getSelectedColumns());
+		namedCompoundMetadataQuery.getDeselectedColumns().addAll(compoundMetadataQueryDTO.getDeselectedColumns());
 		namedCompoundMetadataQuery.setFrequency(compoundMetadataQueryDTO.getFrequency());
 
 		// Save the query.
@@ -442,11 +442,10 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (compoundMetadataQueryDTO.getCompoundQueryType() != null) {
 			namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
 		}
-		if (compoundMetadataQueryDTO.getSelectedColumns() != null
-				&& !compoundMetadataQueryDTO.getSelectedColumns().isEmpty()) {
-			if (namedCompoundMetadataQuery.getSelectedColumns() != null)
-				namedCompoundMetadataQuery.getSelectedColumns().clear();
-			namedCompoundMetadataQuery.getSelectedColumns().addAll(compoundMetadataQueryDTO.getSelectedColumns());
+		if (compoundMetadataQueryDTO.getDeselectedColumns() != null && !compoundMetadataQueryDTO.getDeselectedColumns().isEmpty()) {
+			if(namedCompoundMetadataQuery.getDeselectedColumns() != null)
+				namedCompoundMetadataQuery.getDeselectedColumns().clear();
+			namedCompoundMetadataQuery.getDeselectedColumns().addAll(compoundMetadataQueryDTO.getDeselectedColumns());
 		}
 		namedCompoundMetadataQuery.setFrequency(compoundMetadataQueryDTO.getFrequency());
 
@@ -821,7 +820,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					logger.info("No results found from query {} for user {}", queryName, userId);
 					return;
 				}
-				exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getSelectedColumns());
+				exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getDeselectedColumns());
 			} else {
 				HpcCollectionListDTO collectionListDTO = new HpcCollectionListDTO();
 				int pageNumber = 1;
@@ -840,7 +839,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					logger.info("No results found from query {} for user {}", queryName, userId);
 					return;
 				}
-				exporter.exportCollections(exportFileName, collectionListDTO, query.getSelectedColumns());
+				exporter.exportCollections(exportFileName, collectionListDTO, query.getDeselectedColumns());
 			}
 			// Send the file to the user
 			sendQueryNotification(userId, exportFileName, queryName, query.getFrequency().value());

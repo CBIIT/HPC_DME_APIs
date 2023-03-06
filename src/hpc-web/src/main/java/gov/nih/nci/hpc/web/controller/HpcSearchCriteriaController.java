@@ -184,7 +184,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch.setPageNumber(search.getPageNumber());
 			hpcSearch.setPageSize(search.getPageSize());
 			hpcSearch.setTotalSize(search.getTotalSize());
-			hpcSearch.setSelectedColumns(search.getSelectedColumns());
+			hpcSearch.setDeselectedColumns(search.getDeselectedColumns());
 			search = hpcSearch;
 		}
 
@@ -192,7 +192,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("pageNumber", search.getPageNumber());
 		model.addAttribute("pageSize", search.getPageSize());
 		model.addAttribute("totalSize", search.getTotalSize());
-		model.addAttribute("selectedColumns", search.getSelectedColumns());
+		model.addAttribute("deselectedColumns", search.getDeselectedColumns());
 		boolean success = false;
 		try {
 
@@ -280,7 +280,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
 			hpcSearch.setPageNumber(search.getPageNumber());
 			hpcSearch.setPageSize(search.getPageSize());
-			hpcSearch.setSelectedColumns(search.getSelectedColumns());
+			hpcSearch.setDeselectedColumns(search.getDeselectedColumns());
 			search = hpcSearch;
 		}
 		try {
@@ -312,7 +312,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					totalPages = (int) session.getAttribute("totalPages");
 				}
 			} while (pageNumber <= totalPages);
-			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response, exportSearch.getSelectedColumns());
+			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response, exportSearch.getDeselectedColumns());
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -339,7 +339,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		dto.setDetailedResponse(search.isDetailed());
 		dto.setPage(search.getPageNumber());
 		dto.setPageSize(search.getPageSize());
-		dto.getSelectedColumns().addAll(search.getSelectedColumns());
+		dto.getDeselectedColumns().addAll(search.getDeselectedColumns());
 		return dto;
 	}
 

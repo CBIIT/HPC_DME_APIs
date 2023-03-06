@@ -95,10 +95,10 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 		Calendar updated = Calendar.getInstance();
 		updated.setTime(rs.getTimestamp("UPDATED"));
 		namedCompoundQuery.setUpdated(updated);
-		String selectedColumns = rs.getString("SELECTED_COLUMNS");
-		if(selectedColumns != null) {
-			for (String selectedColumn : selectedColumns.split(",")) {
-				namedCompoundQuery.getSelectedColumns().add(selectedColumn);
+		String deselectedColumns = rs.getString("DESELECTED_COLUMNS");
+		if(deselectedColumns != null) {
+			for (String deselectedColumn : deselectedColumns.split(",")) {
+				namedCompoundQuery.getDeselectedColumns().add(deselectedColumn);
 			}
 		}
 		if(rs.getString("FREQUENCY") != null) {
@@ -137,13 +137,13 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 			jdbcTemplate.update(UPSERT_USER_QUERY_SQL, nciUserId, namedCompoundMetadataQuery.getName(), encryptedQuery,
 					namedCompoundMetadataQuery.getDetailedResponse(), namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getSelectedColumns()),
+					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getDeselectedColumns()),
 					namedCompoundMetadataQuery.getFrequency() == null ? "" : namedCompoundMetadataQuery.getFrequency().value(), 
 					nciUserId, namedCompoundMetadataQuery.getName(),
 					encryptedQuery, namedCompoundMetadataQuery.getDetailedResponse(),
 					namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getSelectedColumns()),
+					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getDeselectedColumns()),
 					namedCompoundMetadataQuery.getFrequency() == null ? "" : namedCompoundMetadataQuery.getFrequency().value());
 
 		} catch (DataAccessException e) {
@@ -374,15 +374,15 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	/**
 	 * Map an array of selected columns to a single string.
 	 * 
-	 * @param selectedColumns A list of selected columns.
+	 * @param deselectedColumns A list of selected columns.
 	 * @return A comma separated selected columns string.
 	 */
-	private String toString(List<String> selectedColumns) {
-		StringBuilder selectedColumnsStr = new StringBuilder();
-		for (String selectedColumn : selectedColumns) {
-			selectedColumnsStr.append(selectedColumn + ",");
+	private String toString(List<String> deselectedColumns) {
+		StringBuilder deselectedColumnsStr = new StringBuilder();
+		for (String deselectedColumn : deselectedColumns) {
+			deselectedColumnsStr.append(deselectedColumn + ",");
 		}
 
-		return selectedColumnsStr.toString();
+		return deselectedColumnsStr.toString();
 	}
 }

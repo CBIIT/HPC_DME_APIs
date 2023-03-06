@@ -83,6 +83,7 @@ public class HPCBatchLocalFolderExecutor {
     boolean extractMetadata = false;
     boolean checksum = true;
     boolean confirmation = true;
+    boolean replaceModifiedFiles = false;
     String localPath = (String) criteriaMap.get("filePath");
     String fileList = (String) criteriaMap.get("fileList");
     String excludePattern = (String) criteriaMap.get("excludePatternFile");
@@ -127,6 +128,11 @@ public class HPCBatchLocalFolderExecutor {
     if (criteriaMap.get("checksum") != null && criteriaMap.get("checksum")
         .equalsIgnoreCase("false")) {
       checksum = false;
+    }
+    
+    if (criteriaMap.get("replaceModifiedFiles") != null && criteriaMap.get("replaceModifiedFiles")
+        .equalsIgnoreCase("true")) {
+      replaceModifiedFiles = true;
     }
 
     try {
@@ -191,7 +197,7 @@ public class HPCBatchLocalFolderExecutor {
           folderProcessor = new HpcLocalFolderProcessor(connection);
           folderProcessor.process(folder, localPath, fileBasePath, destinationBasePath, logFile,
               errorRecordsFile,
-              metadataOnly, extractMetadata, true, checksum, null);
+              metadataOnly, extractMetadata, true, checksum, replaceModifiedFiles, null);
         } catch (IOException e) {
           logger.error(e.getMessage(), e);
           System.out.println("Failed to process collection " + folder.getAbsolutePath()

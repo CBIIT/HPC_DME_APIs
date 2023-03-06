@@ -138,31 +138,21 @@ body.loading{
 body.loading .overlay{
     display: block;
 }
-/* The tableFixHeader is used by Single Reports for fixed header scrolling */
-.tableFixHead {
-        overflow-y: auto;
-      }
-.tableFixHead tbody {
-        display: block;
-        width: 1000px;
-        overflow: auto;
-        height: 505px;
-      }
-.tableFixHead thead th {
-        position: sticky; /* make the table heads sticky */
-        top: 0; /* table head will be placed from the top of the table and sticks to it */
-		text-align: center;
-      }
-.tableFixHead td {
-        padding: 5px;
-        text-align: left;
-        width: 1000px;
-      }
+
+.singlereportcaption{
+	background-color: #006DCC; color: white; font-weight:bold; border-bottom: 2px solid #dddddd; padding: 8px;
+}
+.column-heading{
+	color: black; font-weight:bold
+}
 
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
     var selected = [[${reportRequest.getReportType()}]];
+	var userselected = [[${reportRequest.getUser()}]];
+	var listOfDocs = [[${docs}]];
+	var listOfBasepaths = [[${basepaths}]];
 /*]]>*/
 </script>
 </head>
@@ -238,11 +228,6 @@ body.loading .overlay{
 								<select size="1"
 									id="user" name="user" class="userSelect" style="width: 100%">
 										<option></option>
-										<option
-											th:each="entry : ${docUsers}"
-											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
-											th:selected="${reportRequest.getUser() == entry.getUserId()}">
-											Wireframe</option>
 								</select>
 							</div>
 						</div>
@@ -311,6 +296,8 @@ body.loading .overlay{
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
+					<input type="hidden" id="docs"  name="docs" />
+					<input type="hidden" id="basepaths"  name="basepaths" />
 					<div class="row">
 						<div class="col-sm-12">
 							<button type="submit" class="btn btn-md btn-primary"
@@ -319,7 +306,7 @@ body.loading .overlay{
 					</div>
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 1000px; height: 700px; margin-left: 1%;"
+				<div style="width: 1000px; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
@@ -328,45 +315,20 @@ body.loading .overlay{
 						<div class="col-md-12">&nbsp;</div>
 					</div>
 					<table class="table">
-						<caption style="font-weight:bold" th:text="${reportName}"></caption>
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
-								<td style="white-space: nowrap" align="right" colspan="2">
-								<div class="tableFixHead" style="border-collapse: collapse;">
-									<table class="table">
+								<td style="white-space: nowrap; border: none" align="right" colspan="2">
+									<table class="table" id="singlereportgrid">
+										<caption style="font-weight:bold" th:text="${reportName}"></caption>
+										<caption th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
+										<caption th:if="${reports[0].user != null and !reports[0].user.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
+										<caption th:if="${reports[0].path != null and !reports[0].path.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
+										<caption th:if="${report.fromDate != null and !report.fromDate.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Reporting Period: ' + ${report.fromDate} + ' to ' + ${report.toDate}"></caption>
 										<thead>
-										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'DOC: ' + ${report.doc}">
-												</th>
+											<tr id='attrRowhead'>
+												<td class="column-heading" id='index0' th:text="Name"></td>
+												<td class="column-heading" id='path0' th:text="'Value'"></td>
 											</tr>
-										</div>
-										<div th:if="${report.user != null and !report.user.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'User: ' + ${report.user}">
-												</th>
-											</tr>
-										</div>
-										<div th:if="${report.path != null and !report.path.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2" th:text="'Base Path: ' + ${report.path}">
-												</th>
-											</tr>
-										</div>
-										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
-											<tr>
-												<th align="center"
-													style="background-color: #006DCC; color: white;" colspan="2"
-													th:text="'Reporting Period to Date: From ' + ${report.fromDate} + ' to ' + ${report.toDate}">
-												</th>
-											</tr>
-										</div>
 										</thead>
 										<tbody>
 											<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
@@ -375,7 +337,6 @@ body.loading .overlay{
 											</tr>
 										</tbody>
 									</table>
-								</div>
 								</td>
 							</tr>
 						</tbody>
@@ -397,9 +358,9 @@ body.loading .overlay{
 						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
 						<thead>
 							<tr id='attrRow0'>
-								<td style="color: black; font-weight:bold" id='index0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<td class="column-heading" id='index0' th:text="Index"></td>
+								<td class="column-heading" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
@@ -413,9 +374,9 @@ body.loading .overlay{
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter0'>
-								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<td class="column-heading" id='indexf0' th:text="Index"></td>
+								<td class="column-heading" th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -432,12 +393,12 @@ body.loading .overlay{
 						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
 						<thead>
 							<tr id='attrRow2'>
-								<td style="color: black; font-weight:bold" id='index001' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path001' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path002' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path003' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path004' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Generator'"></td>
+								<td class="column-heading" id='index001' th:text="Index"></td>
+								<td class="column-heading" id='path001' th:text="DOC"></td>
+								<td class="column-heading" id='path002' th:text="'Base Path'"></td>
+								<td class="column-heading" id='path003' th:text="'Collection Path'"></td>
+								<td class="column-heading" id='path004' th:text="'Data Owner'"></td>
+								<td class="column-heading" id='path005' th:text="'Data Generator'"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
@@ -454,12 +415,12 @@ body.loading .overlay{
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter2'>
-								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0011' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path0022' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0033' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Generator'"></td>
+								<td class="column-heading" id='index0000' th:text="Index"></td>
+								<td class="column-heading" id='path0011' th:text="DOC"></td>
+								<td class="column-heading" id='path0022' th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0033' th:text="'Collection Path'"></td>
+								<td class="column-heading" id='path0044' th:text="'Data Owner'"></td>
+								<td class="column-heading" id='path0055' th:text="'Data Generator'"></td>
 								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -520,7 +481,63 @@ body.loading .overlay{
 
 	<script>
 	//<![CDATA[
+
+	// Single Report Datatable
+	$(document).ready(function () {
+		var reportType = document.getElementById("reportType").value;
+		var exportFileName = "";
+		var reportHeaderTitle = "";
+		let pretag = "DME_";
+		let tag = `_${(new Date().toJSON().slice(0,10))}`;
+		let messageTopDateRange = " Date Range: " +  document.getElementById("fromDate").value + "-" + document.getElementById("toDate").value;
+		switch (reportType) {
+			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
+				exportFileName= pretag + "Basepath" + tag;
+				reportHeaderTitle= "Data Archival Usage Report for Basepath: " + document.getElementById("basepath").value + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
+				exportFileName= pretag + "DOC" + tag;
+				reportHeaderTitle = "Data Archival Usage Report for DOC: " + document.getElementById("doc").value + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE':
+				exportFileName= pretag + "User" + tag;
+				reportHeaderTitle = "Data Archival Usage Report for User: " + document.getElementById("user").value + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_DATE_RANGE':
+				exportFileName= pretag + "Summary" + tag;
+				reportHeaderTitle = "Data Archival Usage Report " + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE':
+				exportFileName= pretag + "Path" + tag;
+				reportHeaderTitle = "Data Archival Usage Report for Path: " + document.getElementById("id_collection_path").value + ", " + messageTopDateRange;
+				break;
+		}
+		$('#singlereportgrid').DataTable({
+			"pageLength": -1,
+			 "order": [],
+			dom: 'Bfrt',
+			buttons: [
+							{
+								extend: 'copyHtml5',
+								text: 'Copy',
+								title: "",
+								messageTop: reportHeaderTitle,
+								titleAttr: 'Copy to Clipboard',
+							},
+							{
+								extend: 'excelHtml5',
+								filename: exportFileName,
+								title: null,
+								text: 'Excel',
+								messageTop: reportHeaderTitle,
+								titleAttr: 'Export to Excel',
+							}
+					],
+			"columnDefs": [{"targets": [0,1], "orderable": false}],
+		});
+	});
 	
+	// Grid Report Datatable
 	$(document).ready(function() {
 		var reportType = document.getElementById("reportType").value;
 		var exportFileName = "";
@@ -628,7 +645,7 @@ body.loading .overlay{
 				{
 					extend: 'copyHtml5',
 					exportOptions: exportOptions,
-					//text: '<i class="fa fa-files-o"> Copy</i>',
+					title: "",
 					text: 'Copy',
 					titleAttr: 'Copy to Clipboard',
 				},
@@ -900,6 +917,25 @@ body.loading .overlay{
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "none";
+			if ($('#user option').length == 1) {
+					let uri = '/reports/getUsers';
+					$.ajax({
+							type: 'GET',
+							url: uri,
+							dataType: 'json'
+						}).done(function (result) {
+							var data = JSON.parse(result.message.replace("\\", ""));
+							$.each(data, function (index, value) {
+								if(value.userId === userselected){
+									$('#user').append('<option value="' + value.userId + '" selected=true>' + value.displayName + '</option>');
+									/*$('#user option[value=value.user.id]').attr("selected", "selected");*/
+								} else {
+									$('#user').append('<option value="' + value.userId + '">' + value.displayName + '</option>');
+								}
+						});
+						$('#user option[value=userselected]').attr("selected", "selected");
+					});
+				}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH")
       	{
@@ -1024,6 +1060,8 @@ body.loading .overlay{
 				$("#path").val(updatedPath);
 			}
 		}
+		$("input[name=docs]").val(listOfDocs);
+		$("input[name=basepaths]").val(listOfBasepaths);
 		$("#spinner").show();
 		document.getElementById("reportsform").submit();
       }
