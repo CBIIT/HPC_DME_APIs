@@ -261,41 +261,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Create parent collections if requested to.
 		createParentCollections(path, collectionRegistration.getCreateParentCollections(),
 				collectionRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
-
-		// Create a collection directory.
-		boolean created = dataManagementService.createDirectory(path);
-
-		// Attach the metadata.
-		if (created) {
-			boolean registrationCompleted = false;
-			try {
-				// Assign system account as an additional owner of the collection.
-				dataManagementService.setCoOwnership(path, userId);
-
-				// Add user provided metadata.
-				metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
-						configurationId);
-
-				// Generate system metadata and attach to the collection.
-				metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
-
-				// Validate the collection hierarchy.
-				securityService.executeAsSystemAccount(Optional.empty(),
-						() -> dataManagementService.validateHierarchy(path, configurationId, false));
-
-				// Add collection update event.
-				addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
-
-				registrationCompleted = true;
-
-			} finally {
-				if (!registrationCompleted) {
-					// Collection registration failed. Remove it from Data Management.
-					dataManagementService.delete(path, true);
+		boolean created = false;
+		synchronized (this) {	
+			// Create a collection directory.
+			created = dataManagementService.createDirectory(path);
+	
+			// Attach the metadata.
+			if (created) {
+				boolean registrationCompleted = false;
+				try {
+					// Assign system account as an additional owner of the collection.
+					dataManagementService.setCoOwnership(path, userId);
+	
+					// Add user provided metadata.
+					metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
+							configurationId);
+	
+					// Generate system metadata and attach to the collection.
+					metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
+	
+					// Validate the collection hierarchy.
+					securityService.executeAsSystemAccount(Optional.empty(),
+							() -> dataManagementService.validateHierarchy(path, configurationId, false));
+	
+					// Add collection update event.
+					addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
+	
+					registrationCompleted = true;
+	
+				} finally {
+					if (!registrationCompleted) {
+						// Collection registration failed. Remove it from Data Management.
+						dataManagementService.delete(path, true);
+					}
 				}
-			}
-
-		} else {
+	
+			} 
+		}
+		if (!created) {
 			// Get the metadata for this collection.
 			HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
 			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
@@ -914,7 +917,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
 			HpcDataObjectRegistrationRequestDTO dataObjectRegistration, File dataObjectFile, String userId,
 			String userName, String configurationId, boolean registrationEventRequired) throws HpcException {
-		registrationProfilingLog(path, "Registration started", null);
+		taskProfilingLog("Registration", path, "Registration started", null);
 
 		// Input validation.
 		validatePath(path);
@@ -930,13 +933,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		long timeBefore = System.currentTimeMillis();
 		createParentCollections(path, dataObjectRegistration.getCreateParentCollections(),
 				dataObjectRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
-		registrationProfilingLog(path, "Parent collections created", System.currentTimeMillis() - timeBefore);
+		taskProfilingLog("Registration", path, "Parent collections created", System.currentTimeMillis() - timeBefore);
 
 		// Create a data object file (in the data management system).
 		HpcDataObjectRegistrationResponseDTO responseDTO = new HpcDataObjectRegistrationResponseDTO();
 		timeBefore = System.currentTimeMillis();
 		responseDTO.setRegistered(dataManagementService.createFile(path));
-		registrationProfilingLog(path, "File created in iRODS", System.currentTimeMillis() - timeBefore);
+		taskProfilingLog("Registration", path, "File created in iRODS", System.currentTimeMillis() - timeBefore);
 
 		// Get the collection type containing the data object.
 		String collectionPath = path.substring(0, path.lastIndexOf('/'));
@@ -954,7 +957,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Assign system account as an additional owner of the data-object.
 				timeBefore = System.currentTimeMillis();
 				dataManagementService.setCoOwnership(path, userId);
-				registrationProfilingLog(path, "File permissions set in iRODS",
+				taskProfilingLog("Registration", path, "File permissions set in iRODS",
 						System.currentTimeMillis() - timeBefore);
 
 				// Validate the new data object complies with the hierarchy definition.
@@ -977,7 +980,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					timeBefore = System.currentTimeMillis();
 					HpcMetadataEntry dataObjectMetadataEntry = metadataService.addMetadataToDataObject(path,
 							dataObjectRegistration.getMetadataEntries(), configurationId, collectionType);
-					registrationProfilingLog(path, "User metadata set in iRODS",
+					taskProfilingLog("Registration", path, "User metadata set in iRODS",
 							System.currentTimeMillis() - timeBefore);
 
 					// Attach the user provided extracted metadata (from the physical file)
@@ -1003,7 +1006,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
 							configurationId);
-					registrationProfilingLog(path, "Upload request / URL generation completed",
+					taskProfilingLog("Registration", path, "Upload request / URL generation completed",
 							System.currentTimeMillis() - timeBefore);
 
 					// Set the upload request URL / Multipart upload URLs (if one was generated).
@@ -1025,7 +1028,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									dataManagementService.getDataManagementConfiguration(configurationId)
 											.getS3UploadConfigurationId(),
 									registrationEventRequired);
-					registrationProfilingLog(path, "System metadata set in iRODS",
+					taskProfilingLog("Registration", path, "System metadata set in iRODS",
 							System.currentTimeMillis() - timeBefore);
 
 					// Generate S3 archive system generated metadata. Note: This is only
@@ -1120,7 +1123,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		registrationProfilingLog(path, "Registration finished", null);
+		taskProfilingLog("Registration", path, "Registration finished", null);
 		return responseDTO;
 	}
 
@@ -1363,8 +1366,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Deprecated
 	@Override
-	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes)
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes, boolean excludeParentMetadata)
 			throws HpcException {
+		taskProfilingLog("Retrieval", path, "DataObject Retrieval started", null);
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1373,33 +1377,43 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the data object.
 		HpcDataObject dataObject = null;
 		if (!excludeAttributes) {
+			long timeBefore = System.currentTimeMillis();
 			dataObject = dataManagementService.getDataObject(path);
+			taskProfilingLog("Retrieval", path, "Retrieved dataObject", System.currentTimeMillis() - timeBefore);
 			if (dataObject == null) {
 				throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
 
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
+		long timeBefore = System.currentTimeMillis();
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, excludeParentMetadata);
+		taskProfilingLog("Retrieval", path, "Retrieved metadata entries", System.currentTimeMillis() - timeBefore);
+
 		HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
+		timeBefore = System.currentTimeMillis();
 		dataObjectDTO.setPercentComplete(dataTransferService.getDataObjectUploadProgress(
 				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
+		taskProfilingLog("Retrieval", path, "Retrieved upload progress", System.currentTimeMillis() - timeBefore);
 
 		if (includeAcl) {
 			// Set the permission.
+			timeBefore = System.currentTimeMillis();
 			HpcSubjectPermission subjectPermission = dataManagementService.getDataObjectPermission(path);
+			taskProfilingLog("Retrieval", path, "Retrieved dataObject permission", System.currentTimeMillis() - timeBefore);
 			dataObjectDTO
 					.setPermission(subjectPermission != null ? subjectPermission.getPermission() : HpcPermission.NONE);
 		}
 
+		taskProfilingLog("Retrieval", path, "DataObject Retrieval finished", null);
 		return dataObjectDTO;
 	}
 
 	@Override
 	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, boolean includeAcl,
-			boolean excludeAttributes) throws HpcException {
+			boolean excludeAttributes, boolean excludeParentMetadata) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1415,7 +1429,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path);
+		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path, excludeParentMetadata);
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
@@ -1628,7 +1642,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
@@ -2107,7 +2121,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 
@@ -3058,7 +3072,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			String collectionType, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
 			String checksum, String userId, String callerObjectId) throws HpcException {
 		// Get the metadata for this data object.
-		HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(path);
+		HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
 
@@ -3078,7 +3092,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
-					metadataService.getDataObjectMetadataEntries(path), systemGeneratedMetadata.getArchiveLocation(),
+					metadataService.getDataObjectMetadataEntries(path, false), systemGeneratedMetadata.getArchiveLocation(),
 					updated, null, message, null);
 		}
 
@@ -3433,7 +3447,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Validate the link source is not a link itself. Linking to a link is not
 		// allowed.
-		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService.getDataObjectMetadataEntries(linkSourcePath)
+		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService.getDataObjectMetadataEntries(linkSourcePath, false)
 				.getSelfMetadataEntries();
 		HpcSystemGeneratedMetadata linkSourceSystemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(linkSourceMetadataEntries);
@@ -3797,8 +3811,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param path The data object path
 	 * @param time execution time
 	 */
-	private void registrationProfilingLog(String path, String message, Long time) {
-		logger.info("Registration Profiling [{}]: {}{}", path, message,
+	private void taskProfilingLog(String type, String path, String message, Long time) {
+		logger.info("{} Profiling [{}]: {}{}", type, path, message,
 				time != null ? "[" + time.toString() + " ms]" : "");
 	}
 
@@ -3817,7 +3831,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		Map<String, String> metadataMap = metadataService.toMap(list);
 		for (HpcMetadataEntry metadataEntryInSublist : sublist) {
-			String value = metadataMap.get(Optional.ofNullable(metadataEntryInSublist.getAttribute()).orElse(""));
+			String attribute = metadataEntryInSublist.getAttribute();
+			if(attribute == null) {
+				attribute = "";
+			}
+			String value = metadataMap.get(attribute);
 			if (value == null || !value.equals(metadataEntryInSublist.getValue())) {
 				return false;
 			}
