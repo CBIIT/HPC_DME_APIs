@@ -32,14 +32,21 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public interface HpcDataDownloadDAO {
 	/**
-	 * Store a new data object download task (if dataObjectDownloadTask.getId() is
-	 * provided NULL), or update an existing task. Note: If a new task is inserted,
-	 * dataObjectDownloadTask.getId() will be updated with the generated ID.
+	 * Create a new data object download task.
 	 *
 	 * @param dataObjectDownloadTask The data object download task to persist.
 	 * @throws HpcException on database error.
 	 */
-	public void upsertDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException;
+	public void createDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException;
+	
+	/**
+	 * Update a data object download task 
+	 *
+	 * @param dataObjectDownloadTask The data object download task to persist.
+	 * @return true if the task was updated, or false if the task no longer exist (removed / canceled).
+	 * @throws HpcException on database error.
+	 */
+	public boolean updateDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException;
 
 	/**
 	 * Get a data object download task.

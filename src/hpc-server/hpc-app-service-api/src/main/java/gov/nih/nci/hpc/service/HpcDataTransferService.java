@@ -554,9 +554,10 @@ public interface HpcDataTransferService {
 	 *
 	 * @param downloadTask     The download task to update progress
 	 * @param bytesTransferred The bytes transferred so far.
+	 * @return true if the task was updated, or false if the task no longer exist (removed / canceled).
 	 * @throws HpcException on service failure.
 	 */
-	public void updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, long bytesTransferred)
+	public boolean updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, long bytesTransferred)
 			throws HpcException;
 
 	/**
