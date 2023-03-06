@@ -869,21 +869,26 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
-	public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException {
+	public HpcMetadataEntries getDataObjectMetadataEntries(String path, boolean excludeParentMetadata) throws HpcException {
 		HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
 
 		// Get the metadata associated with the data object itself.
 		metadataEntries.getSelfMetadataEntries().addAll(metadataRetriever.getDataObjectMetadata(path));
 
 		// Get the hierarchical metadata.
-		metadataEntries.getParentMetadataEntries()
+		if(!excludeParentMetadata) {
+		    metadataEntries.getParentMetadataEntries()
 				.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+		} else {
+			logger.info("Excluding parent metadata for {}", path);
+		}
 
 		return metadataEntries;
 	}
 
 	@Override
-	public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path) throws HpcException {
+	public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path,
+			boolean excludeParentMetadata) throws HpcException {
 		HpcGroupedMetadataEntries groupedMetadataEntries = new HpcGroupedMetadataEntries();
 		HpcSelfMetadataEntries selfMetadataEntries = new HpcSelfMetadataEntries();
 
@@ -915,8 +920,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		groupedMetadataEntries.setSelfMetadataEntries(selfMetadataEntries);
 
 		// Get the hierarchical metadata.
-		groupedMetadataEntries.getParentMetadataEntries()
+		if(!excludeParentMetadata) {
+		    groupedMetadataEntries.getParentMetadataEntries()
 				.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+		}
 
 		return groupedMetadataEntries;
 	}

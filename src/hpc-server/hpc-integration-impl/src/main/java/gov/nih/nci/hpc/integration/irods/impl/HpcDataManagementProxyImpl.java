@@ -273,8 +273,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		}
 	}
 
+	// TODO - remove synchronized after testing if this resolved the duplicated
+	// metadata
 	@Override
-	public void addMetadataToDataObject(Object authenticatedToken, String path,
+	public synchronized void addMetadataToDataObject(Object authenticatedToken, String path,
 			List<HpcMetadataEntry> metadataEntries) throws HpcException {
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 

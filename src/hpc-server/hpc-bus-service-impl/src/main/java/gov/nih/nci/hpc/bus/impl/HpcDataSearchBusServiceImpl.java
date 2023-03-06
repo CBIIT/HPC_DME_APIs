@@ -649,7 +649,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (detailedResponse) {
 			for (String dataObjectPath : dataObjectPaths) {
 				dataObjectsDTO.getDataObjects()
-						.add(dataManagementBusService.getDataObjectV1(dataObjectPath, false, false));
+						.add(dataManagementBusService.getDataObjectV1(dataObjectPath, false, false, false));
 			}
 		} else {
 			dataObjectsDTO.getDataObjectPaths().addAll(dataObjectPaths);
