@@ -3545,8 +3545,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// The second hop download's source file.
 		private File sourceFile = null;
-		
-		private int counter = 0;
 
 		// Indicator whether task has removed / cancelled
 		private boolean taskCancelled = false;
@@ -3716,7 +3714,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				try {
 					resetDataObjectDownloadTask(downloadTask);
 					return;
-					
 				} catch (HpcException e) {
 					downloadTask.setFirstHopRetried(false);
 					logger.error("download task: {} - failed to reset", downloadTask.getId(), e);
@@ -3758,14 +3755,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// This callback method is called when the first hop download progressed.
 		@Override
 		public void transferProgressed(long bytesTransferred) {
-			logger.error("ERAN *** progress - {}", counter++);
-			if(counter == 50) {
-				logger.error("ERAN *** progress - thread interrupted");
-				//Thread.currentThread().interrupt();
-				return;
-			}
-				
-			
 			try {
 				if (!updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
 					// The task was cancelled / removed from the DB. Stop 1st hop download thread.
