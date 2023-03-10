@@ -660,7 +660,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
 		// 1. The file is less than 60 days old
-		// 2. The invoker uploaded the data originally
 
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
@@ -671,14 +670,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				String message = "The collection at " + path + " is not eligible for deletion";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
-			}
-
-			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
-			if (!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
-				String message = "The collection at " + path + " can only be deleted by the creator";
-				logger.error(message);
-				throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 			}
 		}
 
@@ -1663,7 +1654,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a GroupAdmin, then ensure that:
 		// 1. The file is less than 90 days old
-		// 2. The invoker uploaded the data originally
 
 		if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
@@ -1673,12 +1663,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						+ " is not eligible for deletion because the file is at least 90 days old.";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
-			}
-
-			if (!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
-				String message = "The data object at " + path + " can only be deleted by the data uploader.";
-				logger.error(message);
-				throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 			}
 		}
 
