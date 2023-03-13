@@ -144,7 +144,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DETAILED_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
 			+ "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
 			+ "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
-			+ "mv.meta_attr_name, mv.meta_attr_value, mv.data_level, mv.level_label, mv.coll_id "
+			+ "mv.meta_attr_name, mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label, mv.coll_id "
 			+ "from r_coll_hierarchy_meta_main mv, r_coll_main coll "
 			+ "where mv.object_id = coll.coll_id and mv.object_path in ";
 
@@ -154,14 +154,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
 			+ "data.data_path, data.data_owner_name, data.create_ts, mv.meta_attr_name, "
-			+ "mv.meta_attr_value, mv.data_level, mv.level_label "
+			+ "mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label "
 			+ "from r_data_hierarchy_meta_main mv, r_data_main data, r_coll_main coll "
 			+ "where mv.object_id = data.data_id and data.coll_id = coll.coll_id and ( exists (select 1 from ("
 			+ "select distinct object_id from r_data_hierarchy_meta_main main1 where ";
 
 	private static final String GET_ALL_DATA_OBJECT_PATHS_SQL = "select main1.object_id, coll.coll_name, main1.object_path, "
 			+ "data.data_owner_name, data.create_ts, main1.meta_attr_name, "
-			+ "main1.meta_attr_value, main1.data_level, main1.level_label "
+			+ "main1.meta_attr_value, main1.meta_attr_unit, main1.data_level, main1.level_label "
 			+ "from (select data_id,coll_id,data_size,data_path,data_owner_name,create_ts from R_DATA_MAIN where ";
 
 	private static final String GET_ALL_DATA_OBJECT_PATHS2_SQL = ") data join r_coll_main coll on data.coll_id=coll.coll_id "
@@ -293,9 +293,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setCreatedAt(cal);
 		searchMetadataEntry.setAttribute(rs.getString(9));
 		searchMetadataEntry.setValue(rs.getString(10));
-		Long level = rs.getLong(11);
+		searchMetadataEntry.setUnit(rs.getString(11));
+		Long level = rs.getLong(12);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
-		searchMetadataEntry.setLevelLabel(rs.getString(12));
+		searchMetadataEntry.setLevelLabel(rs.getString(13));
 
 		return searchMetadataEntry;
 	};
@@ -313,9 +314,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setCreatedAt(cal);
 		searchMetadataEntry.setAttribute(rs.getString(6));
 		searchMetadataEntry.setValue(rs.getString(7));
-		Long level = rs.getLong(8);
+		searchMetadataEntry.setUnit(rs.getString(8));
+		Long level = rs.getLong(9);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
-		searchMetadataEntry.setLevelLabel(rs.getString(9));
+		searchMetadataEntry.setLevelLabel(rs.getString(10));
 
 		return searchMetadataEntry;
 	};
@@ -343,10 +345,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setSpecColType(rs.getString(14));
 		searchMetadataEntry.setAttribute(rs.getString(15));
 		searchMetadataEntry.setValue(rs.getString(16));
-		Integer level = rs.getInt(17);
+		searchMetadataEntry.setUnit(rs.getString(17));
+		Integer level = rs.getInt(18);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
-		searchMetadataEntry.setLevelLabel(rs.getString(18));
-		Long metaCollId = rs.getLong(19);
+		searchMetadataEntry.setLevelLabel(rs.getString(19));
+		Long metaCollId = rs.getLong(20);
 		searchMetadataEntry.setMetaCollectionId(metaCollId != null ? metaCollId.intValue() : null);
 
 		return searchMetadataEntry;
