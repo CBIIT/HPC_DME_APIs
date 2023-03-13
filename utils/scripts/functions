@@ -3691,3 +3691,65 @@ function dm_download_collection {
     fi
 
 }
+
+#Print Usage of dm_get_download_presigned function
+function dm_get_download_presigned_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_get_download_presigned <dataobject-path>
+
+  Get the presigned download URL of a dataobject (URL is printed to standard output)
+
+  dataobject-path             Full path of the dataobject in the archive.
+
+
+EOF
+  echo "$usage"
+}
+
+
+#Get the presigned download URL of a dataobject.
+#Inputs:  <dataobject-path>: The path on the archive
+function dm_get_download_presigned () {
+#Set the default parameters
+  local RESPONSE_STATUS
+
+  if [ "$#" -lt 1 ] || [ "$#" -gt 1 ]
+  then
+    dm_get_download_presigned_usage >&2
+    return 1
+  fi
+  local OBJECT_PATH="$1"
+  local CONFIG=$(get_config)
+  local SERVER=$(get_server)
+  local CODE=0
+  local SUFFIX=`date +"%Y%m%d%H%M%S"_$RANDOM`
+  
+  
+  local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header-$SUFFIX.tmp
+  local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=download-dataobject-response-message-$SUFFIX.tmp
+  local RESPONSE_MESSAGE=download-dataobject-response-message-$SUFFIX.tmp
+
+  curl -H "Content-Type: application/json" -H "Accept: application/json" \
+      $CONFIG -d @$TEMPLATE \
+      -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/generateDownloadRequestURL \
+      -D $RESPONSE_HEADER_OBTAIN_PRESIGNED \
+      -o $RESPONSE_MESSAGE_OBTAIN_PRESIGNED \
+      -s 2> $HPC_DM_UTILS/temp/curl-status
+
+  check_connection $RESPONSE_HEADER_OBTAIN_PRESIGNED
+
+  CODE=$(get_http_code "$RESPONSE_HEADER_OBTAIN_PRESIGNED")
+  if [ "$CODE" -ne 200 ]
+  then
+    exit 1
+  else
+    local PRESIGNED_URL=$(get_json_value  $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  downloadRequestURL)
+    if [ -z "$PRESIGNED_URL" ]
+    then
+      exit 1
+    fi
+  fi
+  
+  rm -f $RESPONSE_HEADER_OBTAIN_PRESIGNED $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  2>/dev/null
+  echo $PRESIGNED_URL
+}
