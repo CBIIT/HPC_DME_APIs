@@ -59,6 +59,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,9 +152,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Autowired
 	private HpcMetadataRetriever metadataRetriever = null;
 
-	// Date formatter to format metadata entries of type Calendar (like data
+	// Date format string to format metadata entries of type Calendar (like data
 	// transfer start/completion time).
-	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+	String dateFormatStr = "MM-dd-yyyy HH:mm:ss";
 
 	// Default collection metadata.
 	private List<HpcMetadataEntry> defaultCollectionMetadataEntries = new ArrayList<>();
@@ -665,11 +666,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Create the Data Transfer Started metadata.
 		addMetadataEntry(metadataEntries,
-				toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, dateFormat.format(dataTransferStarted.getTime())));
+				toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, toDateStr(dataTransferStarted)));
 
 		// Create the Data Transfer Completed metadata.
-		addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE,
-				dataTransferCompleted != null ? dateFormat.format(dataTransferCompleted.getTime()) : null));
+		addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
 
 		// Create the Source File Size metadata.
 		addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, sourceSize));
@@ -778,8 +778,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 				addMetadataEntry(metadataEntries,
 						toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
 				if (dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
-					addMetadataEntry(metadataEntries, toMetadataEntry(DELETED_DATE_ATTRIBUTE,
-							dateFormat.format(Calendar.getInstance().getTime())));
+					addMetadataEntry(metadataEntries, toMetadataEntry(DELETED_DATE_ATTRIBUTE, toDateStr(Calendar.getInstance())));
 				}
 			}
 		}
@@ -792,13 +791,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (dataTransferStarted != null) {
 			// Update the Data Transfer Started metadata.
 			addMetadataEntry(metadataEntries,
-					toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, dateFormat.format(dataTransferStarted.getTime())));
+					toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, toDateStr(dataTransferStarted)));
 		}
 
 		if (dataTransferCompleted != null) {
 			// Update the Data Transfer Completed metadata.
-			addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE,
-					dateFormat.format(dataTransferCompleted.getTime())));
+			addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
 		}
 
 		if (sourceSize != null) {
@@ -826,7 +824,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (deepArchiveDate != null) {
 			// Update the deep archive date metadata.
 			addMetadataEntry(metadataEntries,
-					toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE, dateFormat.format(deepArchiveDate.getTime())));
+					toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE, toDateStr(deepArchiveDate)));
 		}
 
 		if (!metadataEntries.isEmpty()) {
@@ -972,7 +970,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	 * @return The Generated ID metadata.
 	 */
 	private HpcMetadataEntry generateMetadataUpdatedMetadata() {
-		return toMetadataEntry(METADATA_UPDATED_ATTRIBUTE, dateFormat.format(Calendar.getInstance().getTime()));
+		return toMetadataEntry(METADATA_UPDATED_ATTRIBUTE, toDateStr(Calendar.getInstance()));
 	}
 
 	/**
@@ -1172,6 +1170,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+
 		try {
 			cal.setTime(dateFormat.parse(calendarStr));
 
@@ -1181,5 +1181,18 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		return cal;
+	}
+
+	/**
+	 * Get the time from a Calendar object as a String.
+	 *
+	 * @param calendar The calendar object.
+	 * @return The Calendar as a String.
+	 */
+	private String toDateStr(Calendar cal) {
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr);
+		return cal != null ? dateFormat.format(cal.getTime()) : null;
+
 	}
 }
