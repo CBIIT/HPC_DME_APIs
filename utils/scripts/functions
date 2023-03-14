@@ -28,7 +28,7 @@ function dm_list_commands {
 	dm_download_dataobject_presigned  dm_register_user
 	dm_download_dataobject_s3         dm_rename
 	dm_generate_token                 dm_update_user
-	dm_get_collection
+	dm_get_collection                 dm_get_download_presigned
   
 To see the detailed information on each command, use '<command name> -h'
 
@@ -3727,10 +3727,9 @@ function dm_get_download_presigned () {
   
   local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header-$SUFFIX.tmp
   local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=download-dataobject-response-message-$SUFFIX.tmp
-  local RESPONSE_MESSAGE=download-dataobject-response-message-$SUFFIX.tmp
 
   curl -H "Content-Type: application/json" -H "Accept: application/json" \
-      $CONFIG -d @$TEMPLATE \
+      $CONFIG \
       -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/generateDownloadRequestURL \
       -D $RESPONSE_HEADER_OBTAIN_PRESIGNED \
       -o $RESPONSE_MESSAGE_OBTAIN_PRESIGNED \
