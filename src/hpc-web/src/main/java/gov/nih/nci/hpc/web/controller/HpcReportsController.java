@@ -268,6 +268,10 @@ public class HpcReportsController extends AbstractHpcController {
         HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
         if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER))) {
           model.addAttribute("reports", translateDataOwnerReports(reports.getReports()));
+        } if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
+            && reportRequest.getDoc().equals("All")) || (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
+                && reportRequest.getBasepath().equals("All"))) {
+          model.addAttribute("reports", translateGrid(reports.getReports()));
         } else {
           model.addAttribute("reports", translate(reports.getReports()));
         }
@@ -324,20 +328,21 @@ public class HpcReportsController extends AbstractHpcController {
       entry.setValue("NA");
     } else {
       Type empMapType = new TypeToken<List<HpcArchiveSummaryReport>>() {}.getType();
-      List<HpcArchiveSummaryReport> assaySummaryList = gson.fromJson(entry.getValue(), empMapType);
-      String assaySummaryString = "";
-      for(int i=0 ; i < assaySummaryList.size(); i++) {
-        String size = String.valueOf(assaySummaryList.get(i).size);
+      List<HpcArchiveSummaryReport> archiveSummaryList = gson.fromJson(entry.getValue(), empMapType);
+      String archiveSummaryString = "";
+      for(int i=0 ; i < archiveSummaryList.size(); i++) {
+        String size = String.valueOf(archiveSummaryList.get(i).size);
         String hrSize = MiscUtil.getHumanReadableSize(size , true);
-        assaySummaryString = assaySummaryString + assaySummaryList.get(i).vault + ", " +
-            assaySummaryList.get(i).bucket + ", " +
+        archiveSummaryString = archiveSummaryString + archiveSummaryList.get(i).vault + ", " +
+            archiveSummaryList.get(i).bucket + ", " +
             hrSize + separator;
       }
-      entry.setValue(assaySummaryString);
+      entry.setValue(archiveSummaryString);
     }
     return entry;
   }
 
+  // Translate Single Reports
   private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
     List<HpcReportDTO> tReports = new ArrayList<>();
     for (HpcReportDTO dto : reports) {
@@ -352,10 +357,6 @@ public class HpcReportsController extends AbstractHpcController {
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
       // Loop through to add the entries for the Human Readable fields
       int index = 0;
-      int total_data_size_index = 0;
-      int largest_file_size_index = 0;
-      String total_data_size = "";
-      String largest_file_size = "";
       for (HpcReportEntryDTO entry : entries) {
         if (env.getProperty(entry.getAttribute()) != null) {
           entry.setAttribute(env.getProperty(entry.getAttribute()));
@@ -364,66 +365,108 @@ public class HpcReportsController extends AbstractHpcController {
           }
           if (entry.getAttribute().equals(env.getProperty("ARCHIVE_SUMMARY"))) {
             entry = setArchiveSummary(entry,  " <br/>");
-          }
-          if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
-              dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1 ){
-            // In Grid Reports, the TOTAL_DATA_SIZE contains only the Byte value
-            if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))) {
-              total_data_size_index = index;
-              total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
-              entry.setAttribute(env.getProperty("TOTAL_DATA_SIZE_HUMAN_READABLE_FOR_GRID"));
-              entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
-            }
-            // In Grid Reports, the LARGEST_FILE_SIZE contains only the Byte value
-            if (entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))) {
-              largest_file_size_index = index;
-              largest_file_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
-              entry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_HUMAN_READABLE_FOR_GRID"));
-              entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
-            }
-          } else {
-            // For rest of the Single Reports, the value displayed is always a human readable value.
-            if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
-                  || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
-                  || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))) {
-                  entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
-            }
+          }  
+          // For rest of the Single Reports, the value displayed is always a human readable value.
+          if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))
+                || entry.getAttribute().equals(env.getProperty("LARGEST_FILE_SIZE"))
+                || entry.getAttribute().equals(env.getProperty("AVERAGE_FILE_SIZE"))) {
+                entry.setValue(MiscUtil.addHumanReadableSize(entry.getValue(), true));
           }
         }
         index = index + 1;
-      }
-      if ((dto.getType().equals("USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE") ||
-        dto.getType().equals("USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")) && reports.size() > 1  ){
-        HpcReportEntryDTO newEntry = new HpcReportEntryDTO();
-        newEntry.setAttribute(env.getProperty("TOTAL_DATA_SIZE_VALUE_ONLY_FOR_GRID"));
-        newEntry.setValue(total_data_size);
-        dto.getReportEntries().add(total_data_size_index, newEntry);
-        newEntry = new HpcReportEntryDTO();
-        newEntry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_VALUE_ONLY_FOR_GRID"));
-        newEntry.setValue(largest_file_size);
-        dto.getReportEntries().add(largest_file_size_index + 1, newEntry);
-        newEntry = new HpcReportEntryDTO();
-        newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY"));
-        newEntry.setValue("0");
-        dto.getReportEntries().add(newEntry);
-        newEntry = new HpcReportEntryDTO();
-        newEntry.setAttribute(env.getProperty("ARCHIVE_SUMMARY_VALUES"));
-        newEntry.setValue("");
-        dto.getReportEntries().add(newEntry);
       }
       tReports.add(dto);
     }
     return tReports;
   }
 
+// Translate BasePath and DOC Grid Reports
+private List<HpcReportDTO> translateGrid(List<HpcReportDTO> reports) {
+    List<HpcReportDTO> tReports = new ArrayList<>();
+    String largestFileProp = env.getProperty("LARGEST_FILE_SIZE_VALUE_ONLY_FOR_GRID");
+    String totalDataSizeProp = env.getProperty("TOTAL_DATA_SIZE_VALUE_ONLY_FOR_GRID");
+    String archiveSummaryProp = env.getProperty("ARCHIVE_SUMMARY");
+    String archiveSummaryValuesProp = env.getProperty("ARCHIVE_SUMMARY_VALUES");
+    boolean firstReport = true;
+    // The Header properties need to only retrieved for the first report because the UI uses the first report for displaying header
+    for (HpcReportDTO dto : reports) {
+      if(firstReport && dto.getFromDate() != null) {
+        DateTimeFormatter dtoFormat = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+        LocalDate fromDate = LocalDate.parse(dto.getFromDate(), dtoFormat);
+        LocalDate toDate = LocalDate.parse(dto.getToDate(), dtoFormat);
+        dto.setFromDate(formatter.format(fromDate));
+        dto.setToDate(formatter.format(toDate.minusDays(1)));
+      }
+      List<HpcReportEntryDTO> entries = dto.getReportEntries();
+      // Loop through to translate the entries to Human Readable values
+      int index = 0;
+      int total_data_size_index = 0;
+      int largest_file_size_index = 0;
+      String total_data_size = "";
+      String largest_file_size = "";
+      for (HpcReportEntryDTO entry : entries) {
+        if (entry.getAttribute().equals("TOTAL_NUM_OF_COLLECTIONS")) {
+            if (firstReport) {
+              entry.setAttribute(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"));
+            }
+            entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br/>"));
+        } else if (entry.getAttribute().equals("ARCHIVE_SUMMARY")) {
+          entry = setArchiveSummary(entry,  " <br/>");
+        } else if (entry.getAttribute().equals("TOTAL_DATA_SIZE")) {
+          total_data_size_index = index;
+          total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
+          if (firstReport) {
+            entry.setAttribute(env.getProperty("TOTAL_DATA_SIZE_HUMAN_READABLE_FOR_GRID"));
+          }
+          entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+        } else if (entry.getAttribute().equals("LARGEST_FILE_SIZE")) {
+          largest_file_size_index = index;
+          largest_file_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
+          if (firstReport) {
+            entry.setAttribute(env.getProperty("LARGEST_FILE_SIZE_HUMAN_READABLE_FOR_GRID"));
+          }
+          entry.setValue(MiscUtil.getHumanReadableSize(entry.getValue(), true));
+        } else {
+          if (firstReport) {
+            if (env.getProperty(entry.getAttribute()) != null) {
+              entry.setAttribute(env.getProperty(entry.getAttribute()));
+            }
+          }
+        }
+        index = index + 1;
+      }
+      HpcReportEntryDTO newEntry = new HpcReportEntryDTO();
+      newEntry.setAttribute(totalDataSizeProp);
+      newEntry.setValue(total_data_size);
+      dto.getReportEntries().add(total_data_size_index, newEntry);
+      newEntry = new HpcReportEntryDTO();
+      newEntry.setAttribute(largestFileProp);
+      newEntry.setValue(largest_file_size);
+      dto.getReportEntries().add(largest_file_size_index + 1, newEntry);
+      newEntry = new HpcReportEntryDTO();
+      newEntry.setAttribute(archiveSummaryProp);
+      newEntry.setValue("0");
+      dto.getReportEntries().add(newEntry);
+      newEntry = new HpcReportEntryDTO();
+      newEntry.setAttribute(archiveSummaryValuesProp);
+      newEntry.setValue("");
+      dto.getReportEntries().add(newEntry);
+      if (firstReport) {
+        firstReport = false;
+      }
+      tReports.add(dto);
+    }
+    return tReports;
+  }
+
+  //Translate Data Owner Grid Report
   private List<HpcReportDTO> translateDataOwnerReports(List<HpcReportDTO> reports) {
     List<HpcReportDTO> tReports = new ArrayList<>();
-    boolean firstReport = true;
     String collectionSizeProp = env.getProperty("COLLECTION_SIZE");
     String collectionSizeHrProp = env.getProperty("COLLECTION_SIZE_HUMAN_READABLE");
     String archSummaryProp = env.getProperty("ARCHIVE_SUMMARY");
     String archSummaryValuesProp = env.getProperty("ARCHIVE_SUMMARY_VALUES");
-    String[] headerList = new String[reports.size()];
     for (HpcReportDTO dto : reports) {
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
       // Loop through to add the entries for the Human Readable fields
@@ -431,22 +474,7 @@ public class HpcReportsController extends AbstractHpcController {
       int total_data_size_index = 0;
       String total_data_size = "";
       for (HpcReportEntryDTO entry : entries) {
-        String entryAttributeRaw = entry.getAttribute();
-        if(firstReport){
-          String entryAttribute = env.getProperty(entry.getAttribute());
-          headerList[index] = entryAttribute;
-          if(entryAttribute == null) {
-            continue;
-          }
-          entry.setAttribute(entryAttribute);
-        } else {
-          if (headerList[index] != null) {
-            entry.setAttribute(headerList[index]);
-          } else {
-            continue;
-          }
-        }
-        if (entryAttributeRaw.equals("TOTAL_DATA_SIZE")) {
+        if (entry.getAttribute().equals("TOTAL_DATA_SIZE")) {
           total_data_size_index = index;
           total_data_size = String.format("%.2f", Double.parseDouble(entry.getValue()));
           entry.setAttribute(collectionSizeHrProp);
@@ -464,13 +492,10 @@ public class HpcReportsController extends AbstractHpcController {
       newEntry.setValue("0");
       dto.getReportEntries().add(newEntry);
       newEntry = new HpcReportEntryDTO();
-      newEntry.setAttribute(env.getProperty(archSummaryValuesProp));
+      newEntry.setAttribute(archSummaryValuesProp);
       newEntry.setValue("");
       dto.getReportEntries().add(newEntry);
       tReports.add(dto);
-      if (firstReport) {
-        firstReport = false;
-      }
     }
     return tReports;
   }
