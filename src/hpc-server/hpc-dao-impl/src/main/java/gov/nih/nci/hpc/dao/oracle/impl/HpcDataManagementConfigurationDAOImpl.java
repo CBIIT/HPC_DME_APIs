@@ -75,6 +75,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		dataManagementConfiguration.setCreateArchiveMetadata(rs.getBoolean("CREATE_ARCHIVE_METADATA"));
 		dataManagementConfiguration.setRegistrationEventWithDownloadRequestURL(rs.getBoolean("REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL"));
 		dataManagementConfiguration.setDeletionAllowed(rs.getBoolean("DELETION_ALLOWED_AFTER_90_DAYS"));
+		dataManagementConfiguration.setRestrictMetadata(rs.getBoolean("RESTRICT_METADATA"));
 
 		// Map the Globus configuration.
 		HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
