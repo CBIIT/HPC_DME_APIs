@@ -78,6 +78,7 @@
 				<xsd:element name="createArchiveMetadata" type="xsd:boolean" />
 				<xsd:element name="registrationEventWithDownloadRequestURL" type="xsd:boolean" />
 				<xsd:element name="deletionAllowed" type="xsd:boolean" />
+				<xsd:element name="restrictMetadata" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

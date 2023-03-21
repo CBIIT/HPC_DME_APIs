@@ -155,7 +155,8 @@ public class HpcMetadataValidator {
 		}
 
 		validateMetadata(existingMetadataEntries, addUpdateMetadataEntries,
-				dataManagementConfiguration.getCollectionMetadataValidationRules(), null);
+				dataManagementConfiguration.getCollectionMetadataValidationRules(), null,
+				dataManagementConfiguration.getRestrictMetadata());
 	}
 
 	/**
@@ -183,7 +184,8 @@ public class HpcMetadataValidator {
 		}
 
 		validateMetadata(existingMetadataEntries, addUpdateMetadataEntries,
-				dataManagementConfiguration.getDataObjectMetadataValidationRules(), collectionType);
+				dataManagementConfiguration.getDataObjectMetadataValidationRules(), collectionType,
+				dataManagementConfiguration.getRestrictMetadata());
 	}
 
 	/**
@@ -234,7 +236,7 @@ public class HpcMetadataValidator {
 	 */
 	private void validateMetadata(List<HpcMetadataEntry> existingMetadataEntries,
 			List<HpcMetadataEntry> addUpdateMetadataEntries, List<HpcMetadataValidationRule> metadataValidationRules,
-			String collectionType) throws HpcException {
+			String collectionType, Boolean restrictMetadata) throws HpcException {
 		// Crate a metadata <attribute, value> map. Put existing entries first.
 		Map<String, String> metadataEntriesMap = new HashMap<>();
 		if (existingMetadataEntries != null) {
@@ -272,6 +274,22 @@ public class HpcMetadataValidator {
 					throw new HpcException("Metadata format is invalid: " + metadataEntry.getAttribute(),
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
+			}
+
+			//Ensure that the add/update metadata entry defined in the validation rules
+			//i.e. it is a mandatory or optional metadata for the applicable DOC
+			if(restrictMetadata) {
+			    boolean matchFound = false;
+			    for (HpcMetadataValidationRule metadataValidationRule : metadataValidationRules) {
+				    if(metadataValidationRule.getAttribute().contentEquals(metadataEntry.getAttribute())) {
+					    matchFound = true;
+					    break;
+				    }
+			    }
+			    if(!matchFound) {
+				    throw new HpcException("Metadata attribute is not declared in the system: " + metadataEntry.getAttribute(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			    }
 			}
 		}
 
