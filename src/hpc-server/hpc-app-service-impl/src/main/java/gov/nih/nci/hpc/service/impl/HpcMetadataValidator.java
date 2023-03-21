@@ -287,7 +287,7 @@ public class HpcMetadataValidator {
 				    }
 			    }
 			    if(!matchFound) {
-				    throw new HpcException("Metadata is not declared in the system: " + metadataEntry.getAttribute(),
+				    throw new HpcException("Metadata attribute is not declared in the system: " + metadataEntry.getAttribute(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			    }
 			}
