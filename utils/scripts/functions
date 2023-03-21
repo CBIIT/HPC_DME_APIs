@@ -3701,6 +3701,8 @@ function dm_get_download_presigned_usage {
 
   dataobject-path             Full path of the dataobject in the archive.
 
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/qwc1Hw
 
 EOF
   echo "$usage"
