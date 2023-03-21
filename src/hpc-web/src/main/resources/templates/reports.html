@@ -105,6 +105,19 @@ label {
     text-align:left;
 }
 
+#reportgrid_wrapper.dataTables_wrapper div.row {
+    display: flex;
+    align-items: center;
+    margin-left: 1px;
+}
+
+div.grlen {
+	margin-left: auto;
+}
+
+div#reportgrid_length.dataTables_length label {
+	width: auto !important;
+}
 
 .select2-container .select2-choice, .select2-result-label {
   font-size: 1.5em;
@@ -347,12 +360,6 @@ body.loading .overlay{
 				
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>
 
 					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
@@ -638,8 +645,10 @@ body.loading .overlay{
 		}
 	    var table = $('#' + 'reportgrid').DataTable( {
 				responsive: true,
-				dom: 'Blfrtip',
-				language: {"lengthMenu" : "Show _MENU_ Entries"},
+				dom: '<"row"B<"grlen"lf>>rtip',
+				language: {"lengthMenu" : "Show _MENU_ Entries",
+					       "search": "_INPUT_",
+			               "searchPlaceholder": "Search..."},
 				fixedHeader: true,
 				buttons: [
 				{
