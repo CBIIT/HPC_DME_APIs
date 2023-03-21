@@ -2957,6 +2957,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// It is a request for a S3 file
 				singleFileSource = singleFile.getS3UploadSource();
 				pathAttributes = dataTransferService.getPathAttributes(singleFileSource.getAccount(), singleFileSource.getSourceLocation(), false);
+			} else if (singleFile.getGoogleDriveUploadSource() != null){
+				// It is a request for a Google Drive file
+				singleFileSource = singleFile.getGoogleDriveUploadSource();
+				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE, singleFileSource.getAccessToken(),
+					singleFileSource.getSourceLocation(), false);
 			} else {
 				continue;
 			}
