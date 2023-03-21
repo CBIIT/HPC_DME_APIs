@@ -659,16 +659,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcMetadataEntries metadataEntries = metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
 
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
-		// 1. The collection is less than 90 days old (Not applicable if the doc config allows deletion after 90 days.)
+		// 1. The collection is less than 90 days old
 
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
-			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
-			boolean deletionAllowed = dataManagementService.getDataManagementConfiguration(systemGeneratedMetadata.getConfigurationId()).getDeletionAllowed();
-			if (!deletionAllowed && collection.getCreatedAt().before(cutOffDate)) {
+			if (collection.getCreatedAt().before(cutOffDate)) {
 				String message = "The collection at " + path + " is not eligible for deletion";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
@@ -1655,12 +1652,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// If this is a GroupAdmin, then ensure that:
-		// 1. The file is less than 90 days old (Not applicable if the doc config allows deletion after 90 days.)
+		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc config allows deletion after 90 days.)
 
 		if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
 			boolean deletionAllowed = dataManagementService.getDataManagementConfiguration(systemGeneratedMetadata.getConfigurationId()).getDeletionAllowed();
+			deletionAllowed = deletionAllowed & !force;
 			if (!deletionAllowed && dataObject.getCreatedAt().before(cutOffDate)) {
 				String message = "The data object at " + path
 						+ " is not eligible for deletion because the file is at least 90 days old.";
