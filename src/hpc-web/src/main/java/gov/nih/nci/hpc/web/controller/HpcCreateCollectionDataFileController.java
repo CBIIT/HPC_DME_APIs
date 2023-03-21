@@ -582,6 +582,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			logger.info(path + "/" + s3FilePath.getFileName());
 			files.add(file);
 			dto.getDataObjectRegistrationItems().addAll(files);
+			logger.info("AWS S3 file bulk upload json: " + gson.toJson(dto));
 		}
 		else if (StringUtils.equals(bulkType, "s3") && s3Path != null) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();
@@ -622,6 +623,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		}
 		
 		dto.setDryRun(dryRun != null && dryRun.equals("on"));
+		logger.info("AWS S3 directory upload json: " + gson.toJson(dto));
 		return dto;
 	}
 	
