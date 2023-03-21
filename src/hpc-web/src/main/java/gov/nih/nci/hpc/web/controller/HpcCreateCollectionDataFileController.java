@@ -404,6 +404,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				files.add(file);
 			}
 			dto.getDataObjectRegistrationItems().addAll(files);
+			logger.info("Globus file upload json: " + gson.toJson(dto));
 		} else if (StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) && googleDriveFileIds != null) {
 			//Upload File(s) From Google Drive
             List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
@@ -424,6 +425,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 files.add(file);
             }
             dto.getDataObjectRegistrationItems().addAll(files);
+            logger.info("GoogleDrive file upload json: " + gson.toJson(dto));
         }
 
 		List<String> include = new ArrayList<String>();
@@ -472,6 +474,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					folder.getIncludePatterns().addAll(include);
 			}
 			dto.getDirectoryScanRegistrationItems().addAll(folders);
+			logger.info("Globus folder upload json: " + gson.toJson(dto));
 		}
 		if (StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) && googleDriveFolderIds != null) {
 			// Upload Directory/Folder from Google Cloud Storage
@@ -507,6 +510,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                     folder.getIncludePatterns().addAll(include);
             }
             dto.getDirectoryScanRegistrationItems().addAll(folders);
+            logger.info("GoogleDrive folder upload json: " + gson.toJson(dto));
         }
 	      if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) && gcPath != null && isGcFile) {
 			//Upload File From Google Cloud Storage
@@ -620,10 +624,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				folder.getIncludePatterns().addAll(include);
 
 			dto.getDirectoryScanRegistrationItems().addAll(folders);
+	        logger.info("AWS S3 directory upload json: " + gson.toJson(dto));
 		}
 		
 		dto.setDryRun(dryRun != null && dryRun.equals("on"));
-		logger.info("AWS S3 directory upload json: " + gson.toJson(dto));
 		return dto;
 	}
 	
