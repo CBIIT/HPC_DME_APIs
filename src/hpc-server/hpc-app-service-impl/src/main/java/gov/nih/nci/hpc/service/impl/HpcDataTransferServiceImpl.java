@@ -272,6 +272,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		filter.setStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 		filter.setDestination(HpcDataTransferType.GLOBUS);
 		cancelCollectionDownloadTaskItemsFilter.add(filter);
+		
+		filter = new HpcDataObjectDownloadTaskStatusFilter();
+		filter.setStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+		filter.setDestination(HpcDataTransferType.S_3);
+		cancelCollectionDownloadTaskItemsFilter.add(filter);
 	}
 
 	/**
