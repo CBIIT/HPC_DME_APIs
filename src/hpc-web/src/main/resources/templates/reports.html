@@ -105,7 +105,7 @@ label {
     text-align:left;
 }
 
-#reportgrid_wrapper.dataTables_wrapper div.row {
+.dataTables_wrapper div.row {
     display: flex;
     align-items: center;
     margin-left: 1px;
@@ -114,7 +114,11 @@ label {
 div.grlen {
 	margin-left: auto;
 }
-
+div.grlen div.dataTables_length, div.grlen div.dataTables_filter{
+	margin: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
 div#reportgrid_length.dataTables_length label {
 	width: auto !important;
 }
@@ -321,12 +325,6 @@ body.loading .overlay{
 				</form>
 				<div style="width: 1000px; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>
 					<table class="table">
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
@@ -522,7 +520,9 @@ body.loading .overlay{
 		$('#singlereportgrid').DataTable({
 			"pageLength": -1,
 			 "order": [],
-			dom: 'Bfrt',
+			 dom: '<"row"B<"grlen"f>>rt',
+			 language: {"search": "_INPUT_",
+	               "searchPlaceholder": "Search..."},
 			buttons: [
 							{
 								extend: 'copyHtml5',
