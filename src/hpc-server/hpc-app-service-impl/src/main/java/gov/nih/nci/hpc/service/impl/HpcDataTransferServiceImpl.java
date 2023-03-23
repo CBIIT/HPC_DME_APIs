@@ -1414,6 +1414,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				|| bytesTransferred > downloadTask.getSize()) {
 			return true;
 		}
+		
+		// Check if the task got cancelled.
+		HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(downloadTask.getId());
+		if(task != null && HpcDataTransferDownloadStatus.CANCELED.equals(task.getDataTransferStatus())) {
+			logger.debug("download task: {} - cancelled - [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+			return false;
+		}
 
 		// Calculate the percent complete.
 		int percentComplete = Math.round(100 * (float) bytesTransferred / downloadTask.getSize());
