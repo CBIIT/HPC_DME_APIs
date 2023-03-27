@@ -1233,7 +1233,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			try {
 				// Check if this is a directory. Use V2 listObjects API.
 				ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
-						.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId());
+						.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId() + "/");
 				ListObjectsV2Result objectsList = s3Connection.getTransferManager(authenticatedToken)
 						.getAmazonS3Client().listObjectsV2(listObjectsRequest);
 
