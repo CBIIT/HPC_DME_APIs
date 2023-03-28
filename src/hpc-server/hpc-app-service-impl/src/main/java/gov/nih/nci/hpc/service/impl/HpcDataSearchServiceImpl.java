@@ -456,19 +456,15 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   @Override
   public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel)
       throws HpcException {
-    String dataManagementUsername =
-        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
 
-    return metadataDAO.getCollectionMetadataAttributes(levelLabel, dataManagementUsername);
+    return metadataDAO.getCollectionMetadataAttributes(levelLabel, null);
   }
 
   @Override
   public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel)
       throws HpcException {
-    String dataManagementUsername =
-        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
 
-    return metadataDAO.getDataObjectMetadataAttributes(levelLabel, dataManagementUsername);
+    return metadataDAO.getDataObjectMetadataAttributes(levelLabel, null);
   }
 
   //---------------------------------------------------------------------//
