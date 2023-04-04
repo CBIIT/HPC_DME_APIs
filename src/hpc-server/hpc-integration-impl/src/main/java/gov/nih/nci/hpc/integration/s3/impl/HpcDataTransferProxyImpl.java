@@ -226,6 +226,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public String generateDownloadRequestURL(Object authenticatedToken, HpcFileLocation archiveSourceLocation,
 			HpcArchive baseArchiveDestination, Integer downloadRequestURLExpiration) throws HpcException {
+		if (archiveSourceLocation == null) {
+			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
+		}
 
 		// Calculate the URL expiration date.
 		Date expiration = new Date();
