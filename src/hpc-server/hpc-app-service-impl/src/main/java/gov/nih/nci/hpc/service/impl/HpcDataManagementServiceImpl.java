@@ -415,7 +415,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
+	public HpcPathAttributes move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
 			throws HpcException {
 		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 
@@ -482,6 +482,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			}
 		});
 
+		return sourcePathAttributes;
 	}
 
 	@Override
