@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -91,9 +92,10 @@ public interface HpcDataManagementService {
 	 *                           collection, False to validate if it is a data
 	 *                           object. If null - no path type validation is
 	 *                           performed.
+	 * @return The path attributes of sourcePath (data object or Collection)
 	 * @throws HpcException on service failure.
 	 */
-	public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
+	public HpcPathAttributes move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
 			throws HpcException;
 
 	/**
@@ -106,11 +108,11 @@ public interface HpcDataManagementService {
 	 *                           performed.
 	 * @throws HpcException on service failure.
 	 */
-	public void softDelete(String sourcePath, Optional<Boolean> pathTypeValidation)
-			throws HpcException;
-	
+	public void softDelete(String sourcePath, Optional<Boolean> pathTypeValidation) throws HpcException;
+
 	/**
-	 * Recover a path from the delete archive (recover soft deleted data object or collection).
+	 * Recover a path from the delete archive (recover soft deleted data object or
+	 * collection).
 	 *
 	 * @param sourcePath         The data object or collection path to recover.
 	 * @param pathTypeValidation (Optional) True to validate if the path is a
@@ -119,9 +121,8 @@ public interface HpcDataManagementService {
 	 *                           performed.
 	 * @throws HpcException on service failure.
 	 */
-	public void recover(String sourcePath, Optional<Boolean> pathTypeValidation)
-			throws HpcException;
-	
+	public void recover(String sourcePath, Optional<Boolean> pathTypeValidation) throws HpcException;
+
 	/**
 	 * Add an audit record in the DB Note: Currently, there is no 'audit trail'
 	 * functionality implemented. iRODS has this capability, and there is a plan to
@@ -333,10 +334,9 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException;
-	
+
 	/**
-	 * Get data objects that have their data transfer upload failed via
-	 * streaming.
+	 * Get data objects that have their data transfer upload failed via streaming.
 	 *
 	 * @return A list of data objects.
 	 * @throws HpcException on service failure.
@@ -368,7 +368,7 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDataObjectsUploadFileSystemReady() throws HpcException;
-	
+
 	/**
 	 * Get data objects that have their data upload in-progress from file-system.
 	 *
@@ -595,7 +595,7 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException;
-	
+
 	/**
 	 * Get data objects that are in deleted status
 	 *
@@ -603,11 +603,11 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDeletedDataObjects() throws HpcException;
-	
+
 	/**
 	 * Check if the deleted data object is past its retention period
 	 *
-	 * @param deletedDate          The data/time the data object was deleted
+	 * @param deletedDate The data/time the data object was deleted
 	 * @return True if it is expired, or false otherwise.
 	 */
 	boolean deletedDataObjectExpired(Calendar deletedDate);

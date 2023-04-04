@@ -699,6 +699,7 @@
 				type="hpc-dto-datamanagement:HpcMoveRequestItemDTO" />
 			<xsd:element name="result" type="xsd:boolean" />
 			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="taskId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -720,7 +721,6 @@
 				<xsd:element name="moveResponses"
 					type="hpc-dto-datamanagement:HpcMoveResponseItemDTO" minOccurs="0"
 					maxOccurs="unbounded" />
-				<xsd:element name="taskId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
