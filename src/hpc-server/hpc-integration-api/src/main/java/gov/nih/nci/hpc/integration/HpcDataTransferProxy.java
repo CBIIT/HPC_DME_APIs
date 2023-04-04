@@ -14,6 +14,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
@@ -301,28 +303,32 @@ public interface HpcDataTransferProxy {
 	}
 
 	/**
-	 * Calculate data transfer destination to deposit a data object.
+	 * Calculate archive file location to upload a data object.
 	 *
 	 * @param baseArchiveDestination The base (archive specific) destination.
 	 * @param path                   The data object (logical) path.
 	 * @param callerObjectId         The caller's objectId.
 	 * @param archiveType            The type of the archive.
-	 * @param unique                 If true, the a UUID will be appended to the end
-	 *                               of the destination path ensuring it is unique.
-	 *                               Otherwise, no UUID is appended
-	 * @return The calculated data transfer deposit destination.
+	 * @param dataTransferProxy      A concrete instance of data transfer proxy.
+	 *                               authenticatedToken An authenticated token.
+	 * @return The calculated data transfer upload archive destination that is
+	 *         unique.
 	 */
 	public static HpcFileLocation getArchiveDestinationLocation(HpcFileLocation baseArchiveDestination, String path,
-			String callerObjectId, HpcArchiveType archiveType, boolean unique) {
+			String callerObjectId, HpcArchiveType archiveType, HpcDataTransferProxy dataTransferProxy,
+			Object authenticatedToken) throws HpcException {
 		// Calculate the data transfer destination absolute path as the following:
 		StringBuilder destinationPath = new StringBuilder();
 		destinationPath.append(baseArchiveDestination.getFileId());
+
+		HpcFileLocation archiveDestination = new HpcFileLocation();
+		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
 
 		if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
 			// For Archive destination, destination path is:
 			// 'base path' / 'caller's object-id / 'logical path'_'generated UUID' (note:
 			// generated UUID is optional)
-			if (callerObjectId != null && !callerObjectId.isEmpty()) {
+			if (!StringUtils.isEmpty(callerObjectId)) {
 				if (callerObjectId.charAt(0) != '/') {
 					destinationPath.append('/');
 				}
@@ -337,19 +343,26 @@ public interface HpcDataTransferProxy {
 			} else {
 				destinationPath.append(path);
 			}
-			if (unique) {
-				destinationPath.append('_' + UUID.randomUUID().toString());
+			archiveDestination.setFileId(destinationPath.toString());
+
+			// If the generated archive path exists, inject a numeric folder into the path
+			// before the file name.
+			for (int i = 1; dataTransferProxy.getPathAttributes(authenticatedToken, archiveDestination, false)
+					.getExists(); i++) {
+				StringBuffer uniquePath = new StringBuffer();
+				String currentPath = archiveDestination.getFileId();
+				uniquePath.append(currentPath.substring(0, currentPath.lastIndexOf('/')));
+				uniquePath.append("/" + i);
+				uniquePath.append(currentPath.substring(currentPath.lastIndexOf('/')));
+				archiveDestination.setFileId(uniquePath.toString());
 			}
 
 		} else {
 			// For Temporary Archive, destination path is:
 			// 'base path' / generated UUID.
 			destinationPath.append('/' + UUID.randomUUID().toString());
+			archiveDestination.setFileId(destinationPath.toString());
 		}
-
-		HpcFileLocation archiveDestination = new HpcFileLocation();
-		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
-		archiveDestination.setFileId(destinationPath.toString());
 
 		return archiveDestination;
 	}
