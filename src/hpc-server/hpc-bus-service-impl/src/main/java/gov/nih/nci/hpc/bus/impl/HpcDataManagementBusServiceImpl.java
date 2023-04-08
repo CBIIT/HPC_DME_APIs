@@ -262,41 +262,41 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		createParentCollections(path, collectionRegistration.getCreateParentCollections(),
 				collectionRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
 		boolean created = false;
-		synchronized (this) {	
+		synchronized (this) {
 			// Create a collection directory.
 			created = dataManagementService.createDirectory(path);
-	
+
 			// Attach the metadata.
 			if (created) {
 				boolean registrationCompleted = false;
 				try {
 					// Assign system account as an additional owner of the collection.
 					dataManagementService.setCoOwnership(path, userId);
-	
+
 					// Add user provided metadata.
 					metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
 							configurationId);
-	
+
 					// Generate system metadata and attach to the collection.
 					metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
-	
+
 					// Validate the collection hierarchy.
 					securityService.executeAsSystemAccount(Optional.empty(),
 							() -> dataManagementService.validateHierarchy(path, configurationId, false));
-	
+
 					// Add collection update event.
 					addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
-	
+
 					registrationCompleted = true;
-	
+
 				} finally {
 					if (!registrationCompleted) {
 						// Collection registration failed. Remove it from Data Management.
 						dataManagementService.delete(path, true);
 					}
 				}
-	
-			} 
+
+			}
 		}
 		if (!created) {
 			// Get the metadata for this collection.
@@ -308,7 +308,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			boolean updated = true;
 			String message = null;
 			try {
-				if (!metadataContained(collectionRegistration.getMetadataEntries(), metadataBefore.getSelfMetadataEntries())) {
+				if (!metadataContained(collectionRegistration.getMetadataEntries(),
+						metadataBefore.getSelfMetadataEntries())) {
 					synchronized (this) {
 						metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
 								systemGeneratedMetadata.getConfigurationId());
@@ -328,7 +329,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} finally {
 				// Add an audit record of this update collection attempt.
 				dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
+						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId, null);
 			}
 
 			addCollectionUpdatedEvent(path, false, false, userId, null, null, null);
@@ -660,7 +661,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
 		// 1. The collection is less than 90 days old
-
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
@@ -673,14 +673,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Delete the collection.
-
 		boolean deleted = true;
 		String message = null;
-
+		Long totalSize = null;
 		try {
 			if (recursive) {
 				// Delete all the data objects in this hierarchy first
-				deleteDataObjectsInCollections(path, force);
+				totalSize = deleteDataObjectsInCollections(path, force);
 			}
 
 			dataManagementService.delete(path, false);
@@ -694,7 +693,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_COLLECTION, metadataEntries, null,
-					null, deleted, null, message, null);
+					null, deleted, null, message, null, totalSize);
 		}
 	}
 
@@ -1211,7 +1210,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return responseDTO;
 	}
 
-
 	@Override
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
 			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException {
@@ -1226,12 +1224,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// object registration
 		// requests for all files found. Add these individual data object requests to
 		// the list provided by the caller.
-		if(!bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().isEmpty()) {
-		  bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().addAll(
-				toDataObjectRegistrationItems(bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()));
+		if (!bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().isEmpty()) {
+			bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().addAll(toDataObjectRegistrationItems(
+					bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()));
 		} else {
 			// Single file validation
-			checkDataObjectRegistrationDestinationPaths(bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems());
+			checkDataObjectRegistrationDestinationPaths(
+					bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems());
 		}
 		// Normalize the path of the data object registration items (i.e. remove
 		// redundant '/', etc).
@@ -1361,8 +1360,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Deprecated
 	@Override
-	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes, boolean excludeParentMetadata)
-			throws HpcException {
+	public HpcDataObjectDTO getDataObjectV1(String path, boolean includeAcl, boolean excludeAttributes,
+			boolean excludeParentMetadata) throws HpcException {
 		taskProfilingLog("Retrieval", path, "DataObject Retrieval started", null);
 		// Input validation.
 		if (path == null) {
@@ -1397,7 +1396,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Set the permission.
 			timeBefore = System.currentTimeMillis();
 			HpcSubjectPermission subjectPermission = dataManagementService.getDataObjectPermission(path);
-			taskProfilingLog("Retrieval", path, "Retrieved dataObject permission", System.currentTimeMillis() - timeBefore);
+			taskProfilingLog("Retrieval", path, "Retrieved dataObject permission",
+					System.currentTimeMillis() - timeBefore);
 			dataObjectDTO
 					.setPermission(subjectPermission != null ? subjectPermission.getPermission() : HpcPermission.NONE);
 		}
@@ -1424,7 +1424,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Get the metadata for this data object.
-		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path, excludeParentMetadata);
+		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path,
+				excludeParentMetadata);
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);
@@ -1657,12 +1658,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// If this is a GroupAdmin, then ensure that:
-		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc config allows deletion after 90 days.)
+		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc
+		// config allows deletion after 90 days.)
 
 		if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
-			boolean deletionAllowed = dataManagementService.getDataManagementConfiguration(systemGeneratedMetadata.getConfigurationId()).getDeletionAllowed();
+			boolean deletionAllowed = dataManagementService
+					.getDataManagementConfiguration(systemGeneratedMetadata.getConfigurationId()).getDeletionAllowed();
 			deletionAllowed = deletionAllowed & !force;
 			if (!deletionAllowed && dataObject.getCreatedAt().before(cutOffDate)) {
 				String message = "The data object at " + path
@@ -1674,6 +1677,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Instantiate a response DTO
 		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
+		dataObjectDeleteResponse.setSize(systemGeneratedMetadata.getSourceSize());
 		boolean abort = false;
 
 		// Delete all the links to this data object.
@@ -1749,7 +1753,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Add an audit record of this deletion attempt.
 		dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_DATA_OBJECT, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
-				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null);
+				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null,
+				systemGeneratedMetadata.getSourceSize());
 
 		return dataObjectDeleteResponse;
 	}
@@ -2373,19 +2378,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * from it's sub-collections.
 	 *
 	 * @param path  The path at the root of the hierarchy to delete from.
-	 * @param force If true, perform hard delete.
+	 * @param force If true, perform hard delete. return The total size of the data
+	 *              objects.
 	 * @throws HpcException if it failed to delete any object in this collection.
 	 */
-	private void deleteDataObjectsInCollections(String path, Boolean force) throws HpcException {
-
+	private long deleteDataObjectsInCollections(String path, Boolean force) throws HpcException {
 		HpcCollectionDTO collectionDto = getCollectionChildren(path);
+		long totalSize = 0;
 
 		if (collectionDto.getCollection() != null) {
 			List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
 			if (!CollectionUtils.isEmpty(dataObjects)) {
 				// Delete data objects in this collection
 				for (HpcCollectionListingEntry entry : dataObjects) {
-					deleteDataObject(entry.getPath(), force);
+					totalSize += Optional.ofNullable(deleteDataObject(entry.getPath(), force).getSize()).orElse(0L);
 				}
 			}
 
@@ -2394,10 +2400,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Recursively delete data objects from this sub-collection and
 				// it's sub-collections
 				for (HpcCollectionListingEntry entry : subCollections) {
-					deleteDataObjectsInCollections(entry.getPath(), force);
+					totalSize += deleteDataObjectsInCollections(entry.getPath(), force);
 				}
 			}
 		}
+
+		return totalSize;
 	}
 
 	/**
@@ -2941,7 +2949,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return dataObjectRegistrationItems;
 	}
 
-
 	private void checkDataObjectRegistrationDestinationPaths(
 			List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems) throws HpcException {
 
@@ -2951,31 +2958,37 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (singleFile.getGoogleCloudStorageUploadSource() != null) {
 				// It is a request to for a Google Cloud Storage file
 				singleFileSource = singleFile.getGoogleCloudStorageUploadSource();
-				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE, singleFileSource.getAccessToken(),
-					singleFileSource.getSourceLocation(), false);
-			} else if (singleFile.getS3UploadSource() != null){
+				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE,
+						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
+			} else if (singleFile.getS3UploadSource() != null) {
 				// It is a request for a S3 file
 				singleFileSource = singleFile.getS3UploadSource();
-				pathAttributes = dataTransferService.getPathAttributes(singleFileSource.getAccount(), singleFileSource.getSourceLocation(), false);
-			} else if (singleFile.getGoogleDriveUploadSource() != null){
+				pathAttributes = dataTransferService.getPathAttributes(singleFileSource.getAccount(),
+						singleFileSource.getSourceLocation(), false);
+			} else if (singleFile.getGoogleDriveUploadSource() != null) {
 				// It is a request for a Google Drive file
 				singleFileSource = singleFile.getGoogleDriveUploadSource();
-				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE, singleFileSource.getAccessToken(),
-					singleFileSource.getSourceLocation(), false);
+				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE,
+						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
 			} else {
 				continue;
 			}
 			if (!pathAttributes.getExists()) {
-			throw new HpcException("File does not exist: " + singleFileSource.getSourceLocation().getFileContainerId()
-					+ ":" + singleFileSource.getSourceLocation().getFileId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException(
+						"File does not exist: " + singleFileSource.getSourceLocation().getFileContainerId() + ":"
+								+ singleFileSource.getSourceLocation().getFileId(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!pathAttributes.getIsAccessible()) {
-				throw new HpcException("Endpoint is not accessible: " + singleFileSource.getSourceLocation().getFileContainerId() + ":"
-						+ singleFileSource.getSourceLocation().getFileId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException(
+						"Endpoint is not accessible: " + singleFileSource.getSourceLocation().getFileContainerId() + ":"
+								+ singleFileSource.getSourceLocation().getFileId(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (pathAttributes.getIsDirectory()) {
-				throw new HpcException("Endpoint is a directory, not a file: " + singleFileSource.getSourceLocation().getFileContainerId()
-						+ ":" + singleFileSource.getSourceLocation().getFileId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException("Endpoint is a directory, not a file: "
+						+ singleFileSource.getSourceLocation().getFileContainerId() + ":"
+						+ singleFileSource.getSourceLocation().getFileId(), HpcErrorType.INVALID_REQUEST_INPUT);
 
 			}
 		}
@@ -3122,8 +3135,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
-					metadataService.getDataObjectMetadataEntries(path, false), systemGeneratedMetadata.getArchiveLocation(),
-					updated, null, message, null);
+					metadataService.getDataObjectMetadataEntries(path, false),
+					systemGeneratedMetadata.getArchiveLocation(), updated, null, message, null, null);
 		}
 
 		// Optionally re-generate the upload request URL.
@@ -3477,8 +3490,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Validate the link source is not a link itself. Linking to a link is not
 		// allowed.
-		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService.getDataObjectMetadataEntries(linkSourcePath, false)
-				.getSelfMetadataEntries();
+		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService
+				.getDataObjectMetadataEntries(linkSourcePath, false).getSelfMetadataEntries();
 		HpcSystemGeneratedMetadata linkSourceSystemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(linkSourceMetadataEntries);
 		if (linkSourceSystemGeneratedMetadata.getLinkSourcePath() != null) {
@@ -3842,8 +3855,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @param time execution time
 	 */
 	private void taskProfilingLog(String type, String path, String message, Long time) {
-		logger.info("{} Profiling [{}]: {}{}", type, path, message,
-				time != null ? "[" + time.toString() + " ms]" : "");
+		logger.info("{} Profiling [{}]: {}{}", type, path, message, time != null ? "[" + time.toString() + " ms]" : "");
 	}
 
 	/**
@@ -3862,7 +3874,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		Map<String, String> metadataMap = metadataService.toMap(list);
 		for (HpcMetadataEntry metadataEntryInSublist : sublist) {
 			String attribute = metadataEntryInSublist.getAttribute();
-			if(attribute == null) {
+			if (attribute == null) {
 				attribute = "";
 			}
 			String value = metadataMap.get(attribute);
