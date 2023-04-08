@@ -106,11 +106,11 @@ public interface HpcDataManagementService {
 	 *                           performed.
 	 * @throws HpcException on service failure.
 	 */
-	public void softDelete(String sourcePath, Optional<Boolean> pathTypeValidation)
-			throws HpcException;
-	
+	public void softDelete(String sourcePath, Optional<Boolean> pathTypeValidation) throws HpcException;
+
 	/**
-	 * Recover a path from the delete archive (recover soft deleted data object or collection).
+	 * Recover a path from the delete archive (recover soft deleted data object or
+	 * collection).
 	 *
 	 * @param sourcePath         The data object or collection path to recover.
 	 * @param pathTypeValidation (Optional) True to validate if the path is a
@@ -119,9 +119,8 @@ public interface HpcDataManagementService {
 	 *                           performed.
 	 * @throws HpcException on service failure.
 	 */
-	public void recover(String sourcePath, Optional<Boolean> pathTypeValidation)
-			throws HpcException;
-	
+	public void recover(String sourcePath, Optional<Boolean> pathTypeValidation) throws HpcException;
+
 	/**
 	 * Add an audit record in the DB Note: Currently, there is no 'audit trail'
 	 * functionality implemented. iRODS has this capability, and there is a plan to
@@ -145,10 +144,12 @@ public interface HpcDataManagementService {
 	 * @param message              (Optional) Error message if the request failed.
 	 * @param userId               (Optional) userId if not executed in a user
 	 *                             thread.
+	 * @param size                 (Optional) The data object size or collection
+	 *                             total size.
 	 */
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId);
+			Boolean dataTransferStatus, String message, String userId, Long size);
 
 	/**
 	 * Set collection permission for a subject (user or group).
@@ -333,10 +334,9 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException;
-	
+
 	/**
-	 * Get data objects that have their data transfer upload failed via
-	 * streaming.
+	 * Get data objects that have their data transfer upload failed via streaming.
 	 *
 	 * @return A list of data objects.
 	 * @throws HpcException on service failure.
@@ -368,7 +368,7 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDataObjectsUploadFileSystemReady() throws HpcException;
-	
+
 	/**
 	 * Get data objects that have their data upload in-progress from file-system.
 	 *
@@ -595,7 +595,7 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException;
-	
+
 	/**
 	 * Get data objects that are in deleted status
 	 *
@@ -603,11 +603,11 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDataObject> getDeletedDataObjects() throws HpcException;
-	
+
 	/**
 	 * Check if the deleted data object is past its retention period
 	 *
-	 * @param deletedDate          The data/time the data object was deleted
+	 * @param deletedDate The data/time the data object was deleted
 	 * @return True if it is expired, or false otherwise.
 	 */
 	boolean deletedDataObjectExpired(Calendar deletedDate);
