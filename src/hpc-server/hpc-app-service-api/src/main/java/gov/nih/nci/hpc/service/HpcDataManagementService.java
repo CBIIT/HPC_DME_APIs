@@ -146,10 +146,12 @@ public interface HpcDataManagementService {
 	 * @param message              (Optional) Error message if the request failed.
 	 * @param userId               (Optional) userId if not executed in a user
 	 *                             thread.
+	 * @param size                 (Optional) The data object size or collection
+	 *                             total size.
 	 */
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId);
+			Boolean dataTransferStatus, String message, String userId, Long size);
 
 	/**
 	 * Set collection permission for a subject (user or group).
