@@ -329,7 +329,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} finally {
 				// Add an audit record of this update collection attempt.
 				dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
+						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId, null);
 			}
 
 			addCollectionUpdatedEvent(path, false, false, userId, null, null, null);
@@ -661,7 +661,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
 		// 1. The collection is less than 90 days old
-
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
@@ -674,14 +673,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Delete the collection.
-
 		boolean deleted = true;
 		String message = null;
-
+		Long totalSize = null;
 		try {
 			if (recursive) {
 				// Delete all the data objects in this hierarchy first
-				deleteDataObjectsInCollections(path, force);
+				totalSize = deleteDataObjectsInCollections(path, force);
 			}
 
 			dataManagementService.delete(path, false);
@@ -695,7 +693,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_COLLECTION, metadataEntries, null,
-					null, deleted, null, message, null);
+					null, deleted, null, message, null, totalSize);
 		}
 	}
 
@@ -1679,6 +1677,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Instantiate a response DTO
 		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
+		dataObjectDeleteResponse.setSize(systemGeneratedMetadata.getSourceSize());
 		boolean abort = false;
 
 		// Delete all the links to this data object.
@@ -1754,7 +1753,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Add an audit record of this deletion attempt.
 		dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_DATA_OBJECT, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
-				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null);
+				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null,
+				systemGeneratedMetadata.getSourceSize());
 
 		return dataObjectDeleteResponse;
 	}
@@ -2385,19 +2385,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * from it's sub-collections.
 	 *
 	 * @param path  The path at the root of the hierarchy to delete from.
-	 * @param force If true, perform hard delete.
+	 * @param force If true, perform hard delete. return The total size of the data
+	 *              objects.
 	 * @throws HpcException if it failed to delete any object in this collection.
 	 */
-	private void deleteDataObjectsInCollections(String path, Boolean force) throws HpcException {
-
+	private long deleteDataObjectsInCollections(String path, Boolean force) throws HpcException {
 		HpcCollectionDTO collectionDto = getCollectionChildren(path);
+		long totalSize = 0;
 
 		if (collectionDto.getCollection() != null) {
 			List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
 			if (!CollectionUtils.isEmpty(dataObjects)) {
 				// Delete data objects in this collection
 				for (HpcCollectionListingEntry entry : dataObjects) {
-					deleteDataObject(entry.getPath(), force);
+					totalSize += Optional.ofNullable(deleteDataObject(entry.getPath(), force).getSize()).orElse(0L);
 				}
 			}
 
@@ -2406,10 +2407,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Recursively delete data objects from this sub-collection and
 				// it's sub-collections
 				for (HpcCollectionListingEntry entry : subCollections) {
-					deleteDataObjectsInCollections(entry.getPath(), force);
+					totalSize += deleteDataObjectsInCollections(entry.getPath(), force);
 				}
 			}
 		}
+
+		return totalSize;
 	}
 
 	/**
@@ -3140,7 +3143,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
 					metadataService.getDataObjectMetadataEntries(path, false),
-					systemGeneratedMetadata.getArchiveLocation(), updated, null, message, null);
+					systemGeneratedMetadata.getArchiveLocation(), updated, null, message, null, null);
 		}
 
 		// Optionally re-generate the upload request URL.
