@@ -2086,7 +2086,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Move request is successful.
 				moveResponseItem.setResult(true);
 
-				// Optionally align the archive path for the file or collection that successfully moved in iRODS.
+				// Optionally align the archive path for the file or collection that
+				// successfully moved in iRODS.
 				if (Optional.ofNullable(bulkMoveRequest.getAlignArchivePath()).orElse(true)) {
 					if (sourcePathAttributes.getIsDirectory()) {
 						moveResponseItem.setTaskId(migrationBusService
