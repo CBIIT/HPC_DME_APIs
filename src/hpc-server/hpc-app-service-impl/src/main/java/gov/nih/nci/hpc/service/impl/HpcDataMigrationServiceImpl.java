@@ -169,6 +169,18 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void assignDataMigrationTasks() throws HpcException {
+		// If needed, re-setting the cycle iterator of migration server IDs.
+		if (dataMigrationServerIdCycleIter == null) {
+			if (StringUtils.isEmpty(dataMigrationServerIds)) {
+				throw new HpcException(
+						"No migration servers are configured. Check hpc.service.dataMigration.serverIds property",
+						HpcErrorType.SPRING_CONFIGURATION_ERROR);
+			}
+			String[] serverIds = dataMigrationServerIds.split(",");
+			logger.info("{} Data migration servers configured: {}", serverIds.length, dataMigrationServerIds);
+			dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
+		}
+
 		for (HpcDataMigrationTask dataMigrationTask : dataMigrationDAO.getUnassignedDataMigrationTasks()) {
 			String assignedServerId = dataMigrationServerIdCycleIter.next();
 			dataMigrationDAO.setDataMigrationTaskServerId(dataMigrationTask.getId(), assignedServerId);
@@ -373,18 +385,6 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void resetMigrationTasksInProcess() throws HpcException {
-		// If needed, re-setting the cycle iterator of migration server IDs.
-		if (dataMigrationServerIdCycleIter == null) {
-			if (StringUtils.isEmpty(dataMigrationServerIds)) {
-				throw new HpcException(
-						"No migration servers are configured. Check hpc.service.dataMigration.serverIds property",
-						HpcErrorType.SPRING_CONFIGURATION_ERROR);
-			}
-			String[] serverIds = dataMigrationServerIds.split(",");
-			logger.info("{} Data migration servers configured: {}", serverIds.length, dataMigrationServerIds);
-			dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
-		}
-
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0,
