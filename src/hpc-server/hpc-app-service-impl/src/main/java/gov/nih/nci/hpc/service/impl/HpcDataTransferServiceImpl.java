@@ -246,8 +246,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Instantiate the cancel collection download items query filter.
 		// We cancel any collection task item that is in RECEIVED state, or a task that
-		// is IN_PROGRESS
-		// to GLOBUS destination.
+		// is IN_PROGRESS to GLOBUS or S3 destinations.
 		HpcDataObjectDownloadTaskStatusFilter filter = new HpcDataObjectDownloadTaskStatusFilter();
 		filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		filter.setDestination(HpcDataTransferType.GLOBUS);
