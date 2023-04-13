@@ -351,8 +351,13 @@ public interface HpcDataTransferProxy {
 					.getExists(); i++) {
 				StringBuffer uniquePath = new StringBuffer();
 				String currentPath = archiveDestination.getFileId();
-				uniquePath.append(currentPath.substring(0, currentPath.lastIndexOf('/')));
-				uniquePath.append("/" + i);
+				String currentCollection = currentPath.substring(0, currentPath.lastIndexOf('/'));
+				if (i == 1) {
+					uniquePath.append(currentCollection + "/" + i);
+				} else {
+					uniquePath.append(currentCollection.substring(0, currentCollection.lastIndexOf('/')) + "/" + i);
+				}
+
 				uniquePath.append(currentPath.substring(currentPath.lastIndexOf('/')));
 				archiveDestination.setFileId(uniquePath.toString());
 			}
