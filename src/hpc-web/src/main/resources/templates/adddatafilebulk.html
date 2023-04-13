@@ -648,47 +648,47 @@
 		if($('#bulkTypeS3').prop('checked')) {
 			var bucketName = document.getElementById("bucketName").value;
 			if(!bucketName || (bucketName.trim() === "")){
-				alert("Please enter S3 Bucket Name");
+				alert("Enter S3 Bucket Name");
 				return false;
 			} 
 			var s3Path = document.getElementById("s3Path").value;
 			if(!s3Path || (s3Path.trim() === "")){
-				alert("Please enter S3 Path");
+				alert("Enter S3 Path");
 				return false;
 			}
 			var accessKey = document.getElementById("accessKey").value;
 			if(!accessKey || (accessKey.trim() === "")){
-				alert("Please enter S3 Access Key");
+				alert("Enter S3 Access Key");
 				return false;
 			}
 			var secretKey = document.getElementById("secretKey").value;
 			if(!secretKey || (secretKey.trim() === "")){
-				alert("Please enter S3 Secret Access Key");
+				alert("Enter S3 Secret Access Key");
 				return false;
 			}
 			var region = document.getElementById("region").value;
 			if(!region || (region.trim() === "")){
-				alert("Please enter S3 Region");
+				alert("Enter S3 Region");
 				return false;
 			}
 			if(s3Path === "/"){
-				alert("Please re-enter S3 Source Path.S3 Path cannot be a '/'. ");
+				alert("Re-enter S3 Source Path. S3 Path cannot be a slash (/).");
 				return false;
 			}
 		}
 		if($('#bulkTypeGC').prop('checked')) {
 			var gcBucketName = document.getElementById("gcbucketName").value;
 			if(!gcBucketName || (gcBucketName.trim() === "")){
-				alert("Please enter Google Cloud Bucket Name");
+				alert("Enter Google Cloud Bucket Name");
 				return false;
 			}
 			var gcPath = document.getElementById("gcPath").value;
 			if(!gcPath || (gcPath.trim() === "")){
-				alert("Please enter Google Cloud Path");
+				alert("Enter Google Cloud Path");
 				return false;
 			}
 			if(gcPath === "/"){
-				alert("Please re-enter Google Cloud source path. The Google Cloud path cannot be a '/'. ");
+				alert("Re-enter Google Cloud source path. The Google Cloud path cannot be a slash (/). ");
 				return false;
 			}
 		}
