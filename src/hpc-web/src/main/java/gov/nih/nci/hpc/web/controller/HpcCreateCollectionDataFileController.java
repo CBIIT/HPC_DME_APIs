@@ -604,10 +604,17 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			s3Directory.setAccount(s3Account);
 			folder.setS3ScanDirectory(s3Directory);
 			folders.add(folder);
-			Path folderPath = Paths.get(s3Path);
-			String folderName = folderPath.getFileName().toString();
-            String fromPath = "/" + s3Path;
-            String toPath = "/" + folderName;
+			String fromPath = "";
+			String toPath = "";
+			if (s3Path.equals("/")) {
+			  fromPath = "/";
+			  toPath = "/";
+			} else {
+	            Path folderPath = Paths.get(s3Path);
+	            String folderName = folderPath.getFileName().toString();
+	            fromPath = "/" + s3Path;
+	            toPath = "/" + folderName;
+			}
 			if(!fromPath.equals(toPath)) {
                 HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
                 pathDTO.setFromPath(fromPath);
