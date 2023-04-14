@@ -2961,42 +2961,65 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems) throws HpcException {
 
 		HpcPathAttributes pathAttributes = null;
+		String filename= "";
+		String fileContainerId = "";
 		for (HpcDataObjectRegistrationItemDTO singleFile : dataObjectRegistrationItems) {
 			HpcStreamingUploadSource singleFileSource = null;
 			if (singleFile.getGoogleCloudStorageUploadSource() != null) {
 				// It is a request to for a Google Cloud Storage file
 				singleFileSource = singleFile.getGoogleCloudStorageUploadSource();
+				filename = singleFileSource.getSourceLocation().getFileId();
+				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE,
 						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
 			} else if (singleFile.getS3UploadSource() != null) {
 				// It is a request for a S3 file
 				singleFileSource = singleFile.getS3UploadSource();
+				filename = singleFileSource.getSourceLocation().getFileId();
+				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(singleFileSource.getAccount(),
 						singleFileSource.getSourceLocation(), false);
 			} else if (singleFile.getGoogleDriveUploadSource() != null) {
 				// It is a request for a Google Drive file
 				singleFileSource = singleFile.getGoogleDriveUploadSource();
+				filename = singleFileSource.getSourceLocation().getFileId();
+				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE,
 						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
+			} else if (singleFile.getGlobusUploadSource() != null) {
+				// It is a request for a Globus file
+				HpcUploadSource singleGlobusFileSource = singleFile.getGlobusUploadSource();
+				String directoryPath = singleFile.getPath().substring(0,singleFile.getPath().lastIndexOf("/"));
+				filename = singleGlobusFileSource.getSourceLocation().getFileId();
+				fileContainerId = singleGlobusFileSource.getSourceLocation().getFileContainerId();
+				// Get the configuration ID.
+				String configurationId = dataManagementService.findDataManagementConfigurationId(directoryPath);
+				if (StringUtils.isEmpty(configurationId)) {
+					throw new HpcException("Can't determine configuration id for path: " + directoryPath,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+	            }
+				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GLOBUS,
+						singleGlobusFileSource.getSourceLocation(),false, configurationId, null);
 			} else {
 				continue;
 			}
+
 			if (!pathAttributes.getExists()) {
 				throw new HpcException(
-						"File does not exist: " + singleFileSource.getSourceLocation().getFileContainerId() + ":"
-								+ singleFileSource.getSourceLocation().getFileId(),
-						HpcErrorType.INVALID_REQUEST_INPUT);
+				"File does not exist: " + fileContainerId + ":"
+								+ filename,
+					HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!pathAttributes.getIsAccessible()) {
 				throw new HpcException(
-						"Endpoint is not accessible: " + singleFileSource.getSourceLocation().getFileContainerId() + ":"
-								+ singleFileSource.getSourceLocation().getFileId(),
+						"Endpoint is not accessible: " + fileContainerId + ":"
+								+ filename,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (pathAttributes.getIsDirectory()) {
 				throw new HpcException("Endpoint is a directory, not a file: "
-						+ singleFileSource.getSourceLocation().getFileContainerId() + ":"
-						+ singleFileSource.getSourceLocation().getFileId(), HpcErrorType.INVALID_REQUEST_INPUT);
+						+ fileContainerId + ":"
+						+ filename, HpcErrorType.INVALID_REQUEST_INPUT);
 
 			}
 		}
