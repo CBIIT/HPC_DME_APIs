@@ -2963,10 +2963,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcPathAttributes pathAttributes = null;
 		String filename= "";
 		String fileContainerId = "";
+		String source = "";
 		for (HpcDataObjectRegistrationItemDTO singleFile : dataObjectRegistrationItems) {
 			HpcStreamingUploadSource singleFileSource = null;
 			if (singleFile.getGoogleCloudStorageUploadSource() != null) {
 				// It is a request to for a Google Cloud Storage file
+				source = "Google Cloud";
 				singleFileSource = singleFile.getGoogleCloudStorageUploadSource();
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
@@ -2974,6 +2976,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
 			} else if (singleFile.getS3UploadSource() != null) {
 				// It is a request for a S3 file
+				source = "S3";
 				singleFileSource = singleFile.getS3UploadSource();
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
@@ -2981,6 +2984,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						singleFileSource.getSourceLocation(), false);
 			} else if (singleFile.getGoogleDriveUploadSource() != null) {
 				// It is a request for a Google Drive file
+				source = "Google Drive";
 				singleFileSource = singleFile.getGoogleDriveUploadSource();
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
@@ -2988,6 +2992,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
 			} else if (singleFile.getGlobusUploadSource() != null) {
 				// It is a request for a Globus file
+				source = "Globus";
 				HpcUploadSource singleGlobusFileSource = singleFile.getGlobusUploadSource();
 				String directoryPath = singleFile.getPath().substring(0,singleFile.getPath().lastIndexOf("/"));
 				filename = singleGlobusFileSource.getSourceLocation().getFileId();
@@ -3006,18 +3011,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			if (!pathAttributes.getExists()) {
 				throw new HpcException(
-				"File does not exist: " + fileContainerId + ":"
+				source + " file does not exist: " + fileContainerId + ":"
 								+ filename,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!pathAttributes.getIsAccessible()) {
 				throw new HpcException(
-						"Endpoint is not accessible: " + fileContainerId + ":"
+						source + " file is not accessible: " + fileContainerId + ":"
 								+ filename,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (pathAttributes.getIsDirectory()) {
-				throw new HpcException("Endpoint is a directory, not a file: "
+				throw new HpcException(source + " endpoint is a directory, not a file: "
 						+ fileContainerId + ":"
 						+ filename, HpcErrorType.INVALID_REQUEST_INPUT);
 
