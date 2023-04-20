@@ -538,6 +538,14 @@ body.loading .overlay{
 								text: 'Excel',
 								messageTop: reportHeaderTitle,
 								titleAttr: 'Export to Excel',
+								exportOptions: {
+											format: {
+												body: function ( data, row, column, node ) {
+												// Replace <br/> by line feed
+												return data.split('<br>').join("\r\n");
+												}
+											}
+										},
 							}
 					],
 			"columnDefs": [{"targets": [0,1], "orderable": false}],
