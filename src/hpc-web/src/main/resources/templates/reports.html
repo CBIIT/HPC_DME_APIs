@@ -542,10 +542,16 @@ body.loading .overlay{
 											format: {
 												body: function ( data, row, column, node ) {
 												// Replace <br/> by line feed
-												return data.split('<br>').join("\r\n");
+												if(column === 1){
+													return data.split('<br>').join("\r\n");
+												} else {
+													data = data.replace(/&lt;/g, "<");
+													data = data.replace(/&gt;/g, ">");
+													return data;
 												}
 											}
-										},
+										}
+									},
 							}
 					],
 			"columnDefs": [{"targets": [0,1], "orderable": false}],
