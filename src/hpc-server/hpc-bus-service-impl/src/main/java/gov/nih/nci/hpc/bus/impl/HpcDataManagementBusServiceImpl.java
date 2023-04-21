@@ -2961,7 +2961,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems) throws HpcException {
 
 		HpcPathAttributes pathAttributes = null;
-		String filename= "";
+		String filename = "";
 		String fileContainerId = "";
 		String source = "";
 		for (HpcDataObjectRegistrationItemDTO singleFile : dataObjectRegistrationItems) {
@@ -2994,37 +2994,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// It is a request for a Globus file
 				source = "Globus";
 				HpcUploadSource singleGlobusFileSource = singleFile.getGlobusUploadSource();
-				String directoryPath = singleFile.getPath().substring(0,singleFile.getPath().lastIndexOf("/"));
+				String directoryPath = singleFile.getPath().substring(0, singleFile.getPath().lastIndexOf("/"));
 				filename = singleGlobusFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleGlobusFileSource.getSourceLocation().getFileContainerId();
 				// Get the configuration ID.
 				String configurationId = dataManagementService.findDataManagementConfigurationId(directoryPath);
 				if (StringUtils.isEmpty(configurationId)) {
 					throw new HpcException("Can't determine configuration id for path: " + directoryPath,
-						HpcErrorType.INVALID_REQUEST_INPUT);
-	            }
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GLOBUS,
-						singleGlobusFileSource.getSourceLocation(),false, configurationId, null);
+						singleGlobusFileSource.getSourceLocation(), false, configurationId, null);
 			} else {
 				continue;
 			}
 
 			if (!pathAttributes.getExists()) {
-				throw new HpcException(
-				source + " file does not exist: " + fileContainerId + ":"
-								+ filename,
-					HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException(source + " file does not exist: " + fileContainerId + ":" + filename,
+						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!pathAttributes.getIsAccessible()) {
-				throw new HpcException(
-						source + " file is not accessible: " + fileContainerId + ":"
-								+ filename,
+				throw new HpcException(source + " file is not accessible: " + fileContainerId + ":" + filename,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (pathAttributes.getIsDirectory()) {
-				throw new HpcException(source + " endpoint is a directory, not a file: "
-						+ fileContainerId + ":"
-						+ filename, HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException(
+						source + " endpoint is a directory, not a file: " + fileContainerId + ":" + filename,
+						HpcErrorType.INVALID_REQUEST_INPUT);
 
 			}
 		}
@@ -3182,7 +3178,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
 				throw new HpcException(
 						"Upload URL re-generation not allowed. Data object at " + path + " already archived",
-						HpcErrorType.REQUEST_REJECTED);
+						HpcErrorType.REQUEST_REJECTED).withSuppressStackTraceLogging(true);
 			}
 
 			// Re-generate the upload request URL.
