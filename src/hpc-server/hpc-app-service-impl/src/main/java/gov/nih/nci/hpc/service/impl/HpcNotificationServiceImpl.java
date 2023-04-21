@@ -30,11 +30,15 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +58,10 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   // Map notification delivery method to its notification sender impl.
   private Map<HpcNotificationDeliveryMethod, HpcNotificationSender> notificationSenders =
       new EnumMap<>(HpcNotificationDeliveryMethod.class);
+
+  //Security Service
+  @Autowired
+  private HpcSecurityService securityService = null;
 
   // The Notification DAO instance.
   @Autowired
@@ -120,6 +128,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
 
   @Override
   public void addUpdateNotificationSubscription(
+      String userId,
       HpcNotificationSubscription notificationSubscription) throws HpcException {
     // Input validation.
     if (!isValidNotificationSubscription(notificationSubscription)) {
@@ -133,8 +142,13 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
       throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
     }
 
+    String nciUserId = userId;
+    if(StringUtils.isEmpty(nciUserId)) {
+      nciUserId = invoker.getNciAccount().getUserId();
+    }
+
     // Validate subscription for usage summary report is allowed for system admin only
-    if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN)) {
+    if (securityService.getUserRole(nciUserId).equals(HpcUserRole.SYSTEM_ADMIN)) {
       if (notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_REPORT)
           || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT)
@@ -152,11 +166,20 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
       }
     }
 
+    //If the invoker is requesting the subscription for someone else
+    //then ensure that the invoker is a system admin or group admin
+    if(nciUserId != invoker.getNciAccount().getUserId()) {
+      if(!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
+        !invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+          throw new HpcException("Not authorized to setup the subscription", HpcRequestRejectReason.NOT_AUTHORIZED);
+      }
+    }
+
     // Validate the notification triggers.
     validateNotificationTriggers(notificationSubscription.getNotificationTriggers());
 
     // Upsert to DB.
-    notificationDAO.upsertSubscription(invoker.getNciAccount().getUserId(),
+    notificationDAO.upsertSubscription(nciUserId,
         notificationSubscription);
   }
 
