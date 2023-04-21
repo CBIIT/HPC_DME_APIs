@@ -64,11 +64,11 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response subscribeNotifications(
+    public Response subscribeNotifications(String userId,
       HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) {
 			try {
         HpcNotificationSubscriptionsResponseDTO serviceResponseDto =
-          notificationBusService.subscribeNotifications(
+          notificationBusService.subscribeNotifications(userId,
           notificationSubscriptions);
         return okResponse(serviceResponseDto, false);
 			} catch(HpcException e) {
