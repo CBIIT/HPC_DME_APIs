@@ -36,7 +36,8 @@ public abstract class HpcLocalEntityProcessor {
 	}
 
 	public abstract boolean process(HpcPathAttributes entity, String localPath, String filePathBaseName, String destinationBasePath,
-			String logFile, String recordFile, boolean metadataOnly, boolean extractMetadata, boolean directUpload, boolean checksum, String metadataFile)
+			String logFile, String recordFile, boolean metadataOnly, boolean extractMetadata, boolean directUpload, 
+			boolean checksum, boolean replaceModifiedFiles, String metadataFile)
 			throws RecordProcessingException;
 
   protected List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly, String externalMetadataFile)
@@ -77,10 +78,12 @@ public abstract class HpcLocalEntityProcessor {
       if (metadataOnly) {
         return null;
       }
-      HpcMetadataEntry nameEntry = new HpcMetadataEntry();
-      nameEntry.setAttribute("name");
-      nameEntry.setValue(file.getName());
-      metadataEntries.add(nameEntry);
+      if (!file.getIsDirectory()) {
+        HpcMetadataEntry nameEntry = new HpcMetadataEntry();
+        nameEntry.setAttribute("object_name");
+        nameEntry.setValue(file.getName());
+        metadataEntries.add(nameEntry);
+      }
       HpcMetadataEntry dateEntry = new HpcMetadataEntry();
       dateEntry.setAttribute("modified_date");
       if (file.getUpdatedDate() != null) {

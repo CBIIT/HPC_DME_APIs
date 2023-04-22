@@ -64,7 +64,7 @@
     var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
     var selectedRowsData = [];
     var totalSize = [[${totalSize}]];
-    var selectedColumns = [[${selectedColumns}]];
+    var deselectedColumns = [[${deselectedColumns}]];
 /*]]>*/
 </script>
 
@@ -151,10 +151,10 @@
 			      {
 			        title: 'Hide All Columns',
 			        action: function ($event) {
-			        	selectedColumns = [];
 			        	this.grid.columns.forEach(function(col){
 			                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission'&& col.displayName != 'Create Link') {
 			                	   col.hideColumn();
+			                	   deselectedColumns.push(col.field);
 			                 }  
 			        	});
 			        	this.grid.api.core.notifyDataChange("column");
@@ -169,7 +169,6 @@
 				        	this.grid.columns.forEach(function(col){
 				                   if(!col.visible){
 				                	   col.showColumn();
-				                	   selectedColumns.push(col.field);
 				                   }
 				        	});
 				        	this.grid.api.core.notifyDataChange("column");
@@ -276,12 +275,11 @@
           });
 
           gridApi.pagination.on.paginationChanged($scope, function (newPage, pageSize) {
-      		  selectedColumns = [];
         	
         	  $scope.gridOptions1.columnDefs.forEach(function(col){
-                if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
-                	selectedColumns.push(col.field);
-                }  
+        		if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
+                 	deselectedColumns.push(col.field);
+                }
      		  });
         	
               if(pageSize != parseInt(currentPageSize))
@@ -340,11 +338,11 @@
           });
           
           gridApi.core.on.columnVisibilityChanged($scope, function(col) {
-        	  if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
-               	selectedColumns.push(col.field);
-              } else {
-            	selectedColumns = selectedColumns.filter(e => e !== col.field);
-              }
+	    	  if(!col.visible) {
+	           	deselectedColumns.push(col.field);
+	          } else {
+	        	deselectedColumns = deselectedColumns.filter(e => e !== col.field);
+	          }
           });
           
           var metaSet = new Set(); 
@@ -377,14 +375,14 @@
 	    	  }
 	      }
 	      
-	      var len = selectedColumns.length;
+	      var len = deselectedColumns.length;
 	      $scope.gridOptions1.columnDefs.forEach(function(col){
-          	if(len != 0 && col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download' && col.displayName != 'Permission' && col.displayName != 'Create Link') {
-          		if(selectedColumns != null && selectedColumns.length && selectedColumns.indexOf(col.field) < 0)
-           	 		col.visible = false;
-          	} else {
-          		selectedColumns.push(col.field);
-          	}
+	    	  if(len != 0 && col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download' && col.displayName != 'Permission') {
+	          	if(deselectedColumns != null && deselectedColumns.length && deselectedColumns.indexOf(col.field) >= 0)
+	           	 	col.visible = false;
+	          } else {
+	          	  col.visible = true;
+	          }
 		  });
 	      gridApi.core.notifyDataChange("column");
    	
@@ -405,11 +403,10 @@
         };
         
         $scope.export = function() {
-        	var selectedColumns = [];
-        	
+      	
         	$scope.gridOptions1.columnDefs.forEach(function(col){
-                if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
-                	selectedColumns.push(col.field);
+        		if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
+                	deselectedColumns.push(col.field);
               }  
      		});
 
@@ -421,7 +418,7 @@
     		document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(currentPageSize);
     		document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = parseInt(currentPage);
     		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
-    		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
+    		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
     		document.getElementById("simplesearchform").submit();
         };
         
@@ -469,7 +466,7 @@
 	          document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
 	          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 		      document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
-		      document.getElementById("downloadFilesform").elements.namedItem("selectedColumns").value = selectedColumns;
+		      document.getElementById("downloadFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	          document.getElementById("downloadType").value = "datafiles";
 	          document.getElementById("downloadFilesform").submit();
           } else {
@@ -482,7 +479,7 @@
 	        document.getElementById("bulkPermissionsform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
-	        document.getElementById("bulkPermissionsform").elements.namedItem("selectedColumns").value = selectedColumns;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	        document.getElementById("downloadType3").value = "datafiles";
 	        document.getElementById("bulkPermissionsform").submit();
           }
@@ -528,7 +525,7 @@
             document.getElementById("linkFilesform").elements.namedItem("pageSize").value =  currentPageSize;
             document.getElementById("linkFilesform").elements.namedItem("queryName").value = queryName;
             document.getElementById("linkFilesform").elements.namedItem("totalSize").value = totalSize.toString();
-            document.getElementById("linkFilesform").elements.namedItem("selectedColumns").value = selectedColumns;
+            document.getElementById("linkFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
             document.getElementById("linkFilesform").submit();
           };
           
@@ -661,7 +658,7 @@
 						<input type="hidden" id="queryName" name="queryName"/>
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="totalSize" name="totalSize"/>
-						<input type="hidden" id="selectedColumns" name="selectedColumns" value=""/>
+						<input type="hidden" id="deselectedColumns" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
@@ -673,7 +670,7 @@
 						<input type="hidden" id="pageSize1" name="pageSize"/>
 						<input type="hidden" id="queryName1" name="queryName"/>
 						<input type="hidden" id="totalSize1" name="totalSize"/>
-						<input type="hidden" id="selectedColumns1" name="selectedColumns" value=""/>
+						<input type="hidden" id="deselectedColumns1" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="linkFilesform" action="#"
 						role="form" th:action="@{/linkfiles}" 
@@ -684,7 +681,7 @@
 						<input type="hidden" id="pageSize2" name="pageSize"/>
 						<input type="hidden" id="queryName2" name="queryName"/>
 						<input type="hidden" id="totalSize2" name="totalSize"/>
-						<input type="hidden" id="selectedColumns2" name="selectedColumns" value=""/>
+						<input type="hidden" id="deselectedColumns2" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -696,7 +693,7 @@
 						<input type="hidden" id="pageSize3" name="pageSize"/>
 						<input type="hidden" id="queryName3" name="queryName"/>
 						<input type="hidden" id="totalSize3" name="totalSize"/>
-						<input type="hidden" id="selectedColumns3" name="selectedColumns" value=""/>
+						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -778,7 +775,7 @@
     	
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
-		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
+		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 		document.getElementById("simplesearchform").submit();
     }
 

@@ -200,7 +200,13 @@ CREATE TABLE "IRODS"."HPC_DATA_MANAGEMENT_CONFIGURATION"
    GLOBUS_DOWNLOAD_PATH VARCHAR2(2700),
    GLOBUS_DOWNLOAD_DIRECTORY VARCHAR2(2700),
    S3_UPLOAD_ARCHIVE_CONFIGURATION_ID VARCHAR2(50),
-   S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID VARCHAR2(50)
+   S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID VARCHAR2(50),
+   CREATE_ARCHIVE_METADATA CHAR default 1 not null,
+   GLOBUS_ENCRYPTED_TRANSFER CHAR default 0 not null,
+   GLOBUS_HYPERFILE_ARCHIVE CHAR default 0 not null,
+   REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL CHAR default '0',
+   DELETION_ALLOWED_AFTER_90_DAYS CHAR default '0',
+   RESTRICT_METADATA CHAR default 0 not null
 )
 ;
 comment on table IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION" is 'The data management configurations supported by HPC-DME';
@@ -236,6 +242,21 @@ comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_DOWNLOAD_DIR
 comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_UPLOAD_ARCHIVE_CONFIGURATION_ID" is 'The S3 archive to be used for uploading new files for this DOC';
 
 comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID" is 'The default (was first) S3 archive to use for downloading files for this DOC';
+
+comment on column HPC_DATA_MANAGEMENT_CONFIGURATION.CREATE_ARCHIVE_METADATA is 'An indicator whether archive metadata should be created for uploaded data objects'
+
+comment on column HPC_DATA_MANAGEMENT_CONFIGURATION.GLOBUS_ENCRYPTED_TRANSFER is 'Globus encrypter transfer indicator'
+
+comment on column HPC_DATA_MANAGEMENT_CONFIGURATION.GLOBUS_HYPERFILE_ARCHIVE is 'Hyperfile POSIX archive indicator'
+
+comment on column HPC_DATA_MANAGEMENT_CONFIGURATION.REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL is 'Indicator if a download URL should be created with a registration completion event'
+
+comment on column HPC_DATA_MANAGEMENT_CONFIGURATION.DELETION_ALLOWED_AFTER_90_DAYS is 'Indicator if deletion is allowed after 90 days'
+
+COMMENT ON COLUMN HPC_DATA_MANAGEMENT_CONFIGURATION.RESTRICT_METADATA IS 'Indicator if metadata should be pre-declared in the validation rules'
+
+
+
 
 
 

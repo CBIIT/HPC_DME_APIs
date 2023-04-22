@@ -29,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
@@ -119,10 +120,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER = " and dataObject.level_label = ?)";
 	private static final String DATA_OBJECT_LEVEL_LABEL_NOT_EQUAL_FILTER = " and dataObject.level_label <> ?)";
 	private static final String DATA_OBJECT_LEVEL_LABEL_LIKE_FILTER = " and dataObject.level_label like ?)";
+	private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER_TERM = " dataObject.level_label = ?)";
 
 	private static final String COLLECTION_LEVEL_LABEL_EQUAL_FILTER = " and collection.level_label = ?)";
 	private static final String COLLECTION_LEVEL_LABEL_NOT_EQUAL_FILTER = " and collection.level_label <> ?)";
 	private static final String COLLECTION_LEVEL_LABEL_LIKE_FILTER = " and collection.level_label like ?)";
+	private static final String COLLECTION_LEVEL_LABEL_EQUAL_FILTER_TERM = " collection.level_label = ?)";
 
 	private static final String USER_ACCESS_SQL = "(select 1 from R_USER_MAIN user_main, R_USER_GROUP groups, R_OBJT_ACCESS obj_access "
 			+ "where user_main.USER_ID=groups.USER_ID " + "and groups.GROUP_USER_ID=obj_access.USER_ID "
@@ -143,7 +146,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DETAILED_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
 			+ "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
 			+ "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
-			+ "mv.meta_attr_name, mv.meta_attr_value, mv.data_level, mv.level_label, mv.coll_id "
+			+ "mv.meta_attr_name, mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label, mv.coll_id "
 			+ "from r_coll_hierarchy_meta_main mv, r_coll_main coll "
 			+ "where mv.object_id = coll.coll_id and mv.object_path in ";
 
@@ -153,14 +156,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
 			+ "data.data_path, data.data_owner_name, data.create_ts, mv.meta_attr_name, "
-			+ "mv.meta_attr_value, mv.data_level, mv.level_label "
+			+ "mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label "
 			+ "from r_data_hierarchy_meta_main mv, r_data_main data, r_coll_main coll "
 			+ "where mv.object_id = data.data_id and data.coll_id = coll.coll_id and ( exists (select 1 from ("
 			+ "select distinct object_id from r_data_hierarchy_meta_main main1 where ";
 
 	private static final String GET_ALL_DATA_OBJECT_PATHS_SQL = "select main1.object_id, coll.coll_name, main1.object_path, "
 			+ "data.data_owner_name, data.create_ts, main1.meta_attr_name, "
-			+ "main1.meta_attr_value, main1.data_level, main1.level_label "
+			+ "main1.meta_attr_value, main1.meta_attr_unit, main1.data_level, main1.level_label "
 			+ "from (select data_id,coll_id,data_size,data_path,data_owner_name,create_ts from R_DATA_MAIN where ";
 
 	private static final String GET_ALL_DATA_OBJECT_PATHS2_SQL = ") data join r_coll_main coll on data.coll_id=coll.coll_id "
@@ -172,31 +175,42 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_ALL_DATA_OBJECT_COUNT2_SQL = " and exists(select 1 from r_data_hierarchy_user_meta_main where OBJECT_ID=data_id) ";
 
-	private static final String GET_COLLECTION_METADATA_SQL = "select coll_id, meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
+	private static final String GET_HIERARCHICAL_COLLECTION_METADATA_SQL = "select coll_id, meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_coll_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
-	private static final String GET_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
+	private static final String GET_COLLECTION_METADATA_SQL = "select META_ATTR_NAME, META_ATTR_VALUE, META_ATTR_UNIT, 1 as DATA_LEVEL, null as LEVEL_LABEL "
+			+ "from R_META_MAIN meta_main, R_OBJT_METAMAP metamap, R_COLL_MAIN coll_main "
+			+ "where coll_main.COLL_NAME = ? and meta_main.META_ID = metamap.META_ID and coll_main.COLL_ID = metamap.OBJECT_ID";
+
+	private static final String GET_HIERARCHICAL_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_data_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
-	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main main1 "
-			+ "where exists " + USER_ACCESS_SQL;
+	private static final String GET_DATA_OBJECT_METADATA_SQL = "select META_ATTR_NAME, META_ATTR_VALUE, META_ATTR_UNIT, 1 as DATA_LEVEL, null as LEVEL_LABEL "
+			+ "from R_META_MAIN meta_main, R_OBJT_METAMAP metamap, R_DATA_MAIN data_main, R_COLL_MAIN coll_main "
+			+ "where coll_main.COLL_NAME = ? and data_main.DATA_NAME = ? "
+			+ "and data_main.COLL_ID = coll_main.COLL_ID and meta_main.META_ID = metamap.META_ID and data_main.DATA_ID = metamap.OBJECT_ID";
 
-	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main main1 "
-			+ "where exists " + USER_ACCESS_SQL;
+	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main main1";
+
+	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main main1";
 
 	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "select level_label, rtrim(xmlagg(xmlelement(e, meta_attr_name, ',').extract('//text()') "
-			+ "order by meta_attr_name).getClobVal(),',') as attributes from (" + GET_COLLECTION_METADATA_ATTRIBUTES_SQL
-			+ ")";
+			+ "order by meta_attr_name).getClobVal(),',') as attributes from (" + GET_COLLECTION_METADATA_ATTRIBUTES_SQL;
 
 	private static final String GET_DATA_OBJECT_METADATA_AGGREGATE_SQL = "select level_label, rtrim(xmlagg(xmlelement(e, meta_attr_name, ',').extract('//text()') "
-			+ "order by meta_attr_name).getClobVal(),',') as attributes from ("
-			+ GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL + ")";
+			+ "order by meta_attr_name).getClobVal(),',') as attributes from (" + GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL;
 
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = " group by level_label order by level_label";
 
 	private static final String GET_METADATA_MODIFIED_AT_SQL = "select max(cast(modify_ts as bigint)) from r_objt_metamap where object_id = ?";
 
 	private static final String REFRESH_VIEWS_SQL = "call REFRESH_HIERARCHY_META_VIEW()";
+
+	private static final String GET_DATA_OBJECTS_SQL = "select data_main.DATA_ID, data_main.COLL_ID, data_main.DATA_NAME, coll_main.COLL_NAME, "
+			+ "data_main.DATA_SIZE, data_main.DATA_PATH, data_main.DATA_OWNER_NAME, data_main.CREATE_TS "
+			+ "from R_META_MAIN meta_main, R_OBJT_METAMAP metamap, R_DATA_MAIN data_main, R_COLL_MAIN coll_main "
+			+ "where data_main.COLL_ID = coll_main.COLL_ID and meta_main.META_ID = metamap.META_ID and data_main.DATA_ID = metamap.OBJECT_ID "
+			+ "and meta_main.META_ATTR_NAME = ? and meta_main.META_ATTR_VALUE = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -277,9 +291,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setCreatedAt(cal);
 		searchMetadataEntry.setAttribute(rs.getString(9));
 		searchMetadataEntry.setValue(rs.getString(10));
-		Long level = rs.getLong(11);
+		searchMetadataEntry.setUnit(rs.getString(11));
+		Long level = rs.getLong(12);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
-		searchMetadataEntry.setLevelLabel(rs.getString(12));
+		searchMetadataEntry.setLevelLabel(rs.getString(13));
 
 		return searchMetadataEntry;
 	};
@@ -297,9 +312,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setCreatedAt(cal);
 		searchMetadataEntry.setAttribute(rs.getString(6));
 		searchMetadataEntry.setValue(rs.getString(7));
-		Long level = rs.getLong(8);
+		searchMetadataEntry.setUnit(rs.getString(8));
+		Long level = rs.getLong(9);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
-		searchMetadataEntry.setLevelLabel(rs.getString(9));
+		searchMetadataEntry.setLevelLabel(rs.getString(10));
 
 		return searchMetadataEntry;
 	};
@@ -327,10 +343,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setSpecColType(rs.getString(14));
 		searchMetadataEntry.setAttribute(rs.getString(15));
 		searchMetadataEntry.setValue(rs.getString(16));
-		Integer level = rs.getInt(17);
+		searchMetadataEntry.setUnit(rs.getString(17));
+		Integer level = rs.getInt(18);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
-		searchMetadataEntry.setLevelLabel(rs.getString(18));
-		Long metaCollId = rs.getLong(19);
+		searchMetadataEntry.setLevelLabel(rs.getString(19));
+		Long metaCollId = rs.getLong(20);
 		searchMetadataEntry.setMetaCollectionId(metaCollId != null ? metaCollId.intValue() : null);
 
 		return searchMetadataEntry;
@@ -349,6 +366,31 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		}
 		return metadataEntry;
 	};
+	private RowMapper<HpcDataObject> dataObjectRowMapper = (rs, rowNum) -> {
+		HpcDataObject dataObject = new HpcDataObject();
+
+		dataObject.setId(rs.getInt("DATA_ID"));
+		dataObject.setCollectionId(rs.getInt("COLL_ID"));
+		dataObject.setCollectionName(rs.getString("COLL_NAME"));
+		dataObject.setAbsolutePath(rs.getString("COLL_NAME") + "/" + rs.getString("DATA_NAME"));
+		dataObject.setDataSize(rs.getLong("DATA_SIZE"));
+		dataObject.setDataPath(rs.getString("DATA_PATH"));
+		dataObject.setDataOwnerName(rs.getString("DATA_OWNER_NAME"));
+
+		String createdAtStr = rs.getString("CREATE_TS");
+		if (createdAtStr != null) {
+			try {
+				Calendar createdAt = Calendar.getInstance();
+				createdAt.setTimeInMillis(Long.valueOf(createdAtStr) * 1000L);
+				dataObject.setCreatedAt(createdAt);
+
+			} catch (NumberFormatException e) {
+				logger.error("Unexpected timestamp value: [{}] - {}", dataObject.getAbsolutePath(), createdAtStr);
+			}
+		}
+
+		return dataObject;
+	};
 
 	// SQL Maps from operators to queries and filters.
 	private HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
@@ -361,6 +403,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	/** Constructor for Spring Dependency Injection. */
 	private HpcMetadataDAOImpl(int fetchSize) {
 		this.fetchSize = fetchSize;
+
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.EQUAL, GET_DATA_OBJECT_IDS_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.NOT_EQUAL, GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.LIKE, GET_DATA_OBJECT_IDS_LIKE_SQL);
@@ -563,7 +606,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public List<HpcMetadataEntry> getCollectionMetadata(String path, int minLevel) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, collectionMetadataEntryRowMapper, path, minLevel);
+			return jdbcTemplate.query(GET_HIERARCHICAL_COLLECTION_METADATA_SQL, collectionMetadataEntryRowMapper, path,
+					minLevel);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection hierarchical metadata: " + e.getMessage(),
@@ -572,9 +616,21 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 
 	@Override
+	public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, metadataEntryRowMapper, path);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get collection metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
 	public List<HpcMetadataEntry> getDataObjectMetadata(String path, int minLevel) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, path, minLevel);
+			return jdbcTemplate.query(GET_HIERARCHICAL_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, path,
+					minLevel);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data object hierarchical metadata: " + e.getMessage(),
@@ -583,17 +639,49 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 
 	@Override
+	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException {
+		try {
+			String collectionPath = path.substring(0, path.lastIndexOf('/'));
+			String dataObjectName = path.substring(path.lastIndexOf('/') + 1);
+			return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, collectionPath,
+					dataObjectName);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get data object metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException {
+		// Input validation
+		if (metadataQueries.size() != 1) {
+			throw new HpcException("Unexpected number of metadata queries received: " + metadataQueries.size(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		HpcMetadataQuery metadataQuery = metadataQueries.get(0);
+		if (!HpcMetadataQueryOperator.EQUAL.equals(metadataQuery.getOperator())) {
+			throw new HpcException("Unexpected operator in metadata received: " + metadataQuery.getOperator(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		return jdbcTemplate.query(GET_DATA_OBJECTS_SQL, dataObjectRowMapper, metadataQuery.getAttribute(),
+				metadataQuery.getValue());
+	}
+
+	@Override
 	public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel,
 			String dataManagementUsername) throws HpcException {
 		return getMetadataAttributes(GET_COLLECTION_METADATA_AGGREGATE_SQL, levelLabel, dataManagementUsername,
-				COLLECTION_LEVEL_LABEL_EQUAL_FILTER);
+				COLLECTION_LEVEL_LABEL_EQUAL_FILTER_TERM);
 	}
 
 	@Override
 	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel,
 			String dataManagementUsername) throws HpcException {
 		return getMetadataAttributes(GET_DATA_OBJECT_METADATA_AGGREGATE_SQL, levelLabel, dataManagementUsername,
-				DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER);
+				DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER_TERM);
 	}
 
 	@Override
@@ -1029,15 +1117,30 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			String dataManagementUsername, String sqlLevelLabelFilter) throws HpcException {
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
-		args.add(dataManagementUsername);
 
 		sqlQueryBuilder.append(query);
+		boolean usernamePresent = false;
+
+		// Add a query to only include entities the user can access.
+		if (dataManagementUsername != null && !dataManagementUsername.isEmpty()) {
+			sqlQueryBuilder.append(" where exists ");
+			sqlQueryBuilder.append(USER_ACCESS_SQL);
+			args.add(dataManagementUsername);
+			usernamePresent = true;
+		}
 
 		// Add level label filter if provided.
 		if (levelLabel != null && !levelLabel.isEmpty()) {
+			if(usernamePresent) {
+				sqlQueryBuilder.append(" and");
+			} else {
+				sqlQueryBuilder.append(" where");
+			}
 			sqlQueryBuilder.append(sqlLevelLabelFilter);
 			args.add(levelLabel);
 		}
+
+		sqlQueryBuilder.append(")");
 
 		// Add the grouping and order SQL.
 		sqlQueryBuilder.append(GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL);

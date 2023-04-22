@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
@@ -411,7 +412,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		HpcCompleteMultipartUploadResponseDTO responseDTO = null;
 
 		try {
-			responseDTO = dataManagementBusService.completeMultipartUpload(toNormalizedPath(path),
+			// Note that the completion of upload w/ URL was extended to single part URLs.
+			// However, for now - we kept the endpoint as-is and it will be updated in a
+			// future change
+			responseDTO = dataManagementBusService.completeUrlUpload(toNormalizedPath(path),
 					completeMultipartUploadRequest);
 
 		} catch (HpcException e) {
@@ -535,11 +539,13 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 	@Deprecated
 	@Override
-	public Response getDataObjectV1(String path, Boolean includeAcl) {
+	public Response getDataObjectV1(String path, Boolean includeAcl, Boolean excludeAttributes, Boolean excludeParentMetadata) {
 		HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
 		try {
 			HpcDataObjectDTO dataObject = dataManagementBusService.getDataObjectV1(toNormalizedPath(path),
-					includeAcl != null ? includeAcl : false);
+					Optional.ofNullable(includeAcl).orElse(false),
+					Optional.ofNullable(excludeAttributes).orElse(false),
+					Optional.ofNullable(excludeParentMetadata).orElse(false));
 			if (dataObject != null) {
 				dataObjects.getDataObjects().add(dataObject);
 			}
@@ -552,11 +558,13 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getDataObject(String path, Boolean includeAcl) {
+	public Response getDataObject(String path, Boolean includeAcl, Boolean excludeAttributes, Boolean excludeParentMetadata) {
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObject = null;
 		try {
 			dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path),
-					includeAcl != null ? includeAcl : false);
+					Optional.ofNullable(includeAcl).orElse(false),
+					Optional.ofNullable(excludeAttributes).orElse(false),
+					Optional.ofNullable(excludeParentMetadata).orElse(false));
 
 		} catch (HpcException e) {
 			return errorResponse(e);
