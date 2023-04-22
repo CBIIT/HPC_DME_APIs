@@ -74,6 +74,9 @@ public interface HpcDataTransferService {
 	 *                                       directly upload file into archive).
 	 * @param uploadParts                    (Optional) The number of parts when
 	 *                                       generating upload request URL.
+	 * @param uploadCompletion               (Optional) An indicator if the caller
+	 *                                       will be completing a single part
+	 *                                       upload.
 	 * @param uploadRequestURLChecksum       A checksum provided by the caller to be
 	 *                                       attached to the upload request URL.
 	 * @param path                           The data object registration path.
@@ -90,9 +93,9 @@ public interface HpcDataTransferService {
 	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
-			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum,
-			String path, String dataObjectId, String userId, String callerObjectId, String configurationId)
-			throws HpcException;
+			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
+			String uploadRequestURLChecksum, String path, String dataObjectId, String userId, String callerObjectId,
+			String configurationId) throws HpcException;
 
 	/**
 	 * Complete a multipart upload.
@@ -551,9 +554,10 @@ public interface HpcDataTransferService {
 	 *
 	 * @param downloadTask     The download task to update progress
 	 * @param bytesTransferred The bytes transferred so far.
+	 * @return true if the task was updated, or false if the task no longer exist (removed / canceled).
 	 * @throws HpcException on service failure.
 	 */
-	public void updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, long bytesTransferred)
+	public boolean updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, long bytesTransferred)
 			throws HpcException;
 
 	/**
@@ -687,8 +691,7 @@ public interface HpcDataTransferService {
 	 * @param taskId The collection download task ID to cancel items for.
 	 * @throws HpcException on service failure.
 	 */
-	public void cancelCollectionDownloadTaskItems(String taskId)
-			throws HpcException;
+	public void cancelCollectionDownloadTaskItems(String taskId) throws HpcException;
 
 	/**
 	 * Retry a collection download task. This will retry all failed download items
@@ -705,7 +708,8 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, String retryUserId) throws HpcException;
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, String retryUserId)
+			throws HpcException;
 
 	/**
 	 * Get collection download tasks in process.

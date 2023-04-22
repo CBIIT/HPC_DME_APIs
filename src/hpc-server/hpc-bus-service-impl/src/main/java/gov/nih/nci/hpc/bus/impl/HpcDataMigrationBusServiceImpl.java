@@ -376,11 +376,6 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		validateMigrationRequest(path, migrationRequest, alignArchivePath);
 
-		// Validate that data object exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -400,9 +395,12 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		if (dataTransferStatus == null) {
 			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
 		}
-		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-			throw new HpcException("Object is not in archived state yet. It is in "
-					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)
+				&& !dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
+			throw new HpcException(
+					"Data Object [" + path + "] is not in archived or soft-deleted state. It is in "
+							+ metadata.getDataTransferStatus().value() + " state",
+					HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
 
 		return metadata;
@@ -564,7 +562,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(path,
 						userId, null, null,
 						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
-						collectionMigrationTaskId, alignArchivePath);
+						collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize());
 				dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
 						HpcDataMigrationResult.IGNORED, "Invalid migration request: " + e.getMessage(), null, null);
 				migrationResponse.setTaskId(dataObjectMigrationTask.getId());
@@ -578,7 +576,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		migrationResponse.setTaskId(dataMigrationService.createDataObjectMigrationTask(path, userId,
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
 				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
-				collectionMigrationTaskId, alignArchivePath).getId());
+				collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize()).getId());
 
 		return migrationResponse;
 	}
