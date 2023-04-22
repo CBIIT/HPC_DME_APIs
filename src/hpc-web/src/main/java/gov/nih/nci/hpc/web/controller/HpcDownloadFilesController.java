@@ -143,9 +143,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				hpcSaveSearch.setPageSize(Integer.parseInt(pageSize));
 			hpcSaveSearch.setQueryName(request.getParameter("queryName"));
 			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
-			String[] selectedColumns =  request.getParameterValues("selectedColumns");
-			if(selectedColumns != null && StringUtils.isNotEmpty(selectedColumns[0]))
-				hpcSaveSearch.getSelectedColumns().addAll(CollectionUtils.arrayToList(selectedColumns[0].split(",")));
+			String[] deselectedColumns =  request.getParameterValues("deselectedColumns");
+			if(deselectedColumns != null && StringUtils.isNotEmpty(deselectedColumns[0]))
+				hpcSaveSearch.getDeselectedColumns().addAll(CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 			model.addAttribute("hpcSearch", hpcSaveSearch);
 			session.setAttribute("hpcSavedSearch", hpcSaveSearch);

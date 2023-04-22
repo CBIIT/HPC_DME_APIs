@@ -54,8 +54,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -148,9 +146,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Autowired
 	private HpcMetadataDAO metadataDAO = null;
 
-	// Date formatter to format metadata entries of type Calendar (like data
+	// Metadata Retriever.
+	@Autowired
+	private HpcMetadataRetriever metadataRetriever = null;
+
+	// Date format string to format metadata entries of type Calendar (like data
 	// transfer start/completion time).
-	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+	String dateFormatStr = "MM-dd-yyyy HH:mm:ss";
 
 	// Default collection metadata.
 	private List<HpcMetadataEntry> defaultCollectionMetadataEntries = new ArrayList<>();
@@ -189,9 +191,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
 			if (!validationResult.getValid()) {
 				if (StringUtils.isEmpty(validationResult.getMessage())) {
-					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException(INVALID_METADATA_MSG + ". Path - " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
 				} else {
-					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException(validationResult.getMessage() + ". Path - " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 			}
 		}
@@ -222,8 +226,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		// Validate collection type is not in the update request.
-		List<HpcMetadataEntry> existingMetadataEntries = dataManagementProxy
-				.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path);
+		List<HpcMetadataEntry> existingMetadataEntries = metadataRetriever.getCollectionMetadata(path);
 		validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
 
 		// Validate the metadata.
@@ -296,8 +299,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		return toSystemGeneratedMetadata(
-				dataManagementProxy.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		return toSystemGeneratedMetadata(metadataRetriever.getCollectionMetadata(path));
 	}
 
 	@Override
@@ -467,8 +469,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
 
 		// Get the metadata associated with the collection itself.
-		metadataEntries.getSelfMetadataEntries().addAll(
-				dataManagementProxy.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		metadataEntries.getSelfMetadataEntries().addAll(metadataRetriever.getCollectionMetadata(path));
 
 		// Get the hierarchical metadata.
 		metadataEntries.getParentMetadataEntries()
@@ -663,11 +664,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Create the Data Transfer Started metadata.
 		addMetadataEntry(metadataEntries,
-				toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, dateFormat.format(dataTransferStarted.getTime())));
+				toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, toDateStr(dataTransferStarted)));
 
 		// Create the Data Transfer Completed metadata.
-		addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE,
-				dataTransferCompleted != null ? dateFormat.format(dataTransferCompleted.getTime()) : null));
+		addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
 
 		// Create the Source File Size metadata.
 		addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, sourceSize));
@@ -728,8 +728,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		return toSystemGeneratedMetadata(
-				dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		return toSystemGeneratedMetadata(metadataRetriever.getDataObjectMetadata(path));
 	}
 
 	@Override
@@ -777,8 +776,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 				addMetadataEntry(metadataEntries,
 						toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
 				if (dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
-					addMetadataEntry(metadataEntries, toMetadataEntry(DELETED_DATE_ATTRIBUTE,
-							dateFormat.format(Calendar.getInstance().getTime())));
+					addMetadataEntry(metadataEntries, toMetadataEntry(DELETED_DATE_ATTRIBUTE, toDateStr(Calendar.getInstance())));
 				}
 			}
 		}
@@ -791,13 +789,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (dataTransferStarted != null) {
 			// Update the Data Transfer Started metadata.
 			addMetadataEntry(metadataEntries,
-					toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, dateFormat.format(dataTransferStarted.getTime())));
+					toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, toDateStr(dataTransferStarted)));
 		}
 
 		if (dataTransferCompleted != null) {
 			// Update the Data Transfer Completed metadata.
-			addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE,
-					dateFormat.format(dataTransferCompleted.getTime())));
+			addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
 		}
 
 		if (sourceSize != null) {
@@ -825,7 +822,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (deepArchiveDate != null) {
 			// Update the deep archive date metadata.
 			addMetadataEntry(metadataEntries,
-					toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE, dateFormat.format(deepArchiveDate.getTime())));
+					toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE, toDateStr(deepArchiveDate)));
 		}
 
 		if (!metadataEntries.isEmpty()) {
@@ -852,8 +849,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		// Validate the metadata.
-		metadataValidator.validateDataObjectMetadata(configurationId,
-				dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path),
+		metadataValidator.validateDataObjectMetadata(configurationId, metadataRetriever.getDataObjectMetadata(path),
 				metadataEntries, collectionType);
 
 		// Update the 'metadata updated' system-metadata to record the time of this
@@ -869,28 +865,31 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
-	public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException {
+	public HpcMetadataEntries getDataObjectMetadataEntries(String path, boolean excludeParentMetadata) throws HpcException {
 		HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
 
 		// Get the metadata associated with the data object itself.
-		metadataEntries.getSelfMetadataEntries().addAll(
-				dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path));
+		metadataEntries.getSelfMetadataEntries().addAll(metadataRetriever.getDataObjectMetadata(path));
 
 		// Get the hierarchical metadata.
-		metadataEntries.getParentMetadataEntries()
+		if(!excludeParentMetadata) {
+		    metadataEntries.getParentMetadataEntries()
 				.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+		} else {
+			logger.info("Excluding parent metadata for {}", path);
+		}
 
 		return metadataEntries;
 	}
 
 	@Override
-	public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path) throws HpcException {
+	public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path,
+			boolean excludeParentMetadata) throws HpcException {
 		HpcGroupedMetadataEntries groupedMetadataEntries = new HpcGroupedMetadataEntries();
 		HpcSelfMetadataEntries selfMetadataEntries = new HpcSelfMetadataEntries();
 
 		// Get the metadata associated with the data object itself.
-		List<HpcMetadataEntry> metadataEntries = dataManagementProxy
-				.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path);
+		List<HpcMetadataEntry> metadataEntries = metadataRetriever.getDataObjectMetadata(path);
 
 		// Get the system metadata attributes.
 		List<String> systemMetadataAttributeNames = metadataValidator
@@ -917,8 +916,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		groupedMetadataEntries.setSelfMetadataEntries(selfMetadataEntries);
 
 		// Get the hierarchical metadata.
-		groupedMetadataEntries.getParentMetadataEntries()
+		if(!excludeParentMetadata) {
+		    groupedMetadataEntries.getParentMetadataEntries()
 				.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+		}
 
 		return groupedMetadataEntries;
 	}
@@ -967,7 +968,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	 * @return The Generated ID metadata.
 	 */
 	private HpcMetadataEntry generateMetadataUpdatedMetadata() {
-		return toMetadataEntry(METADATA_UPDATED_ATTRIBUTE, dateFormat.format(Calendar.getInstance().getTime()));
+		return toMetadataEntry(METADATA_UPDATED_ATTRIBUTE, toDateStr(Calendar.getInstance()));
 	}
 
 	/**
@@ -1162,15 +1163,34 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	 * @return The Calendar instance.
 	 */
 	private Calendar toCalendar(String calendarStr) {
+		if (StringUtils.isEmpty(calendarStr)) {
+			return null;
+		}
+
 		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+
 		try {
 			cal.setTime(dateFormat.parse(calendarStr));
 
-		} catch (ParseException e) {
-			logger.error("Failed to parse calendar string: " + calendarStr);
+		} catch (Exception e) {
+			logger.error("Failed to parse calendar string: {}", calendarStr);
 			return null;
 		}
 
 		return cal;
+	}
+
+	/**
+	 * Get the time from a Calendar object as a String.
+	 *
+	 * @param calendar The calendar object.
+	 * @return The Calendar as a String.
+	 */
+	private String toDateStr(Calendar cal) {
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr);
+		return cal != null ? dateFormat.format(cal.getTime()) : null;
+
 	}
 }

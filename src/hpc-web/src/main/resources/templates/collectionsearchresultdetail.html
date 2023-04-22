@@ -66,7 +66,7 @@
     var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
     var selectedRowsData = [];
     var totalSize = [[${totalSize}]];
-    var selectedColumns = [[${selectedColumns}]];
+    var deselectedColumns = [[${deselectedColumns}]];
 /*]]>*/
 </script>
 <script>
@@ -144,10 +144,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	      {
 	        title: 'Hide All Columns',
 	        action: function ($event) {
-	        	selectedColumns = [];
 	        	this.grid.columns.forEach(function(col){
 	                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission') {
 	                	   col.hideColumn();
+	                	   deselectedColumns.push(col.field);
 	                 }  
 	        	});
 	        	this.grid.api.core.notifyDataChange("column");
@@ -162,7 +162,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        	this.grid.columns.forEach(function(col){
 	                   if(!col.visible){
 	                	   col.showColumn();
-	                	   selectedColumns.push(col.field);
 	                   }
 	        	});
 	        	this.grid.api.core.notifyDataChange("column");
@@ -270,11 +269,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
       });
       
       gridApi.pagination.on.paginationChanged($scope, function (newPage, pageSize) {
-    	  selectedColumns = [];
       	
     	  $scope.gridOptions1.columnDefs.forEach(function(col){
-            if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
-            	selectedColumns.push(col.field);
+            if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
+           		deselectedColumns.push(col.field);
             }  
  		  });
     	  
@@ -334,10 +332,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
           });
       
 	      gridApi.core.on.columnVisibilityChanged($scope, function(col) {
-	    	  if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
-	           	selectedColumns.push(col.field);
+	    	  if(!col.visible) {
+	           	deselectedColumns.push(col.field);
 	          } else {
-	        	selectedColumns = selectedColumns.filter(e => e !== col.field);
+	        	deselectedColumns = deselectedColumns.filter(e => e !== col.field);
 	          }
 	      });
 	      
@@ -371,13 +369,13 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	    	  }
 	      }
 	      
-	      var len = selectedColumns.length;
+	      var len = deselectedColumns.length;
 	      $scope.gridOptions1.columnDefs.forEach(function(col){
           	if(len != 0 && col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download' && col.displayName != 'Permission') {
-          		if(selectedColumns != null && selectedColumns.length && selectedColumns.indexOf(col.field) < 0)
+          		if(deselectedColumns != null && deselectedColumns.length && deselectedColumns.indexOf(col.field) >= 0)
            	 		col.visible = false;
           	} else {
-          		selectedColumns.push(col.field);
+          		col.visible = true;
           	}
 		  });
 	      gridApi.core.notifyDataChange("column");
@@ -399,11 +397,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
     };
     
     $scope.export = function() {
-    	var selectedColumns = [];
     	
     	$scope.gridOptions1.columnDefs.forEach(function(col){
-            if(col.displayName == 'Path' || col.visible === undefined || col.visible) {
-            	selectedColumns.push(col.field);
+            if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
+            	deselectedColumns.push(col.field);
           }  
  		});
     	
@@ -415,7 +412,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(currentPageSize);
 		document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = parseInt(currentPage);
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
-		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
+		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 		document.getElementById("simplesearchform").submit();
     };
     
@@ -463,7 +460,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
-	        document.getElementById("downloadFilesform").elements.namedItem("selectedColumns").value = selectedColumns;
+	        document.getElementById("downloadFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	        document.getElementById("downloadType").value = "collections";
 	        document.getElementById("downloadFilesform").submit();
         } else {
@@ -476,7 +473,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("bulkPermissionsform").elements.namedItem("pageSize").value =  currentPageSize;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
-	        document.getElementById("bulkPermissionsform").elements.namedItem("selectedColumns").value = selectedColumns;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	        document.getElementById("downloadType2").value = "collections";
 	        document.getElementById("bulkPermissionsform").submit();
         }
@@ -595,7 +592,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="queryName" name="queryName"/>
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="totalSize" name="totalSize"/>
-						<input type="hidden" id="selectedColumns" name="selectedColumns" value=""/>
+						<input type="hidden" id="deselectedColumns" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
@@ -607,7 +604,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="pageSize1" name="pageSize"/>
 						<input type="hidden" id="queryName1" name="queryName"/>
 						<input type="hidden" id="totalSize1" name="totalSize"/>
-						<input type="hidden" id="selectedColumns1" name="selectedColumns" value=""/>
+						<input type="hidden" id="deselectedColumns1" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -619,7 +616,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="pageSize2" name="pageSize"/>
 						<input type="hidden" id="queryName2" name="queryName"/>
 						<input type="hidden" id="totalSize2" name="totalSize"/>
-						<input type="hidden" id="selectedColumns2" name="selectedColumns" value=""/>
+						<input type="hidden" id="deselectedColumns2" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -701,7 +698,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
-		document.getElementById("simplesearchform").elements.namedItem("selectedColumns").value = selectedColumns;
+		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 		document.getElementById("simplesearchform").submit();
     }
     

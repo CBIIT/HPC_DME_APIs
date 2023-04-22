@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import org.slf4j.Logger;
@@ -114,9 +115,12 @@ public class HpcLocalDirectoryListQuery {
 				String name = filePath.substring(filePath.lastIndexOf("/") > 0 ? filePath.lastIndexOf("/") : 0,
 						filePath.length());
 				filePathAttr.setName(name);
-				File fileToCheckDir = new File(filePath);
+				File fileToCheckDir = new File(fullPath);
 				filePathAttr.setIsDirectory(fileToCheckDir.isDirectory());
 				filePathAttr.setPath(filePath);
+				Date modifiedDate = new Date(fileToCheckDir.lastModified());
+				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+				filePathAttr.setUpdatedDate(sdf.format(modifiedDate));
 				totalSize = totalSize + fileToCheckDir.length();
 				System.out.println("Including: " + fullPath);
 				pathAttributes.add(filePathAttr);

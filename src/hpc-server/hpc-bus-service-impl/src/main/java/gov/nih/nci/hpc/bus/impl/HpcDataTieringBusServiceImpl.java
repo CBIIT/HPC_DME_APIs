@@ -99,11 +99,6 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			throw new HpcException("Null path for archive request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Validate the data object exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -210,9 +205,6 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 
 			// Validate all data object paths requested exist.
 			for (String path : tierRequest.getDataObjectPaths()) {
-				if (dataManagementService.getDataObject(path) == null) {
-					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-				}
 				if (StringUtils.isEmpty(path)) {
 					throw new HpcException("Null / Empty path in registration request",
 							HpcErrorType.INVALID_REQUEST_INPUT);

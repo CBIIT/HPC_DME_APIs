@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -233,7 +234,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		// Get the current user role.
 		HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(nciUserId);
 
-		// If the invoker is a GroupAdmin, then user being created must belong to their DOC
+		// If the invoker is a GroupAdmin, then user being created must belong to their
+		// DOC
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
 				&& (!invoker.getNciAccount().getDoc().equals(user.getNciAccount().getDoc())
@@ -242,17 +244,17 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 			logger.error(message);
 			throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
 		}
-		
+
 		// Determine update values.
-		String updateFirstName = !StringUtils.isEmpty(userUpdateRequest.getFirstName()) && !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
-				? userUpdateRequest.getFirstName()
-				: user.getNciAccount().getFirstName();
-		String updateLastName = !StringUtils.isEmpty(userUpdateRequest.getLastName()) && !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) 
-				? userUpdateRequest.getLastName()
-				: user.getNciAccount().getLastName();
-		String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc()) && !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
-				? userUpdateRequest.getDoc()
-				: user.getNciAccount().getDoc();
+		String updateFirstName = !StringUtils.isEmpty(userUpdateRequest.getFirstName())
+				&& !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) ? userUpdateRequest.getFirstName()
+						: user.getNciAccount().getFirstName();
+		String updateLastName = !StringUtils.isEmpty(userUpdateRequest.getLastName())
+				&& !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) ? userUpdateRequest.getLastName()
+						: user.getNciAccount().getLastName();
+		String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc())
+				&& !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) ? userUpdateRequest.getDoc()
+						: user.getNciAccount().getDoc();
 		String updateDefaultConfigurationId = user.getNciAccount().getDefaultConfigurationId();
 		if (userUpdateRequest.getDefaultBasePath() != null) {
 			if (!userUpdateRequest.getDefaultBasePath().isEmpty())
@@ -270,18 +272,20 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		HpcUserRole updateToRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole())
 				? roleFromString(userUpdateRequest.getUserRole())
 				: currentUserRole;
-				
-		// We don't want group admins to demote any system admin or set user roles to system admin.
+
+		// We don't want group admins to demote any system admin or set user roles to
+		// system admin.
 		if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
 				&& (currentUserRole == HpcUserRole.SYSTEM_ADMIN || updateToRole == HpcUserRole.SYSTEM_ADMIN)) {
 			updateToRole = currentUserRole;
 		}
 		HpcUserRole updateRole = updateToRole;
-		
+
 		boolean active = userUpdateRequest.getActive() != null ? userUpdateRequest.getActive() : user.getActive();
 
 		// Update the data management (IRODS) account.
-		executeGroupAdminAsSystemAccount(() -> dataManagementSecurityService.updateUser(nciUserId, updateFirstName, updateLastName, updateRole));
+		executeGroupAdminAsSystemAccount(
+				() -> dataManagementSecurityService.updateUser(nciUserId, updateFirstName, updateLastName, updateRole));
 
 		// Update User.
 		securityService.updateUser(nciUserId, updateFirstName, updateLastName, updateDoc, updateDefaultConfigurationId,
@@ -327,7 +331,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
 	@Override
 	public HpcUserDTO getUser(String nciUserId) throws HpcException {
-				
+
 		// nciUserId is optional. If null, get the request invoker.
 		String userId = nciUserId;
 		if (userId == null) {
@@ -343,7 +347,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		if (user == null) {
 			return null;
 		}
-		
 
 		// Get the default data management configuration for this user.
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
@@ -390,8 +393,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 			// Add user entry into the return list.
 			HpcUserListEntry userListEntry = new HpcUserListEntry();
 			userListEntry.setUserId(user.getNciAccount().getUserId());
-			userListEntry.setFirstName(user.getNciAccount().getFirstName().replace("'","\\'"));
-			userListEntry.setLastName(user.getNciAccount().getLastName().replace("'","\\'"));
+			userListEntry.setFirstName(user.getNciAccount().getFirstName().replace("'", "\\'"));
+			userListEntry.setLastName(user.getNciAccount().getLastName().replace("'", "\\'"));
 			userListEntry.setDoc(user.getNciAccount().getDoc());
 			userListEntry.setDefaultBasePath(
 					dataManagementConfiguration != null ? dataManagementConfiguration.getBasePath() : null);
@@ -723,40 +726,47 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		if (queryConfig == null || queryConfig.getBasePath() == null || queryConfig.getEncryptionKey() == null) {
 			throw new HpcException("Null configuration", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+
 		securityService.updateQueryConfig(queryConfig.getBasePath(), queryConfig.getEncryptionKey());
 	}
-	
+
 	@Override
 	public HpcQueryConfigDTO getQueryConfig(String basePath) throws HpcException {
 		// Input validation.
 		if (basePath == null) {
 			throw new HpcException("Null base path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+
 		HpcQueryConfiguration queryConfig = securityService.getQueryConfig(basePath);
 		HpcQueryConfigDTO queryConfigDTO = new HpcQueryConfigDTO();
 		queryConfigDTO.setBasePath(queryConfig.getBasePath());
 		queryConfigDTO.setEncryptionKey(queryConfig.getEncryptionKey());
-		
+
 		return queryConfigDTO;
 	}
 
 	/**
 	 * Set the Request invoker metadata only (in thread local).
 	 *
-	 * @param metadataOnly          True if user is metadata only user.
+	 * @param metadataOnly True if user is metadata only user.
 	 * @throws HpcException on service failure.
 	 */
 	public void setMetadataOnlyUser(Boolean metadataOnly) throws HpcException {
 		// Set whether user is metadata only user
 		securityService.getRequestInvoker().setMetadataOnly(metadataOnly);
 	}
-	
+
 	@Override
 	public void refreshDataManagementConfigurations() throws HpcException {
 
 		securityService.refreshDataManagementConfigurations();
+	}
+
+	@Override
+	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
+			String serverId, Calendar created, Calendar completed) throws HpcException {
+		securityService.addApiCallAuditRecord(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created,
+				completed);
 	}
 
 	// ---------------------------------------------------------------------//
@@ -811,7 +821,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 			return systemAccountFunction.execute();
 		}
 	}
-	
+
 	/**
 	 * Convert a user role from string to enum.
 	 *

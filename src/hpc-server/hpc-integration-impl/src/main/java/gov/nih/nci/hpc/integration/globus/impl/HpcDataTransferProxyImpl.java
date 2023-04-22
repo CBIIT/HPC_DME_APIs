@@ -215,7 +215,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Calculate the archive destination.
 		HpcFileLocation archiveDestinationLocation = getArchiveDestinationLocation(
 				baseArchiveDestination.getFileLocation(), uploadRequest.getPath(), uploadRequest.getCallerObjectId(),
-				baseArchiveDestination.getType(), false);
+				baseArchiveDestination.getType(), this, authenticatedToken);
 
 		if (uploadRequest.getSourceFile() != null) {
 			// This is a synchronous upload request. Simply store the data to the
@@ -223,13 +223,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// No Globus action is required here.
 			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination,
 					uploadRequest.getSudoPassword(), uploadRequest.getSystemAccountName());
-		}
-
-		// If the archive destination file exists, generate a new archive destination w/
-		// unique path.
-		if (getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
-			archiveDestinationLocation = getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(),
-					uploadRequest.getPath(), uploadRequest.getCallerObjectId(), baseArchiveDestination.getType(), true);
 		}
 
 		// Build a Globus transfer request.

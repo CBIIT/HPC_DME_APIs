@@ -16,6 +16,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -133,6 +134,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// Key Generator.
 	@Autowired
 	private HpcKeyGenerator keyGenerator = null;
+
+	// Metadata Retriever.
+	@Autowired
+	private HpcMetadataRetriever metadataRetriever = null;
 
 	// Prepared query to get data objects that have their data transfer in-progress
 	// to archive.
@@ -410,7 +415,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
+	public HpcPathAttributes move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
 			throws HpcException {
 		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 
@@ -477,6 +482,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			}
 		});
 
+		return sourcePathAttributes;
 	}
 
 	@Override
@@ -600,7 +606,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId) {
+			Boolean dataTransferStatus, String message, String userId, Long size) {
 		// Input validation.
 		String nciUserId = HpcRequestContext.getRequestInvoker().getNciAccount() == null ? userId
 				: HpcRequestContext.getRequestInvoker().getNciAccount().getUserId();
@@ -611,7 +617,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		try {
 			dataManagementAuditDAO.insert(nciUserId, path, requestType, metadataBefore, metadataAfter, archiveLocation,
-					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance());
+					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance(), size);
 
 		} catch (HpcException e) {
 			logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
@@ -768,62 +774,51 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadReceived() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferReceivedQuery);
+		return metadataRetriever.getDataObjects(dataTransferReceivedQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException {
-		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 		List<HpcDataObject> objectsInProgress = new ArrayList<>();
-		objectsInProgress
-				.addAll(dataManagementProxy.getDataObjects(authenticatedToken, dataTransferInProgressToArchiveQuery));
-		objectsInProgress.addAll(
-				dataManagementProxy.getDataObjects(authenticatedToken, dataTransferInProgressToTemporaryArchiveQuery));
+		objectsInProgress.addAll(metadataRetriever.getDataObjects(dataTransferInProgressToArchiveQuery));
+		objectsInProgress.addAll(metadataRetriever.getDataObjects(dataTransferInProgressToTemporaryArchiveQuery));
 
 		return objectsInProgress;
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferInProgressWithGeneratedURLQuery);
+		return metadataRetriever.getDataObjects(dataTransferInProgressWithGeneratedURLQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferStreamingInProgressQuery);
+		return metadataRetriever.getDataObjects(dataTransferStreamingInProgressQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadStreamingFailed() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferStreamingFailedQuery);
+		return metadataRetriever.getDataObjects(dataTransferStreamingFailedQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataTranferUploadStreamingStopped() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferStreamingStoppedQuery);
+		return metadataRetriever.getDataObjects(dataTransferStreamingStoppedQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferInTemporaryArchiveQuery);
+		return metadataRetriever.getDataObjects(dataTransferInTemporaryArchiveQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadFileSystemReady() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferFileSystemReadyQuery);
+		return metadataRetriever.getDataObjects(dataTransferFileSystemReadyQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjectsUploadFileSystemInProgress() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataTransferFileSystemInProgressQuery);
+		return metadataRetriever.getDataObjects(dataTransferFileSystemInProgressQuery);
 	}
 
 	@Override
@@ -831,8 +826,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		List<HpcMetadataQuery> dataObjectLinksQuery = new ArrayList<>();
 		dataObjectLinksQuery.add(toMetadataQuery(LINK_SOURCE_PATH_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL, path));
 
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				dataObjectLinksQuery);
+		return metadataRetriever.getDataObjects(dataObjectLinksQuery);
 	}
 
 	@Override
@@ -946,7 +940,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		int effectiveTransferSpeed = 0;
 		int completedItems = 0;
 		for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
-			if (Boolean.TRUE.equals(item.getTask().getResult()) && item.getRequest().getLinkSourcePath() == null) {
+			if (Boolean.TRUE.equals(item.getTask().getResult()) && item.getRequest().getLinkSourcePath() == null
+					&& item.getTask().getEffectiveTransferSpeed() != null) {
 				effectiveTransferSpeed += item.getTask().getEffectiveTransferSpeed();
 				completedItems++;
 			}
@@ -1048,8 +1043,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public String getCollectionType(String path) throws HpcException {
-		for (HpcMetadataEntry metadataEntry : dataManagementProxy
-				.getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path)) {
+		for (HpcMetadataEntry metadataEntry : metadataRetriever.getCollectionMetadata(path)) {
 			if (metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
 				return metadataEntry.getValue();
 			}
@@ -1124,7 +1118,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		if (StringUtils.isEmpty(dataObjectRegistrationResult.getId())) {
-			// In case of some failure scenrios, the data object UUID was not created, so we
+			// In case of some failure scenarios, the data object UUID was not created, so
+			// we
 			// create it here
 			// just to record a valid ID in the DB table.
 			dataObjectRegistrationResult.setId(keyGenerator.generateKey());
@@ -1141,7 +1136,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				&& created != null && completed != null) {
 			long transferTime = completed.getTimeInMillis() - created.getTimeInMillis();
 			if (transferTime > 0) {
-				dataObjectRegistrationResult.setEffectiveTransferSpeed(Math.toIntExact(size * 1000 / (transferTime)));
+				dataObjectRegistrationResult.setEffectiveTransferSpeed(toIntExact(size * 1000 / (transferTime)));
 			}
 		}
 
@@ -1169,14 +1164,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public List<HpcDataObject> getDataObjectsDeepArchiveInProgress() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				deepArchiveInProgressQuery);
+		return metadataRetriever.getDataObjects(deepArchiveInProgressQuery);
 	}
 
 	@Override
 	public List<HpcDataObject> getDeletedDataObjects() throws HpcException {
-		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-				deletedDataObjectsQuery);
+		return metadataRetriever.getDataObjects(deletedDataObjectsQuery);
 	}
 
 	@Override

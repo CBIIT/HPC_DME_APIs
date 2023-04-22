@@ -48,6 +48,7 @@
 <script src="js/popper.min.js"></script>
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
 <script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" charset="utf8" src="js/jszip.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Buttons-2.2.2/js/buttons.html5.min.js"></script>
@@ -67,18 +68,7 @@
     z-index: 1002 !important;
 }
 legend {text-align:center}
-/* Header Title */
-.header1 {
-  padding: 5px;
-  text-align: center;
-  background: #eeeeee;
-  margin:10px;
-  font-size:15px;
-  background-color: #006DCC;
-  color: white;
-}
-</style>
-<style>
+
 body {
   font: 90%/1.45em "Helvetica Neue", HelveticaNeue, Verdana, Arial, Helvetica, sans-serif;
   margin: 0;
@@ -112,9 +102,26 @@ label {
     width: 10em;
     margin-right: 0em;
     padding-top: 1.5em;
-    text-align:center;
+    text-align:left;
 }
 
+.dataTables_wrapper div.row {
+    display: flex;
+    align-items: center;
+    margin-left: 1px;
+    margin-right: -55px;
+}
+
+div.grlen {
+	margin-left: auto;
+}
+div.grlen div.dataTables_length, div.grlen div.dataTables_filter{
+	margin: 0px;
+    padding-top: 0px;
+}
+div#reportgrid_length.dataTables_length label {
+	width: auto !important;
+}
 
 .select2-container .select2-choice, .select2-result-label {
   font-size: 1.5em;
@@ -126,20 +133,12 @@ label {
   padding-top: 6px;
 }
 
-.headercol .property{
-  width:50%;
-  display:inline-block;
-  box-sizing:border-box;
-  text-align:right;
-  }
+.select2-container .select2-selection--single {height: 33px; width:100% !important;}
 
-.headercol .value{
-  text-align:left;
-  padding-left:2px;
-  width:50%;
-  display:inline-block;
-  box-sizing:border-box;
-  }
+.select2-search--dropdown .select2-search__field {
+ width: 98%;
+ }
+
 .overlay{
     display: none;
     position: fixed;
@@ -156,10 +155,21 @@ body.loading{
 body.loading .overlay{
     display: block;
 }
+
+.singlereportcaption{
+	background-color: #006DCC; color: white; font-weight:bold; border-bottom: 2px solid #dddddd; padding: 8px;
+}
+.column-heading{
+	color: black; font-weight:bold
+}
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
     var selected = [[${reportRequest.getReportType()}]];
+	var userselected = [[${reportRequest.getUser()}]];
+	var listOfDocs = [[${docs}]];
+	var listOfBasepaths = [[${basepaths}]];
 /*]]>*/
 </script>
 </head>
@@ -171,29 +181,23 @@ body.loading .overlay{
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
-				<!--Title start-->
-				<div class="row">
-					<div class="col-lg-12">
-						<h4>
-							<i class="fa fa-list-alt"></i> Reports
-						</h4>
-					</div>
-				</div>
-				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<div th:if="${error != null}">
-						<div class="alert alert-error">
-							<a class="close" data-dismiss="alert">×</a> <label for="${error}"
-								th:text="${error}"></label>
+					<div class="col-md-12">
+						<div th:if="${error != null}">
+							<div class="alert alert-error">
+								<a class="close" data-dismiss="alert">×</a> <p for="${error}"
+									th:text="${error}"></p>
+							</div>
+						</div>
+						<div th:if="${message != null}">
+							<div class="alert alert-error">
+								<a class="close" data-dismiss="alert">×</a> <p
+									for="${message}" th:text="${message}"></p>
+							</div>
 						</div>
 					</div>
-					<div th:if="${message != null}">
-						<div class="alert alert-error">
-							<a class="close" data-dismiss="alert">×</a> <label
-								for="${message}" th:text="${message}"></label>
-						</div>
-					</div>
+
 				</div>
 
 				<form  id="reportsform" action="#"
@@ -202,12 +206,10 @@ body.loading .overlay{
 					
 					<!-- First Row Begin -->
 					<div class="row">
-						<div class="col-6 col-md-3">
-							<label><b>Report Type:</b></label>
+						<div class="col-sm-3"><label><b>Report Type:</b></label>
 							<select name="reportType" id="reportType" class="form-control"
 								onchange="show(this.value)">
-								<option value="-1">----Select----</option>
-
+								<option value="-1">---Select Report Type---</option>
 								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
 								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
 								<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
@@ -216,51 +218,45 @@ body.loading .overlay{
 									th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
 								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
 							</select>
+							<div class="col-sm-2"></div>
 						</div>
-						<div class="col-6 col-md-1">&nbsp;</div>
-						<div style="display: none" id="docList">
-							<div class="col-6 col-md-2">
+						<!---  DOC List Begin -->
+						<div style="display: none" id="docList" >
+							<div class="col-sm-2">
 								<label><b>DOC:</b></label>
-								<select size="1"
-									id="doc" name="doc" class="form-control"
-									th:required="required">
-										<option value="-1">----------Select----------</option>
-										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
-										<option
-											th:each="entry : ${docs}"
-											th:value="${entry}" th:text="${entry}" 
-											th:selected="${reportRequest.getDoc() == entry}">
-											Wireframe</option>
-								</select>
+									<select size="1"
+										id="doc" name="doc" class="docList" style="width: 100%" onchange="showArchiveSummaryCheckbox(this.value)">
+											<option></option>
+											<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getDoc() == 'All'}">All</option>
+											<option
+												th:each="entry : ${docs}"
+												th:value="${entry}" th:text="${entry}" 
+												th:selected="${reportRequest.getDoc() == entry}">
+												Wireframe</option>
+									</select>
 							</div>
-							<div class="col-6 col-md-4">&nbsp;&nbsp;</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
+							<div class="col-sm-4"></div>
 						</div>
-						
+						<!---  DOC List End -->
+						<!---  User List Begin -->
 						<div style="display: none" id="userList">
-							<div class="col-6 col-md-4">
-								<label for="user"><b>Users:</b>
+							<div class="col-sm-4">
+								<label><b>Users:</b> </label>
 								<select size="1"
-									id="user" name="user" class="userSelect">
+									id="user" name="user" class="userSelect" style="width: 100%">
 										<option></option>
-										<option
-											th:each="entry : ${docUsers}"
-											th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
-											th:selected="${reportRequest.getUser() == entry.getUserId()}">
-											Wireframe</option>
 								</select>
-								</label>
 							</div>
-							<div class="col-6 col-md-4">&nbsp;</div>
 						</div>
+						<!---  User List End -->
+						<!---  BasePath List Begin -->
 						<div style="display: none" id="basepathList">
-							<div class="col-6 col-md-3">
-								<label><b>Base Path:</b></label>
+							<div class="col-sm-4">
+								<label for="basepathList"><b>Base Path:</b></label>
 								<select size="1"
-									id="basepath" name="basepath" class="form-control"
-									th:required="required">
-										<option value="-1">------------------Select------------------</option>
-										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All</option>
+									id="basepath" name="basepath" class="basepathList" style="width: 100%" onchange="showArchiveSummaryCheckbox(this.value)">
+										<option></option>
+										<option value="All" th:if="${canSeeAllDocs}" th:selected="${reportRequest.getBasepath() == 'All'}">All&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
 										<option
 											th:each="entry : ${basepaths}"
 											th:value="${entry}" th:text="${entry}" 
@@ -268,23 +264,21 @@ body.loading .overlay{
 											Wireframe</option>
 								</select>
 							</div>
-							<div class="col-6 col-md-5">&nbsp;&nbsp;</div>
 						</div>
+						<!---  BasePath List End -->
+						<!---  Collection Path Begin -->
 						<div style="display: none" id="collectionPath">
-							<div class="col-6 col-md-6">
+							<div class="col-sm-6">
 								<label><b>Collection Path:</b></label>
 								<input type="text" name="path" id="id_collection_path" class="form-control" th:value="${reportRequest.getPath()}" size="75"/>
 							</div>
-							<div class="col-6 col-md-2">&nbsp;&nbsp;</div>
 						</div>
+						<!---  Collection Path End -->
 					</div> <!-- First Row End -->
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>			
 					<!-- Second Row Begin -->
 					<div class="row">			
 						<div style="display: none" id="fromDateDiv" class="item">
-							<div class="col-md-2">
+							<div class="col-sm-2">
 								<label><b>From Date:</b></label>
 								<div class="input-group date" data-provide="datepicker">	
 	    							<input type="text" class="form-control" id="fromDate" name="fromDate" th:value="${reportRequest.getFromDate()}"/>
@@ -295,8 +289,8 @@ body.loading .overlay{
 							</div>
 						</div>						
 						<div style="display: none" id="toDateDiv" class="item">
-							<div class="col-md-1">&nbsp;</div>
-							<div class="col-md-2">
+							<div class="col-sm-1">&nbsp;</div>
+							<div class="col-sm-2">
 								<label><b>To Date:</b></label>						
 								<div class="input-group date" data-provide="datepicker">
     								<input type="text" class="form-control" id="toDate" name="toDate" th:value="${reportRequest.getToDate()}"/>
@@ -305,91 +299,58 @@ body.loading .overlay{
     								</div>
     							</div>
 							</div>
-							<div class="col-md-1">&nbsp;</div>						
 						</div>
-						<div style="display: block" id="gen" class="item">
-							<div class="col-md-1">
-								<label>&nbsp;</label>
-								<button type="submit" class="btn btn-md btn-primary"
-									id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
+						<div style="display: block" id="gen" class="form-group">
+							<div class="col-sm-7" id="assaySummaryCheckbox" style="padding-top: 37px">
+								&nbsp;&nbsp;<input type="checkbox" id="assaySummaryCheckboxId" th:field="${reportRequest.showArchiveSummary}" th:checked="${reportRequest.showArchiveSummary} ? 'checked'" />
+								<label style="padding-left: 3px;" for="assaySummaryCheckboxId">
+									<b>Include&nbsp;Archive&nbsp;Summary</b>
+								</label>
 							</div>
-							<div class="col-md-5">&nbsp;</div>
+							<div id="spinner" class="overlay"></div>
 						</div>
 					</div> <!-- Second Row end -->
 					<div class="row">
 						<div class="col-md-12">&nbsp;</div>
 					</div>
+					<input type="hidden" id="docs"  name="docs" />
+					<input type="hidden" id="basepaths"  name="basepaths" />
+					<div class="row">
+						<div class="col-sm-12">
+							<button type="submit" class="btn btn-md btn-primary"
+								id="primaryButton" onClick="return validateAndSubmit()">Generate</button>
+						</div>
+					</div>
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
-				<div style="width: 1000px; height: 1000px; margin-left: 1%;"
+				<div style="width: 1000px; margin-left: 1%;"
 					th:if="${reports != null and reports.size() == 1}">
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>
 					<table class="table">
-						<caption th:text="${reportName}">Basic Table Layout</caption>				
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
-								<td style="white-space: nowrap" align="right" colspan="2">
-									<table class="table">
-										<div th:if="${report.doc != null and !report.doc.isEmpty()}">
-										<tr>
-											<td align="center"
-												style="background-color: #006DCC; color: white;" colspan="2">
-												<div class="headercol">
-													<div class="property">DOC:</div>
-													<div class="value" th:text="${report.doc}">DOC</div>
-												</div>
-											</td>
-										</tr>
-										</div>
-										<div th:if="${report.user != null and !report.user.isEmpty()}">
-											<tr>
-												<td align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2">
-													<div class="headercol">
-														<div class="property">User:</div>
-														<div class="value" th:text="${report.user}">User</div>
-													</div>
-												</td>
+								<td style="white-space: nowrap; border: none" align="right" colspan="2">
+									<table class="table" id="singlereportgrid">
+										<caption style="font-weight:bold" th:text="${reportName}"></caption>
+										<caption th:if="${reports[0].doc != null and !reports[0].doc.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'DOC: ' + ${reports[0].doc}"></caption>
+										<caption th:if="${reports[0].user != null and !reports[0].user.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'User: ' + ${reports[0].user}"></caption>
+										<caption th:if="${reports[0].path != null and !reports[0].path.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Base Path: ' + ${reports[0].path}"></caption>
+										<caption th:if="${report.fromDate != null and !report.fromDate.isEmpty()}" class="singlereportcaption" colspan="2" th:text="'Reporting Period: ' + ${report.fromDate} + ' to ' + ${report.toDate}"></caption>
+										<thead>
+											<tr id='attrRowhead'>
+												<td class="column-heading" id='index0' th:text="Name"></td>
+												<td class="column-heading" id='path0' th:text="'Value'"></td>
 											</tr>
-										</div>
-										<div th:if="${report.path != null and !report.path.isEmpty()}">
-											<tr>
-												<td align="center"
-													style="background-color: #006DCC; color: white;"
-													colspan="2">
-													<div class="headercol">
-														<div class="property">Base Path:</div>
-														<div class="value" for="user" th:text="${report.path}">Base Path</div>
-													</div>
-												</td>
+										</thead>
+										<tbody>
+											<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
+												<td th:text="${entry.attribute}">value</td>
+												<td th:utext="${entry.value}">value</td>
 											</tr>
-										</div>
-										<div th:if="${report.fromDate != null and !report.fromDate.isEmpty()}">
-											<tr>
-												<td align="center"
-													style="background-color: #006DCC; color: white;" colspan="2">
-													<div class="headercol">
-														<div class="property">Reporting Period: </div>
-														<div class="value" th:text="' From ' + ${report.fromDate} + ' to ' + ${report.toDate}"></div>
-													</div>
-												</td>
-											</tr>
-										</div>
-										<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
-											<td th:text="${entry.attribute}">value</td>
-											<td th:utext="${entry.value}">value</td>
-										</tr>
+										</tbody>
 									</table>
 								</td>
 							</tr>
 						</tbody>
-
 					</table>
 				</div>
 				<!-- Start of Grid code -->
@@ -397,17 +358,14 @@ body.loading .overlay{
 				
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
-					<div class="row">
-						<div class="col-md-12">&nbsp;</div>
-					</div>
 
-					<table id="report_grid" class="display" style="width:100%">
+					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
 						<thead>
 							<tr id='attrRow0'>
-								<td style="color: black; font-weight:bold" id='index0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<td class="column-heading" id='index0' th:text="Index"></td>
+								<td class="column-heading" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
@@ -421,9 +379,9 @@ body.loading .overlay{
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter0'>
-								<td style="color: black; font-weight:bold" id='indexf0' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
+								<td class="column-heading" id='indexf0' th:text="Index"></td>
+								<td class="column-heading" th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'" th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0doc' th:if="${reports[0].getType()} == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'" th:text="DOC"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -433,20 +391,22 @@ body.loading .overlay{
 				<!-- Start Data Owner Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
-					<table id="report_grid" class="display" style="width:100%">
+					<div class="row">
+						<div class="col-md-12">&nbsp;</div>
+					</div>
+					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName}"></caption>	
 						<thead>
 							<tr id='attrRow2'>
-								<td style="color: black; font-weight:bold" id='index001' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path001' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path002' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path003' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path004' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path005' th:text="'Data Generator'"></td>
+								<td class="column-heading" id='index001' th:text="Index"></td>
+								<td class="column-heading" id='path001' th:text="DOC"></td>
+								<td class="column-heading" id='path002' th:text="'Base Path'"></td>
+								<td class="column-heading" id='path003' th:text="'Collection Path'"></td>
+								<td class="column-heading" id='path004' th:text="'Data Owner'"></td>
+								<td class="column-heading" id='path005' th:text="'Data Generator'"></td>
 								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</thead>
-            <div class="overlay"></div>
 						<tbody>
 							<tr id='attrCol2' th:each="report : ${reports}">
 							   <td id='index01'></td>
@@ -460,12 +420,12 @@ body.loading .overlay{
 						</tbody>
 						<tfoot>
 							<tr id='attrFooter2'>
-								<td style="color: black; font-weight:bold" id='index0000' th:text="Index"></td>
-								<td style="color: black; font-weight:bold" id='path0011' th:text="DOC"></td>
-								<td style="color: black; font-weight:bold" id='path0022' th:text="'Base Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0033' th:text="'Collection Path'"></td>
-								<td style="color: black; font-weight:bold" id='path0044' th:text="'Data Owner'"></td>
-								<td style="color: black; font-weight:bold" id='path0055' th:text="'Data Generator'"></td>
+								<td class="column-heading" id='index0000' th:text="Index"></td>
+								<td class="column-heading" id='path0011' th:text="DOC"></td>
+								<td class="column-heading" id='path0022' th:text="'Base Path'"></td>
+								<td class="column-heading" id='path0033' th:text="'Collection Path'"></td>
+								<td class="column-heading" id='path0044' th:text="'Data Owner'"></td>
+								<td class="column-heading" id='path0055' th:text="'Data Generator'"></td>
 								<th style="color: black" th:utext="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
 							</tr>
 						</tfoot>
@@ -526,7 +486,79 @@ body.loading .overlay{
 
 	<script>
 	//<![CDATA[
+
+	// Single Report Datatable
+	$(document).ready(function () {
+		var reportType = document.getElementById("reportType").value;
+		var exportFileName = "";
+		var reportHeaderTitle = "";
+		let pretag = "DME_";
+		let tag = `_${(new Date().toJSON().slice(0,10))}`;
+		let messageTopDateRange = " Date Range: " +  document.getElementById("fromDate").value + "-" + document.getElementById("toDate").value;
+		switch (reportType) {
+			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
+				exportFileName= pretag + "Basepath" + tag;
+				reportHeaderTitle= "Data Archival Usage Report for Basepath: " + document.getElementById("basepath").value + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
+				exportFileName= pretag + "DOC" + tag;
+				reportHeaderTitle = "Data Archival Usage Report for DOC: " + document.getElementById("doc").value + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE':
+				exportFileName= pretag + "User" + tag;
+				reportHeaderTitle = "Data Archival Usage Report for User: " + document.getElementById("user").value + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_DATE_RANGE':
+				exportFileName= pretag + "Summary" + tag;
+				reportHeaderTitle = "Data Archival Usage Report " + ", " + messageTopDateRange;
+				break;
+			case 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE':
+				exportFileName= pretag + "Path" + tag;
+				reportHeaderTitle = "Data Archival Usage Report for Path: " + document.getElementById("id_collection_path").value + ", " + messageTopDateRange;
+				break;
+		}
+		$('#singlereportgrid').DataTable({
+			"pageLength": -1,
+			 "order": [],
+			 dom: '<"row"B<"grlen"f>>rt',
+			 language: {"search": "_INPUT_",
+	               "searchPlaceholder": "Search..."},
+			buttons: [
+							{
+								extend: 'copyHtml5',
+								text: 'Copy',
+								title: "",
+								messageTop: reportHeaderTitle,
+								titleAttr: 'Copy to Clipboard',
+							},
+							{
+								extend: 'excelHtml5',
+								filename: exportFileName,
+								title: null,
+								text: 'Excel',
+								messageTop: reportHeaderTitle,
+								titleAttr: 'Export to Excel',
+								exportOptions: {
+											format: {
+												body: function ( data, row, column, node ) {
+												// Replace <br/> by line feed
+												if(column === 1){
+													return data.split('<br>').join("\r\n");
+												} else {
+													data = data.replace(/&lt;/g, "<");
+													data = data.replace(/&gt;/g, ">");
+													return data;
+												}
+											}
+										}
+									},
+							}
+					],
+			"columnDefs": [{"targets": [0,1], "orderable": false}],
+		});
+	});
 	
+	// Grid Report Datatable
 	$(document).ready(function() {
 		var reportType = document.getElementById("reportType").value;
 		var exportFileName = "";
@@ -534,43 +566,63 @@ body.loading .overlay{
 		var noSortColumns = [-1];
 		var visibleColumns = [1];
 		const d = new Date();
-		let pretag = "NCI_DME_";
+		let pretag = "DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
 		var colDefs = [];
 		var exportOptions = {};
 		var showHideCols = [];
 		switch (reportType) {
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
-				exportFileName= pretag + "Basepath_Report" + "_Created_On" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Base Paths";
-				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right. 
-				visibleColumns = [ 1, 2, 4, 7, 9];
+				exportFileName= pretag + "Base_Path" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all Base Paths";
+				noSortColumns = [16, 17];
+				fileSizeColumns = [4,6];
+				visibleColumns = [ 1, 2, 4, 7, 16, 17];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
-						{"targets": 4, "type": 'file-size'}, // not sortable
+						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						{"targets": 1, "data": "base_path"},
+						{"targets": 16, "searchable": false, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						 },
 						];
-				exportOptions = {columns: [[0,1], ':visible' ]};
-				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
+				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]}; // Export visible columns but do not export the Archive Summary Button column
+				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))']; // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
-				exportFileName= pretag + "Doc_Report" + "_Created_On" + tag;
-				reportHeaderTitle = "DME Data Archival Usage Summary Report for all Docs";
-				noSortColumns = [4,6,-1]; // The human readable columns. -1 is the last column from right.
-				visibleColumns = [ 1, 2, 4, 7, 9];
+				exportFileName= pretag + "DOC" + tag;
+				reportHeaderTitle = "DME Data Archival Usage Report for all DOCs";
+				noSortColumns = [16, 17];
+				fileSizeColumns = [4,6];
+				visibleColumns = [ 1, 2, 4, 7, 16, 17];
 				colDefs = [ {"targets": 0, "searchable": false, "orderable": false, "visible": true }, //index
-						{"targets": 4, "type": 'file-size'}, // not sortable
+						{"targets": fileSizeColumns, "type": 'file-size'}, // sort based on human readable file sizes
 						{"targets": noSortColumns, "orderable": false},
 						{"targets": visibleColumns, "visible": true}, // Visible columns at start up(include 0 specified above)
 						{"targets": '_all', "visible": false}, // The rest of the columns will not visible at start up
+						{"targets": 1, "data": "doc"},
+						{"targets": 16, "searchable": false, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						 },
 						];
-				exportOptions = {columns: [[0,1], ':visible' ]};
-				showHideCols = [':nth-child(n+3)']; // Exclude first two columns from show/hide. It starts from 3rd column
+				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]};  // Export visible columns but do not export the Archive Summary Button column
+				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))'];  // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
-				exportFileName= pretag + "Data_Owner_Report" + "_Created_On" +  tag;
-				reportHeaderTitle = "DME Data Owner Summary Report";
+				exportFileName= pretag + "Data_Owner" + tag;
+				reportHeaderTitle = "DME Data Owner Report";
 				colDefs = [
 						{ "data": "index",   "targets": 0, "searchable": false, "orderable": false, "visible": true},
 						{ "data": "doc",  "targets": 1, "visible": true },
@@ -579,16 +631,18 @@ body.loading .overlay{
 						{ "data": "data_owner", "targets": 4, "visible": true },
 						{ "data": "data_generator", "targets": 5, "visible": true },
 						{ "data": "collection_size", "targets": 6, "visible": false },
-						{ "data": "collection_size_hr", "targets": 7, "orderable": false, "visible": true },
-						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null, defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
-            "render": function ( data, type, row ) {
-                if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
-                    return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
-                }
-            }},
+						{ "data": "collection_size_hr", "targets": 7, "visible": true, type: 'file-size'}, // sort based on human readable file sizes
+						{ "data": "archive_summary", "targets": 8, "orderable": false, "visible": true, "data":null,
+							defaultContent: '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+							"render": function ( data, type, row ) {
+								if ( row.archive_summary_value != null && row.archive_summary_value != "" ) {
+									return '<button style="border:none;"><i class="fa fa-check" style="color:green" /></button>';
+								}
+							}
+						},
 						{ "data": "archive_summary_value", "targets": 9, "orderable": false, "visible": true},
 					];
-				exportOptions = {columns: [':not(:nth-last-child(2))'],} // Donot export the 8th column, contains button for displaying Archive Summary
+				exportOptions = {columns: [':visible:not(:nth-last-child(2))']} // Donot export the 8th column, contains button for displaying Archive Summary
 				showHideCols = [2,4,5,6,7]; // Exclude first three columns from show/hide. It starts from 4th column. Also exclude 8th column - the Archive Summary button
 				break;
 			default:
@@ -597,38 +651,50 @@ body.loading .overlay{
 
 		var fromDate = document.getElementById("fromDate").value;
 		var toDate = document.getElementById("toDate").value;
-		var messageTopDateRange = reportHeaderTitle + "  (Date Range: " +  fromDate + "-" + toDate + ")";
- 
-	    var table = $('#report_grid').DataTable( {
+		var messageTopDateRange = "";
+		if(reportType == "USAGE_SUMMARY_BY_DATA_OWNER") {
+			messageTopDateRange = reportHeaderTitle;
+		} else {
+			messageTopDateRange = reportHeaderTitle + "  (Date Range: " +  fromDate + "-" + toDate + ")";
+		}
+	    var table = $('#' + 'reportgrid').DataTable( {
 				responsive: true,
-				dom: 'Blfrtip',
+				dom: '<"row"B<"grlen"lf>>rtip',
+				language: {"lengthMenu" : "Show _MENU_ Entries",
+					       "search": "_INPUT_",
+			               "searchPlaceholder": "Search..."},
 				fixedHeader: true,
 				buttons: [
 				{
 					extend: 'copyHtml5',
 					exportOptions: exportOptions,
-					//text: '<i class="fa fa-files-o"> Copy</i>',
+					title: "",
 					text: 'Copy',
 					titleAttr: 'Copy to Clipboard',
 				},
 				{
 					extend: 'excelHtml5',
-					title: exportFileName,
+					filename: exportFileName,
+					title: null,
 					text: 'Excel',
 					messageTop: messageTopDateRange,
 					titleAttr: 'Export to Excel',
 					exportOptions: exportOptions
 				},
 				{
-          extend: 'colvis',
-          text: 'Show/Hide Columns',
-          titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
-          columns: showHideCols
-        },
+					extend: 'colvis',
+					text: 'Show/Hide Columns',
+					titleAttr: 'Toggle Column Name(Blue: Visible, Orange: Hidden)',
+					columns: showHideCols
+				},
 				],
 				"order": [[ 1, 'asc' ]],
 				"columnDefs": colDefs,
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
+				"initComplete": function() {
+					$("body").removeClass("loading");
+					$(this).show();
+				},
 			} );
 	    
 			table.on( 'order.dt search.dt', function () {
@@ -649,70 +715,99 @@ body.loading .overlay{
 			column.visible( ! column.visible() );
 		} );
 
-	    $('#report_grid tbody').on('click', 'button', function () {
+		/** The following code is executed when you click on the Assay Summary button on the Grid **/
+	    $('#reportgrid tbody').on('click', 'button', function () {
 			var data = table.row($(this).parents('tr')).data();
+			var path = "";
+			var dataJson = {};
+			var reportType = document.getElementById("reportType").value;
+			var fromDate = document.getElementById("fromDate").value;
+			var toDate = document.getElementById("toDate").value;
+			let emptyDate = "";
+
+			switch (reportType) {
+				case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
+					dataJson = {
+						path: data.base_path,
+						reportType: reportType,
+						fromDate: fromDate,
+						toDate: toDate,
+					};
+					break;
+				case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
+					dataJson = {
+						path: data.doc,
+						reportType: reportType,
+						fromDate: fromDate,
+						toDate: toDate,
+					};
+					break;
+				case 'USAGE_SUMMARY_BY_DATA_OWNER':
+					dataJson = {
+						path: data.collection_path,
+						reportType: reportType,
+						fromDate: emptyDate, // The Data owner report does not use dates
+						toDate: emptyDate
+					};
+					break;
+			}
 			var tr = $(this).closest('tr');
 			var row = table.row(tr);
-      if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
-        //Change or disable icon
-      } else {
-        let archiveSummary = "";
-        let uri = '/reports/getArchiveSummary?path=' + data.collection_path;
-        $.ajax({
-          type: 'GET',
-          url: uri,
-          dataType: 'json'
-        }).done(function (result) {
-          if(result.message != null && result.message != "") {
-            archiveSummary = JSON.stringify(result.message);
-            let archiveSummaryStr = archiveSummary.slice(1, -1);
-            data.archive_summary_value = archiveSummaryStr;
-          } else {
-            data.archive_summary_value = "NA";
-          }
-          table.cell(row.index(), 9).data(data.archive_summary_value);
-          table.cell(row.index(), 8).data("");
-        });
-	    }
+			if(row.data().archive_summary_value != null && row.data().archive_summary_value != "") {
+				//Change or disable icon
+			} else {
+				$("#spinner").show();
+				let archiveSummary = "";
+				let uri = '/reports/getArchiveSummary';
+				$.ajax({
+					type: 'GET',
+					url: uri,
+					data: dataJson,
+					dataType: 'json'
+				}).done(function (result) {
+					$("#spinner").hide();
+					if(result.message != null && result.message != "") {
+						archiveSummary = JSON.stringify(result.message);
+						let archiveSummaryStr = archiveSummary.slice(1, -1);
+						data.archive_summary_value = archiveSummaryStr;
+					} else {
+						data.archive_summary_value = "NA";
+					}
+					if (reportType === "USAGE_SUMMARY_BY_DATA_OWNER"){
+						table.cell(row.index(), 9).data(data.archive_summary_value);
+						table.cell(row.index(), 8).data("");
+					} else { // The BasePath and DOC grid positions for Archive Summary(both button and value) are different
+						table.cell(row.index(), 17).data(data.archive_summary_value);
+						table.cell(row.index(), 16).data("");
+					}
+				});
+			}
 		});
 	});
 
-	/* Formatting function for row details showing Archive Summary */
-	function format(archiveSummary) {
-		let archiveSummaryStr = archiveSummary.slice(1, -1);
-		var splitStr = archiveSummaryStr.split(",");
-		var output = "<table cellpadding='5' border='0' width='100%'>"
-		output+= "<tr>" + "<td width='70%'>&nbsp;</td>" + "<td><b>Vault</b></td>" + "<td><b>Bucket</b></td>" + "<td><b>Size</b></td>" + "</tr>";
-		for(x=0;x < splitStr.length-1; x++){
-			if(x % 3 == 0) {
-				output+= "<tr>" + "<td width='70%'>&nbsp;</td>";
-			}
-			output+= "<td>" + splitStr[x] + "</td>";
-			if( (x + 1) % 3 == 0) {
-				output+= "</tr>";
-			}
-		}
-		output += "</table>";
-	    return  output;
-	}
+
   // Spinner for Ajax
-  $(document).on({
-      ajaxStart: function(){
-      $("body").addClass("loading");
-    },
-      ajaxStop: function(){
-      $("body").removeClass("loading");
-    }
-  });
+	$(document).on({
+		ajaxStart: function(){
+		$("body").addClass("loading");
+		},
+		ajaxStop: function(){
+		$("body").removeClass("loading");
+		}
+	});
 
 	$(document).ready(function(){
 		$('#sub-menu-reports').addClass("active");
 		$('.userSelect').select2({
-			width: 'auto',
-			dropdownAutoWidth: true,
-			//allowClear: true,
 			placeholder: '-----------------Select User-----------------'
 		});
+		$('.docList').select2({
+			placeholder: '-----Select DOC-----'
+		});
+		$('.basepathList').select2({
+			placeholder: '-----------------Select Base Path-----------------'
+		});
+
 	});
 		
   $('#fromDate').datepicker({
@@ -762,6 +857,15 @@ body.loading .overlay{
           show(selected);
       });
 
+	  function showArchiveSummaryCheckbox(pathOrDocType) {
+		$("#assaySummaryCheckboxId").prop('checked', false);
+		if (pathOrDocType === "All"){
+			document.getElementById("assaySummaryCheckbox").style.display = "none";
+		} else {
+			document.getElementById("assaySummaryCheckbox").style.display = "block";
+		}
+	  }
+
       var toggle = true;
       function show(reportType) {
     	var fromDateEle = document.getElementById("fromDateDiv");
@@ -770,10 +874,12 @@ body.loading .overlay{
     	var userListEle = document.getElementById("userList");
     	var basepathListEle = document.getElementById("basepathList");
     	var pathEle = document.getElementById("collectionPath");
+		var assaySummaryCheckboxEle = document.getElementById("assaySummaryCheckbox");
       	var selectedValue = reportType;
       	if(selected != reportType) {
-      		$('#fromDate').datepicker('setDate', '01/01/2016');
-      		$('#toDate').datepicker('setDate', new Date());
+			$("#assaySummaryCheckboxId").prop('checked', false);
+			$('#fromDate').datepicker('setDate', '01/01/2016');
+			$('#toDate').datepicker('setDate', new Date());
       	}
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
       	{
@@ -783,6 +889,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC")
       	{
@@ -792,6 +899,12 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			var doc = document.getElementById("doc").value;
+			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+				assaySummaryCheckboxEle.style.display = "none";
+			} else {
+				assaySummaryCheckboxEle.style.display = "block";
+			}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
       	{
@@ -801,6 +914,12 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			var doc = document.getElementById("doc").value;
+			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
+				assaySummaryCheckboxEle.style.display = "none";
+			} else {
+				assaySummaryCheckboxEle.style.display = "block";
+			}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER")
       	{
@@ -810,6 +929,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
       	{
@@ -819,6 +939,26 @@ body.loading .overlay{
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
+			if ($('#user option').length == 1) {
+					let uri = '/reports/getUsers';
+					$.ajax({
+							type: 'GET',
+							url: uri,
+							dataType: 'json'
+						}).done(function (result) {
+							var data = JSON.parse(result.message.replace("\\", ""));
+							$.each(data, function (index, value) {
+								if(value.userId === userselected){
+									$('#user').append('<option value="' + value.userId + '" selected=true>' + value.displayName + '</option>');
+									/*$('#user option[value=value.user.id]').attr("selected", "selected");*/
+								} else {
+									$('#user').append('<option value="' + value.userId + '">' + value.displayName + '</option>');
+								}
+						});
+						$('#user option[value=userselected]').attr("selected", "selected");
+					});
+				}
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH")
       	{
@@ -828,7 +968,13 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		pathEle.style.display = "none";
       		basepathListEle.style.display = "block";
-      	}
+			var basepath = document.getElementById("basepath").value;
+			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
+				assaySummaryCheckbox.style.display = "none";
+			} else {
+				assaySummaryCheckbox.style.display = "block";
+			}
+		}
       	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
       	{
       		userListEle.style.display = "none";
@@ -837,7 +983,13 @@ body.loading .overlay{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "block";
-      	}
+			var basepath = document.getElementById("basepath").value;
+			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
+				assaySummaryCheckbox.style.display = "none";
+			} else {
+				assaySummaryCheckbox.style.display = "block";
+			}
+        }
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH")
       	{
       		userListEle.style.display = "none";
@@ -846,6 +998,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
       	{
@@ -855,6 +1008,7 @@ body.loading .overlay{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		pathEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else
       	{
@@ -865,6 +1019,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			assaySummaryCheckboxEle.style.display = "none";
       	}
       	
       }
@@ -893,7 +1048,7 @@ body.loading .overlay{
 		}
 		else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE"){
 			document.getElementById("user").value = "-1";
-			if(document.getElementById("doc").value == "-1"){
+			if(document.getElementById("doc").value == "" || document.getElementById("doc").value == "-1"){
 				alert("Please select a DOC");
 				return false;
 			}
@@ -908,7 +1063,7 @@ body.loading .overlay{
 		else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE"){
 			document.getElementById("doc").value = "-1";
 			document.getElementById("user").value = "-1";
-			if(document.getElementById("basepath").value == "-1"){
+			if(document.getElementById("basepath").value == "" || document.getElementById("basepath").value == "-1"){
 				alert("Please select a Base path");
 				return false;
 			}
@@ -928,6 +1083,9 @@ body.loading .overlay{
 				$("#path").val(updatedPath);
 			}
 		}
+		$("input[name=docs]").val(listOfDocs);
+		$("input[name=basepaths]").val(listOfBasepaths);
+		$("#spinner").show();
 		document.getElementById("reportsform").submit();
       }
 

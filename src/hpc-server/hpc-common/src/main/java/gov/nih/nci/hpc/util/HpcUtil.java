@@ -189,6 +189,22 @@ public class HpcUtil {
 		}
 	}
 
+	/**
+	 * Performs Math.toIntExact w/o throwing overflow exception, but rather
+	 * returning max int
+	 *
+	 * @param value the long value
+	 * @return the value of the long value
+	 */
+	public static int toIntExact(long value) {
+		try {
+			return Math.toIntExact(value);
+
+		} catch (ArithmeticException e) {
+			return Integer.MAX_VALUE;
+		}
+	}
+
 	private static final String[] SI_UNITS = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
 	private static final String[] BINARY_UNITS = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
 
