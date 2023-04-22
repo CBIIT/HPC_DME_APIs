@@ -108,7 +108,7 @@ app
             field : 'fullPath',
             displayName : 'Download',
             cellFilter : 'dmePathEncoding',
-            cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" ng-if="row.entity.collection" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a><a id="downloadlink" class="btn btn-link btn-sm" ng-if="!row.entity.collection" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+            cellTemplate : '<div class="ui-grid-cell-contents" ng-if="row.entity.name.length != 0"><a id="downloadlink" class="btn btn-link btn-sm" ng-if="row.entity.collection" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a><a id="downloadlink" class="btn btn-link btn-sm" ng-if="!row.entity.collection" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
             exporterSuppressExport : true,
             enableSorting: false,
             enableFiltering: false
@@ -129,13 +129,16 @@ app
     };
       
     function constructBreadcrumb(node) {
+    	var count = node.children.length;
+    	if (node.children.length == 1 && node.children[0].id == "empty")
+    		count = 0;
     	var paths = node.fullPath.split("/");
     	var path = '/'+paths[1];
     	var html='';
     	for(i = 1; i < paths.length; i++){
     		if(html.length == 0) {
         		if(paths.length == 2)  //The path has just one part and ends here, so display the human readable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + node.children.length + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + count + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		} else {
@@ -143,7 +146,7 @@ app
     			if(i < paths.length - 1)
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else //The last part of the path ends here, so display human redable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + node.children.length + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + count + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		}
     	}
     	$('.breadcrumb.folderpath').html(html);
@@ -162,10 +165,12 @@ app
         $scope.rightClickedRow = row;
         var node = row.entity;
 
+		if(node.id != "empty") {
         contextMenuData.push(['View Details', function() {
         	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
             percentEncodePath(node.fullPath) + "&source=browse&init";
         }]);
+        }
         if(node.collection) {
 	        contextMenuData.push(['Add Collection', function() { 
 	        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
@@ -376,16 +381,7 @@ cursor: pointer;
 		<div th:include="header :: header"></div>
 		<!--main content start-->
 		<section id="main-content">
-			<section class="wrapper">
-				<!--Title start-->
-				<div class="row">
-					<div class="col-lg-12">
-						<h4>
-							<i class="fa fa-folder"></i> Browse
-						</h4>
-					</div>
-				</div>
-				<!--Title End-->
+			<section class="wrapper-browse">
 				<!--Row start-->
 				<div class="row">
 					<div class="col-md-12" style="word-break:break-all">
@@ -539,7 +535,10 @@ $(function() {
                 }
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
             } else {
-            	menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode']);
+            	if(node.id == "empty")
+            		menuAPI.disable(node.name, ['viewDetails','addCollection','addDatafile','addBulk','refreshNode']);
+            	else
+            		menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode']);
             }
         }
     });

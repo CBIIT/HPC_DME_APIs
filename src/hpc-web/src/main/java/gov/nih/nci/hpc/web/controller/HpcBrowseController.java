@@ -622,9 +622,9 @@ public class HpcBrowseController extends AbstractHpcController {
 				if (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty()) {
 					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
 					listChildEntry.setCollection(false);
-					listChildEntry.setFullPath(" ");
-					listChildEntry.setId(" ");
-					listChildEntry.setName(" ");
+					listChildEntry.setFullPath("");
+					listChildEntry.setId("empty");
+					listChildEntry.setName("");
 					listChildEntry.setPopulated(true);
 					selectedEntry.getChildren().add(listChildEntry);
 				}

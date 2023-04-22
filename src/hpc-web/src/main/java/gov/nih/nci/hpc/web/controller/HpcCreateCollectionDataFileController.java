@@ -404,6 +404,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				files.add(file);
 			}
 			dto.getDataObjectRegistrationItems().addAll(files);
+			logger.info("Globus file upload json: " + gson.toJson(dto));
 		} else if (StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) && googleDriveFileIds != null) {
 			//Upload File(s) From Google Drive
             List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
@@ -424,6 +425,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 files.add(file);
             }
             dto.getDataObjectRegistrationItems().addAll(files);
+            logger.info("GoogleDrive file upload json: " + gson.toJson(dto));
         }
 
 		List<String> include = new ArrayList<String>();
@@ -472,6 +474,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					folder.getIncludePatterns().addAll(include);
 			}
 			dto.getDirectoryScanRegistrationItems().addAll(folders);
+			logger.info("Globus folder upload json: " + gson.toJson(dto));
 		}
 		if (StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) && googleDriveFolderIds != null) {
 			// Upload Directory/Folder from Google Cloud Storage
@@ -507,6 +510,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                     folder.getIncludePatterns().addAll(include);
             }
             dto.getDirectoryScanRegistrationItems().addAll(folders);
+            logger.info("GoogleDrive folder upload json: " + gson.toJson(dto));
         }
 	      if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) && gcPath != null && isGcFile) {
 			//Upload File From Google Cloud Storage
@@ -582,6 +586,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			logger.info(path + "/" + s3FilePath.getFileName());
 			files.add(file);
 			dto.getDataObjectRegistrationItems().addAll(files);
+			//logger.info("AWS S3 file bulk upload json: " + gson.toJson(dto));
 		}
 		else if (StringUtils.equals(bulkType, "s3") && s3Path != null) {
 			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();
@@ -599,10 +604,17 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			s3Directory.setAccount(s3Account);
 			folder.setS3ScanDirectory(s3Directory);
 			folders.add(folder);
-			Path folderPath = Paths.get(s3Path);
-			String folderName = folderPath.getFileName().toString();
-            String fromPath = "/" + s3Path;
-            String toPath = "/" + folderName;
+			String fromPath = "";
+			String toPath = "";
+			if (s3Path.equals("/")) {
+			  fromPath = "/";
+			  toPath = "/";
+			} else {
+	            Path folderPath = Paths.get(s3Path);
+	            String folderName = folderPath.getFileName().toString();
+	            fromPath = "/" + s3Path;
+	            toPath = "/" + folderName;
+			}
 			if(!fromPath.equals(toPath)) {
                 HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
                 pathDTO.setFromPath(fromPath);
@@ -619,6 +631,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				folder.getIncludePatterns().addAll(include);
 
 			dto.getDirectoryScanRegistrationItems().addAll(folders);
+	        //logger.info("AWS S3 directory upload json: " + gson.toJson(dto));
 		}
 		
 		dto.setDryRun(dryRun != null && dryRun.equals("on"));

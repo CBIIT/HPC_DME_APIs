@@ -1,0 +1,2957 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.11.0",
+    "description": "This Application Programming Interface (API) Specification describes how to use the DME REST API.\n\nThe DME REST API allows you to upload and download data, manage associated metadata, and search for assets against these metadata. \n\nA *collection* is a logical directory in DME. A *data file* represents an individual data object. Data files reside in collections. Collections can also contain other collections. You can logically structure collections and data files in a hierarchical manner, depicted with a tree structure with parents and children.\n\nA *metadata attribute* consists of the attribute name and the attribute value. Each object or collection has associated metadata (required or user defined). When you create a collection or object, you must provide any required metadata.\n\nFor each collection, use the collection_type attribute to define the collection type. \n\nA *child* entity (collection or data file) always inherits the metadata of its parent and other ancestors in that hierarchy. This facilitates advanced searches where you can search for data files or collections based on their own metadata or their parent metadata. You can also limit searches to a specific level in the hierarchy.\n\nA *fileContainerId* is the Globus endpoint UUID or AWS S3 bucket name. \n\nA *fileId*, when registering data to DME, is the full path of the file or collection which exists at the Globus or AWS S3 location. When downloading data to a Globus endpoint or to an AWS S3 bucket, *fileId* is the destination file name or collection name.",
+    "title": "DME API"
+  },
+  "host": "fsdmel-dsapi01t.ncifcrf.gov",
+  "basePath": "/",
+  "paths": {
+    "/hpc-server/authenticate": {
+      "get": {
+        "description": "This API specification assumes you will be specifying your username and password with each command. However, if you would like to generate an authentication token instead, this service allows you do so.\n1. **CURL COMMAND**\n  ```\n  curl -k https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/authenticate -u <Your-User-ID>\n  ```\n2. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/authenticate -u My-User-ID\n  ```\n  \n  Example Token from Console Output:\n  \n  ```\n  **********************************************************.******************************************\n  ```\n\nAfter the command returns the token, create a *curl-conf* file and save the generated token in that file, as follows:\n  ```\n-H \"Authorization:Bearer *Authentication token*\"\n  ```\n\n3. **EXAMPLE - *curl-conf* File**\n  ```\n  -H \"Authorization:Bearer **********************************************************.******************************************\"\n  ```\n4. **EXAMPLE - Using Authentication Token With Curl Commands**\n   Instead of using the *-u* parameter to specify your username, use the *--config* parameter to specify the path to the *curl-conf* file. \n  ```\n  curl --config folder/curl-conf -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/download/13163eac-be40-4f31-af23-e030b905c61a' -D header.txt -o output.json\n  ```\n",
+        "tags": [
+          "Authenticate"
+        ],
+        "summary": "Generate an authentication token.",
+        "operationId": "authenticateUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "**Console Output**          \n```\n{\n  \"authenticationType\": \"LDAP\",\n  \"userId\": \"My-User-ID\",\n  \"userRole\": \"USER\",\n  \"token\": \"**********************************************************.******************************************\"\n}\n```"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/hpc-server/v2/registration/{taskId}": {
+      "get": {
+        "description": "This service allows you to get the status of a registration task. The *taskId* parameter is the task identifier returned in the *Registration* REST API response. \n\nThis service returns the status and path of each file in DME.\n\n1. **CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/registration/{taskId}' -D header.txt -o output.json -u <Your-User-ID>\n  ```\n\n  2. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/registration/32b79929-bd25-4393-a1a3-d64195bb4dea' -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Get the status of a registration task.",
+        "tags": [
+          "Get Task Status"
+        ],
+        "operationId": "registrationStatusByTaskId",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "**Contents of output.json File**          \n```\n{\n  \"inProgress\": false,\n  \"task\": {\n    \"taskId\": \"32b79929-bd25-4393-a1a3-d64195bb4dea\",\n    \"result\": true,\n    \"completedItems\": [{\n      \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Links/icon-above/data.txt\",\n      \"result\": true\n    }],\n    \"created\": \"2022-06-29T16:05:35.210-04:00\",\n    \"completed\": \"2022-06-29T16:06:35.555-04:00\"\n  }\n}",
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/collection/download/{taskId}": {
+      "get": {
+        "description": "This service allows you to get the status of a collection download task. The *taskId* parameter is the task identifier returned in the *Collection Download* REST API response. \n\nThis service returns the download status of each file in DME.\n\n1. **CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/download/{taskId}' -D header.txt -o output.json -u <Your-User-ID>\n  ```\n\n  2. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/download/e1fc3394-f079-4f50-b3e2-8890acb0f8a5' -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Get the status of a collection download task.",
+        "tags": [
+          "Get Task Status"
+        ],
+        "operationId": "collectionDownloadStatusByTaskId",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "**Contents of output.json File**          \n```\n{\n      \"inProgress\": false,\n      \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project_JaneDoe\",\n      \"destinationLocation\": {\n        \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n        \"fileId\": \"/demo/\"\n      },\n      \"destinationType\": \"GLOBUS\",\n      \"result\": \"COMPLETED\",\n      \"completedItems\": [{\n        \"dataObjectDownloadTaskId\": \"645fc12c-bcd4-4032-9f68-c00f4aeecd44\",\n        \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project_JaneDoe/Analysis/analysis.zip\",\n        \"destinationLocation\": {\n          \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n          \"fileId\": \"/demo//Analysis/analysis.zip\"\n        },\n        \"result\": \"COMPLETED\",\n        \"effectiveTransferSpeed\": 1,\n        \"size\": 152\n      }, {\n        \"dataObjectDownloadTaskId\": \"c9e778f6-7ac0-464a-83ff-6010602d103e\",\n        \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project_JaneDoe/Data/data.zip\",\n        \"destinationLocation\": {\n          \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n          \"fileId\": \"/demo//Data/data.zip\"\n        },\n        \"result\": \"COMPLETED\",\n        \"effectiveTransferSpeed\": 1,\n        \"size\": 152\n      }, {\n        \"dataObjectDownloadTaskId\": \"d42daae5-ad95-4ba7-9ef6-d6463505c422\",\n        \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project_JaneDoe/Results/results.zip\",\n        \"destinationLocation\": {\n          \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n          \"fileId\": \"/demo//Results/results.zip\"\n        },\n        \"result\": \"COMPLETED\",\n        \"size\": 152\n      }],\n      \"effectiveTrasnsferSpeed\": 1,\n      \"created\": \"2022-11-29T15:28:55.132-05:00\",\n      \"completed\": \"2022-11-29T15:43:30.012-05:00\"\n  }",
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/dataObject/download/{taskId}": {
+      "get": {
+        "description": "This service allows you to get the status of a data file download task. The *taskId* parameter is the task identifier returned in the *Data File Download* REST API response. \n\nThis service returns the download status of each data file in DME.\n1. **CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/dataObject/download/{taskId}' -D header.txt -o output.json -u <Your-User-ID>\n  ```\n\n  2. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/dataObject/download/c09b52f3-050c-4755-90c6-44d6edbd0c52' -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Get the status of a data file download task.",
+        "tags": [
+          "Get Task Status"
+        ],
+        "operationId": "dataObjectDownloadStatusByTaskId",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "**Contents of output.json File**          \n```\n{\n  \"inProgress\": false,\n  \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data.txt\",\n  \"destinationLocation\": {\n    \"fileContainerId\": \"test01\",\n    \"fileContainerName\": \"test01\",\n    \"fileId\": \"data.txt\"\n  },\n  \"destinationType\": \"S_3\",\n  \"result\": \"COMPLETED\",\n  \"effectiveTrasnsferSpeed\": 14,\n  \"size\": 24,\n  \"created\": \"2020-07-23T16:04:52.154-04:00\",\n  \"completed\": \"2020-07-23T16:04:53.815-04:00\"\n}",
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/download/{taskId}": {
+      "get": {
+        "description": "This service allows you to get the status of a data file list download task or a collection list download task. The *taskId* parameter is the task identifier returned in the *Download Object and Collection List* REST API response. \nThis service returns the download status of each file. For collection list, the service also returns the collection summary information.\n\n1.**CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/download/{taskId}' -D header.txt -o output.json -u <Your-User-ID>\n  ```\n\n  2. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/download/96870f99-4702-4e89-acc6-3e80bd2f5102' -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Get the status of a data file list download task or a collection list download task.",
+        "tags": [
+          "Get Task Status"
+        ],
+        "operationId": "dataObjectsOrCollectionsDownloadStatusByTaskId",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "\n**Contents of output.json File for Data File List Download Task**\n```\n {\n  \"inProgress\": false,\n  \"destinationLocation\": {\n    \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n    \"fileId\": \"/20210301b/\"\n  },\n  \"destinationType\": \"GLOBUS\",\n  \"result\": \"COMPLETED\",\n  \"completedItems\": [{\n    \"dataObjectDownloadTaskId\": \"6e6fd5f1-f49e-432e-9a03-b229f8c9c6ea\",\n    \"path\": \"/DOE_TEST_Archive/program/study/dataset/data1.txt\",\n    \"destinationLocation\": {\n      \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n      \"fileId\": \"/20210301b//DOE_TEST_Archive/program/study/dataset/data1.txt\"\n    },\n    \"result\": \"COMPLETED\",\n    \"size\": 24\n  }, {\n    \"dataObjectDownloadTaskId\": \"2964e811-87c6-4197-b035-f4c2bcb902df\",\n    \"path\": \"/DOE_TEST_Archive/program/study/dataset/data5.txt\",\n    \"destinationLocation\": {\n      \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n      \"fileId\": \"/20210301b//DOE_TEST_Archive/program/study/dataset/data5.txt\"\n    },\n    \"result\": \"COMPLETED\",\n    \"size\": 24\n  }, {\n    \"dataObjectDownloadTaskId\": \"564e1e25-4c5e-4371-802c-348191ed2dce\",\n    \"path\": \"/DOE_TEST_Archive/program/study/dataset/image4.png\",\n    \"destinationLocation\": {\n      \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n      \"fileId\": \"/20210301b//DOE_TEST_Archive/program/study/dataset/image4.png\"\n    },\n    \"result\": \"COMPLETED\",\n    \"effectiveTransferSpeed\": 5,\n    \"size\": 736\n  }],\n  \"effectiveTrasnsferSpeed\": 5,\n  \"created\": \"2021-03-01T14:14:52.686-05:00\",\n  \"completed\": \"2021-03-01T14:18:55.158-05:00\"\n}\n```\n**Contents of output.json File for Collection List Download Task**\n```\n {\n  \"inProgress\": false,\n  \"destinationLocation\": {\n    \"fileContainerId\": \"dme-doc-jane-doe\",\n    \"fileContainerName\": \"dme-doc-jane-doe\",\n    \"fileId\": \"collection-A\"\n  },\n  \"destinationType\": \"S_3\",\n  \"result\": \"COMPLETED\",\n  \"completedItems\": [{\n    \"dataObjectDownloadTaskId\": \"23c6da7b-ea69-45a5-8edb-0e465eceb2ba\",\n    \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/Flowcell1/image\",\n    \"destinationLocation\": {\n      \"fileContainerId\": \"dme-doc-jane-doe\",\n      \"fileId\": \"collection-A/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/Flowcell1/image\"\n    },\n    \"result\": \"COMPLETED\",\n    \"effectiveTransferSpeed\": 2158\n  }, {\n    \"dataObjectDownloadTaskId\": \"c24f3a1a-bbe8-430d-8b1d-3468fddf9997\",\n    \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/Flowcell1/Sample1/data.txt\",\n    \"destinationLocation\": {\n      \"fileContainerId\": \"dme-doc-jane-doe\",\n      \"fileId\": \"collection-A/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/Flowcell1/Sample1/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/Flowcell1/Sample1/data.txt\"\n    },\n    \"result\": \"COMPLETED\",\n    \"effectiveTransferSpeed\": 104\n  }, {\n    \"dataObjectDownloadTaskId\": \"c18778a9-9ea3-4625-815f-4ee6a2230f7c\",\n    \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/Flowcell2/data.txt\",\n    \"destinationLocation\": {\n      \"fileContainerId\": \"dme-doc-jane-doe\",\n      \"fileId\": \"collection-A/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/Flowcell2/data.txt\"\n    },\n    \"result\": \"COMPLETED\",\n    \"effectiveTransferSpeed\": 100\n  }],\n  \"effectiveTrasnsferSpeed\": 787,\n  \"created\": \"2019-10-09T14:27:09.954-04:00\",\n  \"completed\": \"2019-10-09T14:28:55.006-04:00\"\n}             \n```",
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\n**Contents of header.txt File**\n```\nHTTP/1.1 401 Unauthorized\nDate: Wed, 21 Dec 2022 20:57:48 GMT\nContent-Type: application/json\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n\n**Contents of output.json File**\n```\n{\n  \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n  \"message\": \"Access Denied: LDAP authentication failed\"\n} \n```"
+          }
+        }
+      }
+    },
+    "/hpc-server/collection/{path}": {
+      "get": {
+        "description": "This service allows you to get information about a specific collection including all of its hierarchical metadata. Use the *path* parameter to specify the path to the collection of interest. In the output, the *collection* and *selfMetadataEntries* elements provide information about the collection you specified, while the *parentMetadataEntries* element provides information about the collection that contains the collection you specified. If you set the *list* parameter to 'true', the *subCollections* element lists the child collections of this collection and the *dataObjects* element lists the data files of this collection. The list parameter is optional and its default is 'false'. \n\n**Query Param**\n*list* – If set to 'true', the API lists the child collections and data files of this collection. The *subCollections* element lists the child collections and the *dataObjects* element lists the data files. This is an optional parameter and default is 'false'.\n\n1. **CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/{path}' -D header.txt -o output.json -u <Your-User-ID>\n  ```\n\n  2. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/NCI_DOE_Archive/Program_3_1_21/Study_3_1_21/Asset_3_1_21?list=true -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Get collection information.",
+        "tags": [
+          "Get Metadata"
+        ],
+        "operationId": "CollectionByPathGet",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          },
+          {
+            "name": "includeAcl",
+            "in": "query",
+            "description": "includeAcl",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "list",
+            "in": "query",
+            "description": "list",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/HpcCollectionListDTORes"
+            },
+            "description": "**Contents of header.txt File**\n```\nHTTP/1.1 200 OK\nDate: Wed, 21 Dec 2022 16:43:37 GMT\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: GET, POST, DELETE, PUT\nContent-Type: application/json;charset=UTF-8\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File**\n```\n    {\n    \"collections\": [{\n      \"collection\": {\n        \"collectionId\": 397908,\n        \"collectionName\": \"/FNL_SF_Archive/PI_Lab_JaneDoe\",\n        \"absolutePath\": \"/FNL_SF_Archive/PI_Lab_JaneDoe\",\n        \"collectionParentName\": \"/FNL_SF_Archive\",\n        \"collectionOwnerName\": \"My-User-ID\",\n        \"collectionOwnerZone\": \"ncifHpcZone\",\n        \"collectionMapId\": 0,\n        \"collectionInheritance\": 1,\n        \"comments\": \"\",\n        \"info1\": \"\",\n        \"info2\": \"\",\n        \"createdAt\": \"2018-07-30T12:26:42-04:00\",\n        \"specColType\": \"NORMAL\"\n      },\n      \"metadataEntries\": {\n        \"selfMetadataEntries\": [{\n          \"attribute\": \"collection_type\",\n          \"value\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"registered_by\",\n          \"value\": \"My-User-ID\"\n        }, {\n          \"attribute\": \"metadata_updated\",\n          \"value\": \"08-16-2022 16:18:45\"\n        }, {\n          \"attribute\": \"pi_name\",\n          \"value\": \"Jane Doe\"\n        }, {\n          \"attribute\": \"data_owner_designee\",\n          \"value\": \"Jane Doe\"\n        }, {\n          \"attribute\": \"data_owner\",\n          \"value\": \"John Doe\"\n        }, {\n          \"attribute\": \"attribute1\",\n          \"value\": \"value1\"\n        }, {\n          \"attribute\": \"data_generator\",\n          \"value\": \"Jane Doe\"\n        }, {\n          \"attribute\": \"registered_by_name\",\n          \"value\": \"Jane Doe\"\n        }, {\n          \"attribute\": \"uuid\",\n          \"value\": \"db5c88b1-4a9e-42bc-8a5f-b75168bd0881\"\n        }, {\n          \"attribute\": \"data_generator_userid\",\n          \"value\": \"My-User-ID\"\n        }, {\n          \"attribute\": \"configuration_id\",\n          \"value\": \"c93e82ba-7c66-4463-8376-1c7cb0b1a598\"\n        }]\n      },\n      \"reports\": [{\n        \"type\": \"USAGE_SUMMARY_BY_PATH\",\n        \"path\": \"/FNL_SF_Archive/PI_Lab_JaneDoe\",\n        \"generatedOn\": \"2022-12-21-05:00\",\n        \"reportEntries\": [{\n          \"attribute\": \"TOTAL_DATA_SIZE\",\n          \"value\": 528\n        }]\n      }]\n    }]\n  }\n```",
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      },
+      "put": {
+        "description": "This service allows you to register an empty collection if you have a DME user account with upload permission. If this is an existing collection, you can update its metadata.\n\n\nBy default, this service assumes you are registering a collection within a collection that already exists. However, you can optionally request that this service create the parent and higher-level collections. To do so, set the *createParentCollections* indicator in the json file to 'true', and provide the list of metadata for the parent collections through *parentCollectionsBulkMetadataEntries*. In this case, this service creates the entire collection hierarchy above the registered collection.\n\n1. **CURL COMMAND**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @<attributesFile.json> -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/{path} -H \"Accept: application/json\" -D  <response-header> -o <response-message.json> -u <Your-User-ID>\n  ```\n  2.  **attributesFile.json Example**\n  ```\n   {\n     \"createParentCollections\": true,\n     \"metadataEntries\": [{\n         \"attribute\": \"study_identifier\",\n         \"value\": \"Study_1\"\n       },\n       {\n         \"attribute\": \"study_name\",\n         \"value\": \"Study One\"\n       }, {\n         \"attribute\": \"description\",\n         \"value\": \"Test Study\"\n       },\n       {\n         \"attribute\": \"collection_type\",\n         \"value\": \"Study\"\n       }\n     ],\n\n     \"parentCollectionsBulkMetadataEntries\": {\n       \"defaultCollectionMetadataEntries\": [{\n         \"attribute\": \"collection_type\",\n         \"value\": \"Program\"\n       }]\n     }\n   }\n  ```\n  3. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/DOE_TEST_Archive/Program_Jane/Study_New -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Register an empty collection.",
+        "tags": [
+          "Upload Data"
+        ],
+        "operationId": "CollectionByPathPut",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          },
+          {
+            "in": "body",
+            "name": "collectionRegistration",
+            "description": "collectionRegistration",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcCollectionRegistrationDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "**Contents of header.txt File After a Successful Metadata Update**\n```\nHTTP/1.1 200 OK\nDate: Fri, 06 Jan 2023 20:43:58 GMT\nContent-Length: 0\nServer: Jetty(9.2.19.v20160908)\n```\nThe output.json file is empty after a successful metadata update."
+          },
+          "201": {
+            "description": "**Contents of header.txt File After Collection Creation**\n```\nHTTP/1.1 201 Created\nDate: Fri, 06 Jan 2023 20:22:43 GMT\nLocation: https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/DOE_TEST_Archive/Program_Jane/Study_New\nContent-Length: 0\nServer: Jetty(9.2.19.v20160908)\n```\nThe output.json file is empty after collection creation.",
+            "headers": {}
+          },
+          "400": {
+            "description": "**Contents of header.txt File**\n```\nHTTP/1.1 400 Bad Request\nDate: Fri, 06 Jan 2023 20:10:52 GMT\nContent-Type: application/json\nHPC-API-Version: 1.0.0\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File**\n```\n{\"errorType\":\"INVALID_REQUEST_INPUT\",\"message\":\"Missing or empty mandatory metadata: study_name, description\"}\n```",
+            "headers": {}
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/collection/query": {
+      "post": {
+        "description": "This service allows you to perform a query for a collection. You can perform a simple query, or you can combine multiple simple queries into a compound query.\n\n  **Example Simple Query**\n          \n    ...\n    {\n       \"attribute\": \"experiment\",\n       \"value\": \"H1_M2_update_10M\",\n       \"operator\": \"EQUAL\"\n    }\n    ...\n\nThis example consists of the following parameters:\n  \n  • *attribute* - Specify the name of the metadata attribute that you want to query.\n    \n  • *value* - Specify the value of the metadata attribute that you want to query.\n    \n  • *operator* - When using a comparison operator, supported operators are: EQUAL, NOT_EQUAL, LIKE, NUM_LESS_THAN, NUM_LESS_OR_EQUAL, NUM_GREATER_OR_EQUAL, NUM_GREATER_THAN.  \n\n**Example Simple Query with *attributeMatch***\n          \n    ...\n    {\n       \"attributeMatch\": \"ANY\",\n       \"value\": \"H1_M2_update_10M\",\n       \"operator\": \"EQUAL\"\n    }\n    ...\n\nThis example consists of the following parameters:\n\n  • *attributeMatch* - This is an optional attribute. If you set this attribute to *ANY*, then the query applies to any metadata attribute, and the system expects you to omit the ‘attribute’ parameter from the query. Omitting the ‘attributeMatch’ parameter, or setting it to EXACT, limits the search to the provided metadata attribute.\n\n  • *operator* - When using *attributeMatch*, supported comparison operators are the same as above.\n\n  **Example Simple Query with *levelFilter***\n          \n    ...\n    {\n       \"attributeMatch\": \"ANY\",\n       \"value\": \"H1_M2_update_10M\",\n       \"operator\": \"EQUAL\",\n       \"levelFilter\": {\n         \"level\": 1,\n         \"operator\": \"NOT_EQUAL\"\n       }\n    }\n    ...\n\nThis example consists of the following parameters:\n\n  • *levelFilter* - This is an optional attribute. If you use the levelFilter attribute, search matches the metadata found at the specified *level*. Otherwise, the query matches metadata found at any level of the path.\n    \n  • *operator* - When using *levelFilter*, supported comparison operators are the same as above.  \n    \n**Example Compound Query with Additional Parameters**\n    \nA simple query is the basic building block of the compound query. You can combine multiple simple queries with a join operator (\"AND\", \"OR\") to create a list of queries. You can further combine multiple lists to create a combined query. \n\n    {\n       \"compoundQuery\": {\n         \"operator\": \"AND\",\n         \"queries\": [{\n             \"attributeMatch\": \"ANY\",\n             \"value\": \"H1_M2_update_10M\",\n             \"operator\": \"EQUAL\",\n             \"levelFilter\": {\n               \"level\": 1,\n               \"operator\": \"NOT_EQUAL\"\n             }\n           },\n           {\n             \"attribute\": \"run_name\",\n             \"value\": \"run_02_20_2020\",\n             \"operator\": \"LIKE\"\n           }\n         ]\n       },\n       \"detailedResponse\": true,\n       \"page\": 2,\n       \"pageSize\": 10,\n       \"totalCount\": true\n    }\n\nThis example contains the following additional parameters:\n\n  • *detailedResponse*: By default, a search returns only paths of matching collections. If you set this attribute to *true*, the system returns collections with metadata.\n  \n  • *page*: Ask for a specific page of results. By default, the query returns the first 100 results in page 1, the second 100 in page 2, and so on. If you omit the page parameter, the system fetches page 1. \n  \n  • *pageSize*: By default, the query returns up to 100 results in each page.\n  \n  • *totalCount*: If you set this parameter to *true*, the system returns the total count of collections matching the query regardless of the query limit and page. By default, if you omit this attribute, the system sets it to *false* and does not return a total count.\n  \n  \n  \n  \n  \n  \n\n  1. **CURL COMMAND**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @<attributesFile.json> -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/query -H \"Accept: application/json\" -D  <response-header> -o <response-message.json> -u <Your-User-ID>\n  \n  ```\n  2.  **attributesFile.json Example**\n  ```\n       {\n         \"compoundQuery\": {\n           \"operator\": \"AND\",\n           \"queries\": [{\n               \"attribute\": \"access_group\",\n               \"value\": \"public\",\n               \"operator\": \"NOT_EQUAL\"\n             },\n             {\n               \"attribute\": \"collection_type\",\n               \"value\": \"Asset\",\n               \"operator\": \"EQUAL\"\n             }\n           ]\n         },\n         \"detailedResponse\": true,\n         \"page\": 2,\n         \"pageSize\": 10,\n         \"totalCount\": true\n       }\n  ```\n  3. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/collection/query -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n  ``` \n",
+        "summary": "Find a collection by metadata query.",
+        "tags": [
+          "Search Data"
+        ],
+        "operationId": "CollectionQueryPost",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "compoundMetadataQuery",
+            "description": "compoundMetadataQuery",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcCompoundMetadataQueryDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/HpcCollectionListDTORes"
+            },
+            "description": "**Contents of header.txt File After Successful Query**\n```\nHTTP/1.1 200 OK\nDate: Fri, 24 Feb 2023 19:59:58 GMT\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: GET, POST, DELETE, PUT\nContent-Type: application/json;charset=UTF-8\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File After Successful Query**\n\n```\n{\"collectionPaths\":[\n\"\\/FNL_SF_Archive\\/PI_Lab_JaneDoe\\/Project_JaneDoe\\/Analysis\",\n\"\\/FNL_SF_Archive\\/PI_Lab_JaneDoe\\/Project_JaneDoe\\/Data\",\n\"\\/FNL_SF_Archive\\/PI_Lab_JaneDoe\\/Project_JaneDoe\\/Results\"\n],\"page\":1,\"limit\":100,\"totalCount\":3}\n```",
+            "headers": {}
+          },
+          "204": {
+            "description": "**Contents of header.txt File When Nothing Matches Criteria**\n```\nHTTP/1.1 204 No Content\nDate: Fri, 24 Feb 2023 19:49:58 GMT\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File When Nothing Matches Criteria**\nThe output.json file is empty."
+          },
+          "400": {
+            "description": "**Contents of header.txt File**\n```\nHTTP/1.1 400 Bad Request\nDate: Fri, 24 Feb 2023 19:36:58 GMT\nContent-Type: application/json\nHPC-API-Version: 1.0.0\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File**\n```\n{\"errorType\":\"INVALID_REQUEST_INPUT\",\"message\":\"Invalid compound metadata query: Null compound query\"}\n```"
+          },
+          "401": {
+            "description": "**Contents of header.txt File**\n```\nHTTP/1.1 401 Unauthorized\nDate: Fri, 24 Feb 2023 19:44:58 GMT\nContent-Type: application/json\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File**\n```\n{\"errorType\":\"REQUEST_AUTHENTICATION_FAILED\",\"message\":\"Access Denied: LDAP authentication failed\"}\n```"
+          }
+        }
+      }
+    },
+    "/hpc-server/dataObject/{path}/generateDownloadRequestURL": {
+      "post": {
+        "description": "\nThis service allows you to generate a *download request URL* that you can then use to download the data file directly from DME using wget or other commands. \n \n\n\n 1. **CURL COMMAND**\n    ```\n    curl -k -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/dataObject/{path}/generateDownloadRequestURL -u <Your-User-ID>\n    ```\n2. **EXAMPLE - CURL COMMAND**\n    ```\n    curl -k -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/dataObject/NCI_DOE_Archive/ATOM/Neurocrine_H1_Demonstration/H1_M2_update_10nM/H1_M2_10nM_update_20210308.csv/generateDownloadRequestURL -u My-User-ID\n    \n   \n    DownloadRequestURL Response Example:\n    \n   {\"downloadRequestURL\":\"http://s3-nci-north.ha.nci.nih.gov/dme-nci-doe-prod-cld/NCI_DOE/NCI_DOE_Archive/ATOM/Neurocrine_H1_Demonstration/H1_M2_update_10nM/H1_M2_10nM_update_20210308.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20210324T183709Z&X-Amz-SignedHeaders=host&X-Amz-Expires=604800&X-Amz-Credential=113504398e2081835f43%2F20210324%2Fnci-north%2Fs3%2Faws4_request&X-Amz-Signature=449f448f26758fb8f830603c7a43963550cb802292adcb90317cadff14739526\"}\n    ``` \n    \n3. **WGET COMMAND**\n    ```\n    wget -O OutputFileName “DownloadRequestURL”\n    ``` \n \n \n4. **EXAMPLE - WGET COMMAND**\n    ```\n   wget -O OutputFileName “http://s3-nci-north.ha.nci.nih.gov/dme-nci-doe-prod-cld/NCI_DOE/NCI_DOE_Archive/ATOM/Neurocrine_H1_Demonstration/H1_M2_update_10nM/H1_M2_10nM_update_20210308.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20210324T183709Z&X-Amz-SignedHeaders=host&X-Amz-Expires=604800&X-Amz-Credential=113504398e2081835f43%2F20210324%2Fnci-north%2Fs3%2Faws4_request&X-Amz-Signature=449f448f26758fb8f830603c7a43963550cb802292adcb90317cadff14739526”\n    ``` \n",
+        "summary": "Generate a download request URL.",
+        "tags": [
+          "Download Data"
+        ],
+        "operationId": "DataObjectGenerateDownloadRequestURLByPathGet",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/HpcDataObjectDownloadResponseDTO"
+            },
+            "description": "HTTP/1.1 200 \n**Output**:\n    {TBD}",
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/dataObject/query": {
+      "post": {
+        "description": "This service allows you to perform a query for a data file. You can perform a simple query, or you can combine multiple simple queries into a compound query.\n\n  **Example Simple Query**\n          \n    ...\n    {\n       \"attribute\": \"experiment\",\n       \"value\": \"H1_M2_update_10M\",\n       \"operator\": \"EQUAL\"\n    }\n    ...\n\nThis example consists of the following parameters:\n\n  • *attribute* - Specify the name of the metadata attribute that you want to query.\n    \n  • *value* - Specify the value of the metadata attribute that you want to query.\n    \n  • *operator* - When using a comparison operator with *attribute* and *value*, supported operators are: EQUAL, NOT_EQUAL, LIKE, NUM_LESS_THAN, NUM_LESS_OR_EQUAL, NUM_GREATER_OR_EQUAL, NUM_GREATER_THAN.  \n\n**Example Simple Query with *attributeMatch***\n          \n    ...\n    {\n       \"attributeMatch\": \"ANY\",\n       \"value\": \"H1_M2_update_10M\",\n       \"operator\": \"EQUAL\"\n    }\n    ...\n    \nThis example consists of the following parameters:\n\n  • *attributeMatch* - This is an optional attribute. If you set this attribute to *ANY*, then the query applies to any metadata attribute, and the system expects you to omit the ‘attribute’ parameter from the query. Omitting the ‘attributeMatch’ parameter, or setting it to EXACT, limits the search to the provided metadata attribute.\n\n  • *operator* - When using *attributeMatch*, supported comparison operators are the same as above.  \n\n  **Example Simple Query with *levelFilter***\n          \n    ...\n    {\n       \"attributeMatch\": \"ANY\",\n       \"value\": \"H1_M2_update_10M\",\n       \"operator\": \"EQUAL\",\n       \"levelFilter\": {\n         \"level\": 1,\n         \"operator\": \"NOT_EQUAL\"\n       }\n    }\n    ...\n\nThis example consists of the following parameters:\n\n  • *levelFilter* - This is an optional attribute. If you use the levelFilter attribute, search matches the metadata found at the specified *level*. Otherwise, the query matches metadata found at any level of the path.\n    \n  • *operator* - When using *levelFilter*, supported comparison operators are the same as above.  \n    \n**Example Compound Query with Additional Parameters**\n\nA simple query is the basic building block of the compound query. You can combine multiple simple queries with a join operator (\"AND\", \"OR\") to create a list of queries. You can further combine multiple lists to create a combined query.  \n\n    {\n      \"compoundQuery\": {\n        \"operator\": \"AND\",\n        \"queries\": [{\n            \"attributeMatch\": \"ANY\",\n            \"value\": \"H1_M2_update_10M\",\n            \"operator\": \"EQUAL\",\n            \"levelFilter\": {\n              \"level\": 1,\n              \"operator\": \"NOT_EQUAL\"\n            }\n          },\n          {\n            \"attribute\": \"run_name\",\n            \"value\": \"run_02_20_2020\",\n            \"operator\": \"LIKE\"\n          }\n        ]\n      },\n      \"detailedResponse\": true,\n      \"page\": 2,\n      \"pageSize\": 10,\n      \"totalCount\": true\n    }\n\nThis example contains the following additional parameters:\n\n  • *detailedResponse*: By default, a search returns only paths of matching data files. If you set this attribute to *true*, the system returns data files with their metadata.\n  \n  • *page*: Ask for a specific page of results. By default, the query returns the first 100 results in page 1, the second 100 in page 2, and so on. If you omit the page parameter, the system fetches page 1. \n  \n  • *pageSize*: By default, the query returns up to 100 results in each page.\n  \n  • *totalCount*: If you set this parameter to *true*, the system returns the total count of data files matching the query regardless of the query limit and page. By default, if you omit this attribute, the system sets it to 'false' and does not return a total count.\n\n\n1. **CURL COMMAND**\n```\ncurl -k -H \"Content-Type: application/json\" -d @<attributesFile.json> -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/dataobject/query -H \"Accept: application/json\" -D  <response-header> -o <response-message.json> -u <Your-User-ID>\n```\n2.  **attributesFile.json Example**\n```\n  {\n    \"compoundQuery\": {\n      \"operator\": \"AND\",\n      \"queries\": [{\n          \"attribute\": \"asset_identifier\",\n          \"value\": \"H1_Selectivity_Asset\",\n          \"operator\": \"LIKE\"\n        },\n        {\n          \"attribute\": \"data_transfer_status\",\n          \"value\": \"ARCHIVED\",\n          \"operator\": \"EQUAL\"\n        }\n      ]\n    },\n    \"page\": 2,\n    \"pageSize\": 10,\n    \"totalCount\": true\n  }\n```\n3. **EXAMPLE - CURL COMMAND**\n```\ncurl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/dataObject/query -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n```\n\n",
+        "summary": "Find a data file by metadata query.",
+        "tags": [
+          "Search Data"
+        ],
+        "operationId": "DataObjectQueryPost",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "compoundMetadataQuery",
+            "description": "compoundMetadataQuery",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcCompoundMetadataQueryDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/HpcDataObjectListDTORes"
+            },
+            "description": "**Contents of header.txt File After Successful Query**\n```\nHTTP/1.1 200 OK\nDate: Tue, 28 Feb 2023 22:16:32 GMT\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: GET, POST, DELETE, PUT\nContent-Type: application/json;charset=UTF-8\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File After Successful Query**\n```\n{\"dataObjectPaths\":[\n\"\\/FNL_SF_Archive\\/PI_Lab_JaneDoe\\/Project_JaneDoe\\/Analysis\\/analysis.zip\",\n\"\\/FNL_SF_Archive\\/PI_Lab_JaneDoe\\/Project_JaneDoe\\/Data\\/data.zip\",\n\"\\/FNL_SF_Archive\\/PI_Lab_JaneDoe\\/Project_JaneDoe\\/Results\\/results.zip\"\n],\"page\":1,\"limit\":300,\"totalCount\":3}\n```"
+          },
+          "204": {
+            "description": "**Contents of header.txt File When Nothing Matches Criteria**\n```\nHTTP/1.1 204 No Content\nDate: Tue, 28 Feb 2023 22:08:18 GMT\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File When Nothing Matches Criteria**\nThe output.json file is empty.",
+            "headers": {}
+          },
+          "400": {
+            "description": "**Contents of header.txt File When attributesFile.json is Missing**\n```\nHTTP/1.1 400 Bad Request\nDate: Tue, 28 Feb 2023 21:55:13 GMT\nContent-Length: 0\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File When attributesFile.json is Missing**\nThe output.json file is empty."
+          },
+          "401": {
+            "description": "**Contents of header.txt File**\n```\nHTTP/1.1 401 Unauthorized\nDate: Tue, 28 Feb 2023 21:46:32 GMT\nContent-Type: application/json\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File**\n```\n{\"errorType\":\"REQUEST_AUTHENTICATION_FAILED\",\"message\":\"Access Denied: Null NCI user ID or password\"}\n```"
+          }
+        }
+      }
+    },
+    "/hpc-server/v2/collection/{path}/download": {
+      "post": {
+        "description": "This service allows you to to transfer a collection from DME to one of the following possible destinations:\n\n• Globus endpoint (asynchronous download)\n\n• AWS S3 (asynchronous download)\n\n The *path* parameter represents the logical path of the collection registered with DME. The *attributesFile.json* must have the destination information as shown in the *attributesFile.json* example below. \n\n\n\nA DME user account is a pre-requisite for downloading data from DME.  \n\nFor downloading to a Globus endpoint, if you set the optional *destinationOverwrite* indicator to ‘true’ and if the destination file exists, this service overwrites the destination file. If you omit this indicator and the destination file exists, then this service rejects the transfer request. \n\nAdditionally, for downloading to a Globus endpoint, add the **HPCDME-PROD-App-Accts-Pool-FNLCR** group to your Globus endpoint and give that group the *WRITE* permission. For details, refer to [Preparing to Use Globus](https://wiki.nci.nih.gov/x/ngLgGQ) wiki page.\n\n\n1. **CURL COMMAND**\n ```\n curl -k -H \"Content-Type: application/json\" -d @<attributesFile.json> -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/collection/{path}/download -H \"Accept: application/json\" -D  <response-header> -o <response-message.json> -u <Your-User-ID>\n ```\n 2.  **attributesFile.json Example**\n \n ```\n  a. To request a download to a Globus endpoint\n        { \n          \"globusDownloadDestination\": {\n          \"destinationOverwrite\" : true,\n            \"destinationLocation\": {\n              \"fileContainerId\": \"4a3b132a-815f-11e7-8dff-2\",\n              \"fileId\": \"demo-collection-03_20_21\"\n            }\n          }\n        }\n        \n  b. To request a download to AWS S3\n        { \n          \"s3DownloadDestination\": {\n            \"destinationLocation\": {\n              \"fileContainerId\": \"demo-NCI-1\",\n              \"fileId\": \"demo-collection-03_20_21\"\n            },\n            \"account\" : {\n              \"accessKey\" : \"***\",\n              \"secretKey\" : \"***\",\n              \"region\" :\"us-east-2\"\n            }\n          }\n        }\n ```\n 3. **EXAMPLE - CURL COMMAND**\n ```\n curl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/collection/NCI_DOE_Archive/NCI_DOE_Archive/Program_3_7_21/Study_3_7_21/Asset_Data_3_7_21/download -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n ```\n",
+        "summary": "Download a collection.",
+        "tags": [
+          "Download Data"
+        ],
+        "operationId": "V2CollectionDownloadByPathPost",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          },
+          {
+            "in": "body",
+            "name": "downloadRequest",
+            "description": "downloadRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcDownloadRequestDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTTP/1.1 200\nTBD",
+            "schema": {
+              "$ref": "#/definitions/HpcCollectionDownloadResponseDTO"
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/v2/dataObject/{path}": {
+      "get": {
+        "description": "This service allows you to get information about a specific data file including all of its hierarchical metadata. Use the *path* parameter to specify the path to the data file of interest. In the output, the *dataObject* and *selfMetadataEntries* elements provide information about the file you specified, while the *parentMetadataEntries* element provides information about the collection that contains the file you specified.\n\n1. **CURL COMMAND**\n\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/{path}' -D header.txt -o output.json -u <Your-User-ID>\n  ```\n  2. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k 'https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data.txt' -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Get data file information.",
+        "tags": [
+          "Get Metadata"
+        ],
+        "operationId": "path",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          },
+          {
+            "name": "includeAcl",
+            "in": "query",
+            "description": "includeAcl",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/HpcDataObjectDTORes"
+            },
+            "description": "**Contents of header.txt File**\n```\nHTTP/1.1 200 OK\nDate: Fri, 06 Jan 2023 18:06:13 GMT\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: GET, POST, DELETE, PUT\nContent-Type: application/json;charset=UTF-8\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File**\n```\n    {\n      \"dataObject\": {\n        \"id\": 930920,\n        \"collectionId\": 397912,\n        \"collectionName\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project1\",\n        \"absolutePath\": \"/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data.txt\",\n        \"dataSize\": 0,\n        \"dataPath\": \"/var/lib/irods/iRODS/Vault/home/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data.txt\",\n        \"dataOwnerName\": \"My-User-ID\",\n        \"createdAt\": \"2020-06-03T12:37:55-04:00\"\n      },\n      \"metadataEntries\": {\n        \"selfMetadataEntries\": [{\n          \"userMetadataEntries\": {\n            \"attribute\": \"2020-09-02\",\n            \"value\": \"Test\"\n          },\n          \"systemMetadataEntries\": [{\n            \"attribute\": \"configuration_id\",\n            \"value\": \"c93e82ba-7c66-4463-8376-1c7cb0b1a598\"\n          }, {\n            \"attribute\": \"archive_file_container_id\",\n            \"value\": \"dme-test-bucket\"\n          }, {\n            \"attribute\": \"data_transfer_started\",\n            \"value\": \"06-03-2020 12:37:57\"\n          }, {\n            \"attribute\": \"data_transfer_completed\",\n            \"value\": \"06-03-2020 12:37:57\"\n          }, {\n            \"attribute\": \"s3_archive_configuration_id\",\n            \"value\": \"cb2ec73c-8b26-4f51-90fd-cc792792e34e\"\n          }, {\n            \"attribute\": \"data_transfer_status\",\n            \"value\": \"ARCHIVED\"\n          }, {\n            \"attribute\": \"registered_by\",\n            \"value\": \"My-User-ID\"\n          }, {\n            \"attribute\": \"archive_file_id\",\n            \"value\": \"FNL_SF_Archive/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data.txt\"\n          }, {\n            \"attribute\": \"uuid\",\n            \"value\": \"e31fbb7b-bcb4-4f1a-9fe9-683b96d6a628\"\n          }, {\n            \"attribute\": \"data_transfer_type\",\n            \"value\": \"S_3\"\n          }, {\n            \"attribute\": \"registration_event_required\",\n            \"value\": true\n          }, {\n            \"attribute\": \"checksum\",\n            \"value\": \"99f7f0af0ad77416c536eddcd807bae6\"\n          }, {\n            \"attribute\": \"metadata_updated\",\n            \"value\": \"09-02-2020 16:36:25\"\n          }, {\n            \"attribute\": \"data_transfer_method\",\n            \"value\": \"SYNC\"\n          }, {\n            \"attribute\": \"source_file_size\",\n            \"value\": 24\n          }, {\n            \"attribute\": \"registered_by_name\",\n            \"value\": \"Jane Doe\"\n          }, {\n            \"attribute\": \"data_transfer_request_id\",\n            \"value\": 962411130\n          }]\n        }],\n        \"parentMetadataEntries\": [{\n          \"attribute\": \"configuration_id\",\n          \"value\": \"c93e82ba-7c66-4463-8376-1c7cb0b1a598\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"collection_type\",\n          \"value\": \"Project\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"metadata_updated\",\n          \"value\": \"08-16-2022 16:22:10\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"description\",\n          \"value\": \"Test description.\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"project_name\",\n          \"value\": \"Project1\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"project_start_date\",\n          \"value\": \"2018-07-30\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"retention_years\",\n          \"value\": 7,\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"project_status\",\n          \"value\": \"Active\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"uuid\",\n          \"value\": \"934451cf-24de-4c5d-9336-6aabd654dfcd\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"project_id_CSAS_NAS\",\n          \"value\": \"001\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"registered_by_name\",\n          \"value\": \"Jane Doe\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"registered_by\",\n          \"value\": \"My-User-ID\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 2,\n          \"levelLabel\": \"Project\"\n        }, {\n          \"attribute\": \"configuration_id\",\n          \"value\": \"c93e82ba-7c66-4463-8376-1c7cb0b1a598\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"data_owner\",\n          \"value\": \"Abnet, Christian\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"data_generator_userid\",\n          \"value\": \"My-User-ID\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"data_generator\",\n          \"value\": \"Jane Doe\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"data_owner_designee\",\n          \"value\": \"Jane Doe\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"metadata_updated\",\n          \"value\": \"08-16-2022 16:18:45\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"uuid\",\n          \"value\": \"db5c88b1-4a9e-42bc-8a5f-b75168bd0881\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"registered_by_name\",\n          \"value\": \"Jane Doe\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"registered_by\",\n          \"value\": \"My-User-ID\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"attribute1\",\n          \"value\": \"value1\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"collection_type\",\n          \"value\": \"PI_Lab\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }, {\n          \"attribute\": \"pi_name\",\n          \"value\": \"Jane Doe\",\n          \"unit\": \"EMPTY_ATTR_UNIT\",\n          \"level\": 3,\n          \"levelLabel\": \"PI_Lab\"\n        }]\n      }\n    }\n    \n                                               ",
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      },
+      "put": {
+        "description": "\n\nThis service allows you to register a data file from one of the following locations:\n\n   • Local system (synchronous upload)\n   \n   • Globus endpoint (asynchronous upload)\n   \n   • AWS S3 (asynchronous upload)\n\nTo request upload permission, contact NCIDataVault@mail.nih.gov. The method to specify the source file depends on the upload type:\n\n   • When uploading synchronously, specify the source file in the curl command. \n\n   • When uploading asynchronously, specify the source file in the JSON file. \n\n Additionally, for registering a data file from a Globus endpoint, add the **HPCDME-PROD-App-Accts-Pool-FNLCR** group to your Globus endpoint. For details, refer to [Preparing to Use Globus](https://wiki.nci.nih.gov/x/ngLgGQ) wiki page.\n\n\nYou can also use this service to update the metadata of an existing data file. To request  permission to modify the metadata of a file, contact NCIDataVault@mail.nih.gov. \n\n\n 1. **CURL COMMAND**\n  ```\n  A. Synchronous Upload\n  \n curl -k -F \"dataObjectRegistration=@<attributesFile.json;type=application/json\" -F \"dataObject=@<data file path>\" -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/{collection path}/{data file name} -D header.txt -o output.json -u <Your-User-ID>\n\n B. Asynchronous Upload or Metadata Update\n\n curl -k -F \"dataObjectRegistration=@attributesFile.json;type=application/json\" -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/{collection path}/{data file name} -D header.txt -o output.json -u <Your-User-ID>\n  ```\n  2.  **attributesFile.json Example**\n  \n  ```\n   A. Register from Local System (Synchronous Upload) or Update Metadata\n      {\n         \"metadataEntries\": [{\n             \"attribute\": \"description\",\n             \"value\": \"test description\"\n           },\n           {\n             \"attribute\": \"object_name\",\n             \"value\": \"test object name\"\n           }\n         ]\n       }\n       \n   B. Register from Globus (Asynchronous Upload)\n      {\n         \"globusUploadSource\": {\n           \"sourceLocation\": {\n             \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n             \"fileId\": \"data.txt\"\n           }\n         },\n         \"metadataEntries\": [{\n           \"attribute\": \"description\",\n           \"value\": \"test description\"\n         },\n         {\n           \"attribute\": \"object_name\",\n           \"value\": \"test object name\"\n         }\n         ]\n       }\n         \n   C. Register from S3 (Asynchronous Upload)\n      {\n         \"s3UploadSource\": {\n           \"sourceLocation\": {\n             \"fileContainerId\": \"s3-bucket-name\",\n             \"fileId\": \"s3-object-key\"\n           },\n           \"account\" : {\n             \"accessKey\" : \"*******\",\n             \"secretKey\" : \"*******\",\n             \"region\" :\"aws-region\"\n           }\n         },\n         \"metadataEntries\": [{\n           \"attribute\": \"description\",\n           \"value\": \"test description\"\n         },\n         {\n           \"attribute\": \"object_name\",\n           \"value\": \"test object name\"\n           }\n         ]\n       }\n  ```\n  3. **EXAMPLE - CURL COMMAND**\n  \n  ```\n  A. Synchronous Upload or Metadata Update\n  \n  curl -k -F \"dataObjectRegistration=@attributesFile.json;type=application/json\" -F \"dataObject=@data.xlsx\" -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data.xlsx -D header.txt -o output.json -u My-User-ID\n  \n  B. Asynchronous Upload\n  \n  curl -k -F \"dataObjectRegistration=@attributesFile.json;type=application/json\" -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data3.txt -D header.txt -o output.json -u My-User-ID\n  ```",
+        "summary": "Register a data file.",
+        "tags": [
+          "Upload Data"
+        ],
+        "operationId": "DataObjectByPathPut",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          },
+          {
+            "in": "body",
+            "name": "dataObjectRegistration",
+            "description": "dataObjectRegistration",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcDataObjectRegistrationRequestDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "**Contents of header.txt File After a Successful Metadata Update**\n```\nHTTP/1.1 200 OK\nDate: Tue, 17 Jan 2023 21:59:02 GMT\nContent-Length: 0\nServer: Jetty(9.2.19.v20160908)\n```\nThe output.json file is empty after a successful metadata update.",
+            "headers": {}
+          },
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/HpcDataObjectRes"
+            },
+            "description": "**Contents of header.txt File After a Successful Upload**\n```\nHTTP/1.1 201 Created\nDate: Mon, 16 Jan 2023 22:46:33 GMT\nLocation: https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/FNL_SF_Archive/PI_Lab_JaneDoe/Project1/data3.txt\nContent-Length: 0\nServer: Jetty(9.2.19.v20160908)\n```",
+            "headers": {}
+          },
+          "400": {
+            "description": "HTTP/1.1 400 Bad Request"
+          },
+          "401": {
+            "description": "**Contents of header.txt File for Wrong Password**\n```\nHTTP/1.1 401 Unauthorized\nDate: Mon, 16 Jan 2023 22:41:19 GMT\nContent-Type: application/json\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File for Wrong Password**          \n```\nerrorType: REQUEST_AUTHENTICATION_FAILED\nmessage: 'Access Denied: LDAP authentication failed'\n```"
+          },
+          "415": {
+            "description": "**Contents of header.txt File When Uploading TXT File Synchronously**\n```\nHTTP/1.1 415 Unsupported Media Type\nDate: Mon, 16 Jan 2023 21:51:38 GMT\nContent-Length: 0\nServer: Jetty(9.2.19.v20160908)\n```"
+          }
+        }
+      }
+    },
+    "/hpc-server/v2/dataObject/{path}/download/": {
+      "post": {
+        "description": "\nThis service allows you to transfer a data file from DME to one of the following possible destinations: \n \n \n\n• Local system (synchronous download) \n\n• Globus endpoint (asynchronous download) \n\n• AWS S3 (asynchronous download) \n\n\n The *path* parameter represents the logical path of the data file registered with DME. When downloading files asynchronously (to a Globus endpoint or to an S3 bucket), the attributesFile.json must have the destination information as shown in the *attributesFile.json* example above. \n\n\n\nA DME user account is a pre-requisite for downloading data from DME.  \n\nFor downloading to a Globus endpoint, if you set the optional *destinationOverwrite* indicator to ‘true’ and if the destination file exists, this service overwrites the destination file. If you omit this indicator and the destination file exists, then this service rejects the transfer request. \n\nAdditionally, for downloading to a Globus endpoint, add the **HPCDME-PROD-App-Accts-Pool-FNLCR** group to your Globus endpoint and give that group the *WRITE* permission. For details, refer to [Preparing to Use Globus](https://wiki.nci.nih.gov/x/ngLgGQ) wiki page.\n\n\n\n  1. **CURL COMMAND**\n   ```\n  curl -k -H \"Content-Type: application/json\" -d @<attributesFile.json> -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/{path}/download -H \"Accept: application/json\" -D  <response-header> -o <response-message.json> -u <Your-User-ID>\n  ``` \n  \n  2.  **JSON FILE EXAMPLES**\n  ``` \n  a. To request download to your local system\n                \n        { \n        }\n  \n  b. To request a download to a Globus endpoint\n  \n      {\n        \"globusDownloadDestination\": {\n          \"destinationLocation\": {\n          \"fileContainerId\": \"4a3b132a-815f-11e7-8dff-22000b9923ef\",\n            \"fileId\": \"demo-file-3-20-21\"\n          },\n       \"destinationOverwrite\" : true,\n        }\n      }\n     \n      \n c.   To request a download to an S3 bucket\n \n        {\n            \"s3DownloadDestination\": {\n              \"destinationLocation\": {\n                \"fileContainerId\": \"demo-NCI-1\",\n                \"fileId\": \"demo-file-3-20-21\"\n              },\n              \"account\" : {\n                \"accessKey\" : \"***\",\n                \"secretKey\" : \"***\",\n                \"region\" :\"us-east-1\",\n              },\n          \"destinationURL\" : “https://...”\n            }\n        }\n  ```\n  3. **EXAMPLE - CURL COMMAND to download a file to a Globus endpoint**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/NCI_DOE_Archive/Program_3_1_21/Study_3_1_21/Asset_Data_3_1_21/anl_drug_moa_information.xlsx/download -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n  ```\n  \n  \n  4. **EXAMPLE - CURL COMMAND to download a file to an S3 bucket**\n  \n  \n  ```\n  curl -k -H \"Content-Type: application/json\" -d @aattributesFile.json -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/NCI_DOE_Archive/Program_3_1_21/Study_3_1_21/Asset_Data_3_1_21/anl_drug_moa_information.xlsx/download -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n  ```\n  \n  \n  \n  5.  **EXAMPLE - CURL COMMAND to download a file to your local system**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/dataObject/NCI_DOE_Archive/Program_3_1_21/Study_3_1_21/Asset_Data_3_1_21/anl_drug_moa_information.xlsx/download -H \"Accept: application/json\" -D header.txt -o output.xlsx -u My-User-ID\n  ```\n",
+        "summary": "Download a data file.",
+        "tags": [
+          "Download Data"
+        ],
+        "operationId": "V2DataObjectDownloadByPathPost",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": ".*",
+            "description": ""
+          },
+          {
+            "in": "body",
+            "name": "downloadRequest",
+            "description": "downloadRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcDownloadRequestDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTTP/1.1 200\nTBD",
+            "schema": {
+              "$ref": "#/definitions/HpcDataObjectDownloadResponseDTO"
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/v2/download": {
+      "post": {
+        "description": "This service allows you to transfer a list of collections or a list of data files from DME to one of the following possible destinations:\n\n• Globus endpoint (asynchronous download)\n\n• AWS S3 (asynchronous download)\n\n You provide a list of collection paths or data file paths, and destination information for your Globus endpoint or S3 bucket where you want to download the data. The *attributesFile.json* must have the destination information as shown in the *attributesFile.json* example above. \n \n \n\n\nA DME user account is a pre-requisite for downloading data from DME. \n\nFor downloading to a Globus endpoint, if you set the optional *destinationOverwrite* indicator to ‘true’ and if the destination collection exists, this service overwrites the destination collection. If you omit this indicator and the destination collection exists, then this service rejects the transfer request.\n\nAdditionally, for downloading to a Globus endpoint, add the **HPCDME-PROD-App-Accts-Pool-FNLCR** group to your Globus endpoint and give that group the *WRITE* permission. For details, refer to [Preparing to Use Globus](https://wiki.nci.nih.gov/x/ngLgGQ) wiki page.\n\nYou can provide an optional *appendPathToDownloadDestination* indicator. If you set this indicator to 'true', the system uses the entire object path when creating files in the download destination. Otherwise, the system uses just the file name. By default, if you omit this indicator, the system sets it to 'true'.\n\n\n1. **CURL COMMAND**\n ```\n curl -k -H \"Content-Type: application/json\" -d @<attributesFile.json> -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/download -H \"Accept: application/json\" -D  <response-header> -o <response-message.json> -u <Your-User-ID>\n \n ```\n 2.  **attributesFile.json Example**\n \n ```\n  a. To request a download to a Globus endpoint\n        {\n             \"collectionPaths\" : [\n         \"/NCI_DOE_Archive/Program_3_1_21/Study_3_1_21/Asset_Data_3_1_21\",\n         \"/NCI_DOE_Archive/Program_3_7_21/Study_3_7_21/Asset_Data_3_7_21\"\n        ],\n        \"globusDownloadDestination\": {\n            \"destinationOverwrite\" : true,\n            \"destinationLocation\": {\n            \"fileContainerId\": \"16572124-19cb-11e9-934d-0f4\",\n            \"fileId\": \"demo-collection-3_20_21\"\n        }\n        }\n        }\n        \n  b. To request a download to AWS S3\n        {\n          \"collectionPaths\": [\n         \"/NCI_DOE_Archive/Program_3_1_21/Study_3_1_21/Asset_Data_3_1_21\",\n         \"/NCI_DOE_Archive/Program_3_7_21/Study_3_7_21/Asset_Data_3_7_21\"\n          ],\n          \"s3DownloadDestination\": {\n          \"destinationLocation\": {\n            \"fileContainerId\": \"DOE-bucket\",\n            \"fileId\": \"demo-collection-3_20_21\"\n          },\n          \"account\": {\n            \"accessKey\": \"*****\",\n            \"secretKey\": \"*****\",\n            \"region\": \"us-east-2\"\n          }\n        },\n        \"appendPathToDownloadDestination\": true\n      }\n\n\n ```\n 3. **EXAMPLE - CURL COMMAND**\n ```\n curl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X POST https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/download -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n ```\n",
+        "summary": "Download data files and collections.",
+        "tags": [
+          "Download Data"
+        ],
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "downloadRequest",
+            "description": "downloadRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcBulkDataObjectDownloadRequestDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTTP/1.1 200 \n\n**Output**\n\n    {TBD}\n    ",
+            "headers": {},
+            "schema": {
+              "$ref": "#/definitions/HpcBulkDataObjectDownloadResponseDTO"
+            }
+          },
+          "401": {
+            "description": "Authentication Failure: \n\nHTTP/1.1 401 Unauthorized Content-Type: application/json\n\n\nJSON:\n\n{ \"errorType\": \"REQUEST_AUTHENTICATION_FAILED\",\n\n\"message\": \"Access Denied: LDAP authentication failed\",\n\n\"stackTrace\": \"…\" } "
+          }
+        }
+      }
+    },
+    "/hpc-server/v2/registration": {
+      "put": {
+        "description": "\nThis service allows users to bulk register several files or collections in a single request from the following locations: \n\n• Globus endpoint \n\n• AWS S3 bucket\n\nThere are multiple ways to bulk register data in DME:\n\n• To register a collection which consists of one or more files, use the directory scan registration example below to prepare the attributesFile.json. \n\n• To register one or more files to an existing collection, use the bulk data file registration example below to prepare the attributesFile.json.\n\nYou can combine these methods in a single request. \n\n\nYou can provide a *dryRun* indicator.  If you set *dryRun* to 'true', the API does not perform the file registrations, but instead returns a list of registration requests.\n\nThe *directoryScanRegistrationItems* holds the Globus endpoint or AWS S3 bucket information of the directory you want to register. \n\nThe *globusScanDirectory* specifies the Globus endpoint to upload from. \n\nThe *s3ScanDirectory* specifies the AWS S3 endpoint to upload from.\n\n\n  1. **CURL COMMAND**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @<attributesFile.json> -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/registration -H \"Accept: application/json\" -D  <response-header> -o <response-message.json> -u <Your-User-ID>\n  \n  ```\n  2.  **Globus - attributesFile.json Examples**\n  \n    (a) Globus directory scan registration example:\n    \n      {\n        \"dryRun\": false,\n        \"directoryScanRegistrationItems\": [{\n          \"basePath\": \"/DOE_TEST_Archive/Program_Jane/Study_1\",\n          \"globusScanDirectory\": {\n            \"directoryLocation\": {\n              \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n              \"fileId\": \"/~/Globus-folder/\"\n            }\n          },\n          \"bulkMetadataEntries\": {\n            \"pathsMetadataEntries\": [{\n              \"path\": \"/DOE_TEST_Archive/Program_Jane/Study_1/Globus-folder\",\n              \"pathMetadataEntries\": [{\n                  \"attribute\": \"collection_type\",\n                  \"value\": \"Asset\"\n                },\n                {\n                  \"attribute\": \"asset_identifier\",\n                  \"value\": \"Asset_1\"\n                },\n                {\n                  \"attribute\": \"asset_name\",\n                  \"value\": \"Asset One\"\n                },\n                {\n                  \"attribute\": \"description\",\n                  \"value\": \"example description\"\n                },\n                {\n                  \"attribute\": \"asset_type\",\n                  \"value\": \"Dataset\"\n                },\n                {\n                  \"attribute\": \"is_reference_dataset\",\n                  \"value\": \"No\"\n                }\n              ]\n            }]\n          }\n        }]\n      }\n    \n    (b) Globus bulk data file registration example:\n    \n    {\n      \"dryRun\": false,\n      \"dataObjectRegistrationItems\": [{\n          \"path\": \"/DOE_TEST_Archive/Program_Jane/Study_1/Asset_2/results-2.xlsx\",\n          \"globusUploadSource\": {\n            \"sourceLocation\": {\n              \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n              \"fileId\": \"results2.xlsx\"\n            }\n          },\n          \"dataObjectMetadataEntries\": [{\n            \"attribute\": \"file_description\",\n            \"value\": \"example description\"\n          }]\n        },\n        {\n          \"path\": \"/DOE_TEST_Archive/Program_Jane/Study_1/Asset_2/results-3.xlsx\",\n          \"globusUploadSource\": {\n            \"sourceLocation\": {\n              \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n              \"fileId\": \"results3.xlsx\"\n            }\n          },\n          \"dataObjectMetadataEntries\": [{\n            \"attribute\": \"file_description\",\n            \"value\": \"example description\"\n          }]\n        }\n      ]\n    }\n      \n    (c) Globus directory scan and bulk data file registration example:\n    \n      {\n        \"dryRun\": false,\n        \"directoryScanRegistrationItems\": [{\n          \"basePath\": \"/DOE_TEST_Archive/Program_Jane/Study_1\",\n          \"globusScanDirectory\": {\n            \"directoryLocation\": {\n              \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n              \"fileId\": \"/~/Globus-folder/\"\n            }\n          },\n          \"bulkMetadataEntries\": {\n            \"pathsMetadataEntries\": [{\n              \"path\": \"/DOE_TEST_Archive/Program_Jane/Study_1/Globus-folder\",\n              \"pathMetadataEntries\": [{\n                  \"attribute\": \"collection_type\",\n                  \"value\": \"Asset\"\n                },\n                {\n                  \"attribute\": \"asset_identifier\",\n                  \"value\": \"Asset_1\"\n                },\n                {\n                  \"attribute\": \"asset_name\",\n                  \"value\": \"Asset One\"\n                },\n                {\n                  \"attribute\": \"description\",\n                  \"value\": \"example description\"\n                },\n                {\n                  \"attribute\": \"asset_type\",\n                  \"value\": \"Dataset\"\n                },\n                {\n                  \"attribute\": \"is_reference_dataset\",\n                  \"value\": \"No\"\n                }\n              ]\n            }]\n          }\n        }],\n        \"dataObjectRegistrationItems\": [{\n            \"path\": \"/DOE_TEST_Archive/Program_Jane/Study_1/Asset_2/results-5.xlsx\",\n            \"globusUploadSource\": {\n              \"sourceLocation\": {\n                \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n                \"fileId\": \"results5.xlsx\"\n              }\n            },\n            \"dataObjectMetadataEntries\": [{\n              \"attribute\": \"file_description\",\n              \"value\": \"example description\"\n            }]\n          },\n          {\n            \"path\": \"/DOE_TEST_Archive/Program_Jane/Study_1/Asset_2/results-6.xlsx\",\n            \"globusUploadSource\": {\n              \"sourceLocation\": {\n                \"fileContainerId\": \"e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a\",\n                \"fileId\": \"results6.xlsx\"\n              }\n            },\n            \"dataObjectMetadataEntries\": [{\n              \"attribute\": \"file_description\",\n              \"value\": \"example description\"\n            }]\n          }\n        ]\n      }\n\n  \n  3. **AWS S3 - attributesFile.json Examples**\n  \n  \n     (a) AWS S3 directory scan registration example:\n    \n      {\n          \"dryRun\":false,\n          \"directoryScanRegistrationItems\":[\n              {\n                  \"basePath\":\"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demonstration\",\n                  \"s3ScanDirectory\":{\n                      \"directoryLocation\":{\n                          \"fileContainerId\":\"13789bd2-88af-11ea-bf84-0e6cccbb0103\",\n                          \"fileId\":\"Asset_H1_M1_update_MnM\"\n               },\n                \"account\": {\n                  \"accessKey\": \"*******\",\n                  \"secretKey\": \"*******\",\n                  \"region\": \"us-east-1\"\n                }\n              },\n\n                  \"bulkMetadataEntries\":{\n                      \"pathsMetadataEntries\":[\n                          {\n                              \"path\":\"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demo/Asset_H1_M1_update_MnM\",\n                              \"pathMetadataEntries\":[\n                                 {\n                                      \"attribute\":\"collection_type\",\n                                      \"value\":\"Asset\"\n                                  },\n                                  {\n                                      \"attribute\":\"asset_identifier\",\n                                      \"value\":\"H1_M1_update_MnM\"\n                                  },\n                                  {\n                                      \"attribute\":\"asset_name\",\n                                      \"value\":\"H1_M2\"\n                                  },\n                                  {\n                                      \"attribute\":\"description\",\n                                      \"value\":\" Demo data of Accelerating Therapeutics for Opportunities in Medicine (ATOM)\"\n                                  },\n                                  {\n                                      \"attribute\":\"asset_type\",\n                                      \"value\":\"Dataset\"\n                                  }\n                      ]\n                    }\n                  ]\n                }\n              }\n            ]\n        }\n    \n    (b) AWS S3 bulk data file registration example:\n    \n    {\n        \"dryRun\": false,\n        \"dataObjectRegistrationItems\": [{\n            \"path\": \"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demo/Asset_H1_M1_update_MnM/DNA_12918_results.xlsx\",\n            \"s3UploadSource\": {\n              \"sourceLocation\": {\n                \"fileContainerId\": \"16572124-19cb-11e9-934d-0e3d676669f4\",\n                \"fileId\": \"DNA_12918_results.xlsx\"\n            },\n                \"account\": {\n                  \"accessKey\": \"*******\",\n                  \"secretKey\": \"*******\",\n                  \"region\": \"us-east-1\"\n                }\n              },\n            \"dataObjectMetadataEntries\": [{\n              \"attribute\": \"file_description\",\n              \"value\": \"DNA Results from 12-9-2018\"\n            }]\n          },\n          {\n                \"path\": \"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demo/Asset_H1_M1_update_MnM/DNA_5_9_21_results.xlsx\",\n            \"s3UploadSource\": {\n              \"sourceLocation\": {\n                \"fileContainerId\": \"16572124-19cb-11e9-934d-0e3d676669f4\",\n                \"fileId\": \"DNA_5_9_21_results.xlsx\"\n              },\n                \"account\": {\n                  \"accessKey\": \"*******\",\n                  \"secretKey\": \"*******\",\n                  \"region\": \"us-east-1\"\n                }\n              },\n            \"dataObjectMetadataEntries\": [{\n              \"attribute\": \"file_description\",\n              \"value\": \"DNA results from 5-9-2021\"\n            }]\n          }\n        ]\n      }\n      \n    (c) AWS S3 directory scan and bulk data file registration example:\n    \n        {\n          \"dryRun\": false,\n          \"directoryScanRegistrationItems\": [{\n            \"basePath\": \"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demonstration\",\n            \"s3ScanDirectory\": {\n              \"directoryLocation\": {\n                \"fileContainerId\": \"13789bd2-88af-11ea-bf84-0e6cccbb0103\",\n                \"fileId\": \"Asset_H1_M1_update_MnM\"\n              },\n                \"account\": {\n                  \"accessKey\": \"*******\",\n                  \"secretKey\": \"*******\",\n                  \"region\": \"us-east-1\"\n                }\n              },\n            \"bulkMetadataEntries\": {\n              \"pathsMetadataEntries\": [{\n                \"path\": \"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demo/Asset_H1_M1_update_MnM\",\n                \"pathMetadataEntries\": [{\n                    \"attribute\": \"collection_type\",\n                    \"value\": \"Asset\"\n                  },\n                  {\n                    \"attribute\": \"asset_identifier\",\n                    \"value\": \"H1_M1_update_MnM\"\n                  },\n                  {\n                    \"attribute\": \"asset_name\",\n                    \"value\": \"H1_M2\"\n                  },\n                  {\n                    \"attribute\": \"description\",\n                    \"value\": \" Demo data of Accelerating Therapeutics for Opportunities in Medicine (ATOM)\"\n                  },\n                  {\n                    \"attribute\": \"asset_type\",\n                    \"value\": \"Dataset\"\n                  }\n                ]\n              }]\n            }\n          }],\n          \"dataObjectRegistrationItems\": [{\n              \"path\": \"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demo/Asset_H1_M7/combined_data_combat_5_8_21.csv\",\n              \"s3UploadSource\": {\n                \"sourceLocation\": {\n                  \"fileContainerId\": \"16572124-19cb-11e9-934d-0e3d676669f4\",\n                  \"fileId\": \"combined_data_combat_5_8_21.csv\"\n                },\n                \"account\": {\n                  \"accessKey\": \"*******\",\n                  \"secretKey\": \"*******\",\n                  \"region\": \"us-east-1\"\n                }\n              },\n              \"dataObjectMetadataEntries\": [{\n                \"attribute\": \"file_description\",\n                \"value\": \"Combined results from 5-8-2021\"\n              }]\n            },\n            {\n              \"path\": \"/NCI_DOE_Archive/ATOM/Study_Neurocrine_H1_Demo/Asset_H1_M7/combined_data_combat_5_9_21.csv\",\n              \"s3UploadSource\": {\n                \"sourceLocation\": {\n                  \"fileContainerId\": \"16572124-19cb-11e9-934d-0e3d676669f4\",\n                  \"fileId\": \"combined_data_combat_5_9_21.csv\"\n                },\n                \"account\": {\n                  \"accessKey\": \"*******\",\n                  \"secretKey\": \"*******\",\n                  \"region\": \"us-east-1\"\n                }\n              },\n              \"dataObjectMetadataEntries\": [{\n                \"attribute\": \"file_description\",\n                \"value\": \"Combined results from 5-9-2021\"\n              }]\n            }\n          ]\n        }\n    \n    \n  4. **EXAMPLE - CURL COMMAND**\n  ```\n  curl -k -H \"Content-Type: application/json\" -d @attributesFile.json -X PUT https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/registration -H \"Accept: application/json\" -D header.txt -o output.json -u My-User-ID\n  ```\n",
+        "summary": "Register in bulk.",
+        "tags": [
+          "Upload Data"
+        ],
+        "operationId": "BulkRegistration",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Bulk Registration",
+            "description": "Bulk Registration",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HpcBulkDataObjectRegistrationRequestDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/HpcBulkDataObjectRegistrationResponseDTORes"
+            },
+            "description": "**Contents of header.txt File**\n```\n  TBD\n```\n**Contents of output.json File**\n```\n  TBD\n```",
+            "headers": {}
+          },
+          "201": {
+            "description": "**Contents of header.txt File After Registration Task Created**\n```\n  HTTP/1.1 201 Created\n  Date: Fri, 20 Jan 2023 18:58:55 GMT\n  Location: https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server/v2/registration/ac5e2cda-0634-4412-b536-46264757844d\n  Content-Type: application/json;charset=UTF-8\n  Transfer-Encoding: chunked\n  Server: Jetty(9.2.19.v20160908)\n```"
+          },
+          "400": {
+            "description": "**Contents of header.txt File When fileId Specifies File for Directory Scan**\n```\nHTTP/1.1 400 Bad Request\nDate: Wed, 18 Jan 2023 21:08:17 GMT\nContent-Type: application/json\nHPC-API-Version: 1.0.0\nTransfer-Encoding: chunked\nServer: Jetty(9.2.19.v20160908)\n```\n**Contents of output.json File**\n```\nerrorType: INVALID_REQUEST_INPUT\nmessage: 'Endpoint is not a directory: e99bcbb2-b6ab-11e8-8bf8-0a1d4c5c824a:results1.xlsx'\n```\nFor a directory scan, use fileId to specify a folder name. "
+          },
+          "401": {
+            "description": "Authentication Failure: \n**Contents of header.txt File**\n```\n  TBD\n```\n**Contents of output.json File**\n```\n  TBD\n```"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Path": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "ModelPath": {
+      "type": "object",
+      "properties": {
+        "modelPaths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Path"
+          }
+        }
+      }
+    },
+    "ReferenceDataset": {
+      "type": "object",
+      "properties": {
+        "referenceDatasetPaths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Path"
+          }
+        }
+      }
+    },
+    "ModelStatus": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "number"
+        },
+        "completedDate": {
+          "type": "number"
+        },
+        "resultPath": {
+          "type": "string"
+        },
+        "failureMsg": {
+          "type": "string"
+        },
+        "inputFile": {
+          "type": "string"
+        },
+        "outcomeFile": {
+          "type": "string"
+        }
+      }
+    },
+    "HpcBulkDataObjectDownloadRequestDTO": {
+      "type": "object",
+      "properties": {
+        "appendPathToDownloadDestination": {
+          "type": "boolean"
+        },
+        "collectionPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dataObjectPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "globusDownloadDestination": {
+          "xml": {
+            "name": "globusDownloadDestination",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcGlobusDownloadDestination"
+        },
+        "googleDriveDownloadDestination": {
+          "xml": {
+            "name": "googleDriveDownloadDestination",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcGoogleDownloadDestination"
+        },
+        "s3DownloadDestination": {
+          "xml": {
+            "name": "s3DownloadDestination",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcS3DownloadDestination"
+        }
+      },
+      "title": "HpcBulkDataObjectDownloadRequestDTO",
+      "xml": {
+        "name": "HpcBulkDataObjectDownloadRequestDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcBulkDataObjectDownloadResponseDTO": {
+      "type": "object",
+      "properties": {
+        "destinationFile": {
+          "xml": {
+            "name": "destinationFile",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "destinationLocation": {
+          "xml": {
+            "name": "destinationLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        },
+        "taskId": {
+          "type": "string",
+          "xml": {
+            "name": "taskId",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcBulkDataObjectDownloadResponseDTO",
+      "xml": {
+        "name": "HpcBulkDataObjectDownloadResponseDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcBulkMetadataEntries": {
+      "type": "object",
+      "properties": {
+        "defaultCollectionMetadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "pathsMetadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcBulkMetadataEntry"
+          }
+        }
+      },
+      "title": "HpcBulkMetadataEntries",
+      "xml": {
+        "name": "HpcBulkMetadataEntries",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcBulkMetadataEntry": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "xml": {
+            "name": "path",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "pathMetadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        }
+      },
+      "title": "HpcBulkMetadataEntry",
+      "xml": {
+        "name": "HpcBulkMetadataEntry",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionDTOReq": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "xml": {
+            "name": "collection",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcCollectionReq"
+        },
+        "metadataEntries": {
+          "xml": {
+            "name": "metadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcMetadataEntriesReq"
+        },
+        "permission": {
+          "type": "string",
+          "xml": {
+            "name": "permission",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "NONE",
+            "OWN",
+            "READ",
+            "WRITE"
+          ]
+        }
+      },
+      "title": "HpcCollectionDTOReq",
+      "xml": {
+        "name": "HpcCollectionDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionDTORes": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "xml": {
+            "name": "collection",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "metadataEntries": {
+          "xml": {
+            "name": "metadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcMetadataEntriesRes"
+        },
+        "permission": {
+          "type": "string",
+          "xml": {
+            "name": "permission",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "NONE",
+            "OWN",
+            "READ",
+            "WRITE"
+          ]
+        }
+      },
+      "title": "HpcCollectionDTORes",
+      "xml": {
+        "name": "HpcCollectionDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionDownloadResponseDTO": {
+      "type": "object",
+      "properties": {
+        "destinationLocation": {
+          "xml": {
+            "name": "destinationLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        },
+        "taskId": {
+          "type": "string",
+          "xml": {
+            "name": "taskId",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcCollectionDownloadResponseDTO",
+      "xml": {
+        "name": "HpcCollectionDownloadResponseDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionListDTOReq": {
+      "type": "object",
+      "properties": {
+        "collectionPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "collections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcCollectionDTOReq"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "HpcCollectionListDTOReq",
+      "xml": {
+        "name": "HpcCollectionListDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionListDTORes": {
+      "type": "object",
+      "properties": {
+        "collectionPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "collections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcCollectionDTORes"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "HpcCollectionListDTORes",
+      "xml": {
+        "name": "HpcCollectionListDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionListingEntryReq": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "xml": {
+            "name": "createdAt",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "path": {
+          "type": "string",
+          "xml": {
+            "name": "path",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcCollectionListingEntryReq",
+      "xml": {
+        "name": "HpcCollectionListingEntry",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionListingEntryRes": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "xml": {
+            "name": "createdAt",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "path": {
+          "type": "string",
+          "xml": {
+            "name": "path",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcCollectionListingEntryRes",
+      "xml": {
+        "name": "HpcCollectionListingEntry",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionRegistrationDTO": {
+      "type": "object",
+      "properties": {
+        "createParentCollections": {
+          "type": "boolean"
+        },
+        "metadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "parentCollectionsBulkMetadataEntries": {
+          "xml": {
+            "name": "parentCollectionsBulkMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcBulkMetadataEntries"
+        }
+      },
+      "title": "HpcCollectionRegistrationDTO",
+      "xml": {
+        "name": "HpcCollectionRegistrationDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionReq": {
+      "type": "object",
+      "properties": {
+        "absolutePath": {
+          "type": "string",
+          "xml": {
+            "name": "absolutePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "collectionInheritance": {
+          "type": "string",
+          "xml": {
+            "name": "collectionInheritance",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionMapId": {
+          "type": "string",
+          "xml": {
+            "name": "collectionMapId",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionOwnerName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionOwnerName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionOwnerZone": {
+          "type": "string",
+          "xml": {
+            "name": "collectionOwnerZone",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionParentName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionParentName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "comments": {
+          "type": "string",
+          "xml": {
+            "name": "comments",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "createdAt": {
+          "xml": {
+            "name": "createdAt",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataObjects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcCollectionListingEntryReq"
+          }
+        },
+        "info1": {
+          "type": "string",
+          "xml": {
+            "name": "info1",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "info2": {
+          "type": "string",
+          "xml": {
+            "name": "info2",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "specColType": {
+          "type": "string",
+          "xml": {
+            "name": "specColType",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "subCollections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcCollectionListingEntryReq"
+          }
+        }
+      },
+      "title": "HpcCollectionReq",
+      "xml": {
+        "name": "HpcCollection",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCollectionRes": {
+      "type": "object",
+      "properties": {
+        "absolutePath": {
+          "type": "string",
+          "xml": {
+            "name": "absolutePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "collectionInheritance": {
+          "type": "string",
+          "xml": {
+            "name": "collectionInheritance",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionMapId": {
+          "type": "string",
+          "xml": {
+            "name": "collectionMapId",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionOwnerName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionOwnerName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionOwnerZone": {
+          "type": "string",
+          "xml": {
+            "name": "collectionOwnerZone",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionParentName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionParentName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "comments": {
+          "type": "string",
+          "xml": {
+            "name": "comments",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "createdAt": {
+          "xml": {
+            "name": "createdAt",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataObjects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcCollectionListingEntryRes"
+          }
+        },
+        "info1": {
+          "type": "string",
+          "xml": {
+            "name": "info1",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "info2": {
+          "type": "string",
+          "xml": {
+            "name": "info2",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "specColType": {
+          "type": "string",
+          "xml": {
+            "name": "specColType",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "subCollections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcCollectionListingEntryRes"
+          }
+        }
+      },
+      "title": "HpcCollectionRes",
+      "xml": {
+        "name": "HpcCollection",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCompoundMetadataQuery": {
+      "type": "object",
+      "properties": {
+        "compoundQueries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcCompoundMetadataQuery"
+          }
+        },
+        "operator": {
+          "type": "string",
+          "xml": {
+            "name": "operator",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "AND",
+            "OR"
+          ]
+        },
+        "queries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataQuery"
+          }
+        }
+      },
+      "title": "HpcCompoundMetadataQuery",
+      "xml": {
+        "name": "HpcCompoundMetadataQuery",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcCompoundMetadataQueryDTO": {
+      "type": "object",
+      "properties": {
+        "compoundQuery": {
+          "xml": {
+            "name": "compoundQuery",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcCompoundMetadataQuery"
+        },
+        "compoundQueryType": {
+          "type": "string",
+          "xml": {
+            "name": "compoundQueryType",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "COLLECTION",
+            "DATA_OBJECT"
+          ]
+        },
+        "detailedResponse": {
+          "type": "boolean"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalCount": {
+          "type": "boolean"
+        }
+      },
+      "title": "HpcCompoundMetadataQueryDTO",
+      "xml": {
+        "name": "HpcCompoundMetadataQueryDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectDTOReq": {
+      "type": "object",
+      "properties": {
+        "dataObject": {
+          "xml": {
+            "name": "dataObject",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcDataObjectReq"
+        },
+        "metadataEntries": {
+          "xml": {
+            "name": "metadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcMetadataEntriesReq"
+        },
+        "percentComplete": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "permission": {
+          "type": "string",
+          "xml": {
+            "name": "permission",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "NONE",
+            "OWN",
+            "READ",
+            "WRITE"
+          ]
+        }
+      },
+      "title": "HpcDataObjectDTOReq",
+      "xml": {
+        "name": "HpcDataObjectDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectDTORes": {
+      "type": "object",
+      "properties": {
+        "dataObject": {
+          "xml": {
+            "name": "dataObject",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcDataObjectRes"
+        },
+        "metadataEntries": {
+          "xml": {
+            "name": "metadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcMetadataEntriesRes"
+        },
+        "percentComplete": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "permission": {
+          "type": "string",
+          "xml": {
+            "name": "permission",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "NONE",
+            "OWN",
+            "READ",
+            "WRITE"
+          ]
+        }
+      },
+      "title": "HpcDataObjectDTORes",
+      "xml": {
+        "name": "HpcDataObjectDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectDownloadResponseDTO": {
+      "type": "object",
+      "properties": {
+        "destinationFile": {
+          "xml": {
+            "name": "destinationFile",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "destinationLocation": {
+          "xml": {
+            "name": "destinationLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        },
+        "downloadRequestURL": {
+          "type": "string",
+          "xml": {
+            "name": "downloadRequestURL",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "restoreInProgress": {
+          "type": "boolean"
+        },
+        "taskId": {
+          "type": "string",
+          "xml": {
+            "name": "taskId",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcDataObjectDownloadResponseDTO",
+      "xml": {
+        "name": "HpcDataObjectDownloadResponseDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectListDTOReq": {
+      "type": "object",
+      "properties": {
+        "dataObjectPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dataObjects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcDataObjectDTOReq"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "HpcDataObjectListDTOReq",
+      "xml": {
+        "name": "HpcDataObjectListDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectListDTORes": {
+      "type": "object",
+      "properties": {
+        "dataObjectPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dataObjects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcDataObjectDTORes"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "HpcDataObjectListDTORes",
+      "xml": {
+        "name": "HpcDataObjectListDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectRegistrationRequestDTO": {
+      "type": "object",
+      "properties": {
+        "callerObjectId": {
+          "type": "string",
+          "xml": {
+            "name": "callerObjectId",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "checksum": {
+          "type": "string",
+          "xml": {
+            "name": "checksum",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "createParentCollections": {
+          "type": "boolean"
+        },
+        "extractMetadata": {
+          "type": "boolean"
+        },
+        "extractedMetadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "fileSystemUploadSource": {
+          "xml": {
+            "name": "fileSystemUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcUploadSource"
+        },
+        "generateUploadRequestURL": {
+          "type": "boolean"
+        },
+        "globusUploadSource": {
+          "xml": {
+            "name": "globusUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcUploadSource"
+        },
+        "googleDriveUploadSource": {
+          "xml": {
+            "name": "googleDriveUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcStreamingUploadSource"
+        },
+        "linkSourcePath": {
+          "type": "string",
+          "xml": {
+            "name": "linkSourcePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "metadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "parentCollectionsBulkMetadataEntries": {
+          "xml": {
+            "name": "parentCollectionsBulkMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcBulkMetadataEntries"
+        },
+        "s3UploadSource": {
+          "xml": {
+            "name": "s3UploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcStreamingUploadSource"
+        },
+        "uploadParts": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "HpcDataObjectRegistrationRequestDTO",
+      "xml": {
+        "name": "HpcDataObjectRegistrationRequestDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectReq": {
+      "type": "object",
+      "properties": {
+        "absolutePath": {
+          "type": "string",
+          "xml": {
+            "name": "absolutePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "collectionName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "createdAt": {
+          "xml": {
+            "name": "createdAt",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataName": {
+          "type": "string",
+          "xml": {
+            "name": "dataName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataOwnerName": {
+          "type": "string",
+          "xml": {
+            "name": "dataOwnerName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataPath": {
+          "type": "string",
+          "xml": {
+            "name": "dataPath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "HpcDataObjectReq",
+      "xml": {
+        "name": "HpcDataObject",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectRes": {
+      "type": "object",
+      "properties": {
+        "absolutePath": {
+          "type": "string",
+          "xml": {
+            "name": "absolutePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "collectionName": {
+          "type": "string",
+          "xml": {
+            "name": "collectionName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "createdAt": {
+          "xml": {
+            "name": "createdAt",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataName": {
+          "type": "string",
+          "xml": {
+            "name": "dataName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataOwnerName": {
+          "type": "string",
+          "xml": {
+            "name": "dataOwnerName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataPath": {
+          "type": "string",
+          "xml": {
+            "name": "dataPath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "dataSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "HpcDataObjectRes",
+      "xml": {
+        "name": "HpcDataObject",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDownloadRequestDTO": {
+      "type": "object",
+      "properties": {
+        "globusDownloadDestination": {
+          "xml": {
+            "name": "globusDownloadDestination",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcGlobusDownloadDestination"
+        },
+        "googleDriveDownloadDestination": {
+          "xml": {
+            "name": "googleDriveDownloadDestination",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcGoogleDownloadDestination"
+        },
+        "s3DownloadDestination": {
+          "xml": {
+            "name": "s3DownloadDestination",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcS3DownloadDestination"
+        },
+        "synchronousDownloadFilter": {
+          "xml": {
+            "name": "synchronousDownloadFilter",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcSynchronousDownloadFilter"
+        }
+      },
+      "title": "HpcDownloadRequestDTO",
+      "xml": {
+        "name": "HpcDownloadRequestDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcFileLocation": {
+      "type": "object",
+      "properties": {
+        "fileContainerId": {
+          "type": "string",
+          "xml": {
+            "name": "fileContainerId",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "fileContainerName": {
+          "type": "string",
+          "xml": {
+            "name": "fileContainerName",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "fileId": {
+          "type": "string",
+          "xml": {
+            "name": "fileId",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcFileLocation",
+      "xml": {
+        "name": "HpcFileLocation",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcGlobusDownloadDestination": {
+      "type": "object",
+      "properties": {
+        "destinationLocation": {
+          "xml": {
+            "name": "destinationLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        },
+        "destinationOverwrite": {
+          "type": "boolean"
+        }
+      },
+      "title": "HpcGlobusDownloadDestination",
+      "xml": {
+        "name": "HpcGlobusDownloadDestination",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcGoogleDownloadDestination": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string",
+          "xml": {
+            "name": "accessToken",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "destinationLocation": {
+          "xml": {
+            "name": "destinationLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        }
+      },
+      "title": "HpcGoogleDownloadDestination",
+      "xml": {
+        "name": "HpcGoogleDownloadDestination",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcMetadataEntriesReq": {
+      "type": "object",
+      "properties": {
+        "parentMetadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "selfMetadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        }
+      },
+      "title": "HpcMetadataEntriesReq",
+      "xml": {
+        "name": "HpcMetadataEntries",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcMetadataEntriesRes": {
+      "type": "object",
+      "properties": {
+        "parentMetadataEntries": {
+          "type": "array",
+          "xml": {
+            "name": "parentMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "selfMetadataEntries": {
+          "type": "array",
+          "xml": {
+            "name": "selfMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        }
+      },
+      "title": "HpcMetadataEntriesRes",
+      "xml": {
+        "name": "HpcMetadataEntries",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcMetadataEntry": {
+      "type": "object",
+      "properties": {
+        "attribute": {
+          "type": "string",
+          "xml": {
+            "name": "attribute",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "collectionId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "level": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "levelLabel": {
+          "type": "string",
+          "xml": {
+            "name": "levelLabel",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "unit": {
+          "type": "string",
+          "xml": {
+            "name": "unit",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "value": {
+          "type": "string",
+          "xml": {
+            "name": "value",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcMetadataEntry",
+      "xml": {
+        "name": "HpcMetadataEntry",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcMetadataQuery": {
+      "type": "object",
+      "properties": {
+        "attribute": {
+          "type": "string",
+          "xml": {
+            "name": "attribute",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "attributeMatch": {
+          "type": "string",
+          "xml": {
+            "name": "attributeMatch",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "ANY",
+            "EXACT"
+          ]
+        },
+        "format": {
+          "type": "string",
+          "xml": {
+            "name": "format",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "levelFilter": {
+          "xml": {
+            "name": "levelFilter",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcMetadataQueryLevelFilter"
+        },
+        "operator": {
+          "type": "string",
+          "xml": {
+            "name": "operator",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "EQUAL",
+            "LIKE",
+            "NOT_EQUAL",
+            "NUM_GREATER_OR_EQUAL",
+            "NUM_GREATER_THAN",
+            "NUM_LESS_OR_EQUAL",
+            "NUM_LESS_THAN",
+            "TIMESTAMP_GREATER_OR_EQUAL",
+            "TIMESTAMP_GREATER_THAN",
+            "TIMESTAMP_LESS_OR_EQUAL",
+            "TIMESTAMP_LESS_THAN"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "xml": {
+            "name": "value",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcMetadataQuery",
+      "xml": {
+        "name": "HpcMetadataQuery",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcMetadataQueryLevelFilter": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "xml": {
+            "name": "label",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "level": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "operator": {
+          "type": "string",
+          "xml": {
+            "name": "operator",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "EQUAL",
+            "LIKE",
+            "NOT_EQUAL",
+            "NUM_GREATER_OR_EQUAL",
+            "NUM_GREATER_THAN",
+            "NUM_LESS_OR_EQUAL",
+            "NUM_LESS_THAN",
+            "TIMESTAMP_GREATER_OR_EQUAL",
+            "TIMESTAMP_GREATER_THAN",
+            "TIMESTAMP_LESS_OR_EQUAL",
+            "TIMESTAMP_LESS_THAN"
+          ]
+        }
+      },
+      "title": "HpcMetadataQueryLevelFilter",
+      "xml": {
+        "name": "HpcMetadataQueryLevelFilter",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcS3Account": {
+      "type": "object",
+      "properties": {
+        "accessKey": {
+          "type": "string",
+          "xml": {
+            "name": "accessKey",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "pathStyleAccessEnabled": {
+          "type": "boolean"
+        },
+        "region": {
+          "type": "string",
+          "xml": {
+            "name": "region",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "secretKey": {
+          "type": "string",
+          "xml": {
+            "name": "secretKey",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "url": {
+          "type": "string",
+          "xml": {
+            "name": "url",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcS3Account",
+      "xml": {
+        "name": "HpcS3Account",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcS3DownloadDestination": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "xml": {
+            "name": "account",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcS3Account"
+        },
+        "destinationLocation": {
+          "xml": {
+            "name": "destinationLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        }
+      },
+      "title": "HpcS3DownloadDestination",
+      "xml": {
+        "name": "HpcS3DownloadDestination",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcStreamingUploadSource": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string",
+          "xml": {
+            "name": "accessToken",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "account": {
+          "xml": {
+            "name": "account",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcS3Account"
+        },
+        "sourceInputStream": {
+          "xml": {
+            "name": "sourceInputStream",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/InputStream"
+        },
+        "sourceLocation": {
+          "xml": {
+            "name": "sourceLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        },
+        "sourceSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "sourceURL": {
+          "type": "string",
+          "xml": {
+            "name": "sourceURL",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcStreamingUploadSource",
+      "xml": {
+        "name": "HpcStreamingUploadSource",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcSynchronousDownloadFilter": {
+      "type": "object",
+      "properties": {
+        "compressedArchiveType": {
+          "type": "string",
+          "xml": {
+            "name": "compressedArchiveType",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "TAR",
+            "TGZ",
+            "ZIP"
+          ]
+        },
+        "includePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "patternType": {
+          "type": "string",
+          "xml": {
+            "name": "patternType",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "REGEX",
+            "SIMPLE"
+          ]
+        }
+      },
+      "title": "HpcSynchronousDownloadFilter",
+      "xml": {
+        "name": "HpcSynchronousDownloadFilter",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcUploadSource": {
+      "type": "object",
+      "properties": {
+        "sourceLocation": {
+          "xml": {
+            "name": "sourceLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        }
+      },
+      "title": "HpcUploadSource",
+      "xml": {
+        "name": "HpcUploadSource",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "InputStream": {
+      "type": "object",
+      "title": "InputStream"
+    },
+    "Locale": {
+      "type": "object",
+      "title": "Locale"
+    },
+    "HpcBulkDataObjectRegistrationRequestDTO": {
+      "type": "object",
+      "properties": {
+        "dataObjectRegistrationItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcDataObjectRegistrationItemDTO"
+          }
+        },
+        "directoryScanRegistrationItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcDirectoryScanRegistrationItemDTO"
+          }
+        },
+        "dryRun": {
+          "type": "boolean"
+        },
+        "uiURL": {
+          "type": "string",
+          "xml": {
+            "name": "uiURL",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcBulkDataObjectRegistrationRequestDTO",
+      "xml": {
+        "name": "HpcBulkDataObjectRegistrationRequestDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectRegistrationItemDTO": {
+      "type": "object",
+      "properties": {
+        "callerObjectId": {
+          "type": "string",
+          "xml": {
+            "name": "callerObjectId",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "createParentCollections": {
+          "type": "boolean"
+        },
+        "dataObjectMetadataEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "fileSystemUploadSource": {
+          "xml": {
+            "name": "fileSystemUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcUploadSource"
+        },
+        "globusUploadSource": {
+          "xml": {
+            "name": "globusUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcUploadSource"
+        },
+        "googleDriveUploadSource": {
+          "xml": {
+            "name": "googleDriveUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcStreamingUploadSource"
+        },
+        "linkSourcePath": {
+          "type": "string",
+          "xml": {
+            "name": "linkSourcePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "parentCollectionsBulkMetadataEntries": {
+          "xml": {
+            "name": "parentCollectionsBulkMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcBulkMetadataEntries"
+        },
+        "path": {
+          "type": "string",
+          "xml": {
+            "name": "path",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "s3UploadSource": {
+          "xml": {
+            "name": "s3UploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcStreamingUploadSource"
+        }
+      },
+      "title": "HpcDataObjectRegistrationItemDTO",
+      "xml": {
+        "name": "HpcDataObjectRegistrationItemDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDirectoryScanRegistrationItemDTO": {
+      "type": "object",
+      "properties": {
+        "basePath": {
+          "type": "string",
+          "xml": {
+            "name": "basePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "bulkMetadataEntries": {
+          "xml": {
+            "name": "bulkMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcBulkMetadataEntries"
+        },
+        "callerObjectId": {
+          "type": "string",
+          "xml": {
+            "name": "callerObjectId",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fileSystemScanDirectory": {
+          "xml": {
+            "name": "fileSystemScanDirectory",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcScanDirectory"
+        },
+        "globusScanDirectory": {
+          "xml": {
+            "name": "globusScanDirectory",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcScanDirectory"
+        },
+        "googleDriveScanDirectory": {
+          "xml": {
+            "name": "googleDriveScanDirectory",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcGoogleScanDirectory"
+        },
+        "includePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pathMap": {
+          "xml": {
+            "name": "pathMap",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcDirectoryScanPathMap"
+        },
+        "patternType": {
+          "type": "string",
+          "xml": {
+            "name": "patternType",
+            "attribute": false,
+            "wrapped": false
+          },
+          "enum": [
+            "REGEX",
+            "SIMPLE"
+          ]
+        },
+        "s3ScanDirectory": {
+          "xml": {
+            "name": "s3ScanDirectory",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcS3ScanDirectory"
+        }
+      },
+      "title": "HpcDirectoryScanRegistrationItemDTO",
+      "xml": {
+        "name": "HpcDirectoryScanRegistrationItemDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcScanDirectory": {
+      "type": "object",
+      "properties": {
+        "directoryLocation": {
+          "xml": {
+            "name": "directoryLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        }
+      },
+      "title": "HpcScanDirectory",
+      "xml": {
+        "name": "HpcScanDirectory",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcGoogleScanDirectory": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string",
+          "xml": {
+            "name": "accessToken",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "directoryLocation": {
+          "xml": {
+            "name": "directoryLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        }
+      },
+      "title": "HpcGoogleScanDirectory",
+      "xml": {
+        "name": "HpcGoogleScanDirectory",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDirectoryScanPathMap": {
+      "type": "object",
+      "properties": {
+        "fromPath": {
+          "type": "string",
+          "xml": {
+            "name": "fromPath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "toPath": {
+          "type": "string",
+          "xml": {
+            "name": "toPath",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcDirectoryScanPathMap",
+      "xml": {
+        "name": "HpcDirectoryScanPathMap",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcS3ScanDirectory": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "xml": {
+            "name": "account",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcS3Account"
+        },
+        "directoryLocation": {
+          "xml": {
+            "name": "directoryLocation",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcFileLocation"
+        }
+      },
+      "title": "HpcS3ScanDirectory",
+      "xml": {
+        "name": "HpcS3ScanDirectory",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcBulkDataObjectRegistrationResponseDTORes": {
+      "type": "object",
+      "properties": {
+        "dataObjectRegistrationItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HpcDataObjectRegistrationItemDTORes"
+          }
+        },
+        "taskId": {
+          "type": "string",
+          "xml": {
+            "name": "taskId",
+            "attribute": false,
+            "wrapped": false
+          }
+        }
+      },
+      "title": "HpcBulkDataObjectRegistrationResponseDTORes",
+      "xml": {
+        "name": "HpcBulkDataObjectRegistrationResponseDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcDataObjectRegistrationItemDTORes": {
+      "type": "object",
+      "properties": {
+        "callerObjectId": {
+          "type": "string",
+          "xml": {
+            "name": "callerObjectId",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "createParentCollections": {
+          "type": "boolean"
+        },
+        "dataObjectMetadataEntries": {
+          "type": "array",
+          "xml": {
+            "name": "dataObjectMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "fileSystemUploadSource": {
+          "xml": {
+            "name": "fileSystemUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcUploadSource"
+        },
+        "globusUploadSource": {
+          "xml": {
+            "name": "globusUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcUploadSource"
+        },
+        "googleDriveUploadSource": {
+          "xml": {
+            "name": "googleDriveUploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcStreamingUploadSource"
+        },
+        "linkSourcePath": {
+          "type": "string",
+          "xml": {
+            "name": "linkSourcePath",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "parentCollectionsBulkMetadataEntries": {
+          "xml": {
+            "name": "parentCollectionsBulkMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcBulkMetadataEntriesRes"
+        },
+        "path": {
+          "type": "string",
+          "xml": {
+            "name": "path",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "s3UploadSource": {
+          "xml": {
+            "name": "s3UploadSource",
+            "attribute": false,
+            "wrapped": false
+          },
+          "$ref": "#/definitions/HpcStreamingUploadSource"
+        }
+      },
+      "title": "HpcDataObjectRegistrationItemDTORes",
+      "xml": {
+        "name": "HpcDataObjectRegistrationItemDTO",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcBulkMetadataEntriesRes": {
+      "type": "object",
+      "properties": {
+        "defaultCollectionMetadataEntries": {
+          "type": "array",
+          "xml": {
+            "name": "defaultCollectionMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        },
+        "pathsMetadataEntries": {
+          "type": "array",
+          "xml": {
+            "name": "pathsMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "items": {
+            "$ref": "#/definitions/HpcBulkMetadataEntryRes"
+          }
+        }
+      },
+      "title": "HpcBulkMetadataEntriesRes",
+      "xml": {
+        "name": "HpcBulkMetadataEntries",
+        "attribute": false,
+        "wrapped": false
+      }
+    },
+    "HpcBulkMetadataEntryRes": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "xml": {
+            "name": "path",
+            "attribute": false,
+            "wrapped": false
+          }
+        },
+        "pathMetadataEntries": {
+          "type": "array",
+          "xml": {
+            "name": "pathMetadataEntries",
+            "attribute": false,
+            "wrapped": false
+          },
+          "items": {
+            "$ref": "#/definitions/HpcMetadataEntry"
+          }
+        }
+      },
+      "title": "HpcBulkMetadataEntryRes",
+      "xml": {
+        "name": "HpcBulkMetadataEntry",
+        "attribute": false,
+        "wrapped": false
+      }
+    }
+  }
+}
