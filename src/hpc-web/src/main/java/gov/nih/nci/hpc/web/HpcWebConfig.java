@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
@@ -56,6 +57,12 @@ public class HpcWebConfig extends WebMvcConfigurerAdapter {
         registry.addConverter(String.class, String[].class, noCommaSplitStringToArrayConverter());
      }
 
+	 @Override
+     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	   registry.addResourceHandler("/config/api-docs.json").
+  		addResourceLocations("classpath:/config");
+     }
+	 
 	 @Bean
      public Converter<String, String[]> noCommaSplitStringToArrayConverter() {
         return new Converter<String, String[]>() {

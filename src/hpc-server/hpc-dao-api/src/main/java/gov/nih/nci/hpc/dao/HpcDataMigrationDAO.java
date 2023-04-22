@@ -40,7 +40,7 @@ public interface HpcDataMigrationDAO {
 	 *
 	 * @param status   The data migration status to query for.
 	 * @param type     The data migration type to query for.
-	 * @param serverId The server ID to get tasks to be processed
+	 * @param serverId The server ID to get tasks to be processed.
 	 * @return A List of data migration tasks
 	 * @throws HpcException on service failure.
 	 */
@@ -109,15 +109,17 @@ public interface HpcDataMigrationDAO {
 			HpcDataMigrationResult result, String message) throws HpcException;
 
 	/**
-	 * Update the status of all data migration tasks
+	 * Update the status of all data migration tasks.
 	 *
-	 * @param fromStatus Only update tasks in this status
-	 * @param inProcess  The in-process value to set
-	 * @param toStatus   The status to set
+	 * @param fromStatus      Only update tasks in this status.
+	 * @param inProcess       The in-process value to set.
+	 * @param serverId        The server ID to update task status for.
+	 * @param percentComplete The percent complete.
+	 * @param toStatus        The status to set
 	 * @throws HpcException on database error.
 	 */
-	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess,
-			HpcDataMigrationStatus toStatus) throws HpcException;
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, boolean inProcess, String serverId,
+			int percentComplete, HpcDataMigrationStatus toStatus) throws HpcException;
 
 	/**
 	 * Get result counts for items in a collection migration task
@@ -147,4 +149,13 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void setDataMigrationTaskServerId(String id, String serverId) throws HpcException;
+
+	/**
+	 * Update a bulk data migration precent complete.
+	 *
+	 * @param id The bulk data migration task ID (collection, list of objects, list
+	 *           of collections)
+	 * @throws HpcException on database error.
+	 */
+	public void updateBulkDataMigrationTaskPercentComplete(String id) throws HpcException;
 }
