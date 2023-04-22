@@ -10,8 +10,10 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import java.io.File;
 import java.util.Calendar;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
 	// Data Transfer service.
 	private HpcDataTransferService dataTransferService = null;
+
+	// Indicator whether task has removed / cancelled
+	private boolean taskCancelled = false;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -124,6 +129,16 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
 	@Override
 	public void transferFailed(String message) {
+		if (taskCancelled) {
+			// The task was cancelled / removed from the DB. Do some cleanup.
+			FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
+
+			logger.info("download task: {} - cancelled/removed - {} [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), downloadTask.getPercentComplete(), downloadTask.getDataTransferType(),
+					downloadTask.getDestinationType());
+			return;
+		}
+
 		// This callback method is called when streaming download failed.
 		completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
 	}
@@ -132,6 +147,18 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	public void transferProgressed(long bytesTransferred) {
 		try {
 			dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred);
+
+		} catch (HpcException e) {
+
+		}
+
+		try {
+			if (!dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
+				// The task was cancelled / removed from the DB. Stop 1st hop download thread.
+				taskCancelled = true;
+				logger.info("Interrupting thread due to task cancellation");
+				Thread.currentThread().interrupt();
+			}
 
 		} catch (HpcException e) {
 			logger.error("Failed to update Streaming download task progress", e);
@@ -177,8 +204,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 			downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
-		
-		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+
+		dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 	}
 
 	/**
@@ -218,7 +245,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			this.downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 		}
 
-		dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
+		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 	}
 
 	/**
@@ -249,10 +276,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 					eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(), downloadTask.getPath(),
 							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed);
 				} else {
-					eventService
-							.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
-							HpcDownloadTaskType.DATA_OBJECT, result, downloadTask.getId(), destinationLocation, completed,
-							message);
+					eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
+							HpcDownloadTaskType.DATA_OBJECT, result, downloadTask.getId(), destinationLocation,
+							completed, message);
 				}
 			}
 

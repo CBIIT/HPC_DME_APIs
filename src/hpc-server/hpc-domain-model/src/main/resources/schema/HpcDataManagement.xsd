@@ -77,6 +77,8 @@
 					type="hpc-domain-datamanagement:HpcDataHierarchy" />
 				<xsd:element name="createArchiveMetadata" type="xsd:boolean" />
 				<xsd:element name="registrationEventWithDownloadRequestURL" type="xsd:boolean" />
+				<xsd:element name="deletionAllowed" type="xsd:boolean" />
+				<xsd:element name="restrictMetadata" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -217,6 +219,8 @@
 				type="xsd:boolean" />
 			<xsd:element name="uploadParts"
 				type="xsd:int" minOccurs="0" />
+			<xsd:element name="uploadCompletion"
+				type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="uploadRequestURLChecksum"
 				type="xsd:string" />
 			<xsd:element name="sourceSize" type="xsd:long"
@@ -227,7 +231,7 @@
 			<xsd:element name="systemAccountName" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-
+	
 	<xsd:complexType name="HpcDataObjectUploadResponse">
 		<xsd:sequence>
 			<xsd:element name="dataTransferRequestId"

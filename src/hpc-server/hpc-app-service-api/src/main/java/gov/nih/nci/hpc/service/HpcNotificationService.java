@@ -26,12 +26,12 @@ import java.util.List;
 public interface HpcNotificationService {
   /**
    * Add/Update a notification subscription for a user.
-   *
+   * @param userId                   The user receiving the subscription
    * @param notificationSubscription The notification subscription to add/update.
    * @throws HpcException on service failure.
    */
   public void addUpdateNotificationSubscription(
-      HpcNotificationSubscription notificationSubscription) throws HpcException;
+      String userId, HpcNotificationSubscription notificationSubscription) throws HpcException;
 
   /**
    * Delete a notification subscription for a user.
