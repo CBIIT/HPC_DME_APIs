@@ -1,0 +1,37 @@
+
+create table HPC_API_CALLS_AUDIT
+(
+    USER_ID                   VARCHAR2(50)   not null,
+    HTTP_REQUEST_METHOD       VARCHAR2(50)   not null,
+    ENDPOINT                  VARCHAR2(2700) not null,
+    HTTP_RESPONSE_CODE        VARCHAR2(50)   not null,
+    SERVER_ID                 VARCHAR2(50)   not null,
+    CREATED                   TIMESTAMP(6)   not null,
+    COMPLETED                 TIMESTAMP(6)   not null
+)
+/
+
+comment on table HPC_API_CALLS_AUDIT is 'An audit of all API calls made to the DME server'
+/
+
+comment on column HPC_API_CALLS_AUDIT.USER_ID is 'The user ID who submitted the request'
+/
+
+comment on column HPC_API_CALLS_AUDIT.HTTP_REQUEST_METHOD is 'The http request method'
+/
+
+comment on column HPC_API_CALLS_AUDIT.ENDPOINT is 'The endpoint of the API request'
+/
+
+comment on column HPC_API_CALLS_AUDIT.HTTP_RESPONSE_CODE  is 'The API call response code'
+/
+
+comment on column HPC_API_CALLS_AUDIT.SERVER_ID is 'The server that performed the API request'
+/
+
+comment on column HPC_API_CALLS_AUDIT.CREATED is 'The timestamp the API call was made'
+/
+
+comment on column HPC_API_CALLS_AUDIT.COMPLETED is 'The timestamp the API call was completed'
+/
+

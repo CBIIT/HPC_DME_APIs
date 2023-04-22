@@ -31,6 +31,8 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,11 +98,11 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
 
   @Override
   public HpcNotificationSubscriptionsResponseDTO subscribeNotifications(
-    HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
+    String userId, HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
     throws HpcException {
     validateSubscriptionReqDto(notificationSubscriptions);
-    helpProcessSubscriptionAddsAndUpdates(notificationSubscriptions);
-    helpProcessSubscriptionRemovals(notificationSubscriptions);
+    helpProcessSubscriptionAddsAndUpdates(userId, notificationSubscriptions);
+    helpProcessSubscriptionRemovals(userId, notificationSubscriptions);
     HpcNotificationSubscriptionsResponseDTO responseDto =
       produceSubscriptionProcessingResponse();
     return responseDto;
@@ -177,6 +179,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
    *         notification actions (adds, updates, and removes)
    */
   private void helpProcessSubscriptionAddsAndUpdates(
+      String userId,
       HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) {
     if (null == this.addedOrUpdatedNotifSubs) {
       this.addedOrUpdatedNotifSubs = new ArrayList<>();
@@ -192,7 +195,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
       for (HpcNotificationSubscription someSub : notificationSubscriptions
         .getAddUpdateSubscriptions()) {
         try {
-          notificationService.addUpdateNotificationSubscription(someSub);
+          notificationService.addUpdateNotificationSubscription(userId, someSub);
           this.addedOrUpdatedNotifSubs.add(someSub);
         } catch (HpcException hpce) {
           HpcAddOrUpdateNotificationSubscriptionProblem problem =
@@ -214,13 +217,20 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
    *         notification actions (adds, updates, and removes)
    */
   private void helpProcessSubscriptionRemovals(
+      String userId,
       HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) throws HpcException {
 
-	// Get the service invoker.
-	HpcRequestInvoker invoker = securityService.getRequestInvoker();
-	if (invoker == null) {
-	      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+
+	String nciUserId = userId;
+	if(StringUtils.isEmpty(nciUserId)) {
+	  // Get the service invoker.
+	  HpcRequestInvoker invoker = securityService.getRequestInvoker();
+	  if (invoker == null) {
+	    throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+	  }
+	  nciUserId = invoker.getNciAccount().getUserId();
 	}
+
 
     if (null == this.removedSubs) {
       this.removedSubs = new ArrayList<>();
@@ -236,7 +246,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
       for (HpcEventType removeSubEvent : notificationSubscriptions
           .getDeleteSubscriptions()) {
         try {
-          notificationService.deleteNotificationSubscription(invoker.getNciAccount().getUserId(), removeSubEvent);
+          notificationService.deleteNotificationSubscription(nciUserId, removeSubEvent);
           this.removedSubs.add(removeSubEvent);
         } catch (HpcException hpce) {
           HpcRemoveNotificationSubscriptionProblem problem =

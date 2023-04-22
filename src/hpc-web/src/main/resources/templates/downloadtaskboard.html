@@ -180,7 +180,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 				<div class="row">
 					<div class="col-lg-12">
 						<h4>
-							<i class="fa fa-share-alt"></i> Download Tasks
+							<i class="fa fa-gear"></i> Download Tasks
 						</h4>
 					</div>
 				</div>
@@ -271,7 +271,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		if (checkBox.checked == true){
 			window.location.href = "/downloadtasks?queryAll=true";
 		} else {
-			window.location.href = "/downloadtasks";
+			window.location.href = "/downloadtasks?queryAll=false";
 		}
 	}
 	
@@ -281,19 +281,19 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		if(action == "next" && checkBox != null && checkBox.checked == true)
 		 	window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) +1);
 		else if (action == "next")
-			window.location.href = "/downloadtasks?page=" + (parseInt(currentPage) +1);
+			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) +1);
 		else if(action == "previous" && checkBox != null && checkBox.checked == true)
 			window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) - 1);
 		else if(action == "previous")
-			window.location.href = "/downloadtasks?page=" + (parseInt(currentPage) - 1);
+			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) - 1);
 		else if(action == "first" && checkBox != null && checkBox.checked == true)
 			window.location.href = "/downloadtasks?queryAll=true&page=1";
 		else if(action == "first")
-			window.location.href = "/downloadtasks?page=1";
+			window.location.href = "/downloadtasks?queryAll=false&page=1";
 		else if(action == "last" && checkBox != null && checkBox.checked == true)
 			window.location.href = "/downloadtasks?queryAll=true&page=" + totalPages;
 		else if(action == "last")
-			window.location.href = "/downloadtasks?page=" + totalPages;
+			window.location.href = "/downloadtasks?queryAll=false&page=" + totalPages;
     }
     
 	if(currentPage == "1")

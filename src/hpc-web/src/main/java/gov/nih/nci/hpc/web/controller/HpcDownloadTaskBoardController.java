@@ -73,8 +73,10 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
-		model.addAttribute("queryAll", queryAll == null ? false : true);
-		model.addAttribute("canQueryAll", HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session));
+		boolean canQueryAll = HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session);
+		boolean queryAllOption = (queryAll == null || queryAll.contentEquals("true")) && canQueryAll ? true : false;
+		model.addAttribute("queryAll", queryAllOption);
+		model.addAttribute("canQueryAll", canQueryAll);
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
 		if (authToken == null) {
@@ -97,7 +99,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				page = Integer.parseInt(pageStr);
 			}
 			
-			String serviceURL = (queryAll == null ? queryServiceURL : queryAllServiceURL) + "?page=" + page + "&totalCount=true";
+			String serviceURL = (queryAllOption == false ? queryServiceURL : queryAllServiceURL) + "?page=" + page + "&totalCount=true";
 			HpcDownloadSummaryDTO downloads = HpcClientUtil.getDownloadSummary(authToken, serviceURL, sslCertPath,
 					sslCertPassword);
 

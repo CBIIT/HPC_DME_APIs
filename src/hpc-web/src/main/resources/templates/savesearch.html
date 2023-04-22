@@ -27,7 +27,7 @@
 	<div class="modal-body">
 		<form class="form-horizontal" id="saveCriteriaForm"
 			th:object="${hpcSaveSearch}">
-			<input type="hidden" th:field="*{selectedColumns}" id="selectedColumns"/>
+			<input type="hidden" th:field="*{deselectedColumns}" id="deselectedColumns"/>
 			<input type="hidden" th:value="${hpcSaveSearch.frequency}" id="savedFrequency"/>
 			<div th:if="${!#strings.isEmpty(hpcSaveSearch.getCriteriaName())}" class="pull-center" id="note">
 				<p>You can save a query with a new name by changing the name below.<br/>
@@ -100,8 +100,8 @@
 		 	return false;
 		 }
 	 
-	 if(selectedColumns != null)
-	 	document.getElementById("saveCriteriaForm").elements.namedItem("selectedColumns").value = selectedColumns;
+	 if(deselectedColumns != null)
+	 	document.getElementById("saveCriteriaForm").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	 
 	 $.ajax({
      type: "POST",

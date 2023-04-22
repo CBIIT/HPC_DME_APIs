@@ -77,6 +77,7 @@
 				<xsd:element name="createdAt" type="xsd:dateTime" />
 				<xsd:element name="attribute" type="xsd:string" />
 				<xsd:element name="value" type="xsd:string" />
+				<xsd:element name="unit" type="xsd:string" />
 				<xsd:element name="level" type="xsd:int" minOccurs="0" />
 				<xsd:element name="levelLabel" type="xsd:string" />
 		</xsd:sequence>
@@ -99,6 +100,7 @@
 				<xsd:element name="specColType" type="xsd:string" />
 				<xsd:element name="attribute" type="xsd:string" />
 				<xsd:element name="value" type="xsd:string" />
+				<xsd:element name="unit" type="xsd:string" />
 				<xsd:element name="level" type="xsd:int" minOccurs="0" />
 				<xsd:element name="levelLabel" type="xsd:string" />
 				<xsd:element name="metaCollectionId" type="xsd:int" />
@@ -208,7 +210,7 @@
 			<xsd:element name="compoundQuery" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="updated" type="xsd:dateTime" />
-			<xsd:element name="selectedColumns" type="xsd:string"
+			<xsd:element name="deselectedColumns" type="xsd:string"
 						minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="frequency" type="hpc-domain-metadata:HpcCompoundMetadataQueryFrequency" />
 		</xsd:sequence>

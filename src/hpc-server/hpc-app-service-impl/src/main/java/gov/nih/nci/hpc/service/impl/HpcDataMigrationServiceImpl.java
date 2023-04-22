@@ -121,7 +121,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath) throws HpcException {
+			boolean alignArchivePath, long size) throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -148,6 +148,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT);
 		migrationTask.setParentId(collectionMigrationTaskId);
 		migrationTask.setAlignArchivePath(alignArchivePath);
+		migrationTask.setPercentComplete(0);
+		migrationTask.setSize(size);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -167,11 +169,24 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void assignDataMigrationTasks() throws HpcException {
+		// If needed, re-setting the cycle iterator of migration server IDs.
+		if (dataMigrationServerIdCycleIter == null) {
+			if (StringUtils.isEmpty(dataMigrationServerIds)) {
+				throw new HpcException(
+						"No migration servers are configured. Check hpc.service.dataMigration.serverIds property",
+						HpcErrorType.SPRING_CONFIGURATION_ERROR);
+			}
+			String[] serverIds = dataMigrationServerIds.split(",");
+			logger.info("{} Data migration servers configured: {}", serverIds.length, dataMigrationServerIds);
+			dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
+		}
+
 		for (HpcDataMigrationTask dataMigrationTask : dataMigrationDAO.getUnassignedDataMigrationTasks()) {
 			String assignedServerId = dataMigrationServerIdCycleIter.next();
 			dataMigrationDAO.setDataMigrationTaskServerId(dataMigrationTask.getId(), assignedServerId);
 
-			logger.info("Data migration: task - {} assigned to {}", dataMigrationTask.getId(), assignedServerId);
+			logger.info("Data migration: task - {} [{}] assigned to {}", dataMigrationTask.getId(),
+					dataMigrationTask.getType(), assignedServerId);
 		}
 	}
 
@@ -370,21 +385,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void resetMigrationTasksInProcess() throws HpcException {
-		// If needed, re-setting the cycle iterator of migration server IDs.
-		if (dataMigrationServerIdCycleIter == null) {
-			if (StringUtils.isEmpty(dataMigrationServerIds)) {
-				throw new HpcException(
-						"No migration servers are configured. Check hpc.service.dataMigration.serverIds property",
-						HpcErrorType.SPRING_CONFIGURATION_ERROR);
-			}
-			String[] serverIds = dataMigrationServerIds.split(",");
-			logger.info("{} Data migration servers configured: {}", serverIds.length, dataMigrationServerIds);
-			dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
-		}
-
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false,
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false,
+		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
 	}
 
@@ -401,6 +404,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.COLLECTION);
 		migrationTask.setAlignArchivePath(alignArchivePath);
+		migrationTask.setPercentComplete(0);
+		migrationTask.setSize(null);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -420,6 +425,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT_LIST);
 		migrationTask.setAlignArchivePath(false);
+		migrationTask.setPercentComplete(0);
+		migrationTask.setSize(null);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -439,6 +446,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.COLLECTION_LIST);
 		migrationTask.setAlignArchivePath(false);
+		migrationTask.setPercentComplete(0);
+		migrationTask.setSize(null);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -448,6 +457,34 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException {
 		dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+	}
+
+	@Override
+	public void updateDataMigrationTaskProgress(HpcDataMigrationTask dataMigrationTask, long bytesTransferred)
+			throws HpcException {
+		// Input validation.
+		if (dataMigrationTask == null || !HpcDataMigrationType.DATA_OBJECT.equals(dataMigrationTask.getType())
+				|| dataMigrationTask.getSize() <= 0 || bytesTransferred <= 0
+				|| bytesTransferred > dataMigrationTask.getSize()) {
+			return;
+		}
+
+		// Calculate the percent complete.
+		int percentComplete = Math.round(100 * (float) bytesTransferred / dataMigrationTask.getSize());
+		if (percentComplete != dataMigrationTask.getPercentComplete()) {
+			dataMigrationTask.setPercentComplete(percentComplete);
+
+			// Persist.
+			dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+
+			if (!StringUtils.isEmpty(dataMigrationTask.getParentId())) {
+				// Update the parent migration task percent complete.
+				dataMigrationDAO.updateBulkDataMigrationTaskPercentComplete(dataMigrationTask.getParentId());
+			}
+
+			logger.debug("Migration task: {} - % complete - {}", dataMigrationTask.getId(),
+					dataMigrationTask.getPercentComplete());
+		}
 	}
 
 	@Override
