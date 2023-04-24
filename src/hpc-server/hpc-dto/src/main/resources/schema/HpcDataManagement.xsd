@@ -616,9 +616,10 @@
 				<xsd:element name="dataManagementDeleteStatus"
 					type="xsd:boolean" />
 				<xsd:element name="archiveDeleteStatus"
-					type="xsd:boolean" minOccurs="0" maxOccurs="1" />
-				<xsd:element name="linksDeleteStatus" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="linksDeleteStatus" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="message" type="xsd:string" />
+				<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -699,6 +700,7 @@
 				type="hpc-dto-datamanagement:HpcMoveRequestItemDTO" />
 			<xsd:element name="result" type="xsd:boolean" />
 			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="taskId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -720,7 +722,6 @@
 				<xsd:element name="moveResponses"
 					type="hpc-dto-datamanagement:HpcMoveResponseItemDTO" minOccurs="0"
 					maxOccurs="unbounded" />
-				<xsd:element name="taskId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
