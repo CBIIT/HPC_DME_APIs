@@ -12,6 +12,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
@@ -34,7 +35,7 @@ public interface HpcNotificationRestService {
   @Path("/notification")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response subscribeNotifications(
+  public Response subscribeNotifications(@QueryParam("nciUserId") String userId,
       HpcNotificationSubscriptionsRequestDTO notificationSubscriptions);
 
   /**

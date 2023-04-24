@@ -24,14 +24,14 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcNotificationBusService {
   /**
    * Subscribe to notifications.
-   *
+   * @param userId                    The user receiving the subscription
    * @param notificationSubscriptions The notification subscriptions request.
    * @return HpcNotificationSubscriptionsResponseDTO representing outcomes of
    *          actions on notification subscriptions
    * @throws HpcException on service failure.
    */
   public HpcNotificationSubscriptionsResponseDTO subscribeNotifications(
-      HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) throws HpcException;
+      String userId, HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) throws HpcException;
 
   /**
    * Get notification subscriptions of a user.
