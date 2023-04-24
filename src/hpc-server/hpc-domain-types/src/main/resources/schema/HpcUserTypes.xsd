@@ -28,6 +28,7 @@
 			<xsd:enumeration value="AWS" />
 			<xsd:enumeration value="USER_S_3_PROVIDER" />
 			<xsd:enumeration value="GOOGLE_STORAGE" />
+			<xsd:enumeration value="VAST" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
