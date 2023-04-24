@@ -645,11 +645,57 @@
 
 	function validate()
 	{
-	  var inputPath = document.getElementById("path").value;
-	  if (inputPath) {
-	    inputPath = inputPath.trim();
-	  }
-
+		if($('#bulkTypeS3').prop('checked')) {
+			var bucketName = document.getElementById("bucketName").value;
+			if(!bucketName || (bucketName.trim() === "")){
+				alert("Enter S3 bucket name.");
+				return false;
+			} 
+			var s3Path = document.getElementById("s3Path").value;
+			if(!s3Path || (s3Path.trim() === "")){
+				alert("Enter S3 source path.");
+				return false;
+			}
+			var accessKey = document.getElementById("accessKey").value;
+			if(!accessKey || (accessKey.trim() === "")){
+				alert("Enter S3 access key.");
+				return false;
+			}
+			var secretKey = document.getElementById("secretKey").value;
+			if(!secretKey || (secretKey.trim() === "")){
+				alert("Enter S3 secret access Key.");
+				return false;
+			}
+			var region = document.getElementById("region").value;
+			if(!region || (region.trim() === "")){
+				alert("Enter S3 region.");
+				return false;
+			}
+			if(s3Path === "/"){
+				alert("Re-enter S3 source path. S3 path cannot be a slash (/).");
+				return false;
+			}
+		}
+		if($('#bulkTypeGC').prop('checked')) {
+			var gcBucketName = document.getElementById("gcbucketName").value;
+			if(!gcBucketName || (gcBucketName.trim() === "")){
+				alert("Enter Google Cloud bucket name.");
+				return false;
+			}
+			var gcPath = document.getElementById("gcPath").value;
+			if(!gcPath || (gcPath.trim() === "")){
+				alert("Enter Google Cloud source path.");
+				return false;
+			}
+			if(gcPath === "/"){
+				alert("Re-enter Google Cloud source path. The Google Cloud path cannot be a slash (/). ");
+				return false;
+			}
+		}
+		var inputPath = document.getElementById("path").value;
+		if (inputPath) {
+			inputPath = inputPath.trim();
+		}
 		if(!inputPath)
 		{
 			alert("Path is missing!")
