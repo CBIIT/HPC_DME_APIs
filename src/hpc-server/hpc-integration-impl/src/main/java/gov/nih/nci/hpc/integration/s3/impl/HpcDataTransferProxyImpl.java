@@ -176,14 +176,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Calculate the archive destination.
 		HpcFileLocation archiveDestinationLocation = getArchiveDestinationLocation(
 				baseArchiveDestination.getFileLocation(), uploadRequest.getPath(), uploadRequest.getCallerObjectId(),
-				baseArchiveDestination.getType(), false);
-
-		// If the archive destination file exists, generate a new archive destination w/
-		// unique path.
-		if (getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
-			archiveDestinationLocation = getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(),
-					uploadRequest.getPath(), uploadRequest.getCallerObjectId(), baseArchiveDestination.getType(), true);
-		}
+				baseArchiveDestination.getType(), this, authenticatedToken);
 
 		if (uploadRequest.getGenerateUploadRequestURL()) {
 			int uploadParts = Optional.ofNullable(uploadRequest.getUploadParts()).orElse(1);
@@ -233,6 +226,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public String generateDownloadRequestURL(Object authenticatedToken, HpcFileLocation archiveSourceLocation,
 			HpcArchive baseArchiveDestination, Integer downloadRequestURLExpiration) throws HpcException {
+		if (archiveSourceLocation == null) {
+			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
+		}
 
 		// Calculate the URL expiration date.
 		Date expiration = new Date();
@@ -241,7 +237,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Create a URL generation request.
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
 				archiveSourceLocation.getFileContainerId(), archiveSourceLocation.getFileId())
-						.withMethod(HttpMethod.GET).withExpiration(expiration);
+				.withMethod(HttpMethod.GET).withExpiration(expiration);
 
 		// Generate the pre-signed URL.
 		URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
@@ -283,7 +279,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
 		CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
-						.withNewObjectMetadata(toS3Metadata(metadataEntries)).withStorageClass(storageClass);
+				.withNewObjectMetadata(toS3Metadata(metadataEntries)).withStorageClass(storageClass);
 
 		try {
 			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
@@ -676,7 +672,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Create a S3 upload request.
 		PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
 				archiveDestinationLocation.getFileId(), sourceFile).withMetadata(toS3Metadata(metadataEntries))
-						.withStorageClass(storageClass);
+				.withStorageClass(storageClass);
 
 		// Upload the data.
 		Upload s3Upload = null;
@@ -813,7 +809,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				metadata.setContentLength(size);
 				PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
 						archiveDestinationLocation.getFileId(), sourceInputStream, metadata)
-								.withStorageClass(storageClass);
+						.withStorageClass(storageClass);
 
 				// Set the read limit on the request to avoid AWSreset exceptions.
 				request.getRequestClientOptions().setReadLimit(getReadLimit(size));
@@ -899,7 +895,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Create a URL generation request.
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
 				archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
-						.withMethod(HttpMethod.PUT).withExpiration(expiration);
+				.withMethod(HttpMethod.PUT).withExpiration(expiration);
 
 		// Add the storage class.
 		generatePresignedUrlRequest.addRequestParameter(Headers.STORAGE_CLASS, storageClass);
@@ -979,7 +975,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
 					archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
-							.withMethod(HttpMethod.PUT).withExpiration(expiration);
+					.withMethod(HttpMethod.PUT).withExpiration(expiration);
 			generatePresignedUrlRequest.addRequestParameter("partNumber", String.valueOf(partNumber));
 			generatePresignedUrlRequest.addRequestParameter("uploadId", multipartUpload.getId());
 
