@@ -1040,7 +1040,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 										: null;
 						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null,
 								objectMetadata.getChecksum(), null, null, null, null, null, null, null,
-								objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
+								objectMetadata.getDeepArchiveStatus(), deepArchiveDate, null);
 
 						// Automatically extract metadata from the file itself and add to iRODs.
 						if (extractMetadata) {
@@ -1103,13 +1103,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.orElse(new HpcDataObjectUploadResponse());
 			responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 			responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
-
-			// Update system-generated w/ archive location - this is in case the archive
-			// location changed after regeneration of the upload url(s).
-			if (uploadResponse.getArchiveLocation() != null) {
-				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(), null,
-						null, null, null, null, null, null, null, null, null, null);
-			}
 		}
 
 		taskProfilingLog("Registration", path, "Registration finished", null);
@@ -1142,8 +1135,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							: null;
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
 					HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
-					archivePathAttributes.getSize(), null, null, objectMetadata.getDeepArchiveStatus(),
-					deepArchiveDate);
+					archivePathAttributes.getSize(), null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate,
+					null);
 
 			// Add an event if needed.
 			if (Boolean.TRUE.equals(systemGeneratedMetadata.getRegistrationEventRequired())) {
@@ -2771,7 +2764,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void updateDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus) {
 		try {
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus, null,
-					null, null, null, null, null, null, null);
+					null, null, null, null, null, null, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to update system metadata: " + path + ". Data transfer status: " + dataTransferStatus,
@@ -3188,9 +3181,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					systemGeneratedMetadata.getConfigurationId());
 
 			// Update data-transfer-status system metadata accordingly.
-			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-					HpcDataTransferUploadStatus.URL_GENERATED, null, uploadResponse.getDataTransferStarted(), null,
-					null, null, null, null, null);
+			metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(), null,
+					null, HpcDataTransferUploadStatus.URL_GENERATED, null, uploadResponse.getDataTransferStarted(),
+					null, null, null, null, null, null, uploadResponse.getDataTransferMethod());
 
 			return uploadResponse;
 		}
