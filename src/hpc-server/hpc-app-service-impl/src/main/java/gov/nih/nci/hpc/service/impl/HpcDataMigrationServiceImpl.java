@@ -316,7 +316,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 						() -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
 								dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
 								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
-								deepArchiveStatus, deepArchiveDate));
+								deepArchiveStatus, deepArchiveDate, null));
 
 				// Delete the data object from the source S3 archive.
 				dataTransferService.deleteDataObject(dataObjectMigrationTask.getFromS3ArchiveLocation(),
