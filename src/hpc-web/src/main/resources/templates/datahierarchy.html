@@ -21,6 +21,9 @@
 .required:after {
   content:"*";
 }
+.modal-dialog {
+    width: 800px !important;
+}
 </style>
 </head>
 <body>
@@ -48,26 +51,28 @@
 								th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
 						</div>
 					</div>
-					<section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
-            </li>
-        </ul>
-        <ul class="tree">
-            <li>
-                <a>DataObject</a>
-                <a style="border:none" onclick="show(this)"><i title="Show mandatory metadata" class="fa fa-plus"></i></a>
-					<div style="display: none">
-						<div th:each="entry : ${dataObjectMetadata}"
-							th:if="${dataObjectMetadata != null}">
-							<div class="required" th:text="${entry.getAttribute()}"
-								th:if="${#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory()}"></div>
-							<div th:text="${entry.getAttribute()}"
-								th:if="${#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory()}"></div>
-							<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
-								th:if="${!#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory()}"></div>
-							<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
-								th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory()}"></div>
-						</div>
+					<div th:if="${hierarchy.isDataObjectContainer}">
+						<ul>
+				            <li>
+				                <a>DataObject</a>
+				                <a style="border:none" onclick="show(this)"><i title="Show mandatory metadata" class="fa fa-plus"></i></a>
+									<div style="display: none">
+										<div th:each="entry : ${dataObjectMetadata}"
+											th:if="${dataObjectMetadata != null}">
+											<div class="required" th:text="${entry.getAttribute()}"
+												th:if="${#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+											<div th:text="${entry.getAttribute()}"
+												th:if="${#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+											<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+												th:if="${!#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+											<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+												th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+										</div>
+									</div>
+				            </li>
+				        </ul>
 					</div>
+					<section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
             </li>
         </ul>
       </div>  
