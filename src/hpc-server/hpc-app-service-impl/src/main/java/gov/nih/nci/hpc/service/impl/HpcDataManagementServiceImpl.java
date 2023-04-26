@@ -476,7 +476,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		getDataObjectLinks(sourcePath).forEach(link -> {
 			try {
 				metadataService.updateDataObjectSystemGeneratedMetadata(link.getAbsolutePath(), null, null, null, null,
-						null, null, null, null, destinationPath, null, null, null);
+						null, null, null, null, destinationPath, null, null, null, null);
 			} catch (HpcException e) {
 				logger.error("Failed to point link[{}] to {}", link.getAbsolutePath(), destinationPath);
 			}
@@ -551,7 +551,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		metadataService.updateDataObjectSystemGeneratedMetadata(destinationPath, null, null, null,
-				HpcDataTransferUploadStatus.DELETE_REQUESTED, null, null, null, null, null, null, null, null);
+				HpcDataTransferUploadStatus.DELETE_REQUESTED, null, null, null, null, null, null, null, null, null);
 	}
 
 	@Override
@@ -600,7 +600,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		dataManagementProxy.move(authenticatedToken, sourcePath, destinationPath);
 
 		metadataService.updateDataObjectSystemGeneratedMetadata(destinationPath, null, null, null,
-				HpcDataTransferUploadStatus.RECOVER_REQUESTED, null, null, null, null, null, null, null, null);
+				HpcDataTransferUploadStatus.RECOVER_REQUESTED, null, null, null, null, null, null, null, null, null);
 	}
 
 	@Override
