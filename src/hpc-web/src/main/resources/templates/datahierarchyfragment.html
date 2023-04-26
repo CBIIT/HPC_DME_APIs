@@ -7,8 +7,14 @@
                 <div style="display: none">
 					<div th:each="entry : ${collectionMetadata}"
 						th:if="${collectionMetadata != null}">
+						<div class="required" th:text="${entry.getAttribute()}"
+							th:if="${#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
 						<div th:text="${entry.getAttribute()}"
-							th:if="${entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+							th:if="${#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+						<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+							th:if="${!#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+						<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+							th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
 					</div>
 				</div>
                 <section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
