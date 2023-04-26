@@ -222,7 +222,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(),
 						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
-						null, null, null, null);
+						null, null, null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process queued data transfer upload :" + path, e);
@@ -276,7 +276,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									: null;
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null,
 							objectMetadata.getChecksum(), dataTransferStatus, null, null, dataTransferCompleted, null,
-							null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
+							null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate, null);
 
 					// Record data object registration result.
 					systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
@@ -293,7 +293,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					// Update data transfer status.
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
-							null, null, null, null, null, null, null, null);
+							null, null, null, null, null, null, null, null, null);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
 
 					break;
@@ -444,7 +444,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					logger.info("Upload streaming stopped for: {}", path);
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
 							HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null, null, null, null,
-							null);
+							null, null);
 				}
 
 			} catch (HpcException e) {
@@ -509,7 +509,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Update the transfer status and request id.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(), null,
-						uploadResponse.getDataTransferStarted(), null, null, null, null, null, null);
+						uploadResponse.getDataTransferStarted(), null, null, null, null, null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process restart upload streaming for data object:" + path, e);
@@ -558,7 +558,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Upload stopped (server shutdown). We just update the status accordingly.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-						HpcDataTransferUploadStatus.FILE_SYSTEM_READY, null, null, null, null, null, null, null, null);
+						HpcDataTransferUploadStatus.FILE_SYSTEM_READY, null, null, null, null, null, null, null, null,
+						null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process data transfer upload in progress from file system:" + path, e);
@@ -2344,7 +2345,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
 		try {
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-					HpcDataTransferUploadStatus.FAILED, null, null, null, null, null, null, null, null);
+					HpcDataTransferUploadStatus.FAILED, null, null, null, null, null, null, null, null, null);
 
 			systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -2637,7 +2638,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Update the data transfer status.
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
 							HpcDataTransferUploadStatus.FILE_SYSTEM_IN_PROGRESS, null, null, null, null, null, null,
-							null, null);
+							null, null, null);
 
 					// Upload the file from the file-system asynchronously.
 					CompletableFuture.runAsync(() -> {
@@ -2710,7 +2711,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					uploadResponse.getDataTransferRequestId(), objectMetadata.getChecksum(),
 					uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(), null,
 					uploadResponse.getDataTransferCompleted(), null, null, null, objectMetadata.getDeepArchiveStatus(),
-					deepArchiveDate);
+					deepArchiveDate, null);
 
 			// Data transfer upload completed successfully. Add an event if needed.
 			if (Boolean.TRUE.equals(systemGeneratedMetadata.getRegistrationEventRequired())) {
@@ -2848,12 +2849,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Add/Update system generated metadata to iRODs
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, null, null, null,
-						null, null, null, deepArchiveStatus, null);
+						null, null, null, deepArchiveStatus, null, null);
 			} else {
 				// Check if there is a delay and toggle deep archive status to delayed
 				if (dataTieringService.deepArchiveDelayed(systemGeneratedMetadata.getDeepArchiveDate())) {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, null, null,
-							null, null, null, null, HpcDeepArchiveStatus.DELAYED, null);
+							null, null, null, null, HpcDeepArchiveStatus.DELAYED, null, null);
 				}
 			}
 
