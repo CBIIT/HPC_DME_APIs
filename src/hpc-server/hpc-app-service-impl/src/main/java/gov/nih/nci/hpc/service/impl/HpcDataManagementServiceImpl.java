@@ -876,6 +876,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				.setUiURL(!StringUtils.isEmpty(uiURL) ? uiURL : defaultBulkRegistrationStatusUiURL);
 		bulkDataObjectRegistrationTask.setCreated(Calendar.getInstance());
 		bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
+		bulkDataObjectRegistrationTask
+				.setUploadMethod(toDataTransferUploadMethod(dataObjectRegistrationRequests.values().iterator().next()));
 
 		// Iterate through the individual data object registration requests and add them
 		// as items to the
@@ -931,6 +933,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setMessage(message);
 		registrationResult.setCreated(registrationTask.getCreated());
 		registrationResult.setCompleted(completed);
+		registrationResult.setUploadMethod(registrationTask.getUploadMethod());
 		registrationResult.getItems().addAll(registrationTask.getItems());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
@@ -1317,6 +1320,38 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			throw new HpcException("Invalid File System upload source in registration request for: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+	}
+
+	/**
+	 * Map a registration request to upload method.
+	 *
+	 * @param registrationRequest The registration request.
+	 * @return the upload method
+	 */
+	private HpcDataTransferUploadMethod toDataTransferUploadMethod(
+			HpcDataObjectRegistrationRequest registrationRequest) {
+		if (registrationRequest.getFileSystemUploadSource() != null) {
+			return HpcDataTransferUploadMethod.FILE_SYSTEM;
+		}
+
+		if (registrationRequest.getGlobusUploadSource() != null) {
+			return HpcDataTransferUploadMethod.GLOBUS;
+		}
+
+		if (registrationRequest.getGoogleCloudStorageUploadSource() != null) {
+			return HpcDataTransferUploadMethod.GOOGLE_CLOUD_STORAGE;
+		}
+
+		if (registrationRequest.getGoogleDriveUploadSource() != null) {
+			return HpcDataTransferUploadMethod.GOOGLE_DRIVE;
+		}
+
+		if (registrationRequest.getS3UploadSource() != null) {
+			return HpcDataTransferUploadMethod.S_3;
+		}
+
+		return null;
+
 	}
 
 	private void copyCollection(Object authenticatedToken, String sourcePath, String destinationPath)
