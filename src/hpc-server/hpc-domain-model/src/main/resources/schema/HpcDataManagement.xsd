@@ -146,6 +146,8 @@
 			<xsd:element name="items"
 				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="uploadMethod" 
+				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -163,6 +165,8 @@
 			<xsd:element name="items"
 				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="uploadMethod" 
+				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
 		</xsd:sequence>
 	</xsd:complexType>
 

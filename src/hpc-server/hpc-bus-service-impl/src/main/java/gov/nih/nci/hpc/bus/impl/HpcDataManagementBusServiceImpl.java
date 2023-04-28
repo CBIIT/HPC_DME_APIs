@@ -3208,6 +3208,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		taskDTO.setCreated(task.getCreated());
 		taskDTO.setTaskStatus(task.getStatus());
 		taskDTO.setPercentComplete(calculateDataObjectBulkRegistrationPercentComplete(task));
+		taskDTO.setUploadMethod(task.getUploadMethod());
 		populateRegistrationItems(taskDTO, task.getItems());
 		return taskDTO;
 	}
@@ -3232,6 +3233,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		Integer effectiveTransferSpeed = result.getEffectiveTransferSpeed();
 		taskDTO.setEffectiveTransferSpeed(
 				effectiveTransferSpeed != null && effectiveTransferSpeed > 0 ? effectiveTransferSpeed : null);
+		taskDTO.setUploadMethod(result.getUploadMethod());
 		populateRegistrationItems(taskDTO, result.getItems());
 		return taskDTO;
 	}
