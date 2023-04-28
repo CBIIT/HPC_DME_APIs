@@ -3,11 +3,15 @@ package Register.Steps;
 import static io.restassured.RestAssured.when;
 
 import java.util.ArrayList;
-
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import java.io.*;
+
+import Register.Pojo.BulkDataObjectRegisterPojo;
+import Register.Pojo.DataObjectRegistration;
+import Register.Pojo.GoogleCloudUploadPojo;
 import Register.Pojo.GooglePojo;
 import Register.Pojo.ParentMetadataPojo;
 import Register.Pojo.RegisterGoogleCloudPojo;
@@ -18,7 +22,7 @@ import dataProviders.ConfigFileReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.cucumber.messages.internal.com.google.gson.Gson;
+//import io.cucumber.messages.internal.com.google.gson.Gson;
 import io.cucumber.datatable.DataTable;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -26,10 +30,15 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.path.json.JsonPath;
 import junit.framework.Assert;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+//import com.jayway.jsonpath.JsonPath;
 
 
 public class RegisterGoogleCloudSteps {
@@ -41,30 +50,29 @@ public class RegisterGoogleCloudSteps {
   String token;
   String accessToken;
   int statusCode;
- 
-	
-	@Given("I am a valid gc_user with token")
-	public void i_am_a_valid_gc_user_with_token() {
-      this.token = configFileReader.getToken();
-      this.accessToken =  configFileReader.getGoogleCloudToken();
-	}
+  
+  // 
+  GoogleCloudUploadPojo googleCloudInfo = new GoogleCloudUploadPojo();
+  DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
 
-	@Given("I add gc_base_path as {string}")
-	public void i_add_gc_base_path_as(String path) {
-	  registerBody.setPath(path);	  
+	@Given("I am a valid user with token")
+	public void i_am_a_valid_user_with_token() {
+      this.token = configFileReader.getToken();
+  }
+
+	@Given("I add path as {string}")
+	public void i_add_path_as(String path) {
+    dataObjectRegistration.setPath(path);
 	}
 
 	@Given("I add a google cloud bucket as {string}")
 	public void i_add_a_google_cloud_bucket_as(String bucket) {
-	    //registerBody.getGoogleCloudStorageUploadSource().getSourceLocation();
-	    
 	  sourceLocation.setFileContainerId(bucket);
 	}
 
 	@Given("I add a google cloud location as {string}")
 	public void i_add_a_google_cloud_location_as(String file) {
-	  sourceLocation.setFileId(file);
-	  googleObj.setSourceLocation(sourceLocation);
+    sourceLocation.setFileId(file);
 	}
 	
 	@Given("I add google cloud metadataEntries as")
@@ -73,10 +81,8 @@ public class RegisterGoogleCloudSteps {
       for (Map<String, String> columns : rows) {
         String attribute = columns.get("attribute");
         String val = columns.get("value");
-        System.out.println("attribute=" + attribute);
-        System.out.println("value=" + val);
       }
-      googleObj.setMetadataEntries(rows);
+      dataObjectRegistration.setDataObjectMetadataEntries(rows);
 	}
 
 	@Given("I have a refresh token")
@@ -86,52 +92,58 @@ public class RegisterGoogleCloudSteps {
 	  registerBody.setGoogleCloudStorageUploadSource(googleObj);
 	}
 
-
-
 	@When("I click Register for the Google Cloud Upload")
 	public void i_click_register_for_the_google_cloud_upload() {
 	  System.out.println("----------------------------------------------------------");
 	  System.out.println("Test Google Cloud Upload");
-	  configFileReader= new ConfigFileReader();
-      String token = configFileReader.getToken();
-      files.add(registerBody);
-      
-      String registerBodyJson = new JsonHelper().getPrettyJson((Object)files);
-      String tempPath = "/hpc-server/collection" + this.registerBody.getPath();
-      
-      RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
-      RestAssured.port = 7738;
-      RequestSpecification request = RestAssured.given().
-          relaxedHTTPSValidation();
-          request.header("Accept", "application/json");
-          request.header("Authorization", "Bearer "+ token);
-          request.header("Content-Type", "application/json");  
-          
-         // multiPart("dataObjectRegistration",registerBodyJson, "application/json");
-          //multiPart("dataObject", new File(sourceLocation.getFileId()), "application/octet-stream"); 
-
-          
-          System.out.println("tempPath="+ tempPath);
-          Response response = request.body(registerBodyJson).put(tempPath);
-          System.out.println(response.asString());
-          
-          this.statusCode = response.getStatusCode();
-          if (this.statusCode == 200 || this.statusCode == 201) {
-            System.out.println("This test was a success");
-            System.out.println("StatusCode = " + response.getStatusCode());
-            //assert(true);
-          } else {
-            System.out.println("This test was a failure");
-            System.out.println(response.asString());
-          }
-          System.out.println("----------------------------------------------------------");
-          System.out.println("");    	  
-	    
+    googleCloudInfo.setAccessToken(configFileReader.getGoogleCloudToken());
+    googleCloudInfo.setSourceLocation(sourceLocation);
+    dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudInfo);
+    String totalPath = dataObjectRegistration.getPath() + "/" + googleCloudInfo.getSourceLocation().getFileId();
+    dataObjectRegistration.setPath(totalPath);
+    ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
+    dataObjectRegistrations.add(0, dataObjectRegistration);
+    BulkDataObjectRegisterPojo bulkRequest = new BulkDataObjectRegisterPojo();
+    bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
+	  Gson gson = new Gson();
+    RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
+    RestAssured.port = 7738;
+    RequestSpecification request = RestAssured.given().log().all().
+        relaxedHTTPSValidation().
+        header("Accept", "application/json").
+        header("Authorization", "Bearer "+ this.token).
+        header("Content-Type", "application/json").
+        body(gson.toJson(bulkRequest));
+    Response response = request.put("/hpc-server/v2/registration");
+    this.statusCode = response.getStatusCode();
+    if (this.statusCode == 200 || this.statusCode == 201) {
+      System.out.println("The Registration was submitted succesfully.");
+      System.out.println("StatusCode = " + response.getStatusCode());
+      System.out.println(response.getBody());
+      JsonPath jsonpath= response.jsonPath();
+      String taskId = jsonpath.get("taskId").toString();
+      System.out.println("Monitoring task id: " + taskId);
+      request = RestAssured.given().log().all().
+        relaxedHTTPSValidation().
+        header("Accept", "application/json").
+        header("Authorization", "Bearer "+ this.token).
+        header("Content-Type", "application/json").
+        body(gson.toJson(bulkRequest));
+        response = request.get("/hpc-server/v2/registration/" + taskId);
+        this.statusCode = response.getStatusCode();
+        System.out.println(this.statusCode);
+        System.out.println(response.getBody().asString());
+    } else {
+      System.out.println("This test was a failure!");
+      System.out.println(response.getBody().asString());
+    }
+    System.out.println("----------------------------------------------------------");
+    System.out.println("");
 	}
 
 	@Then("I get a response of success for the Google Cloud Upload")
 	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
-	    
+	    org.junit.Assert.assertEquals(201, this.statusCode);
 	}
 
 
