@@ -38,6 +38,7 @@ import io.restassured.response.Response;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
+import java.lang.Thread;
 //import com.jayway.jsonpath.JsonPath;
 
 
@@ -120,22 +121,51 @@ public class RegisterGoogleCloudSteps {
       System.out.println("The Registration was submitted succesfully.");
       System.out.println("StatusCode = " + response.getStatusCode());
       System.out.println(response.getBody());
-      JsonPath jsonpath= response.jsonPath();
-      String taskId = jsonpath.get("taskId").toString();
+      JsonPath jsonPath= response.jsonPath();
+      String taskId = jsonPath.get("taskId").toString();
       System.out.println("Monitoring task id: " + taskId);
-      request = RestAssured.given().log().all().
-        relaxedHTTPSValidation().
-        header("Accept", "application/json").
-        header("Authorization", "Bearer "+ this.token).
-        header("Content-Type", "application/json").
-        body(gson.toJson(bulkRequest));
-        response = request.get("/hpc-server/v2/registration/" + taskId);
-        this.statusCode = response.getStatusCode();
-        System.out.println(this.statusCode);
-        System.out.println(response.getBody().asString());
+      int i = 0;
+      boolean inProgress = true;
+      boolean taskFailed = false;
+      do {
+          request = RestAssured.given().log().all().
+          relaxedHTTPSValidation().
+          header("Accept", "application/json").
+          header("Authorization", "Bearer "+ this.token).
+          header("Content-Type", "application/json").
+          body(gson.toJson(bulkRequest));
+          response = request.get("/hpc-server/v2/registration/" + "32f509b6-6890-4baa-afad-cda77f199254");
+          this.statusCode = response.getStatusCode();
+          System.out.println(this.statusCode);
+          System.out.println(response.getBody().asString());
+          jsonPath= response.jsonPath();
+          Object task = jsonPath.get("task.failedItems.message");
+          System.out.println("Printing extracted task");
+          System.out.println(task);
+          Object failedItems = jsonPath.get("task.failedItems.message");;
+          if(failedItems == null || failedItems.toString().equals("")) {
+              System.out.println("Printing inprogress");
+            inProgress = jsonPath.get("inProgress");
+            System.out.println(inProgress);
+            try {
+              Thread.sleep(10000);  //1000 milliseconds is one second.
+            } catch(InterruptedException ex) {
+              Thread.currentThread().interrupt();
+            }
+          } else {
+            taskFailed = true;
+            System.out.println("Failed set to true");
+            String message = jsonPath.get("task.failedItems.message");;
+            System.out.println(message);
+          }
+          i++;
+           System.out.println(i);
+      } while(i < 10 && inProgress && !taskFailed);
     } else {
       System.out.println("This test was a failure!");
-      System.out.println(response.getBody().asString());
+      JsonPath jsonPath= response.jsonPath();
+      String errorType = jsonPath.get("errorType");
+      System.out.println(errorType);
     }
     System.out.println("----------------------------------------------------------");
     System.out.println("");
