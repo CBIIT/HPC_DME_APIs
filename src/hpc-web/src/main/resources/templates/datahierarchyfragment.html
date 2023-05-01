@@ -7,13 +7,13 @@
                 <div style="display: none">
 					<div th:each="entry : ${collectionMetadata}"
 						th:if="${collectionMetadata != null}">
-						<div class="required" th:text="${entry.getAttribute()}"
+						<div class="required" th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 							th:if="${#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
-						<div th:text="${entry.getAttribute()}"
+						<div th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 							th:if="${#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
-						<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+						<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 							th:if="${!#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
-						<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+						<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 							th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
 					</div>
 				</div>
@@ -25,13 +25,13 @@
 									<div style="display: none">
 										<div th:each="entry : ${dataObjectMetadata}"
 											th:if="${dataObjectMetadata != null}">
-											<div class="required" th:text="${entry.getAttribute()}"
+											<div class="required" th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 												th:if="${#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
-											<div th:text="${entry.getAttribute()}"
+											<div th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 												th:if="${#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
-											<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+											<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 												th:if="${!#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
-											<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'"
+											<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
 												th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
 										</div>
 									</div>
