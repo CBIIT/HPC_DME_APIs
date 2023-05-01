@@ -62,6 +62,7 @@ public class ConfigFileReader {
       refreshTokenObj.refresh_token = properties.getProperty("googleRefreshToken");  
       Gson gson = new Gson();
       String refreshTokenString = gson.toJson(refreshTokenObj);
+      refreshTokenString = properties.getProperty("googleRefreshTokenBlock"); //TEMP CODE
       return refreshTokenString;
     }
     
