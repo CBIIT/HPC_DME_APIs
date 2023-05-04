@@ -38,7 +38,7 @@
         <ul class="tree">
             <li>
                 <a th:text="${hierarchy.collectionType}">Parent</a><i title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
-                <a style="border:none" onclick="show(this)"><i title="Show mandatory metadata" class="fa fa-plus"></i></a>
+                <a style="border:none" onclick="show(this)"><i title="Show attribute names" class="fa fa-plus"></i></a>
 					<div style="display: none">
 						<div th:each="entry : ${collectionMetadata}"
 							th:if="${collectionMetadata != null}">
@@ -56,7 +56,7 @@
 						<ul>
 				            <li>
 				                <a>DataObject</a>
-				                <a style="border:none" onclick="show(this)"><i title="Show mandatory metadata" class="fa fa-plus"></i></a>
+				                <a style="border:none" onclick="show(this)"><i title="Show attribute names" class="fa fa-plus"></i></a>
 									<div style="display: none">
 										<div th:each="entry : ${dataObjectMetadata}"
 											th:if="${dataObjectMetadata != null}">
