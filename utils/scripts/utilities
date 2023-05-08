@@ -61,6 +61,22 @@ function get_json_value {
   echo "$INPUT" | grep "$ATTRIBUTE" | sed "s/.*${ATTRIBUTE}\"[    ]*:[    ]*\"\([^\"]*\)\".*/\1/"
 }
 
+#Return value(s) for a given metadata attribute from metadata json file 
+#Inputs:   json-file-name(or input string)  
+#            attribute-name 
+function get_json_metadata_value {
+
+  if [ -z "$1" ] || [ -z "$2" ]
+  then
+      echo "ERROR: using get_json_metadata_value" >&2
+      echo "USAGE: get_json_metadata_value <input-string-or-file> <attribute>" >&2
+      exit
+  fi
+  INPUT="$1"
+  ATTRIBUTE="$2"
+  INPUT=`get_file_value "$INPUT"`
+  echo "$INPUT" | awk -v RS='}' -F, '{print $2 $3}' | grep "$ATTRIBUTE\"" | head -1 | sed "s/.*value\"[    ]*:[    ]*\"\([^\"]*\)\".*/\1/"
+}
 
 #Return a single value for a given attribute in a java properties file 
 #Inputs:   properties-file-name(or input string)  
