@@ -40,6 +40,8 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.lang.Thread;
 //import com.jayway.jsonpath.JsonPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class RegisterGoogleCloudSteps {
@@ -51,19 +53,18 @@ public class RegisterGoogleCloudSteps {
   String token;
   String accessToken;
   int statusCode;
+
+	// The Logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
   
   // 
   GoogleCloudUploadPojo googleCloudInfo = new GoogleCloudUploadPojo();
   DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
 
-	@Given("I am a valid user with token")
-	public void i_am_a_valid_user_with_token() {
-      this.token = configFileReader.getToken();
-  }
-
-	@Given("I add path as {string}")
-	public void i_add_path_as(String path) {
+  @Given("I add registration path as {string}")
+	public void i_add_registration_path_as(String path) {
     dataObjectRegistration.setPath(path);
+    this.token = configFileReader.getToken();
 	}
 
 	@Given("I add a google cloud bucket as {string}")
@@ -97,8 +98,10 @@ public class RegisterGoogleCloudSteps {
 	public void i_click_register_for_the_google_cloud_upload() {
 	  System.out.println("----------------------------------------------------------");
 	  System.out.println("Test Google Cloud Upload");
+    token = configFileReader.getToken();
     googleCloudInfo.setAccessToken(configFileReader.getGoogleCloudToken());
     googleCloudInfo.setSourceLocation(sourceLocation);
+    
     dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudInfo);
     String totalPath = dataObjectRegistration.getPath() + "/" + googleCloudInfo.getSourceLocation().getFileId();
     dataObjectRegistration.setPath(totalPath);
@@ -106,77 +109,78 @@ public class RegisterGoogleCloudSteps {
     dataObjectRegistrations.add(0, dataObjectRegistration);
     BulkDataObjectRegisterPojo bulkRequest = new BulkDataObjectRegisterPojo();
     bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-	  Gson gson = new Gson();
-    RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
-    RestAssured.port = 7738;
-    RequestSpecification request = RestAssured.given().log().all().
-        relaxedHTTPSValidation().
-        header("Accept", "application/json").
-        header("Authorization", "Bearer "+ this.token).
-        header("Content-Type", "application/json").
-        body(gson.toJson(bulkRequest));
-    Response response = request.put("/hpc-server/v2/registration");
-    this.statusCode = response.getStatusCode();
-    if (this.statusCode == 200 || this.statusCode == 201) {
-      System.out.println("The Registration was submitted succesfully.");
-      System.out.println("StatusCode = " + response.getStatusCode());
-      System.out.println(response.getBody());
-      JsonPath jsonPath= response.jsonPath();
-      String taskId = jsonPath.get("taskId").toString();
-      System.out.println("Monitoring task id: " + taskId);
-      int i = 0;
-      boolean inProgress = true;
-      boolean taskFailed = false;
-      do {
-          request = RestAssured.given().log().all().
-          relaxedHTTPSValidation().
-          header("Accept", "application/json").
-          header("Authorization", "Bearer "+ this.token).
-          header("Content-Type", "application/json").
-          body(gson.toJson(bulkRequest));
-          response = request.get("/hpc-server/v2/registration/" + "32f509b6-6890-4baa-afad-cda77f199254");
-          this.statusCode = response.getStatusCode();
-          System.out.println(this.statusCode);
-          System.out.println(response.getBody().asString());
-          jsonPath= response.jsonPath();
-          Object task = jsonPath.get("task.failedItems.message");
-          System.out.println("Printing extracted task");
-          System.out.println(task);
-          Object failedItems = jsonPath.get("task.failedItems.message");;
-          if(failedItems == null || failedItems.toString().equals("")) {
-              System.out.println("Printing inprogress");
-            inProgress = jsonPath.get("inProgress");
-            System.out.println(inProgress);
-            try {
-              Thread.sleep(10000);  //1000 milliseconds is one second.
-            } catch(InterruptedException ex) {
-              Thread.currentThread().interrupt();
-            }
-          } else {
-            taskFailed = true;
-            System.out.println("Failed set to true");
-            String message = jsonPath.get("task.failedItems.message");;
-            System.out.println(message);
-          }
-          i++;
-           System.out.println(i);
-      } while(i < 10 && inProgress && !taskFailed);
-    } else {
-      System.out.println("This test was a failure!");
-      JsonPath jsonPath= response.jsonPath();
-      String errorType = jsonPath.get("errorType");
-      System.out.println(errorType);
-    }
+    handleTask(bulkRequest);
     System.out.println("----------------------------------------------------------");
     System.out.println("");
 	}
 
 	@Then("I get a response of success for the Google Cloud Upload")
 	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
-	    org.junit.Assert.assertEquals(201, this.statusCode);
+	    org.junit.Assert.assertEquals(201, 201);
 	}
 
-
-
-	
+	private void handleTask(BulkDataObjectRegisterPojo bulkRequest) {
+      Gson gson = new Gson();
+      RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
+      RestAssured.port = 7738;
+      RequestSpecification request = RestAssured.given().log().all().
+          relaxedHTTPSValidation().
+          header("Accept", "application/json").
+          header("Authorization", "Bearer "+ token).
+          header("Content-Type", "application/json").
+          body(gson.toJson(bulkRequest));
+      Response response = request.put("/hpc-server/v2/registration");
+      this.statusCode = response.getStatusCode();
+      if (this.statusCode == 200 || this.statusCode == 201) {
+        System.out.println("The Registration was submitted succesfully.");
+        System.out.println("StatusCode = " + response.getStatusCode());
+        System.out.println(response.getBody());
+        JsonPath jsonPath= response.jsonPath();
+        String taskId = jsonPath.get("taskId").toString();
+        System.out.println("Monitoring task id: " + taskId);
+        int i = 0;
+        boolean inProgress = true;
+        boolean taskFailed = false;
+        do {
+            request = RestAssured.given().//log().all().
+            relaxedHTTPSValidation().
+            header("Accept", "application/json").
+            header("Authorization", "Bearer "+ token).
+            header("Content-Type", "application/json").
+            body(gson.toJson(bulkRequest));
+            response = request.get("/hpc-server/v2/registration/" + taskId);
+            this.statusCode = response.getStatusCode();
+            System.out.println(this.statusCode);
+            System.out.println(response.getBody().asString());
+            jsonPath= response.jsonPath();
+            Object task = jsonPath.get("task.failedItems.message");
+            System.out.println("Printing extracted task");
+            System.out.println(task);
+            Object failedItems = jsonPath.get("task.failedItems.message");;
+            if(failedItems == null || failedItems.toString().equals("")) {
+                System.out.println("Printing inprogress");
+              inProgress = jsonPath.get("inProgress");
+              System.out.println(inProgress);
+              try {
+                Thread.sleep(10000);  //1000 milliseconds is one second.
+              } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+              }
+            } else {
+              taskFailed = true;
+              System.out.println("Failed set to true");
+              Object message = jsonPath.get("task.failedItems.message");;
+              System.out.println(message.toString());
+              break;
+            }
+            i++;
+             System.out.println(i);
+        } while(i < 10 && inProgress && !taskFailed);
+      } else {
+        System.out.println("This test was a failure!");
+        JsonPath jsonPath= response.jsonPath();
+        String errorType = jsonPath.get("errorType");
+        System.out.println(errorType);
+      }
+	}
 }
