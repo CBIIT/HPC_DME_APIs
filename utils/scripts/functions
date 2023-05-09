@@ -733,8 +733,10 @@ function dm_show_get_dataobject_usage {
   usage: dm_get_dataobject [-D REST-response] [-o metadata-file] <dataobject-path>
 
   Get the metadata of a dataobject
+  [-a attribute-name]         Optionally specify the metadata attribute name.
   [-D REST-response]          Optionally specify the filename to capture the REST response.
-  [-o metadata-file]          Optionally specify the filename to capture the dataobject metadata. If this is not specified, metadata is printed to standard output
+  [-o metadata-file]          Optionally specify the filename to capture the dataobject metadata. 
+                              If this is not specified, metadata is printed to standard output
   dataobject-path             Full path of the dataobject in the archive.
 
 For detailed information on this command, refer to the following page: 
@@ -746,7 +748,8 @@ EOF
 
 
 #Get the metadata of a dataobject from the archive
-#Inputs: [-o metadata-file]
+#Inputs: [-a attribute-name]
+#        [-o metadata-file]
 #        [-D REST-response]
 #        <dataObject-path> 
 #      : [metadata-file] (for backward compatibility)
