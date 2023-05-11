@@ -8,6 +8,7 @@ public class DataObjectRegistration {
 	List<Map<String, String>> dataObjectMetadataEntries;	
 	//ParentMetadataPojo parentCollectionsBulkMetadataEntries;
   GoogleCloudUploadPojo googleCloudStorageUploadSource;
+  S3StreamingUploadPojo s3UploadSource;
   String path;
 
 
@@ -31,6 +32,14 @@ public class DataObjectRegistration {
   public String setPath(String path) {
       return this.path = path;
     }
+
+  public S3StreamingUploadPojo getS3UploadSource() {
+    return s3UploadSource;
+  }
+
+  public void setS3UploadSource(S3StreamingUploadPojo s3UploadSource) {
+    this.s3UploadSource = s3UploadSource;
+  }
 }
 
   /* public Boolean getCreateParentCollections() {
