@@ -733,8 +733,10 @@ function dm_show_get_dataobject_usage {
   usage: dm_get_dataobject [-D REST-response] [-o metadata-file] <dataobject-path>
 
   Get the metadata of a dataobject
+  [-a attribute-name]         Optionally specify the metadata attribute name.
   [-D REST-response]          Optionally specify the filename to capture the REST response.
-  [-o metadata-file]          Optionally specify the filename to capture the dataobject metadata. If this is not specified, metadata is printed to standard output
+  [-o metadata-file]          Optionally specify the filename to capture the dataobject metadata. 
+                              If this is not specified, metadata is printed to standard output
   dataobject-path             Full path of the dataobject in the archive.
 
 For detailed information on this command, refer to the following page: 
@@ -746,15 +748,17 @@ EOF
 
 
 #Get the metadata of a dataobject from the archive
-#Inputs: [-o metadata-file]
+#Inputs: [-a attribute-name]
+#        [-o metadata-file]
 #        [-D REST-response]
 #        <dataObject-path> 
 #      : [metadata-file] (for backward compatibility)
 #      : [REST-response] (for backward compatibility)
 function dm_get_dataobject {
 
-    local RESPONSE_MSG
-    local RESPONSE_HEADER
+    local RESPONSE_MSG=get-item-response-message.json.tmp
+    local RESPONSE_HEADER=get-item-response-header.tmp
+    local ATTRIBUTE
 	local SHOW_OUTPUT=1
 
     while :; do
@@ -772,6 +776,15 @@ function dm_get_dataobject {
                 if [ "$2" ]; then
                     RESPONSE_MSG="$2"
                     SHOW_OUTPUT=0
+                    shift
+                else
+                    dm_show_get_dataobject_usage >&2
+                    return 1
+                fi
+            ;;
+            -a|--attribute)
+                if [ "$2" ]; then
+                    ATTRIBUTE="$2"
                     shift
                 else
                     dm_show_get_dataobject_usage >&2
@@ -799,24 +812,6 @@ function dm_get_dataobject {
         return
     fi
     local ITEM_PATH="$1"
-
-
-    if [ ! -z "$2" ]
-    then
-      RESPONSE_MSG="$2"
-	  SHOW_OUTPUT=0
-    elif [ -z "$RESPONSE_MSG" ]
-    then
-      RESPONSE_MSG=get-item-response-message.json.tmp
-    fi 
-
-    if [ ! -z "$3" ]
-    then
-      RESPONSE_HEADER="$3"
-    elif [ -z "$RESPONSE_HEADER" ]
-    then
-      RESPONSE_HEADER=get-item-response-header.tmp
-    fi 
     
     dm_get_item -o "$RESPONSE_MSG" -D "$RESPONSE_HEADER" dataObject/$ITEM_PATH || exit 1
 
@@ -829,7 +824,12 @@ function dm_get_dataobject {
       exit 1
     else 
      
-
+      if [ ! -z "$ATTRIBUTE" ]
+      then
+        	get_json_metadata_value "$RESPONSE_MSG" "$ATTRIBUTE"
+        	return 0
+      fi
+      
       if [ $SHOW_OUTPUT -eq 1 ]
       then
         print_json_message "$RESPONSE_MSG"
