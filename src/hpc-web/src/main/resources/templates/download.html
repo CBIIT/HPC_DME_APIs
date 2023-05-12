@@ -26,6 +26,9 @@
 	border: 1px solid rgb(212, 212, 212);
 	height: 300px
 }
+.btn[disabled] {
+    pointer-events: auto;
+}
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -66,6 +69,7 @@
 			    <div class="panel panel-default">
 
 				  <div th:if="${restoreMsg != null}" class="alert alert-info" th:text="${restoreMsg}"></div>
+				  <div th:if="${canDownload != 'true'}" class="alert alert-danger" th:text="${downloadSizeExceededMsg}"></div>
 				  <div th:if="${error != null}">
 					<div class="alert alert-error">
 						<a class="close" data-dismiss="alert">�</a> <label
@@ -260,8 +264,10 @@
 								</div>
 
 								<div>
-									<button class="btn btn-primary" id="submit"
+									<button class="btn btn-primary" id="submit" th:if="${canDownload == 'true'}"
 										onClick="return validateAndSubmit()">Download</button>
+									<button class="btn btn-primary" id="nosubmit" title="Collection size exceeds max download limit"
+										th:if="${canDownload != 'true'}" disabled="true">Download</button>
 									<button th:if="${source != 'browse'}" type="button" class="btn btn-default"
 										onClick="goBack()" id="close">Back</button>
 								</div>
