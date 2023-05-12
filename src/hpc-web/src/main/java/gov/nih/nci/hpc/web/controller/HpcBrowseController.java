@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -51,18 +49,10 @@ import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
-import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroup;
-import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
@@ -562,13 +552,9 @@ public class HpcBrowseController extends AbstractHpcController {
 				
 				//This is for displaying the total size of the selected collection
 				//in the machine readable and human readable form above the file table
-				if(!CollectionUtils.isEmpty(collectionDTO.getReports())) {
-					HpcReport report = collectionDTO.getReports().get(0);
-					if(!CollectionUtils.isEmpty(report.getReportEntries())) {
-						String collectionSize = report.getReportEntries().get(0).getValue();
-						selectedEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(collectionSize, true));
-					}
-				}
+				Long collectionSize = getCollectionSizeFromReport(collectionDTO);
+				if(!CollectionUtils.isEmpty(collectionDTO.getReports()))
+					selectedEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(collectionSize.toString(), true));
 
 				if(collection.getAbsolutePath() != null) {
 					selectedEntry.setFullPath(collection.getAbsolutePath());
