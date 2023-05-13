@@ -40,11 +40,7 @@ public class SyncFromFileSystemSteps {
 	String sourcePath;
 	String destinationPath;
 	int statusCode;
-	
-	@Given("I am a valid user with token")
-	public void i_am_a_valid_user_with_token() {
-	    
-	}
+ 	
 	
 	@Given("I add source_path as {string}")
 	public void i_add_source_path_as(String source_path) {

@@ -1,0 +1,579 @@
+{
+	"notificationFormats": [
+		{
+			"eventType": "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
+			"subjectFormat": "DME Data Upload received in staging archive",
+			"subjectArguments": [
+			],
+			"textFormat": "Your data upload request is stored in staging archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
+			"subjectFormat": "DME Data Registration Request Completed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your data registration request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "SOURCE_LOCATION",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_UPLOAD_FAILED",
+			"subjectFormat": "DME Data Registration Request Failed at %1$s<br/>",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your data registration failed. <br/>Data path: %1$s <br/>Reason for failure: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_UPLOAD_URL_EXPIRED",
+			"subjectFormat": "DME Data Registration URL Expired",
+			"subjectArguments": [
+			],
+			"textFormat": "Your data registration URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "BULK_DATA_OBJECT_REGISTRATION_COMPLETED",
+			"subjectFormat": "DME Bulk Data Registration Request Completed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your bulk data registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "REGISTRATION_ITEMS",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"eventType": "BULK_DATA_OBJECT_REGISTRATION_FAILED",
+			"subjectFormat": "DME Bulk Data Registration Request Failed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your bulk data registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_DOWNLOAD_COMPLETED",
+			"subjectFormat": "DME %1$s Download Request Completed at %2$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "1"
+				}
+			],
+			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%4$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DESTINATION_LOCATION",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "3"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_DOWNLOAD_FAILED",
+			"subjectFormat": "DME %1$s Download Request Failed at %2$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "1"
+				}
+			],
+			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DESTINATION_LOCATION",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "4"
+				}
+			]
+		},
+		{
+			"eventType": "USAGE_SUMMARY_REPORT",
+			"subjectFormat": "DME Summary Report: [%1$s]",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				}
+			],
+			"textFormat": "DME Usage summary report generated on %1$s. <br/>_______________________________________________________
+         <br/>Total registered users: %2$s 
+         <br/>Total size of the data:  %3$s bytes
+         <br/>Largest file:  %4$s bytes
+         <br/>Average file size:  %5$s bytes
+         <br/>Total number of objects:  %6$s
+         <br/>Total number of collections:  %7$s
+         <br/>Total number of metadata attributes:  %8$s
+         <br/>Total number of files with size:
+         <br/>\t < 1MB:  %9$s 
+		 <br/>\t > 1MB and < 10MB:  %10$s
+		 <br/>\t > 10MB and < 50MB:  %11$s
+		 <br/>\t > 50MB and < 100MB:  %12$s
+		 <br/>\t > 100MB and < 500MB:  %13$s
+		 <br/>\t > 500MB and < 1GB:  %14$s
+		 <br/>\t > 1GB and < 10GB:  %15$s
+		 <br/>\t > 10GB:  %16$s
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%17$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_REGISTERED_USERS",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_DATA_SIZE",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "LARGEST_FILE_SIZE",
+					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "AVERAGE_FILE_SIZE",
+					"index": "4"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_DATA_OBJECTS",
+					"index": "5"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_COLLECTIONS",
+					"index": "6"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUMBER_OF_META_ATTRS",
+					"index": "7"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_BELOW_1_MB",
+					"index": "8"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_MB_10_MB",
+					"index": "9"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_10_MB_50_MB",
+					"index": "10"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_50_MB_100_MB",
+					"index": "11"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_100_MB_500_MB",
+					"index": "12"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_500_MB_1_GB",
+					"index": "13"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
+					"index": "14"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_OVER_10_GB",
+					"index": "15"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "16"
+				}
+			]
+		},
+		{
+			"eventType": "USAGE_SUMMARY_BY_WEEKLY_REPORT",
+			"subjectFormat": "DME Summary by weekly report: [%1$s]",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				}
+			],
+			"textFormat": "DME Usage summary report generated on %1$s. <br/>_______________________________________________________
+         <br/>Reporting period from %17$s to %18$s<br/>
+         <br/>Total registered users: %2$s 
+         <br/>Total size of the data:  %3$s bytes
+         <br/>Largest file:  %4$s bytes
+         <br/>Average file size:  %5$s bytes
+         <br/>Total number of objects:  %6$s
+         <br/>Total number of collections:  %7$s
+         <br/>Total number of metadata attributes:  %8$s
+         <br/>Total number of files with size:
+         <br/>\t < 1MB:  %9$s 
+		 <br/>\t > 1MB and < 10MB:  %10$s
+		 <br/>\t > 10MB and < 50MB:  %11$s
+		 <br/>\t > 50MB and < 100MB:  %12$s
+		 <br/>\t > 100MB and < 500MB:  %13$s
+		 <br/>\t > 500MB and < 1GB:  %14$s
+		 <br/>\t > 1GB and < 10GB:  %15$s
+		 <br/>\t > 10GB:  %16$s
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%19$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_REGISTERED_USERS",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_DATA_SIZE",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "LARGEST_FILE_SIZE",
+					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "AVERAGE_FILE_SIZE",
+					"index": "4"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_DATA_OBJECTS",
+					"index": "5"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_COLLECTIONS",
+					"index": "6"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUMBER_OF_META_ATTRS",
+					"index": "7"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_BELOW_1_MB",
+					"index": "8"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_MB_10_MB",
+					"index": "9"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_10_MB_50_MB",
+					"index": "10"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_50_MB_100_MB",
+					"index": "11"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_100_MB_500_MB",
+					"index": "12"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_500_MB_1_GB",
+					"index": "13"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
+					"index": "14"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_OVER_10_GB",
+					"index": "15"
+				},
+				{
+					"payloadEntryAttribute": "FROM_DATE",
+					"index": "16"
+				},
+				{
+					"payloadEntryAttribute": "TO_DATE",
+					"index": "17"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "18"
+				}
+			]
+		},
+		{
+			"eventType": "COLLECTION_UPDATED",
+			"subjectFormat": "DME collection updated",
+			"subjectArguments": [
+			],
+			"textFormat": "Collection %1$s was updated.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "COLLECTION_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "UPDATE_DESCRIPTION",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"eventType": "USER_REGISTERED",
+			"subjectFormat": "Welcome to DME",
+			"subjectArguments": [
+			],
+			"textFormat": "Hello %1$s %2$s,<br/><br/>
+			A user account has been created for you in the Data Management Environment (DME) and data has been made available to you. You can now access and download this data through the <a href=\"%3$s/browse\">DME GUI</a>. For downloading instructions, refer to <a href=\"https://wiki.nci.nih.gov/x/_QuKFg\">Downloading Data via the GUI</a><br/><br/>You can also search, share, and upload data as described in the <a href=\"https://wiki.nci.nih.gov/x/xKE7Fg\">DME User Guide</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"systemAdminNotificationType": "INTEGRATED_SYSTEM_ERROR",
+			"subjectFormat": "DME %1$s error: %2$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "INTEGRATED_SYSTEM",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "1"
+				}
+			],
+			"textFormat": "%1$s server or connection is broken - Please have DBA or System Administrator check.<br/>%2$s<br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "INTEGRATED_SYSTEM",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "STACK_TRACE",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "RESTORE_REQUEST_COMPLETED",
+			"subjectFormat": "DME Restore Request Completed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "This file is now available for download.<br/>Source path: %1$s<br/>Task ID: %2$s<br/><br/><a href=\"%3$s/download?type=datafile&downloadFilePath=%4$s\">Download from DME</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "3"
+				}
+			]
+		},
+		{
+			"eventType": "RESTORE_REQUEST_FAILED",
+			"subjectFormat": "DME Restore Request Failed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Restore request failed.<br/>Source path: %1$s<br/>Task ID: %2$s<br/>Reason for failure: %3$s<br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "3"
+				}
+			]
+		},
+		{
+			"eventType": "REVIEW_REMINDER_SENT",
+			"subjectFormat": "Reminder to review your projects",
+			"subjectArguments": [
+			],
+			"textFormat": "Hello %1$s %2$s,<br/><br/>
+			This is a reminder to review your projects annually. Please visit your list of active projects through the DME <a href=\"%3$s/review\">Manage Review</a> page. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"eventType": "REVIEW_SENT",
+			"subjectFormat": "Annual review of your projects",
+			"subjectArguments": [
+			],
+			"textFormat": "Hello %1$s %2$s,<br/><br/>
+			Your projects must be reviewed annually. Please visit your list of active projects through the DME <a href=\"%3$s/review\">Manage Review</a> page. <br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				}
+			]
+		}
+	]
+}
