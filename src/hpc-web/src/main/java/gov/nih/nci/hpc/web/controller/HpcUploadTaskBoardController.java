@@ -113,7 +113,6 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 					HpcTask task = new HpcTask();
 					task.setUserId(registration.getUserId());
 					task.setTaskId(registration.getTaskId());
-					task.setSourceType(registration.getUploadMethod());
 					if(registration.getTaskStatus() != null)
 						task.setStatus(registration.getTaskStatus().value());
 					task.setCreated(
@@ -134,7 +133,6 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 				HpcTask task = new HpcTask();
 				task.setUserId(registration.getUserId());
 				task.setTaskId(registration.getTaskId());
-				task.setSourceType(registration.getUploadMethod());
 				if(registration.getTaskStatus() != null)
 					task.setStatus(registration.getTaskStatus().value());
 				task.setCreated(registration.getCreated() != null ? format.format(registration.getCreated().getTime()) : "");
