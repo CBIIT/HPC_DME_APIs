@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-app-service-bundle-context-osgi.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:ctx="http://www.springframework.org/schema/context" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                        http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
+                        http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
+
+	<!-- HPC Application Services OSGi Properties -->
+	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
+		<prop key="hpc.service.dataTransfer.downloadDirectory">/mnt/IRODsScratch/data/S3</prop>
+		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize"></prop>
+		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
+		<prop key="hpc.service.dataTransfer.globusTokenExpirationPeriod">120</prop>
+		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
+		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
+		<prop key="hpc.service.security.authenticationTokenExpirationPeriodSso">120</prop>
+		<prop key="hpc.service.security.dataManagementAccountExpirationPeriod">480</prop>
+		<prop key="hpc.service.systemAccount.aws.secretName">ncif-hpcdm-svc</prop>
+		<prop key="hpc.service.systemAccount.aws.region">us-east-1</prop>
+		<prop key="hpc.service.systemAccount.aws.useSecretsManager">false</prop>
+		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
+		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
+		<prop key="hpc.service.notification.mail.port">25</prop>
+		<prop key="hpc.service.notification.notificationDeliveryReceiptsPageSize">100</prop>
+		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
+		<prop key="hpc.service.dataSearch.searchResultsPageSize">100</prop>
+		<prop key="hpc.service.dataSearch.searchResultsMaxPageSize">5000</prop>
+		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
+		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
+		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
+		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
+		<prop key="hpc.service.dataManagement.systemAdminSubjects">rods rodsadmin</prop>
+		<prop key="hpc.service.dataManagement.defaultBaseUiURL">https://fsdmel-dsapi01d.ncifcrf.gov</prop>
+		<prop key="hpc.service.dataManagement.defaultBulkRegistrationStatusUiDeepLink">uploadtask?taskId={task_id}&amp;type=</prop>
+		<prop key="hpc.service.dataManagement.downloadResultsPageSize">100</prop>
+		<prop key="hpc.service.dataManagement.registrationResultsPageSize">100</prop>
+		<prop key="hpc.service.dataManagement.deletedBasePath">/DME_Deleted_Archive</prop>
+		<prop key="hpc.service.dataManagement.deletedDataObjectRetentionDays">730</prop>
+		<prop key="hpc.service.event.invokerCollectionUpdateNotification">false</prop>
+	</osgix:cm-properties>
+
+	<ctx:property-placeholder properties-ref="preProps" />
+
+	<!-- OSGi beans export -->
+	<osgi:service ref="hpcSecurityService" 
+	              interface="gov.nih.nci.hpc.service.HpcSecurityService" />
+	<osgi:service ref="hpcDataTransferService"
+		          interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
+	<osgi:service ref="hpcDataManagementService"
+		          interface="gov.nih.nci.hpc.service.HpcDataManagementService" />
+	<osgi:service ref="hpcDataManagementSecurityService"
+		          interface="gov.nih.nci.hpc.service.HpcDataManagementSecurityService" />		
+	<osgi:service ref="hpcDataSearchService"
+		          interface="gov.nih.nci.hpc.service.HpcDataSearchService" />	
+	<osgi:service ref="hpcMetadataService"
+		          interface="gov.nih.nci.hpc.service.HpcMetadataService" />	
+	<osgi:service ref="hpcDataBrowseService"
+		          interface="gov.nih.nci.hpc.service.HpcDataBrowseService" />	
+	<osgi:service ref="hpcNotificationService"
+		          interface="gov.nih.nci.hpc.service.HpcNotificationService" />	
+	<osgi:service ref="hpcEventService"
+		          interface="gov.nih.nci.hpc.service.HpcEventService" />	
+	<osgi:service ref="hpcReportService"
+		          interface="gov.nih.nci.hpc.service.HpcReportService" />	
+	<osgi:service ref="hpcCatalogService"
+		          interface="gov.nih.nci.hpc.service.HpcCatalogService" />
+	<osgi:service ref="hpcReviewService"
+		          interface="gov.nih.nci.hpc.service.HpcReviewService" />
+	<osgi:service ref="hpcDataMigrationService"
+		          interface="gov.nih.nci.hpc.service.HpcDataMigrationService" />
+
+	<osgi:service ref="hpcDataTieringService"
+		          interface="gov.nih.nci.hpc.service.HpcDataTieringService" />
+
+	<!-- OSGi beans import -->
+	<osgi:reference id="hpcUserDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
+	<osgi:reference id="hpcGroupDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcGroupDAO" />
+	<osgi:reference id="hpcSystemAccountDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
+	<osgi:reference id="hpcDataDownloadDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataDownloadDAO" />
+	<osgi:reference id="hpcDataRegistrationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataRegistrationDAO" />
+	<osgi:reference id="hpcDataManagementAuditDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO" />
+	<osgi:reference id="hpcNotificationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />	
+	<osgi:reference id="hpcEventDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcEventDAO" />	                 
+	<osgi:reference id="hpcReportDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcReportsDAO" />
+	<osgi:reference id="hpcMetadataDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />	
+	<osgi:reference id="hpcUserNamedQueryDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />	
+	<osgi:reference id="hpcUserBookmarkDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcUserBookmarkDAO" />			
+	<osgi:reference id="hpcDataManagementConfigurationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO" />
+	<osgi:reference id="hpcCatalogDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcCatalogDAO" />
+	<osgi:reference id="hpcDataTieringDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataTieringDAO" />                 
+	<osgi:reference id="hpcGlobusDataTransferProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
+		            bean-name="hpcGlobusDataTransferProxy"/>
+	<osgi:reference id="hpcS3DataTransferProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
+		            bean-name="hpcS3DataTransferProxy"/>
+	<osgi:reference id="hpcGoogleDriveDataTransferProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
+		            bean-name="hpcGoogleDriveDataTransferProxy"/>
+	<osgi:reference id="hpcLdapAuthenticationProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
+	<osgi:reference id="hpcDataManagementProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />				
+	<osgi:reference id="hpcSpsAuthorizationProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy" />		
+	<osgi:reference id="hpcDataMigrationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataMigrationDAO" />	
+	<osgi:reference id="hpcReviewDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcReviewDAO" />	
+</beans>
