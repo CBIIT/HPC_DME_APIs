@@ -1,0 +1,98 @@
+<!--  
+ * pom.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+ 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<name>HPC Integration API</name>
+	<parent>
+		<groupId>gov.nih.nci.hpc</groupId>
+		<artifactId>hpc-server</artifactId>
+		<version>2.11.0</version>
+	</parent>
+	<artifactId>hpc-integration-api</artifactId>
+	<packaging>bundle</packaging>
+
+	<build>
+		<plugins>
+		    <!--  This will install the Globus jars to the local mvn repo. The hpc-integration-impl
+		          has dependencies on these jars, and thus we can't install them in its pom file because 
+		          dependencies are checked first. This is placed here to ensure the jars are installed before
+		          the integration-impl is built. There is no dependency on the Globus jars from this API bundle.
+		    -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>install-jar-TransferAPIClient</id>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<groupId>org.globusonline</groupId>
+							<artifactId>TransferAPIClient</artifactId>
+							<version>1.0</version>
+							<packaging>jar</packaging>
+							<file>lib/TransferAPIClient-1.0.jar</file>
+							<generatePom>true</generatePom>
+						</configuration>						
+					</execution>
+					<execution>
+						<id>install-jar-nexus-client</id>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<groupId>org.globusonline</groupId>
+							<artifactId>java_nexus_client</artifactId>
+							<version>0.0.2</version>
+							<packaging>jar</packaging>
+							<file>lib/java_nexus_client-0.0.2.jar</file>
+							<generatePom>true</generatePom>
+						</configuration>
+					</execution>					
+				</executions>
+			</plugin>		
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+						<Export-Package>
+							gov.nih.nci.hpc.integration
+						</Export-Package>
+						<Import-Package>*</Import-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpc-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpc-domain-model</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+</project>

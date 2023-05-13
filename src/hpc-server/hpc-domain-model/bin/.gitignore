@@ -1,0 +1,6 @@
+/.settings/
+/target/
+/xjc-build/
+/.classpath
+/.project
+/bin/
