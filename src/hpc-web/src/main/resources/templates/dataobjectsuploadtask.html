@@ -91,11 +91,6 @@
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getTaskId()}"
 											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getTaskId()}"></label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getResult() != null}">
-										<label for="Name">Source Type:</label> <label id="sourceType"
-											for="${hpcBulkDataObjectRegistrationTaskDTO.getUploadMethod()}"
-											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getUploadMethod()}"></label>
-									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus() != null}">
 										<label for="Name">Task Status:</label> <label
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus().value()}"
