@@ -26,7 +26,12 @@ import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.report.HpcReport;
+import gov.nih.nci.hpc.domain.report.HpcReportEntry;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroup;
@@ -34,7 +39,6 @@ import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcWebException;
-import gov.nih.nci.hpc.web.model.HpcPermissions;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
@@ -60,7 +64,9 @@ public abstract class AbstractHpcController {
 	private String collectionAclsURL;
 	@Value("${gov.nih.nci.hpc.server.user.group}")
 	private String userGroupServiceURL;
-
+	@Value("${dme.max.allowed.download.size:3000000000000}")
+	private long maxAllowedDownloadSize;
+	
 	//Attribute constants
 	protected static final String ATTR_USER_LOGIN = "hpcLogin";
 	protected static final String ATTR_USER_TOKEN = "hpcUserToken";
@@ -69,7 +75,9 @@ public abstract class AbstractHpcController {
 	protected static final String ATTR_ERROR = "error";
 	protected static final String ATTR_MESSAGE = "message";
 	protected static final String ATTR_BOOKMARKS = "bookmarks";
-	
+	protected static final String ATTR_MAX_DOWNLOAD_SIZE_EXCEEDED_MSG = "downloadSizeExceededMsg";
+	protected static final String ATTR_CAN_DOWNLOAD = "canDownload";
+
 	//Return constants
 	protected static final String RET_DASHBOARD = "dashboard";
 	
@@ -217,4 +225,46 @@ public abstract class AbstractHpcController {
 		}
 		return null;
 	}
+	
+	/**
+     * Find out whether download should be disabled based on 
+     * dataset size
+     *
+     * @param dataSize  The size of the dataset
+     * @return true if specified dataset may be downloaded;
+     *         false otherwise
+     */
+	protected boolean determineIfDataSetCanBeDownloaded(Long dataSize) {
+      
+          return dataSize < maxAllowedDownloadSize;
+
+    }
+	
+	/**
+     * Get the collection size from the Report attribute if 
+     * possible
+     *
+     * @param hpcCollectionDTO  The collectionDTO object
+     * @return size of the collection if provided;
+     *         0 otherwise
+     */
+	protected Long getCollectionSizeFromReport(HpcCollectionDTO hpcCollectionDTO) {
+		Long collectionSize = 0L;
+		List<HpcReport> reports = hpcCollectionDTO.getReports();
+		if(!CollectionUtils.isEmpty(reports)) {
+			for(HpcReport report: reports) {
+				if(report.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+					for(HpcReportEntry reportEntry: report.getReportEntries()) {
+						if(reportEntry.getAttribute().equals(HpcReportEntryAttribute.TOTAL_DATA_SIZE)) {
+							collectionSize = Long.parseLong(reportEntry.getValue());
+							break;
+						}
+					}
+				}
+			}
+		}
+		return collectionSize;
+	}
+
+
 }
