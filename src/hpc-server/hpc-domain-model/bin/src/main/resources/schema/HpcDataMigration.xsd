@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcDataMigration.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-datamigration="http://hpc.nci.nih.gov/domain/datamigration"
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	targetNamespace="http://hpc.nci.nih.gov/domain/model"
+	elementFormDefault="unqualified">
+
+	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/datamigration"
+		schemaLocation="HpcDataMigrationTypes.xsd" />
+	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		schemaLocation="HpcDataTransferTypes.xsd" />
+
+	<xsd:element name="HpcDataMigrationTask">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="id" type="xsd:string" />
+				<xsd:element name="parentId" type="xsd:string" />
+				<xsd:element name="userId" type="xsd:string" />
+				<xsd:element name="path" type="xsd:string" />
+				<xsd:element name="dataObjectId" type="xsd:string" />
+				<xsd:element name="registrarId" type="xsd:string" />
+				<xsd:element name="configurationId" type="xsd:string" />
+				<xsd:element name="fromS3ArchiveConfigurationId"
+					type="xsd:string" />
+				<xsd:element name="toS3ArchiveConfigurationId"
+					type="xsd:string" />
+				<xsd:element name="type"
+					type="hpc-domain-datamigration:HpcDataMigrationType" />
+				<xsd:element name="status"
+					type="hpc-domain-datamigration:HpcDataMigrationStatus" />
+				<xsd:element name="created" type="xsd:dateTime" />
+				<xsd:element name="fromS3ArchiveLocation"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="toS3ArchiveLocation"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+</xsd:schema>

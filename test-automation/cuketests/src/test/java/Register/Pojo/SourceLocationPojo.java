@@ -1,8 +1,8 @@
 package Register.Pojo;
 
-import java.util.List;
-import java.util.Map;
-
+/*
+    This is the equivalent of HpcFileLocation in domain-types/dataTransfer
+ */
 public class SourceLocationPojo {
 
  String fileContainerId;
