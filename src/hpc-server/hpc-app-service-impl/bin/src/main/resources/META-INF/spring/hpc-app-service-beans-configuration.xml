@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-app-service-beans-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	<context:annotation-config />
+	
+	<!--  HPC Data Management Authenticator -->
+	<bean id="hpcDataManagementAuthenticator" class="gov.nih.nci.hpc.service.impl.HpcDataManagementAuthenticator" />
+	
+	<!--  HPC Keys generator -->
+	<bean id="hpcKeyGenerator" class="gov.nih.nci.hpc.service.impl.HpcUUIDKeyGeneratorImpl" />
+
+	<!--  HPC Metadata Validator -->
+	<bean id="hpcMetadataValidator" class="gov.nih.nci.hpc.service.impl.HpcMetadataValidator" />
+	
+	<!--  HPC Data Hierarchy Validator -->
+	<bean id="hpcDataHierarchyValidator" class="gov.nih.nci.hpc.service.impl.HpcDataHierarchyValidator" />
+	
+	<!--  HPC Compressed Archive Extractor -->
+	<bean id="hpcCompressedArchiveExtractor" class="gov.nih.nci.hpc.service.impl.HpcCompressedArchiveExtractor" />
+	
+		<!--  HPC Pattern -->
+	<bean id="hpcPattern" class="gov.nih.nci.hpc.service.impl.HpcPattern" />
+	
+	<!--  Map of HPC Data Transfer Proxies -->
+	<util:map id="hpcDataTransferProxies" 
+	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
+	          value-type="gov.nih.nci.hpc.integration.HpcDataTransferProxy">
+  		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
+  		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
+  		<entry key="GOOGLE_DRIVE" value-ref="hpcGoogleDriveDataTransferProxy" />
+	</util:map>
+	
+	<!--  HPC System Accounts Locator -->
+	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator"
+	      init-method="reload" />
+	      
+	<!--  Email Notification Sender beans -->
+	<bean id="hpcMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${hpc.service.notification.mail.host}" />
+		<property name="port" value="${hpc.service.notification.mail.port}" />
+		<property name="javaMailProperties">
+	   		<props>
+       			<prop key="mail.smtp.auth">false</prop>
+       			<prop key="mail.smtp.starttls.enable">false</prop>
+       	   </props>
+		</property>
+	</bean>
+	<bean id="hpcNotificationFormatter" class="gov.nih.nci.hpc.service.impl.HpcNotificationFormatter" >
+		<constructor-arg value="${hpc.service.notification.formatsPath}" />
+		<constructor-arg value="${hpc.service.dataManagement.defaultBaseUiURL}" />
+	</bean>
+	<bean id="hpcMimeMessagePreparator" class="gov.nih.nci.hpc.service.impl.HpcMimeMessagePreparator" />
+	<bean id="hpcEmailNotificationSender" class="gov.nih.nci.hpc.service.impl.HpcEmailNotificationSenderImpl" />
+	
+	<!--  Default level filters for collection and data object search -->
+	<bean id="hpcDefaultCollectionLevelFilter" class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter" >
+		<property name="level" value="${hpc.service.dataSearch.defaultCollectionLevelFilter.level}" />
+		<property name="operator" >
+			<bean class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator" factory-method="fromValue" >
+				<constructor-arg value="${hpc.service.dataSearch.defaultCollectionLevelFilter.operator}" />
+			</bean>
+		</property>
+	</bean>
+	<bean id="hpcDefaultDataObjectLevelFilter" class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter" >
+		<property name="level" value="${hpc.service.dataSearch.defaultDataObjectLevelFilter.level}" />
+		<property name="operator" >
+			<bean class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator" factory-method="fromValue" >
+				<constructor-arg value="${hpc.service.dataSearch.defaultDataObjectLevelFilter.operator}" />
+			</bean>
+		</property>
+	</bean>
+	
+	<!--  Map of HPC Data Notification Senders -->
+	<util:map id="hpcNotificationSenders" 
+	          key-type="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod"
+	          value-type="gov.nih.nci.hpc.service.impl.HpcNotificationSender">
+  		<entry key="EMAIL" value-ref="hpcEmailNotificationSender" />
+	</util:map>
+	
+	<!--  The DOC to base path map -->
+	<bean id="hpcDataManagementConfigurationLocator" 
+	      class="gov.nih.nci.hpc.service.impl.HpcDataManagementConfigurationLocator" 
+	      init-method="reload" />
+	
+	<!-- HPC Application Services Beans -->
+	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl" />
+	
+	<bean id="hpcDownloadResultsPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.dataManagement.downloadResultsPageSize}" />
+	</bean>
+	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
+		<constructor-arg ref="hpcDataTransferProxies" index="0" />
+		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
+	</bean>
+	
+	<bean id="hpcRegistrationResultsPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.dataManagement.registrationResultsPageSize}" />
+	</bean>
+	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" >
+		<constructor-arg value="${hpc.service.dataManagement.systemAdminSubjects}" />
+		<constructor-arg value="${hpc.service.dataManagement.defaultBaseUiURL}" />
+		<constructor-arg value="${hpc.service.dataManagement.defaultBulkRegistrationStatusUiDeepLink}" />
+		<constructor-arg value="${hpc.service.dataManagement.deletedBasePath}" />
+		<constructor-arg value="${hpc.service.dataManagement.deletedDataObjectRetentionDays}" />
+	</bean>
+	<bean id="hpcDataManagementSecurityService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementSecurityServiceImpl" />
+	
+	<bean id="hpcDataSearchPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.dataSearch.searchResultsPageSize}" />
+		<constructor-arg value="${hpc.service.dataSearch.searchResultsMaxPageSize}" />
+	</bean>
+	<bean id="hpcDataSearchService" class="gov.nih.nci.hpc.service.impl.HpcDataSearchServiceImpl">
+		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="0" />
+		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="1" />
+	</bean>
+	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
+	<bean id="hpcDataBrowseService" class="gov.nih.nci.hpc.service.impl.HpcDataBrowseServiceImpl" />
+	
+	<bean id="hpcNotificationPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.notification.notificationDeliveryReceiptsPageSize}" />
+	</bean>
+	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
+		<constructor-arg ref="hpcNotificationSenders" />
+	</bean>
+	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" />
+	<bean id="hpcReportService" class="gov.nih.nci.hpc.service.impl.HpcReportServiceImpl" />
+	<bean id="hpcCatalogService" class="gov.nih.nci.hpc.service.impl.HpcCatalogServiceImpl" />
+	<bean id="hpcDataMigrationService" class="gov.nih.nci.hpc.service.impl.HpcDataMigrationServiceImpl" />
+	<bean id="hpcDataTieringService" class="gov.nih.nci.hpc.service.impl.HpcDataTieringServiceImpl" >
+		<constructor-arg ref="hpcDataTransferProxies" index="0" />
+	</bean>
+	<bean id="hpcReviewService" class="gov.nih.nci.hpc.service.impl.HpcReviewServiceImpl" />
+</beans>

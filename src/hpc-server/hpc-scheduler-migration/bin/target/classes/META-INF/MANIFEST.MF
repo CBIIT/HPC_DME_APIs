@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1629208965620
+Build-Jdk: 1.8.0_301
+Built-By: schintal
+Bundle-ManifestVersion: 2
+Bundle-Name: HPC Migration Scheduler
+Bundle-SymbolicName: hpc-scheduler-migration
+Bundle-Version: 2.11.0
+Created-By: Apache Maven Bundle Plugin
+Import-Package: gov.nih.nci.hpc.bus;version="[2.11,3)",gov.nih.nci.hpc.e
+ xception;version="[2.11,3)",gov.nih.nci.hpc.util;version="[2.11,3)",org
+ .slf4j;version="[1.7,2)",org.springframework.beans.factory.annotation,o
+ rg.springframework.scheduling.annotation,org.springframework.scheduling
+ .config,org.springframework.scheduling.concurrent
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Tool: Bnd-3.2.0.201605172007
