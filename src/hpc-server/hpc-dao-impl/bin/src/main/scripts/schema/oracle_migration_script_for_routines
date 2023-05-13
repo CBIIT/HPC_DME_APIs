@@ -1,0 +1,173 @@
+CREATE PROCEDURE refresh_report_meta_view AS
+
+BEGIN
+
+        DBMS_MVIEW.REFRESH('R_REPORT_COLL_META_MAIN,
+                        R_REPORT_COLL_REGISTERED_BY,
+                        R_REPORT_COLL_REGISTERED_BY_BASEPATH,
+                        R_REPORT_COLL_REGISTERED_BY_DOC,
+                        R_REPORT_COLL_REGISTERED_BY_PATH,
+                        R_REPORT_COLLECTION_PATH,
+                        R_REPORT_COLLECTION_TYPE,
+                        R_REPORT_DATA_META_MAIN,
+                        R_REPORT_DATA_OBJECTS,
+                        R_REPORT_META_MAIN,
+                        R_REPORT_META_MAP,
+                        R_REPORT_REGISTERED_BY,
+                        R_REPORT_REGISTERED_BY_BASEPATH,
+                        R_REPORT_REGISTERED_BY_DOC,
+                        R_REPORT_REGISTERED_BY_AUDIT,
+                        R_REPORT_REGISTERED_BY_PATH,
+                        R_REPORT_SOURCE_FILE_SIZE',
+                        METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
+
+END;
+
+
+
+CREATE PROCEDURE refresh_hierarchy_meta_view AS
+
+BEGIN
+
+        DBMS_MVIEW.REFRESH('R_COLL_HIERARCHY_METAMAP,
+                        R_COLL_HIERARCHY_META_MAIN,
+                        R_CATALOG_META_MAIN,
+                        R_DATA_HIERARCHY_METAMAP,
+                        R_DATA_HIERARCHY_META_MAIN',
+                        METHOD => 'C',  ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
+
+
+END;
+
+
+create FUNCTION       num_greater_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
+IS
+    num_attr_value    NUMBER;
+    num_value    NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    IF (num_attr_value >= num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
+
+create function       num_greater_than(attr_value varchar2, value varchar2) RETURN CHAR
+ IS
+    num_attr_value  NUMBER;
+    num_value NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    if (num_attr_value > num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
+
+create function       num_less_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
+ IS
+    num_attr_value  NUMBER;
+    num_value NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    IF (num_attr_value <= num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
+
+create function       num_less_than(attr_value varchar2, value varchar2) RETURN CHAR
+ IS
+    num_attr_value  NUMBER;
+    num_value NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    IF (num_attr_value < num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
+
+create function       timestamp_greater_or_equal(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
+ IS
+
+BEGIN
+    IF (to_timestamp(attr_value, format) >= to_timestamp(value, format)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
+
+create function       timestamp_greater_than(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
+ IS
+
+BEGIN
+    IF (to_timestamp(attr_value, format) > to_timestamp(value, format)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
+
+create function       timestamp_less_or_equal(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
+ IS
+
+BEGIN
+    IF (to_timestamp(attr_value, format) <= to_timestamp(value, format)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
+
+create function       timestamp_less_than(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
+ IS
+
+BEGIN
+    IF (to_timestamp(attr_value, format) < to_timestamp(value, format)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
+EXCEPTION
+    WHEN others THEN
+        RETURN '0';
+END;
+
