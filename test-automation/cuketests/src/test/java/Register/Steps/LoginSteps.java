@@ -1,6 +1,6 @@
 package Register.Steps;
 
-
+/* 
 import java.util.concurrent.TimeUnit;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -20,10 +20,10 @@ import context.Context;
 import dataProviders.ConfigFileReader;
 import pages.bulkPage;
 import pages.loginPage;
-
+*/
 public class LoginSteps {
   
-  ConfigFileReader configFileReader= new ConfigFileReader();
+  /* ConfigFileReader configFileReader= new ConfigFileReader();
   WebDriver driver = null;
   loginPage loginPage;
   bulkPage bulkPage;
@@ -152,6 +152,6 @@ public class LoginSteps {
   //public void browser_tearDown() {
   //  System.out.println("LoginSteps: browser_tearDown!!");
   //}
- 
+ */
 
 }
