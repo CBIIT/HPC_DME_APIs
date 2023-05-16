@@ -281,7 +281,11 @@ public class HpcDownloadController extends AbstractHpcController {
 			boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(collectionSize);
 			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
 			if(!canDownloadFlag) {
-				model.addAttribute(ATTR_MAX_DOWNLOAD_SIZE_EXCEEDED_MSG, "Collection size exceeds max download limit. Download sub-collections.");
+				String contactEmail = (String) session.getAttribute("contactEmail");
+				model.addAttribute(ATTR_MAX_DOWNLOAD_SIZE_EXCEEDED_MSG,
+						"Collection size exceeds the maximum permitted download limit of "
+								+ MiscUtil.humanReadableByteCount(Double.parseDouble(maxAllowedDownloadSize.toString()), true)
+								+ ". Contact <a href='mailto:" + contactEmail + "'>" + contactEmail + "</a> for support.");	
 			}
 		}
 		

@@ -64,9 +64,6 @@
 	border: 1px solid rgb(212, 212, 212);
 	height: 300px
 }
-.btn[disabled] {
-    pointer-events: auto;
-}
 </style>
 </head>
 <body ng-controller="MyCtrl">
@@ -93,11 +90,7 @@
 			   <div class="panel-heading" th:if="${collection != null}">
 			    <h2 th:switch="${userpermission}">
 			     <div th:case="'READ'">
-			      <a class="btn btn-link btn-sm" th:if="${canDownload != 'true'}"
-                     href = "#" disabled="true">
-                    <i class="fa fa-download" title="Collection size exceeds max download limit" aria-hidden="true"></i>
-                  </a>
-                  <a class="btn btn-link btn-sm" th:if="${canDownload == 'true'}"
+                   <a  class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
@@ -121,11 +114,7 @@
 				</div>
 
 			    <div th:case="'WRITE'">
-                  <a class="btn btn-link btn-sm" th:if="${canDownload != 'true'}"
-                     href = "#" disabled="true">
-                    <i class="fa fa-download" title="Collection size exceeds max download limit" aria-hidden="true"></i>
-                  </a>
-                  <a class="btn btn-link btn-sm" th:if="${canDownload == 'true'}"
+                  <a class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
@@ -153,11 +142,7 @@
 				 </div>
 
 				 <div th:case="'OWN'">
-                  <a class="btn btn-link btn-sm" th:if="${canDownload != 'true'}"
-                     href = "#" disabled="true">
-                    <i class="fa fa-download" title="Collection size exceeds max download limit" aria-hidden="true"></i>
-                  </a>
-                  <a class="btn btn-link btn-sm" th:if="${canDownload == 'true'}"
+                  <a class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
