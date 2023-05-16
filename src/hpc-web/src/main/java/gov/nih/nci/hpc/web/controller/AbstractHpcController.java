@@ -65,7 +65,7 @@ public abstract class AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user.group}")
 	private String userGroupServiceURL;
 	@Value("${dme.max.allowed.download.size:3000000000000}")
-	private long maxAllowedDownloadSize;
+	protected Long maxAllowedDownloadSize;
 	
 	//Attribute constants
 	protected static final String ATTR_USER_LOGIN = "hpcLogin";
