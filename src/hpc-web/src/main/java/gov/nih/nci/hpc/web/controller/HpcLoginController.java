@@ -73,6 +73,8 @@ public class HpcLoginController extends AbstractHpcController {
     protected String version;
 	@Value("${app.env:}")
     protected String env;
+	@Value("${contact.email:}")
+    protected String contactEmail;
 	@Value("${gov.nih.nci.hpc.server.collection.acl}")
 	private String collectionAclsURL;
 	
@@ -88,6 +90,7 @@ public class HpcLoginController extends AbstractHpcController {
 		session.setAttribute("callerPath", getCallerPath(request));
 		session.setAttribute("env", env);
         session.setAttribute("version", version);
+        session.setAttribute("contactEmail", contactEmail);
 		String userId = (String) session.getAttribute("hpcUserId");
 		if (StringUtils.equalsIgnoreCase(hpcLoginModule, "LDAP") && StringUtils.isBlank(userId)) {
 			// This is for local configuration where site minder is not available or we don't want to use the SMSESSION.
