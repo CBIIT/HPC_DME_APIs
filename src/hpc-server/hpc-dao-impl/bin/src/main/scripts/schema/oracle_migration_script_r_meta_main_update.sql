@@ -1,1 +1,0 @@
-update R_META_MAIN set META_ATTR_UNIT='EMPTY_ATTR_UNIT' where META_ATTR_UNIT is null;
