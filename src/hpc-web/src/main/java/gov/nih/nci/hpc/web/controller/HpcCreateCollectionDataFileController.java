@@ -393,14 +393,14 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			for (String fileName : globusEndpointFiles) {
 				gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
 				HpcFileLocation source = new HpcFileLocation();
-				source.setFileContainerId("265bed98-86ef-11e9-8e6a-029d279f7e24");
-				source.setFileId("/~/test-file-delete-me-aws.txt");
+				source.setFileContainerId(globusEndpoint);
+				source.setFileId(globusEndpointPath + fileName);
 				HpcUploadSource globusSource = new HpcUploadSource();
 				globusSource.setSourceLocation(source);
 				file.setGlobusUploadSource(globusSource);
 				file.setCreateParentCollections(true);
-				file.setPath("/TEST_Archive/PI_testdirectory_Sehgal_3/Project_test/test-file-delete-me-aws.txt");
-				//logger.info(path + "/" + fileName);
+				file.setPath(path + "/" + fileName);
+				logger.info(path + "/" + fileName);
 				files.add(file);
 			}
 			dto.getDataObjectRegistrationItems().addAll(files);
