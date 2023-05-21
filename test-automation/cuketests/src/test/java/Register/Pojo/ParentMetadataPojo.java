@@ -15,6 +15,6 @@ public class ParentMetadataPojo {
 		this.defaultCollectionMetadataEntries = defaultCollectionMetadataEntries;
 	}
 	
-	//Map<String, List<Map<String, String>>> pathsMetadataEntries;
+	Map<String, List<Map<String, String>>> pathsMetadataEntries;
 
 }
