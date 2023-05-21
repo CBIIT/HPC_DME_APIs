@@ -985,14 +985,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
 					archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
 					.withMethod(HttpMethod.PUT).withExpiration(expiration);
-			
-			/** VAST - Skip attaching multipart request and part-id params for multipart upload. 
-			 * 
-			
 			generatePresignedUrlRequest.addRequestParameter("partNumber", String.valueOf(partNumber));
 			generatePresignedUrlRequest.addRequestParameter("uploadId", multipartUpload.getId());
-
-			**/
 			
 			try {
 				uploadPartURL.setPartUploadRequestURL(s3Connection.getTransferManager(authenticatedToken)
