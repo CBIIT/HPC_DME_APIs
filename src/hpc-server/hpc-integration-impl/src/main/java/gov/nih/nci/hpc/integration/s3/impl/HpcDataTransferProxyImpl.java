@@ -901,12 +901,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		generatePresignedUrlRequest.addRequestParameter(Headers.STORAGE_CLASS, storageClass);
 
 		// Add user metadata.
+		/** VAST - Skipping attaching object metadata for single part upload. T
 		if (metadataEntries != null) {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				generatePresignedUrlRequest.addRequestParameter(
 						Headers.S3_USER_METADATA_PREFIX + metadataEntry.getAttribute(), metadataEntry.getValue());
 			}
 		}
+		**/
 
 		// Optionally add a checksum header.
 		if (!StringUtils.isEmpty(uploadRequestURLChecksum)) {
