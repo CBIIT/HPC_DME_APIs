@@ -276,10 +276,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.DATA_TRANSFER_ERROR, ace);
 		}
 
+		// VAST - benchmarking the copy request
+		logger.error("VAST: Copy request started");
+		
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
 		CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
 				.withNewObjectMetadata(toS3Metadata(metadataEntries)).withStorageClass(storageClass);
+		
+		// VAST - benchmarking the copy request
+		logger.error("VAST: Copy request completed");
 
 		try {
 			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
@@ -897,11 +903,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
 				.withMethod(HttpMethod.PUT).withExpiration(expiration);
 
+		/** VAST - Skipping attaching object metadata for single part upload. 
+		 * 
 		// Add the storage class.
 		generatePresignedUrlRequest.addRequestParameter(Headers.STORAGE_CLASS, storageClass);
 
 		// Add user metadata.
-		/** VAST - Skipping attaching object metadata for single part upload. T
 		if (metadataEntries != null) {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				generatePresignedUrlRequest.addRequestParameter(
