@@ -36,7 +36,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Rule;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Transition;
@@ -276,20 +275,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.DATA_TRANSFER_ERROR, ace);
 		}
 
-		// VAST - benchmarking the copy request
-		logger.error("VAST: Copy request started");
-		
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
 		CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
 				.withNewObjectMetadata(toS3Metadata(metadataEntries)).withStorageClass(storageClass);
 		
-		// VAST - benchmarking the copy request
-		logger.error("VAST: Copy request completed");
-
 		try {
+			// VAST - benchmarking the copy request
+			logger.error("VAST: Copy request started");
+			
 			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.copyObject(copyRequest);
+			
+			// VAST - benchmarking the copy request
+			logger.error("VAST: Copy request completed");
+			
 			return copyResult != null ? copyResult.getETag() : null;
 
 		} catch (AmazonServiceException ase) {
