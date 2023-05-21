@@ -903,7 +903,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
 				.withMethod(HttpMethod.PUT).withExpiration(expiration);
 
-		/** VAST - Skipping attaching object metadata for single part upload. 
+		/** VAST - Skip attaching object metadata and storage-class params for single part upload. 
 		 * 
 		// Add the storage class.
 		generatePresignedUrlRequest.addRequestParameter(Headers.STORAGE_CLASS, storageClass);
@@ -985,9 +985,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
 					archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
 					.withMethod(HttpMethod.PUT).withExpiration(expiration);
+			
+			/** VAST - Skip attaching multipart request and part-id params for multipart upload. 
+			 * 
+			
 			generatePresignedUrlRequest.addRequestParameter("partNumber", String.valueOf(partNumber));
 			generatePresignedUrlRequest.addRequestParameter("uploadId", multipartUpload.getId());
 
+			**/
+			
 			try {
 				uploadPartURL.setPartUploadRequestURL(s3Connection.getTransferManager(authenticatedToken)
 						.getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest).toString());
