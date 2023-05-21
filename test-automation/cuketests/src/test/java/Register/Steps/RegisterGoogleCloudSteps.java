@@ -9,7 +9,7 @@ import java.util.Map;
 
 import java.io.*;
 
-import Register.Pojo.BulkDataObjectRegisterPojo;
+import Register.Pojo.BulkDataObjectRegister;
 import Register.Pojo.DataObjectRegistration;
 import Register.Pojo.DirectoryScanRegistrationItemPojo;
 import Register.Pojo.GoogleCloudUploadPojo;
@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 public class RegisterGoogleCloudSteps {
   ConfigFileReader configFileReader= new ConfigFileReader();
+  TaskHelper taskHelper= new TaskHelper();
   RegisterGoogleCloudPojo registerBody = new RegisterGoogleCloudPojo();
   SourceLocationPojo sourceLocation  = new SourceLocationPojo();
   List<RegisterGoogleCloudPojo> files = new ArrayList<RegisterGoogleCloudPojo>();
@@ -73,18 +74,18 @@ public class RegisterGoogleCloudSteps {
     this.source = source;
   }
   
-  @Given("I add registration path as {string}")
-	public void i_add_registration_path_as(String path) {
+  @Given("I have registration path as {string}")
+	public void i_have_registration_path_as(String path) {
     this.path = path;
   }
 
-  @Given("I add a google cloud bucket as {string}")
-	public void i_add_a_google_cloud_bucket_as(String bucket) {
+  @Given("I add source cloud bucket as {string}")
+	public void i_add_source_cloud_bucket_as(String bucket) {
 	  sourceLocation.setFileContainerId(bucket);
   }
 
-  @Given("I add a google cloud location as {string}")
-	public void i_add_a_google_cloud_location_as(String file) {
+  @Given("I add source cloud location as {string}")
+	public void i_add_source_cloud_location_as(String file) {
     sourceLocation.setFileId(file);
   }
 
@@ -111,6 +112,28 @@ public class RegisterGoogleCloudSteps {
 	  registerBody.setGoogleCloudStorageUploadSource(googleObj);
 	}
 
+  @Given("I add a path as {string} with pathMetadata as")
+    public void i_add_a_path_as_with_path_metadata_as(String path, io.cucumber.datatable.DataTable dataTable) {
+        System.out.println("PATH=" + path);
+        List<Map<String, String>> path_metadata_rows = dataTable.asMaps(String.class, String.class);
+          for (Map<String, String> columns : path_metadata_rows) {
+            String attribute = columns.get("attribute");
+            String val = columns.get("value");
+            //System.out.println("DATATABLE val=" + val);
+          }
+    }
+
+  @Given("I add default metadataEntries as")
+  public void i_add_default_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
+    List<Map<String, String>> default_metadata_rows  = dataTable.asMaps(String.class, String.class);
+    for (Map<String, String> columns : default_metadata_rows) {
+      String attribute = columns.get("attribute");
+      String val = columns.get("value");
+      //System.out.println("DATATABLE val=" + val);
+    }
+  }
+
+
 	@When("I click Register for the Google Cloud Upload")
 	public void i_click_register_for_the_google_cloud_upload() {
 	  System.out.println("----------------------------------------------------------");
@@ -127,7 +150,7 @@ public class RegisterGoogleCloudSteps {
         dataObjectRegistration.setDataObjectMetadataEntries(rows);
         ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
         dataObjectRegistrations.add(0, dataObjectRegistration);
-        BulkDataObjectRegisterPojo bulkRequest = new BulkDataObjectRegisterPojo();
+        BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
         bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
         new TaskHelper().submitBulkRequest(bulkRequest, this.token);
         System.out.println("----------------------------------------------------------");
@@ -139,24 +162,13 @@ public class RegisterGoogleCloudSteps {
 	public void i_click_register_for_the_aws_upload() {
 	    System.out.println("Welcome AWS upload");
       this.token = configFileReader.getToken();
-      S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
-      S3AccountPojo s3Account = new S3AccountPojo();
-      s3Account.setAccessKey(configFileReader.getAwsAccessKey());
-      s3Account.setSecretKey(configFileReader.getAwsSecretKey());
-      s3Account.setRegion("us-east-2");
-      s3Info.setAccount(s3Account);
-      s3Info.setSourceLocation(sourceLocation);
-      DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
-      dataObjectRegistration.setPath(this.path);
-      dataObjectRegistration.setS3UploadSource(s3Info);
-      String totalPath = dataObjectRegistration.getPath() + "/" + s3Info.getSourceLocation().getFileId();
-      dataObjectRegistration.setPath(totalPath);
+      DataObjectRegistration dataObjectRegistration = taskHelper.setupAuthorizeAWS(sourceLocation, this.path);
       dataObjectRegistration.setDataObjectMetadataEntries(rows);
       ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
       dataObjectRegistrations.add(0, dataObjectRegistration);
-      BulkDataObjectRegisterPojo bulkRequest = new BulkDataObjectRegisterPojo();
+      BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
       bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-      new TaskHelper().submitBulkRequest(bulkRequest, this.token);
+      taskHelper.submitBulkRequest(bulkRequest, this.token);
       System.out.println("----------------------------------------------------------");
       System.out.println("");
 	}
