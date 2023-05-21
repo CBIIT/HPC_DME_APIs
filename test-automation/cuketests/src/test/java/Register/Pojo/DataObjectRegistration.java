@@ -5,12 +5,12 @@ import java.util.Map;
 
 public class DataObjectRegistration {
 	
-	List<Map<String, String>> dataObjectMetadataEntries;	
-	//ParentMetadataPojo parentCollectionsBulkMetadataEntries;
+  List<Map<String, String>> dataObjectMetadataEntries;
   GoogleCloudUploadPojo googleCloudStorageUploadSource;
   S3StreamingUploadPojo s3UploadSource;
   String path;
-
+  BulkMetadataEntries parentCollectionsBulkMetadataEntries;
+  boolean createParentCollections;
 
   public List<Map<String, String>> getDataObjectMetadataEntries() {
     return dataObjectMetadataEntries;
@@ -31,7 +31,7 @@ public class DataObjectRegistration {
   }
   public String setPath(String path) {
       return this.path = path;
-    }
+  }
 
   public S3StreamingUploadPojo getS3UploadSource() {
     return s3UploadSource;
@@ -40,23 +40,22 @@ public class DataObjectRegistration {
   public void setS3UploadSource(S3StreamingUploadPojo s3UploadSource) {
     this.s3UploadSource = s3UploadSource;
   }
-}
 
-  /* public Boolean getCreateParentCollections() {
-    return createParentCollections;
-  }
-
-  public void setCreateParentCollections(Boolean createParentCollections) {
-    this.createParentCollections = createParentCollections;
-  }
-
-  public ParentMetadataPojo getParentCollectionsBulkMetadataEntries() {
+  public BulkMetadataEntries getParentCollectionsBulkMetadataEntries() {
     return parentCollectionsBulkMetadataEntries;
   }
 
   public void setParentCollectionsBulkMetadataEntries(
-      ParentMetadataPojo parentCollectionsBulkMetadataEntries) {
+      BulkMetadataEntries parentCollectionsBulkMetadataEntries) {
     this.parentCollectionsBulkMetadataEntries = parentCollectionsBulkMetadataEntries;
-  } */
+  }
 
+  public boolean isCreateParentCollections() {
+    return createParentCollections;
+  }
+
+  public void setCreateParentCollections(boolean createParentCollections) {
+    this.createParentCollections = createParentCollections;
+  }
+}
 
