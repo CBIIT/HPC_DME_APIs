@@ -122,7 +122,7 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 			securityService.executeAsSystemAccount(Optional.empty(),
 					() -> metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
 							HpcDataTransferUploadStatus.STREAMING_FAILED, null, null, null, null, null, null, null,
-							null));
+							null, null));
 
 		} catch (HpcException e) {
 			logger.error("Failed to update metadata for AWS / 3rd Party S3 Provider / Google Drive streaming failure",
