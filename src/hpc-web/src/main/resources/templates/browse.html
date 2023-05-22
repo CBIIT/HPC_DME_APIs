@@ -117,16 +117,27 @@ app
 	    rowTemplate: rowTemplate(),
 	    onRegisterApi : function(gridApi) {
 	    	$scope.gridApi = gridApi;
+	    	$scope.tableHeight = getTableHeight($scope.gridOptions1.data.length); 
 	    }
 	};
-		    
+	$scope.tableHeight = 'height: 600px';	    
 	$scope.gridOptions1.data = data[0].children;
 	
 	$scope.refreshGrid = function() {
 		$scope.gridOptions1.data = data[0].children;
+		$scope.tableHeight = getTableHeight($scope.gridOptions1.data.length);
 		$scope.gridApi.core.refresh();
 		constructBreadcrumb(data[0]);
     };
+    
+    function getTableHeight(dataLen) {  
+        var rowHeight = 30; // row height  
+        var headerHeight = 60; // header height  
+        var footerHeight = 60; // bottom scroll bar height  
+        var totalH = dataLen * rowHeight + headerHeight + footerHeight;
+        return 'height: ' + (totalH) + 'px';  
+      }  
+
       
     function constructBreadcrumb(node) {
     	var count = node.children.length;
@@ -328,6 +339,7 @@ div.ui-grid-cell-contents.folder {
     top: 35px;
     bottom: 0;
     width: 50%;
+    overflow-y: scroll; 
     height: 780px;
   }
 }
@@ -448,7 +460,7 @@ cursor: pointer;
 												</ol>
 											</div>
 											<div id="grid1" ui-grid="gridOptions1" ui-grid-auto-resize="true" ui-grid-cellNav="true"
-												ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
+												ui-grid-resize-columns="true" ui-grid-move-columns="true" style="{{tableHeight}}"></div>
 											<div id="refreshGrid" ng-click="refreshGrid()"></div>
 										</div>
 									</div>

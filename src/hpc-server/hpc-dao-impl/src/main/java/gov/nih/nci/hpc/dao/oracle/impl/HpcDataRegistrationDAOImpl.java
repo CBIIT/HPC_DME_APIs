@@ -35,6 +35,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
@@ -63,8 +64,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_TASK using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, CREATED = ? "
-			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, CREATED) " + "values (?, ?, ?, ?, ?)";
+			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, CREATED = ?, UPLOAD_METHOD = ? "
+			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, CREATED, UPLOAD_METHOD) "
+			+ "values (?, ?, ?, ?, ?, ?)";
 
 	private static final String UPDATE_BULK_DATA_OBJECT_REGISTRATION_TASK_ITEMS_SQL = "update HPC_BULK_DATA_OBJECT_REGISTRATION_TASK set ITEMS = ? where ID = ?";
 
@@ -79,8 +81,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			+ "order by CREATED";
 
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, RESULT = ?, MESSAGE = ?, EFFECTIVE_TRANSFER_SPEED = ?, CREATED = ?, COMPLETED = ? "
-			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, CREATED, COMPLETED) values (?, ?, ?, ?, ?, ?, ?) ";
+			+ "when matched then update set USER_ID = ?, RESULT = ?, MESSAGE = ?, EFFECTIVE_TRANSFER_SPEED = ?, CREATED = ?, COMPLETED = ?, UPLOAD_METHOD = ? "
+			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, CREATED, COMPLETED, UPLOAD_METHOD) values (?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_BULK_DATA_OBJECT_REGISTRATION_RESULT_ITEMS_SQL = "update HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT set ITEMS = ? where ID = ?";
 
@@ -148,28 +150,36 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		created.setTime(rs.getTimestamp("CREATED"));
 		bulkDataObjectRegistrationTask.setCreated(created);
 
+		String uploadMethodStr = rs.getString("UPLOAD_METHOD");
+		bulkDataObjectRegistrationTask.setUploadMethod(
+				!StringUtils.isEmpty(uploadMethodStr) ? HpcDataTransferUploadMethod.fromValue(uploadMethodStr) : null);
+
 		return bulkDataObjectRegistrationTask;
 	};
 
 	// HpcBulkDataObjectRegistrationResult table to object mapper.
 	private RowMapper<HpcBulkDataObjectRegistrationResult> bulkDataObjectRegistrationResultRowMapper = (rs, rowNum) -> {
-		HpcBulkDataObjectRegistrationResult bulkDdataObjectRegistrationResult = new HpcBulkDataObjectRegistrationResult();
-		bulkDdataObjectRegistrationResult.setId(rs.getString("ID"));
-		bulkDdataObjectRegistrationResult.setUserId(rs.getString("USER_ID"));
-		bulkDdataObjectRegistrationResult.setResult(rs.getBoolean("RESULT"));
-		bulkDdataObjectRegistrationResult.setMessage(rs.getString("MESSAGE"));
-		bulkDdataObjectRegistrationResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
-		bulkDdataObjectRegistrationResult.setEffectiveTransferSpeed(rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
+		HpcBulkDataObjectRegistrationResult bulkDataObjectRegistrationResult = new HpcBulkDataObjectRegistrationResult();
+		bulkDataObjectRegistrationResult.setId(rs.getString("ID"));
+		bulkDataObjectRegistrationResult.setUserId(rs.getString("USER_ID"));
+		bulkDataObjectRegistrationResult.setResult(rs.getBoolean("RESULT"));
+		bulkDataObjectRegistrationResult.setMessage(rs.getString("MESSAGE"));
+		bulkDataObjectRegistrationResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+		bulkDataObjectRegistrationResult.setEffectiveTransferSpeed(rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
 
 		Calendar created = Calendar.getInstance();
 		created.setTime(rs.getTimestamp("CREATED"));
-		bulkDdataObjectRegistrationResult.setCreated(created);
+		bulkDataObjectRegistrationResult.setCreated(created);
 
 		Calendar completed = Calendar.getInstance();
 		completed.setTime(rs.getTimestamp("COMPLETED"));
-		bulkDdataObjectRegistrationResult.setCompleted(completed);
+		bulkDataObjectRegistrationResult.setCompleted(completed);
+		
+		String uploadMethodStr = rs.getString("UPLOAD_METHOD");
+		bulkDataObjectRegistrationResult.setUploadMethod(
+				!StringUtils.isEmpty(uploadMethodStr) ? HpcDataTransferUploadMethod.fromValue(uploadMethodStr) : null);
 
-		return bulkDdataObjectRegistrationResult;
+		return bulkDataObjectRegistrationResult;
 	};
 
 	// HpcAccessToken table to object mapper.
@@ -204,9 +214,15 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL, dataObjectListRegistrationTask.getId(),
 					dataObjectListRegistrationTask.getUserId(), dataObjectListRegistrationTask.getUiURL(),
 					dataObjectListRegistrationTask.getStatus().value(), dataObjectListRegistrationTask.getCreated(),
+					dataObjectListRegistrationTask.getUploadMethod() != null
+							? dataObjectListRegistrationTask.getUploadMethod().value()
+							: null,
 					dataObjectListRegistrationTask.getId(), dataObjectListRegistrationTask.getUserId(),
 					dataObjectListRegistrationTask.getUiURL(), dataObjectListRegistrationTask.getStatus().value(),
-					dataObjectListRegistrationTask.getCreated());
+					dataObjectListRegistrationTask.getCreated(),
+					dataObjectListRegistrationTask.getUploadMethod() != null
+							? dataObjectListRegistrationTask.getUploadMethod().value()
+							: null);
 
 			jdbcTemplate.update(UPDATE_BULK_DATA_OBJECT_REGISTRATION_TASK_ITEMS_SQL,
 					new Object[] { new SqlLobValue(toJSON(dataObjectListRegistrationTask.getItems()), lobHandler),
@@ -265,10 +281,12 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), registrationResult.getCreated(),
-					registrationResult.getCompleted(), registrationResult.getId(), registrationResult.getUserId(),
-					registrationResult.getResult(), registrationResult.getMessage(),
-					registrationResult.getEffectiveTransferSpeed(), registrationResult.getCreated(),
-					registrationResult.getCompleted());
+					registrationResult.getCompleted(),
+					registrationResult.getUploadMethod() != null ? registrationResult.getUploadMethod().value() : null,
+					registrationResult.getId(), registrationResult.getUserId(), registrationResult.getResult(),
+					registrationResult.getMessage(), registrationResult.getEffectiveTransferSpeed(),
+					registrationResult.getCreated(), registrationResult.getCompleted(),
+					registrationResult.getUploadMethod() != null ? registrationResult.getUploadMethod().value() : null);
 
 			jdbcTemplate.update(UPDATE_BULK_DATA_OBJECT_REGISTRATION_RESULT_ITEMS_SQL, new Object[] {
 					new SqlLobValue(toJSON(registrationResult.getItems()), lobHandler), registrationResult.getId() },
