@@ -667,7 +667,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 				toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, toDateStr(dataTransferStarted)));
 
 		// Create the Data Transfer Completed metadata.
-		addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
+		addMetadataEntry(metadataEntries,
+				toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
 
 		// Create the Source File Size metadata.
 		addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, sourceSize));
@@ -736,7 +737,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
 			Long sourceSize, String linkSourcePath, String s3ArchiveConfigurationId,
-			HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate) throws HpcException {
+			HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate,
+			HpcDataTransferUploadMethod dataTransferMethod) throws HpcException {
 		// Input validation.
 		if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
 			throw new HpcException("Invalid updated system generated metadata for data object",
@@ -776,7 +778,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 				addMetadataEntry(metadataEntries,
 						toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
 				if (dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
-					addMetadataEntry(metadataEntries, toMetadataEntry(DELETED_DATE_ATTRIBUTE, toDateStr(Calendar.getInstance())));
+					addMetadataEntry(metadataEntries,
+							toMetadataEntry(DELETED_DATE_ATTRIBUTE, toDateStr(Calendar.getInstance())));
 				}
 			}
 		}
@@ -794,7 +797,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		if (dataTransferCompleted != null) {
 			// Update the Data Transfer Completed metadata.
-			addMetadataEntry(metadataEntries, toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
+			addMetadataEntry(metadataEntries,
+					toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, toDateStr(dataTransferCompleted)));
 		}
 
 		if (sourceSize != null) {
@@ -821,8 +825,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		if (deepArchiveDate != null) {
 			// Update the deep archive date metadata.
+			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE, toDateStr(deepArchiveDate)));
+		}
+
+		if (dataTransferMethod != null) {
+			// Update the data transfer method metadata.
 			addMetadataEntry(metadataEntries,
-					toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE, toDateStr(deepArchiveDate)));
+					toMetadataEntry(DATA_TRANSFER_METHOD_ATTRIBUTE, dataTransferMethod.value()));
 		}
 
 		if (!metadataEntries.isEmpty()) {
@@ -865,16 +874,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
-	public HpcMetadataEntries getDataObjectMetadataEntries(String path, boolean excludeParentMetadata) throws HpcException {
+	public HpcMetadataEntries getDataObjectMetadataEntries(String path, boolean excludeParentMetadata)
+			throws HpcException {
 		HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
 
 		// Get the metadata associated with the data object itself.
 		metadataEntries.getSelfMetadataEntries().addAll(metadataRetriever.getDataObjectMetadata(path));
 
 		// Get the hierarchical metadata.
-		if(!excludeParentMetadata) {
-		    metadataEntries.getParentMetadataEntries()
-				.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+		if (!excludeParentMetadata) {
+			metadataEntries.getParentMetadataEntries()
+					.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
 		} else {
 			logger.info("Excluding parent metadata for {}", path);
 		}
@@ -883,8 +893,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
-	public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path,
-			boolean excludeParentMetadata) throws HpcException {
+	public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path, boolean excludeParentMetadata)
+			throws HpcException {
 		HpcGroupedMetadataEntries groupedMetadataEntries = new HpcGroupedMetadataEntries();
 		HpcSelfMetadataEntries selfMetadataEntries = new HpcSelfMetadataEntries();
 
@@ -916,9 +926,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		groupedMetadataEntries.setSelfMetadataEntries(selfMetadataEntries);
 
 		// Get the hierarchical metadata.
-		if(!excludeParentMetadata) {
-		    groupedMetadataEntries.getParentMetadataEntries()
-				.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+		if (!excludeParentMetadata) {
+			groupedMetadataEntries.getParentMetadataEntries()
+					.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
 		}
 
 		return groupedMetadataEntries;
