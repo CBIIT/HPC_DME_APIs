@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.util.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,8 +211,12 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 				sendUserRegisteredNotification(nciUserId, nciAccount.getFirstName(), nciAccount.getLastName());
 			}
 
+			if(!CollectionUtils.isEmpty(userRegistrationRequest.getSubscriptions())) {
+				for(HpcNotificationSubscription subscription: userRegistrationRequest.getSubscriptions()) {
+					notificationService.addUpdateNotificationSubscription(nciUserId, subscription);
+				}
+			}
 			registrationCompleted = true;
-
 		} finally {
 			if (!registrationCompleted) {
 				// Registration failed. Remove the data management account.

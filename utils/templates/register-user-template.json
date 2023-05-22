@@ -1,7 +1,17 @@
 {
- "firstName" : "Sunita",
- "lastName" : "Menon",
- "defaultBasePath" : "/CCR_SBL_Admin_Archive",
- "doc" : "CCR_SBL",
- "userRole" : "USER"
+ "firstName" : "",
+ "lastName" : "",
+ "defaultBasePath" : "/FNL_SF_Archive",
+ "doc" : "FNLCR",
+ "userRole" : "USER",
+ "subscriptions": [
+   	{
+   		"eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
+   		"notificationDeliveryMethods": ["EMAIL"]
+   	},
+        {
+   		"eventType": "DATA_TRANSFER_UPLOAD_FAILED",
+   		"notificationDeliveryMethods": ["EMAIL"]
+   	}
+    ]
 }
