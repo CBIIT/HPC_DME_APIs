@@ -135,7 +135,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 
 		// Update deep_archive_status.
 		metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, null, null, null, null,
-				null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+				null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance(), null);
 	}
 
 	@Override
@@ -176,7 +176,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		// deep_archive_status to in_progress
 		for (String dataObjectPath : paths) {
 			metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null, null, null, null,
-					null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+					null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance(), null);
 		}
 
 	}
@@ -257,7 +257,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			// deep_archive_status to in_progress
 			for (String dataObjectPath : paths) {
 				metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null, null, null,
-						null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+						null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance(), null);
 			}
 
 		} else {
@@ -308,7 +308,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			// deep_archive_status to in_progress
 			for (String dataObjectPath : paths) {
 				metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null, null, null,
-						null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+						null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance(), null);
 			}
 		}
 
