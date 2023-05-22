@@ -193,6 +193,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 				//Disable the download icon if the collection size exceeds the limit
 				boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(collectionSize);
 				model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
+				model.addAttribute("collectionSize", MiscUtil.addHumanReadableSize(collectionSize.toString(), true));
 				
 				if (action != null && action.equals("edit")) {
 					if (collection.getPermission() == null || collection.getPermission().equals(HpcPermission.NONE)
