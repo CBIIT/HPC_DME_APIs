@@ -9,6 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -64,9 +69,25 @@ public class HpcDataHierarchyController extends AbstractHpcController {
 		basePath = StringUtils.prependIfMissing(basePath, "/");
 		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		model.addAttribute("hierarchy", basePathRules != null ? basePathRules.getDataHierarchy() : null);
-		model.addAttribute("collectionMetadata", basePathRules != null ? basePathRules.getCollectionMetadataValidationRules() : null);
-	
+		model.addAttribute("collectionMetadata", basePathRules != null ? sortMetadataByMandatoryAttr(basePathRules.getCollectionMetadataValidationRules()) : null);
+		model.addAttribute("dataObjectMetadata", basePathRules != null ? sortMetadataByMandatoryAttr(basePathRules.getDataObjectMetadataValidationRules()) : null);
+		
 		return "datahierarchy";
+	}
+
+	private Object sortMetadataByMandatoryAttr(List<HpcMetadataValidationRule> metadataValidationRules) {
+		Collections.sort(metadataValidationRules, new Comparator<HpcMetadataValidationRule>() {
+			@Override
+			public int compare(HpcMetadataValidationRule entry1, HpcMetadataValidationRule entry2) {
+				if (entry1.getMandatory() && entry2.getMandatory()) {
+					return 0;
+				} else if (entry1.getMandatory()) {
+					return -1;
+				} else 
+					return 1;
+			}
+		});
+		return metadataValidationRules;
 	}
 
 }

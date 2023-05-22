@@ -15,26 +15,63 @@
   background-clip: padding-box;
   outline: none;
 }
+.required {
+  color: black;
+  font-weight: 600;
+}
+.required:after {
+  content:"*";
+}
+.modal-dialog {
+    width: 800px !important;
+}
 </style>
 </head>
 <body>
 
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal">&times;</button>
-		<h4 class="modal-title">Valid Hierarchy and Mandatory Metadata</h4>
+		<h4 class="modal-title">Data Hierarchy and Metadata Structure</h4>
 	</div>
 	<div class="modal-body">
 	  <div th:if="${hierarchy != null}">
         <ul class="tree">
             <li>
                 <a th:text="${hierarchy.collectionType}">Parent</a><i title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
-                <a style="border:none" onclick="show(this)"><i title="Show mandatory metadata" class="fa fa-plus"></i></a>
+                <a style="border:none" onclick="show(this)"><i title="Show attribute names" class="fa fa-plus"></i></a>
 					<div style="display: none">
 						<div th:each="entry : ${collectionMetadata}"
 							th:if="${collectionMetadata != null}">
-							<div th:text="${entry.getAttribute()}"
-								th:if="${entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+							<div class="required" th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+								th:if="${#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+							<div th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+								th:if="${#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+							<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+								th:if="${!#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+							<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+								th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
 						</div>
+					</div>
+					<div th:if="${hierarchy.isDataObjectContainer}">
+						<ul>
+				            <li>
+				                <a>DataObject</a>
+				                <a style="border:none" onclick="show(this)"><i title="Show attribute names" class="fa fa-plus"></i></a>
+									<div style="display: none">
+										<div th:each="entry : ${dataObjectMetadata}"
+											th:if="${dataObjectMetadata != null}">
+											<div class="required" th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+												th:if="${#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+											<div th:text="${entry.getAttribute()}" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+												th:if="${#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+											<div class="required" th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+												th:if="${!#strings.isEmpty(entry.getDefaultValue()) and entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+											<div th:text="${entry.getAttribute()} + ' (Default: ' + ${entry.getDefaultValue()} + ')'" th:title="${!entry.getValidValues().isEmpty()} ? ${entry.getValidValues().toString()} : ${entry.getDateFormat()}"
+												th:if="${!#strings.isEmpty(entry.getDefaultValue()) and !entry.getMandatory() and #lists.contains(entry.getCollectionTypes(), hierarchy.collectionType)}"></div>
+										</div>
+									</div>
+				            </li>
+				        </ul>
 					</div>
 					<section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
             </li>

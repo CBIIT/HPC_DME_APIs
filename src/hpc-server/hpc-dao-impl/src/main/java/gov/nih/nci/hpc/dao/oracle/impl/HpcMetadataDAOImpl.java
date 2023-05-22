@@ -190,9 +190,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "where coll_main.COLL_NAME = ? and data_main.DATA_NAME = ? "
 			+ "and data_main.COLL_ID = coll_main.COLL_ID and meta_main.META_ID = metamap.META_ID and data_main.DATA_ID = metamap.OBJECT_ID";
 
-	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main main1";
+	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main collection";
 
-	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main main1";
+	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main dataObject";
 
 	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "select level_label, rtrim(xmlagg(xmlelement(e, meta_attr_name, ',').extract('//text()') "
 			+ "order by meta_attr_name).getClobVal(),',') as attributes from (" + GET_COLLECTION_METADATA_ATTRIBUTES_SQL;
@@ -1138,9 +1138,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			}
 			sqlQueryBuilder.append(sqlLevelLabelFilter);
 			args.add(levelLabel);
-		}
+		} else {
 
 		sqlQueryBuilder.append(")");
+		}
 
 		// Add the grouping and order SQL.
 		sqlQueryBuilder.append(GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL);

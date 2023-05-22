@@ -3414,20 +3414,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (downloadTask.getS3DownloadDestination() != null) {
 				downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 				downloadTask.setDestinationType(HpcDataTransferType.S_3);
-				downloadTask.setId(UUID.randomUUID().toString());
 				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 				response.setDestinationLocation(downloadTask.getS3DownloadDestination().getDestinationLocation());
 			} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 				downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_DRIVE);
 				downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
-				downloadTask.setId(UUID.randomUUID().toString());
 				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 				response.setDestinationLocation(
 						downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
 			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 				downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 				downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
-				downloadTask.setId(UUID.randomUUID().toString());
 				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 				response.setDestinationLocation(
 						downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
