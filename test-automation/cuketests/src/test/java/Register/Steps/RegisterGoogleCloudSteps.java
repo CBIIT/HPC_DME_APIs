@@ -10,6 +10,8 @@ import java.util.Map;
 import java.io.*;
 
 import Register.Pojo.BulkDataObjectRegister;
+import Register.Pojo.BulkMetadataEntriesPojo;
+import Register.Pojo.BulkMetadataEntry;
 import Register.Pojo.DataObjectRegistration;
 import Register.Pojo.DirectoryScanRegistrationItemPojo;
 import Register.Pojo.GoogleCloudUploadPojo;
@@ -56,6 +58,7 @@ public class RegisterGoogleCloudSteps {
   List<RegisterGoogleCloudPojo> files = new ArrayList<RegisterGoogleCloudPojo>();
   List<Map<String, String>> rows;
   GooglePojo googleObj = new GooglePojo();
+  BulkMetadataEntriesPojo bulkMetadataEntries = new BulkMetadataEntriesPojo();
   String token;
   String accessToken;
   String path;
@@ -114,23 +117,20 @@ public class RegisterGoogleCloudSteps {
 
   @Given("I add a path as {string} with pathMetadata as")
     public void i_add_a_path_as_with_path_metadata_as(String path, io.cucumber.datatable.DataTable dataTable) {
-        System.out.println("PATH=" + path);
         List<Map<String, String>> path_metadata_rows = dataTable.asMaps(String.class, String.class);
-          for (Map<String, String> columns : path_metadata_rows) {
-            String attribute = columns.get("attribute");
-            String val = columns.get("value");
-            //System.out.println("DATATABLE val=" + val);
-          }
+       BulkMetadataEntry metadataEntry = new BulkMetadataEntry();
+       metadataEntry.setPath(path);
+       metadataEntry.setPathMetadataEntries(path_metadata_rows);
+       if(bulkMetadataEntries.getPathsMetadataEntries() == null || bulkMetadataEntries.getPathsMetadataEntries().isEmpty()) { 
+         bulkMetadataEntries.setPathsMetadataEntries(new ArrayList<BulkMetadataEntry>());
+       }
+       bulkMetadataEntries.getPathsMetadataEntries().add(metadataEntry);
     }
 
   @Given("I add default metadataEntries as")
   public void i_add_default_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
     List<Map<String, String>> default_metadata_rows  = dataTable.asMaps(String.class, String.class);
-    for (Map<String, String> columns : default_metadata_rows) {
-      String attribute = columns.get("attribute");
-      String val = columns.get("value");
-      //System.out.println("DATATABLE val=" + val);
-    }
+    bulkMetadataEntries.setDefaultCollectionMetadataEntries(default_metadata_rows);
   }
 
 
@@ -145,6 +145,7 @@ public class RegisterGoogleCloudSteps {
         DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
         dataObjectRegistration.setPath(this.path);
         dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudInfo);
+        dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
         String totalPath = dataObjectRegistration.getPath() + "/" + googleCloudInfo.getSourceLocation().getFileId();
         dataObjectRegistration.setPath(totalPath);
         dataObjectRegistration.setDataObjectMetadataEntries(rows);
