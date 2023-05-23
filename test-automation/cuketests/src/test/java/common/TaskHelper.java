@@ -59,7 +59,8 @@ public class TaskHelper {
 
   public void submitBulkRequest(BulkDataObjectRegister bulkRequest, String token) {
     Gson gson = new Gson();
-    RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
+    ConfigFileReader configFileReader= new ConfigFileReader();
+    RestAssured.baseURI = configFileReader.getApplicationUrl();
     RestAssured.port = 7738;
     RequestSpecification request = RestAssured.given().log().all().
         relaxedHTTPSValidation().
