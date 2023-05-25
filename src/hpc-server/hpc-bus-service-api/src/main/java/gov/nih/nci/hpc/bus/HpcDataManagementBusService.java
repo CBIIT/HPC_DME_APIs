@@ -16,6 +16,8 @@ import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -383,11 +385,12 @@ public interface HpcDataManagementBusService {
 	 * Get Data Object.
 	 *
 	 * @deprecated
-	 * @param path                   The data object's path.
-	 * @param includeAcl             An indicator to obtain user permission.
-	 * @param excludeAttributes      If true, the data objects attributes will not be
-	 *                               returned.
-	 * @param excludeParentMetadata  If true, the parent metadata will not be returned.
+	 * @param path                  The data object's path.
+	 * @param includeAcl            An indicator to obtain user permission.
+	 * @param excludeAttributes     If true, the data objects attributes will not be
+	 *                              returned.
+	 * @param excludeParentMetadata If true, the parent metadata will not be
+	 *                              returned.
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
@@ -402,7 +405,8 @@ public interface HpcDataManagementBusService {
 	 * @param includeAcl            An indicator to obtain user permission.
 	 * @param excludeAttributes     If true, the data objects attributes will not be
 	 *                              returned.
-	 * @param excludeParentMetadata If true, the parent metadata will not be returned.
+	 * @param excludeParentMetadata If true, the parent metadata will not be
+	 *                              returned.
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
@@ -584,5 +588,16 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void recoverCollection(String path) throws HpcException;
+
+	/**
+	 * Bulk update of metadata.
+	 *
+	 * @param bulkMetadataUpdateRequest The bulk metadata update request.
+	 * @return A response DTO containing result of each metadata update request on
+	 *         the list.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkMetadataUpdateResponseDTO updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest)
+			throws HpcException;
 
 }

@@ -44,6 +44,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDT
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -539,12 +541,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 	@Deprecated
 	@Override
-	public Response getDataObjectV1(String path, Boolean includeAcl, Boolean excludeAttributes, Boolean excludeParentMetadata) {
+	public Response getDataObjectV1(String path, Boolean includeAcl, Boolean excludeAttributes,
+			Boolean excludeParentMetadata) {
 		HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
 		try {
 			HpcDataObjectDTO dataObject = dataManagementBusService.getDataObjectV1(toNormalizedPath(path),
-					Optional.ofNullable(includeAcl).orElse(false),
-					Optional.ofNullable(excludeAttributes).orElse(false),
+					Optional.ofNullable(includeAcl).orElse(false), Optional.ofNullable(excludeAttributes).orElse(false),
 					Optional.ofNullable(excludeParentMetadata).orElse(false));
 			if (dataObject != null) {
 				dataObjects.getDataObjects().add(dataObject);
@@ -558,12 +560,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getDataObject(String path, Boolean includeAcl, Boolean excludeAttributes, Boolean excludeParentMetadata) {
+	public Response getDataObject(String path, Boolean includeAcl, Boolean excludeAttributes,
+			Boolean excludeParentMetadata) {
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObject = null;
 		try {
 			dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path),
-					Optional.ofNullable(includeAcl).orElse(false),
-					Optional.ofNullable(excludeAttributes).orElse(false),
+					Optional.ofNullable(includeAcl).orElse(false), Optional.ofNullable(excludeAttributes).orElse(false),
 					Optional.ofNullable(excludeParentMetadata).orElse(false));
 
 		} catch (HpcException e) {
@@ -880,6 +882,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		}
 
 		return bulkMoveResponse.getResult() ? okResponse(bulkMoveResponse, true) : errorResponse(bulkMoveResponse);
+	}
+
+	@Override
+	public Response updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest) {
+		HpcBulkMetadataUpdateResponseDTO bulkMetadataUpdateResponse = null;
+		try {
+			bulkMetadataUpdateResponse = dataManagementBusService.updateMetadata(bulkMetadataUpdateRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(bulkMetadataUpdateResponse, false);
 	}
 
 	// ---------------------------------------------------------------------//

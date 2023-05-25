@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
@@ -106,6 +107,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionResultDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -2147,6 +2150,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		recoverDataObjectsFromCollections(path);
 		dataManagementService.delete(path, false);
 
+	}
+
+	@Override
+	public HpcBulkMetadataUpdateResponseDTO updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest)
+			throws HpcException {
+		HpcBulkMetadataUpdateResponseDTO bulkMetadataUpdateResponse = new HpcBulkMetadataUpdateResponseDTO();
+		
+		bulkMetadataUpdateRequest.getDataObjectPaths().forEach(path -> {
+			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
+			item.setPath(path);
+			item.setResult(true);
+			bulkMetadataUpdateResponse.getCompletedItems().add(item);
+		});
+		
+		bulkMetadataUpdateRequest.getCollectionPaths().forEach(path -> {
+			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
+			item.setPath(path);
+			item.setResult(true);
+			bulkMetadataUpdateResponse.getCompletedItems().add(item);
+		});
+		
+		bulkMetadataUpdateResponse.setResult(true);
+		
+		return bulkMetadataUpdateResponse;
 	}
 
 	// ---------------------------------------------------------------------//
