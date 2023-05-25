@@ -211,4 +211,12 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 	
+	<xsd:complexType name="HpcMetadataUpdateItem">
+		<xsd:sequence>
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="result" type="xsd:boolean" />
+			<xsd:element name="message" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>
