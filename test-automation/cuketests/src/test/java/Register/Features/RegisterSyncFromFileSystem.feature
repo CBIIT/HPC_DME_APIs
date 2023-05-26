@@ -1,9 +1,6 @@
 Feature: Register from file system synchronously
   Description: This feature file contains registering from file system related scenarios
 
-	Background: User is Logged In
-		Given I am a valid user with token
-
   	Scenario: Register from file system synchronously with success
 	    Given I add base_path as "/CCR_CSB_Archive"
 	    And I add collection_type as "PI_Lab"
