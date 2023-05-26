@@ -488,7 +488,10 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		metadataAttributes.getCollectionMetadataAttributes()
 				.addAll(dataSearchService.getCollectionMetadataAttributes(levelLabel));
 		metadataAttributes.getDataObjectMetadataAttributes()
-				.addAll(dataSearchService.getDataObjectMetadataAttributes(levelLabel));
+				.addAll(metadataAttributes.getCollectionMetadataAttributes());
+		if(levelLabel == null || levelLabel.isEmpty() || levelLabel.equals("DataObject"))
+			metadataAttributes.getDataObjectMetadataAttributes()
+				.addAll(dataSearchService.getDataObjectMetadataAttributes("DataObject"));
 
 		return metadataAttributes;
 	}
