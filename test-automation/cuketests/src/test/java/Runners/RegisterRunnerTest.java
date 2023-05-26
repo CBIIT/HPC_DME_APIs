@@ -5,17 +5,16 @@ import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
 
 
-
-
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		 features="src/test/java/Register/Features"
-		, glue={"Register.Steps", "Auth"}
+		, glue={"Register.Steps"}
 		, dryRun = false
 		//, tags="@Smoke"
-		//, monochrome=true
-,plugin = ("json:target/cucumber-reports/CucumberTestReport.json")
+		, monochrome=true
+,plugin = {"pretty", "json:target/cucumber-reports/CucumberTestReport.json",
+		 "html:target/cucumber-reports/cucumber-reports.html" }
 		)
-public class RegisterRunner {
+public class RegisterRunnerTest {
 
 }

@@ -15,14 +15,19 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-domain-notification="http://hpc.nci.nih.gov/domain/notification"
 	xmlns:hpc-dto-security="http://hpc.nci.nih.gov/dto/security"
 	targetNamespace="http://hpc.nci.nih.gov/dto/security" 
 	elementFormDefault="unqualified">
+
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
 		        schemaLocation="HpcUserTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		        schemaLocation="HpcDataTransferTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/notification"
+                schemaLocation="HpcNotificationTypes.xsd" />
+
 
 	<!-- User DTO -->
 	<xsd:element name="HpcUserRequestDTO">
@@ -34,7 +39,8 @@
 				<xsd:element name="defaultBasePath" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
 				<xsd:element name="active" type="xsd:boolean" minOccurs="0" />	
-				<xsd:element name="notifyUser" type="xsd:boolean" minOccurs="0" />						
+				<xsd:element name="notifyUser" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="subscriptions" type="hpc-domain-notification:HpcNotificationSubscription" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -78,6 +79,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
   
 	@Value("${gov.nih.nci.hpc.server.v2.download}")
 	private String downloadServiceURL;
+	
+	@Value("${gov.nih.nci.hpc.server.collection}")
+	private String collectionServiceURL;
 	
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
@@ -147,6 +151,31 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			if(deselectedColumns != null && StringUtils.isNotEmpty(deselectedColumns[0]))
 				hpcSaveSearch.getDeselectedColumns().addAll(CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
+
+			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
+			//Disable the download button if the collection size exceeds the limit
+			if(downloadType.equals("collections")) {
+				Long datasetSize = hpcSaveSearch.getTotalSize();
+				if(datasetSize == 0) {
+					//Calculate the total of all path
+					for(String downloadFilePath: hpcDownloadDatafile.getSelectedPaths()) {
+						//Get the total size of the collection
+						HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionServiceURL, downloadFilePath, false,
+											false, false, sslCertPath, sslCertPassword);
+						//Get the collection size if present
+						datasetSize += getCollectionSizeFromReport(collections.getCollections().get(0));
+					}
+				}
+				boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(datasetSize);
+				model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
+				if(!canDownloadFlag) {
+					String contactEmail = (String) session.getAttribute("contactEmail");
+					model.addAttribute(ATTR_MAX_DOWNLOAD_SIZE_EXCEEDED_MSG,
+							"Collection list size exceeds the maximum permitted download limit of "
+									+ MiscUtil.humanReadableByteCount(Double.parseDouble(maxAllowedDownloadSize.toString()), true)
+									+ ". Contact <a href='mailto:" + contactEmail + "'>" + contactEmail + "</a> for support.");				}
+			}
+
 			model.addAttribute("hpcSearch", hpcSaveSearch);
 			session.setAttribute("hpcSavedSearch", hpcSaveSearch);
 		} catch (Exception e) {
@@ -262,6 +291,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		model.addAttribute("transferType", "globus");
+		model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
 
 		return "downloadfiles";
 	}
