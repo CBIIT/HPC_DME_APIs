@@ -77,6 +77,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectRegistrationTaskItem']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcMetadataUpdateItem']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDirectoryScanPathMap']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap" />
       </jxb:bindings>

@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
@@ -56,7 +57,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * <p>
@@ -76,10 +76,12 @@ public class HpcDownloadController extends AbstractHpcController {
     
     @Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
-	private String dataObjectServiceURL;
-	@Value("${gov.nih.nci.hpc.server.v2.collection}")
+    @Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionServiceURL;
+	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
+	private String dataObjectDownloadServiceURL;
+	@Value("${gov.nih.nci.hpc.server.v2.collection}")
+	private String collectionDownloadServiceURL;
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
 
@@ -107,7 +109,8 @@ public class HpcDownloadController extends AbstractHpcController {
 
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String userId = (String) session.getAttribute("hpcUserId");
-
+		String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
+		
 		String action = request.getParameter("actionType");
 		String endPointName = request.getParameter("endpoint_id");
 		String downloadType = request.getParameter("type");
@@ -253,8 +256,8 @@ public class HpcDownloadController extends AbstractHpcController {
 		session.setAttribute("hpcSearch", hpcSearch);
 		model.addAttribute("source", source);
 		model.addAttribute("deselectedColumns", hpcSearch.getDeselectedColumns());
+		model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
 		if(downloadType.equals("datafile")) {
-			String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
 			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, downloadFilePath, false, false, 
 					sslCertPath, sslCertPassword);
 			if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
@@ -266,6 +269,24 @@ public class HpcDownloadController extends AbstractHpcController {
                         break;
 					}
 				}
+			}
+		} else {
+			//Disable the download button if the collection size exceeds the limit
+			Long collectionSize = 0L;
+			//Get the total size of the collection
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionServiceURL, downloadFilePath, false,
+								false, false, sslCertPath, sslCertPassword);
+			//Get the collection size if present
+			collectionSize = getCollectionSizeFromReport(collections.getCollections().get(0));
+			
+			boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(collectionSize);
+			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
+			if(!canDownloadFlag) {
+				String contactEmail = (String) session.getAttribute("contactEmail");
+				model.addAttribute(ATTR_MAX_DOWNLOAD_SIZE_EXCEEDED_MSG,
+						"Collection size exceeds the maximum permitted download limit of "
+								+ MiscUtil.humanReadableByteCount(Double.parseDouble(maxAllowedDownloadSize.toString()), true)
+								+ ". Contact <a href='mailto:" + contactEmail + "'>" + contactEmail + "</a> for support.");	
 			}
 		}
 		
@@ -299,8 +320,8 @@ public class HpcDownloadController extends AbstractHpcController {
 				return result;
 			}
 			final String basisURL = "collection".equals(downloadFile
-        .getDownloadType()) ? this.collectionServiceURL :
-        this.dataObjectServiceURL;
+        .getDownloadType()) ? this.collectionDownloadServiceURL :
+        this.dataObjectDownloadServiceURL;
       final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
         .path("/{dme-archive-path}/download").buildAndExpand(downloadFile
         .getDestinationPath()).encode().toUri().toURL().toExternalForm();
