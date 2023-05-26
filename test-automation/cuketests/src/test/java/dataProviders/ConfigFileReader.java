@@ -77,4 +77,5 @@ public class ConfigFileReader {
       if(awsSecretKey != null) return awsSecretKey;
       else throw new RuntimeException("awsSecretKey not specified in the Configuration.properties file.");
     }
+
 }
