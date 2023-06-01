@@ -249,7 +249,7 @@ public class HpcS3Connection {
 				.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
 				.withMultipartUploadThreshold(
 						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
-				.withDisableParallelDownloads(true)
+				.withDisableParallelDownloads(false)
 				.withExecutorFactory(() -> executorService)
 				.withShutDownThreadPools(false).build();
 		s3TransferManager.s3Provider = s3Provider;
