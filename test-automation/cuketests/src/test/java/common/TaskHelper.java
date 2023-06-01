@@ -9,7 +9,11 @@ import java.util.Map;
 
 import java.io.*;
 
-import Register.Pojo.BulkDataObjectRegisterPojo;
+import Register.Pojo.BulkDataObjectRegister;
+import Register.Pojo.DataObjectRegistration;
+import Register.Pojo.S3AccountPojo;
+import Register.Pojo.S3StreamingUploadPojo;
+import Register.Pojo.SourceLocationPojo;
 import common.JsonHelper;
 import dataProviders.ConfigFileReader;
 import io.cucumber.java.en.Given;
@@ -38,9 +42,25 @@ import org.slf4j.LoggerFactory;
 
 public class TaskHelper {
   
-  public void submitBulkRequest(BulkDataObjectRegisterPojo bulkRequest, String token) {
+  public DataObjectRegistration setupAuthorizeAWS(SourceLocationPojo sourceLocation, String path) {
+    ConfigFileReader configFileReader= new ConfigFileReader();
+    S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
+    S3AccountPojo s3Account = new S3AccountPojo();
+    s3Account.setAccessKey(configFileReader.getAwsAccessKey());
+    s3Account.setSecretKey(configFileReader.getAwsSecretKey());
+    s3Account.setRegion("us-east-2");
+    s3Info.setAccount(s3Account);
+    s3Info.setSourceLocation(sourceLocation);
+    DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
+    dataObjectRegistration.setPath(path + "/" + s3Info.getSourceLocation().getFileId());
+    dataObjectRegistration.setS3UploadSource(s3Info);
+    return dataObjectRegistration;
+  }
+
+  public void submitBulkRequest(BulkDataObjectRegister bulkRequest, String token) {
     Gson gson = new Gson();
-    RestAssured.baseURI = "https://fsdmel-dsapi01d.ncifcrf.gov/";
+    ConfigFileReader configFileReader= new ConfigFileReader();
+    RestAssured.baseURI = configFileReader.getApplicationUrl();
     RestAssured.port = 7738;
     RequestSpecification request = RestAssured.given().log().all().
         relaxedHTTPSValidation().
@@ -98,8 +118,8 @@ public class TaskHelper {
     } else {
       System.out.println("This test was a failure!");
       JsonPath jsonPath= response.jsonPath();
-System.out.println(statusCode);
-System.out.println(response.getBody());
+      System.out.println(statusCode);
+      System.out.println(response.getBody());
       String errorType = jsonPath.get("errorType");
       System.out.println(errorType);
     }
