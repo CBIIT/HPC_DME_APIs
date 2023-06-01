@@ -152,6 +152,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				hpcSaveSearch.getDeselectedColumns().addAll(CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 
+			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
 			//Disable the download button if the collection size exceeds the limit
 			if(downloadType.equals("collections")) {
 				Long datasetSize = hpcSaveSearch.getTotalSize();
@@ -290,6 +291,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		model.addAttribute("transferType", "globus");
+		model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
 
 		return "downloadfiles";
 	}

@@ -256,6 +256,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		session.setAttribute("hpcSearch", hpcSearch);
 		model.addAttribute("source", source);
 		model.addAttribute("deselectedColumns", hpcSearch.getDeselectedColumns());
+		model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
 		if(downloadType.equals("datafile")) {
 			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, downloadFilePath, false, false, 
 					sslCertPath, sslCertPassword);
