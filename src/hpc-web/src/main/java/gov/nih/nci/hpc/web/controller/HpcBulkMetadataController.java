@@ -151,10 +151,10 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 
 
 	/**
-	 * POST action to assign or update user permissions. On update, redirect
+	 * POST action to add/update metadata in bulk(multiple paths). On update, redirect
 	 * back to bulk permissions page with results
 	 * 
-	 * @param permissionsRequest
+	 * @param bulkMetadataUpdateRequest
 	 * @param model
 	 * @param bindingResult
 	 * @param session
@@ -167,16 +167,14 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			RedirectAttributes redirectAttrs) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
+		List<HpcPathUpdateDetails> pathDetails = new ArrayList<>();
 		//if (authToken == null) {
 		//	return "redirect:/";
 		//}
-	
-	      //String selectedPathsStr = request.getParameter("selectedFilePaths");
-	        String downloadType = request.getParameter("downloadType");
-	        	        
-	        HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
-	        hpcDownloadDatafile.setDownloadType(downloadType);
-
+		//String selectedPathsStr = request.getParameter("selectedFilePaths");
+		String downloadType = request.getParameter("downloadType");
+		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
+		hpcDownloadDatafile.setDownloadType(downloadType);
 		
 		List<HpcMetadataEntry> metadataList = new ArrayList<HpcMetadataEntry>();
 		HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
@@ -195,53 +193,70 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		HpcBulkMetadataUpdateRequestDTO req =  new HpcBulkMetadataUpdateRequestDTO();
 		req.getCollectionPaths().addAll(paths);
 		req.getMetadataEntries().addAll(metadataList);
-	    try {
+		 try {
 
             if (true) {
                 WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
                 client.header("Authorization", "Bearer " + authToken);
                 Response restResponse = client.invoke("POST", req);
-                if (restResponse.getStatus() == 200) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-                            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-                            new JacksonAnnotationIntrospector());
-                    mapper.setAnnotationIntrospector(intr);
-                    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				if (restResponse.getStatus() == 200) {
+					ObjectMapper mapper = new ObjectMapper();
+					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+							new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+							new JacksonAnnotationIntrospector());
+					mapper.setAnnotationIntrospector(intr);
+					mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-                    MappingJsonFactory factory = new MappingJsonFactory(mapper);
-                    JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+					MappingJsonFactory factory = new MappingJsonFactory(mapper);
+					JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-                    HpcBulkMetadataUpdateResponseDTO permissionResponseDTO = parser.readValueAs(HpcBulkMetadataUpdateResponseDTO.class);
-                    List<HpcMetadataUpdateItem> completedItems =  permissionResponseDTO.getCompletedItems();
-                    List<HpcMetadataUpdateItem> failedItems =  permissionResponseDTO.getFailedItems();
-                    return "updatemetadatabulk";
-                } else {
-                    ObjectMapper mapper = new ObjectMapper();
-                    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-                            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-                            new JacksonAnnotationIntrospector());
-                    mapper.setAnnotationIntrospector(intr);
-                    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+					HpcBulkMetadataUpdateResponseDTO bulkUpdateResponseDTO = parser.readValueAs(HpcBulkMetadataUpdateResponseDTO.class);
+					List<HpcMetadataUpdateItem> completedItems =  bulkUpdateResponseDTO.getCompletedItems();
+					List<HpcMetadataUpdateItem> failedItems =  bulkUpdateResponseDTO.getFailedItems();
+					for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getCompletedItems()) {
+						HpcPathUpdateDetails pathUpdateDetails = new HpcPathUpdateDetails();
+						pathUpdateDetails.path = item.getPath();
+						pathUpdateDetails.result = "success";
+						pathDetails.add(pathUpdateDetails);
+					}
+					for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getFailedItems()) {
+						HpcPathUpdateDetails pathUpdateDetails = new HpcPathUpdateDetails();
+						pathUpdateDetails.path = item.getPath();
+						pathUpdateDetails.result = item.getMessage();
+						pathDetails.add(pathUpdateDetails);
+					}
+ 					model.addAttribute("pathDetails", pathDetails);
+					return "updatemetadatabulk";
+				} else {
+					ObjectMapper mapper = new ObjectMapper();
+					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+							new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+							new JacksonAnnotationIntrospector());
+					mapper.setAnnotationIntrospector(intr);
+					mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-                    MappingJsonFactory factory = new MappingJsonFactory(mapper);
-                    JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+					MappingJsonFactory factory = new MappingJsonFactory(mapper);
+					JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-                    HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-                    throw new Exception(exception.getMessage());
-                }
-            }
-        } catch (HttpStatusCodeException e) {
-            //throw e.toString();
-            return "";
-        } catch (RestClientException e) {
-            //throw e;
-            return "";
-        } catch (Exception e) {
-            return "";
-            //throw e;
-        }
+					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+					throw new Exception(exception.getMessage());
+				}
+			}
+		} catch (HttpStatusCodeException e) {
+			//throw e.toString();
+			return "";
+		} catch (RestClientException e) {
+			//throw e;
+			return "";
+		} catch (Exception e) {
+			return "";
+			//throw e;
+		}
 		return result;
 	}
 
+	private class HpcPathUpdateDetails {
+		public String path;
+		public String result;
+	}
 }
