@@ -446,12 +446,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
         {
           if(action == 'download')
           	alert("Select at least one collection to download");
-          else
+          else if (action == 'permission')
         	alert("Select at least one collection to manage permissions");
+          else if (action == 'updatemetadata')
+			alert("Select at least one collection to manage metadata");
           return false;
         }
         if (action == 'download') {
-	        document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
+			document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
 	        if(source == "criteria")
 	          document.getElementById("searchType").value = "criteria";
 	        else
@@ -463,8 +465,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("downloadFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	        document.getElementById("downloadType").value = "collections";
 	        document.getElementById("downloadFilesform").submit();
-        } else {
-        	document.getElementById("bulkPermissionsform").elements.namedItem("selectedFilePaths").value = updatedList;
+        } else if (action == 'permission') {
+			document.getElementById("bulkPermissionsform").elements.namedItem("selectedFilePaths").value = updatedList;
 	        if(source == "criteria")
 	          document.getElementById("searchType2").value = "criteria";
 	        else
@@ -476,6 +478,19 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("bulkPermissionsform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	        document.getElementById("downloadType2").value = "collections";
 	        document.getElementById("bulkPermissionsform").submit();
+        }  else if (action == 'updatemetadata') {
+			document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
+	        if(source == "criteria")
+	          document.getElementById("searchType3").value = "criteria";
+	        else
+	          document.getElementById("searchType3").value = "search";
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageNumber").value =  currentPage;
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageSize").value =  currentPageSize;
+	        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("bulkMetadataform").elements.namedItem("totalSize").value = totalSize.toString();
+	        document.getElementById("bulkMetadataform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("downloadType3").value = "collections";
+	        document.getElementById("bulkMetadataform").submit();
         }
   };
 
@@ -551,6 +566,9 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 									<a data-toggle="modal" id="bulkPermissionlink"
 										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('permission')"
 										><i class="fa fa-users" title="Manage Permissions on Selected Collections"></i></a>
+									<a data-toggle="modal" id="bulkMetadataUpdatelink"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('updatemetadata')"
+										><i class="fa fa-edit" title="Manage Metadata Updates on Selected Collections"></i></a>
 									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Collections: <strong id="totalSizeDisplay"></strong></label>
 								</div>
 							  </div>
@@ -595,7 +613,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="deselectedColumns" name="deselectedColumns" value=""/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
-						role="form" th:action="@{/downloadfiles}" 
+						role="form" th:action="@{/downloadfiles}"
 						method="post" enctype="multipart/form-data">
 						<input type="hidden" id="selectedFilePaths1" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType" name="downloadType" value=""/>
@@ -605,7 +623,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="queryName1" name="queryName"/>
 						<input type="hidden" id="totalSize1" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns1" name="deselectedColumns" value=""/>
-					</form> 
+					</form>
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
 						method="post" enctype="multipart/form-data">
@@ -618,6 +636,18 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="totalSize2" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns2" name="deselectedColumns" value=""/>
 					</form> 
+					<form class="form-horizontal" id="bulkMetadataform" action="#"
+						role="form" th:action="@{/bulkupdatemetadata}"
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="selectedFilePaths3" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="downloadType3" name="downloadType" value=""/>
+						<input type="hidden" id="searchType3" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber3" name="pageNumber"/>
+						<input type="hidden" id="pageSize3" name="pageSize"/>
+						<input type="hidden" id="queryName3" name="queryName"/>
+						<input type="hidden" id="totalSize3" name="totalSize"/>
+						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
+					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
 						method="post" enctype="multipart/form-data">
