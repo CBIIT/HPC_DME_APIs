@@ -330,7 +330,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("downloadType").value = "collections";
 	        document.getElementById("downloadFilesform").submit();
-        } else {
+        } else if (action == 'permission') {
         	document.getElementById("bulkPermissionsform").elements.namedItem("selectedFilePaths").value = updatedList;
 	        if(source == "criteria")
 	          document.getElementById("searchType2").value = "criteria";
@@ -341,6 +341,17 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("downloadType2").value = "collections";
 	        document.getElementById("bulkPermissionsform").submit();
+        } else if (action == 'updatemetadata') {
+			document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
+	        if(source == "criteria")
+	          document.getElementById("searchType3").value = "criteria";
+	        else
+	          document.getElementById("searchType3").value = "search";
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageNumber").value =  currentPage;
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageSize").value =  currentPageSize;
+	        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("downloadType3").value = "collections";
+	        document.getElementById("bulkMetadataform").submit();
         }
   };
 
@@ -413,6 +424,9 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 									<a data-toggle="modal" id="bulkPermissionlink"
 										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('permission')"
 										><i class="fa fa-users" title="Manage Permissions on Selected Collections"></i></a>
+									<a data-toggle="modal" id="bulkUpdateMetadatalink"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('updatemetadata')"
+										><i class="fa fa-edit" title="Manage Metadata Updates on Selected Collections"></i></a>
 								</div>
 							  </div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -471,6 +485,16 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="pageSize2" name="pageSize"/>
 						<input type="hidden" id="queryName2" name="queryName"/>
 					</form> 
+					<form class="form-horizontal" id="bulkMetadataform" action="#"
+						role="form" th:action="@{/bulkupdatemetadata}"
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="selectedFilePaths3" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="downloadType3" name="downloadType" value=""/>
+						<input type="hidden" id="searchType3" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber3" name="pageNumber"/>
+						<input type="hidden" id="pageSize3" name="pageSize"/>
+						<input type="hidden" id="queryName3" name="queryName"/>
+					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
 						method="post" enctype="multipart/form-data">
