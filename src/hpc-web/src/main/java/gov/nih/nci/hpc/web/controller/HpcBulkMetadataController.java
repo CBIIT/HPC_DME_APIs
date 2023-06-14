@@ -78,9 +78,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	 * POST action to render bulk meta data update page
 	 * 
 	 * @param body
-	 * @param path
-	 * @param type
-	 * @param assignType
 	 * @param model
 	 * @param bindingResult
 	 * @param session
@@ -106,6 +103,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		hpcDownloadDatafile.setDownloadType(downloadType);
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
 
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("error", "Data file list is missing!");
@@ -114,13 +112,14 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			List<String> paths = new ArrayList<>();
 			while (tokens.hasMoreTokens()) {
 				String pathStr = tokens.nextToken();
-				paths.add(pathStr.substring(pathStr.lastIndexOf(":") + 1));
-				
-				hpcDownloadDatafile.getSelectedPaths().add(
-				    pathStr.substring(pathStr.lastIndexOf(":") + 1));
+				String path = pathStr.substring(pathStr.lastIndexOf(":") + 1);
+				paths.add(path);
+				hpcDownloadDatafile.getSelectedPaths().add(path);
+				HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
+				pathGridEntry.path = path;
+				pathGridEntry.result = "";
 			}
 	        model.addAttribute("paths", paths);
-
 		}
 		model.addAttribute("downloadType", downloadType);
 
@@ -167,7 +166,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			RedirectAttributes redirectAttrs) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
-		List<HpcPathUpdateDetails> pathDetails = new ArrayList<>();
+		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
 		//if (authToken == null) {
 		//	return "redirect:/";
 		//}
@@ -186,7 +185,11 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	    session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 	            
 
-		List<String> paths = bulkMetadataUpdateRequest.getSelectedFilePaths();		
+		List<String> paths = new ArrayList<>();
+		for(String path: bulkMetadataUpdateRequest.getSelectedFilePaths()) {
+		  path = path.replaceAll("\\[", "").replaceAll("\\]","");
+		  paths.add(path);
+		}
 		HpcSearch hpcSaveSearch = (HpcSearch) session.getAttribute("hpcSavedSearch");
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		String result = "";
@@ -214,16 +217,16 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 					List<HpcMetadataUpdateItem> completedItems =  bulkUpdateResponseDTO.getCompletedItems();
 					List<HpcMetadataUpdateItem> failedItems =  bulkUpdateResponseDTO.getFailedItems();
 					for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getCompletedItems()) {
-						HpcPathUpdateDetails pathUpdateDetails = new HpcPathUpdateDetails();
-						pathUpdateDetails.path = item.getPath();
-						pathUpdateDetails.result = "success";
-						pathDetails.add(pathUpdateDetails);
+						HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
+						pathGridEntry.path = item.getPath();
+						pathGridEntry.result = "success";
+						pathDetails.add(pathGridEntry);
 					}
 					for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getFailedItems()) {
-						HpcPathUpdateDetails pathUpdateDetails = new HpcPathUpdateDetails();
-						pathUpdateDetails.path = item.getPath();
-						pathUpdateDetails.result = item.getMessage();
-						pathDetails.add(pathUpdateDetails);
+						HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
+						pathGridEntry.path = item.getPath();
+						pathGridEntry.result = item.getMessage();
+						pathDetails.add(pathGridEntry);
 					}
  					model.addAttribute("pathDetails", pathDetails);
 					return "updatemetadatabulk";
@@ -255,7 +258,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		return result;
 	}
 
-	private class HpcPathUpdateDetails {
+	private class HpcPathGridEntry {
 		public String path;
 		public String result;
 	}

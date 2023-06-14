@@ -117,7 +117,6 @@
 								</div>
 							</div>
 
-
 							<div th:if="${error == null}">
 								<!--panel-body start-->
 								<div class="panel-body">
@@ -177,6 +176,7 @@
 				</div>
 				<div th:if="${pathDetails != null and pathDetails.size() > 0}">
 					<table id="pathDetailsGrid" class="display" style="width:100%">
+						<caption style="font-weight:bold">Results after Metadata Update</caption>
 						<thead>
 							<tr id='attrRow0'>					
 								<th class="column-heading" id='path2' th:text="Path"></th>
@@ -228,7 +228,7 @@
 		});
 
 		$(document).ready(function () {
-			$('#pathDetailsgrid').DataTable();
+			$('#pathDetailsGrid').DataTable();
 		});
 
 		function enableSave() {
