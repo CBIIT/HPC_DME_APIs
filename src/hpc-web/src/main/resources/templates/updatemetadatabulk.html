@@ -185,7 +185,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="pathDetail : ${pathDetails}">
-								<td id='path3' th:text="${pathDetail.path}"></td>
+								<td><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"></a></td>
 								<td id='path31' th:text="${pathDetail.result}"></td>
 							</tr>
 						</tbody>
