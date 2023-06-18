@@ -1055,7 +1055,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
 
 		} catch (HpcException e) {
-			logger.error("Failed to get cancellation request for task ID: " + taskId, e);
+			logger.error("Failed to get cancellation request for task ID: " + taskId);
 			// If it can not find the collection download task, it is cancelled and removed
 			// from the table.
 			return true;

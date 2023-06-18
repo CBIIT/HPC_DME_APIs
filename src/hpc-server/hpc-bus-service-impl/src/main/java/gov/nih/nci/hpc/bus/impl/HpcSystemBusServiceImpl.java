@@ -1394,6 +1394,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									"download task: {} - A cancelleation request submitted for the collection download task {} [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getCollectionDownloadTaskId(),
 									downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+							dataTransferService.cancelCollectionDownloadTaskItems(downloadTask.getCollectionDownloadTaskId());
 							markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 							break;
 						}
