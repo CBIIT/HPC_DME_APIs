@@ -149,6 +149,34 @@
 													</div>
 												</div>
 											</form>
+											<form class="form-horizontal" id="criteriaForm"
+												th:object="${hpcSearch}" method="POST" th:action="@{/criteria}">
+												<input type="hidden" name="actionType" id="actionTypeId" value="pagination"/>
+												<input type="hidden"
+													class="form-control" name="pageNumber" id="pageNumberId"
+													 th:value="${hpcSearch.getPageNumber()}"/>
+												<input type="hidden"
+													class="form-control" name="pageSize" id="pageSizeId"
+													 th:value="${hpcSearch.getPageSize()}"/>
+												 <input type="hidden" name="totalSize" id="totalSizeId"
+													th:value="${hpcSearch.getTotalSize()}"/>
+												 <input type="hidden"
+													class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>
+											</form>
+											<form class="form-horizontal" id="searchForm"
+												th:object="${hpcSearch}" method="POST" th:action="@{/search}">
+												<input type="hidden" name="queryName" id="queryName"
+													th:value="${hpcSearch.getQueryName()}" /> <input type="hidden"
+													class="form-control" name="pageNumber" id="pageNumber"
+													 th:value="${hpcSearch.getPageNumber()}"/> <input type="hidden"
+													class="form-control" name="pageSize" id="pageSize"
+													 th:value="${hpcSearch.getPageSize()}"/>
+												<input type="hidden" name="totalSize" id="totalSize"
+													 th:value="${hpcSearch.getTotalSize()}"/>
+												<input type="hidden"
+													class="form-control" name="deselectedColumns" id="deselectedColumns"/>
+											</form>
+
 										</div>
 									</div>
 								</div>
@@ -168,8 +196,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="path : ${paths}">
-							   
-							   <td id='path1' th:text="${path}"></td>
+								<td id='path1'><a th:href="@{/collection(path=${path}, action=view)}"  th:text="${path}"></a></td>
 							</tr>
 						</tbody>
 					</table>
@@ -185,7 +212,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="pathDetail : ${pathDetails}">
-								<td><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"></a></td>
+								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"></a></td>
 								<td id='path31' th:text="${pathDetail.result}"></td>
 							</tr>
 						</tbody>
