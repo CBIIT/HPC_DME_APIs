@@ -234,11 +234,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Update the 'metadata updated' system-metadata to record the time of this
 		// metadata update.
-		metadataEntries.add(generateMetadataUpdatedMetadata());
+		List<HpcMetadataEntry> updatedMetadataEntries = new ArrayList<>();
+		updatedMetadataEntries.addAll(metadataEntries);
+		updatedMetadataEntries.add(generateMetadataUpdatedMetadata());
 
 		// Update the metadata.
 		dataManagementProxy.updateCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
-				metadataEntries);
+				updatedMetadataEntries);
 	}
 
 	@Override
@@ -864,13 +866,15 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Update the 'metadata updated' system-metadata to record the time of this
 		// metadata update. This is skipped for updated the data object w/ extracted
 		// metadata (performed during registration).
+		List<HpcMetadataEntry> updatedMetadataEntries = new ArrayList<>();
+		updatedMetadataEntries.addAll(metadataEntries);
 		if (!extractedMetadata) {
-			metadataEntries.add(generateMetadataUpdatedMetadata());
+			updatedMetadataEntries.add(generateMetadataUpdatedMetadata());
 		}
 
 		// Update the metadata.
 		dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
-				metadataEntries);
+				updatedMetadataEntries);
 	}
 
 	@Override
