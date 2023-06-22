@@ -19,6 +19,8 @@ import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -74,6 +76,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	private String serverDataObjectURL;
 	@Value("${hpc.serviceaccount}")
 	private String serviceAccount;
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
 	/**
 	 * POST action to render bulk meta data update page
 	 * 
@@ -140,9 +144,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		session.setAttribute("hpcSavedSearch", hpcSaveSearch);
-
-		//model.addAttribute("bulkUpdateRequest", new HpcBulkMetadataUpdateRequest());
-		
 		model.addAttribute("bulkMetadataUpdateRequest", new HpcBulkMetadataUpdateRequest());
 		
 		return "updatemetadatabulk";
@@ -167,10 +168,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			RedirectAttributes redirectAttrs) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
-		//if (authToken == null) {
-		//	return "redirect:/";
-		//}
-		//String selectedPathsStr = request.getParameter("selectedFilePaths");
 		String downloadType = request.getParameter("downloadType");
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		hpcDownloadDatafile.setDownloadType(downloadType);
@@ -248,14 +245,14 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				}
 			}
 		} catch (HttpStatusCodeException e) {
-			//throw e.toString();
-			return "";
+			model.addAttribute("updateStatus", e.getMessage());
+	        logger.info("Failed to update metadata for ", e.getMessage());
 		} catch (RestClientException e) {
-			//throw e;
-			return "";
+            model.addAttribute("updateStatus", e.getMessage());
+            logger.info("Failed to update metadata for ", e.getMessage());
 		} catch (Exception e) {
-			return "";
-			//throw e;
+            model.addAttribute("updateStatus", e.getMessage());
+            logger.info("Failed to update metadata for ", e.getMessage());
 		}
 		return result;
 	}
