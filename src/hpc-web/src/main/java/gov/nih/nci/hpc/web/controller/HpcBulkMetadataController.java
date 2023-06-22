@@ -182,6 +182,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		metadataList.add(metadataEntry);
 	    model.addAttribute("downloadType", downloadType);
 	    model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+	    model.addAttribute("metadataName", bulkMetadataUpdateRequest.getMetadataName());
+	    model.addAttribute("metadataValue", bulkMetadataUpdateRequest.getMetadataValue());
 	    session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 	            
 
