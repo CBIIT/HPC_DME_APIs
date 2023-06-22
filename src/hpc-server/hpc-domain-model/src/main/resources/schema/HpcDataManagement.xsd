@@ -79,6 +79,8 @@
 				<xsd:element name="registrationEventWithDownloadRequestURL" type="xsd:boolean" />
 				<xsd:element name="deletionAllowed" type="xsd:boolean" />
 				<xsd:element name="restrictMetadata" type="xsd:boolean" />
+				<xsd:element name="storageRecoveryConfiguration" 
+					type="hpc-domain-model:HpcStorageRecoveryConfiguration" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -282,4 +284,12 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:complexType name="HpcStorageRecoveryConfiguration">
+		<xsd:sequence>
+			<xsd:element name="expirationDays" type="xsd:long" />
+			<xsd:element name="compoundQuery" 
+				type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
+		</xsd:sequence>
+	</xsd:complexType>
 </xsd:schema>

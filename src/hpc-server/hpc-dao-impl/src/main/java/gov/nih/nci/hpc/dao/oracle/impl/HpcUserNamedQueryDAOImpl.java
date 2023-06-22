@@ -303,7 +303,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	 * @return A Compound Metadata Query.
 	 */
 	@SuppressWarnings("unchecked")
-	private HpcCompoundMetadataQuery fromJSON(JSONObject jsonCompoundMetadataQuery) {
+	static public HpcCompoundMetadataQuery fromJSON(JSONObject jsonCompoundMetadataQuery) {
 		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
 		compoundMetadataQuery.setOperator(
 				HpcCompoundMetadataQueryOperator.fromValue(jsonCompoundMetadataQuery.get("operator").toString()));
@@ -335,7 +335,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	 * @param jsonMetadataQuery The metadata query JSON object.
 	 * @return A Metadata Query.
 	 */
-	private HpcMetadataQuery metadataQueryFromJSON(JSONObject jsonMetadataQuery) {
+	static private HpcMetadataQuery metadataQueryFromJSON(JSONObject jsonMetadataQuery) {
 		HpcMetadataQuery metadataQuery = new HpcMetadataQuery();
 
 		Object attribute = jsonMetadataQuery.get("attribute");
