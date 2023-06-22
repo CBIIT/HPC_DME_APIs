@@ -9,11 +9,13 @@
 package gov.nih.nci.hpc.service;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
@@ -282,7 +284,7 @@ public interface HpcSecurityService {
 	 * 
 	 * @throws HpcException as service failure
 	 */
-	public void refreshDataManagementConfigurations() throws HpcException;
+	public Collection<HpcDataManagementConfiguration> refreshDataManagementConfigurations() throws HpcException;
 
 	/**
 	 * Obtain user's first and last name from LDAP.
