@@ -126,19 +126,24 @@
 												role="form" th:action="@{/assignbulkmetadata}"
 												th:object="${bulkMetadataUpdateRequest}" method="POST"
 												enctype="multipart/form-data">
-												<!-- input type="hidden" th:field="*{type}" / -->
 												<input type="hidden" name="downloadType" id="downloadType"
 													th:value="${hpcDownloadDatafile.downloadType}" />
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 													th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
 												<div class="form-group" th:if="${downloadType == 'collections'}">
 												  <p>This page allows you to add or modify the Metadata for the selected collections.</p>
-												</div>
-												<div class="row"><table id="metaAttrTable"><tr>
-													<td><input type="text" id="mdname" name="metadataName" placeholder="Enter Metadata attribute" th:value="${bulkMetadataUpdateRequest.getMetadataName()}" /></td>
-													<td><input type="text" id="mdval" name="metadataValue" placeholder="Enter Metadata value" th:value="${bulkMetadataUpdateRequest.getMetadataValue()}" /></td>
-												</tr></table></div>
-												<div class="form-group">
+													<table class="table table-bordered  col-md-12" id="metaAttrTable">
+														<thead>
+															<tr>
+																<th class="col-md-2">Attribute Name</th>
+																<th class="col-md-4">Value</th>
+															</tr>
+														</thead>
+														<tbody><tr>
+															<td><input class="form-control" type="text" id="mdname" name="metadataName" placeholder="Enter Metadata attribute" th:value="${bulkMetadataUpdateRequest.getMetadataName()}" /></td>
+															<td><input class="form-control" type="text" id="mdval" name="metadataValue" placeholder="Enter Metadata value" th:value="${bulkMetadataUpdateRequest.getMetadataValue()}" /></td>
+														</tr></tbody>
+													</table>
 													<div class="col-sm-offset-2 col-sm-10" align="right" >
 													  <div class="row">
 													  	<button type="button" class="btn btn-default"
@@ -203,7 +208,7 @@
 				</div>
 				<div th:if="${pathDetails != null and pathDetails.size() > 0}">
 					<table id="pathDetailsGrid" class="display" style="width:100%">
-						<caption style="font-weight:bold">Results after Metadata Update</caption>
+						<caption style="font-weight:bold" th:text="'Results after Bulk Metadata Update with (attribute=' + ${metadataName} + ', value=' + ${metadataValue} + ')'"></caption>
 						<thead>
 							<tr id='attrRow0'>					
 								<th class="column-heading" id='path2' th:text="Path"></th>
@@ -251,11 +256,15 @@
 		});
 
 		$(document).ready(function () {
-			$('#pathgrid').DataTable();
+			$('#pathgrid').DataTable( {
+				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
+			} );
 		});
 
 		$(document).ready(function () {
-			$('#pathDetailsGrid').DataTable();
+			$('#pathDetailsGrid').DataTable( {
+				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
+			} );
 		});
 
 		function enableSave() {
