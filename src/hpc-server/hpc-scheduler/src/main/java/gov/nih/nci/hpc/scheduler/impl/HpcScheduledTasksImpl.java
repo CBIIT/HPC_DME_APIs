@@ -269,6 +269,18 @@ public class HpcScheduledTasksImpl {
 		execute("completeRestoreRequestTask()", systemBusService::completeRestoreRequest, logger);
 	}
 
+	/** Permanently remove deleted objects. */
+	@Scheduled(cron = "${hpc.scheduler.cron.removeDeletedDataObjects.delay}")
+	private void removeDeletedDataObjectsTask() {
+		execute("removeDeletedDataObjectsTask()", systemBusService::removeDeletedDataObjects, logger);
+	}
+
+	/** Storage recovery. */
+	@Scheduled(cron = "${hpc.scheduler.cron.recoverStorage.delay}")
+	private void recoverStorageTask() {
+		execute("recoverStorageTask()", systemBusService::recoverStorage, logger);
+	}
+
 	/** Send Annual review emails. */
 	@Scheduled(cron = "${hpc.scheduler.cron.sendAnnualReview.delay}")
 	private void sendAnnualReviewTask() {
@@ -279,12 +291,6 @@ public class HpcScheduledTasksImpl {
 	@Scheduled(cron = "${hpc.scheduler.cron.sendAnnualReviewReminder.delay}")
 	private void sendAnnualReviewReminderTask() {
 		execute("sendAnnualReviewReminderTask()", reviewBusService::sendAnnualReviewReminder, logger);
-	}
-
-	/** Permanently remove deleted objects. */
-	@Scheduled(cron = "${hpc.scheduler.cron.removeDeletedDataObjects.delay}")
-	private void removeDeletedDataObjectsTask() {
-		execute("removeDeletedDataObjectsTask()", systemBusService::removeDeletedDataObjects, logger);
 	}
 
 	/** Send Monthly user stored query results. */

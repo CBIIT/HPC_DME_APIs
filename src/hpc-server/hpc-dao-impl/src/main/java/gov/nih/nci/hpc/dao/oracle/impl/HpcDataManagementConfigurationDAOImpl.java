@@ -10,6 +10,8 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import static gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl.fromJSON;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,6 +35,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
+import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -73,7 +76,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		dataManagementConfiguration
 				.setS3DefaultDownloadConfigurationId(rs.getString("S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID"));
 		dataManagementConfiguration.setCreateArchiveMetadata(rs.getBoolean("CREATE_ARCHIVE_METADATA"));
-		dataManagementConfiguration.setRegistrationEventWithDownloadRequestURL(rs.getBoolean("REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL"));
+		dataManagementConfiguration.setRegistrationEventWithDownloadRequestURL(
+				rs.getBoolean("REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL"));
 		dataManagementConfiguration.setDeletionAllowed(rs.getBoolean("DELETION_ALLOWED_AFTER_90_DAYS"));
 		dataManagementConfiguration.setRestrictMetadata(rs.getBoolean("RESTRICT_METADATA"));
 
@@ -108,6 +112,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 					getMetadataValidationRulesFromJSONStr(rs.getString("COLLECTION_METADATA_VALIDATION_RULES")));
 			dataManagementConfiguration.getDataObjectMetadataValidationRules().addAll(
 					getMetadataValidationRulesFromJSONStr(rs.getString("DATA_OBJECT_METADATA_VALIDATION_RULES")));
+			dataManagementConfiguration.setStorageRecoveryConfiguration(
+					geStorageRecoveryConfigurationFromJSONStr(rs.getString("STORAGE_RECOVERY_CONFIGURATION")));
 
 		} catch (HpcException e) {
 			throw new SQLException(e);
@@ -276,6 +282,57 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		}
 
 		return dataHierarchy;
+	}
+
+	/**
+	 * Instantiate a storage recovery configuration from a string.
+	 *
+	 * @param storageRecoveryConfigurationJSONStr The data object storage recovery
+	 *                                            configuration JSON string.
+	 * @return HpcStorageRecoveryConfiguration
+	 * @throws HpcException If failed to parse JSON.
+	 */
+	private HpcStorageRecoveryConfiguration geStorageRecoveryConfigurationFromJSONStr(
+			String storageRecoveryConfigurationJSONStr) throws HpcException {
+		if (storageRecoveryConfigurationJSONStr == null) {
+			return null;
+		}
+
+		try {
+			return storageArchiveConfigurationFromJSON(
+					(JSONObject) new JSONParser().parse(storageRecoveryConfigurationJSONStr));
+
+		} catch (Exception e) {
+			throw new HpcException(
+					"Failed to parse storage recovery configuration JSON: " + storageRecoveryConfigurationJSONStr,
+					HpcErrorType.DATABASE_ERROR, e);
+		}
+	}
+
+	/**
+	 * Instantiate a HpcStorageRecoveryConfiguration from JSON object.
+	 *
+	 * @param jsonStorageArchiveConfiguration The storage recovery configuration
+	 *                                        JSON object.
+	 * @return HpcStorageRecoveryConfiguration
+	 * @throws HpcException If failed to parse the JSON.
+	 */
+	private HpcStorageRecoveryConfiguration storageArchiveConfigurationFromJSON(
+			JSONObject jsonStorageArchiveConfiguration) throws HpcException {
+		HpcStorageRecoveryConfiguration storageArchiveConfiguration = new HpcStorageRecoveryConfiguration();
+
+		if (!jsonStorageArchiveConfiguration.containsKey("expirationDays")) {
+			throw new HpcException("Invalid storage archive configuration: " + jsonStorageArchiveConfiguration,
+					HpcErrorType.DATABASE_ERROR);
+		}
+
+		storageArchiveConfiguration.setExpirationDays((long) jsonStorageArchiveConfiguration.get("expirationDays"));
+		if (jsonStorageArchiveConfiguration.containsKey("compoundQuery")) {
+			storageArchiveConfiguration
+					.setCompoundQuery(fromJSON((JSONObject) jsonStorageArchiveConfiguration.get("compoundQuery")));
+		}
+
+		return storageArchiveConfiguration;
 	}
 
 	/**

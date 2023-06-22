@@ -1324,6 +1324,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
+	@HpcExecuteAsSystemAccount
+	public void recoverStorage() throws HpcException {
+		securityService.refreshDataManagementConfigurations().forEach(dataManagementConfiguration -> {
+			if (dataManagementConfiguration.getStorageRecoveryConfiguration() != null) {
+				logger.info("Storage recovery for config-id: {}", dataManagementConfiguration.getId());
+			}
+		});
+	}
+
+	@Override
 	public void closeConnection() {
 		dataManagementService.closeConnection();
 	}
@@ -1394,7 +1404,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									"download task: {} - A cancelleation request submitted for the collection download task {} [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getCollectionDownloadTaskId(),
 									downloadTask.getDataTransferType(), downloadTask.getDestinationType());
-							dataTransferService.cancelCollectionDownloadTaskItems(downloadTask.getCollectionDownloadTaskId());
+							dataTransferService
+									.cancelCollectionDownloadTaskItems(downloadTask.getCollectionDownloadTaskId());
 							markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 							break;
 						}

@@ -298,6 +298,13 @@ public interface HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void removeDeletedDataObjects() throws HpcException;
+	
+	/**
+	 * Recover storage.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void recoverStorage() throws HpcException;
 
 	/** Close connection to Data Management system for the current service call. */
 	public void closeConnection();
