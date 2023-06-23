@@ -205,7 +205,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    //If pageSize is specified, replace the default defined
+    // If pageSize is specified, replace the default defined
     int finalPageSize = pagination.getPageSize();
     int finalOffset = pagination.getOffset(page);
     if(pageSize != 0) {
