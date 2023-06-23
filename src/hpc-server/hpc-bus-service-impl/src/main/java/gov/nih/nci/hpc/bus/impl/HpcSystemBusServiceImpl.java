@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -67,6 +68,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
@@ -88,6 +93,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcDataTieringService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
@@ -146,6 +152,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Autowired
 	private HpcDataTieringService dataTieringService = null;
 
+	// Data Search Application Service instance.
+	@Autowired
+	private HpcDataSearchService dataSearchService = null;
+
 	// The collection download task executor.
 	@Autowired
 	@Qualifier("hpcCollectionDownloadTaskExecutor")
@@ -178,7 +188,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// task. Note that just one server is expected to perform this task
 	@Value("${hpc.bus.processCollectionDownloadTasksPerformer}")
 	private Boolean processCollectionDownloadTasksPerformer;
-
+	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -1326,9 +1336,35 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void recoverStorage() throws HpcException {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+		
 		securityService.refreshDataManagementConfigurations().forEach(dataManagementConfiguration -> {
 			if (dataManagementConfiguration.getStorageRecoveryConfiguration() != null) {
+				try {
 				logger.info("Storage recovery for config-id: {}", dataManagementConfiguration.getId());
+				
+				Calendar expirationDate = Calendar.getInstance();
+				expirationDate.add(Calendar.DATE, -(int)dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays());      
+				String expirationDateStr =  dateFormat.format(expirationDate);
+				logger.info("Storage recovery formatted expiration date: {}", expirationDateStr);
+				
+				HpcCompoundMetadataQuery compoundQuery = new HpcCompoundMetadataQuery();
+				HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
+				expirationQuery.setAttribute("data_transfer_started");
+				expirationQuery.setFormat("MM-DD-YYYY HH24:MI:SS");
+				expirationQuery.setOperator(HpcMetadataQueryOperator.TIMESTAMP_LESS_OR_EQUAL);
+				expirationQuery.setValue("03-10-2020");
+				
+				compoundQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+				compoundQuery.getQueries().add(expirationQuery);
+				
+				int a = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(), compoundQuery);
+				int b = dataSearchService.getDataObjectCount(null, compoundQuery);
+				logger.info("Storage recovery count: {} {}", a, b);
+				
+				} catch(HpcException e) {
+					
+				}
 			}
 		});
 	}
