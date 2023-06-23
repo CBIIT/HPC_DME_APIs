@@ -1343,25 +1343,31 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				try {
 					logger.info("Storage recovery for config-id: {}", dataManagementConfiguration.getId());
 
+					// Create expiration date query.
+					HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
 					Calendar expirationDate = Calendar.getInstance();
 					expirationDate.add(Calendar.DATE,
 							-(int) dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays());
-					String expirationDateStr = dateFormat.format(expirationDate.getTime());
-					logger.info("Storage recovery formatted expiration date: {}", expirationDateStr);
-
-					HpcCompoundMetadataQuery compoundQuery = new HpcCompoundMetadataQuery();
-					HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
 					expirationQuery.setAttribute("data_transfer_started");
 					expirationQuery.setFormat("MM-DD-YYYY HH24:MI:SS");
 					expirationQuery.setOperator(HpcMetadataQueryOperator.TIMESTAMP_LESS_OR_EQUAL);
-					expirationQuery.setValue("03-10-2020");
-
-					compoundQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
-					compoundQuery.getQueries().add(expirationQuery);
+					expirationQuery.setValue(dateFormat.format(expirationDate.getTime()));
+					
+					// Create the configuration ID query
+					HpcMetadataQuery configIdQuery = new HpcMetadataQuery();
+					configIdQuery.setAttribute("configuration_id");
+					configIdQuery.setOperator(HpcMetadataQueryOperator.EQUAL);
+					configIdQuery.setValue(dataManagementConfiguration.getId());
+					
+					// Combine all into a compound query
+					HpcCompoundMetadataQuery storageRecoveryQuery = new HpcCompoundMetadataQuery();
+					storageRecoveryQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+					storageRecoveryQuery.getQueries().add(expirationQuery);
+					storageRecoveryQuery.getQueries().add(configIdQuery);
 
 					int a = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(),
-							compoundQuery);
-					int b = dataSearchService.getDataObjectCount(null, compoundQuery);
+							storageRecoveryQuery);
+					int b = dataSearchService.getDataObjectCount(null, storageRecoveryQuery);
 					logger.info("Storage recovery count: {} {}", a, b);
 
 				} catch (HpcException e) {
