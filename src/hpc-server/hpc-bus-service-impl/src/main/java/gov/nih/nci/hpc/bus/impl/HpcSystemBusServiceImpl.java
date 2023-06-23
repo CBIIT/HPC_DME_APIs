@@ -188,7 +188,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// task. Note that just one server is expected to perform this task
 	@Value("${hpc.bus.processCollectionDownloadTasksPerformer}")
 	private Boolean processCollectionDownloadTasksPerformer;
-	
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -1337,33 +1337,35 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@HpcExecuteAsSystemAccount
 	public void recoverStorage() throws HpcException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
-		
+
 		securityService.refreshDataManagementConfigurations().forEach(dataManagementConfiguration -> {
 			if (dataManagementConfiguration.getStorageRecoveryConfiguration() != null) {
 				try {
-				logger.info("Storage recovery for config-id: {}", dataManagementConfiguration.getId());
-				
-				Calendar expirationDate = Calendar.getInstance();
-				expirationDate.add(Calendar.DATE, -(int)dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays());      
-				String expirationDateStr =  dateFormat.format(expirationDate);
-				logger.info("Storage recovery formatted expiration date: {}", expirationDateStr);
-				
-				HpcCompoundMetadataQuery compoundQuery = new HpcCompoundMetadataQuery();
-				HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
-				expirationQuery.setAttribute("data_transfer_started");
-				expirationQuery.setFormat("MM-DD-YYYY HH24:MI:SS");
-				expirationQuery.setOperator(HpcMetadataQueryOperator.TIMESTAMP_LESS_OR_EQUAL);
-				expirationQuery.setValue("03-10-2020");
-				
-				compoundQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
-				compoundQuery.getQueries().add(expirationQuery);
-				
-				int a = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(), compoundQuery);
-				int b = dataSearchService.getDataObjectCount(null, compoundQuery);
-				logger.info("Storage recovery count: {} {}", a, b);
-				
-				} catch(HpcException e) {
-					
+					logger.info("Storage recovery for config-id: {}", dataManagementConfiguration.getId());
+
+					Calendar expirationDate = Calendar.getInstance();
+					expirationDate.add(Calendar.DATE,
+							-(int) dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays());
+					String expirationDateStr = dateFormat.format(expirationDate.getTime());
+					logger.info("Storage recovery formatted expiration date: {}", expirationDateStr);
+
+					HpcCompoundMetadataQuery compoundQuery = new HpcCompoundMetadataQuery();
+					HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
+					expirationQuery.setAttribute("data_transfer_started");
+					expirationQuery.setFormat("MM-DD-YYYY HH24:MI:SS");
+					expirationQuery.setOperator(HpcMetadataQueryOperator.TIMESTAMP_LESS_OR_EQUAL);
+					expirationQuery.setValue("03-10-2020");
+
+					compoundQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+					compoundQuery.getQueries().add(expirationQuery);
+
+					int a = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(),
+							compoundQuery);
+					int b = dataSearchService.getDataObjectCount(null, compoundQuery);
+					logger.info("Storage recovery count: {} {}", a, b);
+
+				} catch (HpcException e) {
+
 				}
 			}
 		});
