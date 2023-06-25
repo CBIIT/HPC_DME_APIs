@@ -1351,7 +1351,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							-(int) dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays());
 					String expirationDateStr = dateFormat.format(expirationDate.getTime());
 
-					logger.info("Storage recovery [config: {}] - Started. Expiration Days: {}, Expiration Date:",
+					logger.info("Storage recovery [config: {}] - Started. Expiration Days: {}, Expiration Date: {}",
 							dataManagementConfiguration.getId(),
 							dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays(),
 							expirationDateStr);
@@ -1374,28 +1374,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					storageRecoveryQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
 					storageRecoveryQuery.getQueries().add(expirationQuery);
 					storageRecoveryQuery.getQueries().add(configIdQuery);
-
-					//
-					int count1 = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(),
-							storageRecoveryQuery);
-					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
-							storageRecoveryQuery, 1, count1);
-
-					logger.info(
-							"Storage recovery [config: {}] - {} data objects to recover [exp only] storage. {} paths received",
-							dataManagementConfiguration.getId(), count1, dataObjectPaths.size());
-					//
 					if (dataManagementConfiguration.getStorageRecoveryConfiguration().getCompoundQuery() != null) {
 						storageRecoveryQuery.getCompoundQueries()
 								.add(dataManagementConfiguration.getStorageRecoveryConfiguration().getCompoundQuery());
 					}
-					int count = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(),
-							storageRecoveryQuery);
-					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
-							storageRecoveryQuery, 1, count);
 
-					logger.info("Storage recovery [config: {}] - {} data objects to recover storage. {} paths received",
-							dataManagementConfiguration.getId(), count, dataObjectPaths.size());
+					// Run the compound query to get the data object paths to recover storage for.
+					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
+							storageRecoveryQuery, 1, dataSearchService.getDataObjectCount(
+									dataManagementConfiguration.getBasePath(), storageRecoveryQuery));
+
+					logger.info("Storage recovery [config: {}] - {} data objects to recover storage",
+							dataManagementConfiguration.getId(), dataObjectPaths.size());
 
 				} catch (HpcException e) {
 					logger.error("Storage recovery [config: {}] - failed to query data objects for storage recovery",
