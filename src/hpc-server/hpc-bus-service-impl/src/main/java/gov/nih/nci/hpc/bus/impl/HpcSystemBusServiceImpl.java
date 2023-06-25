@@ -1338,43 +1338,74 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void recoverStorage() throws HpcException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
 
-		securityService.refreshDataManagementConfigurations().forEach(dataManagementConfiguration -> {
+		for (HpcDataManagementConfiguration dataManagementConfiguration : securityService
+				.refreshDataManagementConfigurations()) {
 			if (dataManagementConfiguration.getStorageRecoveryConfiguration() != null) {
+				// Get a list of data objects to recover storage for this data management
+				// configuration.
+				List<String> dataObjectPaths = null;
 				try {
-					logger.info("Storage recovery for config-id: {}", dataManagementConfiguration.getId());
-
-					// Create expiration date query.
-					HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
+					// Calculate the expiration date for this config.
 					Calendar expirationDate = Calendar.getInstance();
 					expirationDate.add(Calendar.DATE,
 							-(int) dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays());
+					String expirationDateStr = dateFormat.format(expirationDate.getTime());
+
+					logger.info("Storage recovery [config: {}] - Started. Expiration Days: {}, Expiration Date:",
+							dataManagementConfiguration.getId(),
+							dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays(),
+							expirationDateStr);
+
+					// Create expiration date query.
+					HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
 					expirationQuery.setAttribute("data_transfer_started");
 					expirationQuery.setFormat("MM-DD-YYYY HH24:MI:SS");
 					expirationQuery.setOperator(HpcMetadataQueryOperator.TIMESTAMP_LESS_OR_EQUAL);
-					expirationQuery.setValue(dateFormat.format(expirationDate.getTime()));
-					
-					// Create the configuration ID query
+					expirationQuery.setValue(expirationDateStr);
+
+					// Create the configuration ID query.
 					HpcMetadataQuery configIdQuery = new HpcMetadataQuery();
 					configIdQuery.setAttribute("configuration_id");
 					configIdQuery.setOperator(HpcMetadataQueryOperator.EQUAL);
 					configIdQuery.setValue(dataManagementConfiguration.getId());
-					
-					// Combine all into a compound query
+
+					// Combine all into a compound query.
 					HpcCompoundMetadataQuery storageRecoveryQuery = new HpcCompoundMetadataQuery();
 					storageRecoveryQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
 					storageRecoveryQuery.getQueries().add(expirationQuery);
 					storageRecoveryQuery.getQueries().add(configIdQuery);
 
-					int a = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(),
+					//
+					int count1 = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(),
 							storageRecoveryQuery);
-					int b = dataSearchService.getDataObjectCount(null, storageRecoveryQuery);
-					logger.info("Storage recovery count: {} {}", a, b);
+					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
+							storageRecoveryQuery, 1, count1);
+
+					logger.info(
+							"Storage recovery [config: {}] - {} data objects to recover [exp only] storage. {} paths received",
+							dataManagementConfiguration.getId(), count1, dataObjectPaths.size());
+					//
+					if (dataManagementConfiguration.getStorageRecoveryConfiguration().getCompoundQuery() != null) {
+						storageRecoveryQuery.getCompoundQueries()
+								.add(dataManagementConfiguration.getStorageRecoveryConfiguration().getCompoundQuery());
+					}
+					int count = dataSearchService.getDataObjectCount(dataManagementConfiguration.getBasePath(),
+							storageRecoveryQuery);
+					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
+							storageRecoveryQuery, 1, count);
+
+					logger.info("Storage recovery [config: {}] - {} data objects to recover storage. {} paths received",
+							dataManagementConfiguration.getId(), count, dataObjectPaths.size());
 
 				} catch (HpcException e) {
-
+					logger.error("Storage recovery [config: {}] - failed to query data objects for storage recovery",
+							dataManagementConfiguration.getId());
+					continue;
 				}
+
+				logger.info("Storage recovery [config: {}] - Completed", dataManagementConfiguration.getId());
 			}
-		});
+		}
 	}
 
 	@Override
