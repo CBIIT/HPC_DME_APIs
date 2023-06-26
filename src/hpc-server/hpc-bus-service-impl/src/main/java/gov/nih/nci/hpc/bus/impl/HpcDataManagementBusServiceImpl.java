@@ -93,6 +93,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
@@ -674,7 +675,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_COLLECTION, metadataEntries, null,
-					null, deleted, null, message, null, totalSize);
+					null, deleted, null, message, null, totalSize, null);
 		}
 	}
 
@@ -1598,7 +1599,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force) throws HpcException {
+	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force,
+			HpcStorageRecoveryConfiguration storageRecoveryConfiguration) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1725,10 +1727,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Add an audit record of this deletion attempt.
-		dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_DATA_OBJECT, metadataEntries, null,
+		HpcAuditRequestType auditRequestType = storageRecoveryConfiguration == null
+				? HpcAuditRequestType.DELETE_DATA_OBJECT
+				: HpcAuditRequestType.STORAGE_RECOVERY;
+		dataManagementService.addAuditRecord(path, auditRequestType, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
 				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null,
-				systemGeneratedMetadata.getSourceSize());
+				systemGeneratedMetadata.getSourceSize(), storageRecoveryConfiguration);
 
 		return dataObjectDeleteResponse;
 	}
@@ -2470,7 +2475,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (!CollectionUtils.isEmpty(dataObjects)) {
 				// Delete data objects in this collection
 				for (HpcCollectionListingEntry entry : dataObjects) {
-					totalSize += Optional.ofNullable(deleteDataObject(entry.getPath(), force).getSize()).orElse(0L);
+					totalSize += Optional.ofNullable(deleteDataObject(entry.getPath(), force, null).getSize())
+							.orElse(0L);
 				}
 			}
 
@@ -3232,7 +3238,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this update collection attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-					metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId, null);
+					metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId, null,
+					null);
 		}
 
 		addCollectionUpdatedEvent(path, false, false, userId, null, null, null);
@@ -3284,7 +3291,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
 					metadataService.getDataObjectMetadataEntries(path, false),
-					systemGeneratedMetadata.getArchiveLocation(), updated, null, message, null, null);
+					systemGeneratedMetadata.getArchiveLocation(), updated, null, message, null, null, null);
 		}
 
 		// Optionally re-generate the upload request URL.
