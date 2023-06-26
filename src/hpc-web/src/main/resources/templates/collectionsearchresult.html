@@ -313,11 +313,13 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 
         if(updatedList == null || updatedList.length == 0)
         {
-        	if(action == 'download')
-             	alert("Select at least one collection to download");
-        	else
-            	alert("Select at least one collection to manage permissions");
-        	return false;
+          if(action == 'download')
+			alert("Select at least one collection to download");
+          else if (action == 'permission')
+			alert("Select at least one collection to manage permissions");
+          else if (action == 'updatemetadata')
+			alert("Select at least one collection to manage metadata");
+          return false;
         }
         if (action == 'download') {
 	        document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
