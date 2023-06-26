@@ -65,7 +65,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	private static final String GET_USER_QUERIES_SQL = "select * from HPC_USER_QUERY where USER_ID = ?";
 
 	private static final String GET_USER_QUERY_SQL = "select * from HPC_USER_QUERY where USER_ID = ? and QUERY_NAME = ?";
-	
+
 	private static final String GET_USER_QUERIES_BY_FREQUENCY_SQL = "select * from HPC_USER_QUERY where FREQUENCY = ?";
 
 	// ---------------------------------------------------------------------//
@@ -96,13 +96,13 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 		updated.setTime(rs.getTimestamp("UPDATED"));
 		namedCompoundQuery.setUpdated(updated);
 		String deselectedColumns = rs.getString("DESELECTED_COLUMNS");
-		if(deselectedColumns != null) {
+		if (deselectedColumns != null) {
 			for (String deselectedColumn : deselectedColumns.split(",")) {
 				namedCompoundQuery.getDeselectedColumns().add(deselectedColumn);
 			}
 		}
-		if(rs.getString("FREQUENCY") != null) {
-		namedCompoundQuery.setFrequency(HpcCompoundMetadataQueryFrequency.fromValue(rs.getString("FREQUENCY")));
+		if (rs.getString("FREQUENCY") != null) {
+			namedCompoundQuery.setFrequency(HpcCompoundMetadataQueryFrequency.fromValue(rs.getString("FREQUENCY")));
 		}
 		return namedCompoundQuery;
 	};
@@ -137,14 +137,17 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 			jdbcTemplate.update(UPSERT_USER_QUERY_SQL, nciUserId, namedCompoundMetadataQuery.getName(), encryptedQuery,
 					namedCompoundMetadataQuery.getDetailedResponse(), namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getDeselectedColumns()),
-					namedCompoundMetadataQuery.getFrequency() == null ? "" : namedCompoundMetadataQuery.getFrequency().value(), 
-					nciUserId, namedCompoundMetadataQuery.getName(),
-					encryptedQuery, namedCompoundMetadataQuery.getDetailedResponse(),
-					namedCompoundMetadataQuery.getTotalCount(),
+					namedCompoundMetadataQuery.getUpdated(),
+					toString(namedCompoundMetadataQuery.getDeselectedColumns()),
+					namedCompoundMetadataQuery.getFrequency() == null ? ""
+							: namedCompoundMetadataQuery.getFrequency().value(),
+					nciUserId, namedCompoundMetadataQuery.getName(), encryptedQuery,
+					namedCompoundMetadataQuery.getDetailedResponse(), namedCompoundMetadataQuery.getTotalCount(),
 					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
-					namedCompoundMetadataQuery.getUpdated(), toString(namedCompoundMetadataQuery.getDeselectedColumns()),
-					namedCompoundMetadataQuery.getFrequency() == null ? "" : namedCompoundMetadataQuery.getFrequency().value());
+					namedCompoundMetadataQuery.getUpdated(),
+					toString(namedCompoundMetadataQuery.getDeselectedColumns()),
+					namedCompoundMetadataQuery.getFrequency() == null ? ""
+							: namedCompoundMetadataQuery.getFrequency().value());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a user query " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
@@ -193,7 +196,8 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	}
 
 	@Override
-	public List<HpcNamedCompoundMetadataQuery> getQueriesByFrequency(HpcCompoundMetadataQueryFrequency frequency) throws HpcException {
+	public List<HpcNamedCompoundMetadataQuery> getQueriesByFrequency(HpcCompoundMetadataQueryFrequency frequency)
+			throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_USER_QUERIES_BY_FREQUENCY_SQL, userQueryRowMapper, frequency.value());
 
@@ -205,7 +209,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
-	
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -227,7 +231,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	 * @return A JSON representation of the compound query.
 	 */
 	@SuppressWarnings("unchecked")
-	private JSONObject toJSON(HpcCompoundMetadataQuery compoundMetadataQuery) {
+	public static JSONObject toJSON(HpcCompoundMetadataQuery compoundMetadataQuery) {
 		JSONObject jsonCompoundMetadataQuery = new JSONObject();
 
 		if (compoundMetadataQuery == null) {
@@ -370,7 +374,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 
 		return metadataQuery;
 	}
-	
+
 	/**
 	 * Map an array of selected columns to a single string.
 	 * 

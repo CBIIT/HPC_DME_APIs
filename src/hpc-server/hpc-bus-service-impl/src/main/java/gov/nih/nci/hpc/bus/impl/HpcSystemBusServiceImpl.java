@@ -1393,6 +1393,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					continue;
 				}
 
+				// Recover storage (delete data objects) for this config.
+				dataObjectPaths.forEach(path -> {
+					try {
+						dataManagementBusService.deleteDataObject(path, true,
+								dataManagementConfiguration.getStorageRecoveryConfiguration());
+					} catch (HpcException e) {
+						logger.error("Storage recovery [config: {}] - failed for path: {}",
+								dataManagementConfiguration.getId(), path, e);
+					}
+				});
+
 				logger.info("Storage recovery [config: {}] - Completed", dataManagementConfiguration.getId());
 			}
 		}
@@ -2975,7 +2986,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			if (dataManagementService.deletedDataObjectExpired(systemGeneratedMetadata.getDeletedDate())) {
 				// Permanently remove the data object
-				dataManagementBusService.deleteDataObject(path, true);
+				dataManagementBusService.deleteDataObject(path, true, null);
 			}
 
 		} catch (HpcException e) {
