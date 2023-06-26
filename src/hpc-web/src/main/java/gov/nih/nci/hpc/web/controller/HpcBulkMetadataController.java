@@ -199,52 +199,52 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		req.getCollectionPaths().addAll(paths);
 		req.getMetadataEntries().addAll(metadataList);
 		try {
-				WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
-				client.header("Authorization", "Bearer " + authToken);
-				Response restResponse = client.invoke("POST", req);
-				if (restResponse.getStatus() == 200) {
-					ObjectMapper mapper = new ObjectMapper();
-					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-							new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-							new JacksonAnnotationIntrospector());
-					mapper.setAnnotationIntrospector(intr);
-					mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
+			client.header("Authorization", "Bearer " + authToken);
+			Response restResponse = client.invoke("POST", req);
+			if (restResponse.getStatus() == 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-					MappingJsonFactory factory = new MappingJsonFactory(mapper);
-					JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-					HpcBulkMetadataUpdateResponseDTO bulkUpdateResponseDTO = parser.readValueAs(HpcBulkMetadataUpdateResponseDTO.class);
-					List<HpcMetadataUpdateItem> completedItems =  bulkUpdateResponseDTO.getCompletedItems();
-					List<HpcMetadataUpdateItem> failedItems =  bulkUpdateResponseDTO.getFailedItems();
-					logger.info("The Bulk Update Response is: " + gson.toJson(bulkUpdateResponseDTO));
-					for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getCompletedItems()) {
-						HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
-						pathGridEntry.path = item.getPath();
-						pathGridEntry.result = "success";
-						pathDetails.add(pathGridEntry);
-					}
-					for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getFailedItems()) {
-						HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
-						pathGridEntry.path = item.getPath();
-						pathGridEntry.result = item.getMessage();
-						pathDetails.add(pathGridEntry);
-					}
- 					model.addAttribute("pathDetails", pathDetails);
-					return "updatemetadatabulk";
-				} else {
-					ObjectMapper mapper = new ObjectMapper();
-					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-							new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-							new JacksonAnnotationIntrospector());
-					mapper.setAnnotationIntrospector(intr);
-					mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-					MappingJsonFactory factory = new MappingJsonFactory(mapper);
-					JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-					throw new Exception(exception.getMessage());
+				HpcBulkMetadataUpdateResponseDTO bulkUpdateResponseDTO = parser.readValueAs(HpcBulkMetadataUpdateResponseDTO.class);
+				List<HpcMetadataUpdateItem> completedItems =  bulkUpdateResponseDTO.getCompletedItems();
+				List<HpcMetadataUpdateItem> failedItems =  bulkUpdateResponseDTO.getFailedItems();
+				logger.info("The Bulk Update Response is: " + gson.toJson(bulkUpdateResponseDTO));
+				for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getCompletedItems()) {
+					HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
+					pathGridEntry.path = item.getPath();
+					pathGridEntry.result = "success";
+					pathDetails.add(pathGridEntry);
 				}
+				for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getFailedItems()) {
+					HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
+					pathGridEntry.path = item.getPath();
+					pathGridEntry.result = item.getMessage();
+					pathDetails.add(pathGridEntry);
+				}
+				model.addAttribute("pathDetails", pathDetails);
+				return "updatemetadatabulk";
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new Exception(exception.getMessage());
+			}
 		} catch (HttpStatusCodeException e) {
 			model.addAttribute("updateStatus", e.getMessage());
 			logger.info("Failed to update metadata for ", e.getMessage());
