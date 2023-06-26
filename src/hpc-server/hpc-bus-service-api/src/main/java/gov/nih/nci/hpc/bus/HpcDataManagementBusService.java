@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import java.io.File;
 
+import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
@@ -476,12 +477,15 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Delete Data Object.
 	 *
-	 * @param path  The data object path.
-	 * @param force If true, perform hard delete.
+	 * @param path                         The data object path.
+	 * @param force                        If true, perform hard delete.
+	 * @param storageRecoveryConfiguration (Optional) The storage recovery config
+	 *                                     that triggered the recovery.
 	 * @return A response DTO with detailed statuses.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force) throws HpcException;
+	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force,
+			HpcStorageRecoveryConfiguration storageRecoveryConfiguration) throws HpcException;
 
 	/**
 	 * Set data object permissions.

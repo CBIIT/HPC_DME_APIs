@@ -661,7 +661,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = null;
 		try {
 			force = force != null ? force : false;
-			dataObjectDeleteResponse = dataManagementBusService.deleteDataObject(toNormalizedPath(path), force);
+			dataObjectDeleteResponse = dataManagementBusService.deleteDataObject(toNormalizedPath(path), force, null);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
