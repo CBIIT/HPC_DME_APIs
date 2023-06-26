@@ -1398,7 +1398,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					try {
 						dataManagementBusService.deleteDataObject(path, true,
 								dataManagementConfiguration.getStorageRecoveryConfiguration());
-						logger.error("Storage recovery [config: {}] - completed for path: {}",
+						logger.info("Storage recovery [config: {}] - completed for path: {}",
 								dataManagementConfiguration.getId(), path);
 						
 					} catch (HpcException e) {
