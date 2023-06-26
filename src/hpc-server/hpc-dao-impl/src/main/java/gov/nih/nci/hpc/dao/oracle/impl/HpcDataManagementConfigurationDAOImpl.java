@@ -10,8 +10,6 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
-import static gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl.fromJSON;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -285,6 +283,46 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	}
 
 	/**
+	 * Convert storage recovery configuration into a JSON string.
+	 * 
+	 * @param compoundMetadataQuery The compound metadata query to convert.
+	 * @return A JSON string of the storage recovery configuration.
+	 */
+	public static String toJSONString(HpcStorageRecoveryConfiguration storageRecoveryConfiguration) {
+		if (storageRecoveryConfiguration == null) {
+			return null;
+		}
+
+		return toJSON(storageRecoveryConfiguration).toJSONString();
+	}
+
+	/**
+	 * Convert storage recovery configuration into a JSON object.
+	 * 
+	 * @param compoundMetadataQuery The compound query.
+	 * @return A JSON representation of the storage recovery configuration.
+	 */
+	@SuppressWarnings("unchecked")
+	static private JSONObject toJSON(HpcStorageRecoveryConfiguration storageRecoveryConfiguration) {
+		JSONObject jsonStorageRecoveryConfiguration = new JSONObject();
+
+		if (storageRecoveryConfiguration == null) {
+			return jsonStorageRecoveryConfiguration;
+		}
+
+		// Map the expiration days.
+		jsonStorageRecoveryConfiguration.put("expirationDays", storageRecoveryConfiguration.getExpirationDays());
+
+		// Map the compound query.
+		if (storageRecoveryConfiguration.getCompoundQuery() != null) {
+			jsonStorageRecoveryConfiguration.put("compoundQuery",
+					HpcUserNamedQueryDAOImpl.toJSON(storageRecoveryConfiguration.getCompoundQuery()));
+		}
+
+		return jsonStorageRecoveryConfiguration;
+	}
+
+	/**
 	 * Instantiate a storage recovery configuration from a string.
 	 *
 	 * @param storageRecoveryConfigurationJSONStr The data object storage recovery
@@ -328,8 +366,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
 		storageArchiveConfiguration.setExpirationDays((long) jsonStorageArchiveConfiguration.get("expirationDays"));
 		if (jsonStorageArchiveConfiguration.containsKey("compoundQuery")) {
-			storageArchiveConfiguration
-					.setCompoundQuery(fromJSON((JSONObject) jsonStorageArchiveConfiguration.get("compoundQuery")));
+			storageArchiveConfiguration.setCompoundQuery(HpcUserNamedQueryDAOImpl
+					.fromJSON((JSONObject) jsonStorageArchiveConfiguration.get("compoundQuery")));
 		}
 
 		return storageArchiveConfiguration;
