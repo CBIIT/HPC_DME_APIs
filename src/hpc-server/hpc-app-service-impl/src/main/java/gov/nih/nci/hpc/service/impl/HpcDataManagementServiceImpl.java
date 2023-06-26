@@ -66,6 +66,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -604,9 +605,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
+	public void addAuditRecord(String path,
+			HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId, Long size) {
+			Boolean dataTransferStatus, String message, String userId, Long size, HpcStorageRecoveryConfiguration storageRecoveryConfiguration) {
 		// Input validation.
 		String nciUserId = HpcRequestContext.getRequestInvoker().getNciAccount() == null ? userId
 				: HpcRequestContext.getRequestInvoker().getNciAccount().getUserId();
@@ -617,7 +619,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		try {
 			dataManagementAuditDAO.insert(nciUserId, path, requestType, metadataBefore, metadataAfter, archiveLocation,
-					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance(), size);
+					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance(), size, storageRecoveryConfiguration);
 
 		} catch (HpcException e) {
 			logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
