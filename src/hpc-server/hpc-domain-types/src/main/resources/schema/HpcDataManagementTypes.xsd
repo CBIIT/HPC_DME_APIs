@@ -208,6 +208,7 @@
 			<xsd:enumeration value="DELETE_DATA_OBJECT" />
 			<xsd:enumeration value="UPDATE_COLLECTION" />
 			<xsd:enumeration value="DELETE_COLLECTION" />
+			<xsd:enumeration value="STORAGE_RECOVERY" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
