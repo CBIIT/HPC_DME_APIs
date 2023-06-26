@@ -1730,9 +1730,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcAuditRequestType auditRequestType = storageRecoveryConfiguration == null
 				? HpcAuditRequestType.DELETE_DATA_OBJECT
 				: HpcAuditRequestType.STORAGE_RECOVERY;
+		String userId = storageRecoveryConfiguration == null ? null : "storage-recovery-task";
 		dataManagementService.addAuditRecord(path, auditRequestType, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
-				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null,
+				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), userId,
 				systemGeneratedMetadata.getSourceSize(), storageRecoveryConfiguration);
 
 		return dataObjectDeleteResponse;
