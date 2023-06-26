@@ -311,7 +311,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		}
 
 		// Map the expiration days.
-		jsonStorageRecoveryConfiguration.put("expirationDays", storageRecoveryConfiguration);
+		jsonStorageRecoveryConfiguration.put("expirationDays", storageRecoveryConfiguration.getExpirationDays());
 
 		// Map the compound query.
 		if (storageRecoveryConfiguration.getCompoundQuery() != null) {
