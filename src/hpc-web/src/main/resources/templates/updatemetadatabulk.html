@@ -129,9 +129,9 @@
 												<input type="hidden" name="downloadType" id="downloadType"
 													th:value="${hpcDownloadDatafile.downloadType}" />
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
-													th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
+													th:value="${bulkMetadataUpdateRequest.getSelectedFilePaths()}" />
 												<div class="form-group" th:if="${downloadType == 'collections'}">
-												  <p>This page allows you to add or modify the Metadata for the selected collections.</p>
+												  <p>This page allows you to add or modify metadata for the selected collections.</p>
 													<table class="table table-bordered  col-md-12" id="metaAttrTable">
 														<thead>
 															<tr>

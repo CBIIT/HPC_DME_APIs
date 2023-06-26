@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.google.gson.Gson;
 import gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
@@ -68,8 +69,8 @@ import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 public class HpcBulkMetadataController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user}")
 	private String serviceURL;
-    @Value("${gov.nih.nci.hpc.server.metadata}")
-    private String serviceMetadataURL;
+	@Value("${gov.nih.nci.hpc.server.metadata}")
+	private String serviceMetadataURL;
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String serverCollectionURL;
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
@@ -77,6 +78,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	@Value("${hpc.serviceaccount}")
 	private String serviceAccount;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private Gson gson = new Gson();
 
 	/**
 	 * POST action to render bulk meta data update page
@@ -108,6 +110,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		hpcDownloadDatafile.setDownloadType(downloadType);
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
+		HpcBulkMetadataUpdateRequest bulkMetadataUpdateRequest = new HpcBulkMetadataUpdateRequest();
 
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("error", "Data file list is missing!");
@@ -123,7 +126,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				pathGridEntry.path = path;
 				pathGridEntry.result = "";
 			}
-	        model.addAttribute("paths", paths);
+			model.addAttribute("paths", paths);
+			bulkMetadataUpdateRequest.setSelectedFilePaths(paths);
 		}
 		model.addAttribute("downloadType", downloadType);
 
@@ -144,8 +148,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		session.setAttribute("hpcSavedSearch", hpcSaveSearch);
-		model.addAttribute("bulkMetadataUpdateRequest", new HpcBulkMetadataUpdateRequest());
-		
+		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 		return "updatemetadatabulk";
 	}
 
@@ -177,11 +180,11 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		metadataEntry.setAttribute(bulkMetadataUpdateRequest.getMetadataName());
 		metadataEntry.setValue(bulkMetadataUpdateRequest.getMetadataValue());
 		metadataList.add(metadataEntry);
-	    model.addAttribute("downloadType", downloadType);
-	    model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-	    model.addAttribute("metadataName", bulkMetadataUpdateRequest.getMetadataName());
-	    model.addAttribute("metadataValue", bulkMetadataUpdateRequest.getMetadataValue());
-	    session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+		model.addAttribute("downloadType", downloadType);
+		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+		model.addAttribute("metadataName", bulkMetadataUpdateRequest.getMetadataName());
+		model.addAttribute("metadataValue", bulkMetadataUpdateRequest.getMetadataValue());
+		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 	            
 
 		List<String> paths = new ArrayList<>();
@@ -195,12 +198,10 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		HpcBulkMetadataUpdateRequestDTO req =  new HpcBulkMetadataUpdateRequestDTO();
 		req.getCollectionPaths().addAll(paths);
 		req.getMetadataEntries().addAll(metadataList);
-		 try {
-
-            if (true) {
-                WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
-                client.header("Authorization", "Bearer " + authToken);
-                Response restResponse = client.invoke("POST", req);
+		try {
+				WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
+				client.header("Authorization", "Bearer " + authToken);
+				Response restResponse = client.invoke("POST", req);
 				if (restResponse.getStatus() == 200) {
 					ObjectMapper mapper = new ObjectMapper();
 					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -215,6 +216,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 					HpcBulkMetadataUpdateResponseDTO bulkUpdateResponseDTO = parser.readValueAs(HpcBulkMetadataUpdateResponseDTO.class);
 					List<HpcMetadataUpdateItem> completedItems =  bulkUpdateResponseDTO.getCompletedItems();
 					List<HpcMetadataUpdateItem> failedItems =  bulkUpdateResponseDTO.getFailedItems();
+					logger.info("The Bulk Update Response is: " + gson.toJson(bulkUpdateResponseDTO));
 					for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getCompletedItems()) {
 						HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
 						pathGridEntry.path = item.getPath();
@@ -243,16 +245,15 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 					throw new Exception(exception.getMessage());
 				}
-			}
 		} catch (HttpStatusCodeException e) {
 			model.addAttribute("updateStatus", e.getMessage());
-	        logger.info("Failed to update metadata for ", e.getMessage());
+			logger.info("Failed to update metadata for ", e.getMessage());
 		} catch (RestClientException e) {
-            model.addAttribute("updateStatus", e.getMessage());
-            logger.info("Failed to update metadata for ", e.getMessage());
+			model.addAttribute("updateStatus", e.getMessage());
+			logger.info("Failed to update metadata for ", e.getMessage());
 		} catch (Exception e) {
-            model.addAttribute("updateStatus", e.getMessage());
-            logger.info("Failed to update metadata for ", e.getMessage());
+			model.addAttribute("updateStatus", e.getMessage());
+			logger.info("Failed to update metadata for ", e.getMessage());
 		}
 		return result;
 	}
