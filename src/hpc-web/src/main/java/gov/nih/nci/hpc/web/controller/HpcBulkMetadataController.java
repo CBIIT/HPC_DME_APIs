@@ -79,7 +79,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	private String serviceAccount;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	private Gson gson = new Gson();
-
+	private String failureErrorMessage = "Error: Unable to update bulk metadata. ";
 	/**
 	 * POST action to render bulk meta data update page
 	 * 
@@ -230,7 +230,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 					pathDetails.add(pathGridEntry);
 				}
 				model.addAttribute("pathDetails", pathDetails);
-				return "updatemetadatabulk";
+				model.addAttribute("errorStatusMessage", "");
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -243,19 +243,20 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				throw new Exception(exception.getMessage());
+				model.addAttribute("errorStatusMessage", failureErrorMessage + exception.getMessage());
+				logger.info("Failed to update metadata for: ", failureErrorMessage + exception.getMessage());
 			}
 		} catch (HttpStatusCodeException e) {
-			model.addAttribute("updateStatus", e.getMessage());
-			logger.info("Failed to update metadata for ", e.getMessage());
+			model.addAttribute("errorStatusMessage", failureErrorMessage + e.getMessage());
+			logger.info("Failed to update metadata: ", failureErrorMessage + e.getMessage());
 		} catch (RestClientException e) {
-			model.addAttribute("updateStatus", e.getMessage());
-			logger.info("Failed to update metadata for ", e.getMessage());
+			model.addAttribute("errorStatusMessage", failureErrorMessage + e.getMessage());
+			logger.info("Failed to update metadata: ", failureErrorMessage + e.getMessage());
 		} catch (Exception e) {
-			model.addAttribute("updateStatus", e.getMessage());
-			logger.info("Failed to update metadata for ", e.getMessage());
+			model.addAttribute("errorStatusMessage", failureErrorMessage + e.getMessage());
+			logger.info("Failed to update metadata: ", failureErrorMessage + e.getMessage());
 		}
-		return result;
+        return "updatemetadatabulk";
 	}
 
 	private class HpcPathGridEntry {
