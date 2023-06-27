@@ -206,7 +206,7 @@
 						</tbody>
 					</table>
 				</div>
-				<div th:if="${pathDetails != null and pathDetails.size() > 0}">
+				<div th:if="${errorStatusMessage == '' and pathDetails != null and pathDetails.size() > 0}">
 					<table id="pathDetailsGrid" class="display" style="width:100%">
 						<caption style="font-weight:bold" th:text="'Results after Bulk Metadata Update with (attribute=' + ${metadataName} + ', value=' + ${metadataValue} + ')'"></caption>
 						<thead>
@@ -223,7 +223,9 @@
 						</tbody>
 					</table>
 				</div>
-
+				<div th:if="${errorStatusMessage != null and errorStatusMessage != ''}">
+					<p th:text="${errorStatusMessage}"></p>
+				</div>
 			</section>
 			<div th:include="footer :: footer"></div>
 		</section>
