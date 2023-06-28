@@ -110,17 +110,21 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
 
 
   @Override
-  public HpcNotificationSubscriptionListDTO getNotificationSubscriptions() throws HpcException {
+  public HpcNotificationSubscriptionListDTO getNotificationSubscriptions(String nciUserId) throws HpcException {
 
-	// Get the service invoker.
-	HpcRequestInvoker invoker = securityService.getRequestInvoker();
-	if (invoker == null) {
-	      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+	String userId = nciUserId;
+	if(userId == null) {
+		// Get the service invoker.
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		if (invoker == null) {
+			throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
+		userId = invoker.getNciAccount().getUserId();
 	}
 
 	// Get the subscriptions for the user.
     List<HpcNotificationSubscription> subscriptions =
-        notificationService.getNotificationSubscriptions(invoker.getNciAccount().getUserId());
+        notificationService.getNotificationSubscriptions(userId);
     if (subscriptions == null || subscriptions.isEmpty()) {
       return null;
     }

@@ -41,12 +41,13 @@ public interface HpcNotificationRestService {
   /**
    * Get Notification Subscriptions.
    *
+   * @param	nciUserId	The user whose subscription is being retrieved
    * @return The REST service response w/ HpcNotificationSubscriptionListDTO entity.
    */
   @GET
   @Path("/notification")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response getNotificationSubscriptions();
+  public Response getNotificationSubscriptions(@QueryParam("nciUserId") String userId);
 
   /**
    * Get notification delivery receipts.
