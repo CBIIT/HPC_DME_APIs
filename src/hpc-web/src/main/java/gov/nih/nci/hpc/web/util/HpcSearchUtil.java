@@ -240,8 +240,8 @@ public class HpcSearchUtil {
 		List<HpcMetadataEntry> selfEntries = entries.getSelfMetadataEntries();
 		for (HpcMetadataEntry entry : selfEntries) {
 			if (entry.getAttribute() == null){
-				logger.info("Error finding " + attrName + "in self metadata entry " + gson.toJson(entry));
-				logger.info("The self metadata entries are: " + gson.toJson(selfEntries));
+				logger.error("Error finding attribute " + attrName + " in self metadata entry " + gson.toJson(entry));
+				logger.error("The self metadata entries are: " + gson.toJson(selfEntries));
 				continue;
 			}
 			if (entry.getAttribute().equals(attrName))
@@ -250,8 +250,8 @@ public class HpcSearchUtil {
 		List<HpcMetadataEntry> parentEntries = entries.getParentMetadataEntries();
 		for (HpcMetadataEntry entry : parentEntries) {
 			if (entry.getAttribute() == null){
-				logger.info("Error finding " + attrName + "in parent metadata entry " + gson.toJson(entry));
-				logger.info("The parent metadata entries are: " + gson.toJson(parentEntries));
+				logger.error("Error finding attribute " + attrName + " in parent metadata entry " + gson.toJson(entry));
+				logger.error("The parent metadata entries are: " + gson.toJson(parentEntries));
 				continue;
 			}
 			if (entry.getAttribute().equals(attrName))
