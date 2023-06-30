@@ -77,11 +77,11 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 	  }
 
     @Override
-    public Response getNotificationSubscriptions()
+    public Response getNotificationSubscriptions(String nciUserId)
     {
 		HpcNotificationSubscriptionListDTO subscriptions = null;
 		try {
-			 subscriptions = notificationBusService.getNotificationSubscriptions();
+			 subscriptions = notificationBusService.getNotificationSubscriptions(nciUserId);
 		 
 		} catch(HpcException e) {
 		        return errorResponse(e);

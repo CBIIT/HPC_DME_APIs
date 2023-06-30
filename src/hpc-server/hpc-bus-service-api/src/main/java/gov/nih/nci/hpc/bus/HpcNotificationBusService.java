@@ -35,11 +35,11 @@ public interface HpcNotificationBusService {
 
   /**
    * Get notification subscriptions of a user.
-   *
+   * @param userId	The user whose subscription is being requested
    * @return A list of notification subscriptions.
    * @throws HpcException on service failure.
    */
-  public HpcNotificationSubscriptionListDTO getNotificationSubscriptions() throws HpcException;
+  public HpcNotificationSubscriptionListDTO getNotificationSubscriptions(String nciUserId) throws HpcException;
 
   /**
    * Get Notification Delivery Receipts.

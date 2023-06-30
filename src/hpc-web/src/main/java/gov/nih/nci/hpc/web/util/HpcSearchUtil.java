@@ -36,8 +36,16 @@ import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.HpcSearchResult;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HpcSearchUtil {
+    private static Gson gson = new Gson();
+    private static Logger logger = LoggerFactory.getLogger(HpcSearchUtil.class);
+
 
 	public static void processResponseResults(HpcSearch search, Response restResponse, Model model, HttpSession session)
 			throws JsonParseException, IOException {
@@ -229,14 +237,23 @@ public class HpcSearchUtil {
 	private static String getAttributeValue(String attrName, HpcMetadataEntries entries) {
 		if (entries == null)
 			return null;
-
 		List<HpcMetadataEntry> selfEntries = entries.getSelfMetadataEntries();
 		for (HpcMetadataEntry entry : selfEntries) {
+			if (entry.getAttribute() == null){
+				logger.error("Error finding attribute " + attrName + " in self metadata entry " + gson.toJson(entry));
+				logger.info("The self metadata entries are: " + gson.toJson(selfEntries));
+				continue;
+			}
 			if (entry.getAttribute().equals(attrName))
 				return entry.getValue();
 		}
 		List<HpcMetadataEntry> parentEntries = entries.getParentMetadataEntries();
 		for (HpcMetadataEntry entry : parentEntries) {
+			if (entry.getAttribute() == null){
+				logger.error("Error finding attribute " + attrName + " in parent metadata entry " + gson.toJson(entry));
+				logger.info("The parent metadata entries are: " + gson.toJson(parentEntries));
+				continue;
+			}
 			if (entry.getAttribute().equals(attrName))
 				return entry.getValue();
 		}
