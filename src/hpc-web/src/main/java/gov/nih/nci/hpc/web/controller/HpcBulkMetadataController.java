@@ -220,7 +220,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getCompletedItems()) {
 					HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
 					pathGridEntry.path = item.getPath();
-					pathGridEntry.result = "success";
+					pathGridEntry.result = "Success";
 					pathDetails.add(pathGridEntry);
 				}
 				for (HpcMetadataUpdateItem item : bulkUpdateResponseDTO.getFailedItems()) {
