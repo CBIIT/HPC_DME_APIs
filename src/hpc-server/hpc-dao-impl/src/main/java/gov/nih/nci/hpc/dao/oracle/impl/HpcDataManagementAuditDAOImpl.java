@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -44,7 +45,7 @@ public class HpcDataManagementAuditDAOImpl implements HpcDataManagementAuditDAO 
 	public static final String INSERT_SQL = "insert into HPC_DATA_MANAGEMENT_AUDIT ( "
 			+ "USER_ID, PATH, REQUEST_TYPE, METADATA_BEFORE, METADATA_AFTER, ARCHIVE_FILE_CONTAINER_ID,"
 			+ "ARCHIVE_FILE_ID, DATA_MANAGEMENT_STATUS, DATA_TRANSFER_STATUS,"
-			+ "MESSAGE, COMPLETED, DATA_SIZE) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "MESSAGE, COMPLETED, DATA_SIZE, STORAGE_RECOVERY_CONFIGURATION) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -76,7 +77,8 @@ public class HpcDataManagementAuditDAOImpl implements HpcDataManagementAuditDAO 
 	@Override
 	public void insert(String userId, String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, Calendar completed, Long size) throws HpcException {
+			Boolean dataTransferStatus, String message, Calendar completed, Long size,
+			HpcStorageRecoveryConfiguration storageRecoveryConfiguration) throws HpcException {
 		String fileContainerId = null;
 		String fileId = null;
 		if (archiveLocation != null) {
@@ -87,7 +89,8 @@ public class HpcDataManagementAuditDAOImpl implements HpcDataManagementAuditDAO 
 		try {
 			jdbcTemplate.update(INSERT_SQL, userId, path, requestType.value(), toJSONString(metadataBefore),
 					toJSONString(metadataAfter), fileContainerId, fileId, dataManagementStatus, dataTransferStatus,
-					message, completed, size);
+					message, completed, size,
+					HpcDataManagementConfigurationDAOImpl.toJSONString(storageRecoveryConfiguration));
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to insert a data management audit record: " + e.getMessage(),

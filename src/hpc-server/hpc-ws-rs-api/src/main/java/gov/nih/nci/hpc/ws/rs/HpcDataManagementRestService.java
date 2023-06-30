@@ -30,6 +30,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
@@ -770,5 +771,18 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
+	
+	/**
+	 * Data objects registration.
+	 *
+	 * @param bulkDataObjectRegistrationRequest The bulk registration request.
+	 * @return The REST service response w/ HpcBulkDataObjectRegistrationResponseDTO
+	 *         entity.
+	 */
+	@POST
+	@Path("/metadata")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest);
 
 }

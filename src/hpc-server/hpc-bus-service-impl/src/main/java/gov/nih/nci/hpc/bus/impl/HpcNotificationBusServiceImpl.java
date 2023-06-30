@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.notification.HpcAddOrUpdateNotificationSubscriptionProblem;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
@@ -110,17 +111,32 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
 
 
   @Override
-  public HpcNotificationSubscriptionListDTO getNotificationSubscriptions() throws HpcException {
+  public HpcNotificationSubscriptionListDTO getNotificationSubscriptions(String nciUserId) throws HpcException {
 
 	// Get the service invoker.
 	HpcRequestInvoker invoker = securityService.getRequestInvoker();
 	if (invoker == null) {
-	      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+			throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
 	}
+	String userId = nciUserId;
+	if(userId == null) {
+		userId = invoker.getNciAccount().getUserId();
+	}
+
+	if(!userId.contentEquals(invoker.getNciAccount().getUserId())) {
+		//The invoker has requested subscription of another user,
+		//so check if they have the appropriate privileges to do so
+		if(!HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) &&
+				!HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) ) {
+			throw new HpcException(
+		            "You are not authorized to subscribe users to notifications", HpcErrorType.UNAUTHORIZED_REQUEST);
+		}
+	}
+
 
 	// Get the subscriptions for the user.
     List<HpcNotificationSubscription> subscriptions =
-        notificationService.getNotificationSubscriptions(invoker.getNciAccount().getUserId());
+        notificationService.getNotificationSubscriptions(userId);
     if (subscriptions == null || subscriptions.isEmpty()) {
       return null;
     }
