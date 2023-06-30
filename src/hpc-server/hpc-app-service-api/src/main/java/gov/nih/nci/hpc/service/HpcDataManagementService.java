@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -131,27 +132,31 @@ public interface HpcDataManagementService {
 	 * implemented (using iRODS capability) this API method and the DAO behind it
 	 * should be retired.
 	 *
-	 * @param path                 The data object or collection path.
-	 * @param requestType          The request being recorded for audit.
-	 * @param metadataBefore       The collection or data object metadata before the
-	 *                             request.
-	 * @param metadataAfter        (Optional) The collection or data object metadata
-	 *                             after the request.
-	 * @param archiveLocation      (Optional) The location of the file in the
-	 *                             archive (prior to deletion).
-	 * @param dataManagementStatus Data management (iRODS) request completion
-	 *                             status.
-	 * @param dataTransferStatus   (Optional) Data transfer (archive) request
-	 *                             completion status.
-	 * @param message              (Optional) Error message if the request failed.
-	 * @param userId               (Optional) userId if not executed in a user
-	 *                             thread.
-	 * @param size                 (Optional) The data object size or collection
-	 *                             total size.
+	 * @param path                         The data object or collection path.
+	 * @param requestType                  The request being recorded for audit.
+	 * @param metadataBefore               The collection or data object metadata
+	 *                                     before the request.
+	 * @param metadataAfter                (Optional) The collection or data object
+	 *                                     metadata after the request.
+	 * @param archiveLocation              (Optional) The location of the file in
+	 *                                     the archive (prior to deletion).
+	 * @param dataManagementStatus         Data management (iRODS) request
+	 *                                     completion status.
+	 * @param dataTransferStatus           (Optional) Data transfer (archive)
+	 *                                     request completion status.
+	 * @param message                      (Optional) Error message if the request
+	 *                                     failed.
+	 * @param userId                       (Optional) userId if not executed in a
+	 *                                     user thread.
+	 * @param size                         (Optional) The data object size or
+	 *                                     collection total size.
+	 * @param storageRecoveryConfiguration (Optional) The storage recovery config
+	 *                                     that triggered the recovery.
 	 */
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId, Long size);
+			Boolean dataTransferStatus, String message, String userId, Long size,
+			HpcStorageRecoveryConfiguration storageRecoveryConfiguration);
 
 	/**
 	 * Set collection permission for a subject (user or group).
