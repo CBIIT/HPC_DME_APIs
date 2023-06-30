@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -156,12 +157,12 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	}
 
 	/**
-	 * Load the data management configurations from the DB. Called by spring as
-	 * init-method.
-	 *
+	 * Load the data management configurations from the DB.
+	 * 
+	 * @return A collection with all the data management configurations.
 	 * @throws HpcException On configuration error.
 	 */
-	public void reload() throws HpcException {
+	public Collection<HpcDataManagementConfiguration> reload() throws HpcException {
 		clear();
 		basePathConfigurations.clear();
 		docs.clear();
@@ -232,6 +233,7 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 		}
 
 		logger.info("Data Management Configurations: " + toString());
+		return basePathConfigurations.values();
 	}
 
 	/**

@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -67,6 +68,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
@@ -88,6 +93,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcDataTieringService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
@@ -145,6 +151,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// Data Tiering Application Service Instance
 	@Autowired
 	private HpcDataTieringService dataTieringService = null;
+
+	// Data Search Application Service instance.
+	@Autowired
+	private HpcDataSearchService dataSearchService = null;
 
 	// The collection download task executor.
 	@Autowired
@@ -1324,6 +1334,85 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
+	@HpcExecuteAsSystemAccount
+	public void recoverStorage() throws HpcException {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+
+		for (HpcDataManagementConfiguration dataManagementConfiguration : securityService
+				.refreshDataManagementConfigurations()) {
+			if (dataManagementConfiguration.getStorageRecoveryConfiguration() != null) {
+				// Get a list of data objects to recover storage for this data management
+				// configuration.
+				List<String> dataObjectPaths = null;
+				try {
+					// Calculate the expiration date for this config.
+					Calendar expirationDate = Calendar.getInstance();
+					expirationDate.add(Calendar.DATE,
+							-(int) dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays());
+					String expirationDateStr = dateFormat.format(expirationDate.getTime());
+
+					logger.info("Storage recovery [config: {}] - Started. Expiration Days: {}, Expiration Date: {}",
+							dataManagementConfiguration.getId(),
+							dataManagementConfiguration.getStorageRecoveryConfiguration().getExpirationDays(),
+							expirationDateStr);
+
+					// Create expiration date query.
+					HpcMetadataQuery expirationQuery = new HpcMetadataQuery();
+					expirationQuery.setAttribute("data_transfer_started");
+					expirationQuery.setFormat("MM-DD-YYYY HH24:MI:SS");
+					expirationQuery.setOperator(HpcMetadataQueryOperator.TIMESTAMP_LESS_OR_EQUAL);
+					expirationQuery.setValue(expirationDateStr);
+
+					// Create the configuration ID query.
+					HpcMetadataQuery configIdQuery = new HpcMetadataQuery();
+					configIdQuery.setAttribute("configuration_id");
+					configIdQuery.setOperator(HpcMetadataQueryOperator.EQUAL);
+					configIdQuery.setValue(dataManagementConfiguration.getId());
+
+					// Combine all into a compound query.
+					HpcCompoundMetadataQuery storageRecoveryQuery = new HpcCompoundMetadataQuery();
+					storageRecoveryQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+					storageRecoveryQuery.getQueries().add(expirationQuery);
+					storageRecoveryQuery.getQueries().add(configIdQuery);
+					if (dataManagementConfiguration.getStorageRecoveryConfiguration().getCompoundQuery() != null) {
+						storageRecoveryQuery.getCompoundQueries()
+								.add(dataManagementConfiguration.getStorageRecoveryConfiguration().getCompoundQuery());
+					}
+
+					// Run the compound query to get the data object paths to recover storage for.
+					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
+							storageRecoveryQuery, 1, dataSearchService.getDataObjectCount(
+									dataManagementConfiguration.getBasePath(), storageRecoveryQuery));
+
+					logger.info("Storage recovery [config: {}] - {} data objects to recover storage",
+							dataManagementConfiguration.getId(), dataObjectPaths.size());
+
+				} catch (HpcException e) {
+					logger.error("Storage recovery [config: {}] - failed to query data objects for storage recovery",
+							dataManagementConfiguration.getId());
+					continue;
+				}
+
+				// Recover storage (delete data objects) for this config.
+				dataObjectPaths.forEach(path -> {
+					try {
+						dataManagementBusService.deleteDataObject(path, true,
+								dataManagementConfiguration.getStorageRecoveryConfiguration());
+						logger.info("Storage recovery [config: {}] - completed for path: {}",
+								dataManagementConfiguration.getId(), path);
+						
+					} catch (HpcException e) {
+						logger.error("Storage recovery [config: {}] - failed for path: {}",
+								dataManagementConfiguration.getId(), path, e);
+					}
+				});
+
+				logger.info("Storage recovery [config: {}] - Completed", dataManagementConfiguration.getId());
+			}
+		}
+	}
+
+	@Override
 	public void closeConnection() {
 		dataManagementService.closeConnection();
 	}
@@ -1394,6 +1483,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									"download task: {} - A cancelleation request submitted for the collection download task {} [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getCollectionDownloadTaskId(),
 									downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+							dataTransferService
+									.cancelCollectionDownloadTaskItems(downloadTask.getCollectionDownloadTaskId());
 							markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 							break;
 						}
@@ -2898,7 +2989,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			if (dataManagementService.deletedDataObjectExpired(systemGeneratedMetadata.getDeletedDate())) {
 				// Permanently remove the data object
-				dataManagementBusService.deleteDataObject(path, true);
+				dataManagementBusService.deleteDataObject(path, true, null);
 			}
 
 		} catch (HpcException e) {
