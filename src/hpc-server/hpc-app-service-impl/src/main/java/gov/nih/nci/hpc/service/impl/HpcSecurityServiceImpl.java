@@ -13,6 +13,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
@@ -606,8 +608,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	}
 
 	@Override
-	public void refreshDataManagementConfigurations() throws HpcException {
-		this.dataManagementConfigurationLocator.reload();
+	public Collection<HpcDataManagementConfiguration> refreshDataManagementConfigurations() throws HpcException {
+		return dataManagementConfigurationLocator.reload();
 	}
 
 	@Override
