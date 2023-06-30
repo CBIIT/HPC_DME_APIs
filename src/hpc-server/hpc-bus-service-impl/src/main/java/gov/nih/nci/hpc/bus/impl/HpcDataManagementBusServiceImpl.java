@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 import com.google.common.hash.Hashing;
@@ -41,6 +42,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
@@ -91,6 +93,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
@@ -106,6 +109,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionResultDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -149,6 +154,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -207,6 +213,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// Migration Business Service Instance.
 	@Autowired
 	private HpcDataMigrationBusService migrationBusService;
+
+	// Data Search Application Service instance.
+	@Autowired
+	private HpcDataSearchService dataSearchService = null;
+
+	// The limit on total number of collections and data objects in a single bulk
+	// metadata update request
+	@Value("${hpc.bus.bulkMetadataDataUpdateLimit}")
+	private int bulkMetadataDataUpdateLimit = 0;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -299,40 +314,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 		if (!created) {
-			// Get the metadata for this collection.
-			HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
-			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-					.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
-
-			// Update the metadata.
-			boolean updated = true;
-			String message = null;
-			try {
-				if (!metadataContained(collectionRegistration.getMetadataEntries(),
-						metadataBefore.getSelfMetadataEntries())) {
-					synchronized (this) {
-						metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
-								systemGeneratedMetadata.getConfigurationId());
-					}
-				} else {
-					logger.info(
-							"Collection metadata update skipped - request contains no metadata updates to current state: {}",
-							path);
-				}
-
-			} catch (HpcException e) {
-				// Collection metadata update failed. Capture this in the audit record.
-				updated = false;
-				message = e.getMessage();
-				throw (e);
-
-			} finally {
-				// Add an audit record of this update collection attempt.
-				dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId, null);
-			}
-
-			addCollectionUpdatedEvent(path, false, false, userId, null, null, null);
+			updateCollection(path, collectionRegistration.getMetadataEntries(), userId);
 		}
 
 		return created;
@@ -693,7 +675,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_COLLECTION, metadataEntries, null,
-					null, deleted, null, message, null, totalSize);
+					null, deleted, null, message, null, totalSize, null);
 		}
 	}
 
@@ -1617,7 +1599,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force) throws HpcException {
+	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force,
+			HpcStorageRecoveryConfiguration storageRecoveryConfiguration) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1744,10 +1727,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Add an audit record of this deletion attempt.
-		dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_DATA_OBJECT, metadataEntries, null,
+		HpcAuditRequestType auditRequestType = storageRecoveryConfiguration == null
+				? HpcAuditRequestType.DELETE_DATA_OBJECT
+				: HpcAuditRequestType.STORAGE_RECOVERY;
+		String userId = storageRecoveryConfiguration == null ? null : "storage-recovery-task";
+		dataManagementService.addAuditRecord(path, auditRequestType, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
-				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null,
-				systemGeneratedMetadata.getSourceSize());
+				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), userId,
+				systemGeneratedMetadata.getSourceSize(), storageRecoveryConfiguration);
 
 		return dataObjectDeleteResponse;
 	}
@@ -2149,6 +2136,103 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	}
 
+	@Override
+	public HpcBulkMetadataUpdateResponseDTO updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest)
+			throws HpcException {
+		// Input Validation
+		if (bulkMetadataUpdateRequest == null || (bulkMetadataUpdateRequest.getDataObjectPaths().size() == 0
+				&& bulkMetadataUpdateRequest.getCollectionPaths().size() == 0
+				&& bulkMetadataUpdateRequest.getDataObjectCompoundQuery() == null
+				&& bulkMetadataUpdateRequest.getCollectionCompoundQuery() == null)) {
+			throw new HpcException("No data object / collection paths or queries in metadata update request",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (bulkMetadataUpdateRequest.getMetadataEntries().size() == 0) {
+			throw new HpcException("No metadata entries in metadata update request",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Perform the collection and data objects queries to get paths to include in
+		// the bulk metadata update request.
+		Set<String> collectionPaths = new HashSet<>();
+		if (bulkMetadataUpdateRequest.getCollectionCompoundQuery() != null) {
+			collectionPaths.addAll(dataSearchService.getCollectionPaths(
+					bulkMetadataUpdateRequest.getCollectionCompoundQuery(), 1, bulkMetadataDataUpdateLimit + 1));
+		}
+		Set<String> dataObjectPaths = new HashSet<>();
+		if (bulkMetadataUpdateRequest.getDataObjectCompoundQuery() != null) {
+			dataObjectPaths.addAll(dataSearchService.getDataObjectPaths(null,
+					bulkMetadataUpdateRequest.getDataObjectCompoundQuery(), 1, bulkMetadataDataUpdateLimit + 1));
+		}
+
+		// Add the collection and data object paths the user requested explicitly to the
+		// bulk update paths list.
+		bulkMetadataUpdateRequest.getCollectionPaths()
+				.forEach(collectionPath -> collectionPaths.add(toNormalizedPath(collectionPath)));
+		bulkMetadataUpdateRequest.getDataObjectPaths()
+				.forEach(dataObjectPath -> dataObjectPaths.add(toNormalizedPath(dataObjectPath)));
+		if (collectionPaths.size() + dataObjectPaths.size() > bulkMetadataDataUpdateLimit) {
+			throw new HpcException(
+					"Number of collection/data-object path in bulk metadata request exceeds the maximum of "
+							+ bulkMetadataDataUpdateLimit,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Perform the individual path metadata update and capture the result in a
+		// response DTO.
+		HpcBulkMetadataUpdateResponseDTO bulkMetadataUpdateResponse = new HpcBulkMetadataUpdateResponseDTO();
+		bulkMetadataUpdateResponse.setResult(true);
+		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+
+		// Data objects bulk metadata updates.
+		dataObjectPaths.forEach(path -> {
+			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
+			item.setPath(path);
+			item.setResult(true);
+			try {
+				updateDataObject(path, bulkMetadataUpdateRequest.getMetadataEntries(),
+						dataManagementService.getCollectionType(path.substring(0, path.lastIndexOf('/'))), false, null,
+						null, null, userId, null);
+			} catch (HpcException e) {
+				logger.error("Failed to update data object metadata in a bulk request: {}", path, e);
+				item.setResult(false);
+				item.setMessage(e.getMessage());
+				bulkMetadataUpdateResponse.setResult(false);
+			}
+
+			if (item.getResult()) {
+				bulkMetadataUpdateResponse.getCompletedItems().add(item);
+			} else {
+				bulkMetadataUpdateResponse.getFailedItems().add(item);
+			}
+		});
+
+		// Collections bulk metadata updates.
+		collectionPaths.forEach(path -> {
+			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
+			item.setPath(path);
+			item.setResult(true);
+
+			try {
+				updateCollection(path, bulkMetadataUpdateRequest.getMetadataEntries(), userId);
+			} catch (HpcException e) {
+				logger.error("Failed to update data object metadata in a bulk request: {}", path, e);
+				item.setResult(false);
+				item.setMessage(e.getMessage());
+				bulkMetadataUpdateResponse.setResult(false);
+			}
+
+			if (item.getResult()) {
+				bulkMetadataUpdateResponse.getCompletedItems().add(item);
+			} else {
+				bulkMetadataUpdateResponse.getFailedItems().add(item);
+			}
+		});
+
+		return bulkMetadataUpdateResponse;
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -2392,7 +2476,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (!CollectionUtils.isEmpty(dataObjects)) {
 				// Delete data objects in this collection
 				for (HpcCollectionListingEntry entry : dataObjects) {
-					totalSize += Optional.ofNullable(deleteDataObject(entry.getPath(), force).getSize()).orElse(0L);
+					totalSize += Optional.ofNullable(deleteDataObject(entry.getPath(), force, null).getSize())
+							.orElse(0L);
 				}
 			}
 
@@ -3116,6 +3201,52 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
+	 * Update collection metadata.
+	 *
+	 * @param path            The data object path.
+	 * @param metadataEntries The list of metadata entries to update.
+	 * @param userId          The userId updating the data object.
+	 * @throws HpcException on service failure.
+	 */
+	private void updateCollection(String path, List<HpcMetadataEntry> metadataEntries, String userId)
+			throws HpcException {
+		// Get the metadata for this collection.
+		HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
+		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+				.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
+
+		// Update the metadata.
+		boolean updated = true;
+		String message = null;
+		try {
+			if (!metadataContained(metadataEntries, metadataBefore.getSelfMetadataEntries())) {
+				synchronized (this) {
+					metadataService.updateCollectionMetadata(path, metadataEntries,
+							systemGeneratedMetadata.getConfigurationId());
+				}
+			} else {
+				logger.info(
+						"Collection metadata update skipped - request contains no metadata updates to current state: {}",
+						path);
+			}
+
+		} catch (HpcException e) {
+			// Collection metadata update failed. Capture this in the audit record.
+			updated = false;
+			message = e.getMessage();
+			throw (e);
+
+		} finally {
+			// Add an audit record of this update collection attempt.
+			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
+					metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId, null,
+					null);
+		}
+
+		addCollectionUpdatedEvent(path, false, false, userId, null, null, null);
+	}
+
+	/**
 	 * Update data object metadata and optionally re-generate upload request URL.
 	 *
 	 * @param path                       The data object path.
@@ -3161,7 +3292,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
 					metadataService.getDataObjectMetadataEntries(path, false),
-					systemGeneratedMetadata.getArchiveLocation(), updated, null, message, null, null);
+					systemGeneratedMetadata.getArchiveLocation(), updated, null, message, null, null, null);
 		}
 
 		// Optionally re-generate the upload request URL.
