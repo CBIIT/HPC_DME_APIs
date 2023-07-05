@@ -16,7 +16,7 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
-		<spring.shell.version>1.2.0.M1</spring.shell.version>
+		<spring.shell.version>1.2.0.RELEASE</spring.shell.version>
 		<jar.mainclass>org.springframework.shell.Bootstrap</jar.mainclass>
 		<junit.version>4.10</junit.version>
 	</properties>
@@ -299,14 +299,6 @@
 
 
 	<repositories>
-		<repository>
-			<id>libs-milestone</id>
-			<url>https://repo.spring.io/libs-milestone/</url>
-		</repository>
-		<repository>
-			<id>libs-release</id>
-			<url>https://repo.spring.io/libs-release/</url>
-		</repository>
 		<repository>
 			<id>jline</id>
 			<name>JLine Project Repository</name>
