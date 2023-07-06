@@ -117,14 +117,13 @@
 			<artifactId>spring-retry</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-s3</artifactId>
+			<groupId>software.amazon.awssdk</groupId>
+    		<artifactId>s3-transfer-manager</artifactId>
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
 		    <artifactId>cxf-rt-rs-client</artifactId>
 		</dependency>
-		
 		<dependency>
     		<groupId>com.google.apis</groupId>
     		<artifactId>google-api-services-drive</artifactId>
