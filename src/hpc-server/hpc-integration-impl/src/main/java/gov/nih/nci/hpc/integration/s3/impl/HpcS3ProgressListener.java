@@ -10,10 +10,10 @@ package gov.nih.nci.hpc.integration.s3.impl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.amazonaws.event.ProgressEvent;
-import com.amazonaws.event.ProgressListener;
+
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -23,7 +23,7 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public class HpcS3ProgressListener implements ProgressListener {
+public class HpcS3ProgressListener /*implements ProgressListener*/ {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
@@ -92,8 +92,9 @@ public class HpcS3ProgressListener implements ProgressListener {
 	// ProgressListener Interface Implementation
 	// ---------------------------------------------------------------------//
 
-	@Override
-	public void progressChanged(ProgressEvent event) {
+	//@Override
+	public void progressChanged(/*ProgressEvent event*/) {
+		/*
 		if (event.getBytesTransferred() > 0) {
 			bytesTransferred.getAndAdd(event.getBytesTransferred());
 			if (bytesTransferredReported == 0) {
@@ -134,6 +135,6 @@ public class HpcS3ProgressListener implements ProgressListener {
 
 		default:
 			break;
-		}
+		}*/
 	}
 }

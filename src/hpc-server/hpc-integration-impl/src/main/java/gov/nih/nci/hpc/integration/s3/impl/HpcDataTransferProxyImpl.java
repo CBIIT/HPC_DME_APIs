@@ -5,25 +5,16 @@ import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,58 +22,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.HttpMethod;
-import com.amazonaws.event.ProgressListener;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.Headers;
-import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
-import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Rule;
-import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Transition;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.CopyObjectResult;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.RestoreObjectRequest;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.SetBucketLifecycleConfigurationRequest;
-import com.amazonaws.services.s3.model.StorageClass;
-import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter;
-import com.amazonaws.services.s3.model.lifecycle.LifecycleFilterPredicate;
-import com.amazonaws.services.s3.model.lifecycle.LifecyclePrefixPredicate;
-import com.amazonaws.services.s3.transfer.Download;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
-import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.transfer.internal.TransferManagerUtils;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
-import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
@@ -91,6 +41,10 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 /**
  * HPC Data Transfer Proxy S3 Implementation.
@@ -230,20 +184,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		// Calculate the URL expiration date.
-		Date expiration = new Date();
-		expiration.setTime(expiration.getTime() + 1000 * 60 * 60 * downloadRequestURLExpiration);
+		try {
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+					.bucket(archiveSourceLocation.getFileContainerId()).key(archiveSourceLocation.getFileId()).build();
 
-		// Create a URL generation request.
-		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
-				archiveSourceLocation.getFileContainerId(), archiveSourceLocation.getFileId())
-				.withMethod(HttpMethod.GET).withExpiration(expiration);
+			GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+					.signatureDuration(Duration.ofHours(downloadRequestURLExpiration))
+					.getObjectRequest(getObjectRequest).build();
 
-		// Generate the pre-signed URL.
-		URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-				.generatePresignedUrl(generatePresignedUrlRequest);
+			PresignedGetObjectRequest presignedGetObjectRequest = s3Connection.getPresigner(authenticatedToken)
+					.presignGetObject(getObjectPresignRequest);
+			return presignedGetObjectRequest.url().toString();
 
-		return url.toString();
+		} catch (S3Exception e) {
+			throw new HpcException(
+					"[S3] Failed to generate presigned download URL" + archiveSourceLocation.getFileContainerId() + ":"
+							+ archiveSourceLocation.getFileId() + " - " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
 	}
 
 	@Override
@@ -251,6 +209,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
 			String storageClass) throws HpcException {
 
+		/*
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {
 			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
@@ -294,11 +253,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ace);
 		}
+		*/ return null;
 	}
 
 	@Override
 	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
 			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
+		/*
 		// Create a S3 delete request.
 		DeleteObjectRequest deleteRequest = new DeleteObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId());
@@ -312,12 +273,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to delete file: " + deleteRequest, HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ace);
-		}
+		}*/
 	}
 
 	@Override
 	public HpcPathAttributes getPathAttributes(Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize)
 			throws HpcException {
+		/*
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
 		ObjectMetadata metadata = null;
 		Boolean fileExists = null;
@@ -370,12 +332,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			pathAttributes.setSize(metadata.getContentLength());
 		}
 
-		return pathAttributes;
+		return pathAttributes;*/ return null;
 	}
 
 	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, HpcFileLocation directoryLocation)
 			throws HpcException {
+		/*
 		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
 
 		try {
@@ -421,12 +384,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to list objects: " + ace.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ace);
-		}
+		} */ return null;
 	}
 
 	@Override
 	public String completeMultipartUpload(Object authenticatedToken, HpcFileLocation archiveLocation,
 			String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException {
+		/*
 		// Create AWS part ETags from the HPC model.
 		List<PartETag> partETags = new ArrayList<PartETag>();
 		uploadPartETags.forEach(uploadPartETag -> partETags
@@ -444,12 +408,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 							+ archiveLocation.getFileId() + ". multi-part-upload-id = " + multipartUploadId
 							+ ", number-of-parts = " + uploadPartETags.size() + " - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		}
+		}*/ return null;
 	}
 
 	@Override
 	public HpcArchiveObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
 			throws HpcException {
+		/* 
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		// Get metadata for the data-object in the S3 archive.
@@ -494,13 +459,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.DATA_TRANSFER_ERROR, ace);
 		}
 
-		return objectMetadata;
+		return objectMetadata;*/ return null;
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public synchronized void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
 			String tieringBucket, String tieringProtocol) throws HpcException {
+		/*
 		// Create a rule to archive objects with the prefix to Glacier
 		// immediately.
 		BucketLifecycleConfiguration.Rule newRule = new BucketLifecycleConfiguration.Rule().withId(prefix)
@@ -561,12 +527,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					"[S3] Failed to add a new rule to life cycle policy on bucket "
 							+ archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		}
+		}*/
 	}
 
 	@Override
 	public void restoreDataObject(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
-
+/*
 		try {
 			AmazonS3 s3Client = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
 
@@ -586,12 +552,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					"[S3] Failed to restore data object " + archiveLocation.getFileContainerId() + ":"
 							+ archiveLocation.getFileId() + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		}
+		}*/
 	}
 
 	@Override
 	public boolean existsTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
-
+/*
 		try {
 			AmazonS3 s3Client = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
 
@@ -631,18 +597,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 							+ e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 		}
-		return false;
+		return false; */ return false;
 	}
 
 	@Override
 	public void shutdown(Object authenticatedToken) throws HpcException {
+		/*
 		try {
 			s3Connection.getTransferManager(authenticatedToken).shutdownNow();
 
 		} catch (Exception e) {
 			throw new HpcException("[S3] Failed to shutdown TransferManager: " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
-		}
+		}*/
 	}
 
 	// ---------------------------------------------------------------------//
@@ -669,6 +636,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcFileLocation archiveDestinationLocation, HpcDataTransferProgressListener progressListener,
 			HpcArchiveType archiveType, List<HpcMetadataEntry> metadataEntries, String storageClass)
 			throws HpcException {
+		/*
 		// Create a S3 upload request.
 		PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
 				archiveDestinationLocation.getFileId(), sourceFile).withMetadata(toS3Metadata(metadataEntries))
@@ -714,7 +682,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
 		}
 
-		return uploadResponse;
+		return uploadResponse;*/ return null;
 	}
 
 	/**
@@ -745,6 +713,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcFileLocation archiveDestinationLocation,
 			HpcArchive baseArchiveDestination, Long size, HpcDataTransferProgressListener progressListener,
 			List<HpcMetadataEntry> metadataEntries, String storageClass) throws HpcException {
+		/*
 		if (progressListener == null) {
 			throw new HpcException(
 					"[S3] No progress listener provided for a upload from AWS S3 / S3 Provider / Google Drive / Google Cloud Storage",
@@ -862,7 +831,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		uploadResponse.setSourceSize(size);
 		uploadResponse.setDataTransferMethod(uploadMethod);
 
-		return uploadResponse;
+		return uploadResponse; */return null;
 	}
 
 	/**
@@ -887,6 +856,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration,
 			List<HpcMetadataEntry> metadataEntries, String uploadRequestURLChecksum, String storageClass,
 			boolean uploadCompletion) throws HpcException {
+		/*
 
 		// Calculate the URL expiration date.
 		Date expiration = new Date();
@@ -930,7 +900,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				.setDataTransferMethod(uploadCompletion ? HpcDataTransferUploadMethod.URL_SINGLE_PART_WITH_COMPLETION
 						: HpcDataTransferUploadMethod.URL_SINGLE_PART);
 
-		return uploadResponse;
+		return uploadResponse; */return null;
 	}
 
 	/**
@@ -950,6 +920,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private HpcDataObjectUploadResponse generateMultipartUploadRequestURLs(Object authenticatedToken,
 			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, int uploadParts,
 			List<HpcMetadataEntry> metadataEntries, String storageClass) throws HpcException {
+		/*
 		// Initiate the multipart upload.
 		HpcMultipartUpload multipartUpload = new HpcMultipartUpload();
 		InitiateMultipartUploadRequest initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(
@@ -1002,7 +973,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
 		uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.URL_MULTI_PART);
 
-		return uploadResponse;
+		return uploadResponse; */return null;
 	}
 
 	/**
@@ -1011,7 +982,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param metadataEntries The metadata entries to convert
 	 * @return A S3 metadata object
 	 */
-	private ObjectMetadata toS3Metadata(List<HpcMetadataEntry> metadataEntries) {
+	private /*ObjectMetadata*/ void toS3Metadata(List<HpcMetadataEntry> metadataEntries) {
+		/*
 		ObjectMetadata objectMetadata = new ObjectMetadata();
 		if (metadataEntries != null) {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
@@ -1019,7 +991,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 		}
 
-		return objectMetadata;
+		return objectMetadata; */ 
 	}
 
 	/**
@@ -1035,6 +1007,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 */
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			File destinationLocation, HpcDataTransferProgressListener progressListener) throws HpcException {
+		/*
 		// Create a S3 download request.
 
 		GetObjectRequest request = new GetObjectRequest(archiveLocation.getFileContainerId(),
@@ -1068,7 +1041,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} catch (Exception ge) {
 		}
 
-		return String.valueOf(s3Download.hashCode());
+		return String.valueOf(s3Download.hashCode()); */ return null;
 	}
 
 	/**
@@ -1152,6 +1125,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private String downloadDataObject(Object s3AccountAuthenticatedToken, String sourceURL,
 			HpcFileLocation destinationLocation, long fileSize, HpcDataTransferProgressListener progressListener)
 			throws HpcException {
+		/*
 		if (progressListener == null) {
 			throw new HpcException("[S3] No progress listener provided for a download to AWS S3 destination",
 					HpcErrorType.UNEXPECTED_ERROR);
@@ -1203,7 +1177,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 		}, s3Executor);
 
-		return String.valueOf(s3TransferManagerDownloadFuture.hashCode());
+		return String.valueOf(s3TransferManagerDownloadFuture.hashCode()); */ return null;
 	}
 
 	/**
@@ -1225,6 +1199,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @throws HpcException on failure invoke AWS S3 api.
 	 */
 	private boolean isDirectory(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
+		/* 
 		try {
 			try {
 				// Check if this is a directory. Use V2 listObjects API.
@@ -1252,6 +1227,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to list object: " + ace.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ace);
-		}
-	}
+		}*/ return false;
+	} 
 }
