@@ -12,34 +12,14 @@ package gov.nih.nci.hpc.integration.s3.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.AmazonS3EncryptionClientV2Builder;
-import com.amazonaws.services.s3.model.CryptoConfigurationV2;
-import com.amazonaws.services.s3.model.CryptoMode;
-import com.amazonaws.services.s3.model.CryptoRangeGetMode;
-import com.amazonaws.services.s3.model.EncryptionMaterials;
-import com.amazonaws.services.s3.model.StaticEncryptionMaterialsProvider;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -48,7 +28,11 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
@@ -61,11 +45,14 @@ public class HpcS3Connection {
 	// Constants
 	// ---------------------------------------------------------------------//
 
+	// TODO: cleanup - not used
 	// 5GB in bytes
-	private static final long FIVE_GB = 5368709120L;
+	// private static final long FIVE_GB = 5368709120L;
 
+	// TODO: cleanup - not used
 	// Google Storage S3 URL.
-	private static final String GOOGLE_STORAGE_URL = "https://storage.googleapis.com";
+	// private static final String GOOGLE_STORAGE_URL =
+	// "https://storage.googleapis.com";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -79,13 +66,15 @@ public class HpcS3Connection {
 	@Value("${hpc.integration.s3.minimumUploadPartSize}")
 	private Long minimumUploadPartSize = null;
 
+	// TODO: Cleanup - not used
 	// The multipart upload threshold.
-	@Value("${hpc.integration.s3.multipartUploadThreshold}")
-	private Long multipartUploadThreshold = null;
+	// @Value("${hpc.integration.s3.multipartUploadThreshold}")
+	// private Long multipartUploadThreshold = null;
 
+	// TODO: Cleanup - not used
 	// The socket timeout.
-	@Value("${hpc.integration.s3.socketTimeout}")
-	private Integer socketTimeout = null;
+	// @Value("${hpc.integration.s3.socketTimeout}")
+	// private Integer socketTimeout = null;
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
@@ -176,11 +165,41 @@ public class HpcS3Connection {
 	 * @throws HpcException on invalid authentication token.
 	 */
 	public S3TransferManager getTransferManager(Object authenticatedToken) throws HpcException {
-		if (!(authenticatedToken instanceof HpcS3TransferManager)) {
+		if (!(authenticatedToken instanceof HpcS3)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		return ((HpcS3TransferManager) authenticatedToken).transferManager;
+		return ((HpcS3) authenticatedToken).transferManager;
+	}
+
+	/**
+	 * Get S3 Client from an authenticated token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return A S3 client object.
+	 * @throws HpcException on invalid authentication token.
+	 */
+	public S3AsyncClient getClient(Object authenticatedToken) throws HpcException {
+		if (!(authenticatedToken instanceof HpcS3)) {
+			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return ((HpcS3) authenticatedToken).client;
+	}
+
+	/**
+	 * Get S3 Presigner from an authenticated token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return A S3 presigner object.
+	 * @throws HpcException on invalid authentication token.
+	 */
+	public S3Presigner getPresigner(Object authenticatedToken) throws HpcException {
+		if (!(authenticatedToken instanceof HpcS3)) {
+			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return ((HpcS3) authenticatedToken).presigner;
 	}
 
 	/**
@@ -191,20 +210,22 @@ public class HpcS3Connection {
 	 * @throws HpcException on invalid authentication token.
 	 */
 	public HpcIntegratedSystem getS3Provider(Object authenticatedToken) throws HpcException {
-		if (!(authenticatedToken instanceof HpcS3TransferManager)) {
+		if (!(authenticatedToken instanceof HpcS3)) {
 			return null;
 		}
 
-		return ((HpcS3TransferManager) authenticatedToken).s3Provider;
+		return ((HpcS3) authenticatedToken).provider;
 	}
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
 
-	private class HpcS3TransferManager {
+	private class HpcS3 {
 		private S3TransferManager transferManager = null;
-		private HpcIntegratedSystem s3Provider = null;
+		private S3AsyncClient client = null;
+		private S3Presigner presigner = null;
+		private HpcIntegratedSystem provider = null;
 	}
 
 	/**
@@ -221,12 +242,12 @@ public class HpcS3Connection {
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
-	@SuppressWarnings("deprecation")
 	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
 			HpcIntegratedSystem s3Provider, String encryptionAlgorithm, String encryptionKey) throws HpcException {
 		// Create the credential provider based on the configured credentials.
-		AwsBasicCredentials s3ArchiveCredentials = AwsBasicCredentials.create(username, password);
-		StaticCredentialsProvider s3ArchiveCredentialsProvider = StaticCredentialsProvider.create(s3ArchiveCredentials);
+		AwsBasicCredentials s3ProviderCredentials = AwsBasicCredentials.create(username, password);
+		StaticCredentialsProvider s3ProviderCredentialsProvider = StaticCredentialsProvider
+				.create(s3ProviderCredentials);
 
 		// Create URI to the S3 provider endpoint
 		URI uri = null;
@@ -237,8 +258,15 @@ public class HpcS3Connection {
 			throw new HpcException("Invalid URL: " + url, HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 
-		// TODO: clean up the Client side encryption code.
+		HpcS3 s3 = new HpcS3();
+		s3.provider = s3Provider;
+
+		// TODO: clean up the Client side encryption code. Not supported
 		/*
+		 * 
+		 * ClientConfiguration config = new ClientConfiguration();
+		 * config.setSocketTimeout(socketTimeout);
+		 * 
 		 * if (!StringUtils.isEmpty(encryptionAlgorithm) &&
 		 * !StringUtils.isEmpty(encryptionKey)) { s3Client =
 		 * AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new
@@ -254,7 +282,8 @@ public class HpcS3Connection {
 		 * config).build(); } else {
 		 */
 
-		// TODO: clean up - Instantiate a S3 client. Using standard builder
+		// TODO: clean up - Instantiate a S3 client. Using standard builder - note
+		// different config options available, e.g no min-part-size
 		// S3AsyncClient s3Client =
 		// S3AsyncClient.builder().credentialsProvider(s3ArchiveCredentialsProvider)
 		// .forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
@@ -262,31 +291,49 @@ public class HpcS3Connection {
 		// config.apiCallAttemptTimeout(Duration.ofMillis(socketTimeout)))
 		// .build();
 
-		S3AsyncClient s3Client = S3AsyncClient.crtBuilder().credentialsProvider(s3ArchiveCredentialsProvider)
-				.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
-				.httpConfiguration(httpConfig -> httpConfig.connectionTimeout(Duration.ofMillis(socketTimeout)))
+		// TODO: Review crt client builder config options -
+		// https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3CrtAsyncClientBuilder.html#checksumValidationEnabled(java.lang.Boolean)
 
-				// .overrideConfiguration(config ->
-				// config.apiCallAttemptTimeout(Duration.ofMillis(socketTimeout)))
-				.build();
+		try {
+			// Instantiate a S3 async client.
+			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
+					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
+					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(true)
+					// TODO: remove checksumValidation as it is true by default
+					/* TODO: consider using this config - .maxConcurrency(someValue) */
+					.build(); //
 
-		// Create and return the S3 transfer manager. Note that Google Storage doesn't
-		// support multipart upload,
-		// so we override the configured threshold w/ the max size of 5GB.
-		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-		s3TransferManager.transferManager = S3TransferManager.builder().s3Client(s3Client).build();
+			// Instantiate the S3 transfer manager.
+			s3.transferManager = S3TransferManager.builder().s3Client(s3.client).executor(executorService).build();
 
-		/*
-		 * .withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(
-		 * minimumUploadPartSize) .withMultipartUploadThreshold(
-		 * url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB :
-		 * multipartUploadThreshold)
-		 * .withDisableParallelDownloads(true).withExecutorFactory(() ->
-		 * executorService) .withShutDownThreadPools(false).build();
-		 */
+			// Instantiate the S3 presigner.
+			s3.presigner = S3Presigner.builder().credentialsProvider(s3ProviderCredentialsProvider)
+					.endpointOverride(uri).serviceConfiguration(
+							S3Configuration.builder().pathStyleAccessEnabled(pathStyleAccessEnabled).build())
+					.build();
 
-		s3TransferManager.s3Provider = s3Provider;
-		return s3TransferManager;
+			// TODO: Note that since we can't set multipart upload threshold - GCP
+			// storage/archive via S3 can no longer be supported. Need to clean it up
+
+			/*
+			 * TODO: These options from V1 don't have equivalent options in V2
+			 * 
+			 * Note that Google Storage doesn't support multipart upload, so we override the
+			 * configured threshold w/ the max size of 5GB.
+			 * 
+			 * .withAlwaysCalculateMultipartMd5(true).withMultipartUploadThreshold(
+			 * url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB :
+			 * multipartUploadThreshold)
+			 * .withDisableParallelDownloads(true).withShutDownThreadPools(false).build();
+			 */
+
+			return s3;
+
+		} catch (S3Exception e) {
+			throw new HpcException(
+					"[S3] Failed to authenticate S3 Provider: " + s3Provider.value() + "] - " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
 	}
 
 	/**
@@ -300,41 +347,61 @@ public class HpcS3Connection {
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
-	@SuppressWarnings("deprecation")
 	private Object authenticateAWS(String accessKey, String secretKey, String region, String encryptionAlgorithm,
 			String encryptionKey) throws HpcException {
+		// Create the credential provider based on provided AWS S3 account.
+		AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
+		StaticCredentialsProvider awsCredentialsProvider = StaticCredentialsProvider.create(awsCredentials);
+
+		HpcS3 s3 = new HpcS3();
+		s3.provider = HpcIntegratedSystem.AWS;
+
+		/*
+		 * TODO: cleanup as client side encruption not available AmazonS3 s3Client =
+		 * null; if (!StringUtils.isEmpty(encryptionAlgorithm) &&
+		 * !StringUtils.isEmpty(encryptionKey)) { s3Client =
+		 * AmazonS3EncryptionClientV2Builder.standard() .withCryptoConfiguration( new
+		 * CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
+		 * .withRangeGetMode(CryptoRangeGetMode.ALL))
+		 * .withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new
+		 * EncryptionMaterials( new
+		 * SecretKeySpec(Base64.getDecoder().decode(encryptionKey),
+		 * encryptionAlgorithm))))
+		 * .withRegion(region).withCredentials(awsCredentialsProvider).build(); } else {
+		 */
+
 		try {
-			// Create the credential provider based on provided S3 account.
-			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
-			AWSStaticCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(awsCredentials);
+			// Instantiate a S3 async client.
+			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
+					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(true)
+					// TODO: remove checksumValidation as it is true by default
+					// TODO: consider using this config - .maxConcurrency(someValue)
+					.build(); //
 
-			// Instantiate a S3 client.
-			AmazonS3 s3Client = null;
-			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
-				s3Client = AmazonS3EncryptionClientV2Builder.standard()
-						.withCryptoConfiguration(
-								new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
-										.withRangeGetMode(CryptoRangeGetMode.ALL))
-						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
-								new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
-						.withRegion(region).withCredentials(awsCredentialsProvider).build();
-			} else {
-				s3Client = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(awsCredentialsProvider)
-						.build();
-			}
+			// Instantiate the S3 transfer manager.
+			s3.transferManager = S3TransferManager.builder().s3Client(s3.client).executor(executorService).build();
 
-			// Create and return the S3 transfer manager.
-			HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
-					.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
-					.withMultipartUploadThreshold(multipartUploadThreshold).withDisableParallelDownloads(true)
-					.withExecutorFactory(() -> executorService).withShutDownThreadPools(false).build();
-			s3TransferManager.s3Provider = HpcIntegratedSystem.AWS;
-			return s3TransferManager;
+			/*
+			 * TODO: These options from V1 don't have equivalent options in V2
+			 * .withAlwaysCalculateMultipartMd5(true).
+			 * .withMultipartUploadThreshold(multipartUploadThreshold).
+			 * withDisableParallelDownloads(true) .withShutDownThreadPools(false).build();
+			 */
 
-		} catch (SdkClientException e) {
-			throw new HpcException("Failed to authenticate S3 account in region [" + region + "] - " + e.getMessage(),
-					HpcErrorType.INVALID_REQUEST_INPUT, e);
+			// Instantiate the S3 presigner.
+			s3.presigner = S3Presigner.builder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
+					.build();
+
+			return s3;
+			/*
+			 * } catch (SdkClientException e) { throw new
+			 * HpcException("Failed to authenticate S3 account in region [" + region +
+			 * "] - " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT, e); }
+			 */
+
+		} catch (S3Exception e) {
+			throw new HpcException("[S3] Failed to authenticate S3 in region " + region + "] - " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	}
 }
