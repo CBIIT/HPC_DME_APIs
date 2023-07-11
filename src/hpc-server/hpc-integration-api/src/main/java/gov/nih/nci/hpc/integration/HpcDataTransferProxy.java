@@ -150,7 +150,7 @@ public interface HpcDataTransferProxy {
 	 * @param authenticatedToken           An authenticated token.
 	 * @param archiveLocation              The data object's archive location.
 	 * @param baseArchiveDestination       The archive's base destination location.
-	 * @param downloadRequestURLExpiration The expiration period (in days) to set
+	 * @param downloadRequestURLExpiration The expiration period (in hours) to set
 	 *                                     when generating download URL.
 	 * @return The download URL
 	 * @throws HpcException on data transfer system failure.
