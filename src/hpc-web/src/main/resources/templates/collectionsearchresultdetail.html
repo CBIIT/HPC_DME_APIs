@@ -329,6 +329,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
             selectedRowsData = $scope.selectedRows;
             $("#totalSize").val(totalSize);
             $("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
+            $("#totalSizeLabel").show();
           });
       
 	      gridApi.core.on.columnVisibilityChanged($scope, function(col) {
