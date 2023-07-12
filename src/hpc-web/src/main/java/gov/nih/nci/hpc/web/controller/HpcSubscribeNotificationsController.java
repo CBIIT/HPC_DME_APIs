@@ -834,7 +834,8 @@ public class HpcSubscribeNotificationsController extends
     	  || type.equals(HpcEventType.RESTORE_REQUEST_COMPLETED)
     	  || type.equals(HpcEventType.RESTORE_REQUEST_FAILED)
     	  || type.equals(HpcEventType.REVIEW_SENT)
-    	  || type.equals(HpcEventType.REVIEW_REMINDER_SENT))
+    	  || type.equals(HpcEventType.REVIEW_REMINDER_SENT)
+    	  || type.equals(HpcEventType.USER_QUERY_SENT))
         continue;
       HpcNotificationSubscription subscription = getNotificationSubscription(
           authToken, type);
