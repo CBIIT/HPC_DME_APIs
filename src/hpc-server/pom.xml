@@ -39,7 +39,7 @@
         <aspectj.version>1.9.6</aspectj.version>
 		<amazon-aws-v1.version>1.12.420</amazon-aws-v1.version>
 		<amazon-aws-v2.version>2.20.101</amazon-aws-v2.version>
-		<amazon-aws-crt.version>0.22.5</amazon-aws-crt.version>
+		<amazon-aws-crt.version>0.22.2</amazon-aws-crt.version>
 		<jackson.version>2.12.7</jackson.version>
 		<jargon.version>4.3.2.2-RELEASE</jargon.version>
 		<jjwt.version>0.9.1</jjwt.version>
