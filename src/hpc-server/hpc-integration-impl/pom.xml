@@ -52,11 +52,12 @@
 							com.google.cloud:google-cloud-core;scope=compile|runtime,
 							com.google.cloud:google-cloud-core-http;scope=compile|runtime,
 							com.google.cloud:google-cloud-storage;scope=compile|runtime,
-							com.google.auth:google-auth-library-oauth2-http;scope=compile|runtime,
+							com.google.auth:google-auth-library-oauth2-http;scope=compile|runtime
 							<!-- Note: We embed this dependency because it exports classes from the AWS SDK S3 jar and created a deployment issue. 
 							           Need to check if in future versions this was fixed by Amazon, and this dependency can be removed here and 
 							           and added to features.xml instead under the AWS SDK V2 <feature> -->
-							software.amazon.awssdk:s3-transfer-manager;scope=compile|runtime
+							software.amazon.awssdk:s3-transfer-manager;scope=compile|runtime,
+							software.amazon.awssdk:s3;scope=compile|runtime
 						</Embed-Dependency>
 						<Export-Package>
 							com.google.api,
@@ -80,7 +81,31 @@
 							software.amazon.awssdk.transfer.s3.internal.model,
 							software.amazon.awssdk.transfer.s3.internal.progress,
 							software.amazon.awssdk.transfer.s3.internal.utils,
-							software.amazon.awssdk.transfer.s3.internal.serialization
+							software.amazon.awssdk.transfer.s3.internal.serialization,
+							software.amazon.awssdk.services.s3.model,
+							software.amazon.awssdk.services.s3.crt,
+							software.amazon.awssdk.services.s3.endpoints,
+							software.amazon.awssdk.services.s3.endpoints.internal,
+							software.amazon.awssdk.services.s3.internal,
+							software.amazon.awssdk.services.s3.internal.client,
+							software.amazon.awssdk.services.s3.internal.crossregion,
+							software.amazon.awssdk.services.s3.internal.crossregion.utils,
+							software.amazon.awssdk.services.s3.internal.crossregion.endpointprovider,
+							software.amazon.awssdk.services.s3.internal.crt,
+							software.amazon.awssdk.services.s3.internal.endpoints,
+							software.amazon.awssdk.services.s3.internal.handlers,
+							software.amazon.awssdk.services.s3.checksums,
+							software.amazon.awssdk.services.s3.internal.resource,
+							software.amazon.awssdk.services.s3.internal.settingproviders,
+							software.amazon.awssdk.services.s3.model.selectobjectcontenteventstream,
+							software.amazon.awssdk.services.s3.paginators,
+							software.amazon.awssdk.services.s3.presigner,
+							software.amazon.awssdk.services.s3.internal.signing,
+							software.amazon.awssdk.services.s3.presigner.model,
+							software.amazon.awssdk.services.s3.transform,
+							software.amazon.awssdk.services.s3.waiters,
+							software.amazon.awssdk.services.s3.waiters.internal,
+							software.amazon.awssdk.services.s3
 						</Export-Package>
 					</instructions>
 				</configuration>
@@ -134,8 +159,16 @@
     		<artifactId>s3-transfer-manager</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+    		<artifactId>s3</artifactId>
+		</dependency>
+		<dependency>
       		<groupId>software.amazon.awssdk.crt</groupId>
       		<artifactId>aws-crt</artifactId>
+   		</dependency>
+   		<dependency>
+      		<groupId>software.amazon.awssdk</groupId>
+      		<artifactId>aws-crt-client</artifactId>
    		</dependency>
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
