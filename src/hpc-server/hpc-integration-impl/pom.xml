@@ -57,7 +57,8 @@
 							           Need to check if in future versions this was fixed by Amazon, and this dependency can be removed here and 
 							           and added to features.xml instead under the AWS SDK V2 <feature> -->
 							software.amazon.awssdk:s3-transfer-manager;scope=compile|runtime,
-							software.amazon.awssdk:s3;scope=compile|runtime
+							software.amazon.awssdk:sdk-core;scope=compile|runtime<!--,
+							software.amazon.awssdk:s3;scope=compile|runtime-->
 						</Embed-Dependency>
 						<Export-Package>
 							com.google.api,
@@ -73,6 +74,25 @@
 							com.google.cloud.http,
 							com.google.auth.http,
 							com.google.auth.oauth2,
+							
+							software.amazon.awssdk.transfer.s3,
+							software.amazon.awssdk.transfer.s3.*,
+							software.amazon.awssdk.transfer.s3.internal.*,
+							software.amazon.awssdk.core,
+							software.amazon.awssdk.core.*,
+							software.amazon.awssdk.core.async.*,
+							software.amazon.awssdk.core.client.*,
+							software.amazon.awssdk.core.interceptor.*,
+							software.amazon.awssdk.core.internal.*,
+							software.amazon.awssdk.core.internal.checksums.*,
+							software.amazon.awssdk.core.internal.http.*,
+							software.amazon.awssdk.core.internal.http.pipeline.*,
+							software.amazon.awssdk.core.internal.pagination.*,
+							software.amazon.awssdk.core.pagination.*,
+							software.amazon.awssdk.core.document.*,
+							software.amazon.awssdk.core.retry.*
+							
+							<!--
 							software.amazon.awssdk.transfer.s3,
 							software.amazon.awssdk.transfer.s3.config,
 							software.amazon.awssdk.transfer.s3.progress,
@@ -82,6 +102,52 @@
 							software.amazon.awssdk.transfer.s3.internal.progress,
 							software.amazon.awssdk.transfer.s3.internal.utils,
 							software.amazon.awssdk.transfer.s3.internal.serialization,
+							software.amazon.awssdk.core,
+							software.amazon.awssdk.core.async,
+							software.amazon.awssdk.core.async.listener,
+							software.amazon.awssdk.core.client.config,
+							software.amazon.awssdk.core.client.builder,
+							software.amazon.awssdk.core.exception,
+							software.amazon.awssdk.core.http,
+							software.amazon.awssdk.core.interceptor,
+							software.amazon.awssdk.core.checksums,
+							software.amazon.awssdk.core.interceptor.trait,
+							software.amazon.awssdk.core.internal.async,
+							software.amazon.awssdk.core.internal.checksums.factory,
+							software.amazon.awssdk.core.internal.interceptor,
+							software.amazon.awssdk.core.internal.io,
+							software.amazon.awssdk.core.internal.chunked,
+							software.amazon.awssdk.core.internal.signer,
+							software.amazon.awssdk.core.internal.util,
+							software.amazon.awssdk.core.internal.http,
+							software.amazon.awssdk.core.internal.http.pipeline,
+							software.amazon.awssdk.core.internal.http.pipeline.stages,
+							software.amazon.awssdk.core.internal.http.async,
+							software.amazon.awssdk.core.internal.http.pipeline.stages.utils,
+							software.amazon.awssdk.core.internal.http.timers,
+							software.amazon.awssdk.core.internal.http.loader,
+							software.amazon.awssdk.core.internal.metrics,
+							software.amazon.awssdk.core.internal.retry,
+							software.amazon.awssdk.core.internal.capacity,
+							software.amazon.awssdk.core.internal.sync,
+							software.amazon.awssdk.core.internal.pagination.async,
+							software.amazon.awssdk.core.internal,
+							software.amazon.awssdk.core.io,
+							software.amazon.awssdk.core.metrics,
+							software.amazon.awssdk.core.pagination.async,
+							software.amazon.awssdk.core.protocol,
+							software.amazon.awssdk.core.document,
+							software.amazon.awssdk.core.document.internal,
+							software.amazon.awssdk.core.retry,
+							software.amazon.awssdk.core.retry.backoff,
+							software.amazon.awssdk.core.retry.conditions,
+							software.amazon.awssdk.core.signer,
+							software.amazon.awssdk.core.sync,
+							software.amazon.awssdk.core.traits,
+							software.amazon.awssdk.core.util
+							-->
+							
+							<!--,
 							software.amazon.awssdk.services.s3.model,
 							software.amazon.awssdk.services.s3.crt,
 							software.amazon.awssdk.services.s3.endpoints,
@@ -105,7 +171,7 @@
 							software.amazon.awssdk.services.s3.transform,
 							software.amazon.awssdk.services.s3.waiters,
 							software.amazon.awssdk.services.s3.waiters.internal,
-							software.amazon.awssdk.services.s3
+							software.amazon.awssdk.services.s3-->
 						</Export-Package>
 					</instructions>
 				</configuration>
@@ -165,10 +231,6 @@
 		<dependency>
       		<groupId>software.amazon.awssdk.crt</groupId>
       		<artifactId>aws-crt</artifactId>
-   		</dependency>
-   		<dependency>
-      		<groupId>software.amazon.awssdk</groupId>
-      		<artifactId>aws-crt-client</artifactId>
    		</dependency>
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
