@@ -10,6 +10,12 @@ app.filter('percentEncoding', function () {
   };
 });
 
+app.filter('percentDecoding', function () {
+  return function (argStr) {
+    return decodeURIComponent(argStr).replace( /\+/g, ' ' );
+  };
+});
+
 app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
 	$scope.searchesloading = true;
 	$http.get('/savedSearchList').
@@ -35,7 +41,7 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
         field : 'searchName',
         width: '45%',
         displayName : 'Search Name',
-        cellFilter: 'percentEncoding',
+        cellFilter: 'percentDecoding',
         cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a title="Run Search" href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a>&nbsp;&nbsp;&nbsp;<a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}_edit" onclick="editSearch(this)"><i class="fa fa-edit" title="Edit Search Criteria"></i></a></div>'
       },
       {
