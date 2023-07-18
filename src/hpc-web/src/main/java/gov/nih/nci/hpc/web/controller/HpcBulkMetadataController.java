@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.web.controller;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -109,6 +110,10 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		hpcDownloadDatafile.setDownloadType(downloadType);
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		String selectedPathsMetadataNames = request.getParameter("selectedPathsMetadataNames");
+		List<String> allPathsMetadataNamesList = Arrays.asList(selectedPathsMetadataNames.split(",", -1));
+		model.addAttribute("allPathsMetadataNamesList", allPathsMetadataNamesList);
+		model.addAttribute("selectedPathsMetadataNames", selectedPathsMetadataNames);
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
 		HpcBulkMetadataUpdateRequest bulkMetadataUpdateRequest = new HpcBulkMetadataUpdateRequest();
 

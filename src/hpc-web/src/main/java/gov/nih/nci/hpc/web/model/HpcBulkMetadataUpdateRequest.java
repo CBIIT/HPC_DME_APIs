@@ -1,5 +1,8 @@
 package gov.nih.nci.hpc.web.model;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
 
 public class HpcBulkMetadataUpdateRequest {
 	
@@ -7,15 +10,14 @@ public class HpcBulkMetadataUpdateRequest {
   protected List<HpcMetadataAttrEntry> metadataList;
   protected String metadataName;
   protected String metadataValue;
+  private String selectedPathsMetadataNames;
 
   public List<String> getSelectedFilePaths(){
     return selectedFilePaths;
   }
-  
   public void setSelectedFilePaths(List<String> paths) {
     this.selectedFilePaths = paths;
   }
-  
   public List<HpcMetadataAttrEntry> getMetadataList() {
     return this.metadataList;
   }
@@ -33,5 +35,11 @@ public class HpcBulkMetadataUpdateRequest {
   }
   public void setMetadataName(String metadataName) {
     this.metadataName = metadataName;
+  }
+  public String getSelectedPathsMetadataNames() {
+	return selectedPathsMetadataNames;
+  }
+  public void setSelectedPathsMetadataNames(String selectedPathsMetadataNames) {
+	this.selectedPathsMetadataNames = selectedPathsMetadataNames;
   }
 }

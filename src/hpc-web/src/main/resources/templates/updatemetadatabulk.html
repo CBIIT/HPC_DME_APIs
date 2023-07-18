@@ -24,7 +24,7 @@
 <link href="css/style.css" rel="stylesheet" />
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
-<link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link href="css/jquery-ui-1.13.2.min.css" rel="stylesheet" />
 <link href="css/select2-4.0.11.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
@@ -86,6 +86,7 @@
     var assignedNames = [[${names}]];
     var searchType = [[${hpcSearch.getSearchType()}]];
     var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
+	var allPathsMetadataNamesList =  [[${allPathsMetadataNamesList}]];
 /*]]>*/
 </script>
 </head>
@@ -241,7 +242,7 @@
 	<!-- bootstrap -->
 	<script src="js/bootstrap.min.js"></script>
 
-	<script src="js/jquery-ui-1.10.4.min.js"></script>
+	<script src="js/jquery-ui-1.13.2.min.js"></script>
 	<script src="js/jquery.scrollTo.min.js"></script>
 	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
 	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
@@ -254,7 +255,9 @@
 	<script type="text/javascript">
 	//<![CDATA[
 		$(document).ready(function(){
-			$('#sub-menu-search').addClass("active");
+			$("#mdname").autocomplete({
+                source: allPathsMetadataNamesList
+            });
 		});
 
 		$(document).ready(function () {

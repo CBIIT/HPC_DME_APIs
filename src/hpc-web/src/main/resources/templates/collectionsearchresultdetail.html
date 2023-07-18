@@ -65,6 +65,8 @@
     var currentPageSize = "[[${currentPageSize}]]";
     var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
     var selectedRowsData = [];
+	var selectedRowsUserMetadataAttributes = new Map();
+	var selectedPathsMetadataNames = [[${selectedPathsMetadataNames}]];
     var totalSize = [[${totalSize}]];
     var deselectedColumns = [[${deselectedColumns}]];
 /*]]>*/
@@ -419,9 +421,11 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
     $scope.performActionSelectedRows = function(action) {
         console.log('$scope.selectedRows: ', $scope.selectedRows);
         console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
-        var updatedList = [];
+		console.log('Enter performActionSelectedRows: selectedPathsMetadataNames: ', selectedPathsMetadataNames);
+		selectedRowsUserMetadataAttributes = new Map();
+		var updatedList = [];
         if($scope.selectedRows != null)
-          {
+        {
             if(hpcSelectedDatafileList != null)
             {
               for(var i=hpcSelectedDatafileList.length-1;i>=0;i--)
@@ -435,13 +439,36 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
             }
 
             for(var i=0;i<selectedRowsData.length;i++)
-              {
+            {
               if(!updatedList.contains(selectedRowsData[i]))
                 updatedList.push(selectedRowsData[i]);
             }
-          }
-        console.log(' after updatedList: ', updatedList);
-
+			for(var pathIndex=0; pathIndex < selectedRowsData.length; pathIndex++){
+				let path = selectedRowsData[pathIndex].substring(selectedRowsData[pathIndex].lastIndexOf(":") + 1, selectedRowsData[pathIndex].length);
+				for(var rowIndex=0; rowIndex < results.length; rowIndex++){
+					if (results[rowIndex].path === path){
+						let pathData = results[rowIndex].metadataEntries.selfMetadataEntries;
+						for(var attributeIndex=0; attributeIndex < pathData.length; attributeIndex++) {
+							let attribute = pathData[attributeIndex].attribute;
+							if(selectedRowsUserMetadataAttributes[attribute] != null){
+								selectedRowsUserMetadataAttributes[attribute] = selectedRowsUserMetadataAttributes[attribute] + 1;
+							} else {
+								selectedRowsUserMetadataAttributes[attribute] = 1;
+							}
+						}
+						break;
+					}
+				}
+			}
+        }
+		if (selectedRowsUserMetadataAttributes != null){
+			if(selectedPathsMetadataNames != null) {
+				selectedPathsMetadataNames = selectedPathsMetadataNames + ',' +  JSON.stringify(Object.keys(selectedRowsUserMetadataAttributes).join(','));
+				console.log('Combined selectedPathsMetadataNames: ', selectedPathsMetadataNames);
+			} else {
+				selectedPathsMetadataNames = JSON.stringify(Object.keys(selectedRowsUserMetadataAttributes).join(','));
+			}
+		}
         if(updatedList == null || updatedList.length == 0)
         {
           if(action == 'download')
@@ -489,6 +516,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkMetadataform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("bulkMetadataform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+			document.getElementById("bulkMetadataform").elements.namedItem("selectedPathsMetadataNames").value = selectedPathsMetadataNames;
 	        document.getElementById("downloadType3").value = "collections";
 	        document.getElementById("bulkMetadataform").submit();
         }
@@ -611,6 +639,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="totalSize" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns" name="deselectedColumns" value=""/>
+						<input type="hidden" id="selectedPathsMetadataNames" name="selectedPathsMetadataNames"/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}"
@@ -646,6 +675,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="pageSize3" name="pageSize"/>
 						<input type="hidden" id="queryName3" name="queryName"/>
 						<input type="hidden" id="totalSize3" name="totalSize"/>
+						<input type="hidden" id="selectedPathsMetadataNames" name="selectedPathsMetadataNames"/>
 						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
 					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
@@ -705,6 +735,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(newPageSize);
 		
 		var updatedList = [];
+		console.log('Enter updatePage, selectedPathsMetadataNames: ', selectedPathsMetadataNames);
 		if(selectedRowsData != null)
     	{
 	    	if(hpcSelectedDatafileList != null)
@@ -724,10 +755,36 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	    		if(!updatedList.contains(selectedRowsData[i]))
 	    			updatedList.push(selectedRowsData[i]);
 	    	}
+			selectedRowsUserMetadataAttributes = new Map();
+			for(var pathIndex=0; pathIndex < selectedRowsData.length; pathIndex++){
+				let path = selectedRowsData[pathIndex].substring(selectedRowsData[pathIndex].lastIndexOf(":") + 1, selectedRowsData[pathIndex].length);
+				for(var rowIndex=0; rowIndex < results.length; rowIndex++){
+					if (results[rowIndex].path === path){
+						let pathData = results[rowIndex].metadataEntries.selfMetadataEntries;
+						for(var attributeIndex=0; attributeIndex < pathData.length; attributeIndex++) {
+							let attribute = pathData[attributeIndex].attribute;
+							if(selectedRowsUserMetadataAttributes[attribute] != null){
+								selectedRowsUserMetadataAttributes[attribute] = selectedRowsUserMetadataAttributes[attribute] + 1;
+							} else {
+								selectedRowsUserMetadataAttributes[attribute] = 1;
+							}
+						}
+						break;
+					}
+				}
+			}
     	}
 		
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
+		if(selectedRowsUserMetadataAttributes != null) {
+			if (selectedPathsMetadataNames != null) {
+				selectedPathsMetadataNames = selectedPathsMetadataNames + "," + JSON.stringify(Object.keys(selectedRowsUserMetadataAttributes).join(','));
+			} else{
+				selectedPathsMetadataNames = JSON.stringify(Object.keys(selectedRowsUserMetadataAttributes).join(','));
+			}
+			document.getElementById("simplesearchform").elements.namedItem("selectedPathsMetadataNames").value = selectedPathsMetadataNames;
+		}
 		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 		document.getElementById("simplesearchform").submit();
     }
