@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,6 +73,7 @@ public class HpcSearchUtil {
 		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
 		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, user.getDefaultBasePath());
 		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
+		Map<String, String>  pathAttributeNamesMap = getMetadataNamesList(search, collections, user, basePathRules);
 		if (!search.isDetailed()) {
 			List<String> searchResults = collections.getCollectionPaths();
 			List<HpcSearchResult> returnResults = new ArrayList<HpcSearchResult>();
@@ -78,9 +81,9 @@ public class HpcSearchUtil {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
 				returnResult.setDownload(result);
+				returnResult.setMetadataNamesList(pathAttributeNamesMap.get(result));
 				returnResults.add(returnResult);
 				returnResult.setPermission(result);
-
 			}
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "collection");
@@ -104,8 +107,8 @@ public class HpcSearchUtil {
 				returnResult.setMetadataEntries(new HpcMetadataEntries());
 				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(filterEncryptedMetadata(user, basePathRules, search, result.getCollection().getCollectionName(), result.getMetadataEntries().getSelfMetadataEntries())));
 				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(filterEncryptedMetadata(user, basePathRules, search, result.getCollection().getCollectionName(), result.getMetadataEntries().getParentMetadataEntries())));
+				returnResult.setMetadataNamesList(pathAttributeNamesMap.get(result.getCollection().getCollectionName()));
 				returnResults.add(returnResult);
-
 			}
 			model.addAttribute("searchresults", returnResults);
 			List<HpcCollectionSearchResultDetailed> collectionResults = (List<HpcCollectionSearchResultDetailed>) session.getAttribute("searchresults");
@@ -122,7 +125,25 @@ public class HpcSearchUtil {
 			model.addAttribute("totalCount", collections.getTotalCount());
 			model.addAttribute("currentPageSize", search.getPageSize());
 			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount(), collections.getLimit()));
+			model.addAttribute("selectedPathsMetadataNames", search.getSelectedPathsMetadataNames());
+
 		}
+	}
+
+	private static Map<String, String>  getMetadataNamesList(HpcSearch search, HpcCollectionListDTO collections, HpcUserDTO user, HpcDataManagementRulesDTO basePathRules) {
+		List<HpcCollectionDTO> searchResults = collections.getCollections();
+		Map<String, String>  pathAttributeNamesMap = new HashMap();
+		for (HpcCollectionDTO result : searchResults) {
+			String path = result.getCollection().getCollectionName();
+			List<HpcMetadataEntry> selfMetadataEntries = new ArrayList<HpcMetadataEntry>();
+			selfMetadataEntries.addAll(new ArrayList<HpcMetadataEntry>(filterEncryptedMetadata(user, basePathRules, search, result.getCollection().getCollectionName(), result.getMetadataEntries().getSelfMetadataEntries())));
+			String metadataNamesList = "";
+			for(HpcMetadataEntry metadata : selfMetadataEntries) {
+				metadataNamesList = metadataNamesList + metadata.getAttribute() + ",";
+			}
+			pathAttributeNamesMap.put(path, metadataNamesList);
+		}
+		return pathAttributeNamesMap;
 	}
 
 	public static int getTotalPages(int totalCount, int limit)

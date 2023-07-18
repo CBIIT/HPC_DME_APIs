@@ -11,6 +11,7 @@ public class HpcCollectionSearchResultDetailed {
 	private String createdOn;
 	private String permission;
 	private String download;
+	private String metadataNamesList;
 	HpcMetadataEntries metadataEntries;
 
 	public String getPermission() {
@@ -67,6 +68,14 @@ public class HpcCollectionSearchResultDetailed {
 
 	public void setDownload(String download) {
 		this.download = download;
+	}
+
+	public String getMetadataNamesList() {
+		return metadataNamesList;
+	}
+
+	public void setMetadataNamesList(String metadataNamesList) {
+		this.metadataNamesList = metadataNamesList;
 	}
 
 	public HpcMetadataEntries getMetadataEntries() {
