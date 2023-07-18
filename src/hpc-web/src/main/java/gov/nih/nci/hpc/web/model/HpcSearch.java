@@ -23,6 +23,7 @@ public class HpcSearch {
 	private String queryName;
 	private long totalSize=0;
 	private List<String> deselectedColumns;
+	private String selectedPathsMetadataNames;
 	
 	public String getQueryName() {
 		return queryName;
@@ -148,7 +149,15 @@ public class HpcSearch {
       return userKey;
     }
 
-    public void setUserKey(String userKey) {
+    public String getSelectedPathsMetadataNames() {
+		return selectedPathsMetadataNames;
+	}
+
+	public void setSelectedPathsMetadataNames(String selectedPathsMetadataNames) {
+		this.selectedPathsMetadataNames = selectedPathsMetadataNames;
+	}
+
+	public void setUserKey(String userKey) {
       this.userKey = userKey;
     }
     

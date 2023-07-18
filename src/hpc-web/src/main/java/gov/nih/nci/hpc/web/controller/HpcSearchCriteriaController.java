@@ -185,6 +185,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch.setPageSize(search.getPageSize());
 			hpcSearch.setTotalSize(search.getTotalSize());
 			hpcSearch.setDeselectedColumns(search.getDeselectedColumns());
+			hpcSearch.setSelectedPathsMetadataNames(search.getSelectedPathsMetadataNames());
 			search = hpcSearch;
 		}
 
@@ -193,6 +194,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("pageSize", search.getPageSize());
 		model.addAttribute("totalSize", search.getTotalSize());
 		model.addAttribute("deselectedColumns", search.getDeselectedColumns());
+		model.addAttribute("selectedPathsMetadataNames", search.getSelectedPathsMetadataNames());
 		boolean success = false;
 		try {
 
