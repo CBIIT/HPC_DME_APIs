@@ -6,6 +6,15 @@ public class HpcSearchResult {
 	private String download;
 	private String permission;
 	private String link;
+	private String metadataNamesList;
+
+	public String getMetadataNamesList() {
+		return metadataNamesList;
+	}
+
+	public void setMetadataNamesList(String metadataNamesList) {
+		this.metadataNamesList = metadataNamesList;
+	}
 
 	public String getPermission() {
 		return permission;
