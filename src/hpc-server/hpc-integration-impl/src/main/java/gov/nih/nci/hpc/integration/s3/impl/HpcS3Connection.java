@@ -28,10 +28,10 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
@@ -329,7 +329,7 @@ public class HpcS3Connection {
 
 			return s3;
 
-		} catch (S3Exception e) {
+		} catch (SdkException e) {
 			throw new HpcException(
 					"[S3] Failed to authenticate S3 Provider: " + s3Provider.value() + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -399,7 +399,7 @@ public class HpcS3Connection {
 			 * "] - " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT, e); }
 			 */
 
-		} catch (S3Exception e) {
+		} catch (SdkException e) {
 			throw new HpcException("[S3] Failed to authenticate S3 in region " + region + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
