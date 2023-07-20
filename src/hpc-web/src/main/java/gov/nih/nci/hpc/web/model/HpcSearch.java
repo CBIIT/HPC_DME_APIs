@@ -14,7 +14,7 @@ public class HpcSearch {
 	private String[] attrName;
 	private String[] operator;
 	private String[] attrValue;
-	private boolean detailed;
+	private boolean detailed = true;
 	private String searchType;
 	private String advancedCriteria;
 	private String actionType;
