@@ -252,6 +252,15 @@ public class HpcMetadataValidator {
 		// Add Add/Update metadata entries to the map.
 		Map<String, String> addUpdateMetadataEntriesMap = new HashMap<>();
 		for (HpcMetadataEntry metadataEntry : addUpdateMetadataEntries) {
+
+			if(metadataEntry.getValue() != null && ((String)metadataEntry.getValue()).isEmpty()) {
+				//Indicates request for deletion, so remove it if it already exists
+				if(metadataEntriesMap.containsKey(metadataEntry.getAttribute())) {
+					metadataEntriesMap.remove(metadataEntry.getAttribute());
+				}
+				continue;
+			}
+
 			metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
 			if (addUpdateMetadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue()) != null) {
 				// Metadata attributes are expected to be unique.
