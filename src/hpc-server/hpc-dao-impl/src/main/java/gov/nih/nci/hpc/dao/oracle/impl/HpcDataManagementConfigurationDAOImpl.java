@@ -141,6 +141,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setEncryptionAlgorithm(rs.getString("ENCRYPTION_ALGORITHM"));
 		s3Configuration.setEncryptionKey(rs.getString("ENCRYPTION_KEY"));
 		s3Configuration.setStorageClass(rs.getString("STORAGE_CLASS"));
+		s3Configuration.setDataManagementConfigurationId(rs.getString("DATA_MANAGEMENT_CONFIGURATION_ID"));
 
 		return s3Configuration;
 	};
