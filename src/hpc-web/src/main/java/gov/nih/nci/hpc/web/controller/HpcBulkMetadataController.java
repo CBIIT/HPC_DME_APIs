@@ -54,6 +54,11 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+
 
 /**
  * <p>
@@ -77,6 +82,9 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	private String serverDataObjectURL;
 	@Value("${hpc.serviceaccount}")
 	private String serviceAccount;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
+
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	private Gson gson = new Gson();
 	private String failureErrorMessage = "Error: Unable to update bulk metadata. ";
@@ -93,7 +101,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	@PostMapping(value = "/bulkupdatemetadata")
 	public String home(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-
+		// Check if session valid
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (user == null || authToken == null) {
@@ -103,15 +111,33 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "dashboard";
 		}
-		HpcSearchUtil.cacheSelectedRows(session, request, model);
-		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 
-		String downloadType = request.getParameter("downloadType");
-		hpcDownloadDatafile.setDownloadType(downloadType);
+		// Get metadata attributes from session
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
+		if (modelDTO == null) {
+			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+			session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
+		}
+		List<String> metadataAttributesList = new ArrayList<>();
+		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+			  for (HpcMetadataValidationRule basepathCollectionRule : rule.getCollectionMetadataValidationRules()) {
+				  if(!metadataAttributesList.contains(basepathCollectionRule.getAttribute()))
+					if(basepathCollectionRule.getAttribute().equals("collection_type")) {
+						continue;
+					}
+				  	metadataAttributesList.add(basepathCollectionRule.getAttribute());
+			  }
+			}
+		}
+		model.addAttribute("metadataAttributesList", metadataAttributesList);
+		logger.info("metadataAttributesList="+ gson.toJson(metadataAttributesList));
+
+		// Set paths to be displayed on the updatemetadatabulk page
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
 		HpcBulkMetadataUpdateRequest bulkMetadataUpdateRequest = new HpcBulkMetadataUpdateRequest();
-
+		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("error", "Data file list is missing!");
 		} else {
@@ -129,11 +155,15 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("paths", paths);
 			bulkMetadataUpdateRequest.setSelectedFilePaths(paths);
 		}
-		model.addAttribute("downloadType", downloadType);
+		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 
+		// Set all session and model attributes to retain data/state of the previous page(collectionsearchresult.html or collectionsearchresultdetail.html)
+		HpcSearchUtil.cacheSelectedRows(session, request, model);
+		String downloadType = request.getParameter("downloadType");
+		hpcDownloadDatafile.setDownloadType(downloadType);
+		model.addAttribute("downloadType", downloadType);
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-			
 		HpcSearch hpcSaveSearch = new HpcSearch();
 		String pageNumber = request.getParameter("pageNumber");
 		hpcSaveSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
@@ -148,7 +178,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		session.setAttribute("hpcSavedSearch", hpcSaveSearch);
-		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 		return "updatemetadatabulk";
 	}
 
