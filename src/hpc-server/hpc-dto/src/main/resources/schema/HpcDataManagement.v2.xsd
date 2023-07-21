@@ -64,6 +64,7 @@
 				<xsd:element name="parentCollectionsBulkMetadataEntries"
 					type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 				<xsd:element name="checksum" type="xsd:string" />
+				<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -965,6 +965,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 								dataObjectRegistration.getExtractedMetadataEntries(), configurationId, collectionType);
 					}
 
+					// Use default S3 archive configuration ID if not provided.
+					String s3ArchiveConfigurationId = !StringUtils
+							.isEmpty(dataObjectRegistration.getS3ArchiveConfigurationId())
+									? dataObjectRegistration.getS3ArchiveConfigurationId()
+									: dataManagementService.getDataManagementConfiguration(configurationId)
+											.getS3UploadConfigurationId();
+
 					// Transfer the data file.
 					timeBefore = System.currentTimeMillis();
 					uploadResponse = dataTransferService.uploadDataObject(
@@ -976,7 +983,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							dataObjectRegistration.getUploadCompletion(),
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
-							configurationId);
+							configurationId, s3ArchiveConfigurationId);
 					taskProfilingLog("Registration", path, "Upload request / URL generation completed",
 							System.currentTimeMillis() - timeBefore);
 
@@ -995,9 +1002,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									uploadResponse.getDataTransferStarted(), uploadResponse.getDataTransferCompleted(),
 									uploadResponse.getSourceSize(), uploadResponse.getSourceURL(),
 									uploadResponse.getSourcePermissions(), dataObjectRegistration.getCallerObjectId(),
-									userId, userName, configurationId,
-									dataManagementService.getDataManagementConfiguration(configurationId)
-											.getS3UploadConfigurationId(),
+									userId, userName, configurationId, s3ArchiveConfigurationId,
 									registrationEventRequired);
 					taskProfilingLog("Registration", path, "System metadata set in iRODS",
 							System.currentTimeMillis() - timeBefore);
@@ -3309,7 +3314,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
 					null, null, true, uploadParts, uploadCompletion, checksum, path,
 					systemGeneratedMetadata.getObjectId(), userId, callerObjectId,
-					systemGeneratedMetadata.getConfigurationId());
+					systemGeneratedMetadata.getConfigurationId(),
+					systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(), null,
