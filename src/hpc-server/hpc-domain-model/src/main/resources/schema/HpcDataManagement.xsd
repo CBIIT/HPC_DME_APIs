@@ -107,6 +107,7 @@
 				type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="parentCollectionsBulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
+			<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
