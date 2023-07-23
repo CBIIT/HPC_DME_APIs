@@ -2494,6 +2494,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Map request to a DTO.
 		HpcDataObjectRegistrationRequestDTO registrationDTO = new HpcDataObjectRegistrationRequestDTO();
 		registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
+		registrationDTO.setS3ArchiveConfigurationId(registrationRequest.getS3ArchiveConfigurationId());
 		registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
 		registrationDTO.setGlobusUploadSource(registrationRequest.getGlobusUploadSource());
 		registrationDTO.setS3UploadSource(registrationRequest.getS3UploadSource());
