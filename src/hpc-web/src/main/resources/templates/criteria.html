@@ -288,7 +288,6 @@
 	$(document).ready(function(){
 		$('#sub-menu-search').addClass("active");
 		$('[data-toggle="tooltip"]').tooltip();
-		document.getElementById("detailed").checked = true;
 		$('#level1').select2().on("change", function(e) {
 		  populateLevelAttributes($("#level1").val(), "level1")
         });
@@ -739,7 +738,10 @@ if(searchCriteria.level) {
 		// The table is one-indexed, not zero-indexed.
 		var row_id = (i + 1);
 		$('#level' + row_id).val(searchCriteria.level[i]).change();
-		$('#attrName' + row_id).val(searchCriteria.attrName[i]);
+		if(searchCriteria.attrName[i] == null)
+			$('#attrName' + row_id).val("ANY");
+		else
+			$('#attrName' + row_id).val(searchCriteria.attrName[i]);
 		$('#operator' + row_id).val(searchCriteria.operator[i]);
 		if(searchCriteria.selfAttributeOnly[i])
 			$('#selfAttributeOnly' + row_id).prop('checked', true);
