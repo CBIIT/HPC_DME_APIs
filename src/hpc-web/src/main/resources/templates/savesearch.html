@@ -90,11 +90,7 @@
 	 e.preventDefault();
 	 var ele = document.getElementById("message");
 	 var searchName = document.getElementById("criteriaName").value;
-	 if(searchName.indexOf(' ') >= 0) {
-		 alert ("The space character is not allowed.");
-		 	return false;
-	 }
-	 else if(checkForSpecialChar(searchName))
+	 if(checkForSpecialChar(searchName))
 		 {
 		 	alert ("The only special characters allowed are underscore (_) and dash (-).");
 		 	return false;
@@ -127,7 +123,7 @@
 		  return s.indexOf(' ') >= 0;
  }
 
- var specialChars = " <>@!#$%^&*()+[]{}?:;|'\"\\,./~`=";
+ var specialChars = "<>@!#$%^&*()+[]{}?:;|'\"\\,./~`=";
  var checkForSpecialChar = function(string){
   for(i = 0; i < specialChars.length;i++){
     if(string.indexOf(specialChars[i]) > -1){

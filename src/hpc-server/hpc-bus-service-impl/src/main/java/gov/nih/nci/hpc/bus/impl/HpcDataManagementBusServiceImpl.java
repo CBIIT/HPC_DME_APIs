@@ -965,6 +965,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 								dataObjectRegistration.getExtractedMetadataEntries(), configurationId, collectionType);
 					}
 
+					// Use default S3 archive configuration ID if not provided.
+					String s3ArchiveConfigurationId = !StringUtils
+							.isEmpty(dataObjectRegistration.getS3ArchiveConfigurationId())
+									? dataObjectRegistration.getS3ArchiveConfigurationId()
+									: dataManagementService.getDataManagementConfiguration(configurationId)
+											.getS3UploadConfigurationId();
+
 					// Transfer the data file.
 					timeBefore = System.currentTimeMillis();
 					uploadResponse = dataTransferService.uploadDataObject(
@@ -976,7 +983,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							dataObjectRegistration.getUploadCompletion(),
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
-							configurationId);
+							configurationId, s3ArchiveConfigurationId);
 					taskProfilingLog("Registration", path, "Upload request / URL generation completed",
 							System.currentTimeMillis() - timeBefore);
 
@@ -995,9 +1002,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 									uploadResponse.getDataTransferStarted(), uploadResponse.getDataTransferCompleted(),
 									uploadResponse.getSourceSize(), uploadResponse.getSourceURL(),
 									uploadResponse.getSourcePermissions(), dataObjectRegistration.getCallerObjectId(),
-									userId, userName, configurationId,
-									dataManagementService.getDataManagementConfiguration(configurationId)
-											.getS3UploadConfigurationId(),
+									userId, userName, configurationId, s3ArchiveConfigurationId,
 									registrationEventRequired);
 					taskProfilingLog("Registration", path, "System metadata set in iRODS",
 							System.currentTimeMillis() - timeBefore);
@@ -1247,6 +1252,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
 			dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
 					dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+			dataObjectRegistrationRequest.setS3ArchiveConfigurationId(dataObjectRegistrationItem.getS3ArchiveConfigurationId());
 
 			String path = dataObjectRegistrationItem.getPath();
 			if (StringUtils.isEmpty(path)) {
@@ -3029,7 +3035,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleAccessToken)));
+							fs3Account, fgoogleAccessToken,
+							directoryScanRegistrationItem.getS3ArchiveConfigurationId())));
 		}
 
 		return dataObjectRegistrationItems;
@@ -3107,28 +3114,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Create a data object registration DTO out of a directory scan item.
 	 *
-	 * @param scanItem              The scan item.
-	 * @param basePath              The base path to register the scan item with.
-	 * @param sourceFileContainerId The container ID containing the scan item.
-	 * @param callerObjectId        The caller's object ID.
-	 * @param bulkMetadataEntries   metadata entries for this data object
-	 *                              registration and parent collections.
-	 * @param pathMap               Replace 'fromPath' (found in scanned directory)
-	 *                              with 'toPath'.
-	 * @param dataTransferType      (Optional) The data transfer type performed the
-	 *                              scan. Null means it's a DME server file system
-	 *                              scan
-	 * @param s3Account             (Optional) Provided if this is a registration
-	 *                              item from S3 source, otherwise null.
-	 * @param googleAccessToken     (Optional) Provided if this is a registration
-	 *                              item from Google Drive or Google Cloud Storage
-	 *                              source, otherwise null.
+	 * @param scanItem                 The scan item.
+	 * @param basePath                 The base path to register the scan item with.
+	 * @param sourceFileContainerId    The container ID containing the scan item.
+	 * @param callerObjectId           The caller's object ID.
+	 * @param bulkMetadataEntries      metadata entries for this data object
+	 *                                 registration and parent collections.
+	 * @param pathMap                  Replace 'fromPath' (found in scanned
+	 *                                 directory) with 'toPath'.
+	 * @param dataTransferType         (Optional) The data transfer type performed
+	 *                                 the scan. Null means it's a DME server file
+	 *                                 system scan
+	 * @param s3Account                (Optional) Provided if this is a registration
+	 *                                 item from S3 source, otherwise null.
+	 * @param googleAccessToken        (Optional) Provided if this is a registration
+	 *                                 item from Google Drive or Google Cloud
+	 *                                 Storage source, otherwise null.
+	 * @param s3ArchiveConfigurationId (Optional) S3 archive configuration ID.
 	 * @return data object registration DTO.
 	 */
 	private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem,
 			String basePath, String sourceFileContainerId, String callerObjectId,
 			HpcBulkMetadataEntries bulkMetadataEntries, HpcDirectoryScanPathMap pathMap,
-			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken) {
+			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken,
+			String s3ArchiveConfigurationId) {
 		// If pathMap provided - use the map to replace scanned path with user provided
 		// path (or part of
 		// path).
@@ -3146,6 +3155,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectRegistrationItemDTO dataObjectRegistration = new HpcDataObjectRegistrationItemDTO();
 		dataObjectRegistration.setPath(path);
 		dataObjectRegistration.setCreateParentCollections(true);
+		dataObjectRegistration.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
 
 		// Set data object metadata entries.
 		if (bulkMetadataEntries != null) {
@@ -3309,7 +3319,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
 					null, null, true, uploadParts, uploadCompletion, checksum, path,
 					systemGeneratedMetadata.getObjectId(), userId, callerObjectId,
-					systemGeneratedMetadata.getConfigurationId());
+					systemGeneratedMetadata.getConfigurationId(),
+					systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(), null,
