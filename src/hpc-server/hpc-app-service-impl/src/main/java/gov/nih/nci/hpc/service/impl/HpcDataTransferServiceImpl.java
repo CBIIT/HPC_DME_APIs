@@ -271,7 +271,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		filter.setStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 		filter.setDestination(HpcDataTransferType.GLOBUS);
 		cancelCollectionDownloadTaskItemsFilter.add(filter);
-		
+
 		filter = new HpcDataObjectDownloadTaskStatusFilter();
 		filter.setStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 		filter.setDestination(HpcDataTransferType.S_3);
@@ -302,7 +302,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
 			String uploadRequestURLChecksum, String path, String dataObjectId, String userId, String callerObjectId,
-			String configurationId) throws HpcException {
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 		// Input Validation. One and only one of the first 6 parameters is expected to
 		// be provided.
 
@@ -317,6 +317,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				&& !generateUploadRequestURL) {
 			throw new HpcException("No data transfer source or data attachment provided or upload URL requested",
 					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the S3 archive configuration ID.
+		if (!StringUtils.isEmpty(s3ArchiveConfigurationId)) {
+			HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementConfigurationLocator
+					.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
+			if (!configurationId.equals(s3ArchiveConfiguration.getDataManagementConfigurationId())) {
+				throw new HpcException(
+						"S3 archive configuration ID [" + s3ArchiveConfigurationId + "] is associated with config ID ["
+								+ s3ArchiveConfiguration.getDataManagementConfigurationId()
+								+ "] and can't be used w/ config ID [" + configurationId + "]",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 
 		// Validate Globus upload source.
@@ -475,7 +488,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// Upload the data object file.
-		return uploadDataObject(uploadRequest, configurationId);
+		return uploadDataObject(uploadRequest, configurationId, s3ArchiveConfigurationId);
 	}
 
 	@Override
@@ -1413,10 +1426,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				|| bytesTransferred > downloadTask.getSize()) {
 			return true;
 		}
-		
+
 		// Check if the task got cancelled.
 		HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(downloadTask.getId());
-		if(task != null && HpcDataTransferDownloadStatus.CANCELED.equals(task.getDataTransferStatus())) {
+		if (task != null && HpcDataTransferDownloadStatus.CANCELED.equals(task.getDataTransferStatus())) {
 			logger.debug("download task: {} - cancelled - [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 			return false;
@@ -2131,18 +2144,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 *
 	 * @param uploadRequest   The data upload request.
 	 * @param configurationId The data management configuration ID.
+	 * @param s3ArchiveConfigurationId The S3 archive configuration ID.
 	 * @return A data object upload response.
 	 * @throws HpcException on service failure.
 	 */
 	private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest,
-			String configurationId) throws HpcException {
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 		// Determine the data transfer type to use in this upload request (i.e. Globus
 		// or S3).
 		HpcDataTransferType dataTransferType = getUploadDataTransferType(uploadRequest, configurationId);
-
-		// Get the S3 archive configuration ID.
-		String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(configurationId)
-				.getS3UploadConfigurationId();
 
 		// Confirm that Globus can accept the upload request at this time.
 		if (uploadRequest.getGlobusUploadSource() != null

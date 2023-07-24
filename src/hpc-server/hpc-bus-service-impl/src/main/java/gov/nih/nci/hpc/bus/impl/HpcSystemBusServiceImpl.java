@@ -226,7 +226,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null, null,
 						false, null, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
-						systemGeneratedMetadata.getConfigurationId());
+						systemGeneratedMetadata.getConfigurationId(),
+						systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
 				// Update system metadata of the data object.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
@@ -514,7 +515,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceSize()),
 						null, null, false, null, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
-						systemGeneratedMetadata.getConfigurationId());
+						systemGeneratedMetadata.getConfigurationId(),
+						systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
 				// Update the transfer status and request id.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
@@ -1400,7 +1402,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								dataManagementConfiguration.getStorageRecoveryConfiguration());
 						logger.info("Storage recovery [config: {}] - completed for path: {}",
 								dataManagementConfiguration.getId(), path);
-						
+
 					} catch (HpcException e) {
 						logger.error("Storage recovery [config: {}] - failed for path: {}",
 								dataManagementConfiguration.getId(), path, e);
@@ -2492,6 +2494,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Map request to a DTO.
 		HpcDataObjectRegistrationRequestDTO registrationDTO = new HpcDataObjectRegistrationRequestDTO();
 		registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
+		registrationDTO.setS3ArchiveConfigurationId(registrationRequest.getS3ArchiveConfigurationId());
 		registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
 		registrationDTO.setGlobusUploadSource(registrationRequest.getGlobusUploadSource());
 		registrationDTO.setS3UploadSource(registrationRequest.getS3UploadSource());
@@ -2780,7 +2783,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
 					null, file, false, null, null, null, path, systemGeneratedMetadata.getObjectId(),
 					systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
-					systemGeneratedMetadata.getConfigurationId());
+					systemGeneratedMetadata.getConfigurationId(),
+					systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
 			// Generate archive system generated metadata.
 			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(

@@ -87,6 +87,8 @@ public interface HpcDataTransferService {
 	 * @param configurationId                The configuration ID (needed to
 	 *                                       determine the archive connection
 	 *                                       config).
+	 * @param s3ArchiveConfigurationId       (Optional) overriding the default S3
+	 *                                       archive
 	 * @return A data object upload response.
 	 * @throws HpcException on service failure.
 	 */
@@ -95,7 +97,7 @@ public interface HpcDataTransferService {
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
 			String uploadRequestURLChecksum, String path, String dataObjectId, String userId, String callerObjectId,
-			String configurationId) throws HpcException;
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
 	/**
 	 * Complete a multipart upload.
@@ -554,7 +556,8 @@ public interface HpcDataTransferService {
 	 *
 	 * @param downloadTask     The download task to update progress
 	 * @param bytesTransferred The bytes transferred so far.
-	 * @return true if the task was updated, or false if the task no longer exist (removed / canceled).
+	 * @return true if the task was updated, or false if the task no longer exist
+	 *         (removed / canceled).
 	 * @throws HpcException on service failure.
 	 */
 	public boolean updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, long bytesTransferred)
