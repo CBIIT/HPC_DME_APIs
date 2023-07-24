@@ -248,7 +248,7 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 
 		if (s3ArchiveConfiguration == null) {
 			throw new HpcException("Could not locate S3 archive configuration: " + s3ArchiveConfigurationId,
-					HpcErrorType.UNEXPECTED_ERROR);
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Ensure encryption algorithm and key are both defined or both omitted.

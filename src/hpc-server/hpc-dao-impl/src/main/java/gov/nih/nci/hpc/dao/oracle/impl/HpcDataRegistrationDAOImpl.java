@@ -174,7 +174,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Calendar completed = Calendar.getInstance();
 		completed.setTime(rs.getTimestamp("COMPLETED"));
 		bulkDataObjectRegistrationResult.setCompleted(completed);
-		
+
 		String uploadMethodStr = rs.getString("UPLOAD_METHOD");
 		bulkDataObjectRegistrationResult.setUploadMethod(
 				!StringUtils.isEmpty(uploadMethodStr) ? HpcDataTransferUploadMethod.fromValue(uploadMethodStr) : null);
@@ -534,6 +534,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			if (request.getCallerObjectId() != null) {
 				jsonRequest.put("callerObjectId", request.getCallerObjectId());
 			}
+			if (request.getS3ArchiveConfigurationId() != null) {
+				jsonRequest.put("s3ArchiveConfigurationId", request.getS3ArchiveConfigurationId());
+			}
 
 			if (request.getGlobusUploadSource() != null) {
 				JSONObject jsonGlobusUploadSource = new JSONObject();
@@ -839,6 +842,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Object callerObjectId = jsonRequest.get("callerObjectId");
 		if (callerObjectId != null) {
 			request.setCallerObjectId(callerObjectId.toString());
+		}
+		
+		Object s3ArchiveConfigurationId = jsonRequest.get("s3ArchiveConfigurationId");
+		if (s3ArchiveConfigurationId != null) {
+			request.setS3ArchiveConfigurationId(s3ArchiveConfigurationId.toString());
 		}
 
 		Object createParentCollection = jsonRequest.get("createParentCollection");
