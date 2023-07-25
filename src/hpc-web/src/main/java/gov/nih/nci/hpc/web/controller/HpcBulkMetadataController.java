@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.HashSet;
@@ -298,6 +299,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		}
 		HashSet<String> hset = new HashSet<String>(metadataAttributesList);
 		List<String> uniqueMetadataAttributeNames = new ArrayList<>(hset);
+		Collections.sort(uniqueMetadataAttributeNames, String.CASE_INSENSITIVE_ORDER);
 		return uniqueMetadataAttributeNames;
 	}
 
