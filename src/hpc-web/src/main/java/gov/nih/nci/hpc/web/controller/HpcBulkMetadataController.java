@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.HashSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -113,25 +114,9 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		}
 
 		// Get metadata attributes from session
-		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
-		if (modelDTO == null) {
-			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-			session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
-		}
-		List<String> metadataAttributesList = new ArrayList<>();
-		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-			  for (HpcMetadataValidationRule basepathCollectionRule : rule.getCollectionMetadataValidationRules()) {
-				  if(!metadataAttributesList.contains(basepathCollectionRule.getAttribute()))
-					if(basepathCollectionRule.getAttribute().equals("collection_type")) {
-						continue;
-					}
-				  	metadataAttributesList.add(basepathCollectionRule.getAttribute());
-			  }
-			}
-		}
+		List<String> metadataAttributesList  = getAllUserMetadataAttributes(authToken, session);
 		model.addAttribute("metadataAttributesList", metadataAttributesList);
-		logger.info("metadataAttributesList="+ gson.toJson(metadataAttributesList));
+		logger.info("metadataAttributesList size ="+ gson.toJson(metadataAttributesList.size()));
 
 		// Set paths to be displayed on the updatemetadatabulk page
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
@@ -203,6 +188,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		hpcDownloadDatafile.setDownloadType(downloadType);
+		logger.info("Enter /assignbulkmetadata bulkMetadataUpdateRequest= " + gson.toJson(bulkMetadataUpdateRequest));
 		
 		List<HpcMetadataEntry> metadataList = new ArrayList<HpcMetadataEntry>();
 		HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
@@ -214,7 +200,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		model.addAttribute("metadataName", bulkMetadataUpdateRequest.getMetadataName());
 		model.addAttribute("metadataValue", bulkMetadataUpdateRequest.getMetadataValue());
 		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-	            
 
 		List<String> paths = new ArrayList<>();
 		for(String path: bulkMetadataUpdateRequest.getSelectedFilePaths()) {
@@ -230,6 +215,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
+			logger.info("Bulk metadata update request is="+gson.toJson(req));
 			Response restResponse = client.invoke("POST", req);
 			if (restResponse.getStatus() == 200) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -285,7 +271,34 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("errorStatusMessage", failureErrorMessage + e.getMessage());
 			logger.info("Failed to update metadata: ", failureErrorMessage + e.getMessage());
 		}
+		// Get metadata attributes from session for Autocomplete
+		List<String> metadataAttributesList  = getAllUserMetadataAttributes(authToken, session);
+		model.addAttribute("metadataAttributesList", metadataAttributesList);
+		logger.info("metadataAttributesList size="+ gson.toJson(metadataAttributesList.size()));
         return "updatemetadatabulk";
+	}
+	// Get User metadata attributes from session
+	public List<String> getAllUserMetadataAttributes(String authToken,  HttpSession session ) {
+		List<String> metadataAttributesList = new ArrayList<>();
+		// Get metadata attributes from session
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
+		if (modelDTO == null) {
+			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+			session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
+		}
+		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+				for (HpcMetadataValidationRule basepathCollectionRule : rule.getCollectionMetadataValidationRules()) {
+					if(basepathCollectionRule.getAttribute().equals("collection_type")) {
+							continue;
+					}
+					metadataAttributesList.add(basepathCollectionRule.getAttribute());
+				}
+			}
+		}
+		HashSet<String> hset = new HashSet<String>(metadataAttributesList);
+		List<String> uniqueMetadataAttributeNames = new ArrayList<>(hset);
+		return uniqueMetadataAttributeNames;
 	}
 
 	private class HpcPathGridEntry {
