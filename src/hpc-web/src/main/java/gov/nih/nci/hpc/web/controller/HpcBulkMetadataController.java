@@ -11,8 +11,10 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.HashSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -54,6 +56,11 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+
 
 /**
  * <p>
@@ -77,6 +84,9 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	private String serverDataObjectURL;
 	@Value("${hpc.serviceaccount}")
 	private String serviceAccount;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
+
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	private Gson gson = new Gson();
 	private String failureErrorMessage = "Error: Unable to update bulk metadata. ";
@@ -93,7 +103,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	@PostMapping(value = "/bulkupdatemetadata")
 	public String home(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-
+		// Check if session valid
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (user == null || authToken == null) {
@@ -103,15 +113,17 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "dashboard";
 		}
-		HpcSearchUtil.cacheSelectedRows(session, request, model);
-		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 
-		String downloadType = request.getParameter("downloadType");
-		hpcDownloadDatafile.setDownloadType(downloadType);
+		// Get metadata attributes from session
+		List<String> metadataAttributesList  = getAllUserMetadataAttributes(authToken, session);
+		model.addAttribute("metadataAttributesList", metadataAttributesList);
+		logger.info("metadataAttributesList size ="+ gson.toJson(metadataAttributesList.size()));
+
+		// Set paths to be displayed on the updatemetadatabulk page
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
 		HpcBulkMetadataUpdateRequest bulkMetadataUpdateRequest = new HpcBulkMetadataUpdateRequest();
-
+		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("error", "Data file list is missing!");
 		} else {
@@ -129,11 +141,15 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("paths", paths);
 			bulkMetadataUpdateRequest.setSelectedFilePaths(paths);
 		}
-		model.addAttribute("downloadType", downloadType);
+		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 
+		// Set all session and model attributes to retain data/state of the previous page(collectionsearchresult.html or collectionsearchresultdetail.html)
+		HpcSearchUtil.cacheSelectedRows(session, request, model);
+		String downloadType = request.getParameter("downloadType");
+		hpcDownloadDatafile.setDownloadType(downloadType);
+		model.addAttribute("downloadType", downloadType);
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-			
 		HpcSearch hpcSaveSearch = new HpcSearch();
 		String pageNumber = request.getParameter("pageNumber");
 		hpcSaveSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
@@ -148,7 +164,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		session.setAttribute("hpcSavedSearch", hpcSaveSearch);
-		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 		return "updatemetadatabulk";
 	}
 
@@ -174,6 +189,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		hpcDownloadDatafile.setDownloadType(downloadType);
+		logger.info("Enter /assignbulkmetadata bulkMetadataUpdateRequest= " + gson.toJson(bulkMetadataUpdateRequest));
 		
 		List<HpcMetadataEntry> metadataList = new ArrayList<HpcMetadataEntry>();
 		HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
@@ -185,7 +201,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		model.addAttribute("metadataName", bulkMetadataUpdateRequest.getMetadataName());
 		model.addAttribute("metadataValue", bulkMetadataUpdateRequest.getMetadataValue());
 		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-	            
 
 		List<String> paths = new ArrayList<>();
 		for(String path: bulkMetadataUpdateRequest.getSelectedFilePaths()) {
@@ -201,6 +216,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
+			logger.info("Bulk metadata update request is="+gson.toJson(req));
 			Response restResponse = client.invoke("POST", req);
 			if (restResponse.getStatus() == 200) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -256,7 +272,35 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("errorStatusMessage", failureErrorMessage + e.getMessage());
 			logger.info("Failed to update metadata: ", failureErrorMessage + e.getMessage());
 		}
+		// Get metadata attributes from session for Autocomplete
+		List<String> metadataAttributesList  = getAllUserMetadataAttributes(authToken, session);
+		model.addAttribute("metadataAttributesList", metadataAttributesList);
+		logger.info("metadataAttributesList size="+ gson.toJson(metadataAttributesList.size()));
         return "updatemetadatabulk";
+	}
+	// Get User metadata attributes from session
+	public List<String> getAllUserMetadataAttributes(String authToken,  HttpSession session ) {
+		List<String> metadataAttributesList = new ArrayList<>();
+		// Get metadata attributes from session
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
+		if (modelDTO == null) {
+			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+			session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
+		}
+		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+				for (HpcMetadataValidationRule basepathCollectionRule : rule.getCollectionMetadataValidationRules()) {
+					if(basepathCollectionRule.getAttribute().equals("collection_type")) {
+							continue;
+					}
+					metadataAttributesList.add(basepathCollectionRule.getAttribute());
+				}
+			}
+		}
+		HashSet<String> hset = new HashSet<String>(metadataAttributesList);
+		List<String> uniqueMetadataAttributeNames = new ArrayList<>(hset);
+		Collections.sort(uniqueMetadataAttributeNames, String.CASE_INSENSITIVE_ORDER);
+		return uniqueMetadataAttributeNames;
 	}
 
 	private class HpcPathGridEntry {
