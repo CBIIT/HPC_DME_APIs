@@ -53,6 +53,7 @@
 	type="text/css" />
 <script
 	src="js/jquery/3.1.1/jquery.min.js"></script>
+
 <script
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
 <script
@@ -140,7 +141,18 @@
 															</tr>
 														</thead>
 														<tbody><tr>
-															<td><input class="form-control" type="text" id="mdname" name="metadataName" placeholder="Enter Metadata Attribute" th:value="${bulkMetadataUpdateRequest.getMetadataName()}" /></td>
+															<td>
+																<input
+																	type="text" class="form-control"
+																	list="metadataAttributesListId" autocomplete="on"
+																	id="mdname" name="metadataName" placeholder="Enter Metadata Attribute" th:value="${bulkMetadataUpdateRequest.getMetadataName()}" />
+																	<datalist id="metadataAttributesListId">
+																		<option
+																			th:each="metadataAttributeName : ${metadataAttributesList}"
+																			th:value="${metadataAttributeName}" th:text="${metadataAttributeName}">
+																		</option>
+																	</datalist>
+																</td>
 															<td><input class="form-control" type="text" id="mdval" name="metadataValue" placeholder="Enter Metadata Value" th:value="${bulkMetadataUpdateRequest.getMetadataValue()}" /></td>
 														</tr></tbody>
 													</table>
@@ -201,7 +213,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="path : ${paths}">
-								<td id='path1'><a th:href="@{/collection(path=${path}, action=view)}"  th:text="${path}"></a></td>
+								<td id='path1'><a th:href="@{/collection(path=${path}, action=view)}"  th:text="${path}" target="_blank"></a></td>
 							</tr>
 						</tbody>
 					</table>
@@ -217,7 +229,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="pathDetail : ${pathDetails}">
-								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"></a></td>
+								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
 								<td id='path31' th:text="${pathDetail.result}"></td>
 							</tr>
 						</tbody>
@@ -253,9 +265,6 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
-		$(document).ready(function(){
-			$('#sub-menu-search').addClass("active");
-		});
 
 		$(document).ready(function () {
 			$('#pathgrid').DataTable( {
