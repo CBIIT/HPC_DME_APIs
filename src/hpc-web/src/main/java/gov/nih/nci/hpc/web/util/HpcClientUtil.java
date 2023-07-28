@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
@@ -47,6 +49,7 @@ import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
@@ -93,6 +96,9 @@ import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.transform.Source;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.ClientConfiguration;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -1703,40 +1709,29 @@ public class HpcClientUtil {
 
 
   public static HpcNotificationSubscriptionListDTO getUserNotifications(String token,
-      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
+      String hpcQueryURL, String nciUserId, String hpcCertPath, String hpcCertPassword) throws HpcWebException {
 
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header("Authorization", "Bearer " + token);
+	UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(hpcQueryURL);
+	ucBuilder.queryParam("nciUserId", nciUserId);
+	try {
+      WebClient client = HpcClientUtil.getWebClient(ucBuilder.build().encode()
+		.toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
 
-    Response restResponse = client.get();
+      Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
-      return null;
-    MappingJsonFactory factory = new MappingJsonFactory();
-    JsonParser parser;
-    try {
-      parser = factory.createParser((InputStream) restResponse.getEntity());
-    } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get notification subscriptions due to: " + e.getMessage());
-    }
-    try {
+      if (restResponse == null || restResponse.getStatus() != 200)
+        return null;
+      MappingJsonFactory factory = new MappingJsonFactory();
+      JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
       return parser.readValueAs(HpcNotificationSubscriptionListDTO.class);
-    } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get notification subscriptions due to: " + e.getMessage());
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get notification subscriptions due to: " + e.getMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get notification subscriptions due to: " + e.getMessage());
+    } catch (Exception e) {
+      String errorMsg = "Failed to get notification subscriptions due to: " + e.getMessage();
+      logger.error(errorMsg);
+      throw new HpcWebException(errorMsg);
     }
   }
+
 
   public static HpcDownloadSummaryDTO getDownloadSummary(String token, String hpcQueryURL,
       String hpcCertPath, String hpcCertPassword) {
@@ -2178,7 +2173,7 @@ public class HpcClientUtil {
       throw new HpcWebException("Failed to retry data object download task due to: " + e.getMessage());
     }
   }
-  
+
   public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token,
       String hpcMetadataAttrsURL, String hpcCertPath, String hpcCertPassword) {
 
