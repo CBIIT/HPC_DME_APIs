@@ -36,6 +36,7 @@ import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsResponseDTO;
 import gov.nih.nci.hpc.dto.notification.HpcRemoveNotificationSubscriptionProblem;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcNotification;
 import gov.nih.nci.hpc.web.model.HpcNotificationRequest;
@@ -57,7 +58,10 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -73,6 +77,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -89,6 +94,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class HpcSubscribeNotificationsController extends
     gov.nih.nci.hpc.web.controller.AbstractHpcController {
 
+	@Value("${gov.nih.nci.hpc.server.user.query}")
+	private String activeUsersServiceURL;
+
+	//The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   private static class SubscriptionProblemsBundle {
     private Optional<List<String>> problems;
@@ -263,11 +273,22 @@ public class HpcSubscribeNotificationsController extends
   @RequestMapping(method = RequestMethod.GET)
   public String home(@RequestBody(required = false) String q, Model model,
       BindingResult bindingResult,
+      @ModelAttribute("notificationRequest") HpcNotificationRequest notificationRequest,
+      @ModelAttribute("selectedUser") String selectedUser,
       HttpSession session, HttpServletRequest request) {
     String authToken = (String) session.getAttribute("hpcUserToken");
     if (authToken == null) {
       return "redirect:/";
     }
+
+    String selectedUserId = selectedUser;
+    if(StringUtils.isEmpty(selectedUserId)) {
+        selectedUserId = notificationRequest.getUserId();
+    }
+    if(StringUtils.isEmpty(selectedUserId)) {
+        selectedUserId = (String)session.getAttribute("hpcUserId");
+    }
+    notificationRequest.setUserId(selectedUserId);
 
     HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
     if (user == null) {
@@ -278,12 +299,19 @@ public class HpcSubscribeNotificationsController extends
       return "redirect:/login?returnPath=subscribe";
     }
 
-    populateNotifications(user, authToken, session, model);
-    HpcNotificationRequest notificationRequest = new HpcNotificationRequest();
+    String doc = "GROUP_ADMIN".contentEquals(user.getUserRole()) ? user.getDoc() : null;
+    HpcUserListDTO userListDto = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
+			null, doc, sslCertPath, sslCertPassword);
+	model.addAttribute("users", userListDto.getUsers());
+	session.setAttribute("users", userListDto.getUsers());
+
+    populateNotifications(selectedUserId, authToken, session, model);
     model.addAttribute("notificationRequest", notificationRequest);
+    model.addAttribute("selectedUser", selectedUserId);
 
     return "subscribenotifications";
   }
+
 
   /**
    * POST action to subscribe or unsubscribe notifications
@@ -307,18 +335,39 @@ public class HpcSubscribeNotificationsController extends
       HttpServletRequest request,
       RedirectAttributes redirectAttrs) {
 
-    try {
       String authToken = (String) session.getAttribute("hpcUserToken");
-      String serviceURL = notificationURL;
-//      HpcNotificationSubscriptionsRequestDTO subscriptionsRequestDTO = buildNotifSubsrptnsReqDto(
-//          request);
-      HpcNotificationSubscriptionsRequestDTO subscriptionsRequestDTO =
-        buildDto4ServiceRequest(request, session);
+	  String nciUserId = notificationRequest.getUserId();
 
-      WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath,
+	  if(StringUtils.isEmpty(nciUserId)) {
+          nciUserId = (String)session.getAttribute("hpcUserId");
+          notificationRequest.setUserId(nciUserId);
+      }
+
+      model.addAttribute("users", session.getAttribute("users"));
+      String[] actionType = request.getParameterValues("actionType");
+
+     if (actionType != null && actionType.length > 0 && actionType[0].equals("refresh")) {
+       populateNotifications(nciUserId, authToken, session, model);
+       model.addAttribute("notificationRequest", notificationRequest);
+       return "subscribenotifications";
+     }
+
+     try {
+
+         String serviceURL = notificationURL;
+         HpcNotificationSubscriptionsRequestDTO subscriptionsRequestDTO =
+         buildDto4ServiceRequest(nciUserId, request, session);
+
+          final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(serviceURL);
+          ucBuilder.queryParam("nciUserId", nciUserId);
+          final String notificationServiceURL = ucBuilder.build().encode().toUri()
+            .toURL().toExternalForm();
+
+      WebClient client = HpcClientUtil.getWebClient(notificationServiceURL, sslCertPath,
         sslCertPassword);
       client.header("Authorization", "Bearer " + authToken);
       Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
+
       if (restResponse.getStatus() == 200) {
         if (restResponse.getEntity() instanceof InputStream) {
           String responseBody = IOUtils.toString((InputStream)
@@ -356,19 +405,14 @@ public class HpcSubscribeNotificationsController extends
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         model.addAttribute("updateStatus",
-            "Failed to save criteria! Reason: " + exception.getMessage());
+            "Failed to subscribe user! Reason: " + exception.getMessage());
       }
-    } catch (HttpStatusCodeException e) {
-      model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-      e.printStackTrace();
-    } catch (RestClientException e) {
-      model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-      e.printStackTrace();
     } catch (Exception e) {
+      String error = ("Failed to subscribe user to notifications: " + e.getMessage());
+	  logger.error(error);
+	  //throw new HpcWebException(error);
       model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-      e.printStackTrace();
     } finally {
-      String authToken = (String) session.getAttribute("hpcUserToken");
       if (authToken == null) {
         return "redirect:/";
       }
@@ -381,8 +425,9 @@ public class HpcSubscribeNotificationsController extends
         return "redirect:/";
       }
 
-      populateNotifications(user, authToken, session, model);
+      populateNotifications(nciUserId, authToken, session, model);
       model.addAttribute("notificationRequest", notificationRequest);
+      model.addAttribute("selecteduser", notificationRequest.getUserId());
     }
 
     return "subscribenotifications";
@@ -399,7 +444,7 @@ public class HpcSubscribeNotificationsController extends
    *          service call
    */
   private HpcNotificationSubscriptionsRequestDTO buildDto4ServiceRequest(
-      HttpServletRequest request, HttpSession session) {
+      String nciUserId, HttpServletRequest request, HttpSession session) {
 
     classifyEventTypes(request);
 
@@ -407,8 +452,8 @@ public class HpcSubscribeNotificationsController extends
         HpcNotificationSubscriptionsRequestDTO();
 
     List<HpcNotificationSubscription> addUpdtModel = generateAddUpdtModel(
-      request, session);
-    List<HpcEventType> removeModel = generateRemoveModel(session, addUpdtModel);
+      nciUserId, request, session);
+    List<HpcEventType> removeModel = generateRemoveModel(session, addUpdtModel, nciUserId);
 
     dto.getAddUpdateSubscriptions().addAll(addUpdtModel);
     dto.getDeleteSubscriptions().addAll(removeModel);
@@ -627,10 +672,10 @@ public class HpcSubscribeNotificationsController extends
    *          update Subscriptions
    */
   private List<HpcNotificationSubscription> generateAddUpdtModel(
-      HttpServletRequest request, HttpSession session) {
+      String nciUserId, HttpServletRequest request, HttpSession session) {
     List<HpcNotificationSubscription> tmpSubscriptions =
       getUserNotificationSubscriptions((String) session.getAttribute(
-      "hpcUserToken"));
+      "hpcUserToken"), nciUserId);
 
     final List<HpcNotificationSubscription> addUpdtModel = new ArrayList<>();
 
@@ -682,7 +727,7 @@ public class HpcSubscribeNotificationsController extends
    * @return List<HpcEventType> representing actions to remove Subscriptions
    */
   private List<HpcEventType> generateRemoveModel(HttpSession session,
-    List<HpcNotificationSubscription> addUpdateModel) {
+    List<HpcNotificationSubscription> addUpdateModel, String nciUserId) {
 
     List<HpcEventType> removeModel = new ArrayList<>();
 
@@ -690,7 +735,7 @@ public class HpcSubscribeNotificationsController extends
     //  subscribed to but were not selected in request.
     List<HpcNotificationSubscription> tmpSubscriptions =
         getUserNotificationSubscriptions((String) session.getAttribute(
-            "hpcUserToken"));
+            "hpcUserToken"), nciUserId);
     if (null == tmpSubscriptions) {
       // do nothing, as there are no current subscriptions that can be removed
     } else {
@@ -770,9 +815,9 @@ public class HpcSubscribeNotificationsController extends
    *          Subscription to given Event Type, or null if not applicable
    */
   private HpcNotificationSubscription getNotificationSubscription(
-      String authToken, HpcEventType type) {
+      String authToken, HpcEventType type, String nciUserId) {
     final List<HpcNotificationSubscription> allSubscriptions =
-        getUserNotificationSubscriptions(authToken);
+        getUserNotificationSubscriptions(authToken, nciUserId);
 
     HpcNotificationSubscription theSubscription = null;
     if (null != allSubscriptions && !allSubscriptions.isEmpty()) {
@@ -797,9 +842,9 @@ public class HpcSubscribeNotificationsController extends
    *          Subscriptions if there are any; null if there are none
    */
   private List<HpcNotificationSubscription> getUserNotificationSubscriptions(
-      String authToken) {
+      String authToken, String nciUserId) {
     HpcNotificationSubscriptionListDTO subscriptionListDTO = HpcClientUtil
-        .getUserNotifications(authToken, this.notificationURL, this.sslCertPath,
+        .getUserNotifications(authToken, this.notificationURL, nciUserId, this.sslCertPath,
             this.sslCertPassword);
     List<HpcNotificationSubscription> userNotifs = null;
     if (null != subscriptionListDTO &&
@@ -821,7 +866,7 @@ public class HpcSubscribeNotificationsController extends
    * @param session - HttpSession instance
    * @param model - Model instance having view template state
    */
-  private void populateNotifications(HpcUserDTO user, String authToken,
+  private void populateNotifications(String nciUserId, String authToken,
       HttpSession session, Model model) {
     List<HpcNotification> notifications = new ArrayList<HpcNotification>();
     List<HpcEventType> types = getEventTypes();
@@ -838,7 +883,7 @@ public class HpcSubscribeNotificationsController extends
     	  || type.equals(HpcEventType.USER_QUERY_SENT))
         continue;
       HpcNotificationSubscription subscription = getNotificationSubscription(
-          authToken, type);
+          authToken, type, nciUserId);
       HpcNotification notification = new HpcNotification();
       notification.setEventType(type.name());
       notification.setDisplayName(getDisplayName(type.name()));
@@ -848,7 +893,6 @@ public class HpcSubscribeNotificationsController extends
     }
 
     model.addAttribute("notifications", notifications);
-    session.setAttribute("subscribedNotifications", notifications);
   }
 
 
