@@ -168,12 +168,21 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
 
     //If the invoker is requesting the subscription for someone else
     //then ensure that the invoker is a system admin or group admin
-    if(nciUserId != invoker.getNciAccount().getUserId()) {
+    if(!nciUserId.contentEquals(invoker.getNciAccount().getUserId())) {
       if(!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
         !invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-          throw new HpcException("Not authorized to setup the subscription", HpcRequestRejectReason.NOT_AUTHORIZED);
+          //Allow only sysadmins and groups to setup subscriptions for others
+          throw new HpcException("Not authorized to setup subscriptions for other users", HpcRequestRejectReason.NOT_AUTHORIZED);
+      }
+
+      HpcUser user = userDAO.getUser(userId);
+      if(invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN) &&
+          !user.getNciAccount().getDoc().contentEquals(invoker.getNciAccount().getDoc())) {
+          //Allow group admins to only setup subscriptions for members of their DOC
+          throw new HpcException("Not authorized to setup subscriptions for the requested user", HpcRequestRejectReason.NOT_AUTHORIZED);
       }
     }
+
 
     // Validate the notification triggers.
     validateNotificationTriggers(notificationSubscription.getNotificationTriggers());
