@@ -363,71 +363,64 @@ public class HpcSubscribeNotificationsController extends
           final String notificationServiceURL = ucBuilder.build().encode().toUri()
             .toURL().toExternalForm();
 
-      WebClient client = HpcClientUtil.getWebClient(notificationServiceURL, sslCertPath,
-        sslCertPassword);
-      client.header("Authorization", "Bearer " + authToken);
-      Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
+          WebClient client = HpcClientUtil.getWebClient(notificationServiceURL, sslCertPath, sslCertPassword);
+          client.header("Authorization", "Bearer " + authToken);
+          Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 
-      if (restResponse.getStatus() == 200) {
-        if (restResponse.getEntity() instanceof InputStream) {
-          String responseBody = IOUtils.toString((InputStream)
-            restResponse.getEntity());
-          Gson gsonObj = new GsonBuilder()
-            .registerTypeAdapter(SubscriptionProblemsBundle.class, new
-              SubscriptionProblemsBundleDeserializer())
-            .create();
-          SubscriptionProblemsBundle spBundle = gsonObj.fromJson(responseBody,
-            SubscriptionProblemsBundle.class);
-          String statusMsg = "Updated successfully";
-          if (null != spBundle && spBundle.getProblems().isPresent()) {
-              StringBuilder sb = new StringBuilder();
-              List<String> problems = spBundle.getProblems().get();
-              for (String problem : problems) {
-                if (sb.length() > 0) {
-                  sb.append("\n");
-                }
-                sb.append(problem);
+          if (restResponse.getStatus() == 200) {
+              if (restResponse.getEntity() instanceof InputStream) {
+                  String responseBody = IOUtils.toString((InputStream)restResponse.getEntity());
+                  Gson gsonObj = new GsonBuilder().registerTypeAdapter(SubscriptionProblemsBundle.class,
+                    new SubscriptionProblemsBundleDeserializer()).create();
+                  SubscriptionProblemsBundle spBundle = gsonObj.fromJson(responseBody, SubscriptionProblemsBundle.class);
+                  String statusMsg = "Updated successfully";
+                  if (null != spBundle && spBundle.getProblems().isPresent()) {
+                      StringBuilder sb = new StringBuilder();
+                      List<String> problems = spBundle.getProblems().get();
+                      for (String problem : problems) {
+                          if (sb.length() > 0) {
+                              sb.append("\n");
+                          }
+                          sb.append(problem);
+                      }
+                      statusMsg = sb.toString();
+                  }
+                  model.addAttribute("updateStatus", statusMsg);
               }
-              statusMsg = sb.toString();
-          }
-          model.addAttribute("updateStatus", statusMsg);
+          } else {
+              ObjectMapper mapper = new ObjectMapper();
+              AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+                new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+                new JacksonAnnotationIntrospector());
+              mapper.setAnnotationIntrospector(intr);
+              mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+              MappingJsonFactory factory = new MappingJsonFactory(mapper);
+              JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+              HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+              model.addAttribute("updateStatus", "Failed to subscribe user! Reason: " + exception.getMessage());
         }
-      } else {
-        ObjectMapper mapper = new ObjectMapper();
-        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-            new JacksonAnnotationIntrospector());
-        mapper.setAnnotationIntrospector(intr);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        MappingJsonFactory factory = new MappingJsonFactory(mapper);
-        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        model.addAttribute("updateStatus",
-            "Failed to subscribe user! Reason: " + exception.getMessage());
-      }
     } catch (Exception e) {
-      String error = ("Failed to subscribe user to notifications: " + e.getMessage());
-	  logger.error(error);
-	  //throw new HpcWebException(error);
-      model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
+        String error = ("Failed to subscribe user to notifications: " + e.getMessage());
+	    logger.error(error);
+        model.addAttribute("updateStatus", error);
     } finally {
-      if (authToken == null) {
-        return "redirect:/";
-      }
-      HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-      if (user == null) {
-        ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
-        bindingResult.addError(error);
-        HpcLogin hpcLogin = new HpcLogin();
-        model.addAttribute("hpcLogin", hpcLogin);
-        return "redirect:/";
-      }
+        if (authToken == null) {
+            return "redirect:/";
+        }
+        HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+        if (user == null) {
+            ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+            bindingResult.addError(error);
+            HpcLogin hpcLogin = new HpcLogin();
+            model.addAttribute("hpcLogin", hpcLogin);
+            return "redirect:/";
+        }
 
-      populateNotifications(nciUserId, authToken, session, model);
-      model.addAttribute("notificationRequest", notificationRequest);
-      model.addAttribute("selecteduser", notificationRequest.getUserId());
+        populateNotifications(nciUserId, authToken, session, model);
+        model.addAttribute("notificationRequest", notificationRequest);
+        model.addAttribute("selecteduser", notificationRequest.getUserId());
     }
 
     return "subscribenotifications";
