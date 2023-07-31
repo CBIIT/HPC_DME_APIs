@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -38,7 +37,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
@@ -110,7 +109,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			if (path == null)
 				return RET_DASHBOARD;
 
-			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, path, false, true, 
+			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafilesWithoutAttributes(authToken, serviceURL, path, false, true, 
 					sslCertPath, sslCertPassword);
 			if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
@@ -131,6 +130,12 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(model, dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules());
 				hpcDatafile.setPath(path);
+				//Since we are calling GET dataObject API with excludeNonMetadataAttributes set to true, populate HpcDataObject
+				HpcDataObject dataObject = new HpcDataObject();
+				dataObject.setAbsolutePath(path);
+				dataObject.setCollectionName(StringUtils.substringBeforeLast(path, "/"));
+				hpcDatafile.setDataObject(dataObject);
+				
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				model.addAttribute("attributeNames", getMetadataAttributeNames(dataFile));
 								

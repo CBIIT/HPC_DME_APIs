@@ -528,6 +528,74 @@ public class HpcClientUtil {
     }
   }
 
+  public static HpcDataObjectListDTO getDatafilesWithoutAttributes(String token, String hpcDatafileURL, String path,
+		    boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
+    try {
+      final String url2Apply = UriComponentsBuilder.fromHttpUrl(hpcDatafileURL)
+        .path("/{dme-archive-path}").queryParam("list", Boolean.valueOf(list))
+        .queryParam("includeAcl", includeAcl)
+        .queryParam("excludeNonMetadataAttributes", Boolean.TRUE)
+        .buildAndExpand(path).encode().toUri().toURL().toExternalForm();
+      WebClient client = HpcClientUtil.getWebClient(url2Apply, hpcCertPath,
+        hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+
+      Response restResponse = client.invoke("GET", null);
+      // System.out.println("restResponse.getStatus():"
+      // +restResponse.getStatus());
+      if (restResponse.getStatus() == 200) {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+        HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
+        return datafiles;
+      } else {
+    	  //Try again with ACL turned off
+	      final String url2ApplyRetry = UriComponentsBuilder.fromHttpUrl(hpcDatafileURL)
+	        .path("/{dme-archive-path}").queryParam("list", Boolean.valueOf(list))
+	        .queryParam("includeAcl", Boolean.FALSE)
+	        .queryParam("excludeNonMetadataAttributes", Boolean.TRUE)
+	        .buildAndExpand(path).encode().toUri().toURL().toExternalForm();
+	      client = HpcClientUtil.getWebClient(url2ApplyRetry, hpcCertPath,
+	        hpcCertPassword);
+	      client.header("Authorization", "Bearer " + token);
+
+	      restResponse = client.invoke("GET", null);
+	      if (restResponse.getStatus() == 200) {
+	        ObjectMapper mapper = new ObjectMapper();
+	        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+	            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+	            new JacksonAnnotationIntrospector());
+	        mapper.setAnnotationIntrospector(intr);
+	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+	        HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
+	        //This user only has access to datafile and not parent collection 
+	        datafiles.getDataObjects().get(0).setPermission(HpcPermission.READ);
+	        
+	        return datafiles;
+	      } else {
+	    	  throw new HpcWebException(
+	    			  "File does not exist or you do not have READ access.");
+	      }
+      }
+
+    } catch (Exception e) {
+      logger.error("Failed to get data file for path " + path + ": ", e);
+      throw new HpcWebException("Failed to get data file for path " + path + ": " + e.getMessage());
+    }
+  }
+  
   public static HpcUserListDTO getUsers(String token, String hpcUserURL, String userId,
       String firstName, String lastName, String doc, String hpcCertPath, String hpcCertPassword) {
     try {
