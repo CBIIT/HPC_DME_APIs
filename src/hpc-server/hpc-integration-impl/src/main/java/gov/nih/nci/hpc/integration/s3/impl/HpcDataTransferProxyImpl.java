@@ -45,12 +45,16 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -302,8 +306,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			headObjectResponse = s3Connection.getClient(authenticatedToken).headObject(headObjectRequest).join();
 			fileExists = true;
 
-		} catch (NoSuchKeyException nsf) {
-			if (nsf.statusCode() == 403) {
+		} catch (SdkServiceException sse) {
+			if (sse.statusCode() == 403) {
 				pathAttributes.setIsAccessible(false);
 				return pathAttributes;
 			} else {
@@ -1156,33 +1160,35 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @throws HpcException on failure invoke AWS S3 api.
 	 */
 	private boolean isDirectory(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
-		
-		  try { try { // Check if this is a directory. Use V2 listObjects API.
-		  ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-		  .withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.
-		  getFileId() + "/"); ListObjectsV2Result objectsList =
-		  s3Connection.getTransferManager(authenticatedToken)
-		  .getAmazonS3Client().listObjectsV2(listObjectsRequest);
-		  
-		  return objectsList.getKeyCount() > 0 ||
-		  !objectsList.getObjectSummaries().isEmpty();
-		  
-		  } catch (AmazonServiceException ase) { if (ase.getStatusCode() == 400) { // V2 not supported. Use V1 listObjects API. 
-			  ListObjectsRequest
-		  listObjectsRequest = new ListObjectsRequest()
-		  .withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.
-		  getFileId()); return
-		  !s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-		  .listObjects(listObjectsRequest).getObjectSummaries().isEmpty();
-		  
-		  } else { throw ase; }
-		  
-		  }
-		  
-		  } catch (AmazonClientException ace) { throw new
-		  HpcException("[S3] Failed to list object: " + ace.getMessage(),
-		  HpcErrorType.DATA_TRANSFER_ERROR,
-		  s3Connection.getS3Provider(authenticatedToken), ace); }
-		  
+
+		try {
+			try { // Check if this is a directory. Use V2 listObjects API.
+				ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
+						.bucket(fileLocation.getFileContainerId()).prefix(fileLocation.getFileId() + "/").build();
+
+				ListObjectsV2Response listObjectsV2Response = s3Connection.getClient(authenticatedToken)
+						.listObjectsV2(listObjectsV2Request).join();
+
+				return listObjectsV2Response.keyCount() > 0 || !listObjectsV2Response.contents().isEmpty();
+
+			} catch (SdkServiceException sse) {
+				if (sse.statusCode() == 400) { // V2 not supported. Use V1 listObjects API.
+					ListObjectsRequest listObjectsRequest = ListObjectsRequest.builder()
+							.bucket(fileLocation.getFileContainerId()).prefix(fileLocation.getFileId()).build();
+
+					return !s3Connection.getClient(authenticatedToken).listObjects(listObjectsRequest).join().contents()
+							.isEmpty();
+
+				} else {
+					throw sse;
+				}
+
+			}
+
+		} catch (SdkException e) {
+			throw new HpcException("[S3] Failed to list object: " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
+					s3Connection.getS3Provider(authenticatedToken), e);
+		}
+
 	}
 }
