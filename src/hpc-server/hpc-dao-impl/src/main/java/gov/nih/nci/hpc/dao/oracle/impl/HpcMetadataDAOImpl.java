@@ -183,7 +183,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "where coll_main.COLL_NAME = ? and meta_main.META_ID = metamap.META_ID and coll_main.COLL_ID = metamap.OBJECT_ID "
 			+ "and exists (select 1 from R_USER_MAIN user_main, R_USER_GROUP groups, R_OBJT_ACCESS obj_access "
 			+ "where user_main.USER_ID = groups.USER_ID and groups.GROUP_USER_ID = obj_access.USER_ID "
-			+ "and obj_access.object_id = data_main.DATA_ID and user_main.USER_NAME = ?)";
+			+ "and obj_access.object_id = coll_main.COLL_ID and user_main.USER_NAME = ?)";
 
 	private static final String GET_HIERARCHICAL_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_data_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
