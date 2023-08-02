@@ -319,7 +319,7 @@ public interface HpcMetadataService {
 	 *
 	 * @param path                  The data object's path.
 	 * @param excludeParentMetadata True if parent metadata is to be excluded.
-	 * @return HpcMetadataEntries The data object's metadata entries.
+	 * @return HpcMetadataEntries The data object's metadata entries, or null if not found.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcMetadataEntries getDataObjectMetadataEntries(String path, boolean excludeParentMetadata)
@@ -329,7 +329,7 @@ public interface HpcMetadataService {
 	 * Get metadata of a data object grouped by user / extracted / system
 	 *
 	 * @param path The data object's path.
-	 * @return HpcMetadataEntries The data object's metadata entries.
+	 * @return HpcMetadataEntries The data object's metadata entries, or null if not found.
 	 * @param excludeParentMetadata True if parent metadata is to be excluded.
 	 *
 	 * @throws HpcException on service failure.
