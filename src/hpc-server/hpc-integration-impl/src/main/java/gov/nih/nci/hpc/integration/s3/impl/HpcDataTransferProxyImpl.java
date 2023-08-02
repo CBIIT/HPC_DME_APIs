@@ -11,12 +11,14 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
-import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
@@ -52,11 +53,9 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.transfer.s3.model.CompletedCopy;
@@ -346,49 +345,51 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, HpcFileLocation directoryLocation)
 			throws HpcException {
-		/*
-		 * List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
-		 * 
-		 * try { // List all the files and directories (including nested) under this
-		 * directory. ListObjectsV2Request listObjectsRequest = new
-		 * ListObjectsV2Request()
-		 * .withBucketName(directoryLocation.getFileContainerId()).withPrefix(
-		 * directoryLocation.getFileId());
-		 * 
-		 * ListObjectsV2Result listObjectsResult =
-		 * s3Connection.getTransferManager(authenticatedToken)
-		 * .getAmazonS3Client().listObjectsV2(listObjectsRequest); List<S3ObjectSummary>
-		 * s3Objects = listObjectsResult.getObjectSummaries();
-		 * 
-		 * // Paginate through all results. while (listObjectsResult.isTruncated()) {
-		 * String continuationToken = listObjectsResult.getNextContinuationToken();
-		 * listObjectsRequest.setContinuationToken(continuationToken); listObjectsResult
-		 * = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-		 * .listObjectsV2(listObjectsRequest); if
-		 * (continuationToken.equals(listObjectsResult.getNextContinuationToken())) { //
-		 * Pagination over list objects is not working w/ Cleversafe storage, we keep //
-		 * getting the same set of results. This code is to protect against infinite //
-		 * loop. break; } s3Objects.addAll(listObjectsResult.getObjectSummaries()); }
-		 * 
-		 * s3Objects.forEach(s3ObjectSummary -> { if (s3ObjectSummary.getSize() > 0) {
-		 * HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
-		 * directoryScanItem.setFilePath(s3ObjectSummary.getKey());
-		 * directoryScanItem.setFileName(FilenameUtils.getName(s3ObjectSummary.getKey())
-		 * ); directoryScanItem.setLastModified(dateFormat.format(s3ObjectSummary.
-		 * getLastModified())); directoryScanItems.add(directoryScanItem); } });
-		 * 
-		 * return directoryScanItems;
-		 * 
-		 * } catch (AmazonServiceException ase) { throw new
-		 * HpcException("[S3] Failed to list objects: " + ase.getMessage(),
-		 * HpcErrorType.DATA_TRANSFER_ERROR,
-		 * s3Connection.getS3Provider(authenticatedToken), ase);
-		 * 
-		 * } catch (AmazonClientException ace) { throw new
-		 * HpcException("[S3] Failed to list objects: " + ace.getMessage(),
-		 * HpcErrorType.DATA_TRANSFER_ERROR,
-		 * s3Connection.getS3Provider(authenticatedToken), ace); }
-		 */ return null;
+		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
+
+		try {
+			ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
+					.bucket(directoryLocation.getFileContainerId()).prefix(directoryLocation.getFileId()).build();
+
+			ListObjectsV2Response listObjectsResponse = s3Connection.getClient(authenticatedToken)
+					.listObjectsV2(listObjectsRequest).join();
+
+			List<S3Object> s3Objects = listObjectsResponse.contents();
+
+			// Paginate through all results.
+			while (listObjectsResponse.isTruncated()) {
+				String continuationToken = listObjectsResponse.nextContinuationToken();
+
+				listObjectsRequest = listObjectsRequest.toBuilder().continuationToken(continuationToken).build();
+				listObjectsResponse = s3Connection.getClient(authenticatedToken).listObjectsV2(listObjectsRequest)
+						.join();
+
+				if (continuationToken.equals(listObjectsResponse.nextContinuationToken())) {
+					// Pagination over list objects is not working w/ Cleversafe storage, we keep
+					// getting the same set of results. This code is to protect against infinite
+					// loop.
+					break;
+				}
+
+				s3Objects.addAll(listObjectsResponse.contents());
+			}
+
+			s3Objects.forEach(s3Object -> {
+				if (s3Object.size() > 0) {
+					HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
+					directoryScanItem.setFilePath(s3Object.key());
+					directoryScanItem.setFileName(FilenameUtils.getName(s3Object.key()));
+					directoryScanItem.setLastModified(dateFormat.format(s3Object.lastModified()));
+					directoryScanItems.add(directoryScanItem);
+				}
+			});
+
+			return directoryScanItems;
+
+		} catch (SdkException e) {
+			throw new HpcException("[S3] Failed to list objects: " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
+					s3Connection.getS3Provider(authenticatedToken), e);
+		}
 	}
 
 	@Override
