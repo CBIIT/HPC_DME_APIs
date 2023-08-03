@@ -53,6 +53,7 @@ import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
@@ -76,17 +77,18 @@ import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 @RequestMapping("/browse")
 public class HpcBrowseController extends AbstractHpcController {
 
+
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
 
+	@Value("${gov.nih.nci.hpc.server.dataObject}")
+	private String dataObjectURL;
+	
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
 
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
-
-	@Value("${gov.nih.nci.hpc.server.pathreftype}")
-	private String hpcPathRefTypeURL;
 
 	@Autowired
 	private HpcModelBuilder hpcModelBuilder;
@@ -94,6 +96,10 @@ public class HpcBrowseController extends AbstractHpcController {
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
+    private static final String ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE =
+		    "Failed to determine type of DME entity at path, %s." +
+		    "  Exception message: %s.";
+  
 
 	/**
 	 * POST Action. Invoked under the following conditions:
@@ -634,10 +640,35 @@ public class HpcBrowseController extends AbstractHpcController {
    */
 	private boolean isPathForDataFile(String argPath, String argAuthToken)
       throws HpcWebException {
-    final Optional<String> pathElementType = HpcClientUtil.getPathElementType(
-      argAuthToken, this.hpcPathRefTypeURL, argPath,
-      sslCertPath, sslCertPassword);
-    return "data file".equals(pathElementType.orElse(""));
+
+    String theItemPath = argPath.trim();
+    try {
+      //Try getting the data object
+	  HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafilesWithoutAttributes(argAuthToken, this.dataObjectURL, theItemPath, false, false, 
+		  sslCertPath, sslCertPassword);
+	  if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
+		  return true;
+	  }
+      
+    } catch (HpcWebException e) {
+    	//This could be collection or path doesn't exist
+    	try {
+    		HpcCollectionListDTO collections = HpcClientUtil.getCollection(argAuthToken, this.collectionURL, theItemPath, false, false,
+    			sslCertPath, sslCertPassword);
+    		if (collections != null && collections.getCollections() != null && !collections.getCollections().isEmpty()) {
+    			  return false;
+    		}
+    	} catch (Exception re) {
+	      re.printStackTrace();
+	      final String msgForHpcWebException = String.format(
+	        ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
+	        theItemPath,
+	        re.getMessage()
+	      );
+	      throw new HpcWebException(msgForHpcWebException);
+	    }
+    }
+    return false;
   }
 
 
