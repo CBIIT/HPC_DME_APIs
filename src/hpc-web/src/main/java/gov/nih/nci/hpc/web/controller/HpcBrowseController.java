@@ -19,7 +19,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,7 +52,7 @@ import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
@@ -81,7 +80,7 @@ public class HpcBrowseController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
 
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
+	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
 	private String dataObjectURL;
 	
 	@Value("${gov.nih.nci.hpc.server.collection}")
@@ -644,9 +643,9 @@ public class HpcBrowseController extends AbstractHpcController {
     String theItemPath = argPath.trim();
     try {
       //Try getting the data object
-	  HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafilesWithoutAttributes(argAuthToken, this.dataObjectURL, theItemPath, false, false, 
+    	HpcDataObjectDTO datafile = HpcClientUtil.getDatafilesWithoutAttributes(argAuthToken, this.dataObjectURL, theItemPath, false, false, 
 		  sslCertPath, sslCertPassword);
-	  if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
+	  if (datafile != null && datafile.getMetadataEntries() != null) {
 		  return true;
 	  }
       
