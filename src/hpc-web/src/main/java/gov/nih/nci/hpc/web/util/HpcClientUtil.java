@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -49,7 +50,6 @@ import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
-import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
@@ -485,7 +485,7 @@ public class HpcClientUtil {
     }
   }
 
-  public static HpcDataObjectListDTO getDatafilesWithoutAttributes(String token, String hpcDatafileURL, String path,
+  public static HpcDataObjectDTO getDatafilesWithoutAttributes(String token, String hpcDatafileURL, String path,
 		    boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
     try {
       final String url2Apply = UriComponentsBuilder.fromHttpUrl(hpcDatafileURL)
@@ -507,12 +507,14 @@ public class HpcClientUtil {
             new JacksonAnnotationIntrospector());
         mapper.setAnnotationIntrospector(intr);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        mapper.configure(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS, true);
 
         MappingJsonFactory factory = new MappingJsonFactory(mapper);
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-        HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
-        return datafiles;
+        HpcDataObjectDTO datafile = parser.readValueAs(HpcDataObjectDTO.class);
+        return datafile;
       } else {
     	  //Try again with ACL turned off
 	      final String url2ApplyRetry = UriComponentsBuilder.fromHttpUrl(hpcDatafileURL)
@@ -532,15 +534,17 @@ public class HpcClientUtil {
 	            new JacksonAnnotationIntrospector());
 	        mapper.setAnnotationIntrospector(intr);
 	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+	        mapper.configure(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS, true);
 
 	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
 	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-	        HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
-	        //This user only has access to datafile and not parent collection 
-	        datafiles.getDataObjects().get(0).setPermission(HpcPermission.READ);
-	        
-	        return datafiles;
+	        HpcDataObjectDTO datafile = parser.readValueAs(HpcDataObjectDTO.class);
+	        //This user only has access to datafile and not parent collection
+	        datafile.setPermission(HpcPermission.READ);
+
+	        return datafile;
 	      } else {
 	    	  throw new HpcWebException(
 	    			  "File does not exist or you do not have READ access.");
