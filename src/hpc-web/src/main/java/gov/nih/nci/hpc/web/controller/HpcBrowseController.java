@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -76,7 +77,6 @@ import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 @RequestMapping("/browse")
 public class HpcBrowseController extends AbstractHpcController {
 
-
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
 
@@ -89,16 +89,15 @@ public class HpcBrowseController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
 
+	@Value("${gov.nih.nci.hpc.server.pathreftype}")
+	private String hpcPathRefTypeURL;
+
 	@Autowired
 	private HpcModelBuilder hpcModelBuilder;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-    private static final String ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE =
-		    "Failed to determine type of DME entity at path, %s." +
-		    "  Exception message: %s.";
-  
 
 	/**
 	 * POST Action. Invoked under the following conditions:
@@ -668,6 +667,18 @@ public class HpcBrowseController extends AbstractHpcController {
 	    }
     }
     return false;
+    final Optional<String> pathElementType = HpcClientUtil.getPathElementType(
+      argAuthToken, this.hpcPathRefTypeURL, argPath,
+      sslCertPath, sslCertPassword);
+    return "data file".equals(pathElementType.orElse(""));
+    final Optional<String> pathElementType = HpcClientUtil.getPathElementType(
+      argAuthToken, this.hpcPathRefTypeURL, argPath,
+      sslCertPath, sslCertPassword);
+    return "data file".equals(pathElementType.orElse(""));
+    final Optional<String> pathElementType = HpcClientUtil.getPathElementType(
+      argAuthToken, this.hpcPathRefTypeURL, argPath,
+      sslCertPath, sslCertPassword);
+    return "data file".equals(pathElementType.orElse(""));
   }
 
 
