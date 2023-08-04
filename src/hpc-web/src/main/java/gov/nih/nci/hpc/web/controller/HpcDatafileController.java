@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -38,14 +37,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -71,6 +69,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcDatafileController extends HpcCreateCollectionDataFileController {
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serviceURL;
+	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
+	private String dataObjectV2URL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
 
@@ -110,9 +110,9 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			if (path == null)
 				return RET_DASHBOARD;
 
-			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, path, false, true, 
+			HpcDataObjectDTO dataFile = HpcClientUtil.getDatafilesWithoutAttributes(authToken, dataObjectV2URL, path, false, true, 
 					sslCertPath, sslCertPassword);
-			if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
+			if (dataFile != null && dataFile.getMetadataEntries() != null) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
 				if (modelDTO == null) {
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
@@ -120,9 +120,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				}
 				String basePath = path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2) < 0 ? path.length() : StringUtils.ordinalIndexOf(path, "/", 2));
                 HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
-                
-				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
-				
+                				
 				if (dataFile.getPermission().equals(HpcPermission.NONE)) {
 					throw new HpcWebException(
 				            "You do not have READ access to " + path + ".");
@@ -131,6 +129,12 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(model, dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules());
 				hpcDatafile.setPath(path);
+				//Since we are calling GET dataObject API with excludeNonMetadataAttributes set to true, populate HpcDataObject
+				HpcDataObject dataObject = new HpcDataObject();
+				dataObject.setAbsolutePath(path);
+				dataObject.setCollectionName(StringUtils.substringBeforeLast(path, "/"));
+				hpcDatafile.setDataObject(dataObject);
+				
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				model.addAttribute("attributeNames", getMetadataAttributeNames(dataFile));
 								
@@ -183,7 +187,11 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				|| dataFile.getMetadataEntries().getSelfMetadataEntries() == null
 				|| dataFile.getMetadataEntries().getParentMetadataEntries() == null)
 			return names;
-		for (HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries())
+		for (HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries().getSystemMetadataEntries())
+			names.add(entry.getAttribute());
+		for (HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries().getUserMetadataEntries())
+			names.add(entry.getAttribute());
+		for (HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries().getExtractedMetadataEntries())
 			names.add(entry.getAttribute());
 		return names;
 	}
@@ -275,7 +283,24 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 		HpcDatafileModel datafileModel = new HpcDatafileModel();
 		systemAttrs.add("collection_type");
 		datafileModel.setDataObject(datafile.getDataObject());
-		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries()) {
+		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries().getUserMetadataEntries()) {
+			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
+			attrEntry.setAttrName(entry.getAttribute());
+			attrEntry.setAttrValue(entry.getValue());
+			attrEntry.setAttrUnit(entry.getUnit());
+			attrEntry.setSystemAttr(false);
+			datafileModel.getSelfMetadataEntries().add(attrEntry);		
+		}
+		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries().getExtractedMetadataEntries()) {
+			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
+			attrEntry.setAttrName(entry.getAttribute());
+			attrEntry.setAttrValue(entry.getValue());
+			attrEntry.setAttrUnit(entry.getUnit());
+			attrEntry.setSystemAttr(false);
+			datafileModel.getSelfMetadataEntries().add(attrEntry);		
+		}
+
+		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries().getSystemMetadataEntries()) {
 			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 			attrEntry.setAttrName(entry.getAttribute());
 			if(entry.getAttribute().equalsIgnoreCase("source_file_size")) {
@@ -285,17 +310,11 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			  attrEntry.setAttrValue(entry.getValue());
 			}
 			attrEntry.setAttrUnit(entry.getUnit());
-			if (systemAttrs.contains(entry.getAttribute())) {
-				attrEntry.setSystemAttr(true);
-				datafileModel.getSelfSystemMetadataEntries().add(attrEntry);
-			}
-			else {
-				attrEntry.setSystemAttr(false);
-				datafileModel.getSelfMetadataEntries().add(attrEntry);
-			}
+			attrEntry.setSystemAttr(true);
+			datafileModel.getSelfSystemMetadataEntries().add(attrEntry);
 			
 		}
-
+		
 		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getParentMetadataEntries()) {
 			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 			attrEntry.setAttrName(entry.getAttribute());
