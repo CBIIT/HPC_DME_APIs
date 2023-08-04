@@ -47,17 +47,20 @@ public class HpcOracleMetadataRetrieverImpl implements HpcMetadataRetriever {
 
 	@Override
 	public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException {
-		return metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path));
+		return metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path),
+				HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername());
 	}
 
 	@Override
 	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException {
-		return metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
+		return metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path),
+				HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername());
 	}
 
 	@Override
 	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException {
-		List<HpcDataObject> dataObjects = metadataDAO.getDataObjects(metadataQueries);
+		List<HpcDataObject> dataObjects = metadataDAO.getDataObjects(metadataQueries,
+				HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername());
 
 		dataObjects.forEach(dataObject -> {
 			dataObject.setAbsolutePath(dataManagementProxy.getRelativePath(dataObject.getAbsolutePath()));
