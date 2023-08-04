@@ -139,7 +139,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 				subjectPermission.setSubject(nciUserId);
 
 				String path = bookmarkRequest.getPath();
-				if (dataManagementService.interrogatePathRef(path)) {
+				if (dataManagementService.isPathCollection(path)) {
 					dataManagementService.setCollectionPermission(path, subjectPermission);
 				} else {
 					dataManagementService.setDataObjectPermission(path, subjectPermission);
@@ -202,7 +202,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 			subjectPermission.setSubject(nciUserId);
 			try {
 				String path = bookmarkRequest.getPath();
-				if (dataManagementService.interrogatePathRef(path)) {
+				if (dataManagementService.isPathCollection(path)) {
 					dataManagementService.setCollectionPermission(path, subjectPermission);
 				} else {
 					dataManagementService.setDataObjectPermission(path, subjectPermission);
