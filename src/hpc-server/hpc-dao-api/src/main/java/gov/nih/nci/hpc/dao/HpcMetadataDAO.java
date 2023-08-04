@@ -218,29 +218,33 @@ public interface HpcMetadataDAO {
 	/**
 	 * Get metadata of a data object.
 	 *
-	 * @param path The data object path.
+	 * @param path                   The data object path.
+	 * @param dataManagementUsername The Data Management user name.
 	 * @return List of metadata entries.
 	 * @throws HpcException on data management system failure.
 	 */
-	public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
-	
+	public List<HpcMetadataEntry> getDataObjectMetadata(String path, String dataManagementUsername) throws HpcException;
+
 	/**
 	 * Get data objects by metadata query.
 	 *
-	 * @param metadataQueries The metadata entries to query for.
+	 * @param metadataQueries        The metadata entries to query for.
+	 * @param dataManagementUsername The Data Management user name.
 	 * @return List of data objects.
 	 * @throws HpcException on search failure.
 	 */
-	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) throws HpcException;
+	public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries, String dataManagementUsername)
+			throws HpcException;
 
 	/**
 	 * Get metadata of a collection.
 	 *
-	 * @param path The collection path.
+	 * @param path                   The collection path.
+	 * @param dataManagementUsername The Data Management user name.
 	 * @return List of metadata entries.
 	 * @throws HpcException on data management system failure.
 	 */
-	public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException;
+	public List<HpcMetadataEntry> getCollectionMetadata(String path, String dataManagementUsername) throws HpcException;
 
 	/**
 	 * Get a list of collection metadata attributes currently registered.

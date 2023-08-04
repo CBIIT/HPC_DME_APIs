@@ -244,7 +244,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public boolean interrogatePathRef(String path) throws HpcException {
-		return dataManagementService.interrogatePathRef(path);
+		return dataManagementService.isPathCollection(path);
 	}
 
 	@Override
@@ -1252,7 +1252,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
 			dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
 					dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
-			dataObjectRegistrationRequest.setS3ArchiveConfigurationId(dataObjectRegistrationItem.getS3ArchiveConfigurationId());
+			dataObjectRegistrationRequest
+					.setS3ArchiveConfigurationId(dataObjectRegistrationItem.getS3ArchiveConfigurationId());
 
 			String path = dataObjectRegistrationItem.getPath();
 			if (StringUtils.isEmpty(path)) {
@@ -1363,6 +1364,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the metadata for this data object.
 		long timeBefore = System.currentTimeMillis();
 		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, excludeParentMetadata);
+		if (metadataEntries == null) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		taskProfilingLog("Retrieval", path, "Retrieved metadata entries", System.currentTimeMillis() - timeBefore);
 
 		HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
@@ -1407,6 +1411,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the metadata for this data object.
 		HpcGroupedMetadataEntries metadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path,
 				excludeParentMetadata);
+		if (metadataEntries == null) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
 		dataObjectDTO.setDataObject(dataObject);
 		dataObjectDTO.setMetadataEntries(metadataEntries);

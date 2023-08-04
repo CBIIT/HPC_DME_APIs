@@ -40,8 +40,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -258,11 +257,10 @@ public class HpcDownloadController extends AbstractHpcController {
 		model.addAttribute("deselectedColumns", hpcSearch.getDeselectedColumns());
 		model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
 		if(downloadType.equals("datafile")) {
-			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, downloadFilePath, false, false, 
+			HpcDataObjectDTO datafile = HpcClientUtil.getDatafilesWithoutAttributes(authToken, dataObjectDownloadServiceURL, downloadFilePath, false, false, 
 					sslCertPath, sslCertPassword);
-			if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
-				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
-				for(HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries()) {
+			if (datafile != null && datafile.getMetadataEntries() != null) {
+				for(HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries().getSystemMetadataEntries()) {
 					if(entry.getAttribute().equals("deep_archive_status") && !entry.getValue().equals("IN_PROGRESS")) {
                         model.addAttribute("restoreMsg", "The data may be in deep archive. " +
                         "If so, when you click Download, you will receive a notification after the system has made the data available. Otherwise, the download begins when you click Download.");
