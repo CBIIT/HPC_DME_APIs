@@ -61,9 +61,10 @@ public interface HpcDataManagementService {
 	 * @param path The path.
 	 * @return Boolean to convey whether path refers to collection or data file;
 	 *         true for collection and false for data file.
-	 * @throws HpcException on data management system failure
+	 * @throws HpcException on data management system failure, or path doesn't exist
+	 *                      / user has no read permission to it.
 	 */
-	public boolean interrogatePathRef(String path) throws HpcException;
+	public boolean isPathCollection(String path) throws HpcException;
 
 	/**
 	 * Create a data object's file.
