@@ -31,7 +31,7 @@
 		<prop key="hpc.bus.getAllDataObjectsDefaultPageSize">1000</prop>
 		<prop key="hpc.bus.sendReviewNotificationToUser">false</prop>
 		<prop key="hpc.bus.maxPermittedInProcessDownloadTasksPerUser">1</prop>
-		<prop key="hpc.bus.exportDirectory">/mnt/IRODsScratch/data</prop>
+		<prop key="hpc.bus.exportDirectory">/mnt/DMETemp/test/data</prop>
 		<prop key="hpc.bus.maxDataTranferUploadInProgressWithGeneratedUrlToProcess">100</prop>
 		<prop key="hpc.bus.processCollectionDownloadTasksPerformer">false</prop>
 		<prop key="hpc.bus.bulkMetadataDataUpdateLimit">100</prop>
