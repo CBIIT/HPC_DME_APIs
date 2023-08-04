@@ -880,17 +880,20 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Override
 	public HpcMetadataEntries getDataObjectMetadataEntries(String path, boolean excludeParentMetadata)
 			throws HpcException {
+
 		HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
 
 		// Get the metadata associated with the data object itself.
 		metadataEntries.getSelfMetadataEntries().addAll(metadataRetriever.getDataObjectMetadata(path));
+		if (metadataEntries.getSelfMetadataEntries().isEmpty()) {
+			// Data object doesn't exist or user has no read permission.
+			return null;
+		}
 
 		// Get the hierarchical metadata.
 		if (!excludeParentMetadata) {
 			metadataEntries.getParentMetadataEntries()
 					.addAll(metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
-		} else {
-			logger.info("Excluding parent metadata for {}", path);
 		}
 
 		return metadataEntries;
@@ -904,6 +907,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Get the metadata associated with the data object itself.
 		List<HpcMetadataEntry> metadataEntries = metadataRetriever.getDataObjectMetadata(path);
+		if (metadataEntries.isEmpty()) {
+			// Data object doesn't exist or user has no read permission.
+			return null;
+		}
 
 		// Get the system metadata attributes.
 		List<String> systemMetadataAttributeNames = metadataValidator
