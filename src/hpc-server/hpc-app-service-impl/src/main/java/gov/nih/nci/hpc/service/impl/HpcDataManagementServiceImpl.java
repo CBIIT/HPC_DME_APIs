@@ -366,8 +366,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public boolean interrogatePathRef(String path) throws HpcException {
-		return dataManagementProxy.interrogatePathRef(dataManagementAuthenticator.getAuthenticatedToken(), path);
+	public boolean isPathCollection(String path) throws HpcException {
+		if (!metadataRetriever.getCollectionMetadata(path).isEmpty()) {
+			return true;
+		}
+
+		if (!metadataRetriever.getDataObjectMetadata(path).isEmpty()) {
+			return false;
+		}
+
+		throw new HpcException("Failed to find item at following path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 	}
 
 	@Override
@@ -605,10 +613,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public void addAuditRecord(String path,
-			HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
+	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId, Long size, HpcStorageRecoveryConfiguration storageRecoveryConfiguration) {
+			Boolean dataTransferStatus, String message, String userId, Long size,
+			HpcStorageRecoveryConfiguration storageRecoveryConfiguration) {
 		// Input validation.
 		String nciUserId = HpcRequestContext.getRequestInvoker().getNciAccount() == null ? userId
 				: HpcRequestContext.getRequestInvoker().getNciAccount().getUserId();
@@ -619,7 +627,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		try {
 			dataManagementAuditDAO.insert(nciUserId, path, requestType, metadataBefore, metadataAfter, archiveLocation,
-					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance(), size, storageRecoveryConfiguration);
+					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance(), size,
+					storageRecoveryConfiguration);
 
 		} catch (HpcException e) {
 			logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
