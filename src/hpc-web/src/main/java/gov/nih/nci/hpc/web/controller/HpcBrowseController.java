@@ -19,7 +19,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,6 +52,7 @@ import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
@@ -76,17 +76,18 @@ import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 @RequestMapping("/browse")
 public class HpcBrowseController extends AbstractHpcController {
 
+
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
 
+	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
+	private String dataObjectURL;
+	
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
 
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
-
-	@Value("${gov.nih.nci.hpc.server.pathreftype}")
-	private String hpcPathRefTypeURL;
 
 	@Autowired
 	private HpcModelBuilder hpcModelBuilder;
@@ -630,14 +631,23 @@ public class HpcBrowseController extends AbstractHpcController {
    * @param argPath The DME path.
    * @param argAuthToken The DME auth token.
    * @return boolean true if path refers to a data file, false otherwise
-   * @throws HpcWebException on determining that path does not exist
    */
-	private boolean isPathForDataFile(String argPath, String argAuthToken)
-      throws HpcWebException {
-    final Optional<String> pathElementType = HpcClientUtil.getPathElementType(
-      argAuthToken, this.hpcPathRefTypeURL, argPath,
-      sslCertPath, sslCertPassword);
-    return "data file".equals(pathElementType.orElse(""));
+	private boolean isPathForDataFile(String argPath, String argAuthToken) {
+
+    String theItemPath = argPath.trim();
+    try {
+      //Try getting the data object
+    	HpcDataObjectDTO datafile = HpcClientUtil.getDatafilesWithoutAttributes(argAuthToken, this.dataObjectURL, theItemPath, false, false, 
+		  sslCertPath, sslCertPassword);
+	  if (datafile != null && datafile.getMetadataEntries() != null) {
+		  return true;
+	  }
+      
+    } catch (HpcWebException e) {
+    	//This could be collection or path doesn't exist
+    	return false;
+    }
+    return false;
   }
 
 
