@@ -134,10 +134,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcClientUtil {
 
-  private static final String ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE =
-    "Failed to determine type of DME entity at path, %s." +
-    "  Exception message: %s.";
-
   private static final String JSON_RESPONSE_ATTRIB__ELEMENT_TYPE =
       "elementType";
   
@@ -390,45 +386,6 @@ public class HpcClientUtil {
   }
 
 
-  public static Optional<String> getPathElementType(
-      String argAuthToken, String argServiceUrlPrefix, String argItemPath,
-      String argSslCertPath, String argSslCertPasswd)
-      throws HpcWebException {
-    Optional<String> elemType = Optional.empty();
-    try {
-      String theItemPath = argItemPath.trim();
-      final String hpcServiceUrl = UriComponentsBuilder.fromHttpUrl(
-        argServiceUrlPrefix).path("/{dme-archive-path}").buildAndExpand(
-        theItemPath).encode().toUri().toURL().toExternalForm();
-
-      final WebClient client = HpcClientUtil.getWebClient(hpcServiceUrl,
-                                argSslCertPath, argSslCertPasswd);
-//      client.header(HttpHeaders.AUTHORIZATION, "Basic " + argAuthToken);
-      client.header("Authorization", "Bearer " + argAuthToken);
-      final Response restResponse = client.get();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
-        elemType = extractElementTypeFromResponse(restResponse);
-      } else {
-        final String extractedErrMsg =
-            genHpcExceptionDtoOnNonOkRestResponse(restResponse).getMessage();
-        throw new HpcWebException(
-          extractedErrMsg
-        );
-      }
-
-      return elemType;
-    } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
-      final String msgForHpcWebException = String.format(
-        ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
-        argItemPath,
-        e.getMessage()
-      );
-      throw new HpcWebException(msgForHpcWebException);
-    }
-  }
-
-
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
 	  String path, boolean list, String hpcCertPath, String hpcCertPassword) {
 	return getCollection(token, hpcCollectionlURL, path, false, list, false, hpcCertPath, hpcCertPassword);
@@ -595,7 +552,6 @@ public class HpcClientUtil {
       }
 
     } catch (Exception e) {
-      logger.error("Failed to get data file for path " + path + ": ", e);
       throw new HpcWebException("Failed to get data file for path " + path + ": " + e.getMessage());
     }
   }
