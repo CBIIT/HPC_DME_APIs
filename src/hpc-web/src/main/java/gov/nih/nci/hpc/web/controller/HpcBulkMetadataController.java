@@ -29,12 +29,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -50,9 +55,11 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateResponseDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcBulkMetadataUpdateRequest;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
@@ -60,7 +67,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
-
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 
 /**
  * <p>
@@ -76,6 +84,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 public class HpcBulkMetadataController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user}")
 	private String serviceURL;
+	@Value("${gov.nih.nci.hpc.server.collection}")
+	private String serviceCollectionURL;	
 	@Value("${gov.nih.nci.hpc.server.metadata}")
 	private String serviceMetadataURL;
 	@Value("${gov.nih.nci.hpc.server.collection}")
@@ -311,4 +321,41 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		public String path;
 		public String result;
 	}
+	
+	 /**
+	    * GET operation responding to an AJAX request to retrieve the User Metadata for based a path
+	    *
+	    * @param path
+	    * @param session
+	    * @param request
+	    * @return The Archive summary value
+	  */
+	  @GetMapping(value = "/getUserMetadataValues")
+	  @ResponseBody
+	  public AjaxResponseBody getUserMetadataValues(@RequestParam("path") String path, HttpSession session, HttpServletRequest request) {
+	      String authToken = (String) session.getAttribute("hpcUserToken");
+	      AjaxResponseBody result = new AjaxResponseBody();
+	      try {
+			// Get collection
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceCollectionURL, path, false,
+					false, true, sslCertPath, sslCertPassword);
+			HpcCollectionDTO collection = collections.getCollections().get(0);
+			logger.info("Collection: " + gson.toJson(collection.getMetadataEntries().getSelfMetadataEntries()));
+			//List<HpcMetadataAttrEntry> userMetadataEntries = collection.getMetadataEntries().getSelfMetadataEntries();
+			//logger.info("userMetadataEntries: " + gson.toJson(userMetadataEntries));
+			List<HpcMetadataAttrEntry> listMetadataEntries =  new ArrayList<HpcMetadataAttrEntry>();
+			for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
+				HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
+				attrEntry.setAttrName(entry.getAttribute());
+				attrEntry.setAttrValue(entry.getValue());
+				listMetadataEntries.add(attrEntry);
+			}
+			//Collections.sort(listMetadataEntries, String.CASE_INSENSITIVE_ORDER);
+			result.setMessage(gson.toJson(listMetadataEntries));
+	      } catch (Exception e) {
+	        log.error(e.getMessage(), e);
+	      }
+	      return result;
+	    }
+
 }

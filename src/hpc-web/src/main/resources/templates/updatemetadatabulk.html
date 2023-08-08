@@ -87,6 +87,7 @@
     var assignedNames = [[${names}]];
     var searchType = [[${hpcSearch.getSearchType()}]];
     var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
+    var result = [[${result}]];
 /*]]>*/
 </script>
 </head>
@@ -211,12 +212,14 @@
 							<tr id='attrRow0'>					
 								<th class="column-heading" id='path2' th:text="Path"></th>
 								<td class="column-heading" id='path21' th:if="${result} == 'true'" th:text="Result"></td>
+								<td class="column-heading" id="path22"></td>
 							</tr>
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="pathDetail : ${pathDetails}">
-								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
+								<td id="path30" th:text="${pathDetail.path}"></td>
 								<td id='path31' th:if="${result} == 'true'"  th:text="${pathDetail.result}"></td>
+								<td id='path32'></td>
 							</tr>
 						</tbody>
 					</table>
@@ -253,9 +256,52 @@
 	//<![CDATA[
 
 		$(document).ready(function () {
-			$('#pathDetailsGrid').DataTable( {
-				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
-			} );
+			/*boolean resultVisible = false;
+			if(result === "true") {
+				resultVisible = true;
+			}*/
+			var colDefs = [
+			/* var colDefs = [
+			{"targets": 0, "data": "null", "orderable": false, "visible": true, 
+				defaultContent: '<button  style="border:none;" title="Click"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+			},
+			{"targets": 1, "visible": true },
+			{"targets": 1, "visible": true },*/
+		
+		];
+			var table = $('#pathDetailsGrid').DataTable( {
+				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+				"columnDefs": [
+			{"targets": 0, "visible": true },
+           { "targets": 1,
+           	"data": null,
+            "defaultContent": '<button  style="border:none;" title="Click"><i class="fa fa-info-circle" aria-hidden="true" style="color:blue;"></i></button>',
+        }]
+			});
+			table.on('click', 'button', function (e) {
+				var data1 = table.row($(this).parents('tr')).data();
+				let data = table.row(e.target.closest('tr')).data();
+				console.log(JSON.stringify(data));
+				//console.log("data1");
+				//console.log(JSON.stringify(data1));
+				let uri = '/getUserMetadataValues';
+				alert(uri);
+				var dataJson = {
+						path: data["0"]
+						//action: view
+					};
+				console.log(JSON.stringify(dataJson));
+				
+				$.ajax({
+					type: 'GET',
+					url: uri,
+					data: dataJson,
+					dataType: 'json'
+				}).done(function (res) {
+					console.log(JSON.stringify(res));
+					alert(JSON.stringify(res));
+				});
+			});
 		});
 
 		function enableSave() {
