@@ -12,6 +12,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +34,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
@@ -48,6 +51,7 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -56,7 +60,10 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.UploadPartRequest;
+import software.amazon.awssdk.services.s3.presigner.model.CreateMultipartUploadPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedCreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.transfer.s3.model.CompletedCopy;
 import software.amazon.awssdk.transfer.s3.model.Copy;
@@ -885,68 +892,86 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private HpcDataObjectUploadResponse generateMultipartUploadRequestURLs(Object authenticatedToken,
 			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, int uploadParts,
 			List<HpcMetadataEntry> metadataEntries, String storageClass) throws HpcException {
+		
+		// Initiate the multipart upload. 
+		HpcMultipartUpload multipartUpload = new HpcMultipartUpload(); 
+		CreateMultipartUploadRequest createMultipartUploadRequest =	CreateMultipartUploadRequest.builder().bucket(archiveDestinationLocation.getFileContainerId()).key(archiveDestinationLocation.getFileId()).metadata(toS3Metadata(metadataEntries)).storageClass(storageClass).build();
+		
 		/*
-		 * // Initiate the multipart upload. HpcMultipartUpload multipartUpload = new
-		 * HpcMultipartUpload(); InitiateMultipartUploadRequest
-		 * initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(
-		 * archiveDestinationLocation.getFileContainerId(),
-		 * archiveDestinationLocation.getFileId(),
-		 * toS3Metadata(metadataEntries)).withStorageClass(storageClass);
-		 * 
-		 * try {
-		 * multipartUpload.setId(s3Connection.getTransferManager(authenticatedToken).
-		 * getAmazonS3Client()
-		 * .initiateMultipartUpload(initiateMultipartUploadRequest).getUploadId()); }
-		 * catch (AmazonClientException e) { throw new
-		 * HpcException("[S3] Failed to initiate a multipart upload: " +
-		 * initiateMultipartUploadRequest, HpcErrorType.DATA_TRANSFER_ERROR,
-		 * s3Connection.getS3Provider(authenticatedToken), e); }
-		 * 
-		 * // Calculate the URL expiration date. Date expiration = new Date();
-		 * expiration.setTime(expiration.getTime() + 1000 * 60 * 60 *
-		 * uploadRequestURLExpiration);
-		 * 
-		 * // Generate the parts pre-signed upload URLs. for (int partNumber = 1;
-		 * partNumber <= uploadParts; partNumber++) { HpcUploadPartURL uploadPartURL =
-		 * new HpcUploadPartURL(); uploadPartURL.setPartNumber(partNumber);
-		 * 
-		 * GeneratePresignedUrlRequest generatePresignedUrlRequest = new
-		 * GeneratePresignedUrlRequest( archiveDestinationLocation.getFileContainerId(),
-		 * archiveDestinationLocation.getFileId())
-		 * .withMethod(HttpMethod.PUT).withExpiration(expiration);
-		 * generatePresignedUrlRequest.addRequestParameter("partNumber",
-		 * String.valueOf(partNumber));
-		 * generatePresignedUrlRequest.addRequestParameter("uploadId",
-		 * multipartUpload.getId());
-		 * 
-		 * try { uploadPartURL.setPartUploadRequestURL(s3Connection.getTransferManager(
-		 * authenticatedToken)
-		 * .getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest).
-		 * toString());
-		 * 
-		 * } catch (AmazonClientException e) { throw new
-		 * HpcException("[S3] Failed to create a pre-signed URL for part: " +
-		 * partNumber, HpcErrorType.DATA_TRANSFER_ERROR,
-		 * s3Connection.getS3Provider(authenticatedToken), e); }
-		 * 
-		 * multipartUpload.getParts().add(uploadPartURL); }
-		 * 
-		 * // Create and populate the response object. HpcDataObjectUploadResponse
-		 * uploadResponse = new HpcDataObjectUploadResponse();
-		 * uploadResponse.setArchiveLocation(archiveDestinationLocation);
-		 * uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
-		 * uploadResponse.setDataTransferStarted(Calendar.getInstance());
-		 * uploadResponse.setDataTransferCompleted(null);
-		 * uploadResponse.setDataTransferRequestId(String.valueOf(
-		 * initiateMultipartUploadRequest.hashCode()));
-		 * uploadResponse.setMultipartUpload(multipartUpload);
-		 * uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.
-		 * URL_GENERATED);
-		 * uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.
-		 * URL_MULTI_PART);
-		 * 
-		 * return uploadResponse;
-		 */return null;
+		CreateMultipartUploadPresignRequest createMultipartUploadPresignRequest =
+		         CreateMultipartUploadPresignRequest.builder()
+		                                            .signatureDuration(Duration.ofHours(uploadRequestURLExpiration))
+		                                            .createMultipartUploadRequest(createMultipartUploadRequest)
+		                                            .build();
+		
+		PresignedCreateMultipartUploadRequest presignedCreateMultipartUploadRequest =
+				s3Connection.getPresigner(authenticatedToken).presignCreateMultipartUpload(createMultipartUploadPresignRequest);*/
+		
+		
+		
+		  //InitiateMultipartUploadRequest initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(
+		  //archiveDestinationLocation.getFileContainerId(),
+		  //archiveDestinationLocation.getFileId(),
+		  //toS3Metadata(metadataEntries)).withStorageClass(storageClass);
+		  
+		  try {
+		  multipartUpload.setId(s3Connection.getClient(authenticatedToken).createMultipartUpload(createMultipartUploadRequest).join().uploadId()); 
+		  }
+		  catch (SdkException e) { throw new
+		  HpcException("[S3] Failed to create a multipart upload: " +
+				  createMultipartUploadRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+		  s3Connection.getS3Provider(authenticatedToken), e); 
+		  }
+		  
+		  // Calculate the URL expiration date. 
+		  Date expiration = new Date();
+		  expiration.setTime(expiration.getTime() + 1000 * 60 * 60 *
+		  uploadRequestURLExpiration);
+		  
+		  // Generate the parts pre-signed upload URLs. 
+		  for (int partNumber = 1; partNumber <= uploadParts; partNumber++) { 
+			  HpcUploadPartURL uploadPartURL = new HpcUploadPartURL(); 
+			  uploadPartURL.setPartNumber(partNumber);
+			  
+			  UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+		  
+		  GeneratePresignedUrlRequest generatePresignedUrlRequest = new
+		  GeneratePresignedUrlRequest( archiveDestinationLocation.getFileContainerId(),
+		  archiveDestinationLocation.getFileId())
+		  .withMethod(HttpMethod.PUT).withExpiration(expiration);
+		  generatePresignedUrlRequest.addRequestParameter("partNumber",
+		  String.valueOf(partNumber));
+		  generatePresignedUrlRequest.addRequestParameter("uploadId",
+		  multipartUpload.getId());
+		  
+		  try { uploadPartURL.setPartUploadRequestURL(s3Connection.getTransferManager(
+		  authenticatedToken)
+		  .getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest).
+		  toString());
+		  
+		  } catch (AmazonClientException e) { throw new
+		  HpcException("[S3] Failed to create a pre-signed URL for part: " +
+		  partNumber, HpcErrorType.DATA_TRANSFER_ERROR,
+		  s3Connection.getS3Provider(authenticatedToken), e); }
+		  
+		  multipartUpload.getParts().add(uploadPartURL); }
+		  
+		  // Create and populate the response object. HpcDataObjectUploadResponse
+		  uploadResponse = new HpcDataObjectUploadResponse();
+		  uploadResponse.setArchiveLocation(archiveDestinationLocation);
+		  uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+		  uploadResponse.setDataTransferStarted(Calendar.getInstance());
+		  uploadResponse.setDataTransferCompleted(null);
+		  uploadResponse.setDataTransferRequestId(String.valueOf(
+		  initiateMultipartUploadRequest.hashCode()));
+		  uploadResponse.setMultipartUpload(multipartUpload);
+		  uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.
+		  URL_GENERATED);
+		  uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.
+		  URL_MULTI_PART);
+		  
+		  return uploadResponse;
+		 
 	}
 
 	/**
