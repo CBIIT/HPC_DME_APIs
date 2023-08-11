@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.io.FilenameUtils;
@@ -65,6 +66,7 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -258,9 +260,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				return headObjectResponse.eTag();
 			}
 
-		} catch (SdkException e) {
-			throw new HpcException("[S3] Failed to get object metadata: " + fileLocation.getFileContainerId() + ":"
-					+ fileLocation.getFileId() + " - " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR, e);
+		} catch (CompletionException e) {
+			throw new HpcException(
+					"[S3] Failed to get object metadata: " + fileLocation.getFileContainerId() + ":"
+							+ fileLocation.getFileId() + " - " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e.getCause());
 		}
 
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
@@ -277,9 +281,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			CompletedCopy completedCopy = copy.completionFuture().join();
 			return completedCopy.response().copyObjectResult().eTag();
 
-		} catch (SdkException e) {
+		} catch (CompletionException e) {
 			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
-					s3Connection.getS3Provider(authenticatedToken), e);
+					s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
 
 	}
@@ -295,9 +299,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		try {
 			s3Connection.getClient(authenticatedToken).deleteObject(deleteRequest).join();
 
-		} catch (SdkException e) {
+		} catch (CompletionException e) {
 			throw new HpcException("[S3] Failed to delete file: " + deleteRequest, HpcErrorType.DATA_TRANSFER_ERROR,
-					s3Connection.getS3Provider(authenticatedToken), e);
+					s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
 	}
 
@@ -307,34 +311,38 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
 		HeadObjectResponse headObjectResponse = null;
-		Boolean fileExists = null;
 
 		// Look for the file.
 		try {
 			pathAttributes.setIsAccessible(true);
 			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(fileLocation.getFileContainerId())
 					.key(fileLocation.getFileId()).build();
-			headObjectResponse = s3Connection.getClient(authenticatedToken).headObject(headObjectRequest).join();
-			fileExists = true;
+			headObjectResponse = s3Connection.getClient(authenticatedToken).headObject(headObjectRequest)
+					.exceptionally(e -> {
+						if (e instanceof SdkServiceException) {
+							if (((SdkServiceException) e).statusCode() == 403) {
+								pathAttributes.setIsAccessible(false);
+							}
+						} else if (!(e instanceof NoSuchKeyException)) {
+							logger.error("[S3] Failed to get head object request: " + e.getMessage(), e);
+						}
+						return null;
+					}).join();
 
-		} catch (SdkServiceException sse) {
-			if (sse.statusCode() == 403) {
-				pathAttributes.setIsAccessible(false);
-				return pathAttributes;
-			} else {
-				fileExists = false;
-			}
+		} catch (CompletionException e) {
+			throw new HpcException("[S3] Failed to get head object request: " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 
-		} catch (SdkException e) {
-			throw new HpcException("[S3] Failed to get object metadata: " + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 		}
 
-		if (fileExists.booleanValue()) {
+		if (!pathAttributes.getIsAccessible()) {
+			return pathAttributes;
+		}
+		if (headObjectResponse != null) {
 			// This is a file.
+			pathAttributes.setIsFile(true);
 			pathAttributes.setIsDirectory(false);
 			pathAttributes.setExists(true);
-			pathAttributes.setIsFile(true);
 
 		} else {
 			pathAttributes.setIsFile(false);
@@ -347,7 +355,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Optionally get the file size. We currently don't support getting file size
 		// for a directory.
-		if (getSize && fileExists.booleanValue() && headObjectResponse != null) {
+		if (getSize && headObjectResponse != null) {
 			pathAttributes.setSize(headObjectResponse.contentLength());
 		}
 
@@ -398,9 +406,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			return directoryScanItems;
 
-		} catch (SdkException e) {
-			throw new HpcException("[S3] Failed to list objects: " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
-					s3Connection.getS3Provider(authenticatedToken), e);
+		} catch (CompletionException e) {
+			throw new HpcException("[S3] Failed to list objects: " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
 	}
 
@@ -422,12 +430,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return s3Connection.getClient(authenticatedToken).completeMultipartUpload(completeMultipartUploadRequest)
 					.join().eTag();
 
-		} catch (SdkException e) {
+		} catch (CompletionException e) {
 			throw new HpcException(
 					"[S3] Failed to complete a multipart upload to " + archiveLocation.getFileContainerId() + ":"
 							+ archiveLocation.getFileId() + ". multi-part-upload-id = " + multipartUploadId
 							+ ", number-of-parts = " + uploadPartETags.size() + " - " + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
 	}
 
@@ -910,9 +918,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			multipartUpload.setId(s3Connection.getClient(authenticatedToken)
 					.createMultipartUpload(createMultipartUploadRequest).join().uploadId());
 
-		} catch (SdkException e) {
+		} catch (CompletionException e) {
 			throw new HpcException("[S3] Failed to create a multipart upload: " + createMultipartUploadRequest,
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
 
 		// Generate the parts pre-signed upload URLs.
@@ -925,7 +933,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			// Create a UploadPartPresignRequest to specify the signature duration
 			UploadPartPresignRequest uploadPartPresignRequest = UploadPartPresignRequest.builder()
-					.signatureDuration(Duration.ofDays(uploadRequestURLExpiration))
+					.signatureDuration(Duration.ofHours(uploadRequestURLExpiration))
 					.uploadPartRequest(uploadPartRequest.toBuilder().partNumber(partNumber).build()).build();
 
 			try {
@@ -1177,23 +1185,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				return listObjectsV2Response.keyCount() > 0 || !listObjectsV2Response.contents().isEmpty();
 
-			} catch (SdkServiceException sse) {
-				if (sse.statusCode() == 400) { // V2 not supported. Use V1 listObjects API.
+			} catch (CompletionException e) {
+				if (e.getCause() instanceof SdkServiceException
+						&& ((SdkServiceException) e.getCause()).statusCode() == 400) { // V2 not supported. Use V1
+																						// listObjects API.
 					ListObjectsRequest listObjectsRequest = ListObjectsRequest.builder()
 							.bucket(fileLocation.getFileContainerId()).prefix(fileLocation.getFileId()).build();
 
 					return !s3Connection.getClient(authenticatedToken).listObjects(listObjectsRequest).join().contents()
 							.isEmpty();
-
 				} else {
-					throw sse;
+					throw e;
 				}
-
 			}
 
-		} catch (SdkException e) {
-			throw new HpcException("[S3] Failed to list object: " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
-					s3Connection.getS3Provider(authenticatedToken), e);
+		} catch (CompletionException e) {
+			throw new HpcException("[S3] Failed to list object: " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
 
 	}
