@@ -12,6 +12,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
+
+import javax.net.ssl.SSLContext;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -319,12 +322,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					.key(fileLocation.getFileId()).build();
 			headObjectResponse = s3Connection.getClient(authenticatedToken).headObject(headObjectRequest)
 					.exceptionally(e -> {
-						if (e instanceof SdkServiceException) {
-							if (((SdkServiceException) e).statusCode() == 403) {
+						Throwable cause = e.getCause();
+						if (cause instanceof SdkServiceException) {
+							if (((SdkServiceException) cause).statusCode() == 403) {
 								pathAttributes.setIsAccessible(false);
 							}
-						} else if (!(e instanceof NoSuchKeyException)) {
-							logger.error("[S3] Failed to get head object request: " + e.getMessage(), e);
+						} else if (!(cause instanceof NoSuchKeyException)) {
+							logger.error("[S3] ERAN Failed to get head object request: " + cause.getClass().toString()
+									+ " * " + cause.getMessage(), cause);
 						}
 						return null;
 					}).join();
@@ -1174,6 +1179,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @throws HpcException on failure invoke AWS S3 api.
 	 */
 	private boolean isDirectory(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
+		try {
+			logger.error("ERAN - TLS supported: "
+					+ Arrays.toString(SSLContext.getDefault().getSupportedSSLParameters().getProtocols()));
+		} catch (Exception e) {
+			logger.error("ERAN - TLS", e);
+		}
 
 		try {
 			try { // Check if this is a directory. Use V2 listObjects API.
@@ -1203,6 +1214,5 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("[S3] Failed to list object: " + e.getCause().getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
-
 	}
 }
