@@ -400,6 +400,28 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
 		}
 	}
+	
+	@Override
+	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset) throws HpcException {
+		try {
+
+			if(offset == 0) {
+				return toHpcCollectionChildren(irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+						.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(getAbsolutePath(path)).getCollectionAndDataObjectListingEntries());
+			}
+			else {
+				List<CollectionAndDataObjectListingEntry> listingEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+						.listCollectionsUnderPath(getAbsolutePath(path), offset);
+				listingEntries.addAll(irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+						.listDataObjectsUnderPath(getAbsolutePath(path), offset));
+				return toHpcCollectionChildren(listingEntries);
+			}
+
+		} catch (Exception e) {
+			throw new HpcException("Failed to get Collection at path " + path + ": " + e.getMessage(),
+					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
+		}
+	}
 
 	@Override
 	public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, String path) throws HpcException {
