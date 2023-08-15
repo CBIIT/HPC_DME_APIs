@@ -388,24 +388,40 @@ public class HpcClientUtil {
 
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
 	  String path, boolean list, String hpcCertPath, String hpcCertPassword) {
-	return getCollection(token, hpcCollectionlURL, path, false, list, false, hpcCertPath, hpcCertPassword);
+	return getCollection(token, hpcCollectionlURL, path, false, list, false, 0, hpcCertPath, hpcCertPassword);
   }
 	  
   
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
-    return getCollection(token, hpcCollectionlURL, path, children, list, false, hpcCertPath, hpcCertPassword);
+    return getCollection(token, hpcCollectionlURL, path, children, list, false, 0, hpcCertPath, hpcCertPassword);
   }
   
-
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
-      String path, boolean children, boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
+	      String path, boolean children, boolean list, Integer offset, String hpcCertPath, String hpcCertPassword) {
+	    return getCollection(token, hpcCollectionlURL, path, children, list, false, offset, hpcCertPath, hpcCertPassword);
+  }
+  
+  public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
+	      String path, boolean children, boolean list, boolean includeAcl, 
+	      String hpcCertPath, String hpcCertPassword) {
+	  return getCollection(token, hpcCollectionlURL, path, children, list, includeAcl, 0, hpcCertPath, hpcCertPassword);
+  }
+  
+  private static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
+      String path, boolean children, boolean list, boolean includeAcl, Integer offset, 
+      String hpcCertPath, String hpcCertPassword) {
 	  
 	  try {
       final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
         hpcCollectionlURL).path("/{dme-archive-path}");
       if (children) {
-        ucBuilder.pathSegment("children");
+    	if(offset == 0)
+    		ucBuilder.pathSegment("children");
+    	else {
+	    	ucBuilder.pathSegment("childrenWithPaging");
+	        ucBuilder.queryParam("offset", offset);
+    	}
       } else {
         ucBuilder.queryParam("list", Boolean.toString(list));
       }
