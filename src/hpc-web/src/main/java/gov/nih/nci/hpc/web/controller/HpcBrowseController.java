@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -114,15 +115,21 @@ public class HpcBrowseController extends AbstractHpcController {
 			Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response,
-			final RedirectAttributes redirectAttributes, final String refreshNode) {
+			final RedirectAttributes redirectAttributes, final String refreshNode, final String loadMore) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
 
 		boolean getChildren = false;
 		boolean refresh = false;
+		boolean loadMoreEntry = false;
 
 		if (!StringUtils.isBlank(refreshNode)) {
 			refresh = true;
+			getChildren = true;
+		}
+		
+		if (!StringUtils.isBlank(loadMore)) {
+			loadMoreEntry = true;
 			getChildren = true;
 		}
 
@@ -142,14 +149,16 @@ public class HpcBrowseController extends AbstractHpcController {
 					}
 				}
 
-				browserEntry = new HpcBrowserEntry();
-		        browserEntry.setCollection(true);
-		        browserEntry.setFullPath(hpcBrowserEntry.getSelectedNodePath().trim());
-		        browserEntry.setId(hpcBrowserEntry.getSelectedNodePath().trim());
-		        browserEntry.setName(hpcBrowserEntry.getSelectedNodePath().trim());
+				if(!loadMoreEntry) {
+					browserEntry = new HpcBrowserEntry();
+			        browserEntry.setCollection(true);
+			        browserEntry.setFullPath(hpcBrowserEntry.getSelectedNodePath().trim());
+			        browserEntry.setId(hpcBrowserEntry.getSelectedNodePath().trim());
+			        browserEntry.setName(hpcBrowserEntry.getSelectedNodePath().trim());
+				}
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
-						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
+						model, getChildren, hpcBrowserEntry.isPartial(), refresh, loadMoreEntry);
 
 				if (hpcBrowserEntry.isPartial()) {
 					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
@@ -196,15 +205,21 @@ public class HpcBrowseController extends AbstractHpcController {
 			Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response,
-			final RedirectAttributes redirectAttributes, final String refreshNode) {
+			final RedirectAttributes redirectAttributes, final String refreshNode, final String loadMore) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
 		List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
 		boolean getChildren = false;
 		boolean refresh = false;
+		boolean loadMoreEntry = false;
 
 		if (!StringUtils.isBlank(refreshNode)) {
 			refresh = true;
+			getChildren = true;
+		}
+		
+		if (!StringUtils.isBlank(loadMore)) {
+			loadMoreEntry = true;
 			getChildren = true;
 		}
 
@@ -213,7 +228,7 @@ public class HpcBrowseController extends AbstractHpcController {
 
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
-						model, getChildren, true, refresh);
+						model, getChildren, true, refresh, loadMoreEntry);
 
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
 				String name = browserEntry.getName().substring(browserEntry.getName().lastIndexOf('/') + 1);
@@ -348,7 +363,7 @@ public class HpcBrowseController extends AbstractHpcController {
           browserEntry.setFullPath(path);
           browserEntry.setId(path);
           browserEntry.setName(path);
-          browserEntry = getTreeNodes(path, browserEntry, authToken, model, false, true, false);
+          browserEntry = getTreeNodes(path, browserEntry, authToken, model, false, true, false, false);
           if (request.getParameter("base") == null)
             browserEntry = addPathEntries(path, browserEntry);
           browserEntry = trimPath(browserEntry, browserEntry.getName());
@@ -516,7 +531,7 @@ public class HpcBrowseController extends AbstractHpcController {
 	 * @return
 	 */
 	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
-			boolean getChildren, boolean partial, boolean refresh) {
+			boolean getChildren, boolean partial, boolean refresh, boolean loadMore) {
 
 		path = path.trim();
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
@@ -525,10 +540,23 @@ public class HpcBrowseController extends AbstractHpcController {
 			selectedEntry.setPopulated(false);
 		}
 
-		if (selectedEntry != null && selectedEntry.isPopulated() && !selectedEntry.isPartial())
+		// If the selected entry is already populated retry the entry
+		if (!loadMore && selectedEntry != null && selectedEntry.isPopulated() && !selectedEntry.isPartial())
 			return partial ? selectedEntry : browserEntry;
-		if (selectedEntry != null && selectedEntry.getChildren() != null)
-			selectedEntry.getChildren().clear();
+		if (selectedEntry != null && selectedEntry.getChildren() != null) {
+			// If loading more entry is requested, remove the empty child created for child collections first.
+			if (loadMore) {
+				Iterator<HpcBrowserEntry> it = selectedEntry.getChildren().iterator();
+				HpcBrowserEntry entry = null;
+			    while (it.hasNext()) {
+			    	entry = (HpcBrowserEntry) it.next();
+			    	if(entry.getId().equalsIgnoreCase("empty"))
+			    		it.remove();
+			    }
+			}
+			else
+				selectedEntry.getChildren().clear();
+		}
 		if (selectedEntry == null)
 		{
 			selectedEntry = new HpcBrowserEntry();
@@ -546,8 +574,11 @@ public class HpcBrowseController extends AbstractHpcController {
 					//TODO testing with the child listing only
 					true, true,
 					//partial || refresh ? false : true, partial || refresh,
+					loadMore ? selectedEntry.getChildren().size() : 0,
 					sslCertPath, sslCertPassword);
 
+			if(loadMore) getChildren = false;
+			
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 				HpcCollection collection = collectionDTO.getCollection();
 				
@@ -584,9 +615,10 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setPopulated(false);
 					if (getChildren)
 						listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false, partial,
-								false);
+								false, false);
 					else {
 						HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
+						emptyEntry.setId("empty");
 						emptyEntry.setName("");
 						listChildEntry.getChildren().add(emptyEntry);
 					}
@@ -606,7 +638,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setPopulated(true);
 					selectedEntry.getChildren().add(listChildEntry);
 				}
-				if (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty()) {
+				if (!loadMore && (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty())) {
 					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
 					listChildEntry.setCollection(false);
 					listChildEntry.setFullPath("");
