@@ -302,6 +302,16 @@ public interface HpcDataManagementService {
 	public HpcCollection getCollectionChildren(String path) throws HpcException;
 
 	/**
+	 * Get collection children by its path starting at user specified offset.
+	 *
+	 * @param path The collection's path.
+	 * @param offset The offset to start.
+	 * @return A collection.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollection getCollectionChildrenWithPaging(String path, Integer offset) throws HpcException;
+	
+	/**
 	 * Get data object by its path.
 	 *
 	 * @param path The data object's path.
