@@ -216,7 +216,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr id='attrCol0' th:each="pathDetail : ${pathDetails}">
+							<tr id='attrCol0' data-toggle="popover" th:each="pathDetail : ${pathDetails}">
 								<td id="path30" th:text="${pathDetail.path}"></td>
 								<td id='path31' th:if="${result} == 'true'"  th:text="${pathDetail.result}"></td>
 								<td id='path32'></td>
@@ -281,11 +281,9 @@
 			table.on('click', 'button', function (e) {
 				var data1 = table.row($(this).parents('tr')).data();
 				let data = table.row(e.target.closest('tr')).data();
-				console.log(JSON.stringify(data));
-				//console.log("data1");
-				//console.log(JSON.stringify(data1));
+				var tr = $(this).closest('tr');
+				var row = table.row(tr);
 				let uri = '/getUserMetadataValues';
-				alert(uri);
 				var dataJson = {
 						path: data["0"]
 						//action: view
@@ -299,7 +297,18 @@
 					dataType: 'json'
 				}).done(function (res) {
 					console.log(JSON.stringify(res));
-					alert(JSON.stringify(res));
+					let metadatavalues = JSON.parse(res.message.replace("\\", ""));
+					//let title = "<h1>" + data[0] + "</h1>";
+					let displayMetadataString = "<h4 align='center'> User Metadata for Path </h4><h4 align='center'>" + data[0] + "</h4>" + "<table><tr><td><b>Name</b></td><td><b>Value</b></td></tr>";
+					$.each(metadatavalues, function (index, item) {
+						displayMetadataString = displayMetadataString + '<tr><td>' + item.name + '</td><td> ' + item.value + '</td></tr>';
+					});
+					displayMetadataString = displayMetadataString + "</table>"
+					let randomnumber = Math.floor((Math.random()*100)+1);
+					let popupName = 'popup' + '_' + randomnumber;
+					let popupDocWindow = window.open('', popupName, "scrollbars=1, menubar=0, resizable=1, width=650,height=500");
+					//popupDocWindow.document.title = data[0];
+					popupDocWindow.document.write(displayMetadataString);
 				});
 			});
 		});

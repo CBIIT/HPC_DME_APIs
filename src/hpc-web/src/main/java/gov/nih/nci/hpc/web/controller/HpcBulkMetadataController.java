@@ -343,11 +343,11 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			logger.info("Collection: " + gson.toJson(collection.getMetadataEntries().getSelfMetadataEntries()));
 			//List<HpcMetadataAttrEntry> userMetadataEntries = collection.getMetadataEntries().getSelfMetadataEntries();
 			//logger.info("userMetadataEntries: " + gson.toJson(userMetadataEntries));
-			List<HpcMetadataAttrEntry> listMetadataEntries =  new ArrayList<HpcMetadataAttrEntry>();
+			List<HpcMetaLite> listMetadataEntries =  new ArrayList<HpcMetaLite>();
 			for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
-				HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
-				attrEntry.setAttrName(entry.getAttribute());
-				attrEntry.setAttrValue(entry.getValue());
+				HpcMetaLite attrEntry = new HpcMetaLite();
+				attrEntry.name = entry.getAttribute();
+				attrEntry.value = entry.getValue();
 				listMetadataEntries.add(attrEntry);
 			}
 			//Collections.sort(listMetadataEntries, String.CASE_INSENSITIVE_ORDER);
@@ -358,4 +358,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	      return result;
 	    }
 
+	  private class HpcMetaLite {
+		    String name;
+		    String value;
+		  }
 }
