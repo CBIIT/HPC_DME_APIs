@@ -774,9 +774,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 	
 	@Override
-	public HpcCollection getCollectionChildrenWithPaging(String path, Integer offset) throws HpcException {
+	public HpcCollection getCollectionChildrenWithPaging(String path, Integer collectionOffset, Integer dataObjectOffset) throws HpcException {
 		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
-		return dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, offset);
+		return dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, collectionOffset, dataObjectOffset);
 	}
 
 	@Override
