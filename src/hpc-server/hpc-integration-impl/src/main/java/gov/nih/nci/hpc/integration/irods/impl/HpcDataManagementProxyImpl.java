@@ -46,6 +46,7 @@ import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.core.query.QueryConditionOperators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -402,19 +403,27 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	}
 	
 	@Override
-	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset) throws HpcException {
+	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer collectionOffset, Integer dataObjectOffset) throws HpcException {
 		try {
 
-			if(offset == 0) {
-				return toHpcCollectionChildren(irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-						.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(getAbsolutePath(path)).getCollectionAndDataObjectListingEntries());
+			if(collectionOffset == 0 && dataObjectOffset == 0) {
+				PagingAwareCollectionListing pagingAwareCollectionListing = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+						.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(getAbsolutePath(path));
+				HpcCollection collection = toHpcCollectionChildren(pagingAwareCollectionListing.getCollectionAndDataObjectListingEntries());
+				collection.setSubCollectionsTotalRecords(pagingAwareCollectionListing.getPagingAwareCollectionListingDescriptor().getTotalRecords());
+				collection.setDataObjectsTotalRecords(pagingAwareCollectionListing.getPagingAwareCollectionListingDescriptor().getDataObjectsTotalRecords());
+				return collection;
 			}
 			else {
-				List<CollectionAndDataObjectListingEntry> listingEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-						.listCollectionsUnderPath(getAbsolutePath(path), offset);
-				listingEntries.addAll(irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-						.listDataObjectsUnderPath(getAbsolutePath(path), offset));
-				return toHpcCollectionChildren(listingEntries);
+				List<CollectionAndDataObjectListingEntry> collectionEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+						.listCollectionsUnderPath(getAbsolutePath(path), collectionOffset); 
+				List<CollectionAndDataObjectListingEntry> dataObjectEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+						.listDataObjectsUnderPath(getAbsolutePath(path), dataObjectOffset);
+				collectionEntries.addAll(dataObjectEntries);
+				HpcCollection collection = toHpcCollectionChildren(collectionEntries);
+				collection.setSubCollectionsTotalRecords(!collectionEntries.isEmpty() ? collectionEntries.get(0).getTotalRecords() : 0);
+				collection.setDataObjectsTotalRecords(!dataObjectEntries.isEmpty() ? dataObjectEntries.get(0).getTotalRecords(): 0);
+				return collection;
 			}
 
 		} catch (Exception e) {
