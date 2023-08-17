@@ -103,14 +103,15 @@ public interface HpcDataManagementRestService {
 	 * Get a collection children by its path starting at user specified offset. Collection metadata will not be returned
 	 *
 	 * @param path The collection path.
-	 * @param offset The offset to start.
+	 * @param collectionOffset The collection offset to start.
+	 * @param dataObjectOffset The data object offset to start.
 	 * @return The REST service response w/ HpcCollectionListDTO entity.
 	 * @see gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO
 	 */
 	@GET
 	@Path("/collection/{path:.*}/childrenWithPaging")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getCollectionChildrenWithPaging(@PathParam("path") String path, @QueryParam("offset") Integer offset);
+	public Response getCollectionChildrenWithPaging(@PathParam("path") String path, @QueryParam("collectionOffset") Integer collectionOffset, @QueryParam("dataObjectOffset") Integer dataObjectOffset);
 
 	/**
 	 * Download a collection.
