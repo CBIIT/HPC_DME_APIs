@@ -535,6 +535,8 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		path = path.trim();
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
+		int collectionCount = 0;
+		int dataObjectCount = 0;
 
 		if(refresh & selectedEntry != null) {
 			selectedEntry.setPopulated(false);
@@ -550,8 +552,15 @@ public class HpcBrowseController extends AbstractHpcController {
 				HpcBrowserEntry entry = null;
 			    while (it.hasNext()) {
 			    	entry = (HpcBrowserEntry) it.next();
-			    	if(entry.getId().equalsIgnoreCase("empty"))
+			    	if(entry.getId().equalsIgnoreCase("empty")) {
 			    		it.remove();
+			    		continue;
+			    	}
+			    	if(entry.isCollection())
+			    		collectionCount++;
+			    	else {
+			    		dataObjectCount++;
+					}
 			    }
 			}
 			else
@@ -574,7 +583,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					//TODO testing with the child listing only
 					true, true,
 					//partial || refresh ? false : true, partial || refresh,
-					loadMore ? selectedEntry.getChildren().size() : 0,
+					collectionCount, dataObjectCount,
 					sslCertPath, sslCertPassword);
 
 			if(loadMore) getChildren = false;
@@ -585,8 +594,11 @@ public class HpcBrowseController extends AbstractHpcController {
 				//This is for displaying the total size of the selected collection
 				//in the machine readable and human readable form above the file table
 				Long collectionSize = getCollectionSizeFromReport(collectionDTO);
-				if(!CollectionUtils.isEmpty(collectionDTO.getReports()))
+				if(!CollectionUtils.isEmpty(collectionDTO.getReports())) {
+					Integer totalRecords = collection.getDataObjectsTotalRecords() + collection.getSubCollectionsTotalRecords();
 					selectedEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(collectionSize.toString(), true));
+					selectedEntry.setTotalRecords(totalRecords.toString());
+				}
 
 				if(collection.getAbsolutePath() != null) {
 					selectedEntry.setFullPath(collection.getAbsolutePath());
@@ -638,7 +650,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setPopulated(true);
 					selectedEntry.getChildren().add(listChildEntry);
 				}
-				if (!loadMore && (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty())) {
+				if (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty()) {
 					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
 					listChildEntry.setCollection(false);
 					listChildEntry.setFullPath("");
