@@ -191,10 +191,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 	
 	@Override
-	public Response getCollectionChildrenWithPaging(String path, Integer offset) {
+	public Response getCollectionChildrenWithPaging(String path, Integer collectionOffset, Integer dataObjectOffset) {
 		HpcCollectionListDTO collections = new HpcCollectionListDTO();
 		try {
-			HpcCollectionDTO collection = dataManagementBusService.getCollectionChildrenWithPaging(toNormalizedPath(path), offset);
+			HpcCollectionDTO collection = dataManagementBusService.getCollectionChildrenWithPaging(toNormalizedPath(path), collectionOffset, dataObjectOffset);
 			if (collection != null) {
 				collections.getCollections().add(collection);
 			}
