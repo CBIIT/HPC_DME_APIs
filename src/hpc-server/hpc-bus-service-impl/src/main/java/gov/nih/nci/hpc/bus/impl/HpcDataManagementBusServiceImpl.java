@@ -413,13 +413,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset) throws HpcException {
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer collectionOffset, Integer dataObjectOffset) throws HpcException {
 		// Input validation.
-		if (path == null || offset < 0) {
+		if (path == null || collectionOffset < 0 || dataObjectOffset < 0) {
 			throw new HpcException("Null collection path or invalid offset", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		HpcCollection collection = dataManagementService.getCollectionChildrenWithPaging(path, offset);
+		HpcCollection collection = dataManagementService.getCollectionChildrenWithPaging(path, collectionOffset, dataObjectOffset);
 		if (collection == null) {
 			return null;
 		}

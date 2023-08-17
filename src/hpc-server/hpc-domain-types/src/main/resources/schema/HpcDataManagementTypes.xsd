@@ -36,6 +36,8 @@
 			             minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element name="dataObjects" type="hpc-domain-datamanagement:HpcCollectionListingEntry" 
 			             minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="subCollectionsTotalRecords" type="xsd:int" />
+			<xsd:element name="dataObjectsTotalRecords" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
