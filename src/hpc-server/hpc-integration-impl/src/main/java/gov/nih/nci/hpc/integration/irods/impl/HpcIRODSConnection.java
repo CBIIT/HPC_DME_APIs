@@ -73,7 +73,7 @@ public class HpcIRODSConnection {
   private String key = null;
   private String algorithm = null;
   private Boolean pamAuthentication = null;
-  private Integer maxFilesAndDirsQueryMax = null;
+  protected Integer maxFilesAndDirsQueryMax = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
