@@ -215,12 +215,12 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		if (!StringUtils.isBlank(refreshNode)) {
 			refresh = true;
-			getChildren = true;
+			getChildren = false;
 		}
 		
 		if (!StringUtils.isBlank(loadMore)) {
 			loadMoreEntry = true;
-			getChildren = true;
+			getChildren = false;
 		}
 
 		try {
@@ -585,8 +585,6 @@ public class HpcBrowseController extends AbstractHpcController {
 					//partial || refresh ? false : true, partial || refresh,
 					collectionCount, dataObjectCount,
 					sslCertPath, sslCertPassword);
-
-			if(loadMore) getChildren = false;
 			
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 				HpcCollection collection = collectionDTO.getCollection();
@@ -609,7 +607,10 @@ public class HpcBrowseController extends AbstractHpcController {
 				//This will ensure that the next time we access this path
 				//we dont read again from DB, unless an explicit refresh 
 				//request has been made
-				selectedEntry.setPopulated(true);
+				if(!refresh)
+					selectedEntry.setPopulated(true);
+				else
+					selectedEntry.setPopulated(false);
 				selectedEntry.setPartial(false);
 				
 				selectedEntry.setCollection(true);
@@ -627,7 +628,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setPopulated(false);
 					if (getChildren)
 						listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false, partial,
-								false, false);
+								refresh, false);
 					else {
 						HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
 						emptyEntry.setId("empty");
