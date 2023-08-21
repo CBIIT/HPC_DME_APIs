@@ -213,7 +213,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="path : ${paths}">
-								<td id='path1'><a th:href="@{/collection(path=${path}, action=view)}"  th:text="${path}" target="_blank"></a></td>
+								<td id='path1'><a th:href="@{/collection(path=${path}, action=displayOnly)}"  th:text="${path}" target="_blank"></a></td>
 							</tr>
 						</tbody>
 					</table>
@@ -229,7 +229,7 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="pathDetail : ${pathDetails}">
-								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
+								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=displayOnly)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
 								<td id='path31' th:text="${pathDetail.result}"></td>
 							</tr>
 						</tbody>
