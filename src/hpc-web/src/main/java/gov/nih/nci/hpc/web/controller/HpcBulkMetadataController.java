@@ -137,8 +137,9 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				HpcPathGridEntry pathGridEntry = new HpcPathGridEntry();
 				pathGridEntry.path = path;
 				pathGridEntry.result = "";
+				pathDetails.add(pathGridEntry);
 			}
-			model.addAttribute("paths", paths);
+			model.addAttribute("pathDetails", pathDetails);
 			bulkMetadataUpdateRequest.setSelectedFilePaths(paths);
 		}
 		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
@@ -164,6 +165,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		session.setAttribute("hpcSavedSearch", hpcSaveSearch);
+		model.addAttribute("result", "false");
+		model.addAttribute("errorStatusMessage", "");
 		return "updatemetadatabulk";
 	}
 
@@ -276,6 +279,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		List<String> metadataAttributesList  = getAllUserMetadataAttributes(authToken, session);
 		model.addAttribute("metadataAttributesList", metadataAttributesList);
 		logger.info("metadataAttributesList size="+ gson.toJson(metadataAttributesList.size()));
+		model.addAttribute("result", "true");
         return "updatemetadatabulk";
 	}
 	// Get User metadata attributes from session
