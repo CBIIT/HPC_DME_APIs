@@ -705,6 +705,7 @@ function browseNode(node) {
           success : function(msg) {
        
           	data = msg;
+          	refresh = false;
           	$('#tree1').tree('updateNode', node, data[0]);
           	angular.element('#refreshGrid').triggerHandler('click');
           	if(node.children != null) {
