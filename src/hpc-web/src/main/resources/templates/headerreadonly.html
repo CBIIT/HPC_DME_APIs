@@ -17,6 +17,15 @@
 				</div>
 				<div id="appNav" class="col-sm-6 col-md-7 col-lg-5 pull-right collapse navbar-collapse">
 				<ul class="nav navbar-nav top-menu top-nav">
+					<!--Users Guide-->
+					<li class="nav-item" role="tab"><a data-toggle="dropdown"
+					class="dropdown-toggle" href="#"><i class="icon_book_alt"></i><span
+						class="topNav-item">Help</span></a>
+					<ul class="dropdown-menu extended logout">
+						<div class="log-arrow-up"></div>
+						<li class="eborder-top"><a href="https://wiki.nci.nih.gov/display/DMEdoc" target="_blank"><i class="icon_book_alt"></i> User Guide</a></li>
+						<li><a href="https://github.com/CBIIT/HPC_DME_APIs" target="_blank"><i class="icon_key_alt"></i> DME Site on GitHub</a></li>
+					</ul></li>
 					<li class="nav-item versionNumber"><a href="">
 						<span th:if="${session.env == 'Local' or session.env == 'DEV' or session.env == 'UAT'}" th:text="'version: '+${session.version}+' ('+${session.env}+')'"></span>
 						<span th:if="${session.env == 'PROD'}" th:text="'version: '+${session.version}"></span>
