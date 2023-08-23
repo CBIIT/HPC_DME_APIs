@@ -535,8 +535,6 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		path = path.trim();
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
-		int collectionCount = 0;
-		int dataObjectCount = 0;
 
 		if(refresh & selectedEntry != null) {
 			selectedEntry.setPopulated(false);
@@ -556,11 +554,6 @@ public class HpcBrowseController extends AbstractHpcController {
 			    		it.remove();
 			    		continue;
 			    	}
-			    	if(entry.isCollection())
-			    		collectionCount++;
-			    	else {
-			    		dataObjectCount++;
-					}
 			    }
 			}
 			else
@@ -583,7 +576,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					//TODO testing with the child listing only
 					true, true,
 					//partial || refresh ? false : true, partial || refresh,
-					collectionCount, dataObjectCount,
+					loadMore ? selectedEntry.getChildren().size() : 0,
 					sslCertPath, sslCertPassword);
 			
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
