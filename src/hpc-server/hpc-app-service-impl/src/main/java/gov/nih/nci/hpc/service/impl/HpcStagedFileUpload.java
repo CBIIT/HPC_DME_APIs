@@ -87,8 +87,10 @@ public class HpcStagedFileUpload implements HpcDataTransferProgressListener {
 	}
 
 	@Override
-	public void transferProgressed(long bytesTransferred) {
+	public boolean transferProgressed(long bytesTransferred) {
 		dataTransferService.updateDataObjectUploadProgress(dataObjectId,
 				Math.round(100 * (float) bytesTransferred / size));
+		
+		return true;
 	}
 }
