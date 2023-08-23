@@ -1939,6 +1939,14 @@ div[data-role="editor-toolbar"] {
     width: 100%;
 }
 
+#main-content-readonly {
+	position: absolute;
+    top: 90px;
+    bottom: 0px;
+    overflow: auto;
+    width: 100%;
+}
+
 .sidebar-closed > #sidebar > ul {
     display: none;
 }

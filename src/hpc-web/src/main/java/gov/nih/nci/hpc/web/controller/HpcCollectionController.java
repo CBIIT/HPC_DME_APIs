@@ -32,12 +32,14 @@ import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -57,11 +59,13 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
+
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.model.HpcSecuredRequest;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import com.google.gson.Gson;
 
 
 /**
@@ -84,7 +88,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
       KEY_PREFIX = "fdc-",
       NAV_OUTCOME_FORWARD_PREFIX = "forward:",
       NAV_OUTCOME_REDIRECT_PREFIX = "redirect:";
-    
+
     private static final String ATTR_CAN_DELETE = "canDelete";
 
 	@Value("${gov.nih.nci.hpc.server.collection}")
@@ -97,6 +101,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 
 	//The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private Gson gson = new Gson();
 	  
 	/**
 	 * Get selected collection details from its path
@@ -209,7 +214,11 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 						List<HpcMetadataAttrEntry> mergedMetadataEntries = mergeMatadataEntries(hpcCollection.getSelfMetadataEntries(), userMetadataEntries);
 						hpcCollection.setSelfMetadataEntries(mergedMetadataEntries);
 						model.addAttribute("collection", hpcCollection);
-						model.addAttribute("action", "edit");						
+						if (action != null && action.equals("displayOnly")) {
+							model.addAttribute("action", "displayOnly");
+						} else {
+							model.addAttribute("action", "edit");
+						}
 					}
 				}
 			} else {
@@ -221,7 +230,11 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			model.addAttribute(ATTR_ERROR, e.getMessage());
 		}
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
-		return "collection";
+		if (action != null && action.equals("displayOnly")) {
+			return "viewcollection";
+		} else {
+			return "collection";
+		}
 	}
 
     /**
