@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.connection.SettableJargonProperties;
 import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.JargonException;
@@ -72,6 +73,7 @@ public class HpcIRODSConnection {
   private String key = null;
   private String algorithm = null;
   private Boolean pamAuthentication = null;
+  protected Integer maxFilesAndDirsQueryMax = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -94,7 +96,8 @@ public class HpcIRODSConnection {
    * @throws HpcException If it failed to instantiate the iRODS file system.
    */
   private HpcIRODSConnection(
-      String irodsHost, Integer irodsPort, String irodsZone, String irodsResource, String basePath, String key, String algorithm, Boolean pamAuthentication)
+      String irodsHost, Integer irodsPort, String irodsZone, String irodsResource, String basePath, 
+      String key, String algorithm, Boolean pamAuthentication, Integer maxFilesAndDirsQueryMax)
       throws HpcException {
     if (irodsHost == null
         || irodsHost.isEmpty()
@@ -109,7 +112,8 @@ public class HpcIRODSConnection {
         || key.isEmpty()
         || algorithm == null
         || algorithm.isEmpty()
-        || pamAuthentication == null) {
+        || pamAuthentication == null
+        || maxFilesAndDirsQueryMax == null) {
       throw new HpcException(
           "Null or empty iRODS connection attributes", HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }
@@ -121,6 +125,7 @@ public class HpcIRODSConnection {
     this.key = key;
     this.algorithm = algorithm;
     this.pamAuthentication = pamAuthentication;
+    this.maxFilesAndDirsQueryMax = maxFilesAndDirsQueryMax;
 
     try {
       irodsFileSystem = IRODSFileSystem.instance();
@@ -218,6 +223,10 @@ public class HpcIRODSConnection {
   public CollectionAndDataObjectListAndSearchAO getCollectionAndDataObjectListAndSearchAO(
       Object authenticatedToken) throws HpcException {
     try {
+      
+	  SettableJargonProperties props = new SettableJargonProperties(irodsFileSystem.getIrodsSession().getJargonProperties());
+	  props.setMaxFilesAndDirsQueryMax(maxFilesAndDirsQueryMax);
+	  irodsFileSystem.getIrodsSession().setJargonProperties(props);
       return irodsFileSystem
           .getIRODSAccessObjectFactory()
           .getCollectionAndDataObjectListAndSearchAO(getIrodsAccount(authenticatedToken));
