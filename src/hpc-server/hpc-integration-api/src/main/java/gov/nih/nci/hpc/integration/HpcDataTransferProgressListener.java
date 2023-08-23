@@ -38,7 +38,10 @@ public interface HpcDataTransferProgressListener {
 	 * Called when data transfer (upload or download) progressed.
 	 * 
 	 * @param bytesTransferred total bytes transferred so far.
+	 * @return true if the transfer should proceed, or false if the transfer should
+	 *         be cancelled.
 	 */
-	public default void transferProgressed(long bytesTransferred) {
+	public default boolean transferProgressed(long bytesTransferred) {
+		return true;
 	}
 }

@@ -112,7 +112,7 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 	}
 
 	@Override
-	public void transferProgressed(long bytesTransferred) {
+	public boolean transferProgressed(long bytesTransferred) {
 		try {
 			dataMigrationService.updateDataMigrationTaskProgress(dataObjectMigrationTask, bytesTransferred);
 
@@ -120,5 +120,7 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 			logger.error("Failed to update a migration task progress for {} [task-id: {}]",
 					dataObjectMigrationTask.getPath(), dataObjectMigrationTask.getId(), e);
 		}
+		
+		return true;
 	}
 }

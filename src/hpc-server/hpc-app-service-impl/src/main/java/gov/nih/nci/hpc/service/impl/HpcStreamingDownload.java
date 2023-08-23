@@ -144,7 +144,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	}
 
 	@Override
-	public void transferProgressed(long bytesTransferred) {
+	public boolean transferProgressed(long bytesTransferred) {
 		try {
 			dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred);
 
@@ -156,13 +156,15 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			if (!dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
 				// The task was cancelled / removed from the DB. Stop 1st hop download thread.
 				taskCancelled = true;
-				logger.info("Interrupting thread due to task cancellation");
-				Thread.currentThread().interrupt();
+				logger.info("download task: {} - detected task got cancelled", downloadTask.getId());
+				return false;
 			}
 
 		} catch (HpcException e) {
 			logger.error("Failed to update Streaming download task progress", e);
 		}
+		
+		return true;
 	}
 
 	// ---------------------------------------------------------------------//

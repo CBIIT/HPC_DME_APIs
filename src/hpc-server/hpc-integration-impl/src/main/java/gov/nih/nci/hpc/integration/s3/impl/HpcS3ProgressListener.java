@@ -8,7 +8,7 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -17,13 +17,14 @@ import org.slf4j.LoggerFactory;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
+import software.amazon.awssdk.transfer.s3.progress.TransferListener;
 
 /**
  * HPC S3 Progress Listener.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public class HpcS3ProgressListener /*implements ProgressListener*/ {
+public class HpcS3ProgressListener implements TransferListener {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
@@ -38,17 +39,17 @@ public class HpcS3ProgressListener /*implements ProgressListener*/ {
 	// ---------------------------------------------------------------------//
 
 	// HPC progress listener
-	HpcDataTransferProgressListener progressListener = null;
+	private HpcDataTransferProgressListener progressListener = null;
 
 	// Bytes transferred and logged.
-	AtomicLong bytesTransferred = new AtomicLong(0);
-	long bytesTransferredReported = 0;
+	private AtomicLong bytesTransferred = new AtomicLong(0);
+	private long bytesTransferredReported = 0;
 
 	// Transfer source and/or destination (for logging purposed)
-	String transferSourceDestination = null;
+	private String transferSourceDestination = null;
 
-	// Keep track if we reported a failure.
-	AtomicBoolean transferFailedReported = new AtomicBoolean(false);
+	// The completable future used for S3 transfer.
+	private CompletableFuture<?> completableFuture = null;
 
 	// Logger
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -88,53 +89,55 @@ public class HpcS3ProgressListener /*implements ProgressListener*/ {
 	// Methods
 	// ---------------------------------------------------------------------//
 
+	/**
+	 * Completable future setter
+	 *
+	 * @param completableFuture The transfer future instance.
+	 */
+	public void setCompletableFuture(CompletableFuture<?> completableFuture) {
+		this.completableFuture = completableFuture;
+	}
+
 	// ---------------------------------------------------------------------//
 	// ProgressListener Interface Implementation
 	// ---------------------------------------------------------------------//
 
-	//@Override
-	public void progressChanged(/*ProgressEvent event*/) {
-		/*
-		if (event.getBytesTransferred() > 0) {
-			bytesTransferred.getAndAdd(event.getBytesTransferred());
-			if (bytesTransferredReported == 0) {
-				bytesTransferredReported = bytesTransferred.get();
-				logger.info("S3 transfer [{}] started. {} bytes transferred so far", transferSourceDestination,
-						bytesTransferredReported);
-			} else if (bytesTransferred.get() - bytesTransferredReported >= TRANSFER_PROGRESS_REPORTING_RATE) {
-				bytesTransferredReported = bytesTransferred.get();
-				logger.info("S3 transfer [{}] in progress. {}MB transferred so far", transferSourceDestination,
-						bytesTransferredReported / MB);
+	@Override
+	public void transferInitiated(TransferListener.Context.TransferInitiated context) {
+		bytesTransferred.getAndAdd(context.progressSnapshot().transferredBytes());
+		bytesTransferredReported = bytesTransferred.get();
+		logger.info("S3 transfer [{}] started. {} bytes transferred so far", transferSourceDestination,
+				bytesTransferredReported);
+	}
 
-				progressListener.transferProgressed(bytesTransferredReported);
+	@Override
+	public void bytesTransferred(TransferListener.Context.BytesTransferred context) {
+		bytesTransferred.getAndAdd(context.progressSnapshot().transferredBytes());
+
+		if (bytesTransferred.get() - bytesTransferredReported >= TRANSFER_PROGRESS_REPORTING_RATE) {
+			bytesTransferredReported = bytesTransferred.get();
+			logger.info("S3 transfer [{}] in progress. {}MB transferred so far", transferSourceDestination,
+					bytesTransferredReported / MB);
+
+			boolean proceedTransfer = progressListener.transferProgressed(bytesTransferredReported);
+			if (!proceedTransfer && completableFuture != null) {
+				completableFuture.cancel(true);
 			}
 		}
+	}
 
-		switch (event.getEventType()) {
-		case TRANSFER_COMPLETED_EVENT:
-			logger.info("S3 transfer [{}] completed. {} bytes transferred", transferSourceDestination,
-					bytesTransferred);
-			progressListener.transferCompleted(bytesTransferred.get());
-			break;
+	@Override
+	public void transferComplete(TransferListener.Context.TransferComplete context) {
+		logger.info("S3 transfer [{}] completed. {} bytes transferred", transferSourceDestination, bytesTransferred);
+		progressListener.transferCompleted(bytesTransferred.get());
+	}
 
-		case TRANSFER_FAILED_EVENT:
-		case TRANSFER_CANCELED_EVENT:
-			if (!transferFailedReported.getAndSet(true)) {
-				progressListener.transferFailed("S3 event - " + event.toString());
-			}
+	@Override
+	public void transferFailed(TransferListener.Context.TransferFailed context) {
+		bytesTransferred.getAndAdd(context.progressSnapshot().transferredBytes());
 
-			logger.error("S3 transfer [{}] failed. {}MB transferred. progress event = {}", transferSourceDestination,
-					bytesTransferred.get() / MB, event.getEventType());
-			break;
-
-		case CLIENT_REQUEST_STARTED_EVENT:
-		case CLIENT_REQUEST_SUCCESS_EVENT:
-			logger.info("S3 transfer [{}] no-op event. {}MB transferred. progress event = {}",
-					transferSourceDestination, bytesTransferred.get() / MB, event.getEventType());
-			break;
-
-		default:
-			break;
-		}*/
+		logger.error("S3 transfer [{}] failed. {}MB transferred.", transferSourceDestination,
+				bytesTransferred.get() / MB, context.exception());
+		progressListener.transferFailed("S3 transfer failed:  " + context.exception().getMessage());
 	}
 }
