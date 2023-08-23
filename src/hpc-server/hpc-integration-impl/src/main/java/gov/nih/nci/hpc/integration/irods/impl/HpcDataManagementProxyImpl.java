@@ -46,6 +46,7 @@ import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.core.query.QueryConditionOperators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -394,6 +395,63 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
 			return toHpcCollectionChildren(irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
 					.listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)));
+
+		} catch (Exception e) {
+			throw new HpcException("Failed to get Collection at path " + path + ": " + e.getMessage(),
+					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
+		}
+	}
+	
+	@Override
+	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer collectionOffset, Integer dataObjectOffset) throws HpcException {
+		try {
+			// In case there are no more records from this offset, fetch from offset 0 to get total records.
+			List<CollectionAndDataObjectListingEntry> firstEntries;
+			// Get the child collection from the offset specified.
+			List<CollectionAndDataObjectListingEntry> collectionEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+					.listCollectionsUnderPath(getAbsolutePath(path), collectionOffset); 
+			int collectionTotalRecords = !collectionEntries.isEmpty() ? collectionEntries.get(0).getTotalRecords() : 0;
+			
+			// If requested from an offset and there are no more collection entries, obtain the total count by fetching from offset 0.
+			if(collectionOffset > 0 && collectionEntries.isEmpty()) {
+				firstEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+				.listCollectionsUnderPath(getAbsolutePath(path), 0); 
+				collectionTotalRecords = !firstEntries.isEmpty() ? firstEntries.get(0).getTotalRecords() : 0;
+			}
+			
+			// Get the child dataobject from the offset specified.
+			List<CollectionAndDataObjectListingEntry> dataObjectEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+					.listDataObjectsUnderPath(getAbsolutePath(path), dataObjectOffset);
+			int dataObjectTotalRecords = !dataObjectEntries.isEmpty() ? dataObjectEntries.get(0).getTotalRecords(): 0;
+			
+			// If requested from an offset and there are no more data object entries, obtain the total count by fetching from offset 0.
+			if(dataObjectOffset > 0 && dataObjectEntries.isEmpty()) {
+				firstEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+				.listDataObjectsUnderPath(getAbsolutePath(path), 0); 
+				dataObjectTotalRecords = !firstEntries.isEmpty() ? firstEntries.get(0).getTotalRecords() : 0;
+			}
+			
+			// Set the entries fetched into HpcCollection
+			if(collectionTotalRecords > collectionOffset + collectionEntries.size()) {
+				HpcCollection collection = toHpcCollectionChildren(collectionEntries);
+				// There are more collection entries, so no need to add the dataObjects
+				collection.setSubCollectionsTotalRecords(collectionTotalRecords);
+				collection.setDataObjectsTotalRecords(dataObjectTotalRecords);
+			} else {
+				// Either there are no collections or no more collection entries so add dataObjectEntries up to our max.
+				if(!dataObjectEntries.isEmpty()) {
+					int index = 0;
+					for(int i = collectionEntries.size(); i < irodsConnection.maxFilesAndDirsQueryMax; i++) {
+						if(index < dataObjectEntries.size())
+							collectionEntries.add(dataObjectEntries.get(index++));
+					}
+				}
+			}	
+			HpcCollection collection = toHpcCollectionChildren(collectionEntries);
+			collection.setSubCollectionsTotalRecords(collectionTotalRecords);
+			collection.setDataObjectsTotalRecords(dataObjectTotalRecords);
+			
+			return collection;
 
 		} catch (Exception e) {
 			throw new HpcException("Failed to get Collection at path " + path + ": " + e.getMessage(),

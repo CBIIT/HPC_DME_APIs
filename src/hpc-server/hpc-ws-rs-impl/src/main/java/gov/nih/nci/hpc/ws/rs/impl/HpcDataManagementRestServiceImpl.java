@@ -189,6 +189,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 		return okResponse(!collections.getCollections().isEmpty() ? collections : null, true);
 	}
+	
+	@Override
+	public Response getCollectionChildrenWithPaging(String path, Integer collectionOffset, Integer dataObjectOffset) {
+		HpcCollectionListDTO collections = new HpcCollectionListDTO();
+		try {
+			HpcCollectionDTO collection = dataManagementBusService.getCollectionChildrenWithPaging(toNormalizedPath(path), collectionOffset, dataObjectOffset);
+			if (collection != null) {
+				collections.getCollections().add(collection);
+			}
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(!collections.getCollections().isEmpty() ? collections : null, true);
+	}
 
 	@Deprecated
 	@Override
