@@ -3773,7 +3773,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// This callback method is called when the first hop download progressed.
 		@Override
-		public void transferProgressed(long bytesTransferred) {
+		public boolean transferProgressed(long bytesTransferred) {
 			try {
 				if (!updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
 					// The task was cancelled / removed from the DB. Stop 1st hop download thread.
@@ -3785,6 +3785,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			} catch (HpcException e) {
 				logger.error("Failed to update 1st hop download task progress", e);
 			}
+			
+			return true;
 		}
 
 		// ---------------------------------------------------------------------//

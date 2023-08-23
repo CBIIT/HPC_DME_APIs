@@ -57,6 +57,7 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
@@ -70,6 +71,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -78,6 +80,8 @@ import software.amazon.awssdk.services.s3.presigner.model.UploadPartPresignReque
 import software.amazon.awssdk.transfer.s3.model.CompletedCopy;
 import software.amazon.awssdk.transfer.s3.model.Copy;
 import software.amazon.awssdk.transfer.s3.model.CopyRequest;
+import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
 
 /**
  * HPC Data Transfer Proxy S3 Implementation.
@@ -646,47 +650,53 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcFileLocation archiveDestinationLocation, HpcDataTransferProgressListener progressListener,
 			HpcArchiveType archiveType, List<HpcMetadataEntry> metadataEntries, String storageClass)
 			throws HpcException {
-		/*
-		 * // Create a S3 upload request. PutObjectRequest request = new
-		 * PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
-		 * archiveDestinationLocation.getFileId(),
-		 * sourceFile).withMetadata(toS3Metadata(metadataEntries))
-		 * .withStorageClass(storageClass);
-		 * 
-		 * // Upload the data. Upload s3Upload = null; Calendar dataTransferStarted =
-		 * Calendar.getInstance(); Calendar dataTransferCompleted = null; try { s3Upload
-		 * = s3Connection.getTransferManager(authenticatedToken).upload(request); if
-		 * (progressListener != null) { // Upload asynchronously.
-		 * s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener,
-		 * "upload staged file [" + sourceFile.getAbsolutePath() + "] to " +
-		 * archiveDestinationLocation.getFileContainerId() + ":" +
-		 * archiveDestinationLocation.getFileId())); } // Upload synchronously.
-		 * s3Upload.waitForUploadResult(); dataTransferCompleted =
-		 * Calendar.getInstance();
-		 * 
-		 * } catch (AmazonClientException ace) { throw new
-		 * HpcException("[S3] Failed to upload file.", HpcErrorType.DATA_TRANSFER_ERROR,
-		 * s3Connection.getS3Provider(authenticatedToken), ace);
-		 * 
-		 * } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
-		 * 
-		 * // Upload completed. Create and populate the response object.
-		 * HpcDataObjectUploadResponse uploadResponse = new
-		 * HpcDataObjectUploadResponse();
-		 * uploadResponse.setArchiveLocation(archiveDestinationLocation);
-		 * uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
-		 * uploadResponse.setDataTransferStarted(dataTransferStarted);
-		 * uploadResponse.setDataTransferCompleted(dataTransferCompleted);
-		 * uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
-		 * uploadResponse.setSourceSize(sourceFile.length());
-		 * uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.SYNC); if
-		 * (archiveType.equals(HpcArchiveType.ARCHIVE)) {
-		 * uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED); }
-		 * else { uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.
-		 * IN_TEMPORARY_ARCHIVE); }
-		 * 
-		 * return uploadResponse;
-		 */ return null;
+
+		// Create a S3 upload file request.
+		HpcS3ProgressListener listener = new HpcS3ProgressListener(progressListener,
+				"upload staged file [" + sourceFile.getAbsolutePath() + "] to "
+						+ archiveDestinationLocation.getFileContainerId() + ":"
+						+ archiveDestinationLocation.getFileId());
+
+		UploadFileRequest uploadFileRequest = UploadFileRequest.builder()
+				.putObjectRequest(b -> b.bucket(archiveDestinationLocation.getFileContainerId())
+						.key(archiveDestinationLocation.getFileId()).metadata(toS3Metadata(metadataEntries))
+						.storageClass(storageClass))
+				.addTransferListener(listener).source(sourceFile).build();
+
+		// Upload the data.
+		FileUpload fileUpload = null;
+		Calendar dataTransferStarted = Calendar.getInstance();
+		Calendar dataTransferCompleted = null;
+		try {
+			fileUpload = s3Connection.getTransferManager(authenticatedToken).uploadFile(uploadFileRequest);
+			listener.setCompletableFuture(fileUpload.completionFuture());
+			fileUpload.completionFuture().join();
+
+			dataTransferCompleted = Calendar.getInstance();
+
+		} catch (CompletionException e) {
+			throw new HpcException("[S3] Failed to upload file.", HpcErrorType.DATA_TRANSFER_ERROR,
+					s3Connection.getS3Provider(authenticatedToken), e.getCause());
+
+		}
+
+		// Upload completed. Create and populate the response object.
+		HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+		uploadResponse.setArchiveLocation(archiveDestinationLocation);
+		uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+		uploadResponse.setDataTransferStarted(dataTransferStarted);
+		uploadResponse.setDataTransferCompleted(dataTransferCompleted);
+		uploadResponse.setDataTransferRequestId(String.valueOf(fileUpload.hashCode()));
+		uploadResponse.setSourceSize(sourceFile.length());
+		uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.SYNC);
+		if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
+			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
+		} else {
+			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
+		}
+
+		return uploadResponse;
+
 	}
 
 	/**

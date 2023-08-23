@@ -298,8 +298,8 @@ public class HpcS3Connection {
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
 					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
-					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(true)
-					// TODO: remove checksumValidation as it is true by default
+					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(false)
+					// TODO: checksumValidation if set to true - signature failure for Cloudian
 					/* TODO: consider using this config - .maxConcurrency(someValue) */
 					.build(); //
 
