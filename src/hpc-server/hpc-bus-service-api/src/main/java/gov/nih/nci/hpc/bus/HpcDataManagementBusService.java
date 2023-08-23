@@ -118,6 +118,17 @@ public interface HpcDataManagementBusService {
 	public HpcCollectionDTO getCollectionChildren(String path) throws HpcException;
 
 	/**
+	 * Get Collection children given a path starting at user specified offset.
+	 *
+	 * @param path The collection's path.
+	 * @param collectionOffset The collection offset to start.
+	 * @param dataObjectOffset The data object offset to start.
+	 * @return A Collection DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer collectionOffset, Integer dataObjectOffset) throws HpcException;
+
+	/**
 	 * Download a collection tree.
 	 *
 	 * @param path            The collection path.

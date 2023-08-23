@@ -45,6 +45,9 @@ public class HpcBrowserEntry {
 	@JsonView(Views.Public.class)
 	private String lastUpdated;
 
+	@JsonView(Views.Public.class)
+	private String totalRecords;
+	
 	public String getId() {
 		return id;
 	}
@@ -149,6 +152,14 @@ public class HpcBrowserEntry {
 
 	public void setLastUpdated(String lastUpdated) {
 		this.lastUpdated = lastUpdated;
+	}
+	
+	public String getTotalRecords() {
+		return totalRecords;
+	}
+
+	public void setTotalRecords(String totalRecords) {
+		this.totalRecords = totalRecords;
 	}
 
 	@Override

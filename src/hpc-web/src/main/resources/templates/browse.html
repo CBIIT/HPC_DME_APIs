@@ -66,6 +66,7 @@
     var scrollLoc = [[${scrollLoc}]];
     var userBookmarks = [[${userBookmarks}]];
     var refresh = null;
+    var loadmore = null;
     var detail = true;
 /*]]>*/
 </script>
@@ -149,7 +150,7 @@ app
     	for(i = 1; i < paths.length; i++){
     		if(html.length == 0) {
         		if(paths.length == 2)  //The path has just one part and ends here, so display the human readable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + count + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + count + "/" + node.totalRecords + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		} else {
@@ -157,7 +158,7 @@ app
     			if(i < paths.length - 1)
     				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     			else //The last part of the path ends here, so display human redable total size
-    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + count + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    				html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+paths[i]+"&nbsp&nbsp&nbspTotal Size: " + node.humanReadableFileSize + "&nbsp&nbsp&nbspNumber of Entries: " + count + "/" + node.totalRecords + '<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
     		}
     	}
     	$('.breadcrumb.folderpath').html(html);
@@ -194,6 +195,9 @@ app
 	        }]);
 	        contextMenuData.push(['Refresh Node', function() { 
 	        	refreshNode(node);
+	        }]);
+	        contextMenuData.push(['Load More Entries', function() { 
+	        	loadMore(node);
 	        }]);
         }
 
@@ -450,6 +454,8 @@ cursor: pointer;
 											<li><a href="#addBulk">Add Bulk</a></li>
 											<li class="divider"></li>
 											<li><a href="#refreshNode">Refresh Node</a></li>
+											<li class="divider"></li>
+											<li><a href="#loadMore">Load More Entries</a></li>
 									</ul>	
 								</div>
 									<div id="right" class="">
@@ -491,6 +497,7 @@ cursor: pointer;
 		<input type="hidden" id="selectedNodeId" name="selectedNodeId"/>
 		<input type="hidden" id="scrollLoc" name="scrollLoc"/>
 		<input type="hidden" id="refreshNode" name="refreshNode"/>
+		<input type="hidden" id="loadMore" name="loadMore"/>
 	</form>
 	
 	<!-- container section start -->
@@ -548,9 +555,9 @@ $(function() {
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
             } else {
             	if(node.id == "empty")
-            		menuAPI.disable(node.name, ['viewDetails','addCollection','addDatafile','addBulk','refreshNode']);
+            		menuAPI.disable(node.name, ['viewDetails','addCollection','addDatafile','addBulk','refreshNode','loadMore']);
             	else
-            		menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode']);
+            		menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode','loadMore']);
             }
         }
     });
@@ -566,8 +573,15 @@ $('#tree1').on('click', '.refresh', function(e) {
     refreshNode(node);
 });
 
-function refreshNode(node) {    
+$('#tree1').on('click', '.loadMore', function(e) {	
+	e.stopImmediatePropagation();
+	var node_id = $(e.target).data('node-id');
+    var node = $('#tree1').tree('getNodeById', node_id);
+    loadMore(node);
+});
 
+function refreshNode(node) {    
+	loadmore = null;
 	if(node.parent != null) {
 		console.log('parent: ' + node.parent.id);
 	} else {
@@ -575,8 +589,17 @@ function refreshNode(node) {
 	}
 	refresh = node.id;
 	browseNode(node);
-	$('#tree1').tree('openNode', node);
-	$('#tree1').tree('selectNode', node);
+}
+
+function loadMore(node) {    
+	refresh = null;
+	if(node.parent != null) {
+		console.log('parent: ' + node.parent.id);
+	} else {
+		node = $('#tree1').tree('getNodeById', node.id);
+	}
+	loadmore = node.id;
+	browseNode(node);
 }
 
 //bind 'tree.click' event
@@ -648,7 +671,7 @@ function browseDataobject(node) {
 	  
       $.ajax({
           type : "POST",
-          data: {selectedNodePath: node.fullPath, refreshNode: refresh, scrollLoc: scrollLoc},
+          data: {selectedNodePath: node.fullPath, refreshNode: refresh, loadMore: loadmore, scrollLoc: scrollLoc},
           dataType: "json",
           url : "/browse/dataObject",
           success : function(msg) {
@@ -676,14 +699,22 @@ function browseNode(node) {
 	  
       $.ajax({
           type : "POST",
-          data: {selectedNodePath: node.fullPath, refreshNode: refresh, scrollLoc: scrollLoc},
+          data: {selectedNodePath: node.fullPath, refreshNode: refresh, scrollLoc: scrollLoc, loadMore: loadmore},
           dataType: "json",
           url : "/browse/collection",
           success : function(msg) {
        
           	data = msg;
+          	refresh = false;
           	$('#tree1').tree('updateNode', node, data[0]);
           	angular.element('#refreshGrid').triggerHandler('click');
+          	if(node.children != null) {
+	          for (var i=0; i < node.children.length; i++) {
+	 	        var child = node.children[i];
+	            $('#tree1').tree('closeNode', child, false);
+              }
+	        }
+	        $('#tree1').tree('selectNode', node);         	
           },
     	  error : function(e) {
     		 console.log('ERROR: ', e);
@@ -751,6 +782,9 @@ var menuAPI = $('#tree1').jqTreeContextMenu($('#myMenu'), {
     },
     "refreshNode": function (node) {
     	refreshNode(node);
+    },
+    "loadMore": function (node) {
+    	loadMore(node);
     }
 }); 
 

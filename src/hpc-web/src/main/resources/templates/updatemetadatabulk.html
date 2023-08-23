@@ -204,33 +204,19 @@
 
 					</div>
 				</div>
-				<div th:if="${paths != null and paths.size() > 0}">
-					<table id="pathgrid" class="display" style="width:100%">
-						<thead>
-							<tr id='attrRow0'>
-								<th class="column-heading" id='path0' th:text="Path"></th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr id='attrCol0' th:each="path : ${paths}">
-								<td id='path1'><a th:href="@{/collection(path=${path}, action=view)}"  th:text="${path}" target="_blank"></a></td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
 				<div th:if="${errorStatusMessage == '' and pathDetails != null and pathDetails.size() > 0}">
 					<table id="pathDetailsGrid" class="display" style="width:100%">
-						<caption style="font-weight:bold" th:text="'Results after Bulk Metadata Update with (attribute=' + ${metadataName} + ', value=' + ${metadataValue} + ')'"></caption>
+						<caption style="font-weight:bold" th:if="${result} == 'true'" th:text="'Results after Bulk Metadata Update with (attribute=' + ${metadataName} + ', value=' + ${metadataValue} + ')'"></caption>
 						<thead>
 							<tr id='attrRow0'>					
 								<th class="column-heading" id='path2' th:text="Path"></th>
-								<th class="column-heading" id='path21' th:text="Result"></th>
+								<th class="column-heading" id='path21'  th:if="${result} == 'true'" th:text="Result"></th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:each="pathDetail : ${pathDetails}">
-								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
-								<td id='path31' th:text="${pathDetail.result}"></td>
+								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=displayOnly)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
+								<td id='path31' th:if="${result} == 'true'" th:text="${pathDetail.result}"></td>
 							</tr>
 						</tbody>
 					</table>
@@ -265,12 +251,6 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
-
-		$(document).ready(function () {
-			$('#pathgrid').DataTable( {
-				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
-			} );
-		});
 
 		$(document).ready(function () {
 			$('#pathDetailsGrid').DataTable( {

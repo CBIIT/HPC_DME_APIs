@@ -412,6 +412,50 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return collectionDTO;
 	}
 
+	@Override
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer collectionOffset, Integer dataObjectOffset) throws HpcException {
+		// Input validation.
+		if (path == null || collectionOffset < 0 || dataObjectOffset < 0) {
+			throw new HpcException("Null collection path or invalid offset", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcCollection collection = dataManagementService.getCollectionChildrenWithPaging(path, collectionOffset, dataObjectOffset);
+		if (collection == null) {
+			return null;
+		}
+
+		List<Integer> ids = new ArrayList<>();
+		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+			ids.add(subCollection.getId());
+		}
+		for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
+			ids.add(dataObject.getId());
+		}
+		if (!ids.isEmpty()) {
+			Map<Integer, HpcCollectionListingEntry> childMetadataMap = metadataService.getMetadataForBrowseByIds(ids);
+			for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+				HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
+				if (entry != null) {
+					subCollection.setDataSize(entry.getDataSize());
+					subCollection.setCreatedAt(entry.getCreatedAt());
+				}
+			}
+			for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
+				HpcCollectionListingEntry entry = childMetadataMap.get(dataObject.getId());
+				if (entry != null) {
+					dataObject.setDataSize(entry.getDataSize());
+					dataObject.setCreatedAt(entry.getCreatedAt());
+				}
+			}
+		}
+
+		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
+		collectionDTO.setCollection(collection);
+		collectionDTO.getReports().add(getTotalSizeReport(path, true));
+
+		return collectionDTO;
+	}
+
 	private HpcReport getTotalSizeReport(String path, boolean isMachineReadable) throws HpcException {
 
 		HpcReport totalSizeReport = null;
