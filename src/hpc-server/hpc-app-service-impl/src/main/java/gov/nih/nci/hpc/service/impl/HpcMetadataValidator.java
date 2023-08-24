@@ -257,6 +257,7 @@ public class HpcMetadataValidator {
 				//Indicates request for deletion, so remove it if it already exists
 				if(metadataEntriesMap.containsKey(metadataEntry.getAttribute())) {
 					metadataEntriesMap.remove(metadataEntry.getAttribute());
+
 				}
 				continue;
 			}
@@ -321,17 +322,67 @@ public class HpcMetadataValidator {
 		Map<String, String> errors = new HashMap<>();
 		for (HpcMetadataValidationRule metadataValidationRule : metadataValidationRules) {
 			// Check if rules needs to be skipped.
-			if (skipRule(metadataValidationRule, metadataEntriesMap, collectionType)) {
+			if (skipRule(metadataValidationRule, collectionType)) {
 				continue;
 			}
 
-			// Apply default value/unit if default is defined and metadata was not provided.
 			HpcMetadataEntry defaultMetadataEntry = generateDefaultMetadataEntry(metadataValidationRule,
 					metadataEntriesMap);
-			if (defaultMetadataEntry != null) {
-				addUpdateMetadataEntries.add(defaultMetadataEntry);
-				metadataEntriesMap.put(defaultMetadataEntry.getAttribute(), defaultMetadataEntry.getValue());
+
+			// Check if there is a dependency on a controllerAttribute
+			String controllerAttribute = metadataValidationRule.getControllerAttribute();
+			if (!StringUtils.isEmpty(controllerAttribute)) {
+			    // A controller attribute dependency exists, hence this attribute should be present if
+				// - The controller attribute exists
+				// - and
+				// - no required value is defined for this controller attribute, or
+				// - a required value is defined and that value is present
+				String controllerValue = metadataValidationRule.getControllerValue();
+				if(metadataEntriesMap.containsKey(controllerAttribute)
+				    && (StringUtils.isEmpty(controllerValue)
+					|| metadataEntriesMap.get(controllerAttribute).matches(controllerValue)) ) {
+
+					if(StringUtils.isEmpty(metadataEntriesMap.get(metadataValidationRule.getAttribute())) ) {
+
+					    // Metadata entry is missing, if default is defined add that else error.
+					    if (defaultMetadataEntry != null) {
+						    addUpdateMetadataEntries.add(defaultMetadataEntry);
+						    metadataEntriesMap.put(defaultMetadataEntry.getAttribute(), defaultMetadataEntry.getValue());
+					    } else {
+						    if (StringUtils.isEmpty(errors.get(CONDITIONAL_METADATA_ERROR))) {
+						    errors.put(CONDITIONAL_METADATA_ERROR,
+								"Missing or empty conditional metadata: " + metadataValidationRule.getAttribute());
+						    } else {
+						        errors.put(CONDITIONAL_METADATA_ERROR,
+								errors.get(CONDITIONAL_METADATA_ERROR) + ", " + metadataValidationRule.getAttribute());
+						    }
+					    }
+					}
+				} else {
+
+					//Controller attribute does not exists or the value is not applicable
+					//for this attribute, hence blank this attribute if it exists
+					metadataEntriesMap.remove(metadataValidationRule.getAttribute());
+					int index = 0;
+					for (HpcMetadataEntry metadataEntry : addUpdateMetadataEntries) {
+						if(metadataEntry.getAttribute().equals(metadataValidationRule.getAttribute())) {
+							metadataEntry.setValue("");
+							addUpdateMetadataEntries.set(index, metadataEntry);
+							break;
+						}
+						index++;
+					}
+				}
+
+			} else {
+				// If the attribute does not have a dependency on a controller attribute, then apply
+				//default value/unit if default is defined and metadata was not provided.
+				if (defaultMetadataEntry != null) {
+					addUpdateMetadataEntries.add(defaultMetadataEntry);
+					metadataEntriesMap.put(defaultMetadataEntry.getAttribute(), defaultMetadataEntry.getValue());
+				}
 			}
+
 
 			// Validate a mandatory metadata is provided.
 			if (metadataValidationRule.getMandatory()
@@ -346,25 +397,6 @@ public class HpcMetadataValidator {
 				}
 			}
 
-			// Check if there is a dependency on a controllerAttribute and that exists
-			String controllerAttribute = metadataValidationRule.getControllerAttribute();
-			if (!StringUtils.isEmpty(controllerAttribute) && metadataEntriesMap.containsKey(controllerAttribute)) {
-				// A controller attribute exists, hence this attribute should be present if
-				// - no required value is defined for this controller attribute,
-				// - or a required value is defined and that value is present
-				String controllerValue = metadataValidationRule.getControllerValue();
-				if ((StringUtils.isEmpty(controllerValue)
-						|| metadataEntriesMap.get(controllerAttribute).matches(controllerValue))
-						&& StringUtils.isEmpty(metadataEntriesMap.get(metadataValidationRule.getAttribute()))) {
-					if (StringUtils.isEmpty(errors.get(CONDITIONAL_METADATA_ERROR))) {
-						errors.put(CONDITIONAL_METADATA_ERROR,
-								"Missing or empty conditional metadata: " + metadataValidationRule.getAttribute());
-					} else {
-						errors.put(CONDITIONAL_METADATA_ERROR,
-								errors.get(CONDITIONAL_METADATA_ERROR) + ", " + metadataValidationRule.getAttribute());
-					}
-				}
-			}
 
 			// Validate the metadata value is valid.
 			if (metadataValidationRule.getValidValues() != null && !metadataValidationRule.getValidValues().isEmpty()) {
@@ -425,7 +457,7 @@ public class HpcMetadataValidator {
 	 *                               the collection type hosting the data object.
 	 * @return true if the rule needs to be skipped.
 	 */
-	private boolean skipRule(HpcMetadataValidationRule metadataValidationRule, Map<String, String> metadataEntriesMap,
+	private boolean skipRule(HpcMetadataValidationRule metadataValidationRule,
 			String collectionType) {
 		// Skip disabled rules.
 		if (!metadataValidationRule.getRuleEnabled()) {
