@@ -608,6 +608,17 @@ ul.sidebar-menu li.active a i {
     width: 100%;
 }
 
+.wrapper-manage {
+    display: inline-block;
+    margin-bottom: 1px;
+    padding-top: 15px;
+    padding-right: 15px;
+    padding-bottom: 1px;
+    padding-left: 15px;
+    height: 550px;
+    width: 100%;
+}
+
 
 #appnavbar.navbar {
     border-radius: 0px;
