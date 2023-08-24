@@ -214,6 +214,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
+
+				if (StringUtils.isEmpty(metadataEntry.getValue())) {
+					continue;
+				}
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
 						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit()
 								: DEFAULT_METADATA_UNIT));
