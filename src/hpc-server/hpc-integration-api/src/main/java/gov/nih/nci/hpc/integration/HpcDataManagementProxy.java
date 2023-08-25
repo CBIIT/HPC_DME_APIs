@@ -197,12 +197,11 @@ public interface HpcDataManagementProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param path The collection's path.
-   * @param collectionOffset The collection offset to start.
-   * @param dataObjectOffset The data object offset to start.
+   * @param offset The offset to start.
    * @return The Collection.
    * @throws HpcException on data management system failure.
    */
-  public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer collectionOffset, Integer dataObjectOffset)
+  public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset)
       throws HpcException;
 
   /**
