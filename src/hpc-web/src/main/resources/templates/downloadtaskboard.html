@@ -115,6 +115,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
     enableSorting: true,
     enableFiltering: true,
     paginationPageSize: 100,
+    rowHeight: 30,
+    minRowsToShow: currentPageSize,
     enablePaginationControls: false,
     columnDefs: [
     			 { field: 'userId', width:120, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
@@ -137,6 +139,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
   };
   $scope.gridOptions1.totalItems = totalRows;
   $scope.gridOptions1.data = results;
+
   if(queryAll == "false")
   	$scope.gridOptions1.columnDefs[0].visible = false;
 
@@ -175,7 +178,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		<div th:include="header :: header"></div>
 		<!--main content start-->
 		<section id="main-content">
-			<section class="wrapper">
+			<section class="wrapper-manage">
 				<!--Title start-->
 				<div class="row">
 					<div class="col-lg-12">
@@ -200,7 +203,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 										Tasks</strong>
 								</h2>
 								</div>
-								<div th:if="${canQueryAll}" class="col-md-3 col-md-offset-6">
+								<div th:if="${canQueryAll}" class="col-md-3 col-md-offset-6" style="text-align: right;">
 								<h2 style="color: rgb(121, 121, 121)">
 									<strong>Display All Tasks</strong>
 								</h2>
