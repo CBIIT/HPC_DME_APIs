@@ -115,6 +115,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
     enableSorting: true,
     enableFiltering: true,
     paginationPageSize: 100,
+    rowHeight: 30,
+    minRowsToShow: currentPageSize,
     enablePaginationControls: false,
     columnDefs: [
     			 { field: 'userId', width:120, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
@@ -133,8 +135,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
       $scope.currentPage = currentPage;
       $scope.totalRows = totalRows;
       $scope.currentPageSize = currentPageSize;
-      $scope.pageSize = 100;
-	  $scope.tableHeight = getTableHeight($scope.totalPages, $scope.currentPage, $scope.pageSize,  $scope.totalRows); 
     }
   };
   $scope.gridOptions1.totalItems = totalRows;
@@ -168,35 +168,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	  };
 }]);
 
-</script>
-<script>
-	<!--
-		function getTableHeight(totalPage, currentPage, pageSize, rows) {
-		var rowHeight = 12; // row height
-			var headerHeight = 20; // header height
-			var footerHeight = 10; // bottom scroll bar height
-			var totalH = 0;
-			let itotalPage = parseInt(totalPage);
-			let icurrentPage = parseInt(currentPage);
-			if (itotalPage > 1) {
-			    if (icurrentPage < itotalPage) {
-			        totalH = pageSize * rowHeight + headerHeight + footerHeight;
-			    } else {
-			        var lastPageSize = rows % pageSize;
-			        if (lastPageSize === 0) {
-			            totalH = pageSize * rowHeight + headerHeight + footerHeight;
-			        } else {
-			            totalH = lastPageSize * rowHeight + headerHeight + footerHeight;
-			        }
-			    }
-			} else {
-				totalH = rows * rowHeight + headerHeight + footerHeight;
-			}
-			console.log(totalH);
-			let minHeight = 'min-height: ' + totalH + 'px';
-			return minHeight;
-		}
-	-->
 </script>
 
 </head>
@@ -232,7 +203,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 										Tasks</strong>
 								</h2>
 								</div>
-								<div th:if="${canQueryAll}" class="col-md-3 col-md-offset-6">
+								<div th:if="${canQueryAll}" class="col-md-3 col-md-offset-6" style="text-align: right;">
 								<h2 style="color: rgb(121, 121, 121)">
 									<strong>Display All Tasks</strong>
 								</h2>
@@ -247,7 +218,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 							<div ng-controller="MainCtrl">
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
-										ui-grid-resize-columns="true" ui-grid-move-columns="true"  style="{{tableHeight}}"></div>
+										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
 									<p>Current Page: {{ currentPage }} of {{ totalPages }}
 										&nbsp;&nbsp;|&nbsp;&nbsp;Page Size: {{ currentPageSize }}
 										&nbsp;&nbsp;|&nbsp;&nbsp;Total Records: {{ totalRows }}</p>
