@@ -214,6 +214,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
+
+				if (StringUtils.isEmpty(metadataEntry.getValue())) {
+					continue;
+				}
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
 						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit()
 								: DEFAULT_METADATA_UNIT));
@@ -403,21 +407,22 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	}
 	
 	@Override
-	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer collectionOffset, Integer dataObjectOffset) throws HpcException {
+	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset) throws HpcException {
 		try {
 			// In case there are no more records from this offset, fetch from offset 0 to get total records.
 			List<CollectionAndDataObjectListingEntry> firstEntries;
 			// Get the child collection from the offset specified.
 			List<CollectionAndDataObjectListingEntry> collectionEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-					.listCollectionsUnderPath(getAbsolutePath(path), collectionOffset); 
+					.listCollectionsUnderPath(getAbsolutePath(path), offset); 
 			int collectionTotalRecords = !collectionEntries.isEmpty() ? collectionEntries.get(0).getTotalRecords() : 0;
 			
 			// If requested from an offset and there are no more collection entries, obtain the total count by fetching from offset 0.
-			if(collectionOffset > 0 && collectionEntries.isEmpty()) {
+			if(offset > 0 && collectionEntries.isEmpty()) {
 				firstEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
 				.listCollectionsUnderPath(getAbsolutePath(path), 0); 
 				collectionTotalRecords = !firstEntries.isEmpty() ? firstEntries.get(0).getTotalRecords() : 0;
 			}
+			int dataObjectOffset = offset - collectionTotalRecords > 0 ? offset - collectionTotalRecords: 0;
 			
 			// Get the child dataobject from the offset specified.
 			List<CollectionAndDataObjectListingEntry> dataObjectEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
@@ -432,7 +437,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			}
 			
 			// Set the entries fetched into HpcCollection
-			if(collectionTotalRecords > collectionOffset + collectionEntries.size()) {
+			if(collectionTotalRecords > offset + collectionEntries.size()) {
 				HpcCollection collection = toHpcCollectionChildren(collectionEntries);
 				// There are more collection entries, so no need to add the dataObjects
 				collection.setSubCollectionsTotalRecords(collectionTotalRecords);
