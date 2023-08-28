@@ -5,7 +5,9 @@ import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -18,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
@@ -55,9 +58,10 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
-import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
@@ -71,7 +75,6 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -81,6 +84,7 @@ import software.amazon.awssdk.transfer.s3.model.CompletedCopy;
 import software.amazon.awssdk.transfer.s3.model.Copy;
 import software.amazon.awssdk.transfer.s3.model.CopyRequest;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.transfer.s3.model.Upload;
 import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
 
 /**
@@ -677,7 +681,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} catch (CompletionException e) {
 			throw new HpcException("[S3] Failed to upload file.", HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), e.getCause());
-
 		}
 
 		// Upload completed. Create and populate the response object.
@@ -727,112 +730,101 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcFileLocation archiveDestinationLocation,
 			HpcArchive baseArchiveDestination, Long size, HpcDataTransferProgressListener progressListener,
 			List<HpcMetadataEntry> metadataEntries, String storageClass) throws HpcException {
-		/*
-		 * if (progressListener == null) { throw new HpcException(
-		 * "[S3] No progress listener provided for a upload from AWS S3 / S3 Provider / Google Drive / Google Cloud Storage"
-		 * , HpcErrorType.UNEXPECTED_ERROR); } if (size == null) { throw new
-		 * HpcException(
-		 * "[S3] File size not provided for an upload from AWS / S3 Provider / Google Drive / Google Cloud Storage"
-		 * , HpcErrorType.UNEXPECTED_ERROR); }
-		 * 
-		 * HpcDataTransferUploadMethod uploadMethod = null; String sourceURL = null;
-		 * HpcFileLocation sourceLocation = null;
-		 * 
-		 * if (s3UploadSource != null) { // Upload by streaming from AWS or S3 Provider.
-		 * uploadMethod = HpcDataTransferUploadMethod.S_3; sourceLocation =
-		 * s3UploadSource.getSourceLocation();
-		 * 
-		 * // If not provided, generate a download pre-signed URL for the requested data
-		 * // file from AWS // (using the provided S3 account). sourceURL =
-		 * StringUtils.isEmpty(s3UploadSource.getSourceURL()) ?
-		 * generateDownloadRequestURL(s3Connection.authenticate(s3UploadSource.
-		 * getAccount()), sourceLocation, baseArchiveDestination, S3_STREAM_EXPIRATION)
-		 * : s3UploadSource.getSourceURL();
-		 * 
-		 * } else if (googleDriveUploadSource != null) { // Upload by streaming from
-		 * Google Drive. uploadMethod = HpcDataTransferUploadMethod.GOOGLE_DRIVE;
-		 * sourceLocation = googleDriveUploadSource.getSourceLocation();
-		 * 
-		 * } else if (googleCloudStorageUploadSource != null) { // Upload by streaming
-		 * from Google Drive. uploadMethod =
-		 * HpcDataTransferUploadMethod.GOOGLE_CLOUD_STORAGE; sourceLocation =
-		 * googleCloudStorageUploadSource.getSourceLocation();
-		 * 
-		 * } else { throw new HpcException("Unexpected upload source",
-		 * HpcErrorType.UNEXPECTED_ERROR); }
-		 * 
-		 * final String url = sourceURL; final String sourceDestinationLogMessage =
-		 * "upload from " + sourceLocation.getFileContainerId() + ":" +
-		 * sourceLocation.getFileId(); Calendar dataTransferStarted =
-		 * Calendar.getInstance();
-		 * 
-		 * CompletableFuture<Void> s3TransferManagerUploadFuture =
-		 * CompletableFuture.runAsync(() -> { try { // Open a connection to the input
-		 * stream of the file to be uploaded. InputStream sourceInputStream = null; if
-		 * (googleDriveUploadSource != null) { sourceInputStream =
-		 * googleDriveUploadSource.getSourceInputStream(); } else if
-		 * (googleCloudStorageUploadSource != null) { sourceInputStream =
-		 * googleCloudStorageUploadSource.getSourceInputStream(); } else {
-		 * sourceInputStream = new URL(url).openStream(); }
-		 * 
-		 * // Create a S3 upload request. ObjectMetadata metadata =
-		 * toS3Metadata(metadataEntries); metadata.setContentLength(size);
-		 * PutObjectRequest request = new
-		 * PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
-		 * archiveDestinationLocation.getFileId(), sourceInputStream, metadata)
-		 * .withStorageClass(storageClass);
-		 * 
-		 * // Set the read limit on the request to avoid AWSreset exceptions.
-		 * request.getRequestClientOptions().setReadLimit(getReadLimit(size));
-		 * 
-		 * // Upload asynchronously. AWS transfer manager will perform the upload in its
-		 * // own managed threads. TransferManager transferManager =
-		 * s3Connection.getTransferManager(authenticatedToken); Upload s3Upload =
-		 * transferManager.upload(request);
-		 * 
-		 * // Attach a progress listener. s3Upload.addProgressListener(new
-		 * HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
-		 * 
-		 * TransferManagerConfiguration configuration =
-		 * transferManager.getConfiguration(); logger.info(
-		 * "S3 upload AWS/S3 Provider->{} [{}] started. Source size - {} bytes. Read limit - {}. "
-		 * +
-		 * "Should Use Multipart Uplod - {}. Minimum Part Size - {}. Optimal Part Size - {}"
-		 * , s3Connection.getS3Provider(authenticatedToken),
-		 * sourceDestinationLogMessage, size,
-		 * request.getRequestClientOptions().getReadLimit(),
-		 * TransferManagerUtils.shouldUseMultipartUpload(request, configuration),
-		 * configuration.getMinimumUploadPartSize(),
-		 * TransferManagerUtils.calculateOptimalPartSize(request, configuration));
-		 * 
-		 * // Wait for the result. This ensures the input stream to the URL remains
-		 * opened // and // connected until the upload is complete. // Note that this
-		 * wait for AWS transfer manager completion is done in a separate // thread //
-		 * (from s3Executor pool), so callers to // the API don't wait.
-		 * s3Upload.waitForUploadResult();
-		 * 
-		 * } catch (AmazonClientException | HpcException | IOException e) {
-		 * logger.error("[S3] Failed to upload from AWS S3 destination: " +
-		 * e.getMessage(), e); progressListener.transferFailed(e.getMessage());
-		 * 
-		 * } catch (InterruptedException ie) { Thread.currentThread().interrupt(); } },
-		 * s3Executor);
-		 * 
-		 * // Create and populate the response object. HpcDataObjectUploadResponse
-		 * uploadResponse = new HpcDataObjectUploadResponse();
-		 * uploadResponse.setArchiveLocation(archiveDestinationLocation);
-		 * uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
-		 * uploadResponse.setDataTransferStarted(dataTransferStarted);
-		 * uploadResponse.setUploadSource(sourceLocation);
-		 * uploadResponse.setDataTransferRequestId(String.valueOf(
-		 * s3TransferManagerUploadFuture.hashCode()));
-		 * uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.
-		 * STREAMING_IN_PROGRESS); uploadResponse.setSourceURL(sourceURL);
-		 * uploadResponse.setSourceSize(size);
-		 * uploadResponse.setDataTransferMethod(uploadMethod);
-		 * 
-		 * return uploadResponse;
-		 */return null;
+
+		if (progressListener == null) {
+			throw new HpcException(
+					"[S3] No progress listener provided for a upload from AWS S3 / S3 Provider / Google Drive / Google Cloud Storage",
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if (size == null) {
+			throw new HpcException(
+					"[S3] File size not provided for an upload from AWS / S3 Provider / Google Drive / Google Cloud Storage",
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		HpcDataTransferUploadMethod uploadMethod = null;
+		String sourceURL = null;
+		HpcFileLocation sourceLocation = null;
+
+		if (s3UploadSource != null) { // Upload by streaming from AWS or S3 Provider.
+			uploadMethod = HpcDataTransferUploadMethod.S_3;
+			sourceLocation = s3UploadSource.getSourceLocation();
+
+			// If not provided, generate a download pre-signed URL for the requested data
+			// file from AWS // (using the provided S3 account).
+			sourceURL = StringUtils.isEmpty(s3UploadSource.getSourceURL())
+					? generateDownloadRequestURL(s3Connection.authenticate(s3UploadSource.getAccount()), sourceLocation,
+							baseArchiveDestination, S3_STREAM_EXPIRATION)
+					: s3UploadSource.getSourceURL();
+
+		} else if (googleDriveUploadSource != null) { // Upload by streaming from Google Drive
+			uploadMethod = HpcDataTransferUploadMethod.GOOGLE_DRIVE;
+			sourceLocation = googleDriveUploadSource.getSourceLocation();
+
+		} else if (googleCloudStorageUploadSource != null) { // Upload by streaming from Google Cloud Storage
+			uploadMethod = HpcDataTransferUploadMethod.GOOGLE_CLOUD_STORAGE;
+			sourceLocation = googleCloudStorageUploadSource.getSourceLocation();
+
+		} else {
+			throw new HpcException("Unexpected upload source", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		final String url = sourceURL;
+		final String sourceDestinationLogMessage = "upload from " + sourceLocation.getFileContainerId() + ":"
+				+ sourceLocation.getFileId();
+		Calendar dataTransferStarted = Calendar.getInstance();
+
+		CompletableFuture<Void> s3TransferManagerUploadFuture = CompletableFuture.runAsync(() -> {
+			try { 
+				// Open a connection to the input stream of the file to be uploaded.
+				InputStream sourceInputStream = null;
+				if (googleDriveUploadSource != null) {
+					sourceInputStream = googleDriveUploadSource.getSourceInputStream();
+				} else if (googleCloudStorageUploadSource != null) {
+					sourceInputStream = googleCloudStorageUploadSource.getSourceInputStream();
+				} else {
+					sourceInputStream = new URL(url).openStream();
+				}
+
+				HpcS3ProgressListener listener = new HpcS3ProgressListener(progressListener,
+						sourceDestinationLogMessage);
+
+				// Create a S3 upload request.
+				BlockingInputStreamAsyncRequestBody body = AsyncRequestBody.forBlockingInputStream(size);
+				Upload streamUpload = s3Connection.getTransferManager(authenticatedToken)
+						.upload(builder -> builder
+								.putObjectRequest(
+										request -> request.bucket(archiveDestinationLocation.getFileContainerId())
+												.key(archiveDestinationLocation.getFileId())
+												.metadata(toS3Metadata(metadataEntries)).storageClass(storageClass))
+								.requestBody(body).addTransferListener(listener));
+				listener.setCompletableFuture(streamUpload.completionFuture());
+
+				// Stream the data.
+				body.writeInputStream(sourceInputStream);
+
+				streamUpload.completionFuture().join();
+
+			} catch (CompletionException | HpcException | IOException e) {
+				logger.error("[S3] Failed to upload from AWS S3 destination: " + e.getCause().getMessage(), e);
+				progressListener.transferFailed(e.getCause().getMessage());
+
+			}
+		}, s3Executor);
+
+		// Create and populate the response object.
+		HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+		uploadResponse.setArchiveLocation(archiveDestinationLocation);
+		uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+		uploadResponse.setDataTransferStarted(dataTransferStarted);
+		uploadResponse.setUploadSource(sourceLocation);
+		uploadResponse.setDataTransferRequestId(String.valueOf(s3TransferManagerUploadFuture.hashCode()));
+		uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS);
+		uploadResponse.setSourceURL(sourceURL);
+		uploadResponse.setSourceSize(size);
+		uploadResponse.setDataTransferMethod(uploadMethod);
+
+		return uploadResponse;
 	}
 
 	/**
