@@ -122,10 +122,11 @@ public interface HpcDataManagementBusService {
 	 *
 	 * @param path The collection's path.
 	 * @param offset The offset to start.
+	 * @param report An indicator to obtain report.
 	 * @return A Collection DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset) throws HpcException;
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report) throws HpcException;
 
 	/**
 	 * Download a collection tree.

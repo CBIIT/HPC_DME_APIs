@@ -419,6 +419,7 @@ public class HpcClientUtil {
       if (children) {
 	    	ucBuilder.pathSegment("childrenWithPaging");
 	        ucBuilder.queryParam("offset", offset);
+	        ucBuilder.queryParam("report", true);
       } else {
         ucBuilder.queryParam("list", Boolean.toString(list));
       }

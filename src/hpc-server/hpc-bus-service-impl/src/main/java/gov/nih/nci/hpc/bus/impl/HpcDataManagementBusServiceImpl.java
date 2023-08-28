@@ -413,7 +413,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset) throws HpcException {
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report) throws HpcException {
 		// Input validation.
 		if (path == null || offset < 0) {
 			throw new HpcException("Null collection path or invalid offset", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -451,7 +451,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
-		collectionDTO.getReports().add(getTotalSizeReport(path, true));
+		if(report)
+			collectionDTO.getReports().add(getTotalSizeReport(path, true));
 
 		return collectionDTO;
 	}
