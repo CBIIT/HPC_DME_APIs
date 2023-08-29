@@ -116,10 +116,6 @@ public class HpcDocController extends AbstractHpcController {
 		session.setAttribute("userDOCModel", modelDTO);
 		model.addAttribute("userDOCModel", modelDTO);
 
-		//Reload the base path permissions
-		hpcModelBuilder.updateModelPermissions(modelDTO, authToken, collectionAclsURL,
-				this.sslCertPath, this.sslCertPassword);
-
 		return "doc";
 	}
 

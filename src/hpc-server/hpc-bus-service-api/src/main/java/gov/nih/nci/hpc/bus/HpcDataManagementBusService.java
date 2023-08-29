@@ -275,6 +275,21 @@ public interface HpcDataManagementBusService {
 	public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(String[] collectionPaths, String userId)
 			throws HpcException;
 
+
+	/**
+	 * Given a user and the parent collection path, get the permissions of the user on the
+	 * children of the parent collection.
+	 *
+	 * @param parentPath      The parent collection path.
+	 * @param userId          The user of interest.
+	 * @return permissions of the user on the children collections as <code>
+	 *     HpcUserPermsOnManyCollectionsDTO</code> instance.
+	 * @throws HpcException on service failure.
+	 */
+	HpcUserPermsForCollectionsDTO getUserPermissionsOnChildCollections(String parentPaths, String userId)
+			throws HpcException;
+
+
 	/**
 	 * Given some collection paths, get all permissions on those collections across
 	 * all users.
@@ -614,5 +629,6 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcBulkMetadataUpdateResponseDTO updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest)
 			throws HpcException;
+
 
 }

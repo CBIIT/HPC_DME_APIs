@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskSt
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -199,6 +200,19 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcSubjectPermission acquireCollectionPermission(String path, String userId) throws HpcException;
+
+
+	/**
+	 * Acquire permissions of the given user on the children of a given parent collection.
+	 *
+	 * @param parentPath    Path of the parent collection.
+	 * @param userId        UserId of the user to get permissions for.
+	 * @return <code>HpcPermissionForCollection</code> representing the permissions that
+	 *         the given user has on the children of the given collection.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionsForUser(
+			String parentPath, String userId) throws HpcException;
 
 	/**
 	 * Get collection permission (for the request invoker)
@@ -629,4 +643,5 @@ public interface HpcDataManagementService {
 	 * @return True if it is expired, or false otherwise.
 	 */
 	boolean deletedDataObjectExpired(Calendar deletedDate);
+
 }

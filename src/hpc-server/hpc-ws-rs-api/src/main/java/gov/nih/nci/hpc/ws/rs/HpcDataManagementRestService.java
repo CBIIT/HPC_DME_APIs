@@ -287,6 +287,22 @@ public interface HpcDataManagementRestService {
 	public Response getPermissionsOnCollectionsForUser(@QueryParam("collectionPath") String[] collectionsPaths,
 			@PathParam("userId") String userId);
 
+
+	/**
+	 * Get the permissions that a given user has on the child collections
+	 * of the given parent path.
+	 *
+	 * @param parentPath	The collections' parent path.
+	 * @param userId     	The user id to get permissions for.
+	 * @return The REST service response with HpcUserPermissionsOnMultipleCollectionsDTO instance.
+	 */
+	@GET
+	@Path("/childCollections/acl/user/{userId:.*}")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	Response getPermissionsOnChildCollectionsFromUser(@QueryParam("parentPath") String parentPath,
+			@PathParam("userId") String userId);
+
+
 	/**
 	 * Get all permissions that are assigned for a given set of collections.
 	 *
