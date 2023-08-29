@@ -75,10 +75,13 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.UploadPartPresignRequest;
 import software.amazon.awssdk.transfer.s3.model.CompletedCopy;
 import software.amazon.awssdk.transfer.s3.model.Copy;
@@ -775,7 +778,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		Calendar dataTransferStarted = Calendar.getInstance();
 
 		CompletableFuture<Void> s3TransferManagerUploadFuture = CompletableFuture.runAsync(() -> {
-			try { 
+			try {
 				// Open a connection to the input stream of the file to be uploaded.
 				InputStream sourceInputStream = null;
 				if (googleDriveUploadSource != null) {
@@ -849,52 +852,43 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration,
 			List<HpcMetadataEntry> metadataEntries, String uploadRequestURLChecksum, String storageClass,
 			boolean uploadCompletion) throws HpcException {
-		/*
-		 * 
-		 * // Calculate the URL expiration date. Date expiration = new Date();
-		 * expiration.setTime(expiration.getTime() + 1000 * 60 * 60 *
-		 * uploadRequestURLExpiration);
-		 * 
-		 * // Create a URL generation request. GeneratePresignedUrlRequest
-		 * generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
-		 * archiveDestinationLocation.getFileContainerId(),
-		 * archiveDestinationLocation.getFileId())
-		 * .withMethod(HttpMethod.PUT).withExpiration(expiration);
-		 * 
-		 * // Add the storage class.
-		 * generatePresignedUrlRequest.addRequestParameter(Headers.STORAGE_CLASS,
-		 * storageClass);
-		 * 
-		 * // Add user metadata. if (metadataEntries != null) { for (HpcMetadataEntry
-		 * metadataEntry : metadataEntries) {
-		 * generatePresignedUrlRequest.addRequestParameter(
-		 * Headers.S3_USER_METADATA_PREFIX + metadataEntry.getAttribute(),
-		 * metadataEntry.getValue()); } }
-		 * 
-		 * // Optionally add a checksum header. if
-		 * (!StringUtils.isEmpty(uploadRequestURLChecksum)) {
-		 * generatePresignedUrlRequest.setContentMd5(uploadRequestURLChecksum); }
-		 * 
-		 * // Generate the pre-signed URL. URL url =
-		 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-		 * .generatePresignedUrl(generatePresignedUrlRequest);
-		 * 
-		 * // Create and populate the response object. HpcDataObjectUploadResponse
-		 * uploadResponse = new HpcDataObjectUploadResponse();
-		 * uploadResponse.setArchiveLocation(archiveDestinationLocation);
-		 * uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
-		 * uploadResponse.setDataTransferStarted(Calendar.getInstance());
-		 * uploadResponse.setDataTransferCompleted(null);
-		 * uploadResponse.setDataTransferRequestId(String.valueOf(
-		 * generatePresignedUrlRequest.hashCode()));
-		 * uploadResponse.setUploadRequestURL(url.toString());
-		 * uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.
-		 * URL_GENERATED); uploadResponse .setDataTransferMethod(uploadCompletion ?
-		 * HpcDataTransferUploadMethod.URL_SINGLE_PART_WITH_COMPLETION :
-		 * HpcDataTransferUploadMethod.URL_SINGLE_PART);
-		 * 
-		 * return uploadResponse;
-		 */return null;
+
+		PutObjectRequest objectRequest = PutObjectRequest.builder()
+				.bucket(archiveDestinationLocation.getFileContainerId()).key(archiveDestinationLocation.getFileId())
+				.metadata(toS3Metadata(metadataEntries)).storageClass(storageClass).contentMD5(uploadRequestURLChecksum)
+				.build();
+		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+				.signatureDuration(Duration.ofHours(uploadRequestURLExpiration)).putObjectRequest(objectRequest)
+				.build();
+
+		PresignedPutObjectRequest presignedRequest = null;
+		URL url = null;
+
+		// Generate the upload pre-signed upload URL.
+		try {
+			presignedRequest = s3Connection.getPresigner(authenticatedToken).presignPutObject(presignRequest);
+			url = presignedRequest.url();
+
+		} catch (SdkException e) {
+			throw new HpcException("[S3] Failed to create a pre-signed URL", HpcErrorType.DATA_TRANSFER_ERROR,
+					s3Connection.getS3Provider(authenticatedToken), e);
+		}
+
+		// Create and populate the response object.
+		HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+		uploadResponse.setArchiveLocation(archiveDestinationLocation);
+		uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+		uploadResponse.setDataTransferStarted(Calendar.getInstance());
+		uploadResponse.setDataTransferCompleted(null);
+		uploadResponse.setDataTransferRequestId(String.valueOf(presignedRequest.hashCode()));
+		uploadResponse.setUploadRequestURL(url.toString());
+		uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
+		uploadResponse
+				.setDataTransferMethod(uploadCompletion ? HpcDataTransferUploadMethod.URL_SINGLE_PART_WITH_COMPLETION
+						: HpcDataTransferUploadMethod.URL_SINGLE_PART);
+
+		return uploadResponse;
+
 	}
 
 	/**
