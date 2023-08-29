@@ -901,6 +901,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return usrPrmsOnClltcns;
 	}
 
+
+	@Override
+	public HpcUserPermsForCollectionsDTO getUserPermissionsOnChildCollections(String parentPath, String userId)
+			throws HpcException {
+		HpcUserPermsForCollectionsDTO userPermissionsOnCollections = null;
+		if (dataManagementSecurityService.userExists(userId)) {
+			userPermissionsOnCollections = new HpcUserPermsForCollectionsDTO();
+			userPermissionsOnCollections.setUserId(userId);
+			userPermissionsOnCollections.getPermissionsForCollections().addAll(
+					dataManagementService.acquireChildrenCollectionsPermissionsForUser(
+				        parentPath, userId));
+		} else {
+			throw new HpcException("User not found: " + userId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+		}
+		return userPermissionsOnCollections;
+	}
+
+
 	@Override
 	public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths) throws HpcException {
 		HpcPermsForCollectionsDTO resultDto = new HpcPermsForCollectionsDTO();
