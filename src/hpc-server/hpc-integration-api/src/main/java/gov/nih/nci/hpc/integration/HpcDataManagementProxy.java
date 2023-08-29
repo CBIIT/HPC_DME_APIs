@@ -12,6 +12,7 @@ import java.util.List;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -345,7 +346,21 @@ public interface HpcDataManagementProxy {
   public HpcSubjectPermission acquireCollectionPermission(
       Object authenticatedToken, String path, String userId) throws HpcException;
 
-  
+
+  /**
+   * Acquire permissions of the given user on the direct children of the given parent collection.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param parentPath    Path of the parent collection. If null or blank, the base path
+   *                      of the irods connection will be used as the parent.
+   * @param userId UserId of given user.
+   * @return <code>List<HpcPermissionForCollection></code> List of collection permissions for a user
+   * @throws HpcException on data management system failure.
+   */
+  public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionForUser(
+      Object authenticatedToken, String parentPath, String userId) throws HpcException;
+
+
   /**
    * Acquire permission on a given DataObject for a given user.
    *
@@ -487,4 +502,6 @@ public interface HpcDataManagementProxy {
    * @return The relative path.
    */
   public String getRelativePath(String absolutePath);
+
+
 }

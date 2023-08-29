@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -659,6 +660,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	public HpcSubjectPermission acquireCollectionPermission(String path, String userId) throws HpcException {
 		return dataManagementProxy.acquireCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(),
 				path, userId);
+	}
+
+	@Override
+	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionsForUser(
+		      String parentPath, String userId) throws HpcException {
+		return dataManagementProxy.acquireChildrenCollectionsPermissionForUser(
+				dataManagementAuthenticator.getAuthenticatedToken(), parentPath, userId);
 	}
 
 	@Override
