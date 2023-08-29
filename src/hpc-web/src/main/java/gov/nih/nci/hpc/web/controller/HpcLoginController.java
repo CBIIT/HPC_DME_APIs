@@ -20,6 +20,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -33,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -65,8 +68,8 @@ public class HpcLoginController extends AbstractHpcController {
 	private String queryURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
-	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
-	private String collectionAclURL;
+	@Value("${gov.nih.nci.hpc.server.childCollections.acl.user}")
+	private String childCollectionsAclURL;
 	@Value("${gov.nih.nci.hpc.login.module:}")
 	protected String hpcLoginModule;
 	@Value("${app.version:}")
@@ -138,9 +141,13 @@ public class HpcLoginController extends AbstractHpcController {
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
 
-                //Cache all permissions for all base paths, if not already cached
-                hpcModelBuilder.getModelPermissions(
-                        modelDTO, authToken, collectionAclsURL, sslCertPath, sslCertPassword);
+                //Cache this user's permissions for all base paths
+                HpcUserPermsForCollectionsDTO permissions = (HpcUserPermsForCollectionsDTO) session.getAttribute("userDOCPermissions");
+                if(permissions == null) {
+                    permissions = HpcClientUtil.getPermissionsForBasePaths(modelDTO, authToken,
+                        hpcLogin.getUserId(), childCollectionsAclURL, sslCertPath, sslCertPassword);
+                    session.setAttribute("userDOCPermissions", permissions);
+                }
 
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
