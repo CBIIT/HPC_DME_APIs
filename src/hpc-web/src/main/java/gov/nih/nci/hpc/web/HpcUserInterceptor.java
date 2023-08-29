@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
@@ -58,8 +60,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     protected String env;
     @Value("${dme.token.expiration.period:120}")
     private int tokenExpirationPeriod;
-    @Value("${gov.nih.nci.hpc.server.collection.acl}")
-	private String collectionAclURL;
+    @Value("${gov.nih.nci.hpc.server.childCollections.acl.user}")
+	private String childCollectionsAclURL;
     
     @Autowired
     private HpcModelBuilder hpcModelBuilder;
@@ -114,10 +116,14 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 
                         if (modelDTO != null) {
                             session.setAttribute("userDOCModel", modelDTO);
-    	                
-                            //Cache all permissions for all base paths, if not already cached
-                            hpcModelBuilder.getModelPermissions(
-                              modelDTO, authToken, collectionAclURL, sslCertPath, sslCertPassword);
+                        }
+
+                        //Cache this user's permissions for all base paths
+                        HpcUserPermsForCollectionsDTO permissions = (HpcUserPermsForCollectionsDTO) session.getAttribute("userDOCPermissions");
+                        if(permissions == null) {
+                            permissions = HpcClientUtil.getPermissionsForBasePaths(modelDTO, authToken,
+                            userId, childCollectionsAclURL, sslCertPath, sslCertPassword);
+                            session.setAttribute("userDOCPermissions", permissions);
                         }
 
     	            } catch (HpcWebException e) {
