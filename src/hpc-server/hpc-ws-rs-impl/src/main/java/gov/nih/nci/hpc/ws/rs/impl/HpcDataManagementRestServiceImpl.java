@@ -366,6 +366,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return okResponse(hpcUserPermsOnCollsDTO, true);
 	}
 
+
+	@Override
+	public Response getPermissionsOnChildCollectionsFromUser(String parentPath, String userId) {
+        HpcUserPermsForCollectionsDTO hpcUserPermsOnCollectionsDTO = null;
+        try {
+            hpcUserPermsOnCollectionsDTO = dataManagementBusService.getUserPermissionsOnChildCollections(parentPath, userId);
+        } catch (HpcException e) {
+            return errorResponse(e);
+        }
+
+        return okResponse(hpcUserPermsOnCollectionsDTO, true);
+    }
+
+
 	@Override
 	public Response getAllPermissionsOnCollections(String[] collectionPaths) {
 		HpcPermsForCollectionsDTO resultDto = null;
@@ -377,6 +391,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 		return okResponse(resultDto, true);
 	}
+
 
 	@Deprecated
 	@Override
