@@ -197,25 +197,6 @@ public class HpcPermissionController extends AbstractHpcController {
 				if (restResponse.getStatus() == 200) {
 					redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
 
-					//Reload the base path permissions if this is a base path permission change
-
-					String path = permissionsRequest.getPath();
-					String basePath = path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2) < 0 ? path.length() : StringUtils.ordinalIndexOf(path, "/", 2));
-				     if(basePath.contentEquals(path)) {
-
-				        //Get DOC Models, goes to server only if cache does not have it
-				        HpcDataManagementModelDTO modelDTO =
-				        hpcModelBuilder.getDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
-				        if(modelDTO != null) {
-				            //Overwrite session attribute
-			                session.setAttribute("userDOCModel", modelDTO);
-
-			                //Reload the base paths permissions
-			                hpcModelBuilder.updateModelPermissions(modelDTO, authToken, collectionAclsURL,
-			                this.sslCertPath, this.sslCertPassword);
-				        }
-				     }
-
 					return "redirect:/permissions?assignType=User&type="
 							+ MiscUtil.performUrlEncoding(permissionsRequest.getType()) + "&path="
 							+ MiscUtil.performUrlEncoding(permissionsRequest.getPath());
