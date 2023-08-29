@@ -75,6 +75,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1690,9 +1691,10 @@ public class HpcClientUtil {
           HpcUserPermsForCollectionsDTO.class);
       }
       return retVal;
-    } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get permission due to: " +
+    } catch (Exception e) {
+      String errorMsg = "Failed to get collection permissions for user " + userId;
+      logger.error(errorMsg, e);
+      throw new HpcWebException("Failed to get collection permission: " +
         e.getMessage());
     }
   }
@@ -2418,6 +2420,61 @@ public class HpcClientUtil {
 
 	    return HpcClientUtil.getAllPermissionsForCollections(authToken, collectionURL,
 	      docRulesBasePaths.toArray(), sslCertPath, sslCertPassword);
+  }
+
+  public static HpcUserPermsForCollectionsDTO getPermissionsForBasePaths(
+	      HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
+	      String sslCertPath, String sslCertPassword) {
+
+	    final List<String> docRulesBasePaths = new ArrayList<>();
+	    for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+	      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+	        docRulesBasePaths.add(rule.getBasePath());
+	      }
+	    }
+
+	    HpcUserPermsForCollectionsDTO userPermsForCollectionsDTO = HpcClientUtil.getPermissionsForChildCollections(
+	        authToken, collectionURL, userId, null, sslCertPath, sslCertPassword);
+
+	    List<HpcPermissionForCollection> collectionsPermissions = new ArrayList();
+	    for(HpcPermissionForCollection permission: userPermsForCollectionsDTO.getPermissionsForCollections()) {
+            if(docRulesBasePaths.contains(permission.getCollectionPath())) {
+                HpcPermissionForCollection collectionPermission = new HpcPermissionForCollection();
+                collectionPermission.setCollectionPath(permission.getCollectionPath());
+                collectionPermission.setPermission(permission.getPermission());
+                collectionsPermissions.add(collectionPermission);
+            }
+	    }
+	    userPermsForCollectionsDTO.getPermissionsForCollections().clear();
+	    userPermsForCollectionsDTO.getPermissionsForCollections().addAll(collectionsPermissions);
+	    return userPermsForCollectionsDTO ;
+  }
+
+
+  public static HpcUserPermsForCollectionsDTO getPermissionsForChildCollections(
+	  String token, String hpcServiceURL, String userId, String parentPath,
+      String hpcCertPath, String hpcCertPassword) {
+	  try {
+	      UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
+	      hpcServiceURL).pathSegment(userId);
+	      ucBuilder.queryParam("parentPath", parentPath);
+
+	      WebClient client = HpcClientUtil.getWebClient(ucBuilder.build().encode()
+	        .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+	      client.header("Authorization", "Bearer " + token);
+	      Response restResponse = client.get();
+	      HpcUserPermsForCollectionsDTO retVal = null;
+	      if (null != restResponse && 200 == restResponse.getStatus()) {
+	        retVal = new MappingJsonFactory().createParser((InputStream)
+	          restResponse.getEntity()).readValueAs(
+	          HpcUserPermsForCollectionsDTO.class);
+	      }
+	      return retVal;
+	    } catch (Exception e) {
+	      String errorMsg = "Failed to get child collection permissions for user " + userId;
+	      logger.error(errorMsg, e);
+	      throw new HpcWebException("Failed to get collection permission: " + e.getMessage());
+	    }
   }
 
   @Deprecated
