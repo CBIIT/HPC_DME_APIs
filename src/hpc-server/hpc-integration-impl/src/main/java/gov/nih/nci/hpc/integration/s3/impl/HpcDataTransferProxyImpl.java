@@ -855,8 +855,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		PutObjectRequest objectRequest = PutObjectRequest.builder()
 				.bucket(archiveDestinationLocation.getFileContainerId()).key(archiveDestinationLocation.getFileId())
-				.metadata(toS3Metadata(metadataEntries)).storageClass(storageClass).contentMD5(uploadRequestURLChecksum)
-				.build();
+				// .metadata(toS3Metadata(metadataEntries)) - TODO: setting metadata on the URL
+				// cause Cloudian upload w/ URL to fail.
+				.storageClass(storageClass).contentMD5(uploadRequestURLChecksum).build();
 		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
 				.signatureDuration(Duration.ofHours(uploadRequestURLExpiration)).putObjectRequest(objectRequest)
 				.build();
