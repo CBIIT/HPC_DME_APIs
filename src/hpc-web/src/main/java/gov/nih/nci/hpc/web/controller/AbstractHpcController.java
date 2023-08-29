@@ -24,7 +24,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportEntry;
@@ -34,6 +34,7 @@ import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroup;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -60,8 +61,8 @@ public abstract class AbstractHpcController {
 	private String bookmarkServiceURL;
 	@Value("${dme.globus.public.endpoints:}")
 	private String globusPublicEndpoints;
-	@Value("${gov.nih.nci.hpc.server.collection.acl}")
-	private String collectionAclsURL;
+	@Value("${gov.nih.nci.hpc.server.childCollections.acl.user}")
+	private String childCollectionsAclURL;
 	@Value("${gov.nih.nci.hpc.server.user.group}")
 	private String userGroupServiceURL;
 	@Value("${dme.max.allowed.download.size:3000000000000}")
@@ -137,45 +138,24 @@ public abstract class AbstractHpcController {
 
 		Set<String> userBasePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
-        //Get the groups the user belongs to.
-        HpcGroupListDTO groups = null;
-        List<String> userGroupNames = new ArrayList<String>();
-        if (session.getAttribute("userGroups") == null) {
-            groups =
-              HpcClientUtil.getUserGroup(
-                  authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
-            if(groups != null) {
-                session.setAttribute("userGroups", groups);
-            }
-        } else {
-            groups = (HpcGroupListDTO) session.getAttribute("userGroups");
-        }
-        if(groups != null && !CollectionUtils.isEmpty(groups.getGroups())) {
-           for(HpcGroup group: groups.getGroups()) {
-               userGroupNames.add(group.getGroupName());
-           }
+        //Get this user's permissions for the base paths
+        HpcUserPermsForCollectionsDTO permissions = (HpcUserPermsForCollectionsDTO) session.getAttribute("userDOCPermissions");
+        if(permissions == null) {
+            permissions = HpcClientUtil.getPermissionsForBasePaths(modelDTO, authToken,
+ 				   userId, childCollectionsAclURL, sslCertPath, sslCertPassword);
+            session.setAttribute("userDOCPermissions", permissions);
         }
 
-        //Get all permissions for all base paths, hpcModelBuilder goes to server only if not available in cache
-        HpcPermsForCollectionsDTO permissions = hpcModelBuilder.getModelPermissions(
-            modelDTO, authToken, collectionAclsURL, sslCertPath, sslCertPassword);
-
-        //Now extract the base paths that this user has permissions to
-        if (permissions != null && !CollectionUtils.isEmpty(permissions.getCollectionPermissions())) {
-            for (HpcPermissionsForCollection collectionPermissions : permissions.getCollectionPermissions()) {
-                if (collectionPermissions != null && !CollectionUtils.isEmpty(collectionPermissions.getCollectionPermissions())) {
-                    for(HpcSubjectPermission permission: collectionPermissions.getCollectionPermissions()) {
-                        if( (permission.getSubject().contentEquals(userId) ||
-                              userGroupNames.contains(permission.getSubject()))
-                          && (hpcPermissions != null && Arrays.asList(hpcPermissions).contains((permission.getPermission())))) {
-                            userBasePaths.add(collectionPermissions.getCollectionPath());
-                            break;
-                        }
-                    }
+        //Extract the base paths that this user has READ, WRITE or OWN permissions to
+        if (permissions != null && !CollectionUtils.isEmpty(permissions.getPermissionsForCollections())) {
+            for (HpcPermissionForCollection collectionPermission : permissions.getPermissionsForCollections()) {
+                if (collectionPermission != null && !HpcPermission.NONE.equals(collectionPermission.getPermission())) {
+                    userBasePaths.add(collectionPermission.getCollectionPath());
                 }
             }
         }
         session.setAttribute(sessionAttribute, userBasePaths);
+
 	}
 	
 	protected void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {

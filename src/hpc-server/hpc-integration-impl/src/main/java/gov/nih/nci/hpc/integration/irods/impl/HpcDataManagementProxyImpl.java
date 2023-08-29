@@ -57,6 +57,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -660,6 +661,42 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			throw new HpcException(msg, HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
 		}
 	}
+
+
+	@Override
+	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionForUser(
+        Object authenticatedToken, String parentPath, String userId) throws HpcException {
+
+		List<HpcPermissionForCollection> hpcPermissionsForCollections = new ArrayList();
+
+		try {
+			List<CollectionAndDataObjectListingEntry> collectionsPermissions =
+					irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).listCollectionsUnderPathWithPermissions(
+							!StringUtils.isEmpty(parentPath) ? parentPath : irodsConnection.getBasePath(), 0);
+			//Parse through the entry for each collection in the result
+			for(CollectionAndDataObjectListingEntry collectionPermissions: collectionsPermissions) {
+				//Parse through all the permissions associated with this collection
+				List<UserFilePermission> userFilePermissions = collectionPermissions.getUserFilePermission();
+				for(UserFilePermission userFilePermission: userFilePermissions) {
+					//Obtain the permission for this specific user only if it exists
+					if(userFilePermission.getUserName().equals(userId)) {
+						HpcPermissionForCollection userCollectionPermission = new HpcPermissionForCollection();
+						userCollectionPermission.setCollectionPath(getRelativePath(collectionPermissions.getPathOrName()));
+						userCollectionPermission.setPermission(toHpcPermission(userFilePermission.getFilePermissionEnum()));
+						hpcPermissionsForCollections.add(userCollectionPermission);
+						break;
+					}
+				}
+			}
+			return hpcPermissionsForCollections;
+
+		} catch (Exception e) {
+			String msg = String.format("Failed to acquire collection permission for user [%s]: %s", userId,
+					e.getMessage());
+			throw new HpcException(msg, HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
+		}
+	}
+
 
 	@Override
 	public void setCollectionPermission(Object authenticatedToken, String path, HpcSubjectPermission permissionRequest)
