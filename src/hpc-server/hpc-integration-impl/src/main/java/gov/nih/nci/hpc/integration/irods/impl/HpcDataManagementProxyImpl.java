@@ -673,12 +673,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		logger.info("parentPath for geting child permissions: {}, userId: {}, irodsBasePath: {}",
 				parentPath, userId, irodsConnection.getBasePath());
 		try {
+			String parent = !StringUtils.isEmpty(parentPath) ? parentPath : irodsConnection.getBasePath();
 			List<CollectionAndDataObjectListingEntry> collectionsPermissions =
 					irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).listCollectionsUnderPathWithPermissions(
-							!StringUtils.isEmpty(parentPath) ? parentPath : irodsConnection.getBasePath(), 0);
+							parent, 0, true);
 			//Parse through the entry for each collection in the result
 			if(!CollectionUtils.isEmpty(collectionsPermissions)) {
-				logger.info("Children count of requested parent: {}", collectionsPermissions.size());
+				logger.debug("Children count of path {}: {}", parent, collectionsPermissions.size());
 				for(CollectionAndDataObjectListingEntry collectionPermissions: collectionsPermissions) {
 					//Parse through all the permissions associated with this collection
 					List<UserFilePermission> userFilePermissions = collectionPermissions.getUserFilePermission();
