@@ -51,6 +51,7 @@ import org.irods.jargon.core.query.QueryConditionOperators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -71,6 +72,7 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
+
 
 /**
  * HPC Data Management Proxy iRODS Implementation.
@@ -668,23 +670,28 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
         Object authenticatedToken, String parentPath, String userId) throws HpcException {
 
 		List<HpcPermissionForCollection> hpcPermissionsForCollections = new ArrayList();
-
+		logger.info("parentPath for geting child permissions: {}, userId: {}, irodsBasePath: {}",
+				parentPath, userId, irodsConnection.getBasePath());
 		try {
+			String parent = !StringUtils.isEmpty(parentPath) ? parentPath : irodsConnection.getBasePath();
 			List<CollectionAndDataObjectListingEntry> collectionsPermissions =
 					irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).listCollectionsUnderPathWithPermissions(
-							!StringUtils.isEmpty(parentPath) ? parentPath : irodsConnection.getBasePath(), 0);
+							parent, 0, true);
 			//Parse through the entry for each collection in the result
-			for(CollectionAndDataObjectListingEntry collectionPermissions: collectionsPermissions) {
-				//Parse through all the permissions associated with this collection
-				List<UserFilePermission> userFilePermissions = collectionPermissions.getUserFilePermission();
-				for(UserFilePermission userFilePermission: userFilePermissions) {
-					//Obtain the permission for this specific user only if it exists
-					if(userFilePermission.getUserName().equals(userId)) {
-						HpcPermissionForCollection userCollectionPermission = new HpcPermissionForCollection();
-						userCollectionPermission.setCollectionPath(getRelativePath(collectionPermissions.getPathOrName()));
-						userCollectionPermission.setPermission(toHpcPermission(userFilePermission.getFilePermissionEnum()));
-						hpcPermissionsForCollections.add(userCollectionPermission);
-						break;
+			if(!CollectionUtils.isEmpty(collectionsPermissions)) {
+				logger.debug("Children count of path {}: {}", parent, collectionsPermissions.size());
+				for(CollectionAndDataObjectListingEntry collectionPermissions: collectionsPermissions) {
+					//Parse through all the permissions associated with this collection
+					List<UserFilePermission> userFilePermissions = collectionPermissions.getUserFilePermission();
+					for(UserFilePermission userFilePermission: userFilePermissions) {
+						//Obtain the permission for this specific user only if it exists
+						if(userFilePermission.getUserName().equals(userId)) {
+							HpcPermissionForCollection userCollectionPermission = new HpcPermissionForCollection();
+							userCollectionPermission.setCollectionPath(getRelativePath(collectionPermissions.getPathOrName()));
+							userCollectionPermission.setPermission(toHpcPermission(userFilePermission.getFilePermissionEnum()));
+							hpcPermissionsForCollections.add(userCollectionPermission);
+							break;
+						}
 					}
 				}
 			}
