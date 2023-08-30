@@ -109,15 +109,15 @@
 <script>
 var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
 
-app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval ) {
+app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', function ($scope, $http, $interval,  uiGridConstants ) {
 
 	$scope.gridOptions1 = {
     enableSorting: true,
     enableFiltering: true,
     paginationPageSize: 100,
-    rowHeight: 30,
     minRowsToShow: currentPageSize,
     enablePaginationControls: false,
+    enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
     columnDefs: [
     			 { field: 'userId', width:120, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
     			 { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="downloadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
