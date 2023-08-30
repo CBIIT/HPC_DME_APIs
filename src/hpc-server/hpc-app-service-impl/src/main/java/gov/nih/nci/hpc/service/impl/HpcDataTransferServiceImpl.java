@@ -103,6 +103,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -167,6 +168,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Notification Application Service.
 	@Autowired
 	private HpcNotificationService notificationService = null;
+
+	//Data Management Service
+	@Autowired
+	private HpcDataManagementService dataManagementService = null;
 
 	// Data Registration DAO.
 	@Autowired
@@ -681,6 +686,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCreated(now);
 		taskResult.setSize(size);
 		taskResult.setCompleted(now);
+		taskResult.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+
 
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
@@ -1162,6 +1169,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
 				/ (taskResult.getCompleted().getTimeInMillis() - taskResult.getCreated().getTimeInMillis())));
 
+		taskResult.setDoc(dataManagementService.getDataManagementConfiguration(downloadTask.getConfigurationId()).getDoc());
+
+
 		// Get the file container name.
 		try {
 			taskResult.getDestinationLocation().setFileContainerName(
@@ -1486,6 +1496,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setAppendPathToDownloadDestination(false);
+		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
@@ -1516,7 +1527,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
-
+		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 
@@ -1548,6 +1559,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
+		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 
 		// Persist the request.
@@ -1603,6 +1615,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer()));
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING);
 		collectionDownloadTask.setConfigurationId(configurationId);
+		collectionDownloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 	}
 
 	@Override
@@ -1658,6 +1671,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setUserId(downloadTaskResult.getUserId());
 		downloadTask.setType(downloadTaskResult.getType());
 		downloadTask.setPath(downloadTaskResult.getPath());
+		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(downloadTask.getConfigurationId()).getDoc());
 		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
 
 		switch (downloadTaskResult.getDestinationType()) {
@@ -1851,8 +1865,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadRequests = dataDownloadDAO.getAllDataObjectDownloadRequests();
 			downloadRequests.addAll(dataDownloadDAO.getAllCollectionDownloadRequests());
 		} else {
-			downloadRequests = dataDownloadDAO.getDataObjectDownloadRequestsForDoc(doc);
-			downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequestsForDoc(doc));
+			downloadRequests = dataDownloadDAO.getDataObjectDownloadRequestsForDoc(doc, userId);
+			downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequestsForDoc(doc, userId));
 		}
 		return downloadRequests;
 	}
@@ -1867,7 +1881,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadResults = dataDownloadDAO.getAllDownloadResults(pagination.getOffset(page),
 					pagination.getPageSize());
 		} else {
-			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, pagination.getOffset(page),
+			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, pagination.getOffset(page),
 					pagination.getPageSize());
 		}
 		return downloadResults;
@@ -1881,7 +1895,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (doc.equals("ALL")) {
 			count = dataDownloadDAO.getAllDownloadResultsCount();
 		} else {
-			count = dataDownloadDAO.getDownloadResultsCountForDoc(doc);
+			count = dataDownloadDAO.getDownloadResultsCountForDoc(doc, userId);
 		}
 		return count;
 	}
@@ -2833,6 +2847,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setSize(downloadRequest.getSize());
 		taskResult.setCompleted(Calendar.getInstance());
 		taskResult.setFirstHopRetried(false);
+		taskResult.setDoc(dataManagementService.getDataManagementConfiguration(downloadRequest.getConfigurationId()).getDoc());
 
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
@@ -2878,6 +2893,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setUserId(downloadRequest.getUserId());
 		downloadTask.setFirstHopRetried(false);
 		downloadTask.setRetryUserId(downloadRequest.getRetryUserId());
+		downloadTask.setDoc(
+				dataManagementService.getDataManagementConfiguration(downloadRequest.getConfigurationId()).getDoc());
 
 		// Persist the download task. The download will be performed by a scheduled task
 		// picking up
@@ -3420,6 +3437,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setGoogleDriveDownloadDestination(downloadRequest.getGoogleDriveDestination());
 			downloadTask.setFirstHopRetried(false);
 			downloadTask.setRestoreRequested(true);
+			downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(downloadRequest.getConfigurationId()).getDoc());
 
 			if (downloadTask.getS3DownloadDestination() != null) {
 				downloadTask.setDataTransferType(HpcDataTransferType.S_3);
@@ -3550,6 +3568,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	void setDataDownloadDAO(HpcDataDownloadDAO dataDownloadDAO) {
 		this.dataDownloadDAO = dataDownloadDAO;
+	}
+	
+	void setDataManagementService(HpcDataManagementService dataManagementService) {
+		this.dataManagementService = dataManagementService;
 	}
 
 	// Second hop download.
@@ -3826,6 +3848,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
 							? s3DownloadTaskServerId
 							: null);
+			downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(
+					firstHopDownloadRequest.getConfigurationId()).getDoc());
+
 			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
 			}
