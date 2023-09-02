@@ -1,5 +1,7 @@
 package Register.Pojo;
 
+//hpc-dto/target/generated/src/main/java/gov/nih/nci/hpc/dto/datamanagement/v2/HpcDataObjectRegistrationRequestDTO.java
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ public class DataObjectRegistration {
   List<Map<String, String>> dataObjectMetadataEntries;
   GoogleCloudUploadPojo googleCloudStorageUploadSource;
   S3StreamingUploadPojo s3UploadSource;
+  GlobusUploadSourcePojo globusUploadSource;
   String path;
   BulkMetadataEntriesPojo parentCollectionsBulkMetadataEntries;
   boolean createParentCollections;
@@ -39,6 +42,14 @@ public class DataObjectRegistration {
 
   public void setS3UploadSource(S3StreamingUploadPojo s3UploadSource) {
     this.s3UploadSource = s3UploadSource;
+  }
+
+  public GlobusUploadSourcePojo getGlobusUploadSource() {
+	return globusUploadSource;
+  }
+
+  public void setGlobusUploadSource(GlobusUploadSourcePojo globusUploadSource) {
+	this.globusUploadSource = globusUploadSource;
   }
 
   public BulkMetadataEntriesPojo getParentCollectionsBulkMetadataEntries() {
