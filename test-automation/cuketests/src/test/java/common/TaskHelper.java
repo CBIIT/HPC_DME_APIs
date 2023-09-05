@@ -121,7 +121,10 @@ public class TaskHelper {
       System.out.println(statusCode);
       System.out.println(response.getBody());
       String errorType = jsonPath.get("errorType");
-      System.out.println(errorType);
+      System.out.println("Error Type: " + errorType);
+      String message = response.jsonPath().getString("message");
+      System.out.println("Error Message: " + message);
+      System.out.println("Error Status Code: " + response.getStatusCode());
     }
   }
 }
