@@ -79,3 +79,12 @@ Feature: Register Asynchronous data transfer from Google Cloud and Google Drive
       |source | bucket              | googleCloudLocation | isFile |  response |
       |	googleCloud	| dme-download-bucket | xyz.out             | true  | success |
       | googleCloud	|	dme-upload-bucket   | spreadsheet.csv     | true  | success |
+
+  Scenario Outline:  Register Asynchronous data file transfer from Globus
+		Given I have registration path as "/TEST_Archive/PI_testdirectory_Sehgal_3/Project_test/test-file-delete-me-aws.txt"
+		Given I have a data source "globus"
+		And I add source cloud bucket as "16572124-19cb-11e9-934d-0e3d676669f4"
+		And I add source cloud location as "/~/test-file-delete-me-aws.txt"
+		And I choose file or directory as "true"
+		When I click Register for the Globus Upload
+		Then I get a response of success for the Google Cloud Upload
