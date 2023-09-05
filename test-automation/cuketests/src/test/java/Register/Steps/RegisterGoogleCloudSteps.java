@@ -22,6 +22,7 @@ import Register.Pojo.RegisterPojo;
 import Register.Pojo.S3AccountPojo;
 import Register.Pojo.S3StreamingUploadPojo;
 import Register.Pojo.SourceLocationPojo;
+import Register.Pojo.GlobusUploadSourcePojo;
 import common.JsonHelper;
 import common.TaskHelper;
 import dataProviders.ConfigFileReader;
@@ -137,7 +138,7 @@ public class RegisterGoogleCloudSteps {
 	@When("I click Register for the Google Cloud Upload")
 	public void i_click_register_for_the_google_cloud_upload() {
 	  System.out.println("----------------------------------------------------------");
-	  System.out.println("Test Google Cloud Upload");
+	  System.out.println("Test Google Cloud bulk Upload");
       this.token = configFileReader.getToken();
       if (this.source.equals("googleCloud")) {
         googleCloudInfo.setAccessToken(configFileReader.getGoogleCloudToken());
@@ -161,7 +162,7 @@ public class RegisterGoogleCloudSteps {
 	
 	@When("I click Register for the AWS Upload")
 	public void i_click_register_for_the_aws_upload() {
-	    System.out.println("Welcome AWS upload");
+	    System.out.println("Welcome AWS bulk upload");
       this.token = configFileReader.getToken();
       DataObjectRegistration dataObjectRegistration = taskHelper.setupAuthorizeAWS(sourceLocation, this.path);
       dataObjectRegistration.setDataObjectMetadataEntries(rows);
@@ -174,6 +175,25 @@ public class RegisterGoogleCloudSteps {
       System.out.println("");
 	}
 
+	@When("I click Register for the Globus Upload")
+	public void i_click_register_for_the_globus_upload() {
+		System.out.println("Welcome Globus bulk upload");
+		this.token = configFileReader.getToken();
+		GlobusUploadSourcePojo globusSource = new GlobusUploadSourcePojo();
+		globusSource.setSourceLocation(sourceLocation);
+		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
+		dataObjectRegistration.setPath(this.path);
+		dataObjectRegistration.setDataObjectMetadataEntries(rows);
+		dataObjectRegistration.setGlobusUploadSource(globusSource);
+		ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
+		dataObjectRegistrations.add(0, dataObjectRegistration);
+		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
+		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
+		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
+
+	}
 
 
 	@Then("I get a response of success for the Google Cloud Upload")
