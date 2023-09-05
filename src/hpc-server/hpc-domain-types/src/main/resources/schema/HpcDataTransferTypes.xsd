@@ -370,6 +370,7 @@
 			<xsd:element name="s3DownloadTaskServerId" type="xsd:string" />
 			<xsd:element name="firstHopRetried" type="xsd:boolean" />
 			<xsd:element name="retryUserId" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -407,6 +408,7 @@
 			<xsd:element name="retryTaskId" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="firstHopRetried" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="doc" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -445,6 +447,7 @@
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="doc" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

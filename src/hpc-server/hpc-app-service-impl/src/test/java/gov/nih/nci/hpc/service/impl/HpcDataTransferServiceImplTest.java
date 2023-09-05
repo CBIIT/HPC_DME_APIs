@@ -44,6 +44,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 /**
@@ -68,6 +69,8 @@ public class HpcDataTransferServiceImplTest {
 
 	// Mocks.
 	@Mock
+	private HpcDataManagementService dataManagementServiceMock = null;
+	@Mock
 	private HpcDataTransferProxy dataTransferProxyMock = null;
 	@Mock
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocatorMock = null;
@@ -75,6 +78,7 @@ public class HpcDataTransferServiceImplTest {
 	private HpcSystemAccountLocator systemAccountLocatorMock = null;
 	@Mock
 	private HpcDataDownloadDAO dataDownloadDAOMock = null;
+	
 
 	// ---------------------------------------------------------------------//
 	// Unit Tests
@@ -138,6 +142,7 @@ public class HpcDataTransferServiceImplTest {
 
 		HpcDataManagementConfiguration dmc = new HpcDataManagementConfiguration();
 		dmc.setS3UploadConfigurationId("S3_CONFIG_ID");
+		dmc.setDoc("testDoc");
 
 		// Mock setup.
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
@@ -157,7 +162,8 @@ public class HpcDataTransferServiceImplTest {
 		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(new HpcDataTransferConfiguration());
 		when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
-
+		when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId"))
+		.thenReturn(dmc);
 		// Run the test.
 		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null, null,
 				"/test/path", "testUserId", "testCallerId", "testConfigId", "testObjectId", null);
@@ -210,15 +216,20 @@ public class HpcDataTransferServiceImplTest {
 		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
 		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
+		HpcDataManagementConfiguration testConfiguration = new HpcDataManagementConfiguration();
+		testConfiguration.setDoc("testDoc");
+		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+		.thenReturn(new HpcIntegratedSystemAccount());
+		when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId"))
+		.thenReturn(testConfiguration);
 		when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject(), anyObject()))
-				.thenReturn("https://downloadURL");
-
+		.thenReturn("https://downloadURL");
 		HpcFileLocation archiveLocation = new HpcFileLocation();
 		archiveLocation.setFileContainerId("test");
 		archiveLocation.setFileId("test");
 
 		String downloadURL = dataTransferService.generateDownloadRequestURL("", "user-id", archiveLocation,
-				HpcDataTransferType.S_3, 1000, "", "");
+				HpcDataTransferType.S_3, 1000, "testConfigId", "");
 
 		// Assert expected result.
 		assertEquals(downloadURL, "https://downloadURL");
@@ -335,6 +346,7 @@ public class HpcDataTransferServiceImplTest {
 		dataTransferServiceImpl.setDataManagementConfigurationLocator(dataManagementConfigurationLocatorMock);
 		dataTransferServiceImpl.setSystemAccountLocator(systemAccountLocatorMock);
 		dataTransferServiceImpl.setDataDownloadDAO(dataDownloadDAOMock);
+		dataTransferServiceImpl.setDataManagementService(dataManagementServiceMock);
 
 		dataTransferService = dataTransferServiceImpl;
 	}
