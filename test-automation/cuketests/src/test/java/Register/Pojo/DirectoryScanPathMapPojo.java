@@ -1,12 +1,19 @@
 package Register.Pojo;
 
 public class DirectoryScanPathMapPojo {
-	/*<xsd:complexType name="HpcDirectoryScanPathMap">
-		<xsd:sequence>
-			<xsd:element name="fromPath" type="xsd:string" />
-			<xsd:element name="toPath" type="xsd:string" />
-			<xsd:element name="regexPathMap" type="xsd:boolean" minOccurs="0" />
-		</xsd:sequence>
-	</xsd:complexType>*/
+	String fromPath;
+	String toPath;
 
+	public String getFromPath() {
+		return fromPath;
+	}
+	public void setFromPath(String fromPath) {
+		this.fromPath = fromPath;
+	}
+	public String getToPath() {
+		return toPath;
+	}
+	public void setToPath(String toPath) {
+		this.toPath = toPath;
+	}
 }
