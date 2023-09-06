@@ -86,6 +86,8 @@ import software.amazon.awssdk.services.s3.presigner.model.UploadPartPresignReque
 import software.amazon.awssdk.transfer.s3.model.CompletedCopy;
 import software.amazon.awssdk.transfer.s3.model.Copy;
 import software.amazon.awssdk.transfer.s3.model.CopyRequest;
+import software.amazon.awssdk.transfer.s3.model.DownloadFileRequest;
+import software.amazon.awssdk.transfer.s3.model.FileDownload;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
 import software.amazon.awssdk.transfer.s3.model.Upload;
 import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
@@ -811,7 +813,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			} catch (CompletionException | HpcException | IOException e) {
 				logger.error("[S3] Failed to upload from AWS S3 destination: " + e.getCause().getMessage(), e);
 				progressListener.transferFailed(e.getCause().getMessage());
-
 			}
 		}, s3Executor);
 
@@ -994,37 +995,35 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 */
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			File destinationLocation, HpcDataTransferProgressListener progressListener) throws HpcException {
-		/*
-		 * // Create a S3 download request.
-		 * 
-		 * GetObjectRequest request = new
-		 * GetObjectRequest(archiveLocation.getFileContainerId(),
-		 * archiveLocation.getFileId());
-		 * 
-		 * // Download the file via S3. Download s3Download = null; try { s3Download =
-		 * s3Connection.getTransferManager(authenticatedToken).download(request,
-		 * destinationLocation); if (progressListener == null) { // Download
-		 * synchronously. s3Download.waitForCompletion(); } else { // Download
-		 * asynchronously. s3Download.addProgressListener(new
-		 * HpcS3ProgressListener(progressListener, "download from " +
-		 * archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
-		 * 
-		 * // TODO - remove. This is added to get additional insights on internal //
-		 * exceptions thrown in AWS transfer manager while doing 1st hop download.
-		 * s3Download.addProgressListener( ProgressListener.ExceptionReporter.wrap(new
-		 * ProgressListener.NoOpProgressListener())); }
-		 * 
-		 * } catch (AmazonClientException ace) { throw new
-		 * HpcException("[S3] Failed to download file: [" + ace.getMessage() + "]",
-		 * HpcErrorType.DATA_TRANSFER_ERROR,
-		 * s3Connection.getS3Provider(authenticatedToken), ace);
-		 * 
-		 * } catch (InterruptedException ie) { Thread.currentThread().interrupt();
-		 * 
-		 * } catch (Exception ge) { }
-		 * 
-		 * return String.valueOf(s3Download.hashCode());
-		 */ return null;
+		// Instantiate a transfer listener if needed.
+		HpcS3ProgressListener listener = null;
+		if (progressListener != null) {
+			listener = new HpcS3ProgressListener(progressListener,
+					"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId());
+		}
+
+		// Create a S3 download request.
+		DownloadFileRequest downloadFileRequest = DownloadFileRequest.builder()
+				.getObjectRequest(b -> b.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId()))
+				.addTransferListener(listener).destination(destinationLocation).build();
+
+		FileDownload downloadFile = null;
+		try {
+			downloadFile = s3Connection.getTransferManager(authenticatedToken).downloadFile(downloadFileRequest);
+			if (listener != null) {
+				// Download asynchronously.
+				listener.setCompletableFuture(downloadFile.completionFuture());
+			} else {
+				// Download synchronously.
+				downloadFile.completionFuture().join();
+			}
+		} catch (CompletionException | SdkException e) {
+			throw new HpcException("[S3] Failed to download file: [" + e.getCause().getMessage() + "]",
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
+
+		}
+
+		return String.valueOf(downloadFile.hashCode());
 	}
 
 	/**
