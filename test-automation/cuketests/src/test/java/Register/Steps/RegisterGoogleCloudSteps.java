@@ -15,6 +15,7 @@ import Register.Pojo.BulkMetadataEntry;
 import Register.Pojo.DataObjectRegistration;
 import Register.Pojo.DirectoryScanRegistrationItemPojo;
 import Register.Pojo.GoogleCloudUploadPojo;
+import Register.Pojo.DirectoryScanPathMapPojo;
 import Register.Pojo.GooglePojo;
 import Register.Pojo.ParentMetadataPojo;
 import Register.Pojo.RegisterGoogleCloudPojo;
@@ -22,6 +23,7 @@ import Register.Pojo.RegisterPojo;
 import Register.Pojo.S3AccountPojo;
 import Register.Pojo.S3StreamingUploadPojo;
 import Register.Pojo.SourceLocationPojo;
+import Register.Pojo.DirectoryLocationUploadPojo;
 import Register.Pojo.GlobusUploadSourcePojo;
 import common.JsonHelper;
 import common.TaskHelper;
@@ -56,6 +58,7 @@ public class RegisterGoogleCloudSteps {
   TaskHelper taskHelper= new TaskHelper();
   RegisterGoogleCloudPojo registerBody = new RegisterGoogleCloudPojo();
   SourceLocationPojo sourceLocation  = new SourceLocationPojo();
+  DirectoryScanPathMapPojo pathMap = new DirectoryScanPathMapPojo();
   List<RegisterGoogleCloudPojo> files = new ArrayList<RegisterGoogleCloudPojo>();
   List<Map<String, String>> rows;
   GooglePojo googleObj = new GooglePojo();
@@ -64,6 +67,7 @@ public class RegisterGoogleCloudSteps {
   String accessToken;
   String path;
   String source;
+  String directoryPath;
   int statusCode;
 
   // The Logger instance.
@@ -134,6 +138,15 @@ public class RegisterGoogleCloudSteps {
     bulkMetadataEntries.setDefaultCollectionMetadataEntries(default_metadata_rows);
   }
 
+  @Given("I add fromPath as {string}")
+  public void i_add_from_path_as(String fromPath) {
+	  this.pathMap.setFromPath(fromPath); 
+  }
+
+  @Given("I add toPath as {string}")
+  public void i_add_to_path_as(String toPath) {
+	  this.pathMap.setToPath(toPath);
+  }
 
 	@When("I click Register for the Google Cloud Upload")
 	public void i_click_register_for_the_google_cloud_upload() {
@@ -179,7 +192,8 @@ public class RegisterGoogleCloudSteps {
 	public void i_click_register_for_the_globus_upload() {
 		System.out.println("Welcome Globus bulk upload");
 		this.token = configFileReader.getToken();
-		GlobusUploadSourcePojo globusSource = new GlobusUploadSourcePojo();
+		//GlobusUploadSourcePojo globusSource = new GlobusUploadSourcePojo();
+		S3StreamingUploadPojo globusSource = new S3StreamingUploadPojo();
 		globusSource.setSourceLocation(sourceLocation);
 		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
 		dataObjectRegistration.setPath(this.path);
@@ -195,6 +209,43 @@ public class RegisterGoogleCloudSteps {
 
 	}
 
+	@When("I click Register for the directory Upload")
+	public void i_click_register_for_the_directory_upload() {
+		System.out.println("----------------------------------------------------------");
+		System.out.println("Test Google Cloud bulk Upload");
+		this.token = configFileReader.getToken();
+		DirectoryLocationUploadPojo directoryLocation = new DirectoryLocationUploadPojo();
+		directoryLocation.setDirectoryLocation(sourceLocation);
+		if(this.source.equals("googleCloud")){
+			directoryLocation.setAccessToken(configFileReader.getGoogleCloudToken());
+			directoryScanRegistration.setGoogleCloudStorageScanDirectory(directoryLocation);
+		} else if (source.equals("googleDrive")) {
+			directoryScanRegistration.setGoogleDriveScanDirectory(directoryLocation);
+		} else if (source.equals("aws")) {
+			directoryScanRegistration.setS3ScanDirectory(directoryLocation);
+		} else if (source.equals("globus")) {
+			directoryScanRegistration.setGlobusScanDirectory(directoryLocation);
+		} else {
+			System.out.println(" Unknown Source");
+		}
+		String gcPath = sourceLocation.getFileId();
+		String tempPath = gcPath;
+		if (gcPath.endsWith("/"))
+		  tempPath = gcPath.substring(0, gcPath.length() - 1);
+		String gcToPath = tempPath.substring(tempPath.lastIndexOf("/")+1, tempPath.length());
+        pathMap.setToPath(gcToPath);
+        pathMap.setFromPath(tempPath);
+		directoryScanRegistration.setBasePath(this.path);
+		directoryScanRegistration.setPatternType("SIMPLE");
+		this.directoryScanRegistration.setPathMap(pathMap);
+		ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrations = new ArrayList<DirectoryScanRegistrationItemPojo>();
+		directoryScanRegistrations.add(0, directoryScanRegistration);
+		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
+		bulkRequest.setDirectoryScanRegistrationItems(directoryScanRegistrations);
+		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
+	}
 
 	@Then("I get a response of success for the Google Cloud Upload")
 	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
