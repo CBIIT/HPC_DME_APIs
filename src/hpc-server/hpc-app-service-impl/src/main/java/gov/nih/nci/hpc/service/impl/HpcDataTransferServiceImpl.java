@@ -1671,7 +1671,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setUserId(downloadTaskResult.getUserId());
 		downloadTask.setType(downloadTaskResult.getType());
 		downloadTask.setPath(downloadTaskResult.getPath());
-		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(downloadTask.getConfigurationId()).getDoc());
+		downloadTask.setDoc(downloadTaskResult.getDoc());
 		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
 
 		switch (downloadTaskResult.getDestinationType()) {
