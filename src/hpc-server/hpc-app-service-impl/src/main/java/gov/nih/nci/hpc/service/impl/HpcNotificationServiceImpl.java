@@ -148,7 +148,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
     }
 
     // Validate subscription for usage summary report is allowed for system admin only
-    if (securityService.getUserRole(nciUserId).equals(HpcUserRole.SYSTEM_ADMIN)) {
+    if (!securityService.getUserRole(nciUserId).equals(HpcUserRole.SYSTEM_ADMIN)) {
       if (notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_REPORT)
           || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT)
