@@ -17,4 +17,12 @@ public class ParentMetadataPojo {
 	
 	Map<String, List<Map<String, String>>> pathsMetadataEntries;
 
+	public Map<String, List<Map<String, String>>> getPathsMetadataEntries() {
+		return pathsMetadataEntries;
+	}
+
+	public void setPathsMetadataEntries(Map<String, List<Map<String, String>>> pathsMetadataEntries) {
+		this.pathsMetadataEntries = pathsMetadataEntries;
+	}
+
 }

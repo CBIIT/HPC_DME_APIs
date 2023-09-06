@@ -88,3 +88,16 @@ Feature: Register Asynchronous data transfer from Google Cloud and Google Drive
 		And I choose file or directory as "true"
 		When I click Register for the Globus Upload
 		Then I get a response of success for the Google Cloud Upload
+
+	Scenario Outline:  Register Asynchronous directory transfer from Google Cloud
+		Given I have a data source "googleCloud"
+    Given I have registration path as "/FNL_SF_Archive/Auto_PI_Lab_CCRSF/Project_staudt_103316_17202_ORF_Xeno_1/Flowcell_00000000-ADF6Y/Sample_ORF3_xeno_A_SC1"
+    And I add source cloud bucket as "<bucket>"
+    And I add source cloud location as "dme/"
+    And I have a refresh token
+    When I click Register for the directory Upload
+    Then I get a response of <response> for the Google Cloud Upload
+      Examples:
+      |source | bucket              | response |
+      | googleCloud	|	dme-upload-bucket  	| success |
+    
