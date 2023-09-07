@@ -78,4 +78,15 @@ public class ConfigFileReader {
       else throw new RuntimeException("awsSecretKey not specified in the Configuration.properties file.");
     }
 
+    public String getAwsRegion() {
+        String awsRegion = properties.getProperty("awsRegion");
+        if(awsRegion != null) return awsRegion;
+        else throw new RuntimeException("awsRegion not specified in the Configuration.properties file.");
+      }
+
+    public String getGoogleDriveAccessToken() {
+        String googleDriveAccessToken = properties.getProperty("googleDriveAccessToken");
+        if(googleDriveAccessToken != null) return googleDriveAccessToken;
+        else throw new RuntimeException("googleDriveAccessToken not specified in the Configuration.properties file.");
+      }
 }
