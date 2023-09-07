@@ -175,6 +175,7 @@ public class RegisterGoogleCloudSteps {
 	
 	@When("I click Register for the AWS Upload")
 	public void i_click_register_for_the_aws_upload() {
+		System.out.println("----------------------------------------------------------");
 	    System.out.println("Welcome AWS bulk upload");
       this.token = configFileReader.getToken();
       DataObjectRegistration dataObjectRegistration = taskHelper.setupAuthorizeAWS(sourceLocation, this.path);
@@ -190,6 +191,7 @@ public class RegisterGoogleCloudSteps {
 
 	@When("I click Register for the Globus Upload")
 	public void i_click_register_for_the_globus_upload() {
+		System.out.println("----------------------------------------------------------");
 		System.out.println("Welcome Globus bulk upload");
 		this.token = configFileReader.getToken();
 		//GlobusUploadSourcePojo globusSource = new GlobusUploadSourcePojo();
@@ -213,6 +215,7 @@ public class RegisterGoogleCloudSteps {
 	public void i_click_register_for_the_directory_upload() {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Google Cloud bulk Upload");
+		TaskHelper taskHelper = new TaskHelper();
 		this.token = configFileReader.getToken();
 		DirectoryLocationUploadPojo directoryLocation = new DirectoryLocationUploadPojo();
 		directoryLocation.setDirectoryLocation(sourceLocation);
@@ -220,8 +223,10 @@ public class RegisterGoogleCloudSteps {
 			directoryLocation.setAccessToken(configFileReader.getGoogleCloudToken());
 			directoryScanRegistration.setGoogleCloudStorageScanDirectory(directoryLocation);
 		} else if (source.equals("googleDrive")) {
+			directoryLocation.setAccessToken(configFileReader.getGoogleDriveAccessToken());
 			directoryScanRegistration.setGoogleDriveScanDirectory(directoryLocation);
 		} else if (source.equals("aws")) {
+			directoryLocation.setAccount(taskHelper.getAcctAWS());
 			directoryScanRegistration.setS3ScanDirectory(directoryLocation);
 		} else if (source.equals("globus")) {
 			directoryScanRegistration.setGlobusScanDirectory(directoryLocation);
@@ -242,7 +247,7 @@ public class RegisterGoogleCloudSteps {
 		directoryScanRegistrations.add(0, directoryScanRegistration);
 		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
 		bulkRequest.setDirectoryScanRegistrationItems(directoryScanRegistrations);
-		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
+		taskHelper.submitBulkRequest(bulkRequest, this.token);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}

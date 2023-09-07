@@ -45,17 +45,22 @@ public class TaskHelper {
   public DataObjectRegistration setupAuthorizeAWS(SourceLocationPojo sourceLocation, String path) {
     ConfigFileReader configFileReader= new ConfigFileReader();
     S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
-    S3AccountPojo s3Account = new S3AccountPojo();
-    s3Account.setAccessKey(configFileReader.getAwsAccessKey());
-    s3Account.setSecretKey(configFileReader.getAwsSecretKey());
-    s3Account.setRegion("us-east-2");
-    s3Info.setAccount(s3Account);
+    s3Info.setAccount(getAcctAWS());
     s3Info.setSourceLocation(sourceLocation);
     DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
     dataObjectRegistration.setPath(path + "/" + s3Info.getSourceLocation().getFileId());
     dataObjectRegistration.setS3UploadSource(s3Info);
     return dataObjectRegistration;
   }
+
+  public S3AccountPojo getAcctAWS() {
+	    ConfigFileReader configFileReader= new ConfigFileReader();
+	    S3AccountPojo s3Account = new S3AccountPojo();
+	    s3Account.setAccessKey(configFileReader.getAwsAccessKey());
+	    s3Account.setSecretKey(configFileReader.getAwsSecretKey());
+	    s3Account.setRegion(configFileReader.getAwsRegion());
+	    return s3Account;
+	}
 
   public void submitBulkRequest(BulkDataObjectRegister bulkRequest, String token) {
     Gson gson = new Gson();
