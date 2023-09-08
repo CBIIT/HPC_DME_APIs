@@ -7,6 +7,8 @@ public class S3StreamingUploadPojo {
 
     SourceLocationPojo sourceLocation;
     S3AccountPojo account;
+	String accessToken; // Used by Google Cloud and Google Drive
+
     public SourceLocationPojo getSourceLocation() {
       return sourceLocation;
     }
@@ -19,21 +21,10 @@ public class S3StreamingUploadPojo {
     public void setAccount(S3AccountPojo account) {
       this.account = account;
     }
-
-
-/*
-
-<xsd:complexType name="HpcStreamingUploadSource">
-		<xsd:sequence>
-			<xsd:element name="sourceLocation"
-				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="account"
-				type="hpc-domain-datatransfer:HpcS3Account" />
-			<xsd:element name="accessToken" type="xsd:string" />
-			<xsd:element name="sourceURL" type="xsd:string" />
-			<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
-			<xsd:element name="sourceInputStream" type="hpc-domain-datatransfer:HpcInputStream" />
-		</xsd:sequence>
-	</xsd:complexType>
- */
+	public String getAccessToken() {
+		return accessToken;
+	}
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
+	}    
 }
