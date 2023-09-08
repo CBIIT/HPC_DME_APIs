@@ -3,6 +3,7 @@
 Feature: Register Asynchronous data transfer from Google Cloud and Google Drive
   Description: This feature file contains registering from  related scenarios
 
+	@smoke
   Scenario Outline:  Register Asynchronous data file transfer from Google Cloud
   	Given I have a data source "<source>"
     Given I have registration path as "/TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/RUN_XYZ_12345678"
@@ -41,8 +42,8 @@ Feature: Register Asynchronous data transfer from Google Cloud and Google Drive
     Then I get a response of <response> for the Google Cloud Upload
       Examples:
       |source | bucket              | googleCloudLocation | isFile |  response |
-      |	aws	| dme-download-bucket | xyz.out             | true  | success |
-      | aws	|	dme-upload-bucket   | spreadsheet.csv     | true  | success |
+      |	aws	| dme-test-bucket | a.json             | true  | success |
+      | aws	|	dme-test-bucket   | b.json     | true  | success |
 
  Scenario Outline:  Register Asynchronous data file transfer from Google Cloud with Parent Metadata
     Given I have a data source "<source>"
@@ -100,4 +101,13 @@ Feature: Register Asynchronous data transfer from Google Cloud and Google Drive
       Examples:
       |source | bucket              | response |
       | googleCloud	|	dme-upload-bucket  	| success |
-    
+
+	Scenario Outline:  Register Asynchronous directory transfer from AWS
+		Given I have a data source "aws"
+		Given I have registration path as "/FNL_SF_Archive/Auto_PI_Lab_CCRSF/Project_staudt_103316_17202_ORF_Xeno_1/Flowcell_00000000-ADF6Y/Sample_ORF3_xeno_A_SC1"
+		And I add source cloud bucket as "dme-test-bucket"
+		And I add source cloud location as "backup/"
+		And I have a refresh token
+		When I click Register for the directory Upload
+		Then I get a response of success for the Google Cloud Upload
+   
