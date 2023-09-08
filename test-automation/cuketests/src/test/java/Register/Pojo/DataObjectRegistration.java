@@ -8,7 +8,7 @@ import java.util.Map;
 public class DataObjectRegistration {
 	
   List<Map<String, String>> dataObjectMetadataEntries;
-  GoogleCloudUploadPojo googleCloudStorageUploadSource;
+  S3StreamingUploadPojo googleCloudStorageUploadSource;
   S3StreamingUploadPojo s3UploadSource;
   S3StreamingUploadPojo globusUploadSource;
   String path;
@@ -23,10 +23,10 @@ public class DataObjectRegistration {
     this.dataObjectMetadataEntries = metadataEntries;
   }
 
-  public GoogleCloudUploadPojo getGoogleCloudStorageUploadSource() {
+  public S3StreamingUploadPojo getGoogleCloudStorageUploadSource() {
       return googleCloudStorageUploadSource;
   }
-  public void setGoogleCloudStorageUploadSource(GoogleCloudUploadPojo googleCloudStorageUploadSource) {
+  public void setGoogleCloudStorageUploadSource(S3StreamingUploadPojo googleCloudStorageUploadSource) {
       this.googleCloudStorageUploadSource = googleCloudStorageUploadSource;
   }
   public String getPath() {
