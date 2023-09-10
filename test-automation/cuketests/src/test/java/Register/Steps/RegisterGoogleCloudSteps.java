@@ -144,34 +144,74 @@ public class RegisterGoogleCloudSteps {
   public void i_add_to_path_as(String toPath) {
 	  this.pathMap.setToPath(toPath);
   }
+  
+  @When("I click Register for the file Upload")
+  public void i_click_register_for_the_file_upload() {
+	  System.out.println("----------------------------------------------------------");
+		System.out.println("Test Google Cloud bulk Upload");
+		this.token = configFileReader.getToken();
+		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
+		dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
+		String totalPath = this.path + "/" + sourceLocation.getFileId();
+		dataObjectRegistration.setPath(totalPath);
+		dataObjectRegistration.setDataObjectMetadataEntries(rows);
+		S3StreamingUploadPojo sourceInfo = new S3StreamingUploadPojo();
+	    sourceInfo.setSourceLocation(sourceLocation);
+		if (this.source.toUpperCase().equals("GOOGLECLOUD")) {
+			sourceInfo.setAccessToken(configFileReader.getGoogleCloudToken());
+			dataObjectRegistration.setGoogleCloudStorageUploadSource(sourceInfo);
+		} if (this.source.toUpperCase().equals("AWS")) {
+		    S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
+		    sourceInfo.setAccount(taskHelper.getAcctAWS());
+		    dataObjectRegistration.setS3UploadSource(sourceInfo);
+		} if (this.source.toUpperCase().equals("GLOBUS")) {
+			dataObjectRegistration.setGlobusUploadSource(sourceInfo);
+		} if (this.source.toUpperCase().equals("GOOGLEDRIVE")) {
+			sourceInfo.setAccessToken(configFileReader.getGoogleDriveAccessToken());
+			dataObjectRegistration.setGoogleDriveUploadSource(sourceInfo);
+		}
+		ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
+		dataObjectRegistrations.add(0, dataObjectRegistration);
+		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
+		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
+		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
+	}
 
-  @When("I click Register for the Google Cloud Upload")
+
+
+  /*@When("I click Register for the Google Cloud Upload")
 	public void i_click_register_for_the_google_cloud_upload() {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Google Cloud bulk Upload");
 		this.token = configFileReader.getToken();
-		if (this.source.equals("googleCloud")) {
+		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
+		dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
+		String totalPath = this.path + "/" + sourceLocation.getFileId();
+		dataObjectRegistration.setPath(totalPath);
+		dataObjectRegistration.setDataObjectMetadataEntries(rows);
+		if (this.source.toLowerCase().equals("googlecloud")) {
 			S3StreamingUploadPojo googleCloudInfo = new S3StreamingUploadPojo();
 			googleCloudInfo.setAccessToken(configFileReader.getGoogleCloudToken());
 			googleCloudInfo.setSourceLocation(sourceLocation);
-			DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
-			dataObjectRegistration.setPath(this.path);
 			dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudInfo);
-			dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
-			String totalPath = dataObjectRegistration.getPath() + "/" + googleCloudInfo.getSourceLocation().getFileId();
-			dataObjectRegistration.setPath(totalPath);
-			dataObjectRegistration.setDataObjectMetadataEntries(rows);
-			ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
-			dataObjectRegistrations.add(0, dataObjectRegistration);
-			BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
-			bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-			new TaskHelper().submitBulkRequest(bulkRequest, this.token);
-			System.out.println("----------------------------------------------------------");
-			System.out.println("");
+		} if (this.source.toLowerCase().equals("aws")) {
+		    S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
+		    s3Info.setAccount(taskHelper.getAcctAWS());
+		    s3Info.setSourceLocation(sourceLocation);
+		    dataObjectRegistration.setS3UploadSource(s3Info);
 		}
-	}
+		ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
+		dataObjectRegistrations.add(0, dataObjectRegistration);
+		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
+		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
+		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
+	}*/
 	
-	@When("I click Register for the AWS Upload")
+	/*@When("I click Register for the AWS Upload")
 	public void i_click_register_for_the_aws_upload() {
 		System.out.println("----------------------------------------------------------");
 	    System.out.println("Welcome AWS bulk upload");
@@ -185,7 +225,7 @@ public class RegisterGoogleCloudSteps {
       taskHelper.submitBulkRequest(bulkRequest, this.token);
       System.out.println("----------------------------------------------------------");
       System.out.println("");
-	}
+	}*/
 
 	@When("I click Register for the Globus Upload")
 	public void i_click_register_for_the_globus_upload() {
