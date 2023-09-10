@@ -11,8 +11,10 @@ public class DataObjectRegistration {
   S3StreamingUploadPojo googleCloudStorageUploadSource;
   S3StreamingUploadPojo s3UploadSource;
   S3StreamingUploadPojo globusUploadSource;
+  S3StreamingUploadPojo googleDriveUploadSource;
   String path;
   BulkMetadataEntriesPojo parentCollectionsBulkMetadataEntries;
+  
   boolean createParentCollections;
 
   public List<Map<String, String>> getDataObjectMetadataEntries() {
@@ -50,6 +52,14 @@ public class DataObjectRegistration {
 
   public void setGlobusUploadSource(S3StreamingUploadPojo globusUploadSource) {
 	this.globusUploadSource = globusUploadSource;
+  }
+
+  public S3StreamingUploadPojo getGoogleDriveUploadSource() {
+	return googleDriveUploadSource;
+  }
+
+  public void setGoogleDriveUploadSource(S3StreamingUploadPojo googleDriveUploadSource) {
+	this.googleDriveUploadSource = googleDriveUploadSource;
   }
 
   public BulkMetadataEntriesPojo getParentCollectionsBulkMetadataEntries() {
