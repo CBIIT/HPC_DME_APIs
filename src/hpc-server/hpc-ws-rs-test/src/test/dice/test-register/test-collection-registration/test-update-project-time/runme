@@ -36,7 +36,7 @@ mv $response_msg original-registration-message.json.tmp 2>/dev/null
 
 
 #Update the registered collection
-curl_register updated-input.json  "$COLLECTION_PATH" collection
+curl_register updated-input-1.json  "$COLLECTION_PATH" collection
 mv $response_hdr first-update-response-header.tmp
 mv $response_msg first-update-response-message.json.tmp 2>/dev/null
 
@@ -56,7 +56,7 @@ time1=$(convert_date_to_seconds "$UPDATED_VALUE1")
 sleep 1
 response_hdr=collection-registration-response-header.tmp
 response_msg=collection-registration-response-message.json.tmp
-curl_register updated-input.json  "$COLLECTION_PATH" collection
+curl_register updated-input-2.json  "$COLLECTION_PATH" collection
 mv $response_hdr second-update-response-header.tmp
 mv $response_msg second-update-response-message.json.tmp 2>/dev/null
 
