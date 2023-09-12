@@ -72,7 +72,7 @@ public class SyncFromFileSystemSteps {
 	    this.datafile = datafile;
 	}
 
-	@Given("I add metadataEntries as")
+	/*@Given("I add metadataEntries as")
 	public void i_add_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
 	    
 		//List<List<String>> rawDetails = details.asLists(String.class);
@@ -86,7 +86,7 @@ public class SyncFromFileSystemSteps {
 	      System.out.println("value=" + val);
 	    }
 	    registerBody.setMetadataEntries(rows);
-	}
+	}*/
 	
 	@Given("I add defaultCollectionMetadataEntries as")
 	public void i_add_defaultCollectionMetadataEntries_as(io.cucumber.datatable.DataTable dataTable) {
