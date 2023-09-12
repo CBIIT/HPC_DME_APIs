@@ -594,8 +594,9 @@ function addRow() {
    	var $attroptions = $("#attrName1 > option").clone();
     $('#attrName'+(rows+1)).empty();
     $('#attrName'+(rows+1)).append($attroptions);
-    $('#attrName'+(rows+1)).val($('#attrName1').val());
     $('#attrName'+(rows+1)).select2();
+    $('#level'+(rows+1)).val($('#level1').val()).change();
+    $('#attrName'+(rows+1)).val($('#attrName1').val()).change();
     
    	var operatorEle = document.getElementById('operator1');
    	var $operatoroptions = $("#operator1 > option").clone();
