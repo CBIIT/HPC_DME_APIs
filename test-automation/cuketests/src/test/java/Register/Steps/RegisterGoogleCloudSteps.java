@@ -53,101 +53,100 @@ import org.slf4j.LoggerFactory;
 
 
 public class RegisterGoogleCloudSteps {
-  ConfigFileReader configFileReader= new ConfigFileReader();
-  TaskHelper taskHelper= new TaskHelper();
-  RegisterGoogleCloudPojo registerBody = new RegisterGoogleCloudPojo();
-  SourceLocationPojo sourceLocation  = new SourceLocationPojo();
-  DirectoryScanPathMapPojo pathMap = new DirectoryScanPathMapPojo();
-  List<RegisterGoogleCloudPojo> files = new ArrayList<RegisterGoogleCloudPojo>();
-  List<Map<String, String>> rows;
-  GooglePojo googleObj = new GooglePojo();
-  BulkMetadataEntriesPojo bulkMetadataEntries = new BulkMetadataEntriesPojo();
-  String token;
-  String accessToken;
-  String path;
-  String source;
-  String directoryPath;
-  int statusCode;
+	ConfigFileReader configFileReader= new ConfigFileReader();
+	TaskHelper taskHelper= new TaskHelper();
+	RegisterGoogleCloudPojo registerBody = new RegisterGoogleCloudPojo();
+	SourceLocationPojo sourceLocation  = new SourceLocationPojo();
+	DirectoryScanPathMapPojo pathMap = new DirectoryScanPathMapPojo();
+	List<RegisterGoogleCloudPojo> files = new ArrayList<RegisterGoogleCloudPojo>();
+	List<Map<String, String>> rows;
+	GooglePojo googleObj = new GooglePojo();
+	BulkMetadataEntriesPojo bulkMetadataEntries = new BulkMetadataEntriesPojo();
+	String token;
+	String accessToken;
+	String path;
+	String source;
+	String directoryPath;
+	String isFile = "false";
+	int statusCode;
 
-  // The Logger instance.
-  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-  
-  DirectoryScanRegistrationItemPojo directoryScanRegistration = new DirectoryScanRegistrationItemPojo();
+	// The Logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-  @Given("I have a data source {string}")
-  public void i_have_a_data_source(String source) {
-    this.source = source;
-  }
-  
-  @Given("I have registration path as {string}")
+	DirectoryScanRegistrationItemPojo directoryScanRegistration = new DirectoryScanRegistrationItemPojo();
+
+	@Given("I have a data source {string}")
+	public void i_have_a_data_source(String source) {
+		this.source = source;
+	}
+
+	@Given("I have registration path as {string}")
 	public void i_have_registration_path_as(String path) {
-    this.path = path;
-  }
+		this.path = path;
+	}
 
-  @Given("I add source cloud bucket as {string}")
+	@Given("I add source cloud bucket as {string}")
 	public void i_add_source_cloud_bucket_as(String bucket) {
-	  sourceLocation.setFileContainerId(bucket);
-  }
+		sourceLocation.setFileContainerId(bucket);
+	}
 
-  @Given("I add source cloud location as {string}")
+	@Given("I add source cloud location as {string}")
 	public void i_add_source_cloud_location_as(String file) {
-    sourceLocation.setFileId(file);
-  }
+	sourceLocation.setFileId(file);
+	}
 
-  @Given("I choose file or directory as {string}")
-  public void i_choose_file_or_directory_as(String isFile) {
-    System.out.println(isFile);
-  }
+	@Given("I choose file or directory as {string}")
+	public void i_choose_file_or_directory_as(String isFile) {
+	System.out.println(isFile);
+	}
 
-
-
-	@Given("I add google cloud metadataEntries as")
-	public void i_add_google_cloud_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
-	    rows = dataTable.asMaps(String.class, String.class);
-      for (Map<String, String> columns : rows) {
-        String attribute = columns.get("attribute");
-        String val = columns.get("value");
-      }
+	@Given("I add metadataEntries as")
+	public void i_add_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
+		rows = dataTable.asMaps(String.class, String.class);
+		for (Map<String, String> columns : rows) {
+		String attribute = columns.get("attribute");
+		String val = columns.get("value");
+		}
 	}
 
 	@Given("I have a refresh token")
 	public void i_have_a_refresh_token() {
-	  String refreshTokenStr = configFileReader.getGoogleCloudToken();
-	  googleObj.setAccessToken(refreshTokenStr);
-	  registerBody.setGoogleCloudStorageUploadSource(googleObj);
+		String refreshTokenStr = configFileReader.getGoogleCloudToken();
+		googleObj.setAccessToken(refreshTokenStr);
+		registerBody.setGoogleCloudStorageUploadSource(googleObj);
 	}
 
-  @Given("I add a path as {string} with pathMetadata as")
-    public void i_add_a_path_as_with_path_metadata_as(String path, io.cucumber.datatable.DataTable dataTable) {
-        List<Map<String, String>> path_metadata_rows = dataTable.asMaps(String.class, String.class);
-       BulkMetadataEntry metadataEntry = new BulkMetadataEntry();
-       metadataEntry.setPath(path);
-       metadataEntry.setPathMetadataEntries(path_metadata_rows);
-       if(bulkMetadataEntries.getPathsMetadataEntries() == null || bulkMetadataEntries.getPathsMetadataEntries().isEmpty()) { 
-         bulkMetadataEntries.setPathsMetadataEntries(new ArrayList<BulkMetadataEntry>());
-       }
-       bulkMetadataEntries.getPathsMetadataEntries().add(metadataEntry);
-    }
+	@Given("I add a path as {string} with pathMetadata as")
+	public void i_add_a_path_as_with_path_metadata_as(String path, io.cucumber.datatable.DataTable dataTable) {
+		List<Map<String, String>> path_metadata_rows = dataTable.asMaps(String.class, String.class);
+		BulkMetadataEntry metadataEntry = new BulkMetadataEntry();
+		metadataEntry.setPath(path);
+		metadataEntry.setPathMetadataEntries(path_metadata_rows);
+		if(bulkMetadataEntries.getPathsMetadataEntries() == null || bulkMetadataEntries.getPathsMetadataEntries().isEmpty()) { 
+			bulkMetadataEntries.setPathsMetadataEntries(new ArrayList<BulkMetadataEntry>());
+		}
+		bulkMetadataEntries.getPathsMetadataEntries().add(metadataEntry);
+	}
 
-  @Given("I add default metadataEntries as")
-  public void i_add_default_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
-    List<Map<String, String>> default_metadata_rows  = dataTable.asMaps(String.class, String.class);
-    bulkMetadataEntries.setDefaultCollectionMetadataEntries(default_metadata_rows);
-  }
+	@Given("I add default metadataEntries as")
+	public void i_add_default_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
+		List<Map<String, String>> default_metadata_rows  = dataTable.asMaps(String.class, String.class);
+		bulkMetadataEntries.setDefaultCollectionMetadataEntries(default_metadata_rows);
+	}
 
-  @Given("I add fromPath as {string}")
-  public void i_add_from_path_as(String fromPath) {
-	  this.pathMap.setFromPath(fromPath); 
-  }
+	@Given("I add fromPath as {string}")
+	public void i_add_from_path_as(String fromPath) {
+		this.pathMap.setFromPath(fromPath); 
+	}
 
-  @Given("I add toPath as {string}")
-  public void i_add_to_path_as(String toPath) {
-	  this.pathMap.setToPath(toPath);
-  }
-  
-  @When("I click Register for the file Upload")
-  public void i_click_register_for_the_file_upload() {
-	  System.out.println("----------------------------------------------------------");
+	@Given("I add toPath as {string}")
+	public void i_add_to_path_as(String toPath) {
+		this.pathMap.setToPath(toPath);
+	}
+
+	@When("I click Register for the file Upload")
+	public void i_click_register_for_the_file_upload() {
+		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Google Cloud bulk Upload");
 		this.token = configFileReader.getToken();
 		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
@@ -156,14 +155,14 @@ public class RegisterGoogleCloudSteps {
 		dataObjectRegistration.setPath(totalPath);
 		dataObjectRegistration.setDataObjectMetadataEntries(rows);
 		S3StreamingUploadPojo sourceInfo = new S3StreamingUploadPojo();
-	    sourceInfo.setSourceLocation(sourceLocation);
+		sourceInfo.setSourceLocation(sourceLocation);
 		if (this.source.toUpperCase().equals("GOOGLECLOUD")) {
 			sourceInfo.setAccessToken(configFileReader.getGoogleCloudToken());
 			dataObjectRegistration.setGoogleCloudStorageUploadSource(sourceInfo);
 		} if (this.source.toUpperCase().equals("AWS")) {
-		    S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
-		    sourceInfo.setAccount(taskHelper.getAcctAWS());
-		    dataObjectRegistration.setS3UploadSource(sourceInfo);
+			S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
+			sourceInfo.setAccount(taskHelper.getAcctAWS());
+			dataObjectRegistration.setS3UploadSource(sourceInfo);
 		} if (this.source.toUpperCase().equals("GLOBUS")) {
 			dataObjectRegistration.setGlobusUploadSource(sourceInfo);
 		} if (this.source.toUpperCase().equals("GOOGLEDRIVE")) {
@@ -179,75 +178,6 @@ public class RegisterGoogleCloudSteps {
 		System.out.println("");
 	}
 
-
-
-  /*@When("I click Register for the Google Cloud Upload")
-	public void i_click_register_for_the_google_cloud_upload() {
-		System.out.println("----------------------------------------------------------");
-		System.out.println("Test Google Cloud bulk Upload");
-		this.token = configFileReader.getToken();
-		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
-		dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
-		String totalPath = this.path + "/" + sourceLocation.getFileId();
-		dataObjectRegistration.setPath(totalPath);
-		dataObjectRegistration.setDataObjectMetadataEntries(rows);
-		if (this.source.toLowerCase().equals("googlecloud")) {
-			S3StreamingUploadPojo googleCloudInfo = new S3StreamingUploadPojo();
-			googleCloudInfo.setAccessToken(configFileReader.getGoogleCloudToken());
-			googleCloudInfo.setSourceLocation(sourceLocation);
-			dataObjectRegistration.setGoogleCloudStorageUploadSource(googleCloudInfo);
-		} if (this.source.toLowerCase().equals("aws")) {
-		    S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
-		    s3Info.setAccount(taskHelper.getAcctAWS());
-		    s3Info.setSourceLocation(sourceLocation);
-		    dataObjectRegistration.setS3UploadSource(s3Info);
-		}
-		ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
-		dataObjectRegistrations.add(0, dataObjectRegistration);
-		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
-		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
-		System.out.println("----------------------------------------------------------");
-		System.out.println("");
-	}*/
-	
-	/*@When("I click Register for the AWS Upload")
-	public void i_click_register_for_the_aws_upload() {
-		System.out.println("----------------------------------------------------------");
-	    System.out.println("Welcome AWS bulk upload");
-      this.token = configFileReader.getToken();
-      DataObjectRegistration dataObjectRegistration = taskHelper.setupAuthorizeAWS(sourceLocation, this.path);
-      dataObjectRegistration.setDataObjectMetadataEntries(rows);
-      ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
-      dataObjectRegistrations.add(0, dataObjectRegistration);
-      BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
-      bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-      taskHelper.submitBulkRequest(bulkRequest, this.token);
-      System.out.println("----------------------------------------------------------");
-      System.out.println("");
-	}*/
-
-	@When("I click Register for the Globus Upload")
-	public void i_click_register_for_the_globus_upload() {
-		System.out.println("----------------------------------------------------------");
-		System.out.println("Welcome Globus bulk upload");
-		this.token = configFileReader.getToken();
-		S3StreamingUploadPojo globusSource = new S3StreamingUploadPojo();
-		globusSource.setSourceLocation(sourceLocation);
-		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
-		dataObjectRegistration.setPath(this.path);
-		dataObjectRegistration.setDataObjectMetadataEntries(rows);
-		dataObjectRegistration.setGlobusUploadSource(globusSource);
-		ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
-		dataObjectRegistrations.add(0, dataObjectRegistration);
-		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
-		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
-		System.out.println("----------------------------------------------------------");
-		System.out.println("");
-
-	}
-
 	@When("I click Register for the directory Upload")
 	public void i_click_register_for_the_directory_upload() {
 		System.out.println("----------------------------------------------------------");
@@ -256,16 +186,16 @@ public class RegisterGoogleCloudSteps {
 		this.token = configFileReader.getToken();
 		DirectoryLocationUploadPojo directoryLocation = new DirectoryLocationUploadPojo();
 		directoryLocation.setDirectoryLocation(sourceLocation);
-		if(this.source.equals("googleCloud")){
+		if (this.source.toUpperCase().equals("GOOGLECLOUD")) {
 			directoryLocation.setAccessToken(configFileReader.getGoogleCloudToken());
 			directoryScanRegistration.setGoogleCloudStorageScanDirectory(directoryLocation);
-		} else if (source.equals("googleDrive")) {
+		} if (this.source.toUpperCase().equals("GOOGLEDRIVE")) {
 			directoryLocation.setAccessToken(configFileReader.getGoogleDriveAccessToken());
 			directoryScanRegistration.setGoogleDriveScanDirectory(directoryLocation);
-		} else if (source.equals("aws")) {
+		} else if (this.source.toUpperCase().equals("AWS")) {
 			directoryLocation.setAccount(taskHelper.getAcctAWS());
 			directoryScanRegistration.setS3ScanDirectory(directoryLocation);
-		} else if (source.equals("globus")) {
+		} else if (this.source.toUpperCase().equals("GLOBUS")) {
 			directoryScanRegistration.setGlobusScanDirectory(directoryLocation);
 		} else {
 			System.out.println(" Unknown Source");
@@ -279,7 +209,8 @@ public class RegisterGoogleCloudSteps {
         pathMap.setFromPath(tempPath);
 		directoryScanRegistration.setBasePath(this.path);
 		directoryScanRegistration.setPatternType("SIMPLE");
-		this.directoryScanRegistration.setPathMap(pathMap);
+		directoryScanRegistration.setPathMap(pathMap);
+		directoryScanRegistration.setBulkMetadataEntries(bulkMetadataEntries);
 		ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrations = new ArrayList<DirectoryScanRegistrationItemPojo>();
 		directoryScanRegistrations.add(0, directoryScanRegistration);
 		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
