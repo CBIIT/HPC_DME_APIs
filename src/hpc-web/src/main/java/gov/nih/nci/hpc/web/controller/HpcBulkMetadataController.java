@@ -12,13 +12,17 @@ package gov.nih.nci.hpc.web.controller;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.slf4j.Logger;
@@ -27,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -35,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -44,10 +50,18 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.gson.Gson;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcBulkMetadataUpdateRequest;
@@ -56,10 +70,6 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 
 
 /**
@@ -86,6 +96,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 	private String serviceAccount;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
+	@Value("${gov.nih.nci.hpc.server.childCollections.acl.user}")
+	private String childCollectionsAclURL;
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	private Gson gson = new Gson();
@@ -291,16 +303,44 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 			session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
 		}
-		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-				for (HpcMetadataValidationRule basepathCollectionRule : rule.getCollectionMetadataValidationRules()) {
-					if(basepathCollectionRule.getAttribute().equals("collection_type")) {
-							continue;
-					}
-					metadataAttributesList.add(basepathCollectionRule.getAttribute());
+
+		logger.info("metadataAttributesList =" + gson.toJson(modelDTO));
+
+		HpcUserPermsForCollectionsDTO permissions = (HpcUserPermsForCollectionsDTO) session
+				.getAttribute("userDOCPermissions");
+
+		if (permissions == null) {
+			HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceURL, sslCertPath, sslCertPassword);
+
+			permissions = HpcClientUtil.getPermissionsForBasePaths(modelDTO, authToken,
+					session.getAttribute("hpcUserId").toString(), childCollectionsAclURL, sslCertPath, sslCertPassword);
+		}
+
+		Set<String> userBasePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		// Extract the base paths that this user has READ, WRITE or OWN permissions to
+		if (permissions != null && !CollectionUtils.isEmpty(permissions.getPermissionsForCollections())) {
+			for (HpcPermissionForCollection collectionPermission : permissions.getPermissionsForCollections()) {
+				if (collectionPermission != null && !HpcPermission.NONE.equals(collectionPermission.getPermission())) {
+					userBasePaths.add(collectionPermission.getCollectionPath());
 				}
 			}
 		}
+		logger.info("userBasePaths =" + gson.toJson(userBasePaths));
+
+		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+			if (userBasePaths.contains(docRule.getRules().get(0).getBasePath())) {
+				for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+					for (HpcMetadataValidationRule basepathCollectionRule : rule
+							.getCollectionMetadataValidationRules()) {
+						if (basepathCollectionRule.getAttribute().equals("collection_type")) {
+							continue;
+						}
+						metadataAttributesList.add(basepathCollectionRule.getAttribute());
+					}
+				}
+			}
+		}
+		logger.info("getAllUserMetadataAttributes metadataAttributesList size ="+ metadataAttributesList.size());
 		HashSet<String> hset = new HashSet<String>(metadataAttributesList);
 		List<String> uniqueMetadataAttributeNames = new ArrayList<>(hset);
 		Collections.sort(uniqueMetadataAttributeNames, String.CASE_INSENSITIVE_ORDER);
