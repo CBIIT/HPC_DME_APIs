@@ -220,7 +220,7 @@ public class RegisterGoogleCloudSteps {
 		System.out.println("");
 	}
 
-	@Then("I get a response of success for the Google Cloud Upload")
+	@Then("I get a response of success for the Upload")
 	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
 	    org.junit.Assert.assertEquals(201, 201);
 	}
