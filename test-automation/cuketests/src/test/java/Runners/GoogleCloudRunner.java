@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-		 features="src/test/java/Register/Features/RegisterGoogleCloud.feature"
+		 features="src/test/java/Register/Features/RegisterBulk.feature"
 		, glue="Register.Steps.RegisterGoogleCloudSteps.java"
 		, dryRun = false
 		, monochrome=true
