@@ -43,7 +43,7 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
       | aws    | dme-test-bucket | a.json              | true   | success  |
       | aws    | dme-test-bucket | b.json              | true   | success  |
 
-	@test1023 @gc @bulk
+  @test1023 @gc @bulk
   Scenario Outline: Register Asynchronous data file transfer from Google Cloud with Parent Metadata
     Given I have a data source "<source>"
     And I have registration path as "/TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/RUN_XYZ_12345678"
@@ -77,7 +77,7 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
 
     Examples: 
       | source      | bucket              | googleCloudLocation | isFile | response |
-      | googleCloud | dme-download-bucket | xyzfile.txt             | true   | success  |
+      | googleCloud | dme-download-bucket | xyzfile.txt         | true   | success  |
       | googleCloud | dme-upload-bucket   | RSF-2022-03-29.csv  | true   | success  |
 
   Scenario Outline: Register Asynchronous data file transfer from Globus
@@ -92,21 +92,12 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
     When I click Register for the file Upload
     Then I get a response of success for the Upload
 
-  @test
   Scenario Outline: Register Asynchronous directory transfer from Google Cloud
     Given I have a data source "googleCloud"
-    And I have registration path as "/FNL_SF_Archive/PI_Bogus_Investigator/935-testing-project/935-testing-flowcell/Run_SRR479649"
+    And I have registration path as "/GTL_RAS_Archive/TEST/Project/Flowcell"
     And I add source cloud bucket as "<bucket>"
-    And I add source cloud location as "dme/"
-    And I add a path as "/FNL_SF_Archive/PI_Bogus_Investigator/935-testing-project" with pathMetadata as
-      | attribute       | value   |
-      | collection_type | Project |
-      | project_name    | E052    |
-    And I add a path as "/FNL_SF_Archive/PI_Bogus_Investigator/935-testing-project/935-testing-flowcell" with pathMetadata as
-      | attribute       | value        |
-      | collection_type | Flowcell     |
-      | flowcell_id     | Sarada ff123 |
-    And I add a path as "/FNL_SF_Archive/PI_Bogus_Investigator/935-testing-project/935-testing-flowcell/Run_SRR479649" with pathMetadata as
+    And I add source cloud location as "data_object_lis1/"
+    And I add a path as "/GTL_RAS_Archive/TEST/Project/Flowcell/data_object_lis1" with pathMetadata as
       | attribute       | value        |
       | collection_type | Sample       |
       | sample_id       | 43JSampleId  |
@@ -115,8 +106,49 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
     Then I get a response of <response> for the Upload
 
     Examples: 
-      | source      | bucket            | response |
-      | googleCloud | dme-upload-bucket | success  |
+      | source      | bucket              | response |
+      | googleCloud | dme-download-bucket | success  |
+
+  @test
+  Scenario Outline: Register Asynchronous directory transfer from Google Cloud
+    Given I have a data source "googleCloud"
+    And I have registration path as "/GTL_RAS_Archive/test2"
+    And I add source cloud bucket as "<bucket>"
+    And I add source cloud location as "Project101/"
+    And I add a path as "/GTL_RAS_Archive/test2/Project101" with pathMetadata as
+		      | attribute           | value                                          |
+		      | collection_type     | Project                                        |
+		      | origin              | FAO                                            |
+		      | project_title       | Finding variants of BRC1                       |
+		      | project_description | Finding different biomarkers for breast cancer |
+		      | project_poc         | POC                                            |
+		      | publication_status  | current                                        |
+		      | collaborators       | NIH,NCI                                        |
+		      | comments            | Ongoing for 2 years                            |
+    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201" with pathMetadata as    
+      | attribute                   | value                       |
+		  | collection_type     | Flowcell                                        |
+      | flowcell_id                 | ff2351                      |
+      | run_name                    | sar124                      |
+      | run_date                    | 01/02/2023                  |
+      | sequencing_platform         | NGS Illumina                |
+      | sequencing_application_type | On demand Genome Sequencing |
+      | study_disease               | Alzheimers                  |
+    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201/Sample_301" with pathMetadata as    
+      | attribute                   | value                       |
+		  | collection_type     | Sample                                        |
+      | sample_name | sample38648 |
+      | sample_type | frz106      |
+    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201/Sample_301/code.txt" with pathMetadata as    
+      | attribute                   | value                       |
+      | object_name | meta |
+      | file_type | text |
+    When I click Register for the directory Upload
+    Then I get a response of <response> for the Upload
+
+    Examples: 
+      | source      | bucket              | response |
+      | googleCloud | dme-download-bucket | success  |
 
   @test123
   Scenario Outline: Register Asynchronous directory transfer from AWS
