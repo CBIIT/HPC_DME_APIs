@@ -265,18 +265,18 @@ public interface HpcSystemBusService {
 	public void generateWeeklyUserReportEvent() throws HpcException;
 
 	/**
-	 * Refresh the metadata materialized views.
+	 * Refresh the hourly materialized views.
 	 *
 	 * @throws HpcException on service failure.
 	 */
-	public void refreshMetadataViews() throws HpcException;
+	public void refreshHourlyViews() throws HpcException;
 
 	/**
-	 * Refresh the reports materialized views.
+	 * Refresh the daily materialized views.
 	 *
 	 * @throws HpcException on service failure.
 	 */
-	public void refreshReportViews() throws HpcException;
+	public void refreshDailyViews() throws HpcException;
 
 	/**
 	 * Complete data objects that are deep archive in progress.

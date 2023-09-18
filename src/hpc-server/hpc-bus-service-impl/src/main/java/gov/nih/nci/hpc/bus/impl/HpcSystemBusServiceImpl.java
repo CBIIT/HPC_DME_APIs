@@ -1285,13 +1285,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
-	public void refreshMetadataViews() throws HpcException {
+	public void refreshHourlyViews() throws HpcException {
 		metadataService.refreshViews();
 	}
 
 	@Override
 	@HpcExecuteAsSystemAccount
-	public void refreshReportViews() throws HpcException {
+	public void refreshDailyViews() throws HpcException {
 		reportService.refreshViews();
 	}
 

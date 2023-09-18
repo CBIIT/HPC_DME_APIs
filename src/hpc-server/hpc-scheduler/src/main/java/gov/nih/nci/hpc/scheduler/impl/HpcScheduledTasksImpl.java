@@ -245,16 +245,16 @@ public class HpcScheduledTasksImpl {
 		execute("generateWeeklySummaryReportTask()", systemBusService::generateWeeklySummaryReportEvent, logger);
 	}
 
-	/** Refresh the metadata materialized Views. */
-	@Scheduled(cron = "${hpc.scheduler.cron.refreshMetadataViews.delay}")
+	/** Refresh the hourly materialized Views. */
+	@Scheduled(cron = "${hpc.scheduler.cron.refreshHourlyViews.delay}")
 	private void refreshMetadataViewsTask() {
-		execute("refreshMetadataViewsTask()", systemBusService::refreshMetadataViews, logger);
+		execute("refreshHourlyViewsTask()", systemBusService::refreshHourlyViews, logger);
 	}
 
-	/** Refresh the report materizalized views. */
-	@Scheduled(cron = "${hpc.scheduler.cron.refreshReportViews.delay}")
+	/** Refresh the daily materizalized views. */
+	@Scheduled(cron = "${hpc.scheduler.cron.refreshDailyViews.delay}")
 	private void refreshReportViewsTask() {
-		execute("refreshReportViewsTask()", systemBusService::refreshReportViews, logger);
+		execute("refreshDailyViewsTask()", systemBusService::refreshDailyViews, logger);
 	}
 
 	/** Complete tiering request tasks. */

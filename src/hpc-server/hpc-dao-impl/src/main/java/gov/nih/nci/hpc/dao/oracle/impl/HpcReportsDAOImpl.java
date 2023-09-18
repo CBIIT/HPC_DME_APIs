@@ -263,7 +263,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String DOCS_SQL = "select distinct meta_attr_value from r_meta_main where meta_attr_name='registered_by_doc'";
 
-	private static final String REFRESH_VIEWS_SQL = "call REFRESH_REPORT_META_VIEW()";
+	private static final String REFRESH_VIEWS_SQL = "call REFRESH_DAILY_MATERIALIZED_VIEW()";
 
 	/////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
 	private static final String BASE_PATHS_SQL = "select BASE_PATH from HPC_DATA_MANAGEMENT_CONFIGURATION";
@@ -1524,7 +1524,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			jdbcTemplate.execute(REFRESH_VIEWS_SQL);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to refresh report views: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+			throw new HpcException("Failed to refresh daily materialized views: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
