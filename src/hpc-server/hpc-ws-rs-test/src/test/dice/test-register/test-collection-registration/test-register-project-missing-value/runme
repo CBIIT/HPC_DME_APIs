@@ -16,6 +16,10 @@ NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
 
 DESTINATION=$(get_basefolder)/test-${NAME}
+
+cp expected-errors-prefix.txt expected-errors.txt
+echo "$DESTINATION >> expected-errors.txt
+
 curl_register input.json "$DESTINATION" collection
 
 get_http_code $RESPONSE_HEADER >&2
