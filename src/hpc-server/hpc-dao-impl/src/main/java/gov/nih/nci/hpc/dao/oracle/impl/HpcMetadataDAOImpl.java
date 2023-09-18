@@ -212,7 +212,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_METADATA_MODIFIED_AT_SQL = "select max(cast(modify_ts as bigint)) from r_objt_metamap where object_id = ?";
 
-	private static final String REFRESH_VIEWS_SQL = "call REFRESH_HIERARCHY_META_VIEW()";
+	private static final String REFRESH_VIEWS_SQL = "call REFRESH_HOURLY_MATERIALIZED_VIEW()";
 
 	private static final String GET_DATA_OBJECTS_SQL = "select data_main.DATA_ID, data_main.COLL_ID, data_main.DATA_NAME, coll_main.COLL_NAME, "
 			+ "data_main.DATA_SIZE, data_main.DATA_PATH, data_main.DATA_OWNER_NAME, data_main.CREATE_TS "
@@ -719,7 +719,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			jdbcTemplate.execute(REFRESH_VIEWS_SQL);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to refresh metadata views: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+			throw new HpcException("Failed to refresh hourly materialized views: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
