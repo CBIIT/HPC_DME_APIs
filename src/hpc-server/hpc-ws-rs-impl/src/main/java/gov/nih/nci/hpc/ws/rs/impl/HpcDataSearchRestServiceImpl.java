@@ -349,7 +349,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response refreshMetadataViews() {
     try {
-      systemBusService.refreshMetadataViews();
+      systemBusService.refreshHourlyViews();
 
     } catch (HpcException e) {
       return errorResponse(e);
