@@ -53,6 +53,10 @@ import org.slf4j.LoggerFactory;
 
 
 public class RegisterGoogleCloudSteps {
+	static final String BULK_REGISTRATION_URL="/hpc-server/v2/registration";
+	static final String DATA_OBJECT_REGISTRATION_URL="/hpc-server/v2/dataObject";
+	Gson gson = new Gson();
+
 	ConfigFileReader configFileReader= new ConfigFileReader();
 	TaskHelper taskHelper= new TaskHelper();
 	RegisterGoogleCloudPojo registerBody = new RegisterGoogleCloudPojo();
@@ -148,7 +152,6 @@ public class RegisterGoogleCloudSteps {
 	public void i_click_register_for_the_file_upload() {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Google Cloud bulk Upload");
-		this.token = configFileReader.getToken();
 		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
 		dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
 		String totalPath = this.path + "/" + sourceLocation.getFileId();
@@ -173,7 +176,7 @@ public class RegisterGoogleCloudSteps {
 		dataObjectRegistrations.add(0, dataObjectRegistration);
 		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
 		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-		new TaskHelper().submitBulkRequest(bulkRequest, this.token);
+		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}
@@ -215,7 +218,7 @@ public class RegisterGoogleCloudSteps {
 		directoryScanRegistrations.add(0, directoryScanRegistration);
 		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
 		bulkRequest.setDirectoryScanRegistrationItems(directoryScanRegistrations);
-		taskHelper.submitBulkRequest(bulkRequest, this.token);
+		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}
