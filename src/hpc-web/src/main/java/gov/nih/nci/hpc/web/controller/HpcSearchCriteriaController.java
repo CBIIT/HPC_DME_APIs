@@ -402,7 +402,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 						levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
 					} else {
 						if (level.equals("Data file") || level.equals("DataObject"))
-							levelFilter.setLevel(1);
+							levelFilter.setLabel(level);
 						else
 							levelFilter.setLabel(level);
 						levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
