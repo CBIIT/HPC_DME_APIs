@@ -111,9 +111,9 @@
 										</tr>
 									</thead>
 									<tbody>
-										<tr id='attrRow0'>
-											<td style="white-space: nowrap"><label id="rowId0">A1</label>
-												<input type="hidden" id="rowId0" name="rowId" value="A1" />
+										<tr id='attrRow1'>
+											<td style="white-space: nowrap"><label id="rowIdLabel1">A1</label>
+												<input type="hidden" id="rowId1" name="rowId" value="A1" />
 											</td>
 											<td style="white-space: nowrap">
 												<input type="checkbox" id="selfAttributeOnly1" name="selfAttribute"/>
@@ -161,12 +161,11 @@
 													</div>
 											</div></td>
 											<td style="white-space: nowrap"><a id="deleteAttr"
-												onClick="deleteRow('attrRow0')"
+												onClick="deleteRow('attrRow1')"
 												class="pull-right btn btn-default"> <i
 													class="fa fa-times" aria-hidden="true"></i>
 											</a></td>
 										</tr>
-										<tr id='attr1'></tr>
 									</tbody>
 								</table>
 							</div>
@@ -442,7 +441,7 @@ function populateLevelAttributes(level, id)
 		}
 	}
 
-	if(level == "datafile")
+	if(level == "DataObject")
 	{
 		for(var i=0;i<dataattributes.length;i++)
 		{
@@ -453,7 +452,7 @@ function populateLevelAttributes(level, id)
 	}
     $('#attrName'+(row)).empty();
     $('#attrName'+(row)).append(attrOptions);
-    $('#attrName'+(row)).val($('#attrName1').val());
+    //$('#attrName'+(row)).val($('#attrName1').val());
 
     var namesEle = document.getElementById('attrName'+row);
 	if (namesEle != null)
@@ -464,7 +463,7 @@ function populateLevelAttributes(level, id)
 function resetRows()
 {
     var table = document.getElementById("metaAttrTable");
-    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+    var rows = $("#metaAttrTable tbody").find("tr").length;
 	var searchTypes = document.getElementsByName('searchType');
 	var type;
 
@@ -475,10 +474,10 @@ function resetRows()
 	    }
 	}	
 	
-    for(var i=1;i<rows;i++)
+    for(var i=0;i<rows;i++)
     {
-    	var namesEle = document.getElementById('attrName'+i);
-       	var levelsEle = document.getElementById('level1');
+    	id = $("#metaAttrTable tbody").find("tr:eq(" + i + ")").prop("id").substring("attrRow".length);
+    	var namesEle = document.getElementById('attrName'+id);
     	if (namesEle != null)
     	{
     		if(type == "collection")
@@ -489,8 +488,8 @@ function resetRows()
     				var attr = collattributes[j];
     				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
     			}
-        	    $('#attrName'+(i)).empty();
-        	    $('#attrName'+(i)).append(attrOptions);
+        	    $('#attrName'+(id)).empty();
+        	    $('#attrName'+(id)).append(attrOptions);
 
         	    var levelOptions="<option value='ANY'>ANY</option>";
     			for(var j=0;j<collectionLevels.length;j++)
@@ -498,8 +497,8 @@ function resetRows()
     				var attr = collectionLevels[j];
     				levelOptions = levelOptions + "<option value='"+attr+"'>"+attr+"</option>"
     			}
-        	    $('#level'+(i)).empty();
-        	    $('#level'+(i)).append(levelOptions);
+        	    $('#level'+(id)).empty();
+        	    $('#level'+(id)).append(levelOptions);
     		}
     		else
     		{
@@ -509,8 +508,8 @@ function resetRows()
     				var attr = dataattributes[k];
     				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
     			}
-        	    $('#attrName'+(i)).empty();
-        	    $('#attrName'+(i)).append(attrOptions);
+        	    $('#attrName'+(id)).empty();
+        	    $('#attrName'+(id)).append(attrOptions);
 
         	    var levelOptions="<option value='ANY'>ANY</option>";
     			for(var j=0;j<dataobjectLevels.length;j++)
@@ -518,28 +517,28 @@ function resetRows()
     				var attr = dataobjectLevels[j];
     				levelOptions = levelOptions + "<option value='"+attr+"'>"+attr+"</option>"
     			}
-        	    $('#level'+(i)).empty();
-        	    $('#level'+(i)).append(levelOptions);
+        	    $('#level'+(id)).empty();
+        	    $('#level'+(id)).append(levelOptions);
     		}
     		namesEle.selectedIndex = 0;
     	}
-    	var levelEle = document.getElementById('level'+i);
+    	var levelEle = document.getElementById('level'+id);
     	if (levelEle != null)
     		levelEle.selectedIndex = 0;
-    	var operatorEle = document.getElementById('operator'+i);
+    	var operatorEle = document.getElementById('operator'+id);
     	if (operatorEle != null)
     		operatorEle.selectedIndex = 0;
-    	var levelOperatorEle = document.getElementById('levelOperator'+i);
+    	var levelOperatorEle = document.getElementById('levelOperator'+id);
     	if (levelOperatorEle != null)
     		levelOperatorEle.selectedIndex = 0;
-    	var valueEle = document.getElementById('attrValue'+i);
+    	var valueEle = document.getElementById('attrValue'+id);
     	if (valueEle != null)
     		valueEle.value = null;
-    	var valueSelfAttributeOnly = document.getElementById('selfAttributeOnly'+i);
+    	var valueSelfAttributeOnly = document.getElementById('selfAttributeOnly'+id);
     	if (valueSelfAttributeOnly != null)
     		valueSelfAttributeOnly.checked = false;
     	if(userInSecGroup) {
-	    	var attributeEncrypted = document.getElementById('attributeEncrypted'+i);
+	    	var attributeEncrypted = document.getElementById('attributeEncrypted'+id);
 	    	if (attributeEncrypted != null) {
 	    		attributeEncrypted.checked = false;
 	    	}
@@ -552,11 +551,11 @@ function resetRows()
 
 function addRow() {
 	rowId++;
+	var lastRow = $("#metaAttrTable").find("tr").last().prop("id").substring("attrRow".length);
     var table = document.getElementById("metaAttrTable");
-    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-    rows = rows - 1;
+    var rows = $("#metaAttrTable tbody").find("tr").length;
     var row = table.insertRow(rows+1);
-    row.id = "attrRow"+(rows+1);
+    row.id = "attrRow"+(rowId);
     var cell = 0;
     var cell0 = row.insertCell(cell++);
     var cell1 = row.insertCell(cell++);
@@ -568,60 +567,67 @@ function addRow() {
     var cell4 = row.insertCell(cell++);
     var cell5 = row.insertCell(cell++);
     var cell6 = row.insertCell(cell++);
-    cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
-    cell1.innerHTML = '<input id="selfAttributeOnly'+(rows+1)+'" type="checkbox" name="selfAttribute"/><input id="selfAttributeOnlyHidden'+(rows+1)+'" type="hidden" name="selfAttributeOnly" value="false"/>';
+    cell0.innerHTML = '<label id="rowIdLabel'+ (rowId) +'">A'+ (rows+1) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rows+1) +'"/>';
+    cell1.innerHTML = '<input id="selfAttributeOnly'+(rowId)+'" type="checkbox" name="selfAttribute"/><input id="selfAttributeOnlyHidden'+(rowId)+'" type="hidden" name="selfAttributeOnly" value="false"/>';
     if(userInSecGroup) {
-    	cell1_a.innerHTML = '<input id="attributeEncrypted'+(rows+1)+'" type="checkbox" name="attributeEncrypted" class="encrypted" />'+
-    						'<input id="attributeEncryptedHidden'+(rows+1)+'" type="hidden" name="encrypted" value="false"/>';
+    	cell1_a.innerHTML = '<input id="attributeEncrypted'+(rowId)+'" type="checkbox" name="attributeEncrypted" class="encrypted" />'+
+    						'<input id="attributeEncryptedHidden'+(rowId)+'" type="hidden" name="encrypted" value="false"/>';
     }
-    cell2.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control simple-select2 sl" style="width: 100%" th:required="required"></select>';
-    cell3.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control simple-select2 sl" style="width: 100%" th:required="required"> <option value="ANY">ANY</option></select>';
-    cell4.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
-    cell5.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/><div class="input-group date" data-provide="datepicker" style="display: none;"><input type="text" class="form-control" id="attrValue'+(rows+1)+'X" name="attrValueX"><div class="input-group-addon"><span class="glyphicon glyphicon-th"></span></div></div>';
-   	cell6.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\''+(row.id)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
+    cell2.innerHTML = '<select id="level'+(rowId)+'" name="level" class="form-control simple-select2 sl" style="width: 100%" th:required="required"></select>';
+    cell3.innerHTML = '<select id="attrName'+(rowId)+'" name="attrName" class="form-control simple-select2 sl" style="width: 100%" th:required="required"> <option value="ANY">ANY</option></select>';
+    cell4.innerHTML = '<select id="operator'+(rowId)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
+    cell5.innerHTML = '<input type="text" id="attrValue'+(rowId)+'" name="attrValue" placeholder="Value" class="form-control"/><div class="input-group date" data-provide="datepicker" style="display: none;"><input type="text" class="form-control" id="attrValue'+(rows+1)+'X" name="attrValueX"><div class="input-group-addon"><span class="glyphicon glyphicon-th"></span></div></div>';
+   	cell6.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\'attrRow'+(rowId)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
 
-   	var levelsEle = document.getElementById('level1');
-   	var $leveloptions = $("#level1 > option").clone();
-    $('#level'+(rows+1)).empty();
-    $('#level'+(rows+1)).append($leveloptions);
-    $('#level'+(rows+1)).val($('#level1').val());
-    $('#level'+(rows+1)).select2();
-    $('#level'+(rows+1)).select2().on("change", function(e) {
-		populateLevelAttributes($('#level'+(rows+1)).val(), 'level'+(rows+1))
+   	var $leveloptions = $('#level'+ lastRow + " > option").clone();
+    $('#level'+(rowId)).empty();
+    $('#level'+(rowId)).append($leveloptions)
+    //$('#level'+(rowId)).val($('#level'+ lastRow).val());
+    $('#level'+(rowId)).val(null);
+    $('#level'+(rowId)).select2();
+    $('#level'+(rowId)).select2().on("change", function(e) {
+    	id = $(this).attr('id');
+		populateLevelAttributes($('#'+(id)).val(), id)
     });
+    //$('#level'+(rowId)).val($('#level'+ lastRow).val()).change();
     
-   	var namesEle = document.getElementById('attrName1');
-   	var $attroptions = $("#attrName1 > option").clone();
-    $('#attrName'+(rows+1)).empty();
-    $('#attrName'+(rows+1)).append($attroptions);
-    $('#attrName'+(rows+1)).select2();
-    $('#level'+(rows+1)).val($('#level1').val()).change();
-    $('#attrName'+(rows+1)).val($('#attrName1').val()).change();
+   	var $attroptions = $('#attrName'+ lastRow + " > option").clone();
+    $('#attrName'+(rowId)).empty();
+    $('#attrName'+(rowId)).append($attroptions);
+    $('#attrName'+(rowId)).val(null);
+    //$('#attrName'+(rowId)).val($('#attrName'+ lastRow).val());
+    $('#attrName'+(rowId)).select2();
     
-   	var operatorEle = document.getElementById('operator1');
-   	var $operatoroptions = $("#operator1 > option").clone();
-    $('#operator'+(rows+1)).empty();
-    $('#operator'+(rows+1)).append($operatoroptions);
-    $('#operator'+(rows+1)).val($('#operator1').val());
+   	var $operatoroptions = $('#operator'+ lastRow + " > option").clone();
+    $('#operator'+(rowId)).empty();
+    $('#operator'+(rowId)).append($operatoroptions);
+    $('#operator'+(rowId)).val($('#operator'+ lastRow).val());
 
-	var namesEle = document.getElementById('attrName'+(rows+1));
+	var namesEle = document.getElementById('attrName'+(rowId));
 	if (namesEle != null)
 		namesEle.selectedIndex = 0;
-	var levelEle = document.getElementById('level'+(rows+1));
+	var levelEle = document.getElementById('level'+(rowId));
 	if (levelEle != null)
 		levelEle.selectedIndex = 0;
-	var operatorEle = document.getElementById('operator'+(rows+1));
+	var operatorEle = document.getElementById('operator'+(rowId));
 	if (operatorEle != null)
 		operatorEle.selectedIndex = 0;
 }
 
 function deleteRow(rowid) {
     var table = document.getElementById("metaAttrTable");
-    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-	if(rows <= 2)
+    var rows = $("#metaAttrTable tbody").find("tr").length;
+	if(rows < 2)
 		return;
     var row = document.getElementById(rowid);
     row.parentNode.removeChild(row);
+
+    for(var i=0;i<rows-1;i++)
+    {
+    	id = $("#metaAttrTable tbody").find("tr:eq(" + i + ")").prop("id").substring("attrRow".length);
+    	$("#rowIdLabel"+id).text("A" + (i + 1));
+    	$("#rowId"+id).val("A" + (i + 1));
+    }
 }
 
 function cancel() {
@@ -683,14 +689,15 @@ function validateAndSubmit()
 		alert("Invalid criteria");
 		return false;
 	}
-	var rows = document.getElementById("metaAttrTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-	for(var i=1;i<rows;i++)
+	var rows = $("#metaAttrTable tbody").find("tr").length;
+	for(var i=0;i<rows;i++)
     {
-		if(document.getElementById("selfAttributeOnly" + i).checked) {
-		    document.getElementById("selfAttributeOnlyHidden" + i).value = "true";
+		id = $("#metaAttrTable tbody").find("tr:eq(" + i + ")").prop("id").substring("attrRow".length);
+		if(document.getElementById("selfAttributeOnly" + id).checked) {
+		    document.getElementById("selfAttributeOnlyHidden" + id).value = "true";
 		}
-		if(userInSecGroup && document.getElementById("attributeEncrypted" + i).checked) {
-		    document.getElementById("attributeEncryptedHidden" + i).value = "true";
+		if(userInSecGroup && document.getElementById("attributeEncrypted" + id).checked) {
+		    document.getElementById("attributeEncryptedHidden" + id).value = "true";
 		}
     }
 	document.getElementById("simplesearchform").submit();
@@ -787,11 +794,12 @@ if(searchCriteria.level) {
 	        $(this).prop('checked', true);
 		} else {
 			$(this).prop('checked', false);
-			var rows = document.getElementById("metaAttrTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+			var rows = $("#metaAttrTable tbody").find("tr").length;
 			var checked = false;
 			for(var i=1;i<rows;i++)
 		    {
-				if(document.getElementById("attributeEncrypted" + i).checked) {
+				id = $("#metaAttrTable tbody").find("tr:eq(" + i + ")").prop("id").substring("attrRow".length);
+				if(document.getElementById("attributeEncrypted" + id).checked) {
 					checked = true;
 				}
 		    }
