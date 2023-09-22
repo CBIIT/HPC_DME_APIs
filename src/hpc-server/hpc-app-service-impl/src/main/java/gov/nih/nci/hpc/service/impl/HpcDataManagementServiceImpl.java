@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.CollectionUtils;
 
+import gov.nih.nci.hpc.dao.HpcBulkUpdateAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
@@ -55,6 +56,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -120,6 +123,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Autowired
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
 
+	// Bulk Update Audit DAO.
+	@Autowired
+	private HpcBulkUpdateAuditDAO bulkUpdateAuditDAO = null;
+	
 	// Notification Application Service.
 	@Autowired
 	private HpcNotificationService notificationService = null;
@@ -1212,6 +1219,23 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		return deletedDate.before(Calendar.getInstance());
 	}
 
+	@Override
+	public void addBulkUpdateAuditRecord(String userId, HpcCompoundMetadataQuery query, 
+			HpcCompoundMetadataQueryType queryType, List<HpcMetadataEntry> metadataEntries) {
+		// Input validation.
+		if (userId == null || query == null || queryType == null || StringUtils.isBlank(userId)) {
+			return;
+		}
+
+		for (HpcMetadataEntry entry: metadataEntries) {
+			try {
+				bulkUpdateAuditDAO.insert(userId, query, queryType, entry.getAttribute(), entry.getValue(), Calendar.getInstance());
+	
+			} catch (HpcException e) {
+				logger.error("Failed to add a bulk update audit record", HpcErrorType.DATABASE_ERROR, e);
+			}
+		}
+	}
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
