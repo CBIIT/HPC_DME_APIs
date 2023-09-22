@@ -417,6 +417,24 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		document.getElementById("simplesearchform").submit();
     };
     
+    $scope.bulkUpdate = function() {
+    	var updatedList = [];
+    	document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
+        if(source == "criteria")
+          document.getElementById("searchType3").value = "criteria";
+        else
+          document.getElementById("searchType3").value = "search";
+        document.getElementById("bulkMetadataform").elements.namedItem("totalCount").value =  totalRows;
+        document.getElementById("bulkMetadataform").elements.namedItem("updateAll").value =  "true";
+        document.getElementById("bulkMetadataform").elements.namedItem("pageNumber").value =  currentPage;
+        document.getElementById("bulkMetadataform").elements.namedItem("pageSize").value =  currentPageSize;
+        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
+        document.getElementById("bulkMetadataform").elements.namedItem("totalSize").value = totalSize.toString();
+        document.getElementById("bulkMetadataform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+        document.getElementById("downloadType3").value = "collections";
+        document.getElementById("bulkMetadataform").submit();
+    };
+    
     $scope.performActionSelectedRows = function(action) {
         console.log('$scope.selectedRows: ', $scope.selectedRows);
         console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
@@ -557,6 +575,9 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 									<a id="exportLink"
 										class="btn btn-link btn-sm" ng-click="export()"
 										>Export Search Results</a>
+									<a id="bulkUpdate"
+										class="btn btn-link btn-sm" ng-click="bulkUpdate()"
+										>Update Metadata on Search Results </a>
 								</div>
 							  </div>
 							  <div class="row" style="background-color: #fff;border-top: 1px solid #ccc;border-bottom: none;">
@@ -647,6 +668,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 						<input type="hidden" id="pageSize3" name="pageSize"/>
 						<input type="hidden" id="queryName3" name="queryName"/>
 						<input type="hidden" id="totalSize3" name="totalSize"/>
+						<input type="hidden" id="totalCount" name="totalCount"/>
+						<input type="hidden" id="updateAll" name="updateAll"/>
 						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
 					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
