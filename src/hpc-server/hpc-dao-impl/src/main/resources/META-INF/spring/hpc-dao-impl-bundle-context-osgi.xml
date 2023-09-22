@@ -31,7 +31,6 @@
 		<prop key="hpc.dao.oracle.maxActive">50</prop>
 		<prop key="hpc.dao.oracle.encryptor.key">***128-bit-key**</prop>
 		<prop key="hpc.dao.jdbc.template.fetchSize">1000</prop>
-		
 		<prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
 	</osgix:cm-properties>
 
@@ -44,6 +43,7 @@
 	<osgi:service ref="hpcDataRegistrationDAO" interface="gov.nih.nci.hpc.dao.HpcDataRegistrationDAO" />
 	<osgi:service ref="hpcDataManagementAuditDAO" interface="gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO" />
 	<osgi:service ref="hpcApiCallsAuditDAO" interface="gov.nih.nci.hpc.dao.HpcApiCallsAuditDAO" />
+	<osgi:service ref="hpcBulkUpdateAuditDAO" interface="gov.nih.nci.hpc.dao.HpcBulkUpdateAuditDAO" />
 	<osgi:service ref="hpcNotificationDAO" interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />
 	<osgi:service ref="hpcEventDAO" interface="gov.nih.nci.hpc.dao.HpcEventDAO" />
 	<osgi:service ref="hpcReportDAO" interface="gov.nih.nci.hpc.dao.HpcReportsDAO" />
@@ -57,5 +57,5 @@
 	<osgi:service ref="hpcDataTieringDAO" interface="gov.nih.nci.hpc.dao.HpcDataTieringDAO" />
 	<osgi:service ref="hpcReviewDAO" interface="gov.nih.nci.hpc.dao.HpcReviewDAO" />
 	<osgi:service ref="hpcQueryConfigDAO" interface="gov.nih.nci.hpc.dao.HpcQueryConfigDAO" />
-	
+
 </beans>
