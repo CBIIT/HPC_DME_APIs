@@ -107,6 +107,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO" />
 	<osgi:reference id="hpcApiCallsAuditDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcApiCallsAuditDAO" />
+	<osgi:reference id="hpcBulkUpdateAuditDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcBulkUpdateAuditDAO" />
 	<osgi:reference id="hpcNotificationDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />	
 	<osgi:reference id="hpcEventDAO" 
@@ -148,5 +150,5 @@
 	<osgi:reference id="hpcReviewDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcReviewDAO" />	
 	<osgi:reference id="hpcQueryConfigDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcQueryConfigDAO" />	
+	                interface="gov.nih.nci.hpc.dao.HpcQueryConfigDAO" />
 </beans>

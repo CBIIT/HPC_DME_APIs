@@ -56,12 +56,14 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMetadataUpdateResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcBulkMetadataUpdateRequest;
@@ -133,10 +135,16 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 
 		// Set paths to be displayed on the updatemetadatabulk page
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		String updateAll = request.getParameter("updateAll");
+		String totalCount = request.getParameter("totalCount");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
 		HpcBulkMetadataUpdateRequest bulkMetadataUpdateRequest = new HpcBulkMetadataUpdateRequest();
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
-		if (selectedPathsStr.isEmpty()) {
+		if(StringUtils.equals(updateAll, "true")) {
+			model.addAttribute("updateAll", "true");
+			model.addAttribute("totalCount", totalCount);
+		}
+		else if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("error", "Data file list is missing!");
 		} else {
 			StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
@@ -217,16 +225,34 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		model.addAttribute("metadataValue", bulkMetadataUpdateRequest.getMetadataValue());
 		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 
-		List<String> paths = new ArrayList<>();
-		for(String path: bulkMetadataUpdateRequest.getSelectedFilePaths()) {
-		  path = path.replaceAll("\\[", "").replaceAll("\\]","");
-		  paths.add(path);
-		}
 		HpcSearch hpcSaveSearch = (HpcSearch) session.getAttribute("hpcSavedSearch");
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		String result = "";
 		HpcBulkMetadataUpdateRequestDTO req =  new HpcBulkMetadataUpdateRequestDTO();
-		req.getCollectionPaths().addAll(paths);
+		String updateAll = request.getParameter("updateAll");
+		String totalCount = request.getParameter("totalCount");
+		if(StringUtils.equals(updateAll, "true")) {
+			HpcCompoundMetadataQueryDTO compoundQuery = null;
+			if (session.getAttribute("compoundQuery") != null)
+				compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
+			if (compoundQuery == null) {
+				HpcNamedCompoundMetadataQuery namedCompoundQuery = null;
+				if (session.getAttribute("namedCompoundQuery") != null)
+					namedCompoundQuery = (HpcNamedCompoundMetadataQuery) session.getAttribute("namedCompoundQuery");
+				compoundQuery = new HpcCompoundMetadataQueryDTO();
+				compoundQuery.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
+			}
+			model.addAttribute("updateAll", "true");
+			model.addAttribute("totalCount", totalCount);
+			req.setCollectionCompoundQuery(compoundQuery.getCompoundQuery());
+		} else {
+			List<String> paths = new ArrayList<>();
+			for(String path: bulkMetadataUpdateRequest.getSelectedFilePaths()) {
+			  path = path.replaceAll("\\[", "").replaceAll("\\]","");
+			  paths.add(path);
+			}
+			req.getCollectionPaths().addAll(paths);
+		}
 		req.getMetadataEntries().addAll(metadataList);
 		try {
 			WebClient client = HpcClientUtil.getWebClient(serviceMetadataURL, sslCertPath, sslCertPassword);
