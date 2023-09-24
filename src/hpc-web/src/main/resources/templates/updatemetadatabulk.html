@@ -127,12 +127,17 @@
 												role="form" th:action="@{/assignbulkmetadata}"
 												th:object="${bulkMetadataUpdateRequest}" method="POST"
 												enctype="multipart/form-data">
+												<input type="hidden" name="updateAll" id="updateAll"
+													th:value="${updateAll}" />
+												<input type="hidden" name="totalCount" id="totalCount"
+													th:value="${totalCount}" />
 												<input type="hidden" name="downloadType" id="downloadType"
 													th:value="${hpcDownloadDatafile.downloadType}" />
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 													th:value="${bulkMetadataUpdateRequest.getSelectedFilePaths()}" />
 												<div class="form-group" th:if="${downloadType == 'collections'}">
-												  <p>This page allows you to add or modify metadata for the selected collections.</p>
+												  <p th:if="${updateAll == 'true'}" th:text="'This page allows you to add or modify metadata for the entire search results. Total records affected: ' + ${totalCount}"></p>
+												  <p th:if="${updateAll != 'true'}">This page allows you to add or modify metadata for the selected collections.</p>
 													<table class="table table-bordered  col-md-12" id="metaAttrTable">
 														<thead>
 															<tr>
@@ -160,8 +165,8 @@
 													  <div class="row">
 													  	<button type="button" class="btn btn-default"
 															onClick="goBack()" id="close">Back</button>
-													  	<button type="submit" class="btn btn-md btn-primary"
-															id="primaryButton">Save</button>				
+													  	<button type="button" class="btn btn-md btn-primary"
+															id="primaryButton" onClick="submitBulk()">Save</button>				
 													  </div>
 													</div>
 												</div>
@@ -277,6 +282,19 @@
 			}
 		}
 
+		function submitBulk()
+	    {
+			var mdname = document.getElementById("mdname").value;
+			var mdval = document.getElementById("mdval").value;
+			if(mdname == null || mdname == "" || mdval == null || mdval == "")
+			{
+				alert("Attribute name or value is missing");
+				return false;
+			}
+	    	if (confirm("Are you sure you want to apply bulk updates?") == true) {
+				$("#updateform").submit();
+	    	}
+	    }
 		/*]]>*/
 	</script>
 
