@@ -20,7 +20,10 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
@@ -643,5 +646,16 @@ public interface HpcDataManagementService {
 	 * @return True if it is expired, or false otherwise.
 	 */
 	boolean deletedDataObjectExpired(Calendar deletedDate);
+
+	/**
+	 * Add an audit record in the DB for bulk metadata updates using query
+	 *
+	 * @param userId                       The userId of the user performing the updates.
+	 * @param query                        The query being used for bulk metadata update.
+	 * @param queryType                    The query type, data object or collection.
+	 * @param metadataEntries              The list of metadata being updated.
+	 */
+	public void addBulkUpdateAuditRecord(String userId, HpcCompoundMetadataQuery query, 
+			HpcCompoundMetadataQueryType queryType, List<HpcMetadataEntry> metadataEntries);
 
 }

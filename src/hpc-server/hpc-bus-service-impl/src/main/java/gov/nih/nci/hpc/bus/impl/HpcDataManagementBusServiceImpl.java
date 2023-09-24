@@ -79,6 +79,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -2262,6 +2263,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 
 		// Data objects bulk metadata updates.
+		
+		// Add an audit record if this is a query update
+		if (bulkMetadataUpdateRequest.getDataObjectCompoundQuery() != null) {
+			dataManagementService.addBulkUpdateAuditRecord(userId, bulkMetadataUpdateRequest.getDataObjectCompoundQuery(),
+				HpcCompoundMetadataQueryType.DATA_OBJECT, bulkMetadataUpdateRequest.getMetadataEntries());
+		}
+		
 		dataObjectPaths.forEach(path -> {
 			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
 			item.setPath(path);
@@ -2285,6 +2293,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		});
 
 		// Collections bulk metadata updates.
+		
+		// Add an audit record if this is a query update
+		if (bulkMetadataUpdateRequest.getCollectionCompoundQuery() != null) {
+			dataManagementService.addBulkUpdateAuditRecord(userId, bulkMetadataUpdateRequest.getCollectionCompoundQuery(),
+				HpcCompoundMetadataQueryType.COLLECTION, bulkMetadataUpdateRequest.getMetadataEntries());
+		}
+		
 		collectionPaths.forEach(path -> {
 			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
 			item.setPath(path);
