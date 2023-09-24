@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.connection.IRODSSession;
 import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
 import org.irods.jargon.core.connection.SettableJargonProperties;
 import org.irods.jargon.core.connection.auth.AuthResponse;
@@ -130,6 +131,9 @@ public class HpcIRODSConnection {
 
 			CachedIrodsProtocolManager cachedIrodsProtocolManager = new CachedIrodsProtocolManager();
 			cachedIrodsProtocolManager.setJargonConnectionCache(jargonConnectionCache);
+			
+			IRODSSession irodsSession = IRODSSession.instance(cachedIrodsProtocolManager);
+			jargonPooledObjectFactory.setIrodsSession(irodsSession);
 
 			irodsFileSystem = new IRODSFileSystem(cachedIrodsProtocolManager);
 
