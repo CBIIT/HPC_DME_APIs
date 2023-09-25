@@ -208,6 +208,9 @@ public class HpcBrowseController extends AbstractHpcController {
 			final RedirectAttributes redirectAttributes, final String refreshNode, final String loadMore) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
+		if(browserEntry == null) {
+			browserEntry = hpcBrowserEntry;
+		}
 		List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
 		boolean getChildren = false;
 		boolean refresh = false;
@@ -293,7 +296,8 @@ public class HpcBrowseController extends AbstractHpcController {
         populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "userBasePaths",
             sslCertPath, sslCertPassword, session, hpcModelBuilder);
     }
-    model.addAttribute("userBasePaths", (Set<String>) session.getAttribute("userBasePaths"));
+    Set<String> userBasePaths = (Set<String>)session.getAttribute("userBasePaths");
+    model.addAttribute("userBasePaths", userBasePaths);
 
     String partial = request.getParameter("partial");
     String refresh = request.getParameter("refresh");
@@ -341,8 +345,6 @@ public class HpcBrowseController extends AbstractHpcController {
 
     if (selectedBrowsePath != null && (path == null || path.isEmpty()))
       session.removeAttribute("browserEntry");
-    if (path == null || path.isEmpty() || request.getParameter("base") != null)
-      path = user.getDefaultBasePath();
 
     // If browser tree nodes are cached, return cached data. If not, query
     // browser tree nodes based on the base path and cache it.
@@ -377,6 +379,25 @@ public class HpcBrowseController extends AbstractHpcController {
           model.addAttribute("browserEntry", browserEntry);
         } else
           model.addAttribute("message", "No collections found!");
+      } else {
+          //We will get here if path is null, which means we are building initial
+          //tree or clicked the refresh button - for both we want to display all
+          //the base paths for the logged in user
+          List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
+          for(String basePath: userBasePaths) {
+              HpcBrowserEntry browserEntry = new HpcBrowserEntry();
+              browserEntry.setCollection(true);
+              browserEntry.setFullPath(basePath);
+              browserEntry.setId(basePath);
+              browserEntry.setName(basePath);
+              browserEntry = getTreeNodes(basePath, browserEntry, authToken, model, false, true, false, false);
+              //browserEntry = addPathEntries(path, browserEntry);
+              browserEntry = trimPath(browserEntry, browserEntry.getName());
+              entries.add(browserEntry);
+              if(basePath.equals(user.getDefaultBasePath())) {
+                  model.addAttribute("browserEntryList", entries);
+              }
+          }
       }
       model.addAttribute("basePath", user.getDefaultBasePath());
       model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
@@ -562,7 +583,9 @@ public class HpcBrowseController extends AbstractHpcController {
 		if (selectedEntry == null)
 		{
 			selectedEntry = new HpcBrowserEntry();
+			selectedEntry.setId(path);
 			selectedEntry.setName(path);
+			selectedEntry.setFullPath(path);
 		}
 
 		try
