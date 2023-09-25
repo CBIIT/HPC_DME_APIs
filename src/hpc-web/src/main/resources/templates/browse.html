@@ -815,6 +815,12 @@ var menuAPI = $('#tree1').jqTreeContextMenu($('#myMenu'), {
     $('#bookmarksDiv').toggle();
   });
 
+  $('#validhierarchyModal').on('hidden.bs.modal', function(e)
+  { 
+	$(this).removeData();
+  }) ;
+
+  
 /*]]>*/
 </script>
 
