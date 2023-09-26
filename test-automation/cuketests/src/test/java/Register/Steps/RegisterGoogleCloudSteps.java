@@ -51,16 +51,15 @@ import java.lang.Thread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class RegisterGoogleCloudSteps {
-	static final String BULK_REGISTRATION_URL="/hpc-server/v2/registration";
-	static final String DATA_OBJECT_REGISTRATION_URL="/hpc-server/v2/dataObject";
+	static final String BULK_REGISTRATION_URL = "/hpc-server/v2/registration";
+	static final String DATA_OBJECT_REGISTRATION_URL = "/hpc-server/v2/dataObject";
 	Gson gson = new Gson();
 
-	ConfigFileReader configFileReader= new ConfigFileReader();
-	TaskHelper taskHelper= new TaskHelper();
+	ConfigFileReader configFileReader = new ConfigFileReader();
+	TaskHelper taskHelper = new TaskHelper();
 	RegisterGoogleCloudPojo registerBody = new RegisterGoogleCloudPojo();
-	SourceLocationPojo sourceLocation  = new SourceLocationPojo();
+	SourceLocationPojo sourceLocation = new SourceLocationPojo();
 	DirectoryScanPathMapPojo pathMap = new DirectoryScanPathMapPojo();
 	List<RegisterGoogleCloudPojo> files = new ArrayList<RegisterGoogleCloudPojo>();
 	List<Map<String, String>> rows;
@@ -96,20 +95,20 @@ public class RegisterGoogleCloudSteps {
 
 	@Given("I add source cloud location as {string}")
 	public void i_add_source_cloud_location_as(String file) {
-	sourceLocation.setFileId(file);
+		sourceLocation.setFileId(file);
 	}
 
 	@Given("I choose file or directory as {string}")
 	public void i_choose_file_or_directory_as(String isFile) {
-	System.out.println(isFile);
+
 	}
 
 	@Given("I add metadataEntries as")
 	public void i_add_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
 		rows = dataTable.asMaps(String.class, String.class);
 		for (Map<String, String> columns : rows) {
-		String attribute = columns.get("attribute");
-		String val = columns.get("value");
+			String attribute = columns.get("attribute");
+			String val = columns.get("value");
 		}
 	}
 
@@ -126,7 +125,8 @@ public class RegisterGoogleCloudSteps {
 		BulkMetadataEntry metadataEntry = new BulkMetadataEntry();
 		metadataEntry.setPath(path);
 		metadataEntry.setPathMetadataEntries(path_metadata_rows);
-		if(bulkMetadataEntries.getPathsMetadataEntries() == null || bulkMetadataEntries.getPathsMetadataEntries().isEmpty()) { 
+		if (bulkMetadataEntries.getPathsMetadataEntries() == null
+				|| bulkMetadataEntries.getPathsMetadataEntries().isEmpty()) {
 			bulkMetadataEntries.setPathsMetadataEntries(new ArrayList<BulkMetadataEntry>());
 		}
 		bulkMetadataEntries.getPathsMetadataEntries().add(metadataEntry);
@@ -134,13 +134,13 @@ public class RegisterGoogleCloudSteps {
 
 	@Given("I add default metadataEntries as")
 	public void i_add_default_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
-		List<Map<String, String>> default_metadata_rows  = dataTable.asMaps(String.class, String.class);
+		List<Map<String, String>> default_metadata_rows = dataTable.asMaps(String.class, String.class);
 		bulkMetadataEntries.setDefaultCollectionMetadataEntries(default_metadata_rows);
 	}
 
 	@Given("I add fromPath as {string}")
 	public void i_add_from_path_as(String fromPath) {
-		this.pathMap.setFromPath(fromPath); 
+		this.pathMap.setFromPath(fromPath);
 	}
 
 	@Given("I add toPath as {string}")
@@ -162,15 +162,18 @@ public class RegisterGoogleCloudSteps {
 		if (this.source.toUpperCase().equals("GOOGLECLOUD")) {
 			sourceInfo.setAccessToken(configFileReader.getGoogleCloudToken());
 			dataObjectRegistration.setGoogleCloudStorageUploadSource(sourceInfo);
-		} if (this.source.toUpperCase().equals("AWS")) {
+		} else if (this.source.toUpperCase().equals("AWS")) {
 			S3StreamingUploadPojo s3Info = new S3StreamingUploadPojo();
 			sourceInfo.setAccount(taskHelper.getAcctAWS());
 			dataObjectRegistration.setS3UploadSource(sourceInfo);
-		} if (this.source.toUpperCase().equals("GLOBUS")) {
+		} else if (this.source.toUpperCase().equals("GLOBUS")) {
 			dataObjectRegistration.setGlobusUploadSource(sourceInfo);
-		} if (this.source.toUpperCase().equals("GOOGLEDRIVE")) {
+		} else if (this.source.toUpperCase().equals("GOOGLEDRIVE")) {
 			sourceInfo.setAccessToken(configFileReader.getGoogleDriveAccessToken());
 			dataObjectRegistration.setGoogleDriveUploadSource(sourceInfo);
+		} else {
+			System.out.println("Unknown Source");
+			return;
 		}
 		ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
 		dataObjectRegistrations.add(0, dataObjectRegistration);
@@ -192,7 +195,7 @@ public class RegisterGoogleCloudSteps {
 		if (this.source.toUpperCase().equals("GOOGLECLOUD")) {
 			directoryLocation.setAccessToken(configFileReader.getGoogleCloudToken());
 			directoryScanRegistration.setGoogleCloudStorageScanDirectory(directoryLocation);
-		} if (this.source.toUpperCase().equals("GOOGLEDRIVE")) {
+		} else if (this.source.toUpperCase().equals("GOOGLEDRIVE")) {
 			directoryLocation.setAccessToken(configFileReader.getGoogleDriveAccessToken());
 			directoryScanRegistration.setGoogleDriveScanDirectory(directoryLocation);
 		} else if (this.source.toUpperCase().equals("AWS")) {
@@ -201,15 +204,16 @@ public class RegisterGoogleCloudSteps {
 		} else if (this.source.toUpperCase().equals("GLOBUS")) {
 			directoryScanRegistration.setGlobusScanDirectory(directoryLocation);
 		} else {
-			System.out.println(" Unknown Source");
+			System.out.println("Unknown Source");
+			return;
 		}
 		String gcPath = sourceLocation.getFileId();
 		String tempPath = gcPath;
 		if (gcPath.endsWith("/"))
-		  tempPath = gcPath.substring(0, gcPath.length() - 1);
-		String gcToPath = tempPath.substring(tempPath.lastIndexOf("/")+1, tempPath.length());
-        pathMap.setToPath(gcToPath);
-        pathMap.setFromPath(tempPath);
+			tempPath = gcPath.substring(0, gcPath.length() - 1);
+		String gcToPath = tempPath.substring(tempPath.lastIndexOf("/") + 1, tempPath.length());
+		pathMap.setToPath(gcToPath);
+		pathMap.setFromPath(tempPath);
 		directoryScanRegistration.setBasePath(this.path);
 		directoryScanRegistration.setPatternType("SIMPLE");
 		directoryScanRegistration.setPathMap(pathMap);
@@ -225,6 +229,6 @@ public class RegisterGoogleCloudSteps {
 
 	@Then("I get a response of success for the Upload")
 	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
-	    org.junit.Assert.assertEquals(201, 201);
+		org.junit.Assert.assertEquals(201, 201);
 	}
 }
