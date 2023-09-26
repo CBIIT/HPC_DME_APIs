@@ -136,7 +136,8 @@
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 													th:value="${bulkMetadataUpdateRequest.getSelectedFilePaths()}" />
 												<div class="form-group" th:if="${downloadType == 'collections'}">
-												  <p th:if="${updateAll == 'true'}" th:text="'This page allows you to add or modify metadata on all search results. Total records affected: ' + ${totalCount}"></p>
+												  <p style="display: inline" th:if="${updateAll == 'true'}">This page allows you to add or modify metadata on all 
+												  	<div style="display: inline;font-weight: bold;" th:text="${#numbers.formatInteger(totalCount, 0, 'COMMA')}"/> search results.</p>
 												  <p th:if="${updateAll != 'true'}">This page allows you to add or modify metadata for the selected collections.</p>
 													<table class="table table-bordered  col-md-12" id="metaAttrTable">
 														<thead>
