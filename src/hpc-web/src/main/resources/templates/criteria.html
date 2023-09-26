@@ -583,21 +583,19 @@ function addRow() {
     $('#level'+(rowId)).empty();
     $('#level'+(rowId)).append($leveloptions)
     //$('#level'+(rowId)).val($('#level'+ lastRow).val());
-    $('#level'+(rowId)).val("ANY");
     $('#level'+(rowId)).select2();
     $('#level'+(rowId)).select2().on("change", function(e) {
     	id = $(this).attr('id');
 		populateLevelAttributes($('#'+(id)).val(), id)
     });
-    //$('#level'+(rowId)).val($('#level'+ lastRow).val()).change();
     
    	var $attroptions = $('#attrName'+ lastRow + " > option").clone();
     $('#attrName'+(rowId)).empty();
     $('#attrName'+(rowId)).append($attroptions);
-    $('#attrName'+(rowId)).val("ANY");
-    //$('#attrName'+(rowId)).val($('#attrName'+ lastRow).val());
     $('#attrName'+(rowId)).select2();
-    
+    $('#level'+(rowId)).val("ANY").change();
+    $('#attrName'+(rowId)).val("ANY").change();
+
    	var $operatoroptions = $('#operator'+ lastRow + " > option").clone();
     $('#operator'+(rowId)).empty();
     $('#operator'+(rowId)).append($operatoroptions);
