@@ -74,6 +74,7 @@ public class TaskHelper {
 				.header("Content-Type", "application/json").body(requestBody);
 		Response response = executeRequest(requestType, request, requestUrl);
 		int statusCode = response.getStatusCode();
+		// Polling loop
 		if (statusCode == 200 || statusCode == 201) {
 			System.out.println("The Registration was submitted succesfully.");
 			System.out.println("StatusCode = " + response.getStatusCode());
@@ -81,7 +82,7 @@ public class TaskHelper {
 			JsonPath jsonPath = response.jsonPath();
 			String taskId = jsonPath.get("taskId").toString();
 			System.out.println("Monitoring task id: " + taskId);
-			int i = 0;
+			int pollingIteration = 0;
 			boolean inProgress = true;
 			boolean taskFailed = false;
 			do {
@@ -117,9 +118,9 @@ public class TaskHelper {
 					System.out.println(message.toString());
 					break;
 				}
-				i++;
-				System.out.println("Task polling loop iteration: " + i);
-			} while (i < 10 && inProgress && !taskFailed);
+				pollingIteration++;
+				System.out.println("Task polling loop iteration: " + pollingIteration);
+			} while (pollingIteration < 10 && inProgress && !taskFailed);
 		} else {
 			JsonPath jsonPath = response.jsonPath();
 			logger.error("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
@@ -142,11 +143,14 @@ public class TaskHelper {
 			System.out.println("SUCCESS:" + statusCode);
 		}else {
 			JsonPath jsonPath = response.jsonPath();
-			logger.error("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
-					jsonPath.getString("message") + " , Error Status Code: " + response.getStatusCode());
+			if (jsonPath != null || jsonPath.get("errorType") != null) {
+				//logger.error("This test was a failure. ErrorType: " + (jsonPath.get("errorType") + "") + ", Error Message: " +
+				//		(jsonPath.getString("message") + "") + " , Error Status Code: " + response.getStatusCode());
+			}
+			System.out.println("ERROR:" +response.getBody().asString());
 		}
 	}
-	
+
 	private Response executeRequest(String requestType, RequestSpecification request, String requestUrl) {
 		Response response;
 		if (requestType.equals("POST")) {
@@ -156,7 +160,7 @@ public class TaskHelper {
 		} else if (requestType.equals("DELETE")) {
 			response  = request.delete(requestUrl);
 		} else {
-			System.out.println("Unknown action");
+			System.out.println("Unknown http method");
 			return null;
 		}
 		return response;

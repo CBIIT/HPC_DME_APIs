@@ -76,16 +76,15 @@ public class DownloadBulkSteps {
 	}
 
 	@Given("I have multiple download collection paths as")
-	public void i_have_multiple_download_collection_paths_as(io.cucumber.datatable.DataTable datatable) {
+	public void i_have_multiple_download_collection_paths_as(io.cucumber.datatable.DataTable dataTable) {
 		downloadUrl = BULK_DOWNLOAD_URL;
-		collectionPathsList = datatable.rows(1).asList(); // ignore the head of column
+		collectionPathsList = dataTable.rows(1).asList(); // ignore the head of column
 	}
 
 	@Given("I have multiple download dataObject paths as")
-	public void i_have_multiple_download_data_object_paths_as(io.cucumber.datatable.DataTable datatable) {
+	public void i_have_multiple_download_data_object_paths_as(io.cucumber.datatable.DataTable dataTable) {
 		downloadUrl = BULK_DOWNLOAD_URL;
-		dataObjectPathsList = datatable.asList();
-		dataObjectPathsList.remove(0);
+		dataObjectPathsList = dataTable.rows(1).asList(); // ignore the head of column
 	}
 
 	@Given("I set appendPathToDownloadDestination as {string}")
@@ -120,7 +119,7 @@ public class DownloadBulkSteps {
 			downloadRequestBody.setCollectionPaths(collectionPathsList);
 		}
 		if (!dataObjectPathsList.isEmpty()) {
-			downloadRequestBody.setCollectionPaths(dataObjectPathsList);
+			downloadRequestBody.setDataObjectPaths(dataObjectPathsList);
 		}
 		downloadRequestBody.setAppendPathToDownloadDestination(true);
 		System.out.println(gson.toJson(downloadRequestBody));
