@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		 features="src/test/java/Register/Features/RegisterBulk.feature"
-		, glue="Register.Steps.RegisterGoogleCloudSteps.java"
+		, glue="Register.Steps.RegisterBulkSteps.java"
 		, dryRun = false
 		, monochrome=true
 		//, tags="@Smoke"
@@ -15,6 +15,6 @@ import org.junit.runner.RunWith;
 		 "html:target/cucumber-reports/cucumber-reports.html" }
 		)
 
-public class GoogleCloudRunner {
+public class RegisterBulkRunner {
     
 }
