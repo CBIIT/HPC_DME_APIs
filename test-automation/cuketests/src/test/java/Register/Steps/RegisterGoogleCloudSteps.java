@@ -55,7 +55,6 @@ public class RegisterGoogleCloudSteps {
 	static final String BULK_REGISTRATION_URL = "/hpc-server/v2/registration";
 	static final String DATA_OBJECT_REGISTRATION_URL = "/hpc-server/v2/dataObject";
 	Gson gson = new Gson();
-
 	ConfigFileReader configFileReader = new ConfigFileReader();
 	TaskHelper taskHelper = new TaskHelper();
 	RegisterGoogleCloudPojo registerBody = new RegisterGoogleCloudPojo();
@@ -63,20 +62,59 @@ public class RegisterGoogleCloudSteps {
 	DirectoryScanPathMapPojo pathMap = new DirectoryScanPathMapPojo();
 	List<RegisterGoogleCloudPojo> files = new ArrayList<RegisterGoogleCloudPojo>();
 	List<Map<String, String>> rows;
-	GooglePojo googleObj = new GooglePojo();
 	BulkMetadataEntriesPojo bulkMetadataEntries = new BulkMetadataEntriesPojo();
+	ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
+	ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrations = new ArrayList<DirectoryScanRegistrationItemPojo>();
+	BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
+	DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
+	DirectoryScanRegistrationItemPojo directoryScanRegistration = new DirectoryScanRegistrationItemPojo();
 	String token;
 	String accessToken;
 	String path;
 	String source;
 	String directoryPath;
 	String isFile = "false";
+	boolean isBulkDataObjectRegistration; // true if data object Registration, false if directory Registration
+	boolean firstRegistration = true;
 	int statusCode;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-	DirectoryScanRegistrationItemPojo directoryScanRegistration = new DirectoryScanRegistrationItemPojo();
+	@Given("I need set up a Bulk Data Object Registration")
+	public void i_need_set_up_a_bulk_data_object_registration() {
+		if (firstRegistration) {
+			firstRegistration = false;
+			isBulkDataObjectRegistration = true;
+		} else {
+			if (isBulkDataObjectRegistration) {
+				setupDataObjectRegistration();
+			} else {
+				setupDirectoryScanRegistration();
+			}
+		}
+		isBulkDataObjectRegistration = true;
+	}
+
+	@Given("I need set up a Bulk Directory Registration")
+	public void i_need_set_up_a_bulk_directory_registration() {
+		if (firstRegistration) {
+			firstRegistration = false;
+		} else {
+			if (isBulkDataObjectRegistration) {
+				setupDataObjectRegistration();
+			} else {
+				setupDirectoryScanRegistration();
+			}
+		}
+		isBulkDataObjectRegistration = false;
+	}
+
+	@Then("I get a response of <response> for the Upload")
+	public void i_get_a_response_of_response_for_the_upload() {
+		// Write code here that turns the phrase above into concrete actions
+		throw new io.cucumber.java.PendingException();
+	}
 
 	@Given("I have a data source {string}")
 	public void i_have_a_data_source(String source) {
@@ -110,13 +148,6 @@ public class RegisterGoogleCloudSteps {
 			String attribute = columns.get("attribute");
 			String val = columns.get("value");
 		}
-	}
-
-	@Given("I have a refresh token")
-	public void i_have_a_refresh_token() {
-		String refreshTokenStr = configFileReader.getGoogleCloudToken();
-		googleObj.setAccessToken(refreshTokenStr);
-		registerBody.setGoogleCloudStorageUploadSource(googleObj);
 	}
 
 	@Given("I add a path as {string} with pathMetadata as")
@@ -153,6 +184,53 @@ public class RegisterGoogleCloudSteps {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Google Cloud bulk Upload");
 		DataObjectRegistration dataObjectRegistration = new DataObjectRegistration();
+		System.out.println("----------------------------------------------------------");
+		System.out.println("Test Google Cloud bulk Upload");
+		setupDataObjectRegistration();
+		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
+		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
+	}
+
+	@When("I click Register for the directory Upload")
+	public void i_click_register_for_the_directory_upload() {
+		System.out.println("----------------------------------------------------------");
+		System.out.println("Test Google Cloud bulk Upload");
+		System.out.println("----------------------------------------------------------");
+		System.out.println("Test Google Cloud bulk Upload");
+		setupDirectoryScanRegistration();
+		bulkRequest.setDirectoryScanRegistrationItems(directoryScanRegistrations);
+		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
+	}
+
+	@When("I click Register for Bulk Upload")
+	public void i_click_register_for_bulk_upload() {
+		if (isBulkDataObjectRegistration) {
+			System.out.println("----------------------------------------------------------");
+			System.out.println("Test Google Cloud bulk Upload");
+			setupDataObjectRegistration();
+		} else {
+			System.out.println("----------------------------------------------------------");
+			System.out.println("Test Google Cloud bulk Upload");
+			setupDirectoryScanRegistration();
+		}
+		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
+		bulkRequest.setDirectoryScanRegistrationItems(directoryScanRegistrations);
+		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
+	}
+
+	@Then("I get a response of success for the Upload")
+	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
+		org.junit.Assert.assertEquals(201, 201);
+	}
+
+	private void setupDataObjectRegistration() {
+		dataObjectRegistration = new DataObjectRegistration();
 		dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
 		String totalPath = this.path + "/" + sourceLocation.getFileId();
 		dataObjectRegistration.setPath(totalPath);
@@ -175,21 +253,16 @@ public class RegisterGoogleCloudSteps {
 			System.out.println("Unknown Source");
 			return;
 		}
-		ArrayList<DataObjectRegistration> dataObjectRegistrations = new ArrayList<DataObjectRegistration>();
-		dataObjectRegistrations.add(0, dataObjectRegistration);
-		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
-		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
-		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
-		System.out.println("----------------------------------------------------------");
-		System.out.println("");
+		dataObjectRegistrations.add(dataObjectRegistration);
+		bulkMetadataEntries = new BulkMetadataEntriesPojo();
+		sourceLocation = new SourceLocationPojo();
 	}
 
-	@When("I click Register for the directory Upload")
-	public void i_click_register_for_the_directory_upload() {
+	private void setupDirectoryScanRegistration() {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Google Cloud bulk Upload");
-		TaskHelper taskHelper = new TaskHelper();
 		this.token = configFileReader.getToken();
+		directoryScanRegistration = new DirectoryScanRegistrationItemPojo();
 		DirectoryLocationUploadPojo directoryLocation = new DirectoryLocationUploadPojo();
 		directoryLocation.setDirectoryLocation(sourceLocation);
 		if (this.source.toUpperCase().equals("GOOGLECLOUD")) {
@@ -218,17 +291,9 @@ public class RegisterGoogleCloudSteps {
 		directoryScanRegistration.setPatternType("SIMPLE");
 		directoryScanRegistration.setPathMap(pathMap);
 		directoryScanRegistration.setBulkMetadataEntries(bulkMetadataEntries);
-		ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrations = new ArrayList<DirectoryScanRegistrationItemPojo>();
-		directoryScanRegistrations.add(0, directoryScanRegistration);
-		BulkDataObjectRegister bulkRequest = new BulkDataObjectRegister();
-		bulkRequest.setDirectoryScanRegistrationItems(directoryScanRegistrations);
-		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
-		System.out.println("----------------------------------------------------------");
-		System.out.println("");
+		directoryScanRegistrations.add(directoryScanRegistration);
+		bulkMetadataEntries = new BulkMetadataEntriesPojo();
+		sourceLocation = new SourceLocationPojo();
 	}
 
-	@Then("I get a response of success for the Upload")
-	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
-		org.junit.Assert.assertEquals(201, 201);
-	}
 }
