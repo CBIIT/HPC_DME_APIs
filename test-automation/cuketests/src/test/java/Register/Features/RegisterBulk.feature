@@ -80,6 +80,47 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
       | googleCloud | dme-download-bucket | xyzfile.txt         | true   | success  |
       | googleCloud | dme-upload-bucket   | RSF-2022-03-29.csv  | true   | success  |
 
+  @test1024 @gc @bulk @dev
+  Scenario Outline: Register Asynchronous data file transfer from Google Cloud with Parent Metadat, DEV
+    Given I need set up a Bulk Directory Registration
+    Given I have a data source "googleCloud"
+    And I have registration path as "/DOE_TEST_Archive/Test_Program/Test_Study"
+    And I add source cloud bucket as "dme-download-bucket"
+    And I add source cloud location as "Demo9_14_2023"
+    And I add a path as "/DOE_TEST_Archive/Test_Program/Test_Study/Demo9_14_2023" with pathMetadata as
+      | attribute              | value     |
+      | collection_type        | Asset     |
+      | asset_identifier       | a12       |
+      | asset_name             | b12       |
+      | access_group           | public    |
+      | description            | Asset seq |
+      | asset_type             | Dataset   |
+      | is_reference_dataset   | No        |
+      | applicable_model_paths | Y         |
+    And I add a path as "/DOE_TEST_Archive/Test_Program/Test_Study/Demo9_14_2023/Screenshot" with pathMetadata as
+      | attribute         | value  |
+      | folder_identifier | abc123 |
+    Given I need set up a Bulk Data Object Registration
+    Given I have a data source "googleCloud"
+    And I have registration path as "/DOE_TEST_Archive/Test_Program/Test_Study/Test_Dataset"
+    And I add source cloud bucket as "dme-download-bucket"
+    And I add source cloud location as "xyzfile.txt"
+    And I add a path as "/DOE_TEST_Archive/Test_Program/Test_Study/Test_Dataset/xyzfile.txt" with pathMetadata as
+      | attribute   | value  |
+      | object_name | obj456 |
+      | source_path | xyz    |
+    Given I need set up a Bulk Data Object Registration
+    Given I have a data source "googleCloud"
+    And I have registration path as "/DOE_TEST_Archive/Test_Program/Test_Study/Test_Dataset"
+    And I add source cloud bucket as "dme-download-bucket"
+    And I add source cloud location as "12_12_2022_1124.txt"
+    And I add a path as "/DOE_TEST_Archive/Test_Program/Test_Study/Test_Dataset/12_12_2022_1124.txt" with pathMetadata as
+      | attribute   | value  |
+      | object_name | obj457 |
+      | source_path | xyz2   |
+    When I click Register for Bulk Upload
+    Then I get a response of success for the Upload
+
   Scenario Outline: Register Asynchronous data file transfer from Globus
     Given I have registration path as "/TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/RUN_XYZ_12345678"
     And I have a data source "globus"
@@ -109,40 +150,40 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
       | source      | bucket              | response |
       | googleCloud | dme-download-bucket | success  |
 
-  @test
-  Scenario Outline: Register Asynchronous directory transfer from Google Cloud
+  @testdev101
+  Scenario Outline: Register Asynchronous directory transfer from Google Cloud(DEV)
     Given I have a data source "googleCloud"
     And I have registration path as "/GTL_RAS_Archive/test2"
     And I add source cloud bucket as "<bucket>"
     And I add source cloud location as "Project101/"
     And I add a path as "/GTL_RAS_Archive/test2/Project101" with pathMetadata as
-		      | attribute           | value                                          |
-		      | collection_type     | Project                                        |
-		      | origin              | FAO                                            |
-		      | project_title       | Finding variants of BRC1                       |
-		      | project_description | Finding different biomarkers for breast cancer |
-		      | project_poc         | POC                                            |
-		      | publication_status  | current                                        |
-		      | collaborators       | NIH,NCI                                        |
-		      | comments            | Ongoing for 2 years                            |
-    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201" with pathMetadata as    
+      | attribute           | value                                          |
+      | collection_type     | Project                                        |
+      | origin              | FAO                                            |
+      | project_title       | Finding variants of BRC1                       |
+      | project_description | Finding different biomarkers for breast cancer |
+      | project_poc         | POC                                            |
+      | publication_status  | current                                        |
+      | collaborators       | NIH,NCI                                        |
+      | comments            | Ongoing for 2 years                            |
+    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201" with pathMetadata as
       | attribute                   | value                       |
-		  | collection_type     | Flowcell                                        |
+      | collection_type             | Flowcell                    |
       | flowcell_id                 | ff2351                      |
       | run_name                    | sar124                      |
       | run_date                    | 01/02/2023                  |
       | sequencing_platform         | NGS Illumina                |
       | sequencing_application_type | On demand Genome Sequencing |
       | study_disease               | Alzheimers                  |
-    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201/Sample_301" with pathMetadata as    
-      | attribute                   | value                       |
-		  | collection_type     | Sample                                        |
-      | sample_name | sample38648 |
-      | sample_type | frz106      |
-    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201/Sample_301/code.txt" with pathMetadata as    
-      | attribute                   | value                       |
-      | object_name | meta |
-      | file_type | text |
+    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201/Sample_301" with pathMetadata as
+      | attribute       | value       |
+      | collection_type | Sample      |
+      | sample_name     | sample38648 |
+      | sample_type     | frz106      |
+    And I add a path as "/GTL_RAS_Archive/test2/Project101/Flowcell201/Sample_301/code.txt" with pathMetadata as
+      | attribute   | value |
+      | object_name | meta  |
+      | file_type   | text  |
     When I click Register for the directory Upload
     Then I get a response of <response> for the Upload
 
