@@ -55,12 +55,18 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 
 	// User ID filter.
 	String userIdFilter = null;
+	
+	// NED ID filter.
+	String nedIdFilter = null;
 
 	// Last Name filter.
 	String lastNameFilter = null;
 
 	// First Name filter.
 	String firstNameFilter = null;
+	
+	// NIH SAC filter.
+	String nihSacFilter = null;
 
 	// User domain name
 	String userDomainName = null;
@@ -85,7 +91,8 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	 * @param firstNameFilter The first name filter.
 	 */
 	private HpcLdapAuthenticationProxyImpl(String url, String username, String password, String base,
-			String userIdFilter, String userDomainName, String lastNameFilter, String firstNameFilter) {
+			String userIdFilter, String userDomainName, String lastNameFilter, String firstNameFilter, 
+			String nedIdFilter, String nihSacFilter) {
 		environment.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT);
 		environment.put(Context.PROVIDER_URL, url);
 		environment.put(Context.SECURITY_AUTHENTICATION, SECURITY_AUTHENTICATION);
@@ -98,6 +105,8 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		this.userDomainName = userDomainName;
 		this.lastNameFilter = lastNameFilter;
 		this.firstNameFilter = firstNameFilter;
+		this.nedIdFilter = nedIdFilter;
+		this.nihSacFilter = nihSacFilter;
 	}
 
 	/**
@@ -189,6 +198,55 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 
 		} catch (NamingException ne) {
 			throw new HpcException("User name not found: " + userName, ne);
+
+		} finally {
+			try {
+				dirContext.close();
+
+			} catch (NamingException ne) {
+				logger.error("Failed to close LDAP context", ne);
+			}
+		}
+	}
+	
+	@Override
+	public HpcNciAccount getNihSac(String nedId) throws HpcException {
+
+		String[] attributeIDs = { lastNameFilter, firstNameFilter, nihSacFilter };
+		String searchFilter = "(" + nedIdFilter + "=" + nedId + ")";
+
+		DirContext dirContext = null;
+		try {
+			dirContext = new InitialDirContext(environment);
+
+		} catch (NamingException ne) {
+			throw new HpcException("Error occured in connecting to the directory server", HpcErrorType.LDAP_ERROR,
+					HpcIntegratedSystem.LDAP, ne);
+		}
+
+		SearchControls searchControls = new SearchControls();
+		searchControls.setReturningAttributes(attributeIDs);
+		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		try {
+			NamingEnumeration<SearchResult> searchEnum = dirContext.search(base, searchFilter, searchControls);
+			HpcNciAccount account = null;
+			while (searchEnum.hasMore()) {
+				Attributes attrs = searchEnum.next().getAttributes();
+				if (attrs.get(lastNameFilter) != null && attrs.get(firstNameFilter) != null && attrs.get(nihSacFilter) != null) {
+					account = new HpcNciAccount();
+					account.setLastName(
+							attrs.get(lastNameFilter).toString().substring(lastNameFilter.length() + 1).trim());
+					account.setFirstName(
+							attrs.get(firstNameFilter).toString().substring(firstNameFilter.length() + 1).trim());
+					account.setNihSac(
+							attrs.get(nihSacFilter).toString().substring(nihSacFilter.length() + 1).trim());
+					break;
+				}
+			}
+			return account;
+
+		} catch (NamingException ne) {
+			throw new HpcException("NED ID not found: " + nedId, ne);
 
 		} finally {
 			try {

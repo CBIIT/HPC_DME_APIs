@@ -89,6 +89,8 @@
 		  <constructor-arg value="${hpc.integration.ldap.userIdDomainName}" index="5" />
 		  <constructor-arg value="${hpc.integration.ldap.lastNameFilter}" index="6" />
 		  <constructor-arg value="${hpc.integration.ldap.firstNameFilter}" index="7" />
+		  <constructor-arg value="${hpc.integration.ldap.nedIdFilter}" index="8" />
+		  <constructor-arg value="${hpc.integration.ldap.nihSacFilter}" index="9" />
 	</bean>
 		
 	<!-- HPC SPS Authorization Proxy -->

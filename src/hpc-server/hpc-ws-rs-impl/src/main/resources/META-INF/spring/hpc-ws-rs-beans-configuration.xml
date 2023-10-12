@@ -230,6 +230,7 @@
 					value="${hpc.ws.rs.auth.security.update-query-configuration}" />
 				<entry key="getQueryConfiguration"
 					value="${hpc.ws.rs.auth.security.get-query-configuration}" />
+				<entry key="refreshInvestigators" value="${hpc.ws.rs.auth.security.refresh-investigators}" />
 
 				<!-- Data Management Service Authorizations -->
 				<entry key="registerCollection"

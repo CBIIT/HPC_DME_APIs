@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.dao.HpcApiCallsAuditDAO;
 import gov.nih.nci.hpc.dao.HpcGroupDAO;
+import gov.nih.nci.hpc.dao.HpcInvestigatorDAO;
 import gov.nih.nci.hpc.dao.HpcQueryConfigDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
@@ -110,6 +111,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	// The Query Config DAO instance.
 	@Autowired
 	private HpcApiCallsAuditDAO apiCallsAuditDAO = null;
+	
+	// The Investigator DAO instance.
+	@Autowired
+	private HpcInvestigatorDAO investigatorDAO = null;
 
 	// The LDAP authenticator instance.
 	@Autowired
@@ -672,6 +677,20 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
 			String serverId, Calendar created, Calendar completed) throws HpcException {
 		apiCallsAuditDAO.insert(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created, completed);
+	}
+	
+	@Override
+	public void refreshInvestigators() throws HpcException {
+		// Get all nedId from the table
+		List<String> nedIds = investigatorDAO.getAllNedIds();
+		
+		// For each id, obtain AD first name, last name and NIH SAC code and update
+		for (String nedId: nedIds) {
+			HpcNciAccount account = ldapAuthenticationProxy.getNihSac(nedId);
+			account.setNedId(nedId);
+			investigatorDAO.updateInvestigator(account);
+		}
+		return;
 	}
 
 	// ---------------------------------------------------------------------//
