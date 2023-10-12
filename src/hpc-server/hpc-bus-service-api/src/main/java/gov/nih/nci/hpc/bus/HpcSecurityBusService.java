@@ -258,4 +258,11 @@ public interface HpcSecurityBusService {
 	 */
 	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
 			String serverId, Calendar created, Calendar completed) throws HpcException;
+	
+	/**
+	 * Refresh Investigators.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void refreshInvestigators() throws HpcException;
 }

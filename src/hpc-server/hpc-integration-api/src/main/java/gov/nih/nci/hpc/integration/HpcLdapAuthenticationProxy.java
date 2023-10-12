@@ -55,4 +55,13 @@ public interface HpcLdapAuthenticationProxy
      * @throws HpcException on LDAP failure.
      */
 	public HpcDistinguishedNameSearchResult getDistinguishedName(String id, String keywordPrefix, String searchBase) throws HpcException;
+
+	/** 
+     * Get NIH SAC from NED ID
+     * 
+     * @param nedId The ned id.
+     * @return The nih sac code.
+     * @throws HpcException on LDAP failure.
+     */
+	public HpcNciAccount getNihSac(String nedId) throws HpcException;
 }

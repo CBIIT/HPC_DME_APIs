@@ -340,5 +340,18 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl implements Hp
 		return okResponse(null, false);
 
 	}
+	
+	@Override
+	public Response refreshInvestigators() {
+
+		try {
+			securityBusService.refreshInvestigators();
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+		return okResponse(null, false);
+
+	}
 
 }

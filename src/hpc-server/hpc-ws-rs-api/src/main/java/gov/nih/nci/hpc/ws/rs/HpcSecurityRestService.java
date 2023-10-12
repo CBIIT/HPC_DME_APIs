@@ -311,4 +311,12 @@ public interface HpcSecurityRestService {
   @Path("/refreshDataManagementConfigurations")
   public Response refreshDataManagementConfigurations();
   
+  /**
+   * Refresh Investigators
+   *
+   * @return The REST service response.
+   */
+  @POST
+  @Path("/refreshInvestigators")
+  public Response refreshInvestigators();
 }
