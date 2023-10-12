@@ -49,6 +49,7 @@
 	<bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementAuditDAOImpl" /> 
 	<bean id="hpcApiCallsAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcApiCallsAuditDAOImpl" /> 
 	<bean id="hpcBulkUpdateAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcBulkUpdateAuditDAOImpl" /> 
+	<bean id="hpcInvestigatorDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcInvestigatorDAOImpl" /> 
 	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEventDAOImpl" />
 	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />

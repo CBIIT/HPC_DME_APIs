@@ -365,4 +365,11 @@ public interface HpcSecurityService {
 	 */
 	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
 			String serverId, Calendar created, Calendar completed) throws HpcException;
+	
+	/**
+	 * Refresh investigators from AD
+	 * 
+	 * @throws HpcException as service failure
+	 */
+	public void refreshInvestigators() throws HpcException;
 }
