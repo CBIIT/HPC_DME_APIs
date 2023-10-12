@@ -109,6 +109,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcApiCallsAuditDAO" />
 	<osgi:reference id="hpcBulkUpdateAuditDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcBulkUpdateAuditDAO" />
+	<osgi:reference id="hpcInvestigatorDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcInvestigatorDAO" />
 	<osgi:reference id="hpcNotificationDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />	
 	<osgi:reference id="hpcEventDAO" 
