@@ -773,6 +773,12 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		securityService.addApiCallAuditRecord(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created,
 				completed);
 	}
+	
+	@Override
+	public void refreshInvestigators() throws HpcException {
+
+		securityService.refreshInvestigators();
+	}
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods
