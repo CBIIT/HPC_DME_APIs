@@ -81,19 +81,16 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
-							  <div class="col-md-3">
-							  </div>
-							  <div class="col-md-1 col-md-offset-8">
-								<h2>
-								<!-- 	<strong> <a id="refresh" class="btn btn-link btn-sm" th:href="@{/doc?update}">
-									  <i class="fa fa-repeat" title="Refresh models" aria-hidden="true"></i></a>
-									</strong> -->
-								<!--  <button> type="submit" <i class="fa fa-repeat" title="Refresh models" aria-hidden="true"></i></button>-->
-								<strong> <a id="refresh" class="btn btn-link btn-sm" onClick="document.getElementById('docForm').submit();">
-									  <i class="fa fa-repeat" title="Refresh models" aria-hidden="true"></i></a>
-									</strong>
-								</h2>
-							  </div>
+							  <h2 style="float: right">
+								<div>
+									<a id="refresh" class="btn btn-link btn-sm" onClick="document.getElementById('docForm').submit();">
+									  <i class="fa fa-repeat" title="Refresh models" aria-hidden="true"></i>
+									</a>
+									<a class="btn btn-link btn-sm" onClick="refreshInvestigators()">
+					                  <i id="investigatorIcon" class="fa fa-database" title="Refresh investigators" aria-hidden="true"></i>
+					                </a>
+								</div>
+							  </h2>
 							</div>
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
@@ -155,6 +152,28 @@
 		$(document).ready(function(){
 			$('#sub-menu-admin').addClass("active");
 		});
+		function refreshInvestigators() {
+			var serviceUri = "/doc/refreshInvestigators";
+			$("#investigatorIcon").addClass('fa-spinner fa-spin').removeClass('fa-database');
+	        $.ajax({
+	            type : "POST",
+	            url : serviceUri,
+				success : function(response) {
+					if(response.code=="success") {
+						console.log('Successfully refreshed investigators');
+						$("#investigatorIcon").addClass('fa-check').removeClass('fa-spinner fa-spin');
+					} else {
+						console.log('Error refreshing investigators: ', response.message);
+						$("#investigatorIcon").addClass('fa-exclamation').removeClass('fa-spinner fa-spin');
+					}
+				},
+				error : function(e) {
+					console.log('ERROR: ', e);
+					$('#message').html(e.message);
+					$("#investigatorIcon").addClass('fa-exclamation').removeClass('fa-spinner fa-spin');
+				}
+	        });
+		}
 	</script>
 
 </body>
