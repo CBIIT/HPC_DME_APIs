@@ -2504,6 +2504,35 @@ public class HpcClientUtil {
     session.setAttribute("basePaths", basePaths);
   }
 
+  public static boolean refreshInvestigators(String token, String hpcRefreshInvestigatorsURL,
+	      String hpcCertPath, String hpcCertPassword) {
+
+	  WebClient client = HpcClientUtil.getWebClient(hpcRefreshInvestigatorsURL, hpcCertPath, hpcCertPassword);
+	    client.header("Authorization", "Bearer " + token);
+
+	  Response restResponse = client.invoke("POST", "{}");
+	  if (restResponse.getStatus() == 200) {
+		  return true;
+	  } else {
+		  try {
+			  ObjectMapper mapper = new ObjectMapper();
+			  AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+				new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+				new JacksonAnnotationIntrospector());
+			  mapper.setAnnotationIntrospector(intr);
+			  mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			  MappingJsonFactory factory = new MappingJsonFactory(mapper);
+			  JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+			  HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+			  logger.error("Failed to refresh investigators: " + exception.getMessage(), exception);
+			  throw new HpcWebException("Failed to refresh investigators: " + exception.getMessage());
+		  } catch (IOException e) {
+			  logger.error("Failed to refresh investigators: " + e.getMessage(), e);
+			  throw new HpcWebException("Failed to refresh investigators: " + e.getMessage());
+		  }
+	  }
+  }
 
 /*
   private static String[] dividePathStringIntoSegments(String thePathString) {
