@@ -9,8 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.net.URI;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -25,19 +23,19 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.HpcWebException;
-import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
+import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
+import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
@@ -62,6 +60,8 @@ public class HpcDocController extends AbstractHpcController {
 	private String hpcModelURL;
 	@Value("${gov.nih.nci.hpc.server.refresh.model}")
 	private String hpcRefreshModelURL;
+	@Value("${gov.nih.nci.hpc.server.refresh.investigator}")
+	private String hpcRefreshInvestigatorURL;
 	@Value("${gov.nih.nci.hpc.server.collection.acl}")
 	private String collectionAclsURL;
 
@@ -118,5 +118,31 @@ public class HpcDocController extends AbstractHpcController {
 
 		return "doc";
 	}
+	
+	@JsonView(Views.Public.class)
+	@PostMapping(value = "/refreshInvestigators")
+	@ResponseBody
+	public AjaxResponseBody refreshInvestigators(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcUser,
+			Model model, BindingResult bindingResult, HttpSession session) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		AjaxResponseBody result = new AjaxResponseBody();
+
+		try {
+			//Refresh Investigators on the server
+			boolean refreshed = HpcClientUtil.refreshInvestigators(authToken, this.hpcRefreshInvestigatorURL,
+		            this.sslCertPath, this.sslCertPassword);
+			
+			if (refreshed) {
+				result.setMessage("Investigators refreshed!");
+				result.setCode("success");
+			}
+
+		} catch (Exception e) {
+			result.setMessage(e.getMessage());
+			logger.error(e.getMessage(), e);
+		} 
+		return result;
+	}
+	
 
 }
