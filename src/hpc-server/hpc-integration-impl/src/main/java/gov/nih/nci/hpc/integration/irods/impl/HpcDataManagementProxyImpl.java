@@ -232,7 +232,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			}
 
 		} catch (JargonException e) {
-			throw new HpcException("Failed to add collection metadata for path " + path + ": " + e.getMessage(),
+			throw new HpcException("Failed to add metadata to a collection at path " + path + ": " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
 		}
 	}
@@ -301,10 +301,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			}
 
 		} catch (DuplicateDataException dde) {
-			throw new HpcException("Failed to add metadata for data object at path " + path + ": " + dde.getMessage(),
+			throw new HpcException("Failed to add metadata to a data object: " + dde.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, dde);
 		} catch (JargonException e) {
-			throw new HpcException("Failed to add metadata for data object at path " + path + ": " + e.getMessage(),
+			throw new HpcException("Failed to add metadata to a data object: " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
 		}
 	}
@@ -344,7 +344,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			}
 
 		} catch (JargonException e) {
-			throw new HpcException("Failed to update metadata for data object at path " + path + ": " + e.getMessage(),
+			throw new HpcException("Failed to update data object metadata: " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
 		}
 	}
@@ -371,7 +371,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			}
 
 		} catch (JargonException e) {
-			throw new HpcException("Failed to check if the path " + path + " exists: " + e.getMessage(),
+			throw new HpcException("Failed to check if a path exists: " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
 
 		} finally {
@@ -474,7 +474,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 					.findMetadataValuesForCollection(getAbsolutePath(path)));
 
 		} catch (Exception e) {
-			throw new HpcException("Failed to get collection metadata at path " + path + ": " + e.getMessage(),
+			throw new HpcException("Failed to get metadata of a collection at path " + path + ": " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
 		}
 	}
@@ -489,7 +489,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			return null;
 
 		} catch (Exception e) {
-			throw new HpcException("Failed to get Data Object at path " + path + ": " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
+			throw new HpcException("Failed to get Data Object: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
 					null, e);
 		}
 	}
@@ -531,7 +531,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 
 		} catch (Exception e) {
-			throw new HpcException("Failed to get metadata of data object at path " + path + ": " + e.getMessage(),
+			throw new HpcException("Failed to get metadata of a data object at path " + path + ": " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
 		}
 	}
@@ -1229,7 +1229,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			return null;
 
 		} catch (JargonException e) {
-			throw new HpcException("Failed to get parent path " + path + ": " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
+			throw new HpcException("Failed to get a parent path" + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
 					HpcIntegratedSystem.IRODS, e);
 		}
 	}
