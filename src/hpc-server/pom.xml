@@ -29,6 +29,7 @@
 		<commons-math3.version>3.6.1</commons-math3.version>
 		<commons-io.version>2.7</commons-io.version>
 		<commons-compress.version>1.21</commons-compress.version>
+		<commons-pool2.version>2.11.1</commons-pool2.version>
 		<cxf.version>3.1.9</cxf.version>
 		<cxf-xjc.version>3.2.3</cxf-xjc.version>
 		<oracle.version>19.7.0.0</oracle.version>
@@ -181,6 +182,11 @@
     			<version>${commons-compress.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-pool2</artifactId>
+				<version>${commons-pool2.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
 				<version>${cxf.version}</version>
@@ -308,6 +314,11 @@
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-user-tagging</artifactId>
+				<version>${jargon.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-pool</artifactId>
 				<version>${jargon.version}</version>
 			</dependency>
 			<dependency>
