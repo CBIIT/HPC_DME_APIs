@@ -377,9 +377,8 @@ public class HpcBrowseController extends AbstractHpcController {
           entries.add(browserEntry);
           model.addAttribute("browserEntryList", entries);
           model.addAttribute("browserEntry", browserEntry);
-        } else {
+        } else
           model.addAttribute("message", "No collections found!");
-        }
       } else {
           //We will get here if path is null, which means we are building initial
           //tree or clicked the refresh button - for both we want to display all
@@ -392,10 +391,12 @@ public class HpcBrowseController extends AbstractHpcController {
               browserEntry.setId(basePath);
               browserEntry.setName(basePath);
               browserEntry = getTreeNodes(basePath, browserEntry, authToken, model, false, true, false, false);
-              browserEntry = addPathEntries(basePath, browserEntry);
+              //browserEntry = addPathEntries(path, browserEntry);
               browserEntry = trimPath(browserEntry, browserEntry.getName());
               entries.add(browserEntry);
-              model.addAttribute("browserEntryList", entries);
+              if(basePath.equals(user.getDefaultBasePath())) {
+                  model.addAttribute("browserEntryList", entries);
+              }
           }
       }
       model.addAttribute("basePath", user.getDefaultBasePath());
