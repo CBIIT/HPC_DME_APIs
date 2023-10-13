@@ -559,15 +559,6 @@ $(function() {
             	else
             		menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode','loadMore']);
             }
-        },
-        onCanSelectNode: function(node) {
-            if (node.id == "empty") {
-                // Empty placeholder collection nodes cannot be selected
-                return false;
-            }
-            else {
-                return true;
-            }
         }
     });
     
