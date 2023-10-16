@@ -414,7 +414,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report) throws HpcException {
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report)
+			throws HpcException {
 		// Input validation.
 		if (path == null || offset < 0) {
 			throw new HpcException("Null collection path or invalid offset", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -452,7 +453,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
-		if(report)
+		if (report)
 			collectionDTO.getReports().add(getTotalSizeReport(path, true));
 
 		return collectionDTO;
@@ -902,7 +903,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return usrPrmsOnClltcns;
 	}
 
-
 	@Override
 	public HpcUserPermsForCollectionsDTO getUserPermissionsOnChildCollections(String parentPath, String userId)
 			throws HpcException {
@@ -910,15 +910,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (dataManagementSecurityService.userExists(userId)) {
 			userPermissionsOnCollections = new HpcUserPermsForCollectionsDTO();
 			userPermissionsOnCollections.setUserId(userId);
-			userPermissionsOnCollections.getPermissionsForCollections().addAll(
-					dataManagementService.acquireChildrenCollectionsPermissionsForUser(
-				        parentPath, userId));
+			userPermissionsOnCollections.getPermissionsForCollections()
+					.addAll(dataManagementService.acquireChildrenCollectionsPermissionsForUser(parentPath, userId));
 		} else {
 			throw new HpcException("User not found: " + userId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
 		}
 		return userPermissionsOnCollections;
 	}
-
 
 	@Override
 	public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths) throws HpcException {
@@ -1512,12 +1510,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to Google Drive / Google Cloud Storage destination is supported
+		// 3. Download to Google Drive / Google Cloud Storage / Aspera destination is
+		// supported
 		// only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
 				downloadRequest.getGoogleDriveDownloadDestination() != null
-						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null,
+						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null
+						|| downloadRequest.getAsperaDownloadDestination() != null,
 				false);
 
 		// Download the data object.
@@ -1525,10 +1525,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
-				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
-				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId, completionEvent,
-				collectionDownloadTaskId, metadata.getSourceSize() != null ? metadata.getSourceSize() : 0,
-				metadata.getDataTransferStatus(), metadata.getDeepArchiveStatus());
+				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getSynchronousDownloadFilter(),
+				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
+				userId, completionEvent, collectionDownloadTaskId,
+				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
+				metadata.getDeepArchiveStatus());
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
@@ -2263,13 +2264,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 
 		// Data objects bulk metadata updates.
-		
+
 		// Add an audit record if this is a query update
 		if (bulkMetadataUpdateRequest.getDataObjectCompoundQuery() != null) {
-			dataManagementService.addBulkUpdateAuditRecord(userId, bulkMetadataUpdateRequest.getDataObjectCompoundQuery(),
-				HpcCompoundMetadataQueryType.DATA_OBJECT, bulkMetadataUpdateRequest.getMetadataEntries());
+			dataManagementService.addBulkUpdateAuditRecord(userId,
+					bulkMetadataUpdateRequest.getDataObjectCompoundQuery(), HpcCompoundMetadataQueryType.DATA_OBJECT,
+					bulkMetadataUpdateRequest.getMetadataEntries());
 		}
-		
+
 		dataObjectPaths.forEach(path -> {
 			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
 			item.setPath(path);
@@ -2293,13 +2295,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		});
 
 		// Collections bulk metadata updates.
-		
+
 		// Add an audit record if this is a query update
 		if (bulkMetadataUpdateRequest.getCollectionCompoundQuery() != null) {
-			dataManagementService.addBulkUpdateAuditRecord(userId, bulkMetadataUpdateRequest.getCollectionCompoundQuery(),
-				HpcCompoundMetadataQueryType.COLLECTION, bulkMetadataUpdateRequest.getMetadataEntries());
+			dataManagementService.addBulkUpdateAuditRecord(userId,
+					bulkMetadataUpdateRequest.getCollectionCompoundQuery(), HpcCompoundMetadataQueryType.COLLECTION,
+					bulkMetadataUpdateRequest.getMetadataEntries());
 		}
-		
+
 		collectionPaths.forEach(path -> {
 			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
 			item.setPath(path);
@@ -3494,16 +3497,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Validate a download request.
 	 *
-	 * @param path                      The data object path.
-	 * @param googleDownloadDestination True if the download destination is Google
-	 *                                  Drive or Google Cloud Storage
-	 * @param generateDownloadURL       True if this is a request to generate a
-	 *                                  download URL.
+	 * @param path                              The data object path.
+	 * @param googleOrAsperaDownloadDestination True if the download destination is
+	 *                                          Google Drive or Google Cloud
+	 *                                          Storage, or Aspera
+	 * @param generateDownloadURL               True if this is a request to
+	 *                                          generate a download URL.
 	 * @return The system generated metadata
 	 * @throws HpcException If the request is invalid.
 	 */
-	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path, boolean googleDownloadDestination,
-			boolean generateDownloadURL) throws HpcException {
+	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path,
+			boolean googleOrAsperaDownloadDestination, boolean generateDownloadURL) throws HpcException {
 
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
@@ -3515,16 +3519,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDownloadDestination,
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleOrAsperaDownloadDestination,
 					generateDownloadURL);
 		}
 
 		// Download to Google Drive / Google Cloud Storage destination is supported only
 		// from S3 archive.
-		if (googleDownloadDestination && (metadata.getDataTransferType() == null
+		if (googleOrAsperaDownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
 			throw new HpcException(
-					"Google Drive / Google Cloud Storage download request is not supported for POSIX based file system archive",
+					"Google Drive / Google Cloud Storage / Aspera download request is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 

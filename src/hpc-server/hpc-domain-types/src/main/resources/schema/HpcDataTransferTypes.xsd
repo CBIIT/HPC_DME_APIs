@@ -173,6 +173,14 @@
 			<xsd:element name="pathStyleAccessEnabled" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="HpcAsperaAccount">
+		<xsd:sequence>
+			<xsd:element name="user" type="xsd:string" />
+			<xsd:element name="host" type="xsd:string" />
+			<xsd:element name="password" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 	<xsd:complexType name="HpcStreamingUploadSource">
 		<xsd:sequence>
@@ -259,6 +267,15 @@
 			<xsd:element name="accessToken" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="HpcAsperaDownloadDestination">
+		<xsd:sequence>
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="account"
+				type="hpc-domain-datatransfer:HpcAsperaAccount" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 	<xsd:complexType name="HpcSynchronousDownloadFilter">
 		<xsd:sequence>
@@ -305,6 +322,8 @@
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="googleCloudStorageDestination"
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
+			<xsd:element name="asperaDestination"
+				type="hpc-domain-datatransfer:HpcAsperaDownloadDestination" />
 			<xsd:element name="fileDestination"
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="configurationId" type="xsd:string" />
