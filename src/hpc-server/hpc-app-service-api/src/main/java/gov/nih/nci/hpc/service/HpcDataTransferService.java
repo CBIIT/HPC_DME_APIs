@@ -19,6 +19,7 @@ import java.util.Map;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -150,6 +151,8 @@ public interface HpcDataTransferService {
 	 *                                              download destination.
 	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
 	 *                                              Storage download destination.
+	 * @param asperaDownloadDestination             The user requested Aspera
+	 *                                              download destination.
 	 * @param synchronousDownloadFilter             (Optional) synchronous download
 	 *                                              filter to extract specific files
 	 *                                              from a data object that is
@@ -185,6 +188,7 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
 			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus downloadDataObject,
