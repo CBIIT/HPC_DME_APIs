@@ -192,6 +192,11 @@
 				<version>${cxf.version}</version>
 			</dependency>
 			<dependency>
+      			<groupId>org.apache.cxf</groupId>
+      			<artifactId>cxf-bundle-jaxrs</artifactId>
+      			<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxws</artifactId>
 				<version>${cxf.version}</version>
@@ -206,6 +211,12 @@
 				<artifactId>cxf-rt-transports-http-jetty</artifactId>
 				<version>${cxf.version}</version>
 			</dependency>
+			<dependency>
+			    <groupId>org.apache.cxf</groupId>
+			    <artifactId>cxf-rt-rs-extension-providers</artifactId>
+			    <version>${cxf.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-rs-client</artifactId>
@@ -259,6 +270,11 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-context</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-web</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
 			<dependency>
@@ -336,6 +352,11 @@
 				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
+			<dependency>
+	            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+	            <artifactId>jackson-jaxrs-json-provider</artifactId>
+	            <version>${jackson.version}</version>
+	        </dependency>
 			<dependency>
 				<groupId>com.googlecode.json-simple</groupId>
 				<artifactId>json-simple</artifactId>
