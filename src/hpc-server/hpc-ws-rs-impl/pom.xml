@@ -20,7 +20,7 @@
     <version>2.37.0</version>
   </parent>
   <artifactId>hpc-ws-rs-impl</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>war</packaging>
   <properties>
     <ca.certs.filename>cacerts</ca.certs.filename>
     <ca.certs.jks.filename>cacerts.jks</ca.certs.jks.filename>
@@ -61,29 +61,20 @@
   </properties>
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-            <Export-Package />
-            <Private-Package>
-              gov.nih.nci.hpc.ws.rs.impl,
-              gov.nih.nci.hpc.ws.rs.interceptor,
-              gov.nih.nci.hpc.ws.rs.provider
-            </Private-Package>
-            <Import-Package>
-              META-INF.cxf,
-              org.apache.cxf.bus.spring,
-              org.apache.cxf.common.injection,
-              javax.ws.rs,
-              *
-            </Import-Package>
-          </instructions>
-        </configuration>
-      </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.4.0</version>
+            <configuration>
+				<failOnMissingWebXml>false</failOnMissingWebXml>
+				<webResources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                </webResources>
+                <warName>hpc-server</warName>
+           	</configuration>
+        </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-clean-plugin</artifactId>
@@ -369,7 +360,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>hpc-bus-service-api</artifactId>
+      <artifactId>hpc-bus-service-impl</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -381,6 +372,14 @@
       <artifactId>spring-beans</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      </dependency>
+    <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-web</artifactId>
     </dependency>
@@ -388,6 +387,18 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
     </dependency>
+	<dependency>
+	    <groupId>org.apache.cxf</groupId>
+	    <artifactId>cxf-rt-rs-extension-providers</artifactId>
+	</dependency>
+     <dependency>
+		<groupId>org.apache.cxf</groupId>
+		<artifactId>cxf-rt-transports-http-jetty</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.codehaus.jettison</groupId>
+		<artifactId>jettison</artifactId>
+	</dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -399,6 +410,10 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>com.fasterxml.jackson.jaxrs</groupId>
+       <artifactId>jackson-jaxrs-json-provider</artifactId>
     </dependency>
   </dependencies>
 
