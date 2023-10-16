@@ -21,7 +21,7 @@
 		<version>2.37.0</version>
 	</parent>
 	<artifactId>hpc-dto</artifactId>
-	<packaging>bundle</packaging>
+	<packaging>jar</packaging>
 
 	<build>
 		<plugins>
@@ -228,31 +228,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package>
-							gov.nih.nci.hpc.dto.error,
-							gov.nih.nci.hpc.dto.security,
-							gov.nih.nci.hpc.dto.datamanagement,
-							gov.nih.nci.hpc.dto.datamanagement.v2,
-							gov.nih.nci.hpc.dto.datasearch,
-							gov.nih.nci.hpc.dto.databrowse,
-							gov.nih.nci.hpc.dto.notification,
-							gov.nih.nci.hpc.dto.report,
-							gov.nih.nci.hpc.dto.catalog,
-							gov.nih.nci.hpc.dto.datamigration,
-							gov.nih.nci.hpc.dto.datatiering,
-							gov.nih.nci.hpc.dto.review,
-						</Export-Package>
-						<Import-Package>*</Import-Package>
-					</instructions>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -21,7 +21,7 @@
 		<version>2.37.0</version>
 	</parent>
 	<artifactId>hpc-domain-types</artifactId>
-	<packaging>bundle</packaging>
+	<packaging>jar</packaging>
 
 	<build>
 		<plugins>
@@ -146,32 +146,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package>
-							gov.nih.nci.hpc.domain.error,
-							gov.nih.nci.hpc.domain.user,
-							gov.nih.nci.hpc.domain.metadata,
-							gov.nih.nci.hpc.domain.dataset,
-							gov.nih.nci.hpc.domain.project,
-							gov.nih.nci.hpc.domain.datamanagement,
-							gov.nih.nci.hpc.domain.datatransfer,
-							gov.nih.nci.hpc.domain.databrowse,
-							gov.nih.nci.hpc.domain.notification,
-							gov.nih.nci.hpc.domain.report,
-							gov.nih.nci.hpc.domain.catalog,
-							gov.nih.nci.hpc.domain.datamigration,
-							gov.nih.nci.hpc.domain.review
-						</Export-Package>
-						<Import-Package>*</Import-Package>
-					</instructions>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
