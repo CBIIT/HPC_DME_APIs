@@ -41,7 +41,7 @@ public class HpcBusServiceAspect {
 	// ---------------------------------------------------------------------//
 
 	// The notification service instance.
-	@Autowired
+	//@Autowired
 	private HpcNotificationService notificationService = null;
 
 	// The security service instance.
