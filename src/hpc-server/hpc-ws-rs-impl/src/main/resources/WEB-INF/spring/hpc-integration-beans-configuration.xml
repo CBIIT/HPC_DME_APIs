@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-integration-beans-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xmlns:task="http://www.springframework.org/schema/task"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+	                       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+	<context:annotation-config />
+	
+	<!-- bean id="hpcGlobusRetryTemplate" class="org.springframework.retry.support.RetryTemplate">
+        <property name="retryPolicy" ref="hpcGlobusRetryPolicy" />
+        <property name="backOffPolicy" ref="hpcGlobusBackOffPolicy" />
+    </bean>
+ 
+    <bean id="hpcGlobusRetryPolicy" class="org.springframework.retry.policy.SimpleRetryPolicy">
+        <constructor-arg index="0" value="${hpc.integration.globus.retry.maxAttempts}" />
+        <constructor-arg index="1">
+            <map>
+                <entry key="java.lang.RuntimeException" value="true" />
+                <entry key="java.lang.Exception" value="true" />
+            </map>
+        </constructor-arg>
+    </bean>
+ 
+    <bean id="hpcGlobusBackOffPolicy" class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
+        <property name="initialInterval" value="${hpc.integration.globus.retry.initialInterval}" />
+        <property name="maxInterval" value="${hpc.integration.globus.retry.maxInterval}" />
+        <property name="multiplier" value="${hpc.integration.globus.retry.intervalMultiplier}" />
+    </bean-->
+    
+	<!--  Globus Connection  -->
+	<!--bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection" /-->
+	
+	<!--  Globus Directory Browser  -->
+	<!--bean id="hpcGlobusDirectoryBrowser" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusDirectoryBrowser" /-->
+	
+	<!-- Globus Data Transfer Proxy -->
+	<!--bean id="hpcGlobusDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" /-->
+	
+	<!--  S3 Connection  -->
+	<!--bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.impl.HpcS3Connection" >
+		<constructor-arg value="${hpc.integration.s3.pathStyleAccessEnabledProviders}" index="0" />
+		<constructor-arg value="${hpc.integration.s3.awsTransferManagerThreadPoolSize}" index="1" />
+	</bean-->
+	
+	<!-- S3 Data Transfer Proxy -->
+	<!--bean id="hpcS3DataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.s3.impl.HpcDataTransferProxyImpl" /-->
+	      
+	<!-- Google Drive Data Transfer Proxy -->
+	<!--bean id="hpcGoogleDriveDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.googledrive.impl.HpcDataTransferProxyImpl" /-->
+	      
+	<!--  Google Drive Connection  -->
+	<!--bean id="hpcGoogleDriveConnection" class="gov.nih.nci.hpc.integration.googledrive.impl.HpcGoogleDriveConnection" /-->
+	
+	
+	<!-- Google Cloud Storage Data Transfer Proxy -->
+	<!--bean id="hpcGoogleCloudStorageDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.googlecloudstorage.impl.HpcDataTransferProxyImpl" /-->
+	      
+	<!--  Google Cloud Storage Connection  -->
+	<!--bean id="hpcGoogleCloudStorageConnection" class="gov.nih.nci.hpc.integration.googlecloudstorage.impl.HpcGoogleCloudStorageConnection" /-->
+	 
+	<!-- HPC LDAP Authentication Proxy -->
+	<bean id="hpcLdapAuthenticationProxy"
+		  class="gov.nih.nci.hpc.integration.ldap.impl.HpcLdapAuthenticationProxyImpl" >
+		  <constructor-arg value="${hpc.integration.ldap.URL}" index="0" />
+		  <constructor-arg value="${hpc.integration.ldap.username}" index="1" />
+		  <constructor-arg value="${hpc.integration.ldap.password}" index="2" />
+		  <constructor-arg value="${hpc.integration.ldap.base}" index="3" />
+		  <constructor-arg value="${hpc.integration.ldap.userIdFilter}" index="4" />
+		  <constructor-arg value="${hpc.integration.ldap.userIdDomainName}" index="5" />
+		  <constructor-arg value="${hpc.integration.ldap.lastNameFilter}" index="6" />
+		  <constructor-arg value="${hpc.integration.ldap.firstNameFilter}" index="7" />
+		  <constructor-arg value="${hpc.integration.ldap.nedIdFilter}" index="8" />
+		  <constructor-arg value="${hpc.integration.ldap.nihSacFilter}" index="9" />
+	</bean>
+		
+	<!-- HPC SPS Authorization Proxy -->
+	<!--bean id="hpcSpsAuthorizationProxy"
+		  class="gov.nih.nci.hpc.integration.sps.impl.HpcSpsAuthorizationProxyImpl" >
+		  <constructor-arg value="${hpc.integration.sps.URL}" index="0" />
+		  <constructor-arg value="${hpc.integration.sps.resource}" index="1" />
+		  <constructor-arg value="${hpc.integration.sps.domain}" index="2" />
+	</bean-->
+	
+	<!--  HPC iRODS Connection -->
+	<bean id="hpcIRODSConnection" 
+	      class="gov.nih.nci.hpc.integration.irods.impl.HpcIRODSConnection" >
+	      <constructor-arg value="${hpc.integration.irods.host}" index="0" />
+	      <constructor-arg value="${hpc.integration.irods.port}" index="1" />
+	      <constructor-arg value="${hpc.integration.irods.zone}" index="2" />
+	      <constructor-arg value="${hpc.integration.irods.resource}" index="3" />
+	      <constructor-arg value="${hpc.integration.irods.basePath}" index="4" />
+	      <constructor-arg value="${hpc.integration.irods.key}" index="5" />
+	      <constructor-arg value="${hpc.integration.irods.algorithm}" index="6" />
+	      <constructor-arg value="${hpc.integration.irods.pamAuthentication}" index="7" />
+	      <constructor-arg value="${hpc.integration.irods.maxFilesAndDirsQueryMax}" index="8" />
+	</bean>
+	
+	<!--  HPC Data Management Proxy -->
+	<bean id="hpcDataManagementProxy" 
+	      class="gov.nih.nci.hpc.integration.irods.impl.HpcDataManagementProxyImpl" />
+	      
+	<!--  S3 executor (S3 <-> AWS / S3 Provider) thread pool -->
+	<!--task:executor id="hpcS3Executor" pool-size="${hpc.integration.s3.executorThreadPoolSize}"/-->
+	
+	<!--  Google Drive download executor (S3 -> Google Drive) thread pool -->
+	<!--task:executor id="hpcGoogleDriveDownloadExecutor" pool-size="${hpc.integration.googledrive.downloadExecutorThreadPoolSize}"/-->
+	
+	<!--  Google Cloud Storage download executor (S3 -> Google Cloud Storage) thread pool -->
+	<!--task:executor id="hpcGoogleCloudStorageDownloadExecutor" pool-size="${hpc.integration.googlecloudstorage.downloadExecutorThreadPoolSize}"/-->
+	
+</beans>
