@@ -638,9 +638,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// to a Globus destination (after the 1st hop completed).
 			performGlobusAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
-		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && globusDownloadDestination != null) {
+		} else if (dataTransferType.equals(HpcDataTransferType.S_3)
+				&& (globusDownloadDestination != null || asperaDownloadDestination != null)) {
 			// This is an asynchronous download request from a S3 archive to a
-			// Globus destination. It is performed in 2-hops.
+			// Globus or Aspera destination. It is performed in 2-hops.
 			perform2HopDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else if (s3DownloadDestination != null) {
@@ -3066,9 +3067,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Perform a 2 hop download. i.e. store the data to a local GLOBUS endpoint, and
-	 * submit a transfer request to the caller's GLOBUS destination. Both first and
-	 * second hop downloads are performed asynchronously.
+	 * Perform a 2 hop download. i.e. first stage the data in local DME server
+	 * filesystem, and then submit a transfer request to the caller's GLOBUS, or
+	 * ASPERA destination. Both first and second hop downloads are performed
+	 * asynchronously.
 	 *
 	 * @param downloadRequest           The data object download request.
 	 * @param response                  The download response object. This method
@@ -3632,14 +3634,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcFileLocation secondHopArchiveLocation = getSecondHopDownloadSourceLocation(
 					firstHopDownloadRequest.getConfigurationId(), firstHopDownloadRequest.getS3ArchiveConfigurationId(),
 					HpcDataTransferType.GLOBUS);
-			HpcGlobusDownloadDestination secondHopGlobusDestination = new HpcGlobusDownloadDestination();
-			secondHopGlobusDestination.setDestinationLocation(calculateGlobusDownloadDestinationFileLocation(
-					firstHopDownloadRequest.getGlobusDestination().getDestinationLocation(),
-					firstHopDownloadRequest.getGlobusDestination().getDestinationOverwrite(),
-					HpcDataTransferType.GLOBUS, firstHopDownloadRequest.getPath(),
-					firstHopDownloadRequest.getConfigurationId()));
-			secondHopGlobusDestination
-					.setDestinationOverwrite(firstHopDownloadRequest.getGlobusDestination().getDestinationOverwrite());
+			HpcGlobusDownloadDestination secondHopGlobusDestination = null;
+			HpcDataTransferType destinationType = null;
+			if (firstHopDownloadRequest.getGlobusDestination() != null) {
+				// For Globus destination, Calculate the file location.
+				secondHopGlobusDestination = new HpcGlobusDownloadDestination();
+				secondHopGlobusDestination.setDestinationLocation(calculateGlobusDownloadDestinationFileLocation(
+						firstHopDownloadRequest.getGlobusDestination().getDestinationLocation(),
+						firstHopDownloadRequest.getGlobusDestination().getDestinationOverwrite(),
+						HpcDataTransferType.GLOBUS, firstHopDownloadRequest.getPath(),
+						firstHopDownloadRequest.getConfigurationId()));
+				secondHopGlobusDestination.setDestinationOverwrite(
+						firstHopDownloadRequest.getGlobusDestination().getDestinationOverwrite());
+				destinationType = HpcDataTransferType.GLOBUS;
+			} else {
+				destinationType = HpcDataTransferType.ASPERA;
+			}
 
 			// Get the data transfer configuration.
 			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
@@ -3653,10 +3663,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Create and persist a download task. This object tracks the download request
 			// through the 2-hop async download requests.
 			createDownloadTask(firstHopDownloadRequest, secondHopArchiveLocation, secondHopGlobusDestination,
-					dataTransferDownloadStatus);
+					dataTransferDownloadStatus, destinationType);
 
-			logger.info("download task: {} - 2 Hop download created. Path at scratch space: {}", downloadTask.getId(),
-					sourceFile.getAbsolutePath());
+			logger.info("download task: {} - 2 Hop download to {} destination created. Path at scratch space: {}",
+					downloadTask.getId(), downloadTask.getDestinationType(), sourceFile.getAbsolutePath());
 		}
 
 		/**
@@ -3734,15 +3744,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 				} else {
 					// Update the download task to reflect 1st hop transfer completed. The transfer
-					// type is updated to Globus to perform the second hop
+					// type is updated to Globus / Aspera to perform the second hop
 					// For single file download, the status is set to received, and for bulk
 					// download, status is set to bunching-received, so we wait for all the files
 					// in the bulk request to finish first hop, and then submit a single Globus
 					// request for the second hop.
-					downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
-					downloadTask.setDataTransferStatus(StringUtils.isEmpty(downloadTask.getCollectionDownloadTaskId())
-							|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
-									: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
+					if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
+						// 2nd hop to Globus destination.
+						downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
+						downloadTask
+								.setDataTransferStatus(StringUtils.isEmpty(downloadTask.getCollectionDownloadTaskId())
+										|| !globusCollectionDownloadBunching ? HpcDataTransferDownloadStatus.RECEIVED
+												: HpcDataTransferDownloadStatus.GLOBUS_BUNCHING);
+					} else {
+						// 2nd hop to Aspera destination.
+						downloadTask.setDataTransferType(HpcDataTransferType.ASPERA);
+						downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+					}
+
 					downloadTask.setInProcess(false);
 					downloadTask.setPercentComplete(0);
 
@@ -3847,11 +3866,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		 * @param secondHopGlobusDestination The second hop download destination (user's
 		 *                                   Globus endpoint).
 		 * @param dataTransferDownloadStatus The download status.
+		 * @param destinationType            The 2-hop destination type (GLOBUS or
+		 *                                   ASPERA).
 		 * @throws HpcException If it failed to persist the task.
 		 */
 		private void createDownloadTask(HpcDataObjectDownloadRequest firstHopDownloadRequest,
 				HpcFileLocation secondHopArchiveLocation, HpcGlobusDownloadDestination secondHopGlobusDestination,
-				HpcDataTransferDownloadStatus dataTransferDownloadStatus) throws HpcException {
+				HpcDataTransferDownloadStatus dataTransferDownloadStatus, HpcDataTransferType destinationType)
+				throws HpcException {
 
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 			downloadTask.setDataTransferStatus(dataTransferDownloadStatus);
@@ -3864,7 +3886,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setCollectionDownloadTaskId(firstHopDownloadRequest.getCollectionDownloadTaskId());
 			downloadTask.setArchiveLocation(secondHopArchiveLocation);
 			downloadTask.setGlobusDownloadDestination(secondHopGlobusDestination);
-			downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
+			downloadTask.setAsperaDownloadDestination(firstHopDownloadRequest.getAsperaDestination());
+			downloadTask.setDestinationType(destinationType);
 			downloadTask.setCreated(Calendar.getInstance());
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
