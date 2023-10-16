@@ -13,11 +13,13 @@ package gov.nih.nci.hpc.service.impl;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
@@ -95,9 +97,8 @@ public class HpcDomainValidator {
 			return false;
 		}
 
-		if (StringUtils.isBlank(nciAccount.getFirstName()) || 
-				StringUtils.isBlank(nciAccount.getLastName()) || 
-				StringUtils.isBlank(nciAccount.getDoc())) {
+		if (StringUtils.isBlank(nciAccount.getFirstName()) || StringUtils.isBlank(nciAccount.getLastName())
+				|| StringUtils.isBlank(nciAccount.getDoc())) {
 			return false;
 		}
 
@@ -138,7 +139,7 @@ public class HpcDomainValidator {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Validate a tiering request item.
 	 *
@@ -151,15 +152,13 @@ public class HpcDomainValidator {
 			return false;
 		}
 		for (HpcBulkTierItem item : bulkTierRequest.getItems()) {
-			if (StringUtils.isEmpty(item.getConfigurationId())
-					|| StringUtils.isEmpty(item.getPath())) {
+			if (StringUtils.isEmpty(item.getConfigurationId()) || StringUtils.isEmpty(item.getPath())) {
 				logger.info("Invalid tiering item: {}", item.getPath());
 				return false;
 			}
 		}
 		return true;
 	}
-	
 
 	/**
 	 * Validate a S3 account.
@@ -170,23 +169,48 @@ public class HpcDomainValidator {
 	public static HpcDomainValidationResult isValidS3Account(HpcS3Account s3Account) {
 		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
 		validationResult.setValid(false);
-		
+
 		if (s3Account == null || StringUtils.isEmpty(s3Account.getAccessKey())
 				|| StringUtils.isEmpty(s3Account.getSecretKey())) {
 			validationResult.setMessage("Empty S3 account access/secret key");
 			return validationResult;
 		}
-		
-		if(StringUtils.isEmpty(s3Account.getRegion()) && StringUtils.isEmpty(s3Account.getUrl())) {
+
+		if (StringUtils.isEmpty(s3Account.getRegion()) && StringUtils.isEmpty(s3Account.getUrl())) {
 			validationResult.setMessage("No region (AWS) or URL (3rd Party S3 Provider) provided");
 			return validationResult;
 		}
-		
-		if(!StringUtils.isEmpty(s3Account.getRegion()) && !StringUtils.isEmpty(s3Account.getUrl())) {
+
+		if (!StringUtils.isEmpty(s3Account.getRegion()) && !StringUtils.isEmpty(s3Account.getUrl())) {
 			validationResult.setMessage("Both region (AWS) or URL (3rd Party S3 Provider) provided");
 			return validationResult;
 		}
-	
+
+		validationResult.setValid(true);
+		return validationResult;
+	}
+
+	/**
+	 * Validate an Aspera account.
+	 *
+	 * @param asperaAccount The object to be validated.
+	 * @return true if valid, false otherwise.
+	 */
+	public static HpcDomainValidationResult isValidAsperaAccount(HpcAsperaAccount asperaAccount) {
+		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+		validationResult.setValid(false);
+
+		if (asperaAccount == null || StringUtils.isEmpty(asperaAccount.getUser())
+				|| StringUtils.isEmpty(asperaAccount.getPassword())) {
+			validationResult.setMessage("Empty Aspera account user/password");
+			return validationResult;
+		}
+
+		if (StringUtils.isEmpty(asperaAccount.getHost())) {
+			validationResult.setMessage("No Aspera host provided");
+			return validationResult;
+		}
+
 		validationResult.setValid(true);
 		return validationResult;
 	}
@@ -199,10 +223,12 @@ public class HpcDomainValidator {
 	 * Validate metadata entry collection.
 	 *
 	 * @param metadataEntries Metadata entry collection.
-	 * @param editMetadata true if the metadata is being edited. This is to enable delete.
+	 * @param editMetadata    true if the metadata is being edited. This is to
+	 *                        enable delete.
 	 * @return true if valid, false otherwise.
 	 */
-	public static HpcDomainValidationResult isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries, boolean editMetadata) {
+	public static HpcDomainValidationResult isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries,
+			boolean editMetadata) {
 		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
 		validationResult.setValid(true);
 
@@ -211,25 +237,28 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 
-		for (int i = 0; i < metadataEntries.size(); i ++) {
+		for (int i = 0; i < metadataEntries.size(); i++) {
 			HpcMetadataEntry metadataEntry = metadataEntries.get(i);
-			if(StringUtils.isEmpty(metadataEntry.getAttribute())) {
+			if (StringUtils.isEmpty(metadataEntry.getAttribute())) {
 				validationResult.setValid(false);
 				validationResult.setMessage(EMPTY_METADATA_MSG);
 				return validationResult;
 
 			} else {
-				if(editMetadata == false && StringUtils.isEmpty(metadataEntry.getValue())) {
-					if(validationResult.getValid()) {
-							validationResult.setMessage("The following entries cannot be empty: " + metadataEntry.getAttribute());
+				if (editMetadata == false && StringUtils.isEmpty(metadataEntry.getValue())) {
+					if (validationResult.getValid()) {
+						validationResult
+								.setMessage("The following entries cannot be empty: " + metadataEntry.getAttribute());
 					} else {
-							validationResult.setMessage(validationResult.getMessage() + ", " + metadataEntry.getAttribute());
+						validationResult
+								.setMessage(validationResult.getMessage() + ", " + metadataEntry.getAttribute());
 					}
 					validationResult.setValid(false);
 				} else {
 					metadataEntries.get(i).setAttribute(metadataEntries.get(i).getAttribute().trim());
-					metadataEntries.get(i).setValue(StringUtils.isEmpty(metadataEntry.getValue())
-							? metadataEntry.getValue() : metadataEntries.get(i).getValue().trim());
+					metadataEntries.get(i)
+							.setValue(StringUtils.isEmpty(metadataEntry.getValue()) ? metadataEntry.getValue()
+									: metadataEntries.get(i).getValue().trim());
 				}
 			}
 		}
