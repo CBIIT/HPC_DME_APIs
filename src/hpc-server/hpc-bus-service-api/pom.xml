@@ -22,26 +22,8 @@
 		<version>2.37.0</version>
 	</parent>
 	<artifactId>hpc-bus-service-api</artifactId>
-	<packaging>bundle</packaging>
+	<packaging>jar</packaging>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package>
-							gov.nih.nci.hpc.bus
-						</Export-Package>
-						<Import-Package>*</Import-Package>
-					</instructions>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

@@ -21,9 +21,13 @@
                            http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
                            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	<context:annotation-config />
+	<context:property-placeholder location="classpath:WEB-INF/spring/hpc-server-local.properties" />
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
-
-	<!-- HTTP-JETTY SSL Configuration -->
+	<import resource="classpath:WEB-INF/spring/hpc-dao-impl-beans-configuration.xml"/>
+	<import resource="classpath:WEB-INF/spring/hpc-integration-beans-configuration.xml"/>
+	<import resource="classpath:WEB-INF/spring/hpc-app-service-beans-configuration.xml"/>
+	<import resource="classpath:WEB-INF/spring/hpc-bus-service-beans-configuration.xml"/>
+	<!-- HTTP-JETTY SSL Configuration >
 	<httpj:engine-factory bus="cxf">
 		<httpj:identifiedTLSServerParameters
 			id="hpcTLSServerParameters">
@@ -60,7 +64,7 @@
 			<httpj:threadingParameters minThreads="${hpc.ws.rs.jetty-engine.minThreads}"
 				maxThreads="${hpc.ws.rs.jetty-engine.maxThreads}" />
 		</httpj:engine>
-	</httpj:engine-factory>
+	</httpj:engine-factory-->
 
 	<!-- JAXB Provider -->
 	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
@@ -176,19 +180,19 @@
 
 	<!-- Exception Mapper Providers -->
 	<bean id="hpcExceptionMapper" class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
-		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+		<constructor-arg index="0" value="true" />
 	</bean>
 	<bean id="hpcAuthenticationExceptionMapper"
 		class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthenticationExceptionMapper">
-		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+		<constructor-arg index="0" value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
 	<bean id="hpcAuthorizationExceptionMapper"
 		class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthorizationExceptionMapper">
-		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+		<constructor-arg index="0" value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
 	<bean id="hpcWebApplicationExceptionMapper"
 		class="gov.nih.nci.hpc.ws.rs.provider.HpcWebApplicationExceptionMapper">
-		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+		<constructor-arg index="0" value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
 
 	<!-- Authentication Interceptor -->
@@ -353,30 +357,30 @@
 		<constructor-arg value="send-ending" />
 	</bean>
 
-	<!-- JAX-RS Service Beans -->
+	<!-- JAX-RS Service Beans-->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
-	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
+	<!-- bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
 	<bean id="hpcDataSearchRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataSearchRestServiceImpl" />
 	<bean id="hpcDataBrowseRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataBrowseRestServiceImpl" />
 	<bean id="hpcNotificationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
 	<bean id="hpcDataMigrationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataMigrationRestServiceImpl" />
 	<bean id="hpcDataTieringRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataTieringRestServiceImpl" />
-	<bean id="hpcReviewRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReviewRestServiceImpl" />
+	<bean id="hpcReviewRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReviewRestServiceImpl" /-->
 
 	<!-- CXF JAX-RS Secured Server Config -->
-	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}"
+	<jaxrs:server id="hpc-secured-server" address="/"
 		bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcSecurityRestService" />
-			<ref bean="hpcDataManagementRestService" />
+			<!-- ref bean="hpcDataManagementRestService" />
 			<ref bean="hpcDataSearchRestService" />
 			<ref bean="hpcDataBrowseRestService" />
 			<ref bean="hpcNotificationRestService" />
 			<ref bean="hpcReportRestService" />
 			<ref bean="hpcDataMigrationRestService" />
 			<ref bean="hpcDataTieringRestService" />
-			<ref bean="hpcReviewRestService" />
+			<ref bean="hpcReviewRestService" /-->
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
