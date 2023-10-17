@@ -3093,7 +3093,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Populate the response object.
 		response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
 		response.setDestinationLocation(
-				secondHopDownload.getDownloadTask().getGlobusDownloadDestination().getDestinationLocation());
+				secondHopDownload.getDownloadTask().getDestinationType().equals(HpcDataTransferType.GLOBUS)
+						? secondHopDownload.getDownloadTask().getGlobusDownloadDestination().getDestinationLocation()
+						: secondHopDownload.getDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
 
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
