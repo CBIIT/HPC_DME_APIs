@@ -1235,6 +1235,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setS3Destination(downloadTask.getS3DownloadDestination());
 		downloadRequest.setGoogleDriveDestination(downloadTask.getGoogleDriveDownloadDestination());
 		downloadRequest.setGoogleCloudStorageDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
+		downloadRequest.setAsperaDestination(downloadTask.getAsperaDownloadDestination());
 
 		HpcArchive baseArchiveDestination = null;
 		Boolean encryptedTransfer = null;
@@ -1264,6 +1265,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
 						downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
+			} else if (downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+				logger.error("ERAN: aspera file {}", downloadTask.getDownloadFilePath());
 			} else {
 				// Check if transfer requests can be acceptable at this time (Globus only)
 

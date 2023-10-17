@@ -625,6 +625,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void startAsperaDataObjectDownloadTasks() throws HpcException {
+		// Iterate through all the data object download tasks that are received and type
+		// is ASPERA.
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.ASPERA);
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void completeInProgressDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.IN_PROGRESS, null);
@@ -641,14 +649,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@HpcExecuteAsSystemAccount
 	public void restartDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress w/ S3
-		// transfer.
+		// / GoogleDrive / Google Cloud Storage / Aspera transfer.
 		for (HpcDataObjectDownloadTask downloadTask : dataTransferService.getDataObjectDownloadTasks()) {
 			try {
 				String assignedServerId = downloadTask.getS3DownloadTaskServerId();
 				if ((StringUtils.isEmpty(assignedServerId) || assignedServerId.equals(serverId))
 						&& (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
 								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE)
-								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE))
+								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: {}", downloadTask.getId());
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);

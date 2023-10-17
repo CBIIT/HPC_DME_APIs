@@ -138,6 +138,14 @@ public interface HpcSystemBusService {
 	public void startGoogleCloudStorageDataObjectDownloadTasks() throws HpcException;
 
 	/**
+	 * Start all received data objects download tasks forAspera and process to make
+	 * them in progress.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void startAsperaDataObjectDownloadTasks() throws HpcException;
+
+	/**
 	 * Check status of all in-progress data objects download tasks and complete
 	 * these that are no longer in progress.
 	 *
@@ -182,10 +190,10 @@ public interface HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void completeCollectionDownloadTasks() throws HpcException;
-	
+
 	/**
-	 * Check status of all active collection download tasks that submitted a 2nd Hop Globus bunching and complete these that
-	 * are no longer in progress.
+	 * Check status of all active collection download tasks that submitted a 2nd Hop
+	 * Globus bunching and complete these that are no longer in progress.
 	 *
 	 * @throws HpcException on service failure.
 	 */
@@ -298,7 +306,7 @@ public interface HpcSystemBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void removeDeletedDataObjects() throws HpcException;
-	
+
 	/**
 	 * Recover storage.
 	 *
