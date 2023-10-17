@@ -57,6 +57,8 @@
 		  
 		  <prop key="hpc.integration.googlecloudstorage.downloadExecutorThreadPoolSize">8</prop>
 		  
+		  <prop key="hpc.integration.aspera.downloadExecutorThreadPoolSize">8</prop>
+		  
 	      <prop key="hpc.integration.ldap.URL">ldaps://nihdcadhub2.nih.gov</prop>
 	      <prop key="hpc.integration.ldap.username">Configure Me</prop>
 	      <prop key="hpc.integration.ldap.password">Configure Me</prop>
@@ -90,5 +92,7 @@
 		          interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />
 	<osgi:service ref="hpcSpsAuthorizationProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy" />
+	<osgi:service ref="hpcAsperaDataTransferProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 
 </beans>

@@ -246,8 +246,10 @@ public interface HpcDataTransferProxy {
 	 * @return The path attributes.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public HpcPathAttributes getPathAttributes(Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize)
-			throws HpcException;
+	public default HpcPathAttributes getPathAttributes(Object authenticatedToken, HpcFileLocation fileLocation,
+			boolean getSize) throws HpcException {
+		throw new HpcException("getPathAttributes() not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
 
 	/**
 	 * Scan a directory (recursively) and return a list of all its files.
@@ -257,8 +259,10 @@ public interface HpcDataTransferProxy {
 	 * @return A list of files found.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, HpcFileLocation directoryLocation)
-			throws HpcException;
+	public default List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken,
+			HpcFileLocation directoryLocation) throws HpcException {
+		throw new HpcException("scanDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
 
 	/**
 	 * Get a file container name.
