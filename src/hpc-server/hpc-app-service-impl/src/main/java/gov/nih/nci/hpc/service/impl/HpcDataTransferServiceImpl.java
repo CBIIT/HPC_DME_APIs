@@ -627,7 +627,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		if (globusDownloadDestination == null && s3DownloadDestination == null && googleDriveDownloadDestination == null
-				&& googleCloudStorageDownloadDestination == null) {
+				&& googleCloudStorageDownloadDestination == null && asperaDownloadDestination == null) {
 			// This is a synchronous download request.
 			performSynchronousDownload(downloadRequest, response, dataTransferConfiguration, synchronousDownloadFilter);
 
