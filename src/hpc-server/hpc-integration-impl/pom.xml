@@ -39,7 +39,8 @@
 							gov.nih.nci.hpc.integration.googlecloudstorage.impl,
 							gov.nih.nci.hpc.integration.ldap.impl,
 							gov.nih.nci.hpc.integration.irods.impl,
-							gov.nih.nci.hpc.integration.sps.impl
+							gov.nih.nci.hpc.integration.sps.impl,
+							gov.nih.nci.hpc.integration.aspera.impl
 						</Private-Package>
 						<Import-Package>
 							org.springframework.scheduling.config,
