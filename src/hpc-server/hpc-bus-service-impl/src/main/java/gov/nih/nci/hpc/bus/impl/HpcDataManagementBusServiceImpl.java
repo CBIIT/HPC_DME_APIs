@@ -1571,6 +1571,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} else if (taskStatus.getDataObjectDownloadTask().getGoogleCloudStorageDownloadDestination() != null) {
 				downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
 						.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			} else if (taskStatus.getDataObjectDownloadTask().getAsperaDownloadDestination() != null) {
+				downloadStatus.setDestinationLocation(
+						taskStatus.getDataObjectDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
 			}
 			downloadStatus.setDestinationType(taskStatus.getDataObjectDownloadTask().getDestinationType());
 			downloadStatus.setPercentComplete(taskStatus.getDataObjectDownloadTask().getPercentComplete());
