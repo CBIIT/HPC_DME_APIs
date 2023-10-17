@@ -31,8 +31,9 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 
 /**
- * A data transfer listener for async streaming downloads. The streaming is done
- * from the S3 archive to AWS or Google Drive.
+ * A data transfer listener for async downloads. The streaming is done from the
+ * S3 archive to AWS or Google Drive. This listener is also used for downloading
+ * to Aspera.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */

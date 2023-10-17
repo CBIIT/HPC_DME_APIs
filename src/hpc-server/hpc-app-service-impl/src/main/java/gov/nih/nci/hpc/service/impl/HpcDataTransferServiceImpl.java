@@ -1311,12 +1311,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
-		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage,
+		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage / Aspera,
 		// we need to
 		// create a progress listener.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
 				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
-				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
 			// Create a listener that will complete the download task when it is done.
 			progressListener = new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
 		}
@@ -1328,6 +1329,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							encryptedTransfer));
 
 		} catch (HpcException e) {
+			logger.error("ERAN: aspera failed", e);
 			// Failed to submit a transfer request. Cleanup the download task.
 			completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage(),
 					Calendar.getInstance(), 0);
