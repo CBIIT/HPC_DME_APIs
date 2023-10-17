@@ -68,7 +68,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Upload the file to Aspera.
 		CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				logger.error("ERAN: uploading to aspera");
+				
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 

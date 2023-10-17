@@ -1332,7 +1332,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							encryptedTransfer));
 
 		} catch (HpcException e) {
-			logger.error("ERAN: aspera failed", e);
 			// Failed to submit a transfer request. Cleanup the download task.
 			completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage(),
 					Calendar.getInstance(), 0);
