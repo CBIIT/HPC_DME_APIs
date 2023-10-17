@@ -230,6 +230,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());
 		this.downloadTask
 				.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
+		this.downloadTask.setAsperaDownloadDestination(downloadTask.getAsperaDownloadDestination());
 		this.downloadTask.setCreated(downloadTask.getCreated());
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
@@ -244,6 +245,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		} else if (this.downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 			this.downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+		} else if (this.downloadTask.getAsperaDownloadDestination() != null) {
+			this.downloadTask.setDataTransferType(HpcDataTransferType.ASPERA);
+			this.downloadTask.setDestinationType(HpcDataTransferType.ASPERA);
 		}
 
 		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
