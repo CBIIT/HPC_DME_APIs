@@ -78,7 +78,7 @@ public class TaskHelper {
 		if (statusCode == 200 || statusCode == 201) {
 			System.out.println("The Registration was submitted succesfully.");
 			System.out.println("StatusCode = " + response.getStatusCode());
-			System.out.println(response.getBody());
+			System.out.println("The response is: " + response.asString());
 			JsonPath jsonPath = response.jsonPath();
 			String taskId = jsonPath.get("taskId").toString();
 			System.out.println("Monitoring task id: " + taskId);
@@ -139,15 +139,16 @@ public class TaskHelper {
 				.header("Content-Type", "application/json").body(requestBody);
 		Response response = executeRequest(requestType, request, requestUrl);
 		int statusCode = response.getStatusCode();
+		System.out.println("The response is: " + response.asString());
 		if (statusCode == 200 || statusCode == 201) {
-			System.out.println("SUCCESS:" + statusCode);
+			//System.out.println("SUCCESS:" + statusCode);
 		}else {
 			JsonPath jsonPath = response.jsonPath();
 			if (jsonPath != null || jsonPath.get("errorType") != null) {
 				//logger.error("This test was a failure. ErrorType: " + (jsonPath.get("errorType") + "") + ", Error Message: " +
 				//		(jsonPath.getString("message") + "") + " , Error Status Code: " + response.getStatusCode());
 			}
-			System.out.println("ERROR:" +response.getBody().asString());
+			//System.out.println("ERROR:" +response.getBody().asString());
 		}
 	}
 
