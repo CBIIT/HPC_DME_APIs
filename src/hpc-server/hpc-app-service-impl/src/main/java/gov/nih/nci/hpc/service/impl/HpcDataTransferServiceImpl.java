@@ -1157,8 +1157,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 		} else if (downloadTask.getAsperaDownloadDestination() != null) {
-			taskResult.setDestinationLocation(
-					downloadTask.getAsperaDownloadDestination().getDestinationLocation());
+			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 		}
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		taskResult.setResult(result);
@@ -1260,16 +1259,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			baseArchiveDestination = dataTransferConfiguration.getBaseArchiveDestination();
 			encryptedTransfer = dataTransferConfiguration.getEncryptedTransfer();
 
-			// If the destination is Google Drive / Cloud Storage, we need to generate a
-			// download URL from
-			// the S3 archive.
 			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
 					|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
+				// If the destination is Google Drive / Cloud Storage, we need to generate a
+				// download URL from the S3 archive.
 				downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
 						downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
+
 			} else if (downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
-				logger.error("ERAN: aspera file {}", downloadTask.getDownloadFilePath());
+				// If the destination is Aspera - set the staged file path in the request
+				downloadRequest.setArchiveLocationFilePath(downloadTask.getDownloadFilePath());
+
 			} else {
 				// Check if transfer requests can be acceptable at this time (Globus only)
 
@@ -1314,7 +1315,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
-		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage / Aspera,
+		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage
+		// / Aspera,
 		// we need to
 		// create a progress listener.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
