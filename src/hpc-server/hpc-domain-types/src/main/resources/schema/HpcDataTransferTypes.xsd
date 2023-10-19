@@ -315,6 +315,7 @@
 			<xsd:element name="archiveLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="archiveLocationURL" type="xsd:string" />
+			<xsd:element name="archiveLocationFilePath" type="xsd:string" />
 			<xsd:element name="globusDestination"
 				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
 			<xsd:element name="s3Destination"
