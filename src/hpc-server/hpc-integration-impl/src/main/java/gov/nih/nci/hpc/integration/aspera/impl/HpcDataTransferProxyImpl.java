@@ -82,19 +82,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
 		CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				String cmd = ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
+				exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
 						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
 						+ "@" + asperaDestination.getAccount().getHost() + ":"
 						+ asperaDestination.getDestinationLocation().getFileContainerId() + "/"
-						+ asperaDestination.getDestinationLocation().getFileId();
-				logger.error("ERAN: aspera command: " + cmd);
-
-				// exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(),
-				// downloadRequest.getSudoPassword());
+						+ asperaDestination.getDestinationLocation().getFileId(), null);
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
-			} catch (Exception e) {
+			} catch (HpcException e) {
 				String message = "[Aspera] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
