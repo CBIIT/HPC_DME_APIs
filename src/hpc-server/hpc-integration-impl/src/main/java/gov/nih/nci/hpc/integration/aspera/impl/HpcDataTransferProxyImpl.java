@@ -1,8 +1,11 @@
 package gov.nih.nci.hpc.integration.aspera.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.exec;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -31,10 +35,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Qualifier("hpcAsperaDownloadExecutor")
 	Executor asperaExecutor = null;
 
-	// The maximum size of individual chunks that will get uploaded by single HTTP
-	// request.
-	@Value("${hpc.integration.googledrive.chunkSize}")
-	int chunkSize = -1;
+	// Aspera connect private key file.
+	@Value("${hpc.integration.aspera.privateKeyFile}")
+	private String privateKeyFile = null;
+
+	// Aspera connect ascp command path.
+	@Value("${hpc.integration.aspera.ascp}")
+	private String ascp = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -64,11 +71,26 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("[Aspera] No progress listener provided for a download to Aspera destination",
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
+		if (StringUtils.isEmpty(downloadRequest.getArchiveLocationFilePath())) {
+			throw new HpcException("[Aspera] No archive file set", HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if (downloadRequest.getAsperaDestination() == null) {
+			throw new HpcException("[Aspera] Null destination", HpcErrorType.UNEXPECTED_ERROR);
+		}
 
 		// Upload the file to Aspera.
+		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
 		CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				
+				String cmd = ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
+						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
+						+ "@" + asperaDestination.getAccount().getHost() + ":"
+						+ asperaDestination.getDestinationLocation().getFileContainerId() + "/"
+						+ asperaDestination.getDestinationLocation().getFileId();
+				logger.error("ERAN: aspera command: " + cmd);
+
+				// exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(),
+				// downloadRequest.getSudoPassword());
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
