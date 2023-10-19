@@ -58,7 +58,9 @@
 		  <prop key="hpc.integration.googlecloudstorage.downloadExecutorThreadPoolSize">8</prop>
 		  
 		  <prop key="hpc.integration.aspera.downloadExecutorThreadPoolSize">8</prop>
-		  
+		  <prop key="hpc.integration.aspera.ascp">/Users/rosenbergea/Development/tools/aspera-connect/ascp</prop>
+		  <prop key="hpc.integration.aspera.privateKeyFile">/Users/rosenbergea/Development/tools/aspera-connect/aspera_tokenauth_id_rsa</prop>
+		  		  
 	      <prop key="hpc.integration.ldap.URL">ldaps://nihdcadhub2.nih.gov</prop>
 	      <prop key="hpc.integration.ldap.username">Configure Me</prop>
 	      <prop key="hpc.integration.ldap.password">Configure Me</prop>
