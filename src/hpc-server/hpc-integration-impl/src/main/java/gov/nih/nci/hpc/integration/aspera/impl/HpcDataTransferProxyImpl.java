@@ -82,12 +82,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
 		CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				String resp = exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
+				String resp = exec("export ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() + "; "
+						+ ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
 						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
 						+ "@" + asperaDestination.getAccount().getHost() + ":"
 						+ asperaDestination.getDestinationLocation().getFileContainerId() + "/"
 						+ asperaDestination.getDestinationLocation().getFileId(), null);
-				
+
 				logger.error("ERAN: ascp response - " + resp);
 
 				progressListener.transferCompleted(downloadRequest.getSize());
