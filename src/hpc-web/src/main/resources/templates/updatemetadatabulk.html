@@ -87,6 +87,8 @@
     var assignedNames = [[${names}]];
     var searchType = [[${hpcSearch.getSearchType()}]];
     var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
+    var metadataAttributesList = [[${metadataAttributesList}]];
+    var dynamicallyAddedMetadataList = [[${userMetadataList}]];
 /*]]>*/
 </script>
 </head>
@@ -163,10 +165,11 @@
 													</table>
 													<div class="col-sm-offset-2 col-sm-10" align="right" >
 													  <div class="row">
-													  	<button type="button" class="btn btn-default"
-															onClick="goBack()" id="close">Back</button>
+														<button class="btn btn-md btn-primary"
+														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 													  	<button type="button" class="btn btn-md btn-primary"
-															id="primaryButton" onClick="submitBulk()">Update</button>				
+															id="primaryButton" onClick="submitBulk()">Update</button>
+														<button type="button" class="btn btn-default" onClick="goBack()" id="close">Cancel</button>
 													  </div>
 													</div>
 												</div>
@@ -261,7 +264,63 @@
 			$('#pathDetailsGrid').DataTable( {
 				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
 			} );
+			$('body').on('click', '.deleteAttribute', function () {
+				$(this).closest("tr").find("input").val("");
+				$(this).closest("tr").addClass("hidden");
+			});
+
+			let i = 1;
+			if (dynamicallyAddedMetadataList != null) {
+				while (i < dynamicallyAddedMetadataList.length) {
+					var rowId = 1;
+					refreshMetadata(dynamicallyAddedMetadataList[i].attribute, dynamicallyAddedMetadataList[i].value);
+					i++;
+				}
+			}
 		});
+
+		var rowId = 1;
+		function addMetadata() {
+			rowId++;
+			var table = document.getElementById("metaAttrTable");
+			var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+			rows = rows - 1;
+			var row = table.insertRow();
+			row.id = "attrRow"+(rows+1);
+			var cell0 = row.insertCell(0);
+			var cell1 = row.insertCell(1);
+			cell0.innerHTML = '<input type="text" id="addAttrName'+(rows+1)+'" name="addAttrName'+(rows+1)+'" onClick="return populateMetadataNamesList('+(rows+1)+');"  placeholder="Enter Metadata Attribute" class="form-control"/> <datalist id="addAttrNameList'+(rows+1)+'"> </datalist>';
+			cell1.innerHTML = '<div class="input-group"><input type="text" id="addAttrValue'+(rows+1)+'" name="addAttrValue'+(rows+1)+'" placeholder="Enter Metadata Value" class="form-control"/><span class="input-group-addon deleteAttribute" title="Delete Attribute"><i class="fa fa-trash"></i></span></div>';
+			return false;
+		}
+
+		function refreshMetadata(displayName, displayValue) {
+			rowId++;
+			var table = document.getElementById("metaAttrTable");
+			var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+			rows = rows - 1;
+			var row = table.insertRow();
+			row.id = "attrRow"+(rows+1);
+			var cell0 = row.insertCell(0);
+			var cell1 = row.insertCell(1);
+			cell0.innerHTML = '<input type="text" id="addAttrName'+(rows+1)+'" name="addAttrName'+(rows+1)+'" value="'+ displayName+'" onClick="return populateMetadataNamesList('+(rows+1)+');"  placeholder="Enter Metadata Attribute" class="form-control"/> <datalist id="addAttrNameList'+(rows+1)+'"> </datalist>';
+			cell1.innerHTML = '<div class="input-group"><input type="text" id="addAttrValue'+(rows+1)+'"value="'+ displayValue+'" name="addAttrValue'+(rows+1)+'" placeholder="Enter Metadata Value" class="form-control"/><span class="input-group-addon deleteAttribute" title="Delete Attribute"><i class="fa fa-trash"></i></span></div>';
+			return true;
+		}
+
+
+		function populateMetadataNamesList(row) {
+			var x = '#addAttrNameList' + row;
+			var y = '#addAttrName' + row;
+			var numberInList = document.getElementById('addAttrNameList' + row).options.length;
+			if (numberInList == 0) {
+				$(y).attr('list', 'addAttrNameList' + row);
+				$(x).empty(); // first empty datalist
+				$.each(metadataAttributesList, function (i, item) {
+					$(x).append('<option>' + item + '</option>');
+				});
+			}
+		}
 
 		function enableSave() {
 			$('#primaryButton').removeClass('disabled');
@@ -284,13 +343,6 @@
 
 		function submitBulk()
 	    {
-			var mdname = document.getElementById("mdname").value;
-			var mdval = document.getElementById("mdval").value;
-			if(mdname == null || mdname == "" || mdval == null || mdval == "")
-			{
-				alert("Attribute name or value is missing");
-				return false;
-			}
 	    	if (confirm("Are you sure you want to apply bulk updates?") == true) {
 				$("#updateform").submit();
 	    	}
