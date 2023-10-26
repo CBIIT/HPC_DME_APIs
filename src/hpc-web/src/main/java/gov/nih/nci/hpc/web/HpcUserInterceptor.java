@@ -58,6 +58,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     protected String version;
     @Value("${app.env:}")
     protected String env;
+    @Value("${contact.email:}")
+    protected String contactEmail;
     @Value("${dme.token.expiration.period:120}")
     private int tokenExpirationPeriod;
     @Value("${gov.nih.nci.hpc.server.childCollections.acl.user}")
@@ -140,6 +142,7 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     	            session.setAttribute("hpcUser", user);
     	            session.setAttribute("env", env);
     	            session.setAttribute("version", version);
+    	            session.setAttribute("contactEmail", contactEmail);
     	            session.setAttribute("isCurator", HpcIdentityUtil.isUserCurator(session));
     	            
     	            if(action.equals("/")) {
