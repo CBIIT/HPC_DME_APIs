@@ -164,7 +164,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				pathDetails.add(pathGridEntry);
 			}
 			model.addAttribute("pathDetails", pathDetails);
-			bulkMetadataUpdateRequest.setSelectedFilePaths(paths);
+			bulkMetadataUpdateRequest.setSelectedFilePaths(selectedPathsStr); //TODO
 		}
 		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 
@@ -278,10 +278,14 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			req.setCollectionCompoundQuery(compoundQuery.getCompoundQuery());
 		} else {
 			List<String> paths = new ArrayList<>();
-			for(String path: bulkMetadataUpdateRequest.getSelectedFilePaths()) {
-			  path = path.replaceAll("\\[", "").replaceAll("\\]","");
-			  paths.add(path);
+			String selectedPathsStr = bulkMetadataUpdateRequest.getSelectedFilePaths();
+			StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
+			while (tokens.hasMoreTokens()) {
+				String pathStr = tokens.nextToken();
+				String path = pathStr.substring(pathStr.lastIndexOf(":") + 1);
+				paths.add(path);
 			}
+			bulkMetadataUpdateRequest.setSelectedFilePaths(selectedPathsStr);
 			req.getCollectionPaths().addAll(paths);
 		}
 		req.getMetadataEntries().addAll(userMetadataList);
