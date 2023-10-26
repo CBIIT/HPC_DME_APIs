@@ -80,8 +80,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Upload the file to Aspera.
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
-		CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
+		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
+				;
+				logger.error("ERAN: user - " + exec("whoami", null));
+				logger.error("ERAN: ls -l - " + exec("ls -l " + downloadRequest.getArchiveLocationFilePath(), null));
+				
 				String resp = exec("export ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() + "; "
 						+ ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
 						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
@@ -101,7 +105,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		}, asperaExecutor);
 
-		return String.valueOf(googleDriveDownloadFuture.hashCode());
+		return String.valueOf(asperaDownloadFuture.hashCode());
 	}
 
 }
