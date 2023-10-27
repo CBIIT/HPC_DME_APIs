@@ -831,13 +831,14 @@ public interface HpcDataTransferService {
 	/**
 	 * Get download results (all completed download requests) for a user.
 	 *
-	 * @param userId The user ID to query for.
-	 * @param page   The requested results page.
-	 * @param doc    doc of group admin or all for system administrators
+	 * @param userId          The user ID to query for.
+	 * @param page            The requested results page.
+	 * @param doc             The doc of group admin or all for system administrators.
+	 * @param pageSizeOffset  The amount to offset the configured page size by.
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset) throws HpcException;
 
 	/**
 	 * Get download results (all completed download requests) count for a user.
