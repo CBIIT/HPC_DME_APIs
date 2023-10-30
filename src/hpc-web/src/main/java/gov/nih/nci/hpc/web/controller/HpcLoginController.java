@@ -72,12 +72,6 @@ public class HpcLoginController extends AbstractHpcController {
 	private String childCollectionsAclURL;
 	@Value("${gov.nih.nci.hpc.login.module:}")
 	protected String hpcLoginModule;
-	@Value("${app.version:}")
-    protected String version;
-	@Value("${app.env:}")
-    protected String env;
-	@Value("${contact.email:}")
-    protected String contactEmail;
 	@Value("${gov.nih.nci.hpc.server.collection.acl}")
 	private String collectionAclsURL;
 	
