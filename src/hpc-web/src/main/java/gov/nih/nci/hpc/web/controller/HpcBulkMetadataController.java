@@ -137,6 +137,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 
 		// Set paths to be displayed on the updatemetadatabulk page
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		selectedPathsStr = selectedPathsStr.replaceAll("\\[", "").replaceAll("\\]","");
+		logger.info("selectedPathsStr ="+ gson.toJson(selectedPathsStr));
 		String updateAll = request.getParameter("updateAll");
 		String totalCount = request.getParameter("totalCount");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
@@ -162,7 +164,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				pathDetails.add(pathGridEntry);
 			}
 			model.addAttribute("pathDetails", pathDetails);
-			bulkMetadataUpdateRequest.setSelectedFilePaths(paths);
+			bulkMetadataUpdateRequest.setSelectedFilePaths(selectedPathsStr); //TODO
 		}
 		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 
@@ -214,6 +216,9 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		hpcDownloadDatafile.setDownloadType(downloadType);
+		model.addAttribute("downloadType", downloadType);
+		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		logger.info("Enter /assignbulkmetadata bulkMetadataUpdateRequest= " + gson.toJson(bulkMetadataUpdateRequest));
 		
 		List<HpcMetadataEntry> userMetadataList = new ArrayList<HpcMetadataEntry>();
@@ -250,9 +255,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		model.addAttribute("userMetadataList", userMetadataList);
 		model.addAttribute("metadataName", bulkMetadataUpdateRequest.getMetadataName());
 		model.addAttribute("metadataValue", bulkMetadataUpdateRequest.getMetadataValue());
-		model.addAttribute("downloadType", downloadType);
-		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 
 		HpcSearch hpcSaveSearch = (HpcSearch) session.getAttribute("hpcSavedSearch");
 		model.addAttribute("hpcSearch", hpcSaveSearch);
@@ -276,10 +278,14 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			req.setCollectionCompoundQuery(compoundQuery.getCompoundQuery());
 		} else {
 			List<String> paths = new ArrayList<>();
-			for(String path: bulkMetadataUpdateRequest.getSelectedFilePaths()) {
-			  path = path.replaceAll("\\[", "").replaceAll("\\]","");
-			  paths.add(path);
+			String selectedPathsStr = bulkMetadataUpdateRequest.getSelectedFilePaths();
+			StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
+			while (tokens.hasMoreTokens()) {
+				String pathStr = tokens.nextToken();
+				String path = pathStr.substring(pathStr.lastIndexOf(":") + 1);
+				paths.add(path);
 			}
+			bulkMetadataUpdateRequest.setSelectedFilePaths(selectedPathsStr);
 			req.getCollectionPaths().addAll(paths);
 		}
 		req.getMetadataEntries().addAll(userMetadataList);
@@ -358,8 +364,6 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 			session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
 		}
-
-		logger.info("metadataAttributesList =" + gson.toJson(modelDTO));
 
 		HpcUserPermsForCollectionsDTO permissions = (HpcUserPermsForCollectionsDTO) session
 				.getAttribute("userDOCPermissions");

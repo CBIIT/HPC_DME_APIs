@@ -75,6 +75,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -799,19 +800,48 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
 		}
 
+		int limit = dataTransferService.getDownloadResultsPageSize();
+
 		// Populate the DTO with active and completed download requests for this user.
 		HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
-		downloadSummary.getActiveTasks().addAll(dataTransferService.getDownloadRequests(userId, doc));
-		downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId, page, doc));
+		List<HpcUserDownloadRequest> activeRequests = dataTransferService.getDownloadRequests(userId, doc);
 
-		int limit = dataTransferService.getDownloadResultsPageSize();
+		int pageSizeOffset = 0;
+		int resultsCount = dataTransferService.getDownloadResultsCount(userId, doc);
+		List<HpcUserDownloadRequest> activeRequestsInPage = null;
+		if(activeRequests != null && !activeRequests.isEmpty()) {
+			if(activeRequests.size() > limit * page) {
+			//The active requests to be displayed are more than the size of the page,
+			//so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage =
+				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
+			} else if(activeRequests.size() > limit * (page - 1)) {
+				//The active requests to be displayed on this page are less than the size of the page
+				//so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+			}
+			if(activeRequestsInPage != null) {
+				downloadSummary.getActiveTasks().addAll(activeRequestsInPage);
+			}
+
+			//Determine how many rows have been taken up by the activeRequests, these will be
+			//subtracted from the page limit later to determine how many rows are available to display
+			//the completed requests.
+			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+				pageSizeOffset = activeRequestsInPage.size();
+			}
+		}
+
+		List<HpcUserDownloadRequest> downloadResults = dataTransferService.getDownloadResults(userId, page, doc, pageSizeOffset);
+		downloadSummary.getCompletedTasks().addAll(downloadResults);
+
 		downloadSummary.setPage(page);
 		downloadSummary.setLimit(limit);
 
 		if (totalCount) {
-			int count = downloadSummary.getCompletedTasks().size();
+			int count = downloadSummary.getCompletedTasks().size()  + downloadSummary.getActiveTasks().size();
 			downloadSummary.setTotalCount(
-					(page == 1 && count < limit) ? count : dataTransferService.getDownloadResultsCount(userId, doc));
+					(page == 1 && count < limit) ? count : resultsCount);
 		}
 
 		return downloadSummary;
