@@ -1887,17 +1887,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc) throws HpcException {
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int activeRequestsOffset) throws HpcException {
 		List<HpcUserDownloadRequest> downloadResults = null;
 		if (doc == null) {
 			downloadResults = dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page),
-					pagination.getPageSize());
+					pagination.getPageSize() - activeRequestsOffset);
 		} else if (doc.equals("ALL")) {
 			downloadResults = dataDownloadDAO.getAllDownloadResults(pagination.getOffset(page),
-					pagination.getPageSize());
+					pagination.getPageSize() - activeRequestsOffset);
 		} else {
 			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, pagination.getOffset(page),
-					pagination.getPageSize());
+					pagination.getPageSize() - activeRequestsOffset);
 		}
 		return downloadResults;
 	}
