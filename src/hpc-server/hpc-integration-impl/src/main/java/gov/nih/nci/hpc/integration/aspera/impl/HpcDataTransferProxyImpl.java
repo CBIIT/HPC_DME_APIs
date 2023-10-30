@@ -82,9 +82,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				;
+				String archiveLocationDirectory = downloadRequest.getArchiveLocationFilePath().substring(0, downloadRequest.getArchiveLocationFilePath().lastIndexOf('/'));
+				
+				logger.error("ERAN: user - " + exec("cd " + archiveLocationDirectory, null));
 				logger.error("ERAN: user - " + exec("whoami", null));
-				logger.error("ERAN: ls -l - " + exec("ls -l " + downloadRequest.getArchiveLocationFilePath(), null));
+				logger.error("ERAN: ls -l - " + exec("ls -l ", null));
 				
 				String resp = exec("export ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() + "; "
 						+ ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
