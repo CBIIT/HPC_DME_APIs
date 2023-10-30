@@ -57,6 +57,12 @@ public abstract class AbstractHpcController {
 	@Value("${hpc.USER}")
 	protected String USER;
 	
+	@Value("${app.version:}")
+    protected String version;
+	@Value("${app.env:}")
+    protected String env;
+	@Value("${contact.email:}")
+    protected String contactEmail;
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
 	@Value("${dme.globus.public.endpoints:}")
