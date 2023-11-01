@@ -1270,6 +1270,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			} else if (downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
 				// If the destination is Aspera - set the staged file path in the request
 				downloadRequest.setArchiveLocationFilePath(downloadTask.getDownloadFilePath());
+				downloadRequest.setSudoPassword(
+						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
 
 			} else {
 				// Check if transfer requests can be acceptable at this time (Globus only)
@@ -1887,7 +1889,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int activeRequestsOffset) throws HpcException {
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc,
+			int activeRequestsOffset) throws HpcException {
 		List<HpcUserDownloadRequest> downloadResults = null;
 		if (doc == null) {
 			downloadResults = dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page),
