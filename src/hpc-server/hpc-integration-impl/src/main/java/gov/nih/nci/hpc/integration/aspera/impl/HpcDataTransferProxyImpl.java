@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -77,14 +78,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (downloadRequest.getAsperaDestination() == null) {
 			throw new HpcException("[Aspera] Null destination", HpcErrorType.UNEXPECTED_ERROR);
 		}
-
+		
 		// Upload the file to Aspera.
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
 				String archiveLocationDirectory = downloadRequest.getArchiveLocationFilePath().substring(0, downloadRequest.getArchiveLocationFilePath().lastIndexOf('/'));
 				
-				logger.error("ERAN: user - " + exec("cd " + archiveLocationDirectory, null));
+				logger.error("ERAN: SP - " + downloadRequest.getSudoPassword());
+				logger.error("ERAN: user - " + exec("cd " + archiveLocationDirectory, downloadRequest.getSudoPassword()));
 				logger.error("ERAN: user - " + exec("whoami", null));
 				logger.error("ERAN: ls -l - " + exec("ls -l ", null));
 				
