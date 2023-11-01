@@ -125,6 +125,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
                  { field: 'type', width:130, displayName : 'Type', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{grid.appScope.toTitleCase(row.entity.type)}}</div>'},
                  { field: 'destinationType', width:150, displayName : 'Destination Type'},
                  { field: 'result', width:130, displayName: 'Transfer Result'},
+                 { field: 'error', width:130, displayName: 'Error'},
 				 { field: 'retryUserId', width:120, displayName : 'Retry User ID'},
                  { field: 'created', width:130, displayName : 'Created On' },
                  { field: 'completed', width:130, displayName : 'Completed On'}
