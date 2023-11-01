@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.Calendar;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -262,6 +263,11 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	 */
 	private void completeDownloadTask(HpcDownloadResult result, String message, long bytesTransferred) {
 		try {
+			if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
+				// The task was cancelled / removed from the DB. Do some cleanup.
+				FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
+			}
+
 			Calendar completed = Calendar.getInstance();
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					bytesTransferred);
