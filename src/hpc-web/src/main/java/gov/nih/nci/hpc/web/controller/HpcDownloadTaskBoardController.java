@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
@@ -122,6 +125,20 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
 				HpcTask task = new HpcTask();
+				if(!download.getResult().equals(HpcDownloadResult.COMPLETED)) {
+					if(CollectionUtils.isNotEmpty(download.getItems())) {
+						HpcCollectionDownloadTaskItem item = download.getItems().stream()
+			            .filter(t -> !t.getResult().equals(HpcDownloadResult.COMPLETED))
+			            .findFirst()
+			            .orElse(null);
+						if(item != null)
+							task.setError(item.getMessage());
+						else
+							task.setError(download.getMessage());
+					} else {
+						task.setError(download.getMessage());
+					}
+				}
 				task.setUserId(download.getUserId());
 				task.setTaskId(download.getTaskId());
 				task.setPath(download.getPath());
