@@ -25,6 +25,8 @@ public class HpcTask {
     protected String status;
     @JsonView(Views.Public.class)
     protected String retryUserId;
+    @JsonView(Views.Public.class)
+    protected String error;
 
 	
 	public String getUserId() {
@@ -92,6 +94,12 @@ public class HpcTask {
     }
     public void setRetryUserId(String retryUserId) {
       this.retryUserId = retryUserId;
+    }
+    public String getError() {
+      return error;
+    }
+    public void setError(String error) {
+      this.error = error;
     }
 
 }
