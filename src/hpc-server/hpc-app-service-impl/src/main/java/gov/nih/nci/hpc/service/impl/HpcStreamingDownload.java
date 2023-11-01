@@ -211,7 +211,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	}
 
 	/**
-	 * Update a download task for a streaming download (to AWS S3 or Google Drive).
+	 * Update a download task for a streaming download (to AWS S3 or Google Drive or Aspera).
 	 *
 	 * @param downloadTask The download task.
 	 * @throws HpcException If it failed to persist the task.
@@ -219,7 +219,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	private void updateDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		this.downloadTask.setId(downloadTask.getId());
 		this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
-		this.downloadTask.setDownloadFilePath(null);
+		this.downloadTask.setDownloadFilePath(downloadTask.getDownloadFilePath());
 		this.downloadTask.setUserId(downloadTask.getUserId());
 		this.downloadTask.setPath(downloadTask.getPath());
 		this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());
