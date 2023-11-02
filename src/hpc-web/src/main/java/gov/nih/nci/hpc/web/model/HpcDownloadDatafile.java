@@ -17,6 +17,11 @@ public class HpcDownloadDatafile {
 	private String accessKey;
 	private String secretKey;
 	private String region;
+	private String asperaBucketName;
+	private String asperaPath;
+	private String asperaUser;
+	private String asperaPassword;
+	private String asperaHost;
 	private String searchType;
 	private String downloadType;
 	private List<String> selectedPaths;
@@ -143,4 +148,45 @@ public class HpcDownloadDatafile {
 	public void setRegion(String region) {
 		this.region = region;
 	}
+
+	public String getAsperaUser() {
+		return asperaUser;
+	}
+
+	public void setAsperaUser(String asperaUser) {
+		this.asperaUser = asperaUser;
+	}
+
+	public String getAsperaPassword() {
+		return asperaPassword;
+	}
+
+	public void setAsperaPassword(String asperaPassword) {
+		this.asperaPassword = asperaPassword;
+	}
+
+	public String getAsperaHost() {
+		return asperaHost;
+	}
+
+	public void setAsperaHost(String asperaHost) {
+		this.asperaHost = asperaHost;
+	}
+
+	public String getAsperaBucketName() {
+		return asperaBucketName;
+	}
+
+	public void setAsperaBucketName(String asperaBucketName) {
+		this.asperaBucketName = asperaBucketName;
+	}
+
+	public String getAsperaPath() {
+		return asperaPath;
+	}
+
+	public void setAsperaPath(String asperaPath) {
+		this.asperaPath = asperaPath;
+	}
+	
 }
