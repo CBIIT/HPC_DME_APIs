@@ -73,8 +73,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "DATA_TRANSFER_STATUS, DOWNLOAD_FILE_PATH, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, "
 			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_ACCESS_TOKEN, COMPLETION_EVENT, COLLECTION_DOWNLOAD_TASK_ID, PERCENT_COMPLETE, STAGING_PERCENT_COMPLETE, DATA_SIZE, CREATED, "
-			+ "PROCESSED, IN_PROCESS, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_USER_ID, DOC) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "PROCESSED, IN_PROCESS, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_TASK_ID, RETRY_USER_ID, DOC) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK "
 			+ "set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, S3_ARCHIVE_CONFIGURATION_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, "
@@ -82,7 +82,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_TYPE = ?, S3_ACCOUNT_ACCESS_KEY = ?, "
 			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_ACCESS_TOKEN = ?, "
 			+ "COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, PERCENT_COMPLETE = ?, STAGING_PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ?, "
-			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_USER_ID = ? where ID = ?";
+			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ? where ID = ?";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -581,7 +581,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getDoc());
+					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getDoc());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
@@ -646,7 +646,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getId()) > 0;
+					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getId()) > 0;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
