@@ -165,8 +165,12 @@ public interface HpcDataTransferService {
 	 *                                              data-object is stored in. This
 	 *                                              is only applicable for S3
 	 *                                              archives, not POSIX.
+	 * @param retryTaskId                           The task ID being retried if this
+	 *                                              is a retry request.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
+	 * @param retryUserId                           The user ID retrying the request
+	 *                                              if this is a retry request.
 	 * @param completionEvent                       If true, an event will be added
 	 *                                              when async download is complete.
 	 * @param collectionDownloadTaskId              (Optional) The collection
@@ -186,7 +190,8 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
+			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
+			String retryUserId, boolean completionEvent,
 			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus downloadDataObject,
 			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
 
