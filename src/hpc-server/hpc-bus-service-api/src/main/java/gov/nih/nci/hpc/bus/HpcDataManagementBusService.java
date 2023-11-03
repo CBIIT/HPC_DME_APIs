@@ -458,7 +458,10 @@ public interface HpcDataManagementBusService {
 	 *
 	 * @param path                     The data object path.
 	 * @param downloadRequest          The download request DTO.
+	 * @param retryTaskId              The previous task ID if this is a retry request
 	 * @param userId                   The user submitting the request.
+	 * @param retryUserId              The user retrying the request if this
+	 *                                 is a retry request
 	 * @param completionEvent          If true, an event will be added when async
 	 *                                 download is complete.
 	 * @param collectionDownloadTaskId (Optional) The collection download task ID if
@@ -467,8 +470,8 @@ public interface HpcDataManagementBusService {
 	 * @return Download ResponseDTO
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String userId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException;
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest, String retryTaskId, 
+			String userId, String retryUserId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException;
 
 	/**
 	 * Get Data object download task status.
@@ -629,6 +632,5 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcBulkMetadataUpdateResponseDTO updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest)
 			throws HpcException;
-
 
 }
