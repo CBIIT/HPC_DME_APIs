@@ -1525,13 +1525,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
-		return downloadDataObject(path, downloadRequest,
-				securityService.getRequestInvoker().getNciAccount().getUserId(), true, null);
+		return downloadDataObject(path, downloadRequest, null,
+				securityService.getRequestInvoker().getNciAccount().getUserId(), null, true, null);
 	}
 
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String userId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException {
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException {
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1556,10 +1556,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getSynchronousDownloadFilter(),
-				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
-				userId, completionEvent, collectionDownloadTaskId,
+				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId,
+				userId, retryUserId, completionEvent, collectionDownloadTaskId,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
 				metadata.getDeepArchiveStatus());
+
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
@@ -1661,7 +1662,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDownloadTaskResult downloadTask = taskStatus.getResult();
 		HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
 		downloadTask.setRetryUserId(securityService.getRequestInvoker().getNciAccount().getUserId());
-		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getUserId(), true, null);
+		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getId(), downloadTask.getUserId(), 
+				downloadTask.getRetryUserId(), true, null);
 	}
 
 	@Override
