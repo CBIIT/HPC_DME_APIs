@@ -87,7 +87,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				logger.error("ERAN: SP - " + downloadRequest.getSudoPassword());
 				logger.error("ERAN: user - "
-						+ exec("cd " + archiveLocationDirectory, null /* downloadRequest.getSudoPassword() */));
+						+ exec("cd " + archiveLocationDirectory, downloadRequest.getSudoPassword()));
 				logger.error("ERAN: user - " + exec("whoami", null));
 				logger.error("ERAN: ls -l - " + exec("ls -l ", null));
 
