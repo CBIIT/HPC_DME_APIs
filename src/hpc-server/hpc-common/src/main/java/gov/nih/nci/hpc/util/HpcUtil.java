@@ -87,7 +87,7 @@ public class HpcUtil {
 		if (!StringUtils.isEmpty(sudoPassword)) {
 			execCommand = new String[] { "/bin/sh", "-c", "echo '" + sudoPassword + "'|sudo -S " + command };
 		} else {
-			execCommand = new String[] { command };
+			execCommand = new String[] { "/bin/sh", "-c", command };
 		}
 
 		Process process = null;
