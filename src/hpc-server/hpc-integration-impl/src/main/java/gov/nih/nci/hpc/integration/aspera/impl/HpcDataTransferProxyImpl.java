@@ -85,21 +85,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			try {
 				File archiveLocationDirectory = new File(downloadRequest.getArchiveLocationFilePath().substring(0,
 						downloadRequest.getArchiveLocationFilePath().lastIndexOf('/')));
-				String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword()};
+				String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() };
 
-				logger.error("ERAN: ls -l - " + exec("ls -l ", null, envp, archiveLocationDirectory));
-				logger.error("ERAN: env - " + exec("env", null, envp, archiveLocationDirectory));
-				logger.error("ERAN: pwd - " + exec("pwd", null, envp, archiveLocationDirectory));
+				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " "
+						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
-				/*
-				String resp = exec("export ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() + "; "
-						+ ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
+				String resp = exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
 						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
 						+ "@" + asperaDestination.getAccount().getHost() + ":"
-						+ asperaDestination.getDestinationLocation().getFileContainerId() + "/"
-						+ asperaDestination.getDestinationLocation().getFileId(), null);
+						+ asperaDestination.getDestinationLocation().getFileContainerId()
+						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
-				logger.error("ERAN: ascp response - " + resp);*/
+				logger.error("ERAN: ascp response - " + resp);
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
