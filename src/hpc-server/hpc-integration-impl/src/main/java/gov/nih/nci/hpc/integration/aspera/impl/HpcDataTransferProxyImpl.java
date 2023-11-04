@@ -96,7 +96,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						+ asperaDestination.getAccount().getUser() + "@" + asperaDestination.getAccount().getHost()
 						+ ":" + asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
 						archiveLocationDirectory);
-				logger.info("[Aspera] successfully completed download of {}. ascp response: ",
+				logger.info("[Aspera] successfully completed download of {}. ascp response: {}",
 						downloadRequest.getPath(), ascpResponse);
 
 				progressListener.transferCompleted(downloadRequest.getSize());
