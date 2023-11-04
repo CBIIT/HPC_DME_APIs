@@ -90,11 +90,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " "
 						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
+				logger.error("ERAN - cmd - " + ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
+						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
+						+ "@" + asperaDestination.getAccount().getHost() + ":"
+						+ asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
+						archiveLocationDirectory);
+				
 				String resp = exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
 						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
 						+ "@" + asperaDestination.getAccount().getHost() + ":"
-						+ asperaDestination.getDestinationLocation().getFileContainerId()
-						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
+						+ asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
+						archiveLocationDirectory);
 
 				logger.error("ERAN: ascp response - " + resp);
 
