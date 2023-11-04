@@ -87,11 +87,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						downloadRequest.getArchiveLocationFilePath().lastIndexOf('/')));
 				String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword()};
 
-				logger.error("ERAN: SP - " + downloadRequest.getSudoPassword());
-				logger.error("ERAN: user - " + exec("whoami", null, null, null));
-				logger.error("ERAN: ls -l - " + exec("ls -l ", null, envp, null));
-				logger.error("ERAN: ls -l - " + exec("env", null, envp, null));
-				logger.error("ERAN: ls -l - " + exec("pwd", null, envp, null));
+				logger.error("ERAN: ls -l - " + exec("ls -l ", null, envp, archiveLocationDirectory));
+				logger.error("ERAN: env - " + exec("env", null, envp, archiveLocationDirectory));
+				logger.error("ERAN: pwd - " + exec("pwd", null, envp, archiveLocationDirectory));
 
 				/*
 				String resp = exec("export ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() + "; "
