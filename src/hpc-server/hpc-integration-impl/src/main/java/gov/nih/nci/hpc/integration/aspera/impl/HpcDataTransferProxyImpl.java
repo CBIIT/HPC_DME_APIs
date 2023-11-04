@@ -81,28 +81,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Upload the file to Aspera.
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
+		File archiveLocationDirectory = new File(downloadRequest.getArchiveLocationFilePath().substring(0,
+				downloadRequest.getArchiveLocationFilePath().lastIndexOf('/')));
+		String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() };
+
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				File archiveLocationDirectory = new File(downloadRequest.getArchiveLocationFilePath().substring(0,
-						downloadRequest.getArchiveLocationFilePath().lastIndexOf('/')));
-				String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() };
 
 				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " "
 						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
-				logger.error("ERAN - cmd - " + ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
-						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
-						+ "@" + asperaDestination.getAccount().getHost() + ":"
-						+ asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
+				exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
+						+ asperaDestination.getDestinationLocation().getFileId() + " "
+						+ asperaDestination.getAccount().getUser() + "@" + asperaDestination.getAccount().getHost()
+						+ ":" + asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
 						archiveLocationDirectory);
-				
-				String resp = exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
-						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
-						+ "@" + asperaDestination.getAccount().getHost() + ":"
-						+ asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
-						archiveLocationDirectory);
-
-				logger.error("ERAN: ascp response - " + resp);
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
@@ -110,6 +103,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				String message = "[Aspera] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
+
+			} finally {
+				try {
+					exec("rm -f " + downloadRequest.getArchiveLocationFilePath(), null, envp, archiveLocationDirectory);
+
+				} catch (HpcException e) {
+					logger.error("Failed to delete sym link for Aspera download", e);
+				}
 			}
 
 		}, asperaExecutor);
