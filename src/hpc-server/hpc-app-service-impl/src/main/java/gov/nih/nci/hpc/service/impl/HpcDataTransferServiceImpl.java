@@ -550,7 +550,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException {
+			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
+			throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -2013,8 +2014,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// temporary fix until code cleanup
 		// exec("chown " + permissions.getOwner() + " " + archivePath, sudoPassword);
 
-		exec("chown :" + permissions.getGroup() + " " + archivePath, sudoPassword);
-		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword);
+		exec("chown :" + permissions.getGroup() + " " + archivePath, sudoPassword, null, null);
+		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword, null, null);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.integration.aspera.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
 
+import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -82,15 +83,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				String archiveLocationDirectory = downloadRequest.getArchiveLocationFilePath().substring(0,
-						downloadRequest.getArchiveLocationFilePath().lastIndexOf('/'));
+				File archiveLocationDirectory = new File(downloadRequest.getArchiveLocationFilePath().substring(0,
+						downloadRequest.getArchiveLocationFilePath().lastIndexOf('/')));
+				String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword()};
 
 				logger.error("ERAN: SP - " + downloadRequest.getSudoPassword());
-				logger.error("ERAN: user - "
-						+ exec("cd " + archiveLocationDirectory, null /*downloadRequest.getSudoPassword()*/));
-				logger.error("ERAN: user - " + exec("whoami", null));
-				logger.error("ERAN: ls -l - " + exec("ls -l ", null));
+				logger.error("ERAN: user - " + exec("whoami", null, null, null));
+				logger.error("ERAN: ls -l - " + exec("ls -l ", null, envp, archiveLocationDirectory));
+				logger.error("ERAN: ls -l - " + exec("env", null, envp, archiveLocationDirectory));
 
+				/*
 				String resp = exec("export ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() + "; "
 						+ ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 -d "
 						+ downloadRequest.getArchiveLocationFilePath() + " " + asperaDestination.getAccount().getUser()
@@ -98,7 +100,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						+ asperaDestination.getDestinationLocation().getFileContainerId() + "/"
 						+ asperaDestination.getDestinationLocation().getFileId(), null);
 
-				logger.error("ERAN: ascp response - " + resp);
+				logger.error("ERAN: ascp response - " + resp);*/
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
