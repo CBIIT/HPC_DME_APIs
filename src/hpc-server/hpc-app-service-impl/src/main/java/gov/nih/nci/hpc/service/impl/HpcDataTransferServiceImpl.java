@@ -1274,8 +1274,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			} else if (downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
 				// If the destination is Aspera - set the staged file path in the request
 				downloadRequest.setArchiveLocationFilePath(downloadTask.getDownloadFilePath());
-				downloadRequest.setSudoPassword(
-						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
 
 			} else {
 				// Check if transfer requests can be acceptable at this time (Globus only)
@@ -1411,7 +1409,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
 		downloadTask.setS3DownloadTaskServerId(null);
-		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
+		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())
+				&& !downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA)) {
 			FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 			downloadTask.setDownloadFilePath(null);
 		}
@@ -1469,7 +1468,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		int percentComplete = Math.round(100 * (float) bytesTransferred / downloadTask.getSize());
 
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-				&& downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
+				&& (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
+						|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA))) {
 			// This is a 2-hop download, performing the 1st Hop (i.e. staging the file, not
 			// downloading to destination just yet)
 			downloadTask.setPercentComplete(0);
