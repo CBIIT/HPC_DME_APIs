@@ -87,7 +87,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-
+				exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " "
 						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
@@ -108,7 +108,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			} finally {
 				try {
-					exec("rm -f " + downloadRequest.getArchiveLocationFilePath(), null, envp, archiveLocationDirectory);
+					exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
 				} catch (HpcException e) {
 					logger.error("Failed to delete sym link for Aspera download", e);
