@@ -1292,9 +1292,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		// If the destination is Globus and the data transfer is S3, then we need to
+		// If the destination is Globus / Aspera and the data transfer is S3, then we
+		// need to
 		// restart a 2-hop download.
-		if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
+		if ((downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA))
 				&& downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
 			// Create a listener that will kick off the 2nd hop when the first one is done,
 			// and update the download task accordingly.
@@ -3951,7 +3953,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
 			this.downloadTask.setArchiveLocation(secondHopArchiveLocation);
 			this.downloadTask.setGlobusDownloadDestination(downloadTask.getGlobusDownloadDestination());
-			this.downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
+			this.downloadTask.setDestinationType(downloadTask.getDestinationType());
 			this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
 			this.downloadTask.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
 			this.downloadTask.setCreated(downloadTask.getCreated());
