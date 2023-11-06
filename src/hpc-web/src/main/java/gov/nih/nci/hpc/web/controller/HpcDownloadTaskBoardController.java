@@ -132,11 +132,11 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			            .findFirst()
 			            .orElse(null);
 						if(item != null)
-							task.setError(item.getMessage());
+							task.setError(item.getMessage().replaceAll("'", "\\\\'"));
 						else
-							task.setError(download.getMessage());
+							task.setError(download.getMessage().replaceAll("'", "\\\\'"));
 					} else {
-						task.setError(download.getMessage());
+						task.setError(download.getMessage().replaceAll("'", "\\\\'"));
 					}
 				}
 				task.setUserId(download.getUserId());
