@@ -809,39 +809,41 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		int pageSizeOffset = 0;
 		int resultsCount = dataTransferService.getDownloadResultsCount(userId, doc);
 		List<HpcUserDownloadRequest> activeRequestsInPage = null;
-		if(activeRequests != null && !activeRequests.isEmpty()) {
-			if(activeRequests.size() > limit * page) {
-			//The active requests to be displayed are more than the size of the page,
-			//so restrict the activeRequests displayed to the page limit
-				activeRequestsInPage =
-				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
-			} else if(activeRequests.size() > limit * (page - 1)) {
-				//The active requests to be displayed on this page are less than the size of the page
-				//so display the remaining activeRequests
-				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+		if (activeRequests != null && !activeRequests.isEmpty()) {
+			if (activeRequests.size() > limit * page) {
+				// The active requests to be displayed are more than the size of the page,
+				// so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), limit + limit * (page - 1));
+			} else if (activeRequests.size() > limit * (page - 1)) {
+				// The active requests to be displayed on this page are less than the size of
+				// the page
+				// so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), activeRequests.size());
 			}
-			if(activeRequestsInPage != null) {
+			if (activeRequestsInPage != null) {
 				downloadSummary.getActiveTasks().addAll(activeRequestsInPage);
 			}
 
-			//Determine how many rows have been taken up by the activeRequests, these will be
-			//subtracted from the page limit later to determine how many rows are available to display
-			//the completed requests.
-			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+			// Determine how many rows have been taken up by the activeRequests, these will
+			// be
+			// subtracted from the page limit later to determine how many rows are available
+			// to display
+			// the completed requests.
+			if (activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
 				pageSizeOffset = activeRequestsInPage.size();
 			}
 		}
 
-		List<HpcUserDownloadRequest> downloadResults = dataTransferService.getDownloadResults(userId, page, doc, pageSizeOffset);
+		List<HpcUserDownloadRequest> downloadResults = dataTransferService.getDownloadResults(userId, page, doc,
+				pageSizeOffset);
 		downloadSummary.getCompletedTasks().addAll(downloadResults);
 
 		downloadSummary.setPage(page);
 		downloadSummary.setLimit(limit);
 
 		if (totalCount) {
-			int count = downloadSummary.getCompletedTasks().size()  + downloadSummary.getActiveTasks().size();
-			downloadSummary.setTotalCount(
-					(page == 1 && count < limit) ? count : resultsCount);
+			int count = downloadSummary.getCompletedTasks().size() + downloadSummary.getActiveTasks().size();
+			downloadSummary.setTotalCount((page == 1 && count < limit) ? count : resultsCount);
 		}
 
 		return downloadSummary;
@@ -1531,7 +1533,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String retryTaskId, String userId, String retryUserId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException {
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
+			String collectionDownloadTaskId) throws HpcException {
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1556,11 +1559,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getSynchronousDownloadFilter(),
-				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId,
-				userId, retryUserId, completionEvent, collectionDownloadTaskId,
+				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
+				retryTaskId, userId, retryUserId, completionEvent, collectionDownloadTaskId,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
 				metadata.getDeepArchiveStatus());
-
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
@@ -1612,7 +1614,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setRestoreInProgress(taskStatus.getDataObjectDownloadTask().getDataTransferStatus()
 					.equals(HpcDataTransferDownloadStatus.RESTORE_REQUESTED));
 			downloadStatus.setStagingInProgress(Boolean.FALSE.equals(downloadStatus.getRestoreInProgress())
-					&& HpcDataTransferType.GLOBUS.equals(taskStatus.getDataObjectDownloadTask().getDestinationType())
+					&& (HpcDataTransferType.GLOBUS.equals(taskStatus.getDataObjectDownloadTask().getDestinationType())
+							|| HpcDataTransferType.ASPERA
+									.equals(taskStatus.getDataObjectDownloadTask().getDestinationType()))
 					&& HpcDataTransferType.S_3.equals(taskStatus.getDataObjectDownloadTask().getDataTransferType())
 							? true
 							: null);
@@ -1662,8 +1666,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDownloadTaskResult downloadTask = taskStatus.getResult();
 		HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
 		downloadTask.setRetryUserId(securityService.getRequestInvoker().getNciAccount().getUserId());
-		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getId(), downloadTask.getUserId(), 
-				downloadTask.getRetryUserId(), true, null);
+		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getId(),
+				downloadTask.getUserId(), downloadTask.getRetryUserId(), true, null);
 	}
 
 	@Override

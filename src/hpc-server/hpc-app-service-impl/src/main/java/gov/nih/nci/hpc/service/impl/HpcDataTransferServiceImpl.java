@@ -1409,10 +1409,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
 		downloadTask.setS3DownloadTaskServerId(null);
-		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())
-				&& !downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA)) {
+		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
 			FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 			downloadTask.setDownloadFilePath(null);
+		}
+
+		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA)) {
+			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 		}
 
 		dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
