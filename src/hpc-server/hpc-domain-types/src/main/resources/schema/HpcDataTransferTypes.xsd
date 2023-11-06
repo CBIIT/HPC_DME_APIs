@@ -93,6 +93,7 @@
 			<xsd:enumeration value="S_3" />
 			<xsd:enumeration value="GOOGLE_DRIVE" />
 			<xsd:enumeration value="GOOGLE_CLOUD_STORAGE" />
+			<xsd:enumeration value="ASPERA" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
