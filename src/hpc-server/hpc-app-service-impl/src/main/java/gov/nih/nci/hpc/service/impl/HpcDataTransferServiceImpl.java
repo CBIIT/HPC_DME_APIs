@@ -3953,6 +3953,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
 			this.downloadTask.setArchiveLocation(secondHopArchiveLocation);
 			this.downloadTask.setGlobusDownloadDestination(downloadTask.getGlobusDownloadDestination());
+			this.downloadTask.setAsperaDownloadDestination(downloadTask.getAsperaDownloadDestination());
 			this.downloadTask.setDestinationType(downloadTask.getDestinationType());
 			this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
 			this.downloadTask.setCollectionDownloadTaskId(downloadTask.getCollectionDownloadTaskId());
