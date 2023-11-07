@@ -1226,6 +1226,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		logger.error("ERAN 1");
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -1256,12 +1257,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadRequest.getArchiveLocation(), HpcDataTransferType.GLOBUS,
 					downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
 		} else {
+			logger.error("ERAN 2");
 			// For any other download - get the data transfer configuration.
 			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 					.getDataTransferConfiguration(downloadRequest.getConfigurationId(),
 							downloadRequest.getS3ArchiveConfigurationId(), downloadRequest.getDataTransferType());
 			baseArchiveDestination = dataTransferConfiguration.getBaseArchiveDestination();
 			encryptedTransfer = dataTransferConfiguration.getEncryptedTransfer();
+			
+			if (downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA)) {
+				// If the destination is Aspera - set the staged file path in the request
+				downloadRequest.setArchiveLocationFilePath(downloadTask.getDownloadFilePath());
+				logger.error("ERAN 3");
+			}
 
 			if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
 					|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
@@ -1270,10 +1278,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
 						downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
-
-			} else if (downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
-				// If the destination is Aspera - set the staged file path in the request
-				downloadRequest.setArchiveLocationFilePath(downloadTask.getDownloadFilePath());
 
 			} else {
 				// Check if transfer requests can be acceptable at this time (Globus only)
@@ -1300,6 +1304,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				&& downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
 			// Create a listener that will kick off the 2nd hop when the first one is done,
 			// and update the download task accordingly.
+			logger.error("ERAN 4");
 			HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadTask);
 			progressListener = secondHopDownload;
 
@@ -1314,7 +1319,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						downloadTask.getPath());
 				return;
 			}
-
+			logger.error("ERAN 5");
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
 			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
@@ -1330,6 +1335,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
 				|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
 			// Create a listener that will complete the download task when it is done.
+			logger.error("ERAN 6");
 			progressListener = new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
 		}
 
@@ -1338,6 +1344,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setDataTransferRequestId(dataTransferProxies.get(downloadRequest.getDataTransferType())
 					.downloadDataObject(authenticatedToken, downloadRequest, baseArchiveDestination, progressListener,
 							encryptedTransfer));
+			logger.error("ERAN 7");
 
 		} catch (HpcException e) {
 			// Failed to submit a transfer request. Cleanup the download task.
@@ -1354,8 +1361,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.orElse(HpcDataTransferDownloadStatus.CANCELED).equals(HpcDataTransferDownloadStatus.CANCELED)) {
 			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 			dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
+			logger.error("ERAN 8");
 		}
 
+		logger.error("ERAN 9");
 		logger.info("download task: {} - continued  - archive file-id = {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), downloadRequest.getArchiveLocation().getFileId(),
 				downloadTask.getDataTransferType(), downloadTask.getDestinationType());
