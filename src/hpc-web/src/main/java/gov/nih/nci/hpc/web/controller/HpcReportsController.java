@@ -378,7 +378,7 @@ public class HpcReportsController extends AbstractHpcController {
 				String vault = keyValue.getKey();
 				Long vaultTotalSize = keyValue.getValue();
 				if (!displayVaultSizeString.isEmpty()) {
-					displayVaultSizeString = displayVaultSizeString + ", ";
+					displayVaultSizeString = displayVaultSizeString + separator;
 				}
 				displayVaultSizeString = displayVaultSizeString + vault + ": "
 						+ MiscUtil.getHumanReadableSize(String.valueOf(vaultTotalSize), true);
@@ -439,7 +439,7 @@ public class HpcReportsController extends AbstractHpcController {
 				for (HpcReportEntryDTO entry : entries) {
 					if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))) {
 						if (!assaySummary.isEmpty()) {
-							String displayVaultTotals = entry.getValue() + " - " + totalVaultSize;
+							String displayVaultTotals = entry.getValue() +  " - <br/>" + totalVaultSize;
 							entry.setValue(displayVaultTotals);
 						}
 					}
