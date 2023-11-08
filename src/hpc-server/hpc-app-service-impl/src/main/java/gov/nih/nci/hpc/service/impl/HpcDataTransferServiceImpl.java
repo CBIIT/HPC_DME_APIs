@@ -1330,8 +1330,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// create a progress listener.
 		if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
 				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
-				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-				|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+				|| downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
 			// Create a listener that will complete the download task when it is done.
 			logger.error("ERAN 6");
 			progressListener = new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
