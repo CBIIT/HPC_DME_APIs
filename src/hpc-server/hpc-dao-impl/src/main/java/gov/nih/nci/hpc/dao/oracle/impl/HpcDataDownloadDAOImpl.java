@@ -254,6 +254,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setS3DownloadTaskServerId(rs.getString("S3_DOWNLOAD_TASK_SERVER_ID"));
 		dataObjectDownloadTask.setFirstHopRetried(rs.getBoolean("FIRST_HOP_RETRIED"));
 		dataObjectDownloadTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
+		dataObjectDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		dataObjectDownloadTask.setDoc(rs.getString("DOC"));
 
 		int stagingPercentComplete = rs.getInt("STAGING_PERCENT_COMPLETE");
