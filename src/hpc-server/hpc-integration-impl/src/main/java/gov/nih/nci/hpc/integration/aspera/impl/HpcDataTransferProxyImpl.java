@@ -91,16 +91,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " "
 						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
-				logger.error("ERAN 10: {} {} ", downloadRequest.getArchiveLocationFilePath(), asperaDestination.getDestinationLocation().getFileId());
 				String ascpResponse = exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
 						+ asperaDestination.getDestinationLocation().getFileId() + " "
 						+ asperaDestination.getAccount().getUser() + "@" + asperaDestination.getAccount().getHost()
 						+ ":" + asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
 						archiveLocationDirectory);
-				logger.error("ERAN 11: " + ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 1 "
-						+ asperaDestination.getDestinationLocation().getFileId() + " "
-						+ asperaDestination.getAccount().getUser() + "@" + asperaDestination.getAccount().getHost()
-						+ ":" + asperaDestination.getDestinationLocation().getFileContainerId());
 				
 				logger.info("[Aspera] successfully completed download of {}. ascp response: {}",
 						downloadRequest.getPath(), ascpResponse);
