@@ -98,6 +98,12 @@
 										for="${error}" th:utext="${error}"></label>
 								</div>
 							</div>
+							<div th:if="${message != null}">
+								<div class="alert alert-error">
+									<a class="close" data-dismiss="alert">×</a> <label
+										for="${message}" th:utext="${message}"></label>
+								</div>
+							</div>
 								<!--panel-body start-->
 								<div class="panel-body"  th:if="${hpcDataObjectDownloadStatusDTO != null}">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -108,12 +114,30 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>
-									<div class="form-group" style="word-break: break-all;">
-										<div class="col-md-12 form-group">
-										    <label for="Name">Task ID:</label> <label
+								  <div class="form-group" style="word-break: break-all;">
+								    <div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getRetryTaskId() == null}">
+										<label for="Name">Task ID:</label> <label
 											for="${taskId}"
 											th:text="${taskId}"></label>
-										</div>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getRetryTaskId() != null}">
+										<label for="Name">Re-initiated Task ID:</label> <label
+											for="${taskId}"
+											th:text="${taskId}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getRetryUserId() != null}">
+											<label for="Name">Retry User ID:</label> <label
+											for="${hpcDataObjectDownloadStatusDTO.getRetryUserId()}"
+											th:text="${hpcDataObjectDownloadStatusDTO.getRetryUserId()}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getRetryTaskId() != null}">
+										<label for="Name">Previous Task ID:</label>
+										<a th:href="@{/downloadtask(type=${taskType},taskId=${hpcDataObjectDownloadStatusDTO.getRetryTaskId()})}">
+										  <label
+											for="${hpcDataObjectDownloadStatusDTO.getRetryTaskId()}"
+											th:text="${hpcDataObjectDownloadStatusDTO.getRetryTaskId()}"></label>
+										</a>
+									</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> 
 											<a th:href="@{/datafile(action=view,path=${hpcDataObjectDownloadStatusDTO.getPath()})}">
