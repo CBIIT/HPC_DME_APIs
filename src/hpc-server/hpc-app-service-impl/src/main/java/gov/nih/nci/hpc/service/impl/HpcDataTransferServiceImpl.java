@@ -1280,7 +1280,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			} else {
 				// Check if transfer requests can be acceptable at this time (Globus only)
-
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
 				// Check if transfer requests can be acceptable at this time.
