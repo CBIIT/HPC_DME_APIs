@@ -263,7 +263,6 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	 */
 	private void completeDownloadTask(HpcDownloadResult result, String message, long bytesTransferred) {
 		try {
-			logger.error("ERAN: deleting file - " + downloadTask.getDownloadFilePath());
 			if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
 				// The task was cancelled / removed from the DB. Do some cleanup.
 				FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
