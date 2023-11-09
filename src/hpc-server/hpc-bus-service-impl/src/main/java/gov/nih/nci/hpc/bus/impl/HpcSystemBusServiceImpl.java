@@ -1930,7 +1930,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTaskItem retryItem : retryItems) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(retryItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, false, userId, retryItem.getDestinationLocation(),
+					googleCloudStorageDownloadDestination, true, userId, null,
 					collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
