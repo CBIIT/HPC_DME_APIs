@@ -503,11 +503,13 @@ public interface HpcDataManagementService {
 	 * @param userId The user ID to query for.
 	 * @param page   The requested results page.
 	 * @param doc    doc of group admin or all for system administrators
+	 * @param pageSizeOffset  The amount to offset the configured page size by.
+	 *
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
-			throws HpcException;
+	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId,
+			int page, String doc, int pageSizeOffset) throws HpcException;
 
 	/**
 	 * Get registration results (all completed download requests) count for a user.
