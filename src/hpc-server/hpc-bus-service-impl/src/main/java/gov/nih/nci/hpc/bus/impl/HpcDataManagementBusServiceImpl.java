@@ -1456,7 +1456,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationSummary.setLimit(limit);
 
 		if (totalCount) {
-			int count = registrationSummary.getCompletedTasks().size() - registrationSummary.getActiveTasks().size();
+			int count = registrationSummary.getCompletedTasks().size() + registrationSummary.getActiveTasks().size();
 			registrationSummary.setTotalCount((page == 1 && count < limit) ? count : resultsCount);
 		}
 
