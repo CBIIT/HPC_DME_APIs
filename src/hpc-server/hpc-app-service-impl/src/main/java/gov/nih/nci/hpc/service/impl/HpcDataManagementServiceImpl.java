@@ -1042,18 +1042,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
-			throws HpcException {
+	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc,
+			int activeRequestsOffset) throws HpcException {
 		List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
 		if (doc == null) {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId,
-					pagination.getOffset(page), pagination.getPageSize());
+					pagination.getOffset(page), pagination.getPageSize() - activeRequestsOffset);
 		} else if (doc.equals("ALL")) {
 			registrationResults = dataRegistrationDAO
-					.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page), pagination.getPageSize());
+					.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page),
+							pagination.getPageSize() - activeRequestsOffset);
 		} else {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc,
-					pagination.getOffset(page), pagination.getPageSize());
+					pagination.getOffset(page), pagination.getPageSize() - activeRequestsOffset);
 		}
 		return registrationResults;
 	}
