@@ -1416,19 +1416,48 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// user.
 		final boolean addUserId = doc == null ? false : true;
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
-		dataManagementService.getRegistrationTasks(userId, doc).forEach(
-				task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId)));
-		dataManagementService.getRegistrationResults(userId, page, doc).forEach(result -> registrationSummary
+		List<HpcBulkDataObjectRegistrationTask> activeRequests =
+				dataManagementService.getRegistrationTasks(userId, doc);
+
+
+		int pageSizeOffset = 0;
+		int limit = dataManagementService.getRegistrationResultsPageSize();
+
+		int resultsCount = dataManagementService.getRegistrationResultsCount(userId, doc);
+		List<HpcBulkDataObjectRegistrationTask> activeRequestsInPage = null;
+		if(activeRequests != null && !activeRequests.isEmpty()) {
+			if(activeRequests.size() > limit * page) {
+			//The active requests to be displayed are more than the size of the page,
+			//so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage =
+				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
+			} else if(activeRequests.size() > limit * (page - 1)) {
+				//The active requests to be displayed on this page are less than the size of the page
+				//so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+			}
+			if(activeRequestsInPage != null) {
+				for(HpcBulkDataObjectRegistrationTask task: activeRequestsInPage)
+				    registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId));
+			}
+
+			//Determine how many rows have been taken up by the activeRequests, these will be
+			//subtracted from the page limit later to determine how many rows are available to display
+			//the completed requests.
+			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+				pageSizeOffset = activeRequestsInPage.size();
+			}
+		}
+
+		dataManagementService.getRegistrationResults(userId, page, doc, pageSizeOffset).forEach(result -> registrationSummary
 				.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
 
-		int limit = dataManagementService.getRegistrationResultsPageSize();
 		registrationSummary.setPage(page);
 		registrationSummary.setLimit(limit);
 
 		if (totalCount) {
-			int count = registrationSummary.getCompletedTasks().size();
-			registrationSummary.setTotalCount((page == 1 && count < limit) ? count
-					: dataManagementService.getRegistrationResultsCount(userId, doc));
+			int count = registrationSummary.getCompletedTasks().size() - registrationSummary.getActiveTasks().size();
+			registrationSummary.setTotalCount((page == 1 && count < limit) ? count : resultsCount);
 		}
 
 		return registrationSummary;
