@@ -146,6 +146,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 				}
 			} catch (Exception e) {
 				dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
+				logger.error("Error setting permission for {} on bookmark path {} ", nciUserId, bookmarkRequest.getPath(), e);
 				throw e;
 			}
 		}
@@ -187,9 +188,6 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 			bookmark.setGroup(bookmarkRequest.getGroup());
 		}
 
-		// Save the bookmark.
-		dataBrowseService.saveBookmark(nciUserId, bookmark);
-
 		// Set the permission to the bookmark path
 		if (bookmarkRequest.getPermission() != null) {
 
@@ -207,10 +205,14 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 				} else {
 					dataManagementService.setDataObjectPermission(path, subjectPermission);
 				}
-			} finally {
-				dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
+			} catch(Exception e) {
+				logger.error("Error setting permission for {} on bookmark path {} ", nciUserId, bookmarkRequest.getPath(), e);
+				throw e;
 			}
 		}
+
+		// Save the bookmark.
+		dataBrowseService.saveBookmark(nciUserId, bookmark);
 	}
 
 	@Override
