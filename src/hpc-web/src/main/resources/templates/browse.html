@@ -772,12 +772,14 @@ function refreshBookmarks(userBookmarks) {
 	
 	$("#bookmarksDiv").empty();
     var aBookmarkLink;
-    for (i = 0; i < userBookmarks.length; i++) {
-      var linkHref = '/browse?refresh&path=' + percentEncodePath(userBookmarks[i].path);
-      aBookmarkLink = "<a href='bm-path'>bm-name</a>".replace("bm-path", linkHref)
-                                                     .replace("bm-name", userBookmarks[i].name);
-      $("#bookmarksDiv").append(aBookmarkLink);
-      $("#bookmarksDiv").append("<br/>");
+    if(userBookmarks != null) {
+	    for (i = 0; i < userBookmarks.length; i++) {
+	      var linkHref = '/browse?refresh&path=' + percentEncodePath(userBookmarks[i].path);
+	      aBookmarkLink = "<a href='bm-path'>bm-name</a>".replace("bm-path", linkHref)
+	                                                     .replace("bm-name", userBookmarks[i].name);
+	      $("#bookmarksDiv").append(aBookmarkLink);
+	      $("#bookmarksDiv").append("<br/>");
+	    }
     }
 	
 }
