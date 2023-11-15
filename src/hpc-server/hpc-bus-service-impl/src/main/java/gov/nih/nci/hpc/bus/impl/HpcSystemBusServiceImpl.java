@@ -1939,7 +1939,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTaskItem retryItem : retryItems) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(retryItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, false, userId, retryItem.getDestinationLocation(),
+					googleCloudStorageDownloadDestination, true, userId, null,
 					collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
@@ -2036,7 +2036,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Download this data object.
 		try {
 			HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = dataManagementBusService
-					.downloadDataObject(path, dataObjectDownloadRequest, userId, false, collectionDownloadTaskId);
+					.downloadDataObject(path, dataObjectDownloadRequest, null, userId, null, false, collectionDownloadTaskId);
 
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());

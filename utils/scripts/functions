@@ -3247,6 +3247,122 @@ function dm_add_bookmark () {
 }
 
 
+#Print Usage of dm_update_bookmark function
+function dm_show_update_bookmark_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_update_bookmark [-D REST-response] [-o output-file] <bookmark_name> <description.json>
+
+  Update the path or group of an existing bookmark for a user
+  [-D REST-response]          Optionally specify the filename to capture the REST response.
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  bookmark_name               Display name for the bookmark
+  description-json            Path to the JSON file containing the bookmark path in the archive
+
+For a sample description.json file, refer to templates/add_bookmark_group_admin-template.json.
+
+For detailed information on this command, refer to the following page:
+https://wiki.nci.nih.gov/x/ooheFw
+
+EOF
+  echo "$usage"
+}
+
+
+#Update a bookmark for a user
+#Inputs:  [-o status-file]
+#         [-D REST-response]
+#         <bookmark_name>: Name of the bookmark
+#         <description.json>: The json file containing the parameters
+#      : [status-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
+function dm_update_bookmark () {
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    dm_show_update_bookmark_usage >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    dm_show_update_bookmark_usage >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        dm_show_update_bookmark_usage >&2
+        return 1
+    fi
+
+
+    local BOOKMARK_NAME="$1"
+    local DESCRIPTION_PATH="$2"
+
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_MSG="$3"
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=update_bookmark-response-message.json.tmp
+    fi
+
+    if [ ! -z "$4" ]
+    then
+      RESPONSE_HEADER="$4"
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=update_bookmark-response-header.tmp
+    fi
+
+    rm -f  $RESPONSE_MSG 2>/dev/null
+    rm -f $RESPONSE_HEADER 2>/dev/null
+
+    local CURL_FLAGS="${SERVER}/bookmark/$(urlencode $BOOKMARK_NAME)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+
+
+    curl -X POST -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+
+    #Exit with connection error if response header has no data
+    check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 200 ]
+    then
+      echo "Error updating bookmark \"$BOOKMARK_NAME\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    fi
+
+}
+
 
 #Print Usage of dm_register_user function
 function dm_show_register_user_usage {
@@ -3363,7 +3479,6 @@ function dm_register_user () {
       exit 1
     fi
 }
-
 
 
 #Print Usage of dm_update_user function
