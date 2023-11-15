@@ -22,8 +22,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
@@ -217,43 +217,51 @@ public class HpcS3Connection {
 	@SuppressWarnings("deprecation")
 	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
 			HpcIntegratedSystem s3Provider, String encryptionAlgorithm, String encryptionKey) throws HpcException {
-		// Create the credential provider based on the configured credentials.
-		BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(username, password);
-		AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
-				s3ArchiveCredentials);
-		// Setup the endpoint configuration.
-		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
+		try {
+			// Create the credential provider based on the configured credentials.
+			BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(username, password);
+			AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
+					s3ArchiveCredentials);
+			// Setup the endpoint configuration.
+			EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
 
-		// Instantiate a S3 client.
-		ClientConfiguration config = new ClientConfiguration();
-		config.setSocketTimeout(socketTimeout);
-		AmazonS3 s3Client = null;
-		if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
-			s3Client = AmazonS3EncryptionClientV2Builder.standard().withCryptoConfiguration(new CryptoConfigurationV2()
-					.withCryptoMode(CryptoMode.AuthenticatedEncryption).withRangeGetMode(CryptoRangeGetMode.ALL))
-					.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
-							new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
-					.withCredentials(s3ArchiveCredentialsProvider).withPathStyleAccessEnabled(pathStyleAccessEnabled)
-					.withEndpointConfiguration(endpointConfiguration).withClientConfiguration(config).build();
-		} else {
-			s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
-					.withPathStyleAccessEnabled(pathStyleAccessEnabled).withEndpointConfiguration(endpointConfiguration)
-					.withClientConfiguration(config).build();
+			// Instantiate a S3 client.
+			ClientConfiguration config = new ClientConfiguration();
+			config.setSocketTimeout(socketTimeout);
+			AmazonS3 s3Client = null;
+			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
+				s3Client = AmazonS3EncryptionClientV2Builder.standard()
+						.withCryptoConfiguration(
+								new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
+										.withRangeGetMode(CryptoRangeGetMode.ALL))
+						.withEncryptionMaterialsProvider(new StaticEncryptionMaterialsProvider(new EncryptionMaterials(
+								new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
+						.withCredentials(s3ArchiveCredentialsProvider)
+						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
+						.withEndpointConfiguration(endpointConfiguration).withClientConfiguration(config).build();
+			} else {
+				s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
+						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
+						.withEndpointConfiguration(endpointConfiguration).withClientConfiguration(config).build();
+			}
+
+			// Create and return the S3 transfer manager. Note that Google Storage doesn't
+			// support multipart upload,
+			// so we override the configured threshold w/ the max size of 5GB.
+			HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
+			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
+					.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
+					.withMultipartUploadThreshold(
+							url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
+					.withDisableParallelDownloads(true).withExecutorFactory(() -> executorService)
+					.withShutDownThreadPools(false).build();
+			s3TransferManager.s3Provider = s3Provider;
+			return s3TransferManager;
+
+		} catch (AmazonClientException e) {
+			throw new HpcException("Failed to authenticate S3 provider [" + s3Provider + "] - " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
-
-		// Create and return the S3 transfer manager. Note that Google Storage doesn't
-		// support multipart upload,
-		// so we override the configured threshold w/ the max size of 5GB.
-		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-		s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(s3Client)
-				.withAlwaysCalculateMultipartMd5(true).withMinimumUploadPartSize(minimumUploadPartSize)
-				.withMultipartUploadThreshold(
-						url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
-				.withDisableParallelDownloads(true)
-				.withExecutorFactory(() -> executorService)
-				.withShutDownThreadPools(false).build();
-		s3TransferManager.s3Provider = s3Provider;
-		return s3TransferManager;
 	}
 
 	/**
@@ -299,7 +307,7 @@ public class HpcS3Connection {
 			s3TransferManager.s3Provider = HpcIntegratedSystem.AWS;
 			return s3TransferManager;
 
-		} catch (SdkClientException e) {
+		} catch (AmazonClientException e) {
 			throw new HpcException("Failed to authenticate S3 account in region [" + region + "] - " + e.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
