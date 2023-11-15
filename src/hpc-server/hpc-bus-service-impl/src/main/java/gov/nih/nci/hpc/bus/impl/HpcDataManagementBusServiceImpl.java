@@ -563,6 +563,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		} else {
@@ -1416,41 +1417,43 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// user.
 		final boolean addUserId = doc == null ? false : true;
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
-		List<HpcBulkDataObjectRegistrationTask> activeRequests =
-				dataManagementService.getRegistrationTasks(userId, doc);
-
+		List<HpcBulkDataObjectRegistrationTask> activeRequests = dataManagementService.getRegistrationTasks(userId,
+				doc);
 
 		int pageSizeOffset = 0;
 		int limit = dataManagementService.getRegistrationResultsPageSize();
 
 		int resultsCount = dataManagementService.getRegistrationResultsCount(userId, doc);
 		List<HpcBulkDataObjectRegistrationTask> activeRequestsInPage = null;
-		if(activeRequests != null && !activeRequests.isEmpty()) {
-			if(activeRequests.size() > limit * page) {
-			//The active requests to be displayed are more than the size of the page,
-			//so restrict the activeRequests displayed to the page limit
-				activeRequestsInPage =
-				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
-			} else if(activeRequests.size() > limit * (page - 1)) {
-				//The active requests to be displayed on this page are less than the size of the page
-				//so display the remaining activeRequests
-				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+		if (activeRequests != null && !activeRequests.isEmpty()) {
+			if (activeRequests.size() > limit * page) {
+				// The active requests to be displayed are more than the size of the page,
+				// so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), limit + limit * (page - 1));
+			} else if (activeRequests.size() > limit * (page - 1)) {
+				// The active requests to be displayed on this page are less than the size of
+				// the page
+				// so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), activeRequests.size());
 			}
-			if(activeRequestsInPage != null) {
-				for(HpcBulkDataObjectRegistrationTask task: activeRequestsInPage)
-				    registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId));
+			if (activeRequestsInPage != null) {
+				for (HpcBulkDataObjectRegistrationTask task : activeRequestsInPage)
+					registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId));
 			}
 
-			//Determine how many rows have been taken up by the activeRequests, these will be
-			//subtracted from the page limit later to determine how many rows are available to display
-			//the completed requests.
-			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+			// Determine how many rows have been taken up by the activeRequests, these will
+			// be
+			// subtracted from the page limit later to determine how many rows are available
+			// to display
+			// the completed requests.
+			if (activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
 				pageSizeOffset = activeRequestsInPage.size();
 			}
 		}
 
-		dataManagementService.getRegistrationResults(userId, page, doc, pageSizeOffset).forEach(result -> registrationSummary
-				.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
+		dataManagementService.getRegistrationResults(userId, page, doc, pageSizeOffset)
+				.forEach(result -> registrationSummary.getCompletedTasks()
+						.add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
 
 		registrationSummary.setPage(page);
 		registrationSummary.setLimit(limit);
@@ -1672,7 +1675,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
 		}
-		
+
 		return downloadStatus;
 	}
 
@@ -3872,6 +3875,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else if (collectionDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			destinationLocation = collectionDownloadTask.getGoogleCloudStorageDownloadDestination()
 					.getDestinationLocation();
+		} else if (collectionDownloadTask.getAsperaDownloadDestination() != null) {
+			destinationLocation = collectionDownloadTask.getAsperaDownloadDestination().getDestinationLocation();
 		}
 
 		return destinationLocation;
