@@ -380,7 +380,7 @@ public class HpcReportsController extends AbstractHpcController {
 				if (!displayVaultSizeString.isEmpty()) {
 					displayVaultSizeString = displayVaultSizeString + separator;
 				}
-				displayVaultSizeString = displayVaultSizeString + vault + ": "
+				displayVaultSizeString = displayVaultSizeString + vault + ", "
 						+ MiscUtil.getHumanReadableSize(String.valueOf(vaultTotalSize), true);
 			}
 			entry.setValue(displayVaultSizeString + "::" + archiveSummaryString);
@@ -390,7 +390,7 @@ public class HpcReportsController extends AbstractHpcController {
 
   // Translate Single Reports
 	private List<HpcReportDTO> translate(List<HpcReportDTO> reports, HpcReportType reportType) {
-		String assaySummary = "";
+		String archiveSummary = "";
 		String totalVaultSize = "";
 		List<HpcReportDTO> tReports = new ArrayList<>();
 		for (HpcReportDTO dto : reports) {
@@ -415,11 +415,11 @@ public class HpcReportsController extends AbstractHpcController {
 						if ((reportType.equals(HpcReportType.USAGE_SUMMARY)
 								|| reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))) {
 							entry = setArchiveSummaryWithTotalSizes(entry, " <br/>");
-							String assaySummation = entry.getValue();
-							String[] assaySummationParts = assaySummation.split("::");
-							totalVaultSize = assaySummationParts[0];
-							assaySummary = assaySummationParts[1];
-							entry.setValue(assaySummary);
+							String vaultSizeSummation = entry.getValue();
+							String[] vaultSummationParts = vaultSizeSummation.split("::");
+							totalVaultSize = vaultSummationParts[0];
+							archiveSummary = vaultSummationParts[1];
+							entry.setValue(archiveSummary);
 						} else {
 							entry = setArchiveSummary(entry, " <br/>");
 						}
@@ -438,8 +438,10 @@ public class HpcReportsController extends AbstractHpcController {
 					|| reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)) {
 				for (HpcReportEntryDTO entry : entries) {
 					if (entry.getAttribute().equals(env.getProperty("TOTAL_DATA_SIZE"))) {
-						if (!assaySummary.isEmpty()) {
-							String displayVaultTotals = entry.getValue() +  " - <br/>" + totalVaultSize;
+						if (!archiveSummary.isEmpty()) {
+							entry.setAttribute("Total Archived Data Size");
+							String[] displaySize = entry.getValue().split(" ");
+							String displayVaultTotals = displaySize[0] + " bytes " + displaySize[1] +  " " + displaySize[2] + ": <br/>" + totalVaultSize;
 							entry.setValue(displayVaultTotals);
 						}
 					}
