@@ -81,6 +81,19 @@
 			<plugin>
 				<groupId>org.ops4j.pax.exam</groupId>
 				<artifactId>maven-paxexam-plugin</artifactId>
+				<dependencies>
+		          <dependency>
+		            <groupId>commons-logging</groupId>
+		            <artifactId>commons-logging</artifactId>
+		            <version>1.2</version>
+		            <exclusions>
+		              <exclusion>
+		                <groupId>log4j</groupId>
+		                <artifactId>log4j</artifactId>
+		              </exclusion>
+		            </exclusions>
+		          </dependency>
+		        </dependencies>
 				<executions>
 					<execution>
 						<id>generate-depends-file</id>

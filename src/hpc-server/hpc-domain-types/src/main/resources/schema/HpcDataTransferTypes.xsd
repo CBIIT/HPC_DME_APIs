@@ -331,6 +331,7 @@
 			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="s3ArchiveConfigurationId"
 				type="xsd:string" />
+			<xsd:element name="retryTaskId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="collectionDownloadTaskId" type="xsd:string" />
@@ -392,6 +393,7 @@
 			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="s3DownloadTaskServerId" type="xsd:string" />
 			<xsd:element name="firstHopRetried" type="xsd:boolean" />
+			<xsd:element name="retryTaskId" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="doc" type="xsd:string" />
 		</xsd:sequence>
@@ -521,6 +523,7 @@
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result"
 				type="hpc-domain-datatransfer:HpcDownloadResult" />
+			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"

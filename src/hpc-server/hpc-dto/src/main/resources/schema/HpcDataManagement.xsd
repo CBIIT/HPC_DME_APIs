@@ -475,6 +475,7 @@
 				<xsd:element name="restoreInProgress" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="stagingInProgress" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="stagingPercentComplete" type="xsd:int" minOccurs="0" />
+				<xsd:element name="retryTaskId" type="xsd:string" />
 				<xsd:element name="retryUserId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
