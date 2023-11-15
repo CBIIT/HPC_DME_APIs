@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -69,11 +70,14 @@ public class HpcUtil {
 	 *
 	 * @param command      The command to execute.
 	 * @param sudoPassword (Optional) if provided, the command will be executed w/
-	 *                     'sudo' using the provided password
+	 *                     'sudo' using the provided password.
+	 * @param envp         (Optional) array of environment variables
+	 * @param working      Directory The working directory to execute the command
 	 * @return The command's output
 	 * @throws HpcException If exec failed.
 	 */
-	public static String exec(String command, String sudoPassword) throws HpcException {
+	public static String exec(String command, String sudoPassword, String[] envp, File workingDirectory)
+			throws HpcException {
 		if (StringUtils.isEmpty(command)) {
 			throw new HpcException("Null / empty command", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -83,12 +87,12 @@ public class HpcUtil {
 		if (!StringUtils.isEmpty(sudoPassword)) {
 			execCommand = new String[] { "/bin/sh", "-c", "echo '" + sudoPassword + "'|sudo -S " + command };
 		} else {
-			execCommand = new String[] { command };
+			execCommand = new String[] { "/bin/sh", "-c", command };
 		}
 
 		Process process = null;
 		try {
-			process = Runtime.getRuntime().exec(execCommand);
+			process = Runtime.getRuntime().exec(execCommand, envp, workingDirectory);
 
 			if (process.waitFor() != 0) {
 				String message = null;

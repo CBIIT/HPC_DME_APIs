@@ -178,10 +178,13 @@ app
         var node = row.entity;
 
 		if(node.id != "empty") {
-        contextMenuData.push(['View Details', function() {
-        	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
-            percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
+        	contextMenuData.push(['View Details', function() {
+        		window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
+            	percentEncodePath(node.fullPath) + "&source=browse&init";
+        	}]);
+        	contextMenuData.push(['Copy URL', function() { 
+	        	copyPath(node);
+	        }]);
         }
         if(node.collection) {
 	        contextMenuData.push(['Add Collection', function() { 
@@ -453,6 +456,8 @@ cursor: pointer;
  											<li class="divider"></li>
 											<li><a href="#addBulk">Add Bulk</a></li>
 											<li class="divider"></li>
+											<li><a href="#copyPath">Copy URL</a></li>
+											<li class="divider"></li>
 											<li><a href="#refreshNode">Refresh Node</a></li>
 											<li class="divider"></li>
 											<li><a href="#loadMore">Load More Entries</a></li>
@@ -555,7 +560,7 @@ $(function() {
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
             } else {
             	if(node.id == "empty")
-            		menuAPI.disable(node.name, ['viewDetails','addCollection','addDatafile','addBulk','refreshNode','loadMore']);
+            		menuAPI.disable(node.name, ['viewDetails','addCollection','addDatafile','addBulk','copyPath','refreshNode','loadMore']);
             	else
             		menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode','loadMore']);
             }
@@ -602,6 +607,18 @@ function loadMore(node) {
 	browseNode(node);
 }
 
+function copyPath(node) {
+	url = window.document.location.protocol + "//" + window.document.location.host + 
+	        (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
+            percentEncodePath(node.fullPath) + "&source=browse&init";
+	const listener = function(ev) {
+	    ev.preventDefault();
+	    ev.clipboardData.setData('text/plain', url);
+	  };
+	  document.addEventListener('copy', listener);
+	  document.execCommand('copy');
+	  document.removeEventListener('copy', listener);
+}
 //bind 'tree.click' event
 //Invoked when the node (label) is manually selected
 $('#tree1').bind(
@@ -755,12 +772,14 @@ function refreshBookmarks(userBookmarks) {
 	
 	$("#bookmarksDiv").empty();
     var aBookmarkLink;
-    for (i = 0; i < userBookmarks.length; i++) {
-      var linkHref = '/browse?refresh&path=' + percentEncodePath(userBookmarks[i].path);
-      aBookmarkLink = "<a href='bm-path'>bm-name</a>".replace("bm-path", linkHref)
-                                                     .replace("bm-name", userBookmarks[i].name);
-      $("#bookmarksDiv").append(aBookmarkLink);
-      $("#bookmarksDiv").append("<br/>");
+    if(userBookmarks != null) {
+	    for (i = 0; i < userBookmarks.length; i++) {
+	      var linkHref = '/browse?refresh&path=' + percentEncodePath(userBookmarks[i].path);
+	      aBookmarkLink = "<a href='bm-path'>bm-name</a>".replace("bm-path", linkHref)
+	                                                     .replace("bm-name", userBookmarks[i].name);
+	      $("#bookmarksDiv").append(aBookmarkLink);
+	      $("#bookmarksDiv").append("<br/>");
+	    }
     }
 	
 }
@@ -779,6 +798,9 @@ var menuAPI = $('#tree1').jqTreeContextMenu($('#myMenu'), {
     },
     "addBulk": function (node) {
     	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+    },
+    "copyPath": function (node) {
+    	copyPath(node);
     },
     "refreshNode": function (node) {
     	refreshNode(node);
