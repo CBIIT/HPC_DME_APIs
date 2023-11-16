@@ -2808,6 +2808,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
 						.getGoogleDriveDownloadDestination().getDestinationLocation());
 				downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+			} else if (taskStatus.getCollectionDownloadTask().getAsperaDownloadDestination() != null) {
+				downloadStatus.setDestinationLocation(
+						taskStatus.getCollectionDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
+				downloadStatus.setDestinationType(HpcDataTransferType.ASPERA);
 			}
 
 			// Get the status of the individual data object download tasks if the collection
@@ -2848,7 +2852,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						downloadItem.setRestoreInProgress(dataObjectDownloadTask.getRestoreRequested());
 					}
 					downloadItem.setStagingInProgress(
-							HpcDataTransferType.GLOBUS.equals(dataObjectDownloadTask.getDestinationType())
+							(HpcDataTransferType.GLOBUS.equals(dataObjectDownloadTask.getDestinationType())
+									|| HpcDataTransferType.ASPERA.equals(dataObjectDownloadTask.getDestinationType()))
 									&& HpcDataTransferType.S_3.equals(dataObjectDownloadTask.getDataTransferType())
 											? true
 											: null);
