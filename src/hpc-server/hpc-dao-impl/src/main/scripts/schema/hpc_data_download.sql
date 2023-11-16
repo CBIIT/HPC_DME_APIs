@@ -9,6 +9,7 @@
 --
 --
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+-- @author <a href="mailto:sunita.menon@nih.gov">Sunita Menon</a>
 --
 
 DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_DOWNLOAD_TASK";
@@ -38,7 +39,8 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "CREATED" timestamp,
   "PROCESSED" timestamp,
   "PRIORITY" integer DEFAULT 100,
-  "IN_PROCESS" boolean NOT NULL DEFAULT false
+  "IN_PROCESS" boolean NOT NULL DEFAULT false,
+  "RETRY_TASK_ID" varchar2(50)
 )
 WITH (
   OIDS=FALSE
@@ -94,6 +96,9 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PRIORITY" IS
                   'The download task priority';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."IN_PROCESS" IS 
                   'An indicator whether this task is in-process, i.e. a thread is working on submitting it';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."RETRY_TASK_ID" IS 
+                  'The task ID to be re-tried';
+
 
 DROP TABLE IF EXISTS public."HPC_COLLECTION_DOWNLOAD_TASK";
 CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
