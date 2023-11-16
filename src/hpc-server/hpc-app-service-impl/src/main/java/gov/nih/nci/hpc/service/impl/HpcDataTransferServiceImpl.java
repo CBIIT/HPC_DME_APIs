@@ -576,7 +576,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
 		downloadRequest.setRetryTaskId(retryTaskId);
 		downloadRequest.setUserId(userId);
-		downloadRequest.setRetryUserId(userId);
+		downloadRequest.setRetryUserId(retryUserId);
 		downloadRequest.setCompletionEvent(completionEvent);
 		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
