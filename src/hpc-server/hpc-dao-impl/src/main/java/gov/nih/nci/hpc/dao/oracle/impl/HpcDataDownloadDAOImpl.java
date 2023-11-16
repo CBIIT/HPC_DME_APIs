@@ -79,7 +79,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "PROCESSED, IN_PROCESS, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_TASK_ID, RETRY_USER_ID, DOC) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
-
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK "
 			+ "set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, S3_ARCHIVE_CONFIGURATION_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, "
 			+ "DATA_TRANSFER_TYPE = ?, DATA_TRANSFER_STATUS = ?, DOWNLOAD_FILE_PATH = ?, ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
@@ -456,34 +455,61 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			googleCloudAccessToken = encryptor.decrypt(cloudToken);
 		}
 
+		HpcAsperaAccount asperaAccount = null;
+		byte[] asperaAccountUser = rs.getBytes("ASPERA_ACCOUNT_USER");
+		byte[] asperaAccountPassword = rs.getBytes("ASPERA_ACCOUNT_PASSWORD");
+		String asperaAccountHost = rs.getString("ASPERA_ACCOUNT_HOST");
+		if (asperaAccountUser != null && asperaAccountPassword != null && asperaAccountHost != null) {
+			asperaAccount = new HpcAsperaAccount();
+			asperaAccount.setUser(encryptor.decrypt(asperaAccountUser));
+			asperaAccount.setPassword(encryptor.decrypt(asperaAccountPassword));
+			asperaAccount.setHost(asperaAccountHost);
+		}
+
 		if (s3Account != null) {
 			HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
 			s3DownloadDestination.setDestinationLocation(destinationLocation);
 			s3DownloadDestination.setAccount(s3Account);
 			collectionDownloadTask.setS3DownloadDestination(s3DownloadDestination);
-			if (destinationType == null)
+			if (destinationType == null) {
 				collectionDownloadTask.setDestinationType(HpcDataTransferType.S_3);
+			}
+
 		} else if (googleDriveAccessToken != null) {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
 			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
 			collectionDownloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
-			if (destinationType == null)
+			if (destinationType == null) {
 				collectionDownloadTask.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+			}
+
 		} else if (googleCloudAccessToken != null) {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination = new HpcGoogleDownloadDestination();
 			googleCloudStorageDownloadDestination.setDestinationLocation(destinationLocation);
 			googleCloudStorageDownloadDestination.setAccessToken(googleCloudAccessToken);
 			collectionDownloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
-			if (destinationType == null)
+			if (destinationType == null) {
 				collectionDownloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+			}
+
+		} else if (collectionDownloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+			HpcAsperaDownloadDestination asperaDownloadDestination = new HpcAsperaDownloadDestination();
+			asperaDownloadDestination.setDestinationLocation(destinationLocation);
+			asperaDownloadDestination.setAccount(asperaAccount);
+			collectionDownloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
+			if (destinationType == null) {
+				collectionDownloadTask.setDestinationType(HpcDataTransferType.ASPERA);
+			}
+
 		} else {
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 			globusDownloadDestination.setDestinationLocation(destinationLocation);
 			globusDownloadDestination.setDestinationOverwrite(rs.getBoolean("DESTINATION_OVERWRITE"));
 			collectionDownloadTask.setGlobusDownloadDestination(globusDownloadDestination);
-			if (destinationType == null)
+			if (destinationType == null) {
 				collectionDownloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
+			}
 		}
 
 		collectionDownloadTask.setAppendPathToDownloadDestination(rs.getBoolean("APPEND_PATH_TO_DOWNLOAD_DESTINATION"));
@@ -620,7 +646,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getDoc());
+					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
+					dataObjectDownloadTask.getDoc());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
@@ -695,7 +722,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getId()) > 0;
+					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
+					dataObjectDownloadTask.getId()) > 0;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
@@ -983,11 +1011,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 						.encrypt(collectionDownloadTask.getGoogleCloudStorageDownloadDestination().getAccessToken());
 				destinationType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE.name();
 			} else if (collectionDownloadTask.getAsperaDownloadDestination() != null) {
-					destinationLocation = collectionDownloadTask.getAsperaDownloadDestination().getDestinationLocation();
-					HpcAsperaAccount asperaAccount = collectionDownloadTask.getAsperaDownloadDestination().getAccount();
-					asperaAccountUser = encryptor.encrypt(asperaAccount.getUser());
-					asperaAccountPassword = encryptor.encrypt(asperaAccount.getPassword());
-					asperaAccountHost = asperaAccount.getHost();
+				destinationLocation = collectionDownloadTask.getAsperaDownloadDestination().getDestinationLocation();
+				HpcAsperaAccount asperaAccount = collectionDownloadTask.getAsperaDownloadDestination().getAccount();
+				asperaAccountUser = encryptor.encrypt(asperaAccount.getUser());
+				asperaAccountPassword = encryptor.encrypt(asperaAccount.getPassword());
+				asperaAccountHost = asperaAccount.getHost();
+				destinationType = HpcDataTransferType.ASPERA.name();
 			} else {
 				throw new HpcException("No download destination in a collection download task",
 						HpcErrorType.UNEXPECTED_ERROR);
@@ -998,8 +1027,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
 					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
-					googleCloudAccessToken, asperaAccountUser, asperaAccountPassword,
-					asperaAccountHost, collectionDownloadTask.getAppendPathToDownloadDestination(),
+					googleCloudAccessToken, asperaAccountUser, asperaAccountPassword, asperaAccountHost,
+					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					collectionDownloadTask.getCreated(), collectionDownloadTask.getRetryTaskId(),
 					collectionDownloadTask.getRetryUserId(), collectionDownloadTask.getDataTransferRequestId(),
@@ -1008,8 +1037,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
 					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
-					googleCloudAccessToken, asperaAccountUser, asperaAccountPassword,
-					asperaAccountHost, collectionDownloadTask.getAppendPathToDownloadDestination(),
+					googleCloudAccessToken, asperaAccountUser, asperaAccountPassword, asperaAccountHost,
+					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					collectionDownloadTask.getCreated(), collectionDownloadTask.getRetryTaskId(),
 					collectionDownloadTask.getRetryUserId(), collectionDownloadTask.getDataTransferRequestId(),
