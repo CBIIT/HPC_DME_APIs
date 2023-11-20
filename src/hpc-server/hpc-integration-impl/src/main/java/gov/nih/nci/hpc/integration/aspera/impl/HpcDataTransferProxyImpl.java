@@ -87,7 +87,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
+				exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp,
+						archiveLocationDirectory);
 				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " "
 						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
@@ -96,9 +97,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						+ asperaDestination.getAccount().getUser() + "@" + asperaDestination.getAccount().getHost()
 						+ ":" + asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
 						archiveLocationDirectory);
-				
-				logger.info("[Aspera] successfully completed download of {}. ascp response: {}",
-						downloadRequest.getPath(), ascpResponse);
+
+				logger.info("[Aspera] successfully completed download of {} to {}:{}/{}. ascp response: {}",
+						downloadRequest.getPath(), asperaDestination.getAccount().getHost(),
+						asperaDestination.getDestinationLocation().getFileContainerId(),
+						asperaDestination.getDestinationLocation().getFileId(), ascpResponse);
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
@@ -109,7 +112,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			} finally {
 				try {
-					exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
+					exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp,
+							archiveLocationDirectory);
 
 				} catch (HpcException e) {
 					logger.error("Failed to delete sym link for Aspera download", e);
