@@ -168,8 +168,8 @@ public interface HpcDataTransferService {
 	 *                                              data-object is stored in. This
 	 *                                              is only applicable for S3
 	 *                                              archives, not POSIX.
-	 * @param retryTaskId                           The task ID being retried if this
-	 *                                              is a retry request.
+	 * @param retryTaskId                           The task ID being retried if
+	 *                                              this is a retry request.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param retryUserId                           The user ID retrying the request
@@ -195,9 +195,8 @@ public interface HpcDataTransferService {
 			HpcAsperaDownloadDestination asperaDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
-			String retryUserId, boolean completionEvent,
-			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus downloadDataObject,
-			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
+			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
+			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
 
 	/**
 	 * Generate a (pre-signed) download URL for a data object file.
@@ -643,6 +642,8 @@ public interface HpcDataTransferService {
 	 *                                              download destination.
 	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
 	 *                                              Storage download destination.
+	 * @param asperaDownloadDestination             The user requested Aspera
+	 *                                              download destination.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param configurationId                       A configuration ID used to
@@ -661,7 +662,8 @@ public interface HpcDataTransferService {
 	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
@@ -840,14 +842,16 @@ public interface HpcDataTransferService {
 	/**
 	 * Get download results (all completed download requests) for a user.
 	 *
-	 * @param userId          The user ID to query for.
-	 * @param page            The requested results page.
-	 * @param doc             The doc of group admin or all for system administrators.
-	 * @param pageSizeOffset  The amount to offset the configured page size by.
+	 * @param userId         The user ID to query for.
+	 * @param page           The requested results page.
+	 * @param doc            The doc of group admin or all for system
+	 *                       administrators.
+	 * @param pageSizeOffset The amount to offset the configured page size by.
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset)
+			throws HpcException;
 
 	/**
 	 * Get download results (all completed download requests) count for a user.
