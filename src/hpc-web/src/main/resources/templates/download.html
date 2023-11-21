@@ -145,6 +145,11 @@
 											name="searchType" id="searchTypeGoogleCloud" value="googleCloud"
 											onChange="display('googleCloud')"/>Google Cloud</label>
 										</div>
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeAspera" value="aspera"
+											onChange="display('aspera')"/>Db Gap</label>
+										</div>
 								</div>
 		                        
 		                        <div id="globus-help-links" style="display: none;">
@@ -260,6 +265,44 @@
 											th:value="${googleCloudPath}"
 											name="googleCloudPath" id="googleCloudPath"
 											placeholder="Enter Google Cloud (Destination) Path" size="40" />
+									</div>
+								</div>
+
+								<!--- DbGap inputs -->
+								<div class="form-group" id="asperaDiv" style="display: none">
+									<div class="col-sm-12 column">
+										<label for="bucketName">Aspera Bucket:</label>
+										<input
+											type="text" class="form-control" name="asperaBucketName" th:value="${asperaBucketName}"
+											id="asperaBucketName" placeholder="Enter Aspera Bucket Name" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="s3Path">Aspera (Destination) Path:</label> <input
+											type="text" class="form-control"
+											th:value="${asperaPath}"
+											name="asperaPath" id="asperaPath"
+											placeholder="Enter Aspera (Destination) Path" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="accessKey">Aspera Account User:</label> <input
+											type="text" class="form-control"
+											th:value="${asperaUser}"
+											name="asperaUser" id="asperaUser"
+											placeholder="Enter User" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="secretKey">Aspera Account Password:</label> <input
+											type="password" autocomplete="secret-access-key" class="form-control"
+											th:value="${asperaPassword}"
+											name="asperaPassword" id="asperaPassword"
+											placeholder="Enter Aspera Password" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="region">Aspera Host:</label> <input
+											type="text" class="form-control"
+											th:value="${asperaHost}"
+											name="asperaHost" id="asperaHost"
+											placeholder="Enter Aspera Host" size="40" />
 									</div>
 								</div>
 
@@ -406,6 +449,26 @@
 					alert("Please enter asynchronous download values");
 					return false;
 				}
+			} else if (radioValue == 'aspera') {
+				var asperaBucketName = document.getElementById("asperaBucketName").value;
+				var asperaPath = document
+						.getElementById("asperaPath").value;
+				var asperaUser = document.getElementById("asperaUser").value;
+				var asperaPassword = document.getElementById("asperaPassword").value;
+				var asperaHost = document.getElementById("asperaHost").value;
+				if (asperaPath == null
+						|| asperaPath.trim().length == 0
+						|| asperaBucketName == null
+						|| asperaBucketName.trim().length == 0
+						|| asperaUser == null
+						|| asperaUser.trim().length == 0
+						|| asperaPassword == null
+						|| asperaPassword.trim().length == 0
+						|| asperaHost == null
+						|| asperaHost.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
 			} else {
 				var downloadFileName = document
 						.getElementById("downloadFileName").value;
@@ -537,7 +600,7 @@
 								e.preventDefault();
 								
 								var radioValue = document.querySelector('input[name="searchType"]:checked').value
-								if (radioValue == 'async' || radioValue == 's3' || radioValue == 'drive' || radioValue == 'googleCloud') {
+								if (radioValue == 'async' || radioValue == 's3' || radioValue == 'drive' || radioValue == 'googleCloud' || radioValue == 'aspera') {
 									$("#wait")
 											.html(
 													'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
@@ -593,12 +656,14 @@
 			var s3Div = document.getElementById("s3Div");
 			var driveDiv = document.getElementById("driveDiv");
 			var googleCloudDiv = document.getElementById("googleCloudDiv");
+			var asperaDiv = document.getElementById("asperaDiv");
 			if (value == "async") {
 				asyncDiv.style.display = "block";
 				globusHelpLinksDiv.style.display = "block";
 				if(syncDiv)
 					syncDiv.style.display = "none";
 				s3Div.style.display = "none";
+				asperaDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv)
@@ -617,6 +682,7 @@
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "none";
+				asperaDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv)
@@ -630,6 +696,7 @@
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "block";
+				asperaDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv)
@@ -643,6 +710,7 @@
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "none";
+				asperaDiv.style.display = "none";
 				if(googleCloudDiv)
 					googleCloudDiv.style.display = "none";
 				if(driveDiv) {
@@ -664,6 +732,7 @@
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "none";
+				asperaDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv) {
@@ -679,6 +748,20 @@
 				} else {
 					$("#submit").prop('disabled', true);
 				}
+			} else if (value == 'aspera'){
+				if(syncDiv)
+					syncDiv.style.display = "none";
+				asyncDiv.style.display = "none";
+				globusHelpLinksDiv.style.display = "none";
+				s3Div.style.display = "none";
+				asperaDiv.style.display = "block";
+				if(driveDiv)
+					driveDiv.style.display = "none";
+				if(googleCloudDiv)
+					googleCloudDiv.style.display = "none";
+				if(downloadType == "datafile")
+					$("#s3Path").val(downloadFileName);
+				$("#submit").prop('disabled', false);
 			}
 		}
 	//]]>	
