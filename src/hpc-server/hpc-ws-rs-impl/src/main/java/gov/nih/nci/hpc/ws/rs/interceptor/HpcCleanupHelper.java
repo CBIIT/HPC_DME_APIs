@@ -34,7 +34,7 @@ public class HpcCleanupHelper {
   // ---------------------------------------------------------------------//
 
   // The System Business Service instance.
-  //@Autowired
+  @Autowired
   private HpcSystemBusService systemBusService = null;
 
   // The logger instance.
@@ -62,7 +62,7 @@ public class HpcCleanupHelper {
    */
   public void cleanup(Message message, boolean fault) {
     // Close the connection to Data Management.
-    //systemBusService.closeConnection();
+    systemBusService.closeConnection();
 
     // Delete file staged for sync download request.
     Object fileObj = message.getContextualProperty(
