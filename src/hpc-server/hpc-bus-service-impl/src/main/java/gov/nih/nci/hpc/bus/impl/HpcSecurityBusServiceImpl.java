@@ -91,15 +91,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 	private HpcDataManagementSecurityService dataManagementSecurityService = null;
 
 	// The data management (iRODS) service.
-	//@Autowired
+	@Autowired
 	private HpcDataManagementService dataManagementService = null;
 
 	// The security service instance.
-	//@Autowired
+	@Autowired
 	private HpcNotificationService notificationService = null;
 
 	// The browse service instance
-	//@Autowired
+	@Autowired
 	private HpcDataBrowseService browseService = null;
 
 	// LDAP authentication on/off switch.
