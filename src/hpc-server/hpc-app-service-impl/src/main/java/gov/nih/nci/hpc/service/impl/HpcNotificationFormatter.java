@@ -19,7 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
@@ -303,7 +304,8 @@ public class HpcNotificationFormatter {
 	private void initNotificationFormats(String notificationFormatPath) throws HpcException {
 		// Open and Parse the notification formats JSON file.
 		JSONArray jsonNotificationFormats = null;
-		try (FileReader reader = new FileReader(notificationFormatPath)) {
+		Resource resource = new ClassPathResource(notificationFormatPath);
+		try (FileReader reader = new FileReader(resource.getFile())) {
 			jsonNotificationFormats = (JSONArray) ((JSONObject) new JSONParser().parse(reader))
 					.get("notificationFormats");
 
