@@ -97,15 +97,15 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	private HpcUserDAO userDAO = null;
 
 	// The User DAO instance.
-	//@Autowired
+	@Autowired
 	private HpcGroupDAO groupDAO = null;
 
 	// The System Account DAO instance.
-	//@Autowired
+	@Autowired
 	private HpcSystemAccountDAO systemAccountDAO = null;
 
 	// The Query Config DAO instance.
-	//@Autowired
+	@Autowired
 	private HpcQueryConfigDAO queryConfigDAO = null;
 
 	// The Query Config DAO instance.
@@ -113,7 +113,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	private HpcApiCallsAuditDAO apiCallsAuditDAO = null;
 	
 	// The Investigator DAO instance.
-	//@Autowired
+	@Autowired
 	private HpcInvestigatorDAO investigatorDAO = null;
 
 	// The LDAP authenticator instance.
@@ -121,26 +121,26 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	private HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
 
 	// The SPS authorization instance.
-	//@Autowired
+	@Autowired
 	private HpcSpsAuthorizationProxy spsAuthorizationProxy = null;
 
-	//@Autowired
+	@Autowired
 	private HpcDataManagementProxy dataManagementProxy = null;
 
 	// System Accounts locator.
-	//@Autowired
+	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 
 	// The Data Management Authenticator.
-	//@Autowired
+	@Autowired
 	private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 
 	// The Data Management Configuration Locator.
-	//@Autowired
+	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
 	// Query configuration locator.
-	//@Autowired
+	@Autowired
 	private HpcQueryConfigurationLocator queryConfigurationLocator = null;
 
 	// The authentication token signature key.
