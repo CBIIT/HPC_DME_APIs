@@ -1844,6 +1844,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+		} else if (downloadTask.getAsperaDownloadDestination() != null) {
+			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
+			taskResult.setDestinationType(HpcDataTransferType.ASPERA);
 		}
 		taskResult.setResult(result);
 		taskResult.setType(downloadTask.getType());
