@@ -1,8 +1,10 @@
 package gov.nih.nci.hpc.integration.aspera.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -81,22 +83,32 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Upload the file to Aspera.
 		HpcAsperaDownloadDestination asperaDestination = downloadRequest.getAsperaDestination();
-		File archiveLocationDirectory = new File(downloadRequest.getArchiveLocationFilePath().substring(0,
-				downloadRequest.getArchiveLocationFilePath().lastIndexOf('/')));
-		String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() };
 
+		String archiveLocationDirectoryPath = downloadRequest.getArchiveLocationFilePath().substring(0,
+				downloadRequest.getArchiveLocationFilePath().lastIndexOf('/'));
+		File archiveLocationDirectory = new File(archiveLocationDirectoryPath);
+
+		String transferDirectoryName = "aspera-" + UUID.randomUUID().toString();
+		String transferDirectoryPath = archiveLocationDirectoryPath + "/" + transferDirectoryName;
+		File transferDirectory = new File(transferDirectoryPath);
+		String transferFileName = toNormalizedPath(asperaDestination.getDestinationLocation().getFileId()
+				.substring(asperaDestination.getDestinationLocation().getFileId().lastIndexOf('/') + 1));
+		String transferFilePath = transferDirectoryPath + "/" + transferFileName;
+		logger.info("[Aspera] - staged transfer file: {}", transferFilePath);
+
+		String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() };
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp,
+				exec("mkdir " + transferDirectoryName, null, envp, archiveLocationDirectory);
+				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " " + transferFilePath, null, envp,
 						archiveLocationDirectory);
-				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " "
-						+ asperaDestination.getDestinationLocation().getFileId(), null, envp, archiveLocationDirectory);
 
-				String ascpResponse = exec(ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 0 "
-						+ asperaDestination.getDestinationLocation().getFileId() + " "
-						+ asperaDestination.getAccount().getUser() + "@" + asperaDestination.getAccount().getHost()
-						+ ":" + asperaDestination.getDestinationLocation().getFileContainerId(), null, envp,
-						archiveLocationDirectory);
+				String ascpResponse = exec(
+						ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 0 " + transferFileName + " "
+								+ asperaDestination.getAccount().getUser() + "@"
+								+ asperaDestination.getAccount().getHost() + ":"
+								+ asperaDestination.getDestinationLocation().getFileContainerId(),
+						null, envp, transferDirectory);
 
 				logger.info("[Aspera] successfully completed download of {} to {}:{}/{}. ascp response: {}",
 						downloadRequest.getPath(), asperaDestination.getAccount().getHost(),
@@ -112,11 +124,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			} finally {
 				try {
-					exec("rm -f " + asperaDestination.getDestinationLocation().getFileId(), null, envp,
-							archiveLocationDirectory);
+					exec("rm -rf " + transferDirectoryPath, null, envp, archiveLocationDirectory);
+					logger.info("[Aspera] - Deleted staged transfer directory: {}", transferDirectoryPath);
 
 				} catch (HpcException e) {
-					logger.error("Failed to delete sym link for Aspera download", e);
+					logger.error("Failed to delete staged transfer directory: {}", transferDirectoryPath, e);
 				}
 			}
 
