@@ -12,6 +12,7 @@ public class BulkDownloadDataObjectPojo {
     protected DestinationLocationPojo s3DownloadDestination;
     protected DestinationLocationPojo googleDriveDownloadDestination;
     protected DestinationLocationPojo googleCloudStorageDownloadDestination;
+    protected DestinationLocationPojo asperaDownloadDestination;
 	protected boolean appendPathToDownloadDestination;
 	
   	public List<String> getDataObjectPaths() {
@@ -49,6 +50,12 @@ public class BulkDownloadDataObjectPojo {
 	}
 	public void setGoogleCloudStorageDownloadDestination(DestinationLocationPojo googleCloudStorageDownloadDestination) {
 		this.googleCloudStorageDownloadDestination = googleCloudStorageDownloadDestination;
+	}
+	public DestinationLocationPojo getAsperaDownloadDestination() {
+		return asperaDownloadDestination;
+	}
+	public void setAsperaDownloadDestination(DestinationLocationPojo asperaDownloadDestination) {
+		this.asperaDownloadDestination = asperaDownloadDestination;
 	}
 	public boolean getAppendPathToDownloadDestination() {
 		return appendPathToDownloadDestination;
