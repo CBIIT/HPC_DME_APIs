@@ -1493,7 +1493,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcCollectionDownloadTask downloadCollection(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId)
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId)
 			throws HpcException {
 
 		// Validate the download destination.
@@ -1511,6 +1512,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
 		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
 		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+		downloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);

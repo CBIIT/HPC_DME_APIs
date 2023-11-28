@@ -583,6 +583,8 @@ public interface HpcDataTransferService {
 	 *                                              download destination.
 	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
 	 *                                              Storage download destination.
+	 * @param asperaDownloadDestination             The user requested Aspera
+	 *                                              download destination.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param configurationId                       The configuration ID (needed to
@@ -594,7 +596,9 @@ public interface HpcDataTransferService {
 	public HpcCollectionDownloadTask downloadCollection(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId)
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination,
+			String userId, String configurationId)
 			throws HpcException;
 
 	/**
