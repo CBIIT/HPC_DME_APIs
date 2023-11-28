@@ -91,8 +91,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String transferDirectoryName = "aspera-" + UUID.randomUUID().toString();
 		String transferDirectoryPath = archiveLocationDirectoryPath + "/" + transferDirectoryName;
 		File transferDirectory = new File(transferDirectoryPath);
-		String transferFileName = toNormalizedPath(asperaDestination.getDestinationLocation().getFileId()
-				.substring(asperaDestination.getDestinationLocation().getFileId().lastIndexOf('/') + 1));
+		String fileId = toNormalizedPath(asperaDestination.getDestinationLocation().getFileId());
+		String transferFileName = fileId.substring(fileId.lastIndexOf('/') + 1);
 		String transferFilePath = transferDirectoryPath + "/" + transferFileName;
 		logger.info("[Aspera] - staged transfer file: {}", transferFilePath);
 
