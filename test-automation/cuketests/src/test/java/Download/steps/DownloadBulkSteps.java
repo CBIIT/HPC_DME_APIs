@@ -95,7 +95,7 @@ public class DownloadBulkSteps {
 	@When("I click Download")
 	public void i_click_download() {
 		System.out.println("----------------------------------------------------------");
-		System.out.println("Test Google Cloud bulk Upload");
+		System.out.println("Test Download");
 		BulkDownloadDataObjectPojo downloadRequestBody = new BulkDownloadDataObjectPojo();
 		String totalPath = this.path + "/" + sourceLocation.getFileId();
 		// downloadRequestBody.setPath(totalPath);
@@ -111,6 +111,9 @@ public class DownloadBulkSteps {
 		} else if (source.toUpperCase().equals("GOOGLEDRIVE")) {
 			destinationLocationObj.setAccessToken(configFileReader.getGoogleDriveAccessToken());
 			downloadRequestBody.setGoogleDriveDownloadDestination(destinationLocationObj);
+		} else if (source.toUpperCase().equals("ASPERA")) {
+			destinationLocationObj.setAsperaAccount(taskHelper.getAcctAspera());
+			downloadRequestBody.setAsperaDownloadDestination(destinationLocationObj);
 		} else {
 			System.out.println("Unknown Source");
 			return;
@@ -122,7 +125,7 @@ public class DownloadBulkSteps {
 			downloadRequestBody.setDataObjectPaths(dataObjectPathsList);
 		}
 		downloadRequestBody.setAppendPathToDownloadDestination(true);
-		System.out.println(gson.toJson(downloadRequestBody));
+		//System.out.println(gson.toJson(downloadRequestBody));
 		taskHelper.submitRequest("POST", gson.toJson(downloadRequestBody), downloadUrl);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
