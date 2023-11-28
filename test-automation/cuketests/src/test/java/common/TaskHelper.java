@@ -1,44 +1,20 @@
 package common;
 
-import static io.restassured.RestAssured.when;
+//import com.jayway.jsonpath.JsonPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.Gson;
 
-import java.io.*;
-
-import Register.Pojo.BulkDataObjectRegister;
 import Register.Pojo.DataObjectRegistration;
 import Register.Pojo.S3AccountPojo;
 import Register.Pojo.S3StreamingUploadPojo;
 import Register.Pojo.SourceLocationPojo;
-import common.JsonHelper;
 import dataProviders.ConfigFileReader;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-//import io.cucumber.messages.internal.com.google.gson.Gson;
-import io.cucumber.datatable.DataTable;
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import io.restassured.path.json.JsonPath;
-import junit.framework.Assert;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
-import java.lang.Thread;
-//import com.jayway.jsonpath.JsonPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.restassured.specification.RequestSpecification;
 
 public class TaskHelper {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -61,6 +37,15 @@ public class TaskHelper {
 		s3Account.setSecretKey(configFileReader.getAwsSecretKey());
 		s3Account.setRegion(configFileReader.getAwsRegion());
 		return s3Account;
+	}
+
+	public AsperaAccountPojo getAcctAspera() {
+		ConfigFileReader configFileReader = new ConfigFileReader();
+		AsperaAccountPojo asperaAccount = new AsperaAccountPojo();
+		asperaAccount.setUser(configFileReader.getAsperaUser());
+		asperaAccount.setPassword(configFileReader.getAsperaPassword());
+		asperaAccount.setHost(configFileReader.getAsperaHost());
+		return asperaAccount;
 	}
 
 	public void submitBulkRequest(String requestType, String requestBody, String requestUrl) {
