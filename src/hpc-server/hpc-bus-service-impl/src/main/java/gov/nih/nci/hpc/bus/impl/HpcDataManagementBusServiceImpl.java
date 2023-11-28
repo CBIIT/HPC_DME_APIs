@@ -603,6 +603,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		}
