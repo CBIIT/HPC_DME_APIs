@@ -19,7 +19,6 @@ Feature: Title of your feature
     When I click Download
     Then I get a response of success for the Download
 
-
   @download2
   Scenario Outline: Download file from DME to various data sources (API Spec doc, section 5.48)
     Given I have a data source "<source>" for download
@@ -40,9 +39,10 @@ Feature: Title of your feature
   Scenario Outline: Download Data Object List from DME to AWS (API Spec doc, section 5.53)
     Given I have a data source "googleCloud" for download
     And I have multiple download dataObject paths as
+      | Paths                                                                                             |
       | /TEST_NO_HIER_Archive/Sample_Collection_Yuri/Compass_Test_Archive1/S_VanDyke_coverletter.pdf      |
       | /TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/dataobject2.txt |
-      | /TEST_NO_HIER_Archive/Sunita-Test-Collection/version.txt |
+      | /TEST_NO_HIER_Archive/Sunita-Test-Collection/version.txt                                          |
     And I add download cloud bucket as "dme-upload-bucket"
     And I add download cloud location as "Sample1/"
     And I set appendPathToDownloadDestination as "true"
@@ -53,10 +53,20 @@ Feature: Title of your feature
   Scenario Outline: Download Collection List from DME to AWS (API Spec doc, section 5.54)
     Given I have a data source "googleCloud" for download
     And I have multiple download collection paths as
+      | Paths                                                                              |
       | /TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/ |
       | /TEST_NO_HIER_Archive/Sample_Collection_Yuri/Compass_Test_Archive1/                |
     And I add download cloud bucket as "dme-upload-bucket"
     And I add download cloud location as "Sample1/"
     And I set appendPathToDownloadDestination as "true"
+    When I click Download
+    Then I get a response of success for the Download
+
+  @download5
+  Scenario: Download file from DME to Aspera
+    Given I have a data source "aspera" for download
+    And I have a download dataObject path as ""
+    And I add download cloud bucket as "aspera"
+    And I add download cloud location as "x.pdf"
     When I click Download
     Then I get a response of success for the Download
