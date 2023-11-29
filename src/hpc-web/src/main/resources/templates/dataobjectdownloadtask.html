@@ -154,7 +154,7 @@
  -->
 										<div class="col-md-12 form-group">
 											<label for="Name">Destination Type:</label> <label th:if="${hpcDataObjectDownloadStatusDTO.getDestinationType() != null}"
-												for="${hpcDataObjectDownloadStatusDTO.getDestinationType().value()}"
+												for="${hpcDataObjectDownloadStatusDTO.getDestinationType().value()}"  id="destinationType"
 												th:text="${#strings.replace(hpcDataObjectDownloadStatusDTO.getDestinationType().value(),'S_3','S3')}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId() != null}">
@@ -223,6 +223,52 @@
 
 					</div>
 				</div>
+								<!-- modal -->
+				<div class="modal fade" id="s3Modal" tabindex="-1" role="dialog"
+					aria-labelledby="s3ModalLabel" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Re-enter S3 Credentials</h4>
+							</div>
+							<div class="modal-body">
+								<div class="form-group" id="s3Div">
+									<div class="alert-danger" id="mandatory"
+										style="display: none">
+										<p>Please re-enter S3 credentials and region</p>
+									</div>
+									<div class="col-sm-12 column">
+										<label for="accessKey">Access Key:</label> <input
+											type="text" class="form-control"
+											name="accessKey" id="accessKeyId"
+											placeholder="Enter Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="secretKey">Secret Access Key:</label> <input
+											type="password" autocomplete="secret-access-key" class="form-control"
+											name="secretKey" id="secretKeyId"
+											placeholder="Enter Secret Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="region">Region:</label> <input
+											type="text" class="form-control"
+											th:value="${region}"
+											name="region" id="regionId"
+											placeholder="Enter Region (for Example us-east-1)" size="40" />
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-md btn-primary"
+											id="retryButton">Retry</button>
+										<button type="button" class="btn btn-default"
+											data-dismiss="modal" id="close">Close</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- modal -->
 				<div class="row"></div>
 			</section>
 			<div th:include="footer :: footer"></div>
@@ -233,6 +279,9 @@
 		method="POST">
 		<input type="hidden" id="taskId" name="taskId" th:value="${taskId}"/>
 		<input type="hidden" id="taskType" name="taskType" th:value="${taskType}"/>
+		<input type="hidden" id="accessKey" name="accessKey" />
+		<input type="hidden" id="secretKey" name="secretKey" />
+		<input type="hidden" id="region" name="region" />
 	</form>
 	</section>
 	<!-- container section start -->
@@ -255,14 +304,38 @@
 
 $(document).ready(function(){
 	$('#sub-menu-manage').addClass("active");
+	$('body').on('click', '#retryButton', function(event) {
+		var accessKey = document.getElementById("accessKeyId").value;
+		var secretKey = document.getElementById("secretKeyId").value;
+		var region = document.getElementById("regionId").value;
+		if (accessKey == null
+				|| accessKey.trim().length == 0
+				|| secretKey == null
+				|| secretKey.trim().length == 0
+				|| region == null
+				|| region.trim().length == 0) {
+			$("#mandatory").show();
+			return false;
+		}
+		document.getElementById("accessKey").value = accessKey;
+		document.getElementById("secretKey").value = secretKey;
+		document.getElementById("region").value = region;
+		$('.downloadfailed').addClass('disabled');
+		$("#downloadForm").submit();
+	});
 });
 	
 function retryDownload(task, taskType)
 {
-	$('#downloadfailed').addClass('disabled');
 	document.getElementById("taskId").value = task;
 	document.getElementById("taskType").value = taskType;
-	$("#downloadForm").submit();
+	destinationType=$('#destinationType').text();
+	if (destinationType == 'S3') {
+		$('#s3Modal').modal({backdrop: 'static', keyboard: false});
+	} else {
+		$('.downloadfailed').addClass('disabled');
+		$("#downloadForm").submit();
+	}
 	
 }
 
