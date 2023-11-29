@@ -277,7 +277,7 @@
 											id="asperaBucketName" placeholder="Enter Aspera Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="s3Path">Aspera (Destination) Path:</label> <input
+										<label for="asperaPath">Aspera (Destination) Path:</label> <input
 											type="text" class="form-control"
 											th:value="${asperaPath}"
 											name="asperaPath" id="asperaPath"
@@ -760,7 +760,7 @@
 				if(googleCloudDiv)
 					googleCloudDiv.style.display = "none";
 				if(downloadType == "datafile")
-					$("#s3Path").val(downloadFileName);
+					$("#asperaPath").val(downloadFileName);
 				$("#submit").prop('disabled', false);
 			}
 		}
