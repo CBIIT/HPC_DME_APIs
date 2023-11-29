@@ -1493,12 +1493,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcCollectionDownloadTask downloadCollection(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId)
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId)
 			throws HpcException {
 
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				googleCloudStorageDownloadDestination, null, null, configurationId, true);
+				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, configurationId, true);
 
 		if (globusDownloadDestination != null) {
 			checkForDuplicateCollectionDownloadRequests(path, globusDownloadDestination);
@@ -1511,6 +1512,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
 		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
 		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+		downloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
@@ -1529,11 +1531,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				googleCloudStorageDownloadDestination, null, null, configurationId, true);
+				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, configurationId, true);
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -1542,6 +1544,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
 		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
 		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+		downloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
 		downloadTask.getCollectionPaths().addAll(collectionPaths);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
@@ -2459,7 +2462,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate the destination for collection/bulk download is provided.
 		if (bulkDownload && destinations == 0) {
-			throw new HpcException("No download destination provided (Globus, S3, Google Drive / Cloud Storage)",
+			throw new HpcException("No download destination provided (Globus, S3, Google Drive / Cloud Storage, Aspera)",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
