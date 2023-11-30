@@ -113,6 +113,7 @@
 	      <constructor-arg value="${hpc.integration.irods.algorithm}" index="6" />
 	      <constructor-arg value="${hpc.integration.irods.pamAuthentication}" index="7" />
 	      <constructor-arg value="${hpc.integration.irods.maxFilesAndDirsQueryMax}" index="8" />
+	      <constructor-arg value="${hpc.integration.irods.maxIdlePerKey}" index="9" />
 	</bean>
 	
 	<!--  HPC Data Management Proxy -->
