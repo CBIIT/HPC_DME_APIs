@@ -8,12 +8,6 @@
  */
 package gov.nih.nci.hpc.integration.irods.impl;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
-import gov.nih.nci.hpc.exception.HpcException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -44,6 +38,13 @@ import org.irods.jargon.pool.conncache.JargonKeyedPoolConfig;
 import org.irods.jargon.pool.conncache.JargonPooledObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * HPC iRODS connection via Jargon.
@@ -91,23 +92,26 @@ public class HpcIRODSConnection {
 	/**
 	 * Constructor for Spring Dependency Injection.
 	 *
-	 * @param irodsHost         The iRODS server host name / IP.
-	 * @param irodsPort         The iRODS server port.
-	 * @param irodsZone         The iRODS zone.
-	 * @param irodsResource     The iRODS resource to use.
-	 * @param basePath          The iRODS base path.
-	 * @param key               The configured key.
-	 * @param algorithm         The configured algorithm
-	 * @param pamAuthentication PAM authentication on/off switch.
+	 * @param irodsHost               The iRODS server host name / IP.
+	 * @param irodsPort               The iRODS server port.
+	 * @param irodsZone               The iRODS zone.
+	 * @param irodsResource           The iRODS resource to use.
+	 * @param basePath                The iRODS base path.
+	 * @param key                     The configured key.
+	 * @param algorithm               The configured algorithm
+	 * @param pamAuthentication       PAM authentication on/off switch.
+	 * @param maxFilesAndDirsQueryMax Max files/Dirs in query.
+	 * @param maxIdlePerKey           The max keys for connection pool. -1 is
+	 *                                unlimited.
 	 * @throws HpcException If it failed to instantiate the iRODS file system.
 	 */
 	private HpcIRODSConnection(String irodsHost, Integer irodsPort, String irodsZone, String irodsResource,
-			String basePath, String key, String algorithm, Boolean pamAuthentication, Integer maxFilesAndDirsQueryMax)
-			throws HpcException {
+			String basePath, String key, String algorithm, Boolean pamAuthentication, Integer maxFilesAndDirsQueryMax,
+			Integer maxIdlePerKey) throws HpcException {
 		if (irodsHost == null || irodsHost.isEmpty() || irodsPort == null || irodsZone == null || irodsZone.isEmpty()
 				|| irodsResource == null || irodsResource.isEmpty() || basePath == null || basePath.isEmpty()
 				|| key == null || key.isEmpty() || algorithm == null || algorithm.isEmpty() || pamAuthentication == null
-				|| maxFilesAndDirsQueryMax == null) {
+				|| maxFilesAndDirsQueryMax == null || maxIdlePerKey == null) {
 			throw new HpcException("Null or empty iRODS connection attributes",
 					HpcErrorType.SPRING_CONFIGURATION_ERROR);
 		}
@@ -124,6 +128,8 @@ public class HpcIRODSConnection {
 		try {
 			// Set cached connection pool.
 			JargonKeyedPoolConfig config = new JargonKeyedPoolConfig();
+			config.setMaxIdlePerKey(maxIdlePerKey);
+
 			JargonPooledObjectFactory jargonPooledObjectFactory = new JargonPooledObjectFactory();
 			IRODSSimpleProtocolManager irodsSimpleProtocolManager = new IRODSSimpleProtocolManager();
 			jargonPooledObjectFactory.setIrodsSimpleProtocolManager(irodsSimpleProtocolManager);
@@ -131,7 +137,7 @@ public class HpcIRODSConnection {
 
 			CachedIrodsProtocolManager cachedIrodsProtocolManager = new CachedIrodsProtocolManager();
 			cachedIrodsProtocolManager.setJargonConnectionCache(jargonConnectionCache);
-			
+
 			IRODSSession irodsSession = IRODSSession.instance(cachedIrodsProtocolManager);
 			jargonPooledObjectFactory.setIrodsSession(irodsSession);
 
