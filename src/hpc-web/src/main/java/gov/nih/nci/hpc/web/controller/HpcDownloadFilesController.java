@@ -35,6 +35,8 @@ import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
@@ -361,6 +363,19 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				account.setRegion(downloadFile.getRegion());
 				destination.setAccount(account);
 				dto.setS3DownloadDestination(destination);
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("aspera")) {
+				HpcAsperaDownloadDestination destination = new HpcAsperaDownloadDestination();
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getAsperaBucketName());
+				location.setFileId(downloadFile.getAsperaPath().trim());
+				destination.setDestinationLocation(location);
+				HpcAsperaAccount account = new HpcAsperaAccount();
+				account.setUser(downloadFile.getAsperaUser());
+				account.setPassword(downloadFile.getAsperaPassword());
+				account.setHost(downloadFile.getAsperaHost());
+				destination.setAccount(account);
+				dto.setAsperaDownloadDestination(destination);
+				logger.info("JSON for Aspera Download: " + gson.toJson(dto));
 			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
                 String accessToken = (String)session.getAttribute("accessToken");
                 HpcGoogleDownloadDestination destination = new HpcGoogleDownloadDestination();
