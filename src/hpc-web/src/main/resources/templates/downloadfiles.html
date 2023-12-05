@@ -158,6 +158,11 @@
 											name="searchType" id="searchTypeGoogleCloud" value="googleCloud"
 											onChange="display('googleCloud')"/>Google Cloud</label>
 										</div>
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeAspera" value="aspera"
+											onChange="display('aspera')"/>dbGaP</label>
+										</div>
 								</div>
 								
 								<div class="pull-center" id="AsyncTextDiv" style="display: none">
@@ -259,6 +264,43 @@
 											th:value="${googleCloudPath}"
 											name="googleCloudPath" id="googleCloudPath"
 											placeholder="Enter Google Cloud (Destination) Path" size="40" />
+									</div>
+								</div>
+								<!--- DbGap inputs -->
+								<div class="form-group" id="asperaDiv" style="display: none">
+									<div class="col-sm-12 column">
+										<label for="bucketName">Aspera Bucket:</label>
+										<input
+											type="text" class="form-control" name="asperaBucketName" th:value="test" readonly="readonly"
+											id="asperaBucketName" placeholder="Enter Aspera Bucket Name" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="asperaPath">Aspera (Destination) Path:</label> <input
+											type="text" class="form-control"
+											th:value="${asperaPath}"
+											name="asperaPath" id="asperaPath"
+											placeholder="Enter Aspera (Destination) Path" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="accessKey">Aspera Account User:</label> <input
+											type="text" class="form-control"
+											th:value="${asperaUser}"
+											name="asperaUser" id="asperaUser"
+											placeholder="Enter User" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="secretKey">Aspera Account Password:</label> <input
+											type="password" autocomplete="secret-access-key" class="form-control"
+											th:value="${asperaPassword}"
+											name="asperaPassword" id="asperaPassword"
+											placeholder="Enter Aspera Password" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="region">Aspera Host:</label> <input
+											type="text" class="form-control"
+											th:value="${asperaHost}"
+											name="asperaHost" id="asperaHost"
+											placeholder="Enter Aspera Host" size="40" />
 									</div>
 								</div>
 								<div class="modal-footer">
@@ -377,6 +419,26 @@
 						|| secretKey.trim().length == 0
 						|| region == null
 						|| region.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
+			} else if (radioValue == 'aspera') {
+				var asperaBucketName = document.getElementById("asperaBucketName").value;
+				var asperaPath = document
+						.getElementById("asperaPath").value;
+				var asperaUser = document.getElementById("asperaUser").value;
+				var asperaPassword = document.getElementById("asperaPassword").value;
+				var asperaHost = document.getElementById("asperaHost").value;
+				if (asperaPath == null
+						|| asperaPath.trim().length == 0
+						|| asperaBucketName == null
+						|| asperaBucketName.trim().length == 0
+						|| asperaUser == null
+						|| asperaUser.trim().length == 0
+						|| asperaPassword == null
+						|| asperaPassword.trim().length == 0
+						|| asperaHost == null
+						|| asperaHost.trim().length == 0) {
 					alert("Please enter asynchronous download values");
 					return false;
 				}
@@ -531,6 +593,17 @@
 				} else {
 					$("#submit").prop('disabled', true);
 				}
+			} else if (value == 'aspera'){
+				asyncDiv.style.display = "none";
+				s3Div.style.display = "none";
+				asperaDiv.style.display = "block";
+				if(driveDiv)
+					driveDiv.style.display = "none";
+				if(googleCloudDiv)
+					googleCloudDiv.style.display = "none";
+				if(downloadType == "datafile")
+					$("#asperaPath").val(downloadFileName);
+				$("#submit").prop('disabled', false);
 			}
 		}
 	</script>
