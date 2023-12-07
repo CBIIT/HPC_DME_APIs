@@ -72,6 +72,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>hpc-ws-rs-impl</artifactId>
 			<version>${project.version}</version>
+			<classifier>classes</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
