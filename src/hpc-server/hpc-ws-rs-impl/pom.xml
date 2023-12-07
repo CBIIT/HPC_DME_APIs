@@ -73,6 +73,7 @@
                     </resource>
                 </webResources>
                 <warName>hpc-server</warName>
+                <attachClasses>true</attachClasses>
            	</configuration>
         </plugin>
       <plugin>
