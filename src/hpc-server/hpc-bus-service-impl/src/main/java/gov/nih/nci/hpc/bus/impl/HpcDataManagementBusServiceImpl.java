@@ -75,6 +75,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -798,19 +799,48 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
 		}
 
+		int limit = dataTransferService.getDownloadResultsPageSize();
+
 		// Populate the DTO with active and completed download requests for this user.
 		HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
-		downloadSummary.getActiveTasks().addAll(dataTransferService.getDownloadRequests(userId, doc));
-		downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId, page, doc));
+		List<HpcUserDownloadRequest> activeRequests = dataTransferService.getDownloadRequests(userId, doc);
 
-		int limit = dataTransferService.getDownloadResultsPageSize();
+		int pageSizeOffset = 0;
+		int resultsCount = dataTransferService.getDownloadResultsCount(userId, doc);
+		List<HpcUserDownloadRequest> activeRequestsInPage = null;
+		if(activeRequests != null && !activeRequests.isEmpty()) {
+			if(activeRequests.size() > limit * page) {
+			//The active requests to be displayed are more than the size of the page,
+			//so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage =
+				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
+			} else if(activeRequests.size() > limit * (page - 1)) {
+				//The active requests to be displayed on this page are less than the size of the page
+				//so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+			}
+			if(activeRequestsInPage != null) {
+				downloadSummary.getActiveTasks().addAll(activeRequestsInPage);
+			}
+
+			//Determine how many rows have been taken up by the activeRequests, these will be
+			//subtracted from the page limit later to determine how many rows are available to display
+			//the completed requests.
+			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+				pageSizeOffset = activeRequestsInPage.size();
+			}
+		}
+
+		List<HpcUserDownloadRequest> downloadResults = dataTransferService.getDownloadResults(userId, page, doc, pageSizeOffset);
+		downloadSummary.getCompletedTasks().addAll(downloadResults);
+
 		downloadSummary.setPage(page);
 		downloadSummary.setLimit(limit);
 
 		if (totalCount) {
-			int count = downloadSummary.getCompletedTasks().size();
+			int count = downloadSummary.getCompletedTasks().size()  + downloadSummary.getActiveTasks().size();
 			downloadSummary.setTotalCount(
-					(page == 1 && count < limit) ? count : dataTransferService.getDownloadResultsCount(userId, doc));
+					(page == 1 && count < limit) ? count : resultsCount);
 		}
 
 		return downloadSummary;
@@ -1386,19 +1416,48 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// user.
 		final boolean addUserId = doc == null ? false : true;
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
-		dataManagementService.getRegistrationTasks(userId, doc).forEach(
-				task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId)));
-		dataManagementService.getRegistrationResults(userId, page, doc).forEach(result -> registrationSummary
+		List<HpcBulkDataObjectRegistrationTask> activeRequests =
+				dataManagementService.getRegistrationTasks(userId, doc);
+
+
+		int pageSizeOffset = 0;
+		int limit = dataManagementService.getRegistrationResultsPageSize();
+
+		int resultsCount = dataManagementService.getRegistrationResultsCount(userId, doc);
+		List<HpcBulkDataObjectRegistrationTask> activeRequestsInPage = null;
+		if(activeRequests != null && !activeRequests.isEmpty()) {
+			if(activeRequests.size() > limit * page) {
+			//The active requests to be displayed are more than the size of the page,
+			//so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage =
+				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
+			} else if(activeRequests.size() > limit * (page - 1)) {
+				//The active requests to be displayed on this page are less than the size of the page
+				//so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+			}
+			if(activeRequestsInPage != null) {
+				for(HpcBulkDataObjectRegistrationTask task: activeRequestsInPage)
+				    registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId));
+			}
+
+			//Determine how many rows have been taken up by the activeRequests, these will be
+			//subtracted from the page limit later to determine how many rows are available to display
+			//the completed requests.
+			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+				pageSizeOffset = activeRequestsInPage.size();
+			}
+		}
+
+		dataManagementService.getRegistrationResults(userId, page, doc, pageSizeOffset).forEach(result -> registrationSummary
 				.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
 
-		int limit = dataManagementService.getRegistrationResultsPageSize();
 		registrationSummary.setPage(page);
 		registrationSummary.setLimit(limit);
 
 		if (totalCount) {
-			int count = registrationSummary.getCompletedTasks().size();
-			registrationSummary.setTotalCount((page == 1 && count < limit) ? count
-					: dataManagementService.getRegistrationResultsCount(userId, doc));
+			int count = registrationSummary.getCompletedTasks().size() + registrationSummary.getActiveTasks().size();
+			registrationSummary.setTotalCount((page == 1 && count < limit) ? count : resultsCount);
 		}
 
 		return registrationSummary;
@@ -1497,13 +1556,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
-		return downloadDataObject(path, downloadRequest,
-				securityService.getRequestInvoker().getNciAccount().getUserId(), true, null);
+		return downloadDataObject(path, downloadRequest, null,
+				securityService.getRequestInvoker().getNciAccount().getUserId(), null, true, null);
 	}
 
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String userId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException {
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException {
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1526,7 +1585,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
-				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId, completionEvent,
+				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId, userId, retryUserId, completionEvent,
 				collectionDownloadTaskId, metadata.getSourceSize() != null ? metadata.getSourceSize() : 0,
 				metadata.getDataTransferStatus(), metadata.getDeepArchiveStatus());
 
@@ -1586,7 +1645,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
 			}
 			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
-
+			downloadStatus.setRetryTaskId(taskStatus.getDataObjectDownloadTask().getRetryTaskId());
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
 			downloadStatus.setPath(taskStatus.getResult().getPath());
@@ -1601,8 +1660,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);
 			downloadStatus.setSize(taskStatus.getResult().getSize());
+			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
+			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
 		}
-
+		
 		return downloadStatus;
 	}
 
@@ -1627,7 +1688,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDownloadTaskResult downloadTask = taskStatus.getResult();
 		HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
 		downloadTask.setRetryUserId(securityService.getRequestInvoker().getNciAccount().getUserId());
-		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getUserId(), true, null);
+		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getId(), downloadTask.getUserId(), 
+				downloadTask.getRetryUserId(), true, null);
 	}
 
 	@Override
