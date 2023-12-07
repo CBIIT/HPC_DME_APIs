@@ -165,8 +165,12 @@ public interface HpcDataTransferService {
 	 *                                              data-object is stored in. This
 	 *                                              is only applicable for S3
 	 *                                              archives, not POSIX.
+	 * @param retryTaskId                           The task ID being retried if this
+	 *                                              is a retry request.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
+	 * @param retryUserId                           The user ID retrying the request
+	 *                                              if this is a retry request.
 	 * @param completionEvent                       If true, an event will be added
 	 *                                              when async download is complete.
 	 * @param collectionDownloadTaskId              (Optional) The collection
@@ -186,7 +190,8 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent,
+			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
+			String retryUserId, boolean completionEvent,
 			String collectionDownloadTaskId, long size, HpcDataTransferUploadStatus downloadDataObject,
 			HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
 
@@ -831,13 +836,14 @@ public interface HpcDataTransferService {
 	/**
 	 * Get download results (all completed download requests) for a user.
 	 *
-	 * @param userId The user ID to query for.
-	 * @param page   The requested results page.
-	 * @param doc    doc of group admin or all for system administrators
+	 * @param userId          The user ID to query for.
+	 * @param page            The requested results page.
+	 * @param doc             The doc of group admin or all for system administrators.
+	 * @param pageSizeOffset  The amount to offset the configured page size by.
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset) throws HpcException;
 
 	/**
 	 * Get download results (all completed download requests) count for a user.
