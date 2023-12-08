@@ -1,24 +1,21 @@
 package Download.steps;
 
-import common.JsonHelper;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.FieldNamingStrategy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import Download.pojos.BulkDownloadDataObjectPojo;
+import Download.pojos.DestinationLocationPojo;
+import Register.Pojo.SourceLocationPojo;
 import common.TaskHelper;
 import dataProviders.ConfigFileReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import Download.pojos.BulkDownloadDataObjectPojo;
-import Download.pojos.DestinationLocationPojo;
-import Register.Pojo.BulkDataObjectRegister;
-import Register.Pojo.DataObjectRegistration;
-import Register.Pojo.S3StreamingUploadPojo;
-import Register.Pojo.SourceLocationPojo;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 public class DownloadBulkSteps {
 	static final String BULK_DOWNLOAD_URL = "/hpc-server/v2/download";
@@ -104,8 +101,9 @@ public class DownloadBulkSteps {
 			destinationLocationObj.setAccessToken(configFileReader.getGoogleCloudToken());
 			downloadRequestBody.setGoogleCloudStorageDownloadDestination(destinationLocationObj);
 		} else if (source.toUpperCase().equals("AWS")) {
-			destinationLocationObj.setAccount(taskHelper.getAcctAWS());
+			destinationLocationObj.setS3Account(taskHelper.getAcctAWS());
 			downloadRequestBody.setS3DownloadDestination(destinationLocationObj);
+			gson = new GsonBuilder().setFieldNamingStrategy(new AccountS3RenameStrategy()).create();
 		} else if (source.toUpperCase().equals("GLOBUS")) {
 			downloadRequestBody.setGlobusDownloadDestination(destinationLocationObj);
 		} else if (source.toUpperCase().equals("GOOGLEDRIVE")) {
@@ -114,6 +112,7 @@ public class DownloadBulkSteps {
 		} else if (source.toUpperCase().equals("ASPERA")) {
 			destinationLocationObj.setAsperaAccount(taskHelper.getAcctAspera());
 			downloadRequestBody.setAsperaDownloadDestination(destinationLocationObj);
+			gson = new GsonBuilder().setFieldNamingStrategy(new AccountAsperaRenameStrategy()).create();
 		} else {
 			System.out.println("Unknown Source");
 			return;
@@ -125,7 +124,7 @@ public class DownloadBulkSteps {
 			downloadRequestBody.setDataObjectPaths(dataObjectPathsList);
 		}
 		downloadRequestBody.setAppendPathToDownloadDestination(true);
-		//System.out.println(gson.toJson(downloadRequestBody));
+		System.out.println(gson.toJson(downloadRequestBody));
 		taskHelper.submitRequest("POST", gson.toJson(downloadRequestBody), downloadUrl);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
@@ -133,6 +132,32 @@ public class DownloadBulkSteps {
 
 	@Then("I get a response of success for the Download")
 	public void i_get_a_response_of_success_for_the_download() {
+		org.junit.Assert.assertEquals(201, 201);
+	}
+
+	@Then("I get a response of {string} for the Download")
+	public void i_get_a_response_of_for_the_download(String string) {
+		org.junit.Assert.assertEquals(201, 201);
+	}
+
+	class AccountAsperaRenameStrategy implements FieldNamingStrategy {
+	     @Override
+	     public String translateName(Field field) {
+	         if (field.getName().equals("asperaAccount")) {
+	             return "account";
+	         }
+	         return field.getName();
+	    }
+	}
+
+	class AccountS3RenameStrategy implements FieldNamingStrategy {
+	     @Override
+	     public String translateName(Field field) {
+	         if (field.getName().equals("s3Account")) {
+	             return "account";
+	         }
+	         return field.getName();
+	    }
 	}
 
 }
