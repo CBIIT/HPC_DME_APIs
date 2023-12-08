@@ -46,7 +46,6 @@ import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
-import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.core.query.QueryConditionOperators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +71,6 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
-
 
 /**
  * HPC Data Management Proxy iRODS Implementation.
@@ -408,57 +406,64 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
 		}
 	}
-	
+
 	@Override
-	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset) throws HpcException {
+	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset)
+			throws HpcException {
 		try {
-			// In case there are no more records from this offset, fetch from offset 0 to get total records.
+			// In case there are no more records from this offset, fetch from offset 0 to
+			// get total records.
 			List<CollectionAndDataObjectListingEntry> firstEntries;
 			// Get the child collection from the offset specified.
-			List<CollectionAndDataObjectListingEntry> collectionEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-					.listCollectionsUnderPath(getAbsolutePath(path), offset); 
+			List<CollectionAndDataObjectListingEntry> collectionEntries = irodsConnection
+					.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+					.listCollectionsUnderPath(getAbsolutePath(path), offset);
 			int collectionTotalRecords = !collectionEntries.isEmpty() ? collectionEntries.get(0).getTotalRecords() : 0;
-			
-			// If requested from an offset and there are no more collection entries, obtain the total count by fetching from offset 0.
-			if(offset > 0 && collectionEntries.isEmpty()) {
+
+			// If requested from an offset and there are no more collection entries, obtain
+			// the total count by fetching from offset 0.
+			if (offset > 0 && collectionEntries.isEmpty()) {
 				firstEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-				.listCollectionsUnderPath(getAbsolutePath(path), 0); 
+						.listCollectionsUnderPath(getAbsolutePath(path), 0);
 				collectionTotalRecords = !firstEntries.isEmpty() ? firstEntries.get(0).getTotalRecords() : 0;
 			}
-			int dataObjectOffset = offset - collectionTotalRecords > 0 ? offset - collectionTotalRecords: 0;
-			
+			int dataObjectOffset = offset - collectionTotalRecords > 0 ? offset - collectionTotalRecords : 0;
+
 			// Get the child dataobject from the offset specified.
-			List<CollectionAndDataObjectListingEntry> dataObjectEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+			List<CollectionAndDataObjectListingEntry> dataObjectEntries = irodsConnection
+					.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
 					.listDataObjectsUnderPath(getAbsolutePath(path), dataObjectOffset);
-			int dataObjectTotalRecords = !dataObjectEntries.isEmpty() ? dataObjectEntries.get(0).getTotalRecords(): 0;
-			
-			// If requested from an offset and there are no more data object entries, obtain the total count by fetching from offset 0.
-			if(dataObjectOffset > 0 && dataObjectEntries.isEmpty()) {
+			int dataObjectTotalRecords = !dataObjectEntries.isEmpty() ? dataObjectEntries.get(0).getTotalRecords() : 0;
+
+			// If requested from an offset and there are no more data object entries, obtain
+			// the total count by fetching from offset 0.
+			if (dataObjectOffset > 0 && dataObjectEntries.isEmpty()) {
 				firstEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-				.listDataObjectsUnderPath(getAbsolutePath(path), 0); 
+						.listDataObjectsUnderPath(getAbsolutePath(path), 0);
 				dataObjectTotalRecords = !firstEntries.isEmpty() ? firstEntries.get(0).getTotalRecords() : 0;
 			}
-			
+
 			// Set the entries fetched into HpcCollection
-			if(collectionTotalRecords > offset + collectionEntries.size()) {
+			if (collectionTotalRecords > offset + collectionEntries.size()) {
 				HpcCollection collection = toHpcCollectionChildren(collectionEntries);
 				// There are more collection entries, so no need to add the dataObjects
 				collection.setSubCollectionsTotalRecords(collectionTotalRecords);
 				collection.setDataObjectsTotalRecords(dataObjectTotalRecords);
 			} else {
-				// Either there are no collections or no more collection entries so add dataObjectEntries up to our max.
-				if(!dataObjectEntries.isEmpty()) {
+				// Either there are no collections or no more collection entries so add
+				// dataObjectEntries up to our max.
+				if (!dataObjectEntries.isEmpty()) {
 					int index = 0;
-					for(int i = collectionEntries.size(); i < irodsConnection.maxFilesAndDirsQueryMax; i++) {
-						if(index < dataObjectEntries.size())
+					for (int i = collectionEntries.size(); i < irodsConnection.maxFilesAndDirsQueryMax; i++) {
+						if (index < dataObjectEntries.size())
 							collectionEntries.add(dataObjectEntries.get(index++));
 					}
 				}
-			}	
+			}
 			HpcCollection collection = toHpcCollectionChildren(collectionEntries);
 			collection.setSubCollectionsTotalRecords(collectionTotalRecords);
 			collection.setDataObjectsTotalRecords(dataObjectTotalRecords);
-			
+
 			return collection;
 
 		} catch (Exception e) {
@@ -664,31 +669,32 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		}
 	}
 
-
 	@Override
-	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionForUser(
-        Object authenticatedToken, String parentPath, String userId) throws HpcException {
+	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionForUser(Object authenticatedToken,
+			String parentPath, String userId) throws HpcException {
 
-		List<HpcPermissionForCollection> hpcPermissionsForCollections = new ArrayList();
-		logger.info("parentPath for geting child permissions: {}, userId: {}, irodsBasePath: {}",
-				parentPath, userId, irodsConnection.getBasePath());
+		List<HpcPermissionForCollection> hpcPermissionsForCollections = new ArrayList<>();
+		logger.info("parentPath for geting child permissions: {}, userId: {}, irodsBasePath: {}", parentPath, userId,
+				irodsConnection.getBasePath());
 		try {
 			String parent = !StringUtils.isEmpty(parentPath) ? parentPath : irodsConnection.getBasePath();
-			List<CollectionAndDataObjectListingEntry> collectionsPermissions =
-					irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).listCollectionsUnderPathWithPermissions(
-							parent, 0, true);
-			//Parse through the entry for each collection in the result
-			if(!CollectionUtils.isEmpty(collectionsPermissions)) {
+			List<CollectionAndDataObjectListingEntry> collectionsPermissions = irodsConnection
+					.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
+					.listCollectionsUnderPathWithPermissions(parent, 0, true);
+			// Parse through the entry for each collection in the result
+			if (!CollectionUtils.isEmpty(collectionsPermissions)) {
 				logger.debug("Children count of path {}: {}", parent, collectionsPermissions.size());
-				for(CollectionAndDataObjectListingEntry collectionPermissions: collectionsPermissions) {
-					//Parse through all the permissions associated with this collection
+				for (CollectionAndDataObjectListingEntry collectionPermissions : collectionsPermissions) {
+					// Parse through all the permissions associated with this collection
 					List<UserFilePermission> userFilePermissions = collectionPermissions.getUserFilePermission();
-					for(UserFilePermission userFilePermission: userFilePermissions) {
-						//Obtain the permission for this specific user only if it exists
-						if(userFilePermission.getUserName().equals(userId)) {
+					for (UserFilePermission userFilePermission : userFilePermissions) {
+						// Obtain the permission for this specific user only if it exists
+						if (userFilePermission.getUserName().equals(userId)) {
 							HpcPermissionForCollection userCollectionPermission = new HpcPermissionForCollection();
-							userCollectionPermission.setCollectionPath(getRelativePath(collectionPermissions.getPathOrName()));
-							userCollectionPermission.setPermission(toHpcPermission(userFilePermission.getFilePermissionEnum()));
+							userCollectionPermission
+									.setCollectionPath(getRelativePath(collectionPermissions.getPathOrName()));
+							userCollectionPermission
+									.setPermission(toHpcPermission(userFilePermission.getFilePermissionEnum()));
 							hpcPermissionsForCollections.add(userCollectionPermission);
 							break;
 						}
@@ -703,7 +709,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			throw new HpcException(msg, HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
 		}
 	}
-
 
 	@Override
 	public void setCollectionPermission(Object authenticatedToken, String path, HpcSubjectPermission permissionRequest)
