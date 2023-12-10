@@ -1390,7 +1390,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	@Override
 	public double getTotalDownloadsSize(String userId) throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_TOTAL_DOWNLOADS_SIZE_SQL, Long.class) / FileUtils.ONE_GB;
+			return jdbcTemplate.queryForObject(GET_TOTAL_DOWNLOADS_SIZE_SQL, Long.class, userId) / FileUtils.ONE_GB;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to sum total downloads per user: " + e.getMessage(),
