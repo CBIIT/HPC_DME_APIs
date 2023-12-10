@@ -29,6 +29,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -70,7 +72,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
-
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	// SQL Queries.
 	private static final String CREATE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "insert into HPC_DATA_OBJECT_DOWNLOAD_TASK (ID, USER_ID, PATH, CONFIGURATION_ID, S3_ARCHIVE_CONFIGURATION_ID, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, "
 			+ "DATA_TRANSFER_STATUS, DOWNLOAD_FILE_PATH, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
@@ -1390,6 +1392,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	@Override
 	public double getTotalDownloadsSize(String userId) throws HpcException {
 		try {
+			logger.error("ERAN {} {}", userId, jdbcTemplate.queryForObject(GET_TOTAL_DOWNLOADS_SIZE_SQL, Long.class, userId));
 			return jdbcTemplate.queryForObject(GET_TOTAL_DOWNLOADS_SIZE_SQL, Long.class, userId) / FileUtils.ONE_GB;
 
 		} catch (DataAccessException e) {
