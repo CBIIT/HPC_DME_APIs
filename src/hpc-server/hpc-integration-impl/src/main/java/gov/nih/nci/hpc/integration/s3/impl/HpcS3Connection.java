@@ -20,6 +20,8 @@ import java.util.concurrent.Executors;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.AmazonClientException;
@@ -27,6 +29,7 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3EncryptionClientV2Builder;
@@ -34,6 +37,7 @@ import com.amazonaws.services.s3.model.CryptoConfigurationV2;
 import com.amazonaws.services.s3.model.CryptoMode;
 import com.amazonaws.services.s3.model.CryptoRangeGetMode;
 import com.amazonaws.services.s3.model.EncryptionMaterials;
+import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.services.s3.model.StaticEncryptionMaterialsProvider;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
@@ -82,6 +86,9 @@ public class HpcS3Connection {
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
+	
+	// The logger instance.
+		private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -223,13 +230,14 @@ public class HpcS3Connection {
 			AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
 					s3ArchiveCredentials);
 			// Setup the endpoint configuration.
-			EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
+			EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, "us-east-1");
 
 			// Instantiate a S3 client.
 			ClientConfiguration config = new ClientConfiguration();
 			config.setSocketTimeout(socketTimeout);
 			AmazonS3 s3Client = null;
 			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
+				logger.error("ERAN: {}", endpointConfiguration.toString());
 				s3Client = AmazonS3EncryptionClientV2Builder.standard()
 						.withCryptoConfiguration(
 								new CryptoConfigurationV2().withCryptoMode(CryptoMode.AuthenticatedEncryption)
@@ -238,7 +246,9 @@ public class HpcS3Connection {
 								new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), encryptionAlgorithm))))
 						.withCredentials(s3ArchiveCredentialsProvider)
 						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
-						.withEndpointConfiguration(endpointConfiguration).withClientConfiguration(config).build();
+						.withEndpointConfiguration(endpointConfiguration).withClientConfiguration(config)
+						.withRegion(Regions.US_EAST_1).build();
+				logger.error("ERAN: client created");
 			} else {
 				s3Client = AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
 						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
