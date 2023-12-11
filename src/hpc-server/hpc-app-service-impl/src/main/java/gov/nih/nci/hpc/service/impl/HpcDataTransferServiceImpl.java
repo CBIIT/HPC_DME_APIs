@@ -10,9 +10,9 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidAsperaAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidAsperaAccount;
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
 import static gov.nih.nci.hpc.util.HpcUtil.fromValue;
 import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
@@ -3227,13 +3227,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Check that the total downloads size for this user doesn't exceed the limit.
 		double totalDownloadsSize = dataDownloadDAO
 				.getTotalDownloadsSize(secondHopDownload.getDownloadTask().getUserId());
-		logger.error("ERAN: {}, {}", maxPermittedTotalDownloadsSizePerUser, totalDownloadsSize);
 
 		if (totalDownloadsSize > maxPermittedTotalDownloadsSizePerUser) {
-			logger.info("The total downloads size [{}] for this user [{}] exceeds the max permitted [{}]",
+			logger.info("The total downloads size [{}GB] for this user [{}] exceeds the max permitted [{}GB]",
 					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
 					maxPermittedTotalDownloadsSizePerUser);
 			return false;
+		} else {
+			logger.info("The total downloads size [{}GB] for this user [{}] under the max permitted [{}GB]",
+					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
+					maxPermittedTotalDownloadsSizePerUser);
 		}
 
 		return true;
