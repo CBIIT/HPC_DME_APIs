@@ -10,9 +10,9 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidAsperaAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidAsperaAccount;
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
 import static gov.nih.nci.hpc.util.HpcUtil.fromValue;
 import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
@@ -216,6 +216,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Max downloads that the transfer manager can perform
 	@Value("${hpc.service.dataTransfer.maxPermittedS3DownloadsForGlobus}")
 	private Integer maxPermittedS3DownloadsForGlobus = null;
+
+	// Max total (active) downloads size allowed per user in GB.
+	@Value("${hpc.service.dataTransfer.maxPermittedTotalDownloadsSizePerUser}")
+	private Double maxPermittedTotalDownloadsSizePerUser = null;
 
 	// A configured ID representing the server performing a download task.
 	@Value("${hpc.service.serverId}")
@@ -1531,7 +1535,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination, HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -2462,7 +2467,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate the destination for collection/bulk download is provided.
 		if (bulkDownload && destinations == 0) {
-			throw new HpcException("No download destination provided (Globus, S3, Google Drive / Cloud Storage, Aspera)",
+			throw new HpcException(
+					"No download destination provided (Globus, S3, Google Drive / Cloud Storage, Aspera)",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -3216,6 +3222,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus,
 					secondHopDownload.getDownloadTask().getPath());
 			return false;
+		}
+
+		// Check that the total downloads size for this user doesn't exceed the limit.
+		double totalDownloadsSize = dataDownloadDAO
+				.getTotalDownloadsSize(secondHopDownload.getDownloadTask().getUserId());
+
+		if (totalDownloadsSize > maxPermittedTotalDownloadsSizePerUser) {
+			logger.info("The total downloads size [{}GB] for this user [{}] exceeds the max permitted [{}GB]",
+					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
+					maxPermittedTotalDownloadsSizePerUser);
+			return false;
+		} else {
+			logger.info("The total downloads size [{}GB] for this user [{}] under the max permitted [{}GB]",
+					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
+					maxPermittedTotalDownloadsSizePerUser);
 		}
 
 		return true;

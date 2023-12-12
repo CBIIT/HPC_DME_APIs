@@ -459,5 +459,14 @@ public interface HpcDataDownloadDAO {
 	 * @throws HpcException on database error.
 	 */
 	public int getAllDownloadResultsCount() throws HpcException;
+	
+	/**
+	 * Get total (active) download size of a given user 
+	 *
+	 * @param userId    The user ID to query for.
+	 * @return The total size of active downloads for the user in GB. 
+	 * @throws HpcException on database error.
+	 */
+	public double getTotalDownloadsSize(String userId) throws HpcException;
 
 }
