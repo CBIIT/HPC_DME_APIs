@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -221,6 +222,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set CANCELLATION_REQUESTED = ? where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "select CANCELLATION_REQUESTED from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
+
+	private static final String GET_TOTAL_DOWNLOADS_SIZE_SQL = "select sum(DATA_SIZE) from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -1381,6 +1384,18 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to count download results: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public double getTotalDownloadsSize(String userId) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_TOTAL_DOWNLOADS_SIZE_SQL, Double.class, userId)
+					/ new Double(FileUtils.ONE_GB);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to sum total downloads per user: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
