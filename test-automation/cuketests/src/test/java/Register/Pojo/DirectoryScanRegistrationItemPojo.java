@@ -17,8 +17,8 @@ public class DirectoryScanRegistrationItemPojo {
     String callerObjectId;
     DirectoryScanPathMapPojo pathMap;
     String patternType;
-
-    public String getBasePath() {
+  
+	public String getBasePath() {
       return basePath;
     }
     public void setBasePath(String basePath) {
@@ -91,29 +91,6 @@ public class DirectoryScanRegistrationItemPojo {
 		this.patternType = patternType;
 	}
 
-  /*
-   * 
-    <xsd:complexType
-        name="HpcDirectoryScanRegistrationItemDTO">
-        <xsd:sequence>
-            <xsd:element name="basePath" type="xsd:string" />
-            <xsd:element name="scanDirectoryLocation"
-                type="hpc-domain-datatransfer:HpcFileLocation" />
-            <xsd:element name="callerObjectId" type="xsd:string" />
-            <xsd:element name="includePatterns" type="xsd:string"
-                minOccurs="0" maxOccurs="unbounded" />
-            <xsd:element name="excludePatterns" type="xsd:string"
-                minOccurs="0" maxOccurs="unbounded" />
-            <xsd:element name="patternType"
-                type="hpc-domain-datatransfer:HpcPatternType" />
-            <xsd:element name="bulkMetadataEntries"
-                type="hpc-domain-metadata:HpcBulkMetadataEntries" />
-            <xsd:element name="pathMap"
-                type="hpc-domain-datamanagement:HpcDirectoryScanPathMap" />
-        </xsd:sequence>
-    </xsd:complexType>
-
-   * 
-   */
+  
 
 }

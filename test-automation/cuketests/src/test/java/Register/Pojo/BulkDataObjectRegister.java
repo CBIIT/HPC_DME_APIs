@@ -3,11 +3,11 @@ package Register.Pojo;
 import java.util.ArrayList;
 
 public class BulkDataObjectRegister {
-	
-  boolean dryRun = false;
 
+	boolean dryRun = false;
 	ArrayList<DataObjectRegistration> dataObjectRegistrationItems;
-    ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrationItems = new ArrayList<DirectoryScanRegistrationItemPojo>();
+	ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrationItems = new ArrayList<DirectoryScanRegistrationItemPojo>();
+	String uiUrl;
 
 	public boolean isDryRun() {
 		return dryRun;
@@ -21,7 +21,8 @@ public class BulkDataObjectRegister {
 		return directoryScanRegistrationItems;
 	}
 
-	public void setDirectoryScanRegistrationItems(ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrations) {
+	public void setDirectoryScanRegistrationItems(
+			ArrayList<DirectoryScanRegistrationItemPojo> directoryScanRegistrations) {
 		this.directoryScanRegistrationItems = directoryScanRegistrations;
 	}
 
@@ -32,4 +33,13 @@ public class BulkDataObjectRegister {
 	public ArrayList<DataObjectRegistration> getDataObjectRegistrationItems() {
 		return this.dataObjectRegistrationItems;
 	}
+
+	public String getUiUrl() {
+		return uiUrl;
+	}
+
+	public void setUiUrl(String uiUrl) {
+		this.uiUrl = uiUrl;
+	}
+
 }
