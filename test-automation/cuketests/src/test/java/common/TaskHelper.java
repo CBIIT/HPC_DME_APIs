@@ -108,12 +108,13 @@ public class TaskHelper {
 			} while (pollingIteration < 10 && inProgress && !taskFailed);
 		} else {
 			JsonPath jsonPath = response.jsonPath();
+			System.out.println(jsonPath);
 			logger.error("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
 				jsonPath.getString("message") + " , Error Status Code: " + response.getStatusCode());
 		}
 	}
 
-	public void submitRequest(String requestType, String requestBody, String requestUrl) {
+	public boolean submitRequest(String requestType, String requestBody, String requestUrl) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
 		String token = configFileReader.getToken();
@@ -124,16 +125,14 @@ public class TaskHelper {
 				.header("Content-Type", "application/json").body(requestBody);
 		Response response = executeRequest(requestType, request, requestUrl);
 		int statusCode = response.getStatusCode();
-		System.out.println("The response is: " + response.asString());
+		System.out.println("The response status code is: " + statusCode);
+		JsonPath jsonPath = response.jsonPath();
+		//System.out.println("JSONPath =" + gson.toJson(jsonPath));
+		System.out.println("The response is: " + response.getBody().asString());
 		if (statusCode == 200 || statusCode == 201) {
-			//System.out.println("SUCCESS:" + statusCode);
-		}else {
-			JsonPath jsonPath = response.jsonPath();
-			if (jsonPath != null || jsonPath.get("errorType") != null) {
-				//logger.error("This test was a failure. ErrorType: " + (jsonPath.get("errorType") + "") + ", Error Message: " +
-				//		(jsonPath.getString("message") + "") + " , Error Status Code: " + response.getStatusCode());
-			}
-			//System.out.println("ERROR:" +response.getBody().asString());
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -145,6 +144,8 @@ public class TaskHelper {
 			 response = request.put(requestUrl);
 		} else if (requestType.equals("DELETE")) {
 			response  = request.delete(requestUrl);
+		} else if (requestType.equals("GET")) {
+			response  = request.get(requestUrl);
 		} else {
 			System.out.println("Unknown http method");
 			return null;

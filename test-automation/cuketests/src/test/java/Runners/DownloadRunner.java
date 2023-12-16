@@ -10,9 +10,8 @@ import org.junit.runner.RunWith;
 		, dryRun = false
 		, monochrome=true
 		, tags="@download"
-//,format= {"pretty","html:test-output_1", "json:target/cucumber-reports/CucumberTestReport.json"}
-,plugin = {"pretty", "json:target/cucumber-reports/CucumberTestReport.json",
-		 "html:target/cucumber-reports/cucumber-reports.html" }
+		, plugin = {"pretty", "json:target/cucumber-reports/CucumberDownloadTestReport.json",
+		 "html:target/cucumber-reports/cucumber-download-test-reports.html" }
 		)
 
 public class DownloadRunner {
