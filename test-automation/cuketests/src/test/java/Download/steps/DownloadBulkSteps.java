@@ -31,6 +31,7 @@ public class DownloadBulkSteps {
 	List<String> dataObjectPathsList = new ArrayList<String>();
 	SourceLocationPojo sourceLocation = new SourceLocationPojo();
 	boolean appendPathToDownloadDestination;
+	boolean testSuccess = false;
 	DestinationLocationPojo destinationLocationObj = new DestinationLocationPojo();
 	Gson gson = new Gson();
 
@@ -125,19 +126,23 @@ public class DownloadBulkSteps {
 		}
 		downloadRequestBody.setAppendPathToDownloadDestination(true);
 		System.out.println(gson.toJson(downloadRequestBody));
-		taskHelper.submitRequest("POST", gson.toJson(downloadRequestBody), downloadUrl);
+		testSuccess = taskHelper.submitRequest("POST", gson.toJson(downloadRequestBody), downloadUrl);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}
 
 	@Then("I get a response of success for the Download")
 	public void i_get_a_response_of_success_for_the_download() {
-		org.junit.Assert.assertEquals(201, 201);
+		org.junit.Assert.assertEquals(testSuccess, true);
 	}
 
 	@Then("I get a response of {string} for the Download")
-	public void i_get_a_response_of_for_the_download(String string) {
-		org.junit.Assert.assertEquals(201, 201);
+	public void i_get_a_response_of_for_the_download(String result) {
+		if (result == "success") {
+			org.junit.Assert.assertEquals(testSuccess, true);
+		} else {
+			org.junit.Assert.assertEquals(testSuccess, false);
+		}
 	}
 
 	class AccountAsperaRenameStrategy implements FieldNamingStrategy {
