@@ -6,13 +6,12 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		 features="src/test/java/Register/Features/RegisterBulk.feature"
-		, glue="Register.Steps.RegisterBulkSteps.java"
+		, glue="Register.Steps"
 		, dryRun = false
 		, monochrome=true
-		//, tags="@Smoke"
-//,format= {"pretty","html:test-output_1", "json:target/cucumber-reports/CucumberTestReport.json"}
-,plugin = {"pretty", "json:target/cucumber-reports/CucumberTestReport.json",
-		 "html:target/cucumber-reports/cucumber-reports.html" }
+		, tags="@register"
+		, plugin = {"pretty", "json:target/cucumber-reports/CucumberRegisterTestReport.json",
+		 "html:target/cucumber-reports/cucumber-register-test-report.html" }
 		)
 
 public class RegisterBulkRunner {
