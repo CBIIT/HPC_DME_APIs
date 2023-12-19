@@ -3534,6 +3534,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 				response.setDestinationLocation(
 						downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			} else if (downloadTask.getAsperaDownloadDestination() != null) {
+				downloadTask.setDataTransferType(HpcDataTransferType.S_3);
+				downloadTask.setDestinationType(HpcDataTransferType.ASPERA);
+				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
+				response.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 			} else if (downloadRequest.getGlobusDestination() != null) {
 				downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 				HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
