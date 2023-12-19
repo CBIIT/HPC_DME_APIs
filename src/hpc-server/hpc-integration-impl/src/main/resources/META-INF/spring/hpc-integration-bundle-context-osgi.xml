@@ -31,7 +31,7 @@
 	      <prop key="hpc.integration.irods.algorithm">Configure Me</prop>
 	      <prop key="hpc.integration.irods.pamAuthentication">false</prop>
 	      <prop key="hpc.integration.irods.maxFilesAndDirsQueryMax">1000</prop>
-	      <prop key="hpc.integration.irods.maxIdlePerKey">-1</prop>
+	      <prop key="hpc.integration.irods.maxIdlePerKey">10</prop>
 	      
 	      
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
