@@ -85,6 +85,8 @@ public class HpcDownloadController extends AbstractHpcController {
 	private String collectionDownloadServiceURL;
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
+	@Value("${gov.nih.nci.hpc.asperaBucket}")
+	private String asperaBucket;
 
 	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
 	private Gson gson = new Gson();
@@ -117,7 +119,17 @@ public class HpcDownloadController extends AbstractHpcController {
 		String downloadType = request.getParameter("type");
 		String source = request.getParameter("source");
 		String downloadFilePath = null;
-		
+		// Setting default values for Aspera variables
+		model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
+		model.addAttribute("asperaUser", "asp-dbgap");
+		if("collection".equals(downloadType)) {
+			model.addAttribute("asperaPath", "/");
+		}
+		if(asperaBucket == null || asperaBucket.contains("<") || asperaBucket.contains(">")) {
+			model.addAttribute("asperaBucketName", "test");
+		} else {
+			model.addAttribute("asperaBucketName", asperaBucket);
+		}
 		String code = request.getParameter("code");
         if (code != null) {
             //Return from Google Drive Authorization
