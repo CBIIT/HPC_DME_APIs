@@ -48,7 +48,7 @@ public class TaskHelper {
 		return asperaAccount;
 	}
 
-	public void submitBulkRequest(String requestType, String requestBody, String requestUrl) {
+	public boolean submitBulkRequest(String requestType, String requestBody, String requestUrl) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
 		String token = configFileReader.getToken();
@@ -99,9 +99,8 @@ public class TaskHelper {
 					taskFailed = true;
 					System.out.println("Failed set to true");
 					Object message = jsonPath.get("task.failedItems.message");
-					;
 					System.out.println(message.toString());
-					break;
+					return false;
 				}
 				pollingIteration++;
 				System.out.println("Task polling loop iteration: " + pollingIteration);
@@ -111,7 +110,9 @@ public class TaskHelper {
 			System.out.println(jsonPath);
 			logger.error("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
 				jsonPath.getString("message") + " , Error Status Code: " + response.getStatusCode());
+			return false;
 		}
+		return true;
 	}
 
 	public boolean submitRequest(String requestType, String requestBody, String requestUrl) {
