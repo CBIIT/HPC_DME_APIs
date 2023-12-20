@@ -104,14 +104,11 @@ public class HpcUtil {
 					message = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
 					if (StringUtils.isEmpty(message) && process.getInputStream() != null) {
 						message = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
-					} else {
-						logger.error("ERAN - input: "+  IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8));
-					}
+					} 
 					throw new HpcException("command [" + command + "] exec error: " + message,
 							HpcErrorType.UNEXPECTED_ERROR);
 				}
 			} else if (process.getInputStream() != null) {
-				logger.error("ERAN - error: "+  IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8));
 				return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
 			}
 
