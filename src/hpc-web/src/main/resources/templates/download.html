@@ -271,17 +271,18 @@
 								<!--- DbGap inputs -->
 								<div class="form-group" id="asperaDiv" style="display: none">
 									<div class="col-sm-12 column">
-										<label for="bucketName">Aspera Bucket:</label>
-										<input
-											type="text" class="form-control" name="asperaBucketName" th:value="test" readonly="readonly"
-											id="asperaBucketName" placeholder="Enter Aspera Bucket Name" />
-									</div>
-									<div class="col-sm-12 column">
-										<label for="asperaPath">Aspera (Destination) Path:</label> <input
-											type="text" class="form-control"
-											th:value="${asperaPath}"
-											name="asperaPath" id="asperaPath"
-											placeholder="Enter Aspera (Destination) Path" size="40" />
+										<label for="asperaBucketName">Aspera Bucket:</label>
+										<div th:if="${asperaBucketName == 'test'}" id="oneOption">
+											<select name="asperaBucketName" id="asperaBucketName" class="form-control">
+												<option th:value="test" th:text="test" selected="selected"></option>
+											</select>
+										</div>
+										<div th:if="${asperaBucketName != 'test'}"  id="multipleOption">
+											<select name="asperaBucketName" id="asperaBucketName" class="form-control">
+												<option th:value="${asperaBucketName}" th:text="${asperaBucketName}" selected="selected"></option>
+												<option th:value="test" th:text="test" ></option>
+											</select>
+										</div>
 									</div>
 									<div class="col-sm-12 column">
 										<label for="accessKey">Aspera Account User:</label> <input
@@ -290,6 +291,8 @@
 											name="asperaUser" id="asperaUser"
 											placeholder="Enter User" size="40" />
 									</div>
+									<input type="hidden" name="asperaPath" id="asperaPath"
+											th:value="${asperaPath}" />
 									<div class="col-sm-12 column">
 										<label for="secretKey">Aspera Account Password:</label> <input
 											type="password" autocomplete="secret-access-key" class="form-control"
@@ -323,7 +326,6 @@
 						th:value="${downloadType}" />
 					<input type="hidden" name="transferType" id="transferType"
 						th:value="${transferType}" />
-
                   </div>
                  </div> 
                </form>
