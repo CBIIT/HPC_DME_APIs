@@ -2,55 +2,55 @@
 Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and Google Drive
   Description: This feature file contains registering from  related scenarios
 
-  @register @smoke
+  @register @reg101
   Scenario Outline: Register Asynchronous data file transfer from Google Cloud
-    Given I have a data source "<source>"
+    Given I need set up a Bulk Data Object Registration
+    And I have a data source "<source>"
     And I have registration path as "/TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/RUN_XYZ_12345678"
     And I add source cloud bucket as "<bucket>"
-    And I add source cloud location as "<googleCloudLocation>"
-    And I choose file or directory as "<isFile>"
+    And I add source cloud location as "<cloudLocation>"
     And I add metadataEntries as
       | attribute       | value                  |
       | sample_id       | 3f233                  |
       | source_organism | Mouse                  |
       | lab_branch      | file-Lab / Branch Name |
       | pi_doc          | FNLCR                  |
-    When I click Register for the file Upload
+    When I click Register for Bulk Upload
     Then I get a response of <response> for the Upload
 
     Examples: 
-      | source      | bucket              | googleCloudLocation | isFile | response |
-      | googleCloud | dme-download-bucket | test.txt            | true   | success  |
-      | googleCloud | dme-upload-bucket   | screenshot.png      | true   | success  |
+      | source      | bucket              | cloudLocation | response |
+      | googleCloud | dme-download-bucket | test.txt            | success  |
+      | googleCloud | dme-upload-bucket   | screenshot.png      | success  |
 
-  @register @smoke2
+  @register @reg102
   Scenario Outline: Register Asynchronous data file transfer from AWS
-    Given I have registration path as "/FNL_SF_Archive/PI_Bogus_Investigator/935-testing-project/935-testing-flowcell/Run_SRR479649"
+    Given I need set up a Bulk Data Object Registration
+    And I have registration path as "/FNL_SF_Archive/PI_Bogus_Investigator/935-testing-project/935-testing-flowcell/Run_SRR479649"
     And I have a data source "<source>"
     And I add source cloud bucket as "<bucket>"
-    And I add source cloud location as "<googleCloudLocation>"
-    And I choose file or directory as "<isFile>"
+    And I add source cloud location as "<cloudLocation>"
     And I add metadataEntries as
       | attribute       | value                  |
       | sample_id       | 3f233 aws              |
       | source_organism | Mouse                  |
       | lab_branch      | file-Lab / Branch Name |
       | pi_doc          | FNLCR                  |
-    When I click Register for the file Upload
+    When I click Register for Bulk Upload
     Then I get a response of <response> for the Upload
 
     Examples: 
-      | source | bucket          | googleCloudLocation | isFile | response |
-      | aws    | dme-test-bucket | a.json              | true   | success  |
-      | aws    | dme-test-bucket | b.json              | true   | success  |
+      | source | bucket          | cloudLocation | response |
+      | aws    | dme-test-bucket | a.json              | success  |
+      | aws    | dme-test-bucket | b.json              | success  |
 
-  @register @test1023 @gc @bulk
+  @register @test1023 @gc @bulk @reg103
   Scenario Outline: Register Asynchronous data file transfer from Google Cloud with Parent Metadata
-    Given I have a data source "<source>"
+  	Given I need set up a Bulk Data Object Registration
+    And I have a data source "<source>"
     And I have registration path as "/TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/RUN_XYZ_12345678"
     And I add source cloud bucket as "<bucket>"
-    And I add source cloud location as "<googleCloudLocation>"
-    And I choose file or directory as "<isFile>"
+    And I add source cloud location as "<cloudLocation>"
     And I add metadataEntries as
       | attribute       | value                  |
       | sample_id       | 3f233                  |
@@ -73,15 +73,15 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
       | source_organism | default_2 |
       | lab_branch      | default_3 |
       | pi_doc          | FNLCR     |
-    When I click Register for the file Upload
+    When I click Register for Bulk Upload
     Then I get a response of <response> for the Upload
 
     Examples: 
-      | source      | bucket              | googleCloudLocation | isFile | response |
-      | googleCloud | dme-download-bucket | xyzfile.txt         | true   | success  |
-      | googleCloud | dme-upload-bucket   | RSF-2022-03-29.csv  | true   | success  |
+      | source      | bucket              | cloudLocation | response |
+      | googleCloud | dme-download-bucket | xyzfile.txt         | success  |
+      | googleCloud | dme-upload-bucket   | RSF-2022-03-29.csv  | success  |
 
-  @register @test1024 @gc @bulk @dev
+  @register @test1024 @gc @bulk @dev @reg104
   Scenario Outline: Register Asynchronous data file transfer from Google Cloud with 2 DataObject registrations and 1 Directory registrations, DEV
     Given I need set up a Bulk Directory Registration
     Given I have a data source "googleCloud"
@@ -124,7 +124,7 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
     When I click Register for Bulk Upload
     Then I get a response of success for the Upload
 
-	@register
+	@register @reg105
   Scenario Outline: Register Asynchronous data file transfer from Globus
     Given I have registration path as "/TEST_NO_HIER_Archive/PI_testdirectory2/Project_test/flowcell_test2/sample_sehgal/RUN_XYZ_12345678"
     And I have a data source "globus"
@@ -137,7 +137,7 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
     When I click Register for the file Upload
     Then I get a response of success for the Upload
 
-	@register
+	@register @register203 @reg106
   Scenario Outline: Register Asynchronous directory transfer from Google Cloud
     Given I have a data source "googleCloud"
     And I have registration path as "/GTL_RAS_Archive/TEST/Project/Flowcell"
@@ -155,7 +155,7 @@ Feature: Register Asynchronous data transfer from Google Cloud, AWS, Globus and 
       | source      | bucket              | response |
       | googleCloud | dme-download-bucket | success  |
 
-  @register  @testdev101
+  @register  @testdev101 @reg107
   Scenario: Register Asynchronous directory transfer from Google Cloud(DEV)
     Given I have a data source "googleCloud"
     And I have registration path as "/GTL_RAS_Archive/test2"

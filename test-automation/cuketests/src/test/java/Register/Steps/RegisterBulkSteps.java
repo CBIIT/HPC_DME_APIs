@@ -1,55 +1,30 @@
 package Register.Steps;
 
-import static io.restassured.RestAssured.when;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.io.*;
+//import com.jayway.jsonpath.JsonPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
 
 import Register.Pojo.BulkDataObjectRegister;
 import Register.Pojo.BulkMetadataEntriesPojo;
 import Register.Pojo.BulkMetadataEntry;
 import Register.Pojo.DataObjectRegistration;
-import Register.Pojo.DirectoryScanRegistrationItemPojo;
-import Register.Pojo.GoogleCloudUploadPojo;
+import Register.Pojo.DirectoryLocationUploadPojo;
 import Register.Pojo.DirectoryScanPathMapPojo;
-import Register.Pojo.GooglePojo;
-import Register.Pojo.ParentMetadataPojo;
+import Register.Pojo.DirectoryScanRegistrationItemPojo;
 import Register.Pojo.RegisterGoogleCloudPojo;
-import Register.Pojo.RegisterPojo;
-import Register.Pojo.S3AccountPojo;
 import Register.Pojo.S3StreamingUploadPojo;
 import Register.Pojo.SourceLocationPojo;
-import Register.Pojo.DirectoryLocationUploadPojo;
-import common.JsonHelper;
 import common.TaskHelper;
 import dataProviders.ConfigFileReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-//import io.cucumber.messages.internal.com.google.gson.Gson;
-import io.cucumber.datatable.DataTable;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import io.restassured.path.json.JsonPath;
-import junit.framework.Assert;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
-import java.lang.Thread;
-//import com.jayway.jsonpath.JsonPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RegisterBulkSteps {
 	static final String BULK_REGISTRATION_URL = "/hpc-server/v2/registration";
@@ -73,9 +48,9 @@ public class RegisterBulkSteps {
 	String path;
 	String source;
 	String directoryPath;
-	String isFile = "false";
 	boolean isBulkDataObjectRegistration; // true if data object Registration, false if directory Registration
 	boolean firstRegistration = true;
+	boolean testSuccess = false;
 	int statusCode;
 
 	// The Logger instance.
@@ -136,13 +111,9 @@ public class RegisterBulkSteps {
 		sourceLocation.setFileId(file);
 	}
 
-	@Given("I choose file or directory as {string}")
-	public void i_choose_file_or_directory_as(String isFile) {
-
-	}
-
 	@Given("I add metadataEntries as")
 	public void i_add_metadata_entries_as(io.cucumber.datatable.DataTable dataTable) {
+		//Sync...
 		rows = dataTable.asMaps(String.class, String.class);
 		for (Map<String, String> columns : rows) {
 			String attribute = columns.get("attribute");
@@ -219,14 +190,14 @@ public class RegisterBulkSteps {
 		}
 		bulkRequest.setDataObjectRegistrationItems(dataObjectRegistrations);
 		bulkRequest.setDirectoryScanRegistrationItems(directoryScanRegistrations);
-		taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
+		testSuccess = taskHelper.submitBulkRequest("PUT", gson.toJson(bulkRequest), BULK_REGISTRATION_URL);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}
 
 	@Then("I get a response of success for the Upload")
 	public void i_get_a_response_of_success_for_the_google_cloud_upload() {
-		org.junit.Assert.assertEquals(201, 201);
+		org.junit.Assert.assertEquals(testSuccess, true);
 	}
 
 	private void setupDataObjectRegistration() {
