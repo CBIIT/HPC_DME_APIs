@@ -88,6 +88,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
 
+	@Value("${gov.nih.nci.hpc.asperaBucket}")
+	private String asperaBucket;
+
 	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
 	private Gson gson = new Gson();
 
@@ -124,6 +127,15 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			String downloadType = request.getParameter("downloadType");
 			hpcDownloadDatafile.setDownloadType(downloadType);
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
+			// Setting default values for Aspera variables
+			model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
+			model.addAttribute("asperaUser", "asp-dbgap");
+			model.addAttribute("asperaPath", "/");
+			if(asperaBucket == null || asperaBucket.contains("<") || asperaBucket.contains(">")) {
+				model.addAttribute("asperaBucketName", "test");
+			} else {
+				model.addAttribute("asperaBucketName", asperaBucket);
+			}
 
 			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
