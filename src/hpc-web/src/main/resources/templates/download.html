@@ -458,17 +458,24 @@
 				var asperaUser = document.getElementById("asperaUser").value;
 				var asperaPassword = document.getElementById("asperaPassword").value;
 				var asperaHost = document.getElementById("asperaHost").value;
-				if (asperaPath == null
-						|| asperaPath.trim().length == 0
-						|| asperaBucketName == null
-						|| asperaBucketName.trim().length == 0
-						|| asperaUser == null
-						|| asperaUser.trim().length == 0
-						|| asperaPassword == null
-						|| asperaPassword.trim().length == 0
-						|| asperaHost == null
-						|| asperaHost.trim().length == 0) {
-					alert("Please enter asynchronous download values");
+				if(asperaUser == null || asperaUser.trim().length == 0){
+					alert("Enter Aspera account user");
+					return false;
+				}
+				if (asperaBucketName == null ||  asperaBucketName.trim().length == 0){
+					alert("Enter Aspera bucket name");
+					return false;
+				}
+				if (asperaPassword == null ||  asperaPassword.trim().length == 0){
+					alert("Enter Aspera password");
+					return false;
+				}
+				if (asperaHost == null ||  asperaHost.trim().length == 0){
+					alert("Enter Aspera host");
+					return false;
+				}
+				if (asperaPath == null ||  asperaPath.trim().length == 0){
+					alert("Aspera path is not set");
 					return false;
 				}
 			} else {
