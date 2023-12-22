@@ -269,7 +269,7 @@
 								<!--- DbGap inputs -->
 								<div class="form-group" id="asperaDiv" style="display: none">
 									<div class="col-sm-12 column">
-										<label for="asperaBucketName">Aspera Bucket:</label>
+										<label for="asperaBucketName">Aspera Destination Directory:</label>
 										<div th:if="${asperaBucketName == 'test'}" id="oneOption">
 											<select name="asperaBucketName" id="asperaBucketName" class="form-control">
 												<option th:value="test" th:text="test" selected="selected"></option>
@@ -437,7 +437,7 @@
 					return false;
 				}
 				if (asperaBucketName == null ||  asperaBucketName.trim().length == 0){
-					alert("Enter Aspera bucket name");
+					alert("Enter Aspera destination directory");
 					return false;
 				}
 				if (asperaPassword == null ||  asperaPassword.trim().length == 0){
