@@ -142,3 +142,5 @@ src/hpc-server/hpc-scheduler-migration/target/classes/gov/nih/nci/hpc/scheduler/
 src/hpc-server/hpc-scheduler-migration/target/classes/META-INF/MANIFEST.MF
 src/hpc-server/hpc-scheduler-migration/target/classes/META-INF/spring/hpc-scheduler-migration-beans-configuration.xml
 src/hpc-server/hpc-scheduler-migration/target/classes/META-INF/spring/hpc-scheduler-migration-bundle-context-osgi.xml
+src/hpc-server/hpc-app-service-impl/src/test/java/META-INF/MANIFEST.MF
+src/hpc-server/hpc-scheduler-migration/.settings/org.eclipse.pde.core.prefs
