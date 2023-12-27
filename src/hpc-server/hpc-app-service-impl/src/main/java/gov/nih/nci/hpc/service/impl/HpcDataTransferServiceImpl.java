@@ -3512,6 +3512,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setGlobusDownloadDestination(downloadRequest.getGlobusDestination());
 			downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
 			downloadTask.setGoogleDriveDownloadDestination(downloadRequest.getGoogleDriveDestination());
+			downloadTask.setAsperaDownloadDestination(downloadRequest.getAsperaDestination());
 			downloadTask.setFirstHopRetried(false);
 			downloadTask.setRestoreRequested(true);
 			downloadTask.setDoc(dataManagementService
@@ -3535,9 +3536,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				response.setDestinationLocation(
 						downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 			} else if (downloadTask.getAsperaDownloadDestination() != null) {
-				downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 				downloadTask.setDestinationType(HpcDataTransferType.ASPERA);
-				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
+				HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
+						HpcDataTransferDownloadStatus.RESTORE_REQUESTED);
+				downloadTask.setId(secondHopDownload.getDownloadTask().getId());
 				response.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 			} else if (downloadRequest.getGlobusDestination() != null) {
 				downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
