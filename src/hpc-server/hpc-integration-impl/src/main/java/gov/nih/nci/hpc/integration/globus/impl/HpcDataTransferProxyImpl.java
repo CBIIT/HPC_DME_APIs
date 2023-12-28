@@ -274,7 +274,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			try {
 				exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(),
-						downloadRequest.getSudoPassword());
+						downloadRequest.getSudoPassword(), null, null);
 
 			} catch (HpcException e) {
 				throw new HpcException(
@@ -335,7 +335,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 
 			// Returning a calculated checksum.
-			return exec("md5sum " + archiveFilePath, sudoPassword).split("\\s+")[0];
+			return exec("md5sum " + archiveFilePath, sudoPassword, null, null).split("\\s+")[0];
 
 		} catch (IOException e) {
 			throw new HpcException("Failed to calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
@@ -349,14 +349,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		// Delete the archive file.
 		try {
-			exec("rm " + archiveFilePath, sudoPassword);
+			exec("rm " + archiveFilePath, sudoPassword, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to delete file: {}", archiveFilePath, e);
 		}
 		// Delete the metadata file.
 		try {
-			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), sudoPassword);
+			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), sudoPassword, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to delete metadata for file: {}", archiveFilePath, e);
@@ -931,10 +931,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
 
 		try {
-			exec("install -d -o " + systemAccount + " " + archiveDirectory, sudoPassword);
-			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), sudoPassword);
-			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword);
-			exec("chown " + systemAccount + " " + archiveFilePath, sudoPassword);
+			exec("install -d -o " + systemAccount + " " + archiveDirectory, sudoPassword, null, null);
+			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), sudoPassword, null, null);
+			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword, null, null);
+			exec("chown " + systemAccount + " " + archiveFilePath, sudoPassword, null, null);
 
 		} catch (HpcException e) {
 			throw new HpcException(

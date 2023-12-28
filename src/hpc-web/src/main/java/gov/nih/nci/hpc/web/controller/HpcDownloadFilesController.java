@@ -35,6 +35,8 @@ import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
@@ -86,6 +88,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
 
+	@Value("${gov.nih.nci.hpc.asperaBucket}")
+	private String asperaBucket;
+
 	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
 	private Gson gson = new Gson();
 
@@ -122,6 +127,15 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			String downloadType = request.getParameter("downloadType");
 			hpcDownloadDatafile.setDownloadType(downloadType);
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
+			// Setting default values for Aspera variables
+			model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
+			model.addAttribute("asperaUser", "asp-dbgap");
+			model.addAttribute("asperaPath", "/");
+			if(asperaBucket == null || asperaBucket.contains("<") || asperaBucket.contains(">")) {
+				model.addAttribute("asperaBucketName", "test");
+			} else {
+				model.addAttribute("asperaBucketName", asperaBucket);
+			}
 
 			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
@@ -361,6 +375,19 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				account.setRegion(downloadFile.getRegion());
 				destination.setAccount(account);
 				dto.setS3DownloadDestination(destination);
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("aspera")) {
+				HpcAsperaDownloadDestination destination = new HpcAsperaDownloadDestination();
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getAsperaBucketName());
+				location.setFileId(downloadFile.getAsperaPath().trim());
+				destination.setDestinationLocation(location);
+				HpcAsperaAccount account = new HpcAsperaAccount();
+				account.setUser(downloadFile.getAsperaUser());
+				account.setPassword(downloadFile.getAsperaPassword());
+				account.setHost(downloadFile.getAsperaHost());
+				destination.setAccount(account);
+				dto.setAsperaDownloadDestination(destination);
+				logger.info("JSON for Aspera Download: " + gson.toJson(dto));
 			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
                 String accessToken = (String)session.getAttribute("accessToken");
                 HpcGoogleDownloadDestination destination = new HpcGoogleDownloadDestination();

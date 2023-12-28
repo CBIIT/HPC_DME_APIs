@@ -25,6 +25,7 @@ public class AddBookmarkSteps {
 	BookmarkPojo bookmark = new BookmarkPojo();
 	String bookmarkName;
 	int statusCode;
+	boolean testSuccess = false;
 
 	@Given("I have a path of {string}")
 	public void i_have_a_path_of(String path) {
@@ -50,7 +51,7 @@ public class AddBookmarkSteps {
 	public void i_add_the_bookmark() {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Add Bookmark");
-		taskHelper.submitRequest("PUT", gson.toJson(bookmark), this.bookmarkName);
+		testSuccess = taskHelper.submitRequest("PUT", gson.toJson(bookmark), this.bookmarkName);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}
@@ -59,7 +60,7 @@ public class AddBookmarkSteps {
 	public void i_update_the_bookmark() {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test Update Bookmark");
-		taskHelper.submitRequest("POST", gson.toJson(bookmark), this.bookmarkName);
+		testSuccess = taskHelper.submitRequest("POST", gson.toJson(bookmark), this.bookmarkName);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}
@@ -68,14 +69,18 @@ public class AddBookmarkSteps {
 	public void i_delete_the_bookmark() {
 		System.out.println("----------------------------------------------------------");
 		System.out.println("Test delete Bookmark");
-		taskHelper.submitBulkRequest("DELETE", gson.toJson(bookmark), this.bookmarkName);
+		testSuccess = taskHelper.submitRequest("DELETE", gson.toJson(bookmark), this.bookmarkName);
 		System.out.println("----------------------------------------------------------");
 		System.out.println("");
 	}
 
 	@Then("I verify the status of {string}")
 	public void i_verify_the_status_of(String status) {
-		// org.junit.Assert.assertEquals(201, this.statusCode);
+		if (status.equals("SUCCESS")) {
+			org.junit.Assert.assertEquals(testSuccess, true);
+		} else {
+			org.junit.Assert.assertEquals(testSuccess, false);
+		}
 	}
 
 }
