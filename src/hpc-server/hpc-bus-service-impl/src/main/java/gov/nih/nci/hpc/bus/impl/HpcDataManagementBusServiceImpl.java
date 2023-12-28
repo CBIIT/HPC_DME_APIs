@@ -415,7 +415,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report) throws HpcException {
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report)
+			throws HpcException {
 		// Input validation.
 		if (path == null || offset < 0) {
 			throw new HpcException("Null collection path or invalid offset", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -453,7 +454,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
-		if(report)
+		if (report)
 			collectionDTO.getReports().add(getTotalSizeReport(path, true));
 
 		return collectionDTO;
@@ -504,6 +505,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 				downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
+				downloadRequest.getAsperaDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId());
 
 		// Create and return a DTO with the request receipt.
@@ -562,6 +564,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		} else {
@@ -600,6 +603,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		}
@@ -808,39 +812,41 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		int pageSizeOffset = 0;
 		int resultsCount = dataTransferService.getDownloadResultsCount(userId, doc);
 		List<HpcUserDownloadRequest> activeRequestsInPage = null;
-		if(activeRequests != null && !activeRequests.isEmpty()) {
-			if(activeRequests.size() > limit * page) {
-			//The active requests to be displayed are more than the size of the page,
-			//so restrict the activeRequests displayed to the page limit
-				activeRequestsInPage =
-				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
-			} else if(activeRequests.size() > limit * (page - 1)) {
-				//The active requests to be displayed on this page are less than the size of the page
-				//so display the remaining activeRequests
-				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+		if (activeRequests != null && !activeRequests.isEmpty()) {
+			if (activeRequests.size() > limit * page) {
+				// The active requests to be displayed are more than the size of the page,
+				// so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), limit + limit * (page - 1));
+			} else if (activeRequests.size() > limit * (page - 1)) {
+				// The active requests to be displayed on this page are less than the size of
+				// the page
+				// so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), activeRequests.size());
 			}
-			if(activeRequestsInPage != null) {
+			if (activeRequestsInPage != null) {
 				downloadSummary.getActiveTasks().addAll(activeRequestsInPage);
 			}
 
-			//Determine how many rows have been taken up by the activeRequests, these will be
-			//subtracted from the page limit later to determine how many rows are available to display
-			//the completed requests.
-			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+			// Determine how many rows have been taken up by the activeRequests, these will
+			// be
+			// subtracted from the page limit later to determine how many rows are available
+			// to display
+			// the completed requests.
+			if (activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
 				pageSizeOffset = activeRequestsInPage.size();
 			}
 		}
 
-		List<HpcUserDownloadRequest> downloadResults = dataTransferService.getDownloadResults(userId, page, doc, pageSizeOffset);
+		List<HpcUserDownloadRequest> downloadResults = dataTransferService.getDownloadResults(userId, page, doc,
+				pageSizeOffset);
 		downloadSummary.getCompletedTasks().addAll(downloadResults);
 
 		downloadSummary.setPage(page);
 		downloadSummary.setLimit(limit);
 
 		if (totalCount) {
-			int count = downloadSummary.getCompletedTasks().size()  + downloadSummary.getActiveTasks().size();
-			downloadSummary.setTotalCount(
-					(page == 1 && count < limit) ? count : resultsCount);
+			int count = downloadSummary.getCompletedTasks().size() + downloadSummary.getActiveTasks().size();
+			downloadSummary.setTotalCount((page == 1 && count < limit) ? count : resultsCount);
 		}
 
 		return downloadSummary;
@@ -932,7 +938,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return usrPrmsOnClltcns;
 	}
 
-
 	@Override
 	public HpcUserPermsForCollectionsDTO getUserPermissionsOnChildCollections(String parentPath, String userId)
 			throws HpcException {
@@ -940,15 +945,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (dataManagementSecurityService.userExists(userId)) {
 			userPermissionsOnCollections = new HpcUserPermsForCollectionsDTO();
 			userPermissionsOnCollections.setUserId(userId);
-			userPermissionsOnCollections.getPermissionsForCollections().addAll(
-					dataManagementService.acquireChildrenCollectionsPermissionsForUser(
-				        parentPath, userId));
+			userPermissionsOnCollections.getPermissionsForCollections()
+					.addAll(dataManagementService.acquireChildrenCollectionsPermissionsForUser(parentPath, userId));
 		} else {
 			throw new HpcException("User not found: " + userId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
 		}
 		return userPermissionsOnCollections;
 	}
-
 
 	@Override
 	public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths) throws HpcException {
@@ -1416,41 +1419,43 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// user.
 		final boolean addUserId = doc == null ? false : true;
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
-		List<HpcBulkDataObjectRegistrationTask> activeRequests =
-				dataManagementService.getRegistrationTasks(userId, doc);
-
+		List<HpcBulkDataObjectRegistrationTask> activeRequests = dataManagementService.getRegistrationTasks(userId,
+				doc);
 
 		int pageSizeOffset = 0;
 		int limit = dataManagementService.getRegistrationResultsPageSize();
 
 		int resultsCount = dataManagementService.getRegistrationResultsCount(userId, doc);
 		List<HpcBulkDataObjectRegistrationTask> activeRequestsInPage = null;
-		if(activeRequests != null && !activeRequests.isEmpty()) {
-			if(activeRequests.size() > limit * page) {
-			//The active requests to be displayed are more than the size of the page,
-			//so restrict the activeRequests displayed to the page limit
-				activeRequestsInPage =
-				activeRequests.subList(limit*(page-1), limit + limit * (page - 1));
-			} else if(activeRequests.size() > limit * (page - 1)) {
-				//The active requests to be displayed on this page are less than the size of the page
-				//so display the remaining activeRequests
-				activeRequestsInPage = activeRequests.subList(limit*(page-1), activeRequests.size());
+		if (activeRequests != null && !activeRequests.isEmpty()) {
+			if (activeRequests.size() > limit * page) {
+				// The active requests to be displayed are more than the size of the page,
+				// so restrict the activeRequests displayed to the page limit
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), limit + limit * (page - 1));
+			} else if (activeRequests.size() > limit * (page - 1)) {
+				// The active requests to be displayed on this page are less than the size of
+				// the page
+				// so display the remaining activeRequests
+				activeRequestsInPage = activeRequests.subList(limit * (page - 1), activeRequests.size());
 			}
-			if(activeRequestsInPage != null) {
-				for(HpcBulkDataObjectRegistrationTask task: activeRequestsInPage)
-				    registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId));
+			if (activeRequestsInPage != null) {
+				for (HpcBulkDataObjectRegistrationTask task : activeRequestsInPage)
+					registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId));
 			}
 
-			//Determine how many rows have been taken up by the activeRequests, these will be
-			//subtracted from the page limit later to determine how many rows are available to display
-			//the completed requests.
-			if(activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
+			// Determine how many rows have been taken up by the activeRequests, these will
+			// be
+			// subtracted from the page limit later to determine how many rows are available
+			// to display
+			// the completed requests.
+			if (activeRequestsInPage != null && activeRequestsInPage.size() + resultsCount > limit) {
 				pageSizeOffset = activeRequestsInPage.size();
 			}
 		}
 
-		dataManagementService.getRegistrationResults(userId, page, doc, pageSizeOffset).forEach(result -> registrationSummary
-				.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
+		dataManagementService.getRegistrationResults(userId, page, doc, pageSizeOffset)
+				.forEach(result -> registrationSummary.getCompletedTasks()
+						.add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
 
 		registrationSummary.setPage(page);
 		registrationSummary.setLimit(limit);
@@ -1562,7 +1567,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String retryTaskId, String userId, String retryUserId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException {
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
+			String collectionDownloadTaskId) throws HpcException {
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1571,12 +1577,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to Google Drive / Google Cloud Storage destination is supported
+		// 3. Download to Google Drive / Google Cloud Storage / Aspera destination is
+		// supported
 		// only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
 				downloadRequest.getGoogleDriveDownloadDestination() != null
-						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null,
+						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null
+						|| downloadRequest.getAsperaDownloadDestination() != null,
 				false);
 
 		// Download the data object.
@@ -1584,10 +1592,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
-				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
-				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId, userId, retryUserId, completionEvent,
-				collectionDownloadTaskId, metadata.getSourceSize() != null ? metadata.getSourceSize() : 0,
-				metadata.getDataTransferStatus(), metadata.getDeepArchiveStatus());
+				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getSynchronousDownloadFilter(),
+				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
+				retryTaskId, userId, retryUserId, completionEvent, collectionDownloadTaskId,
+				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
+				metadata.getDeepArchiveStatus());
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
@@ -1629,6 +1638,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} else if (taskStatus.getDataObjectDownloadTask().getGoogleCloudStorageDownloadDestination() != null) {
 				downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
 						.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			} else if (taskStatus.getDataObjectDownloadTask().getAsperaDownloadDestination() != null) {
+				downloadStatus.setDestinationLocation(
+						taskStatus.getDataObjectDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
 			}
 			downloadStatus.setDestinationType(taskStatus.getDataObjectDownloadTask().getDestinationType());
 			downloadStatus.setPercentComplete(taskStatus.getDataObjectDownloadTask().getPercentComplete());
@@ -1636,7 +1648,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setRestoreInProgress(taskStatus.getDataObjectDownloadTask().getDataTransferStatus()
 					.equals(HpcDataTransferDownloadStatus.RESTORE_REQUESTED));
 			downloadStatus.setStagingInProgress(Boolean.FALSE.equals(downloadStatus.getRestoreInProgress())
-					&& HpcDataTransferType.GLOBUS.equals(taskStatus.getDataObjectDownloadTask().getDestinationType())
+					&& (HpcDataTransferType.GLOBUS.equals(taskStatus.getDataObjectDownloadTask().getDestinationType())
+							|| HpcDataTransferType.ASPERA
+									.equals(taskStatus.getDataObjectDownloadTask().getDestinationType()))
 					&& HpcDataTransferType.S_3.equals(taskStatus.getDataObjectDownloadTask().getDataTransferType())
 							? true
 							: null);
@@ -1663,7 +1677,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
 		}
-		
+
 		return downloadStatus;
 	}
 
@@ -1688,8 +1702,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDownloadTaskResult downloadTask = taskStatus.getResult();
 		HpcDownloadRequestDTO downloadRequest = createDownloadRequestDTO(downloadTask, downloadRetryRequest);
 		downloadTask.setRetryUserId(securityService.getRequestInvoker().getNciAccount().getUserId());
-		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getId(), downloadTask.getUserId(), 
-				downloadTask.getRetryUserId(), true, null);
+		return downloadDataObject(downloadTask.getPath(), downloadRequest, downloadTask.getId(),
+				downloadTask.getUserId(), downloadTask.getRetryUserId(), true, null);
 	}
 
 	@Override
@@ -2325,13 +2339,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 
 		// Data objects bulk metadata updates.
-		
+
 		// Add an audit record if this is a query update
 		if (bulkMetadataUpdateRequest.getDataObjectCompoundQuery() != null) {
-			dataManagementService.addBulkUpdateAuditRecord(userId, bulkMetadataUpdateRequest.getDataObjectCompoundQuery(),
-				HpcCompoundMetadataQueryType.DATA_OBJECT, bulkMetadataUpdateRequest.getMetadataEntries());
+			dataManagementService.addBulkUpdateAuditRecord(userId,
+					bulkMetadataUpdateRequest.getDataObjectCompoundQuery(), HpcCompoundMetadataQueryType.DATA_OBJECT,
+					bulkMetadataUpdateRequest.getMetadataEntries());
 		}
-		
+
 		dataObjectPaths.forEach(path -> {
 			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
 			item.setPath(path);
@@ -2355,13 +2370,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		});
 
 		// Collections bulk metadata updates.
-		
+
 		// Add an audit record if this is a query update
 		if (bulkMetadataUpdateRequest.getCollectionCompoundQuery() != null) {
-			dataManagementService.addBulkUpdateAuditRecord(userId, bulkMetadataUpdateRequest.getCollectionCompoundQuery(),
-				HpcCompoundMetadataQueryType.COLLECTION, bulkMetadataUpdateRequest.getMetadataEntries());
+			dataManagementService.addBulkUpdateAuditRecord(userId,
+					bulkMetadataUpdateRequest.getCollectionCompoundQuery(), HpcCompoundMetadataQueryType.COLLECTION,
+					bulkMetadataUpdateRequest.getMetadataEntries());
 		}
-		
+
 		collectionPaths.forEach(path -> {
 			HpcMetadataUpdateItem item = new HpcMetadataUpdateItem();
 			item.setPath(path);
@@ -2794,6 +2810,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
 						.getGoogleDriveDownloadDestination().getDestinationLocation());
 				downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+			} else if (taskStatus.getCollectionDownloadTask().getAsperaDownloadDestination() != null) {
+				downloadStatus.setDestinationLocation(
+						taskStatus.getCollectionDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
+				downloadStatus.setDestinationType(HpcDataTransferType.ASPERA);
 			}
 
 			// Get the status of the individual data object download tasks if the collection
@@ -2834,7 +2854,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						downloadItem.setRestoreInProgress(dataObjectDownloadTask.getRestoreRequested());
 					}
 					downloadItem.setStagingInProgress(
-							HpcDataTransferType.GLOBUS.equals(dataObjectDownloadTask.getDestinationType())
+							(HpcDataTransferType.GLOBUS.equals(dataObjectDownloadTask.getDestinationType())
+									|| HpcDataTransferType.ASPERA.equals(dataObjectDownloadTask.getDestinationType()))
 									&& HpcDataTransferType.S_3.equals(dataObjectDownloadTask.getDataTransferType())
 											? true
 											: null);
@@ -3556,16 +3577,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Validate a download request.
 	 *
-	 * @param path                      The data object path.
-	 * @param googleDownloadDestination True if the download destination is Google
-	 *                                  Drive or Google Cloud Storage
-	 * @param generateDownloadURL       True if this is a request to generate a
-	 *                                  download URL.
+	 * @param path                              The data object path.
+	 * @param googleOrAsperaDownloadDestination True if the download destination is
+	 *                                          Google Drive or Google Cloud
+	 *                                          Storage, or Aspera
+	 * @param generateDownloadURL               True if this is a request to
+	 *                                          generate a download URL.
 	 * @return The system generated metadata
 	 * @throws HpcException If the request is invalid.
 	 */
-	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path, boolean googleDownloadDestination,
-			boolean generateDownloadURL) throws HpcException {
+	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path,
+			boolean googleOrAsperaDownloadDestination, boolean generateDownloadURL) throws HpcException {
 
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
@@ -3577,16 +3599,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleDownloadDestination,
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleOrAsperaDownloadDestination,
 					generateDownloadURL);
 		}
 
 		// Download to Google Drive / Google Cloud Storage destination is supported only
 		// from S3 archive.
-		if (googleDownloadDestination && (metadata.getDataTransferType() == null
+		if (googleOrAsperaDownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
 			throw new HpcException(
-					"Google Drive / Google Cloud Storage download request is not supported for POSIX based file system archive",
+					"Google Drive / Google Cloud Storage / Aspera download request is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -3860,6 +3882,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else if (collectionDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			destinationLocation = collectionDownloadTask.getGoogleCloudStorageDownloadDestination()
 					.getDestinationLocation();
+		} else if (collectionDownloadTask.getAsperaDownloadDestination() != null) {
+			destinationLocation = collectionDownloadTask.getAsperaDownloadDestination().getDestinationLocation();
 		}
 
 		return destinationLocation;
