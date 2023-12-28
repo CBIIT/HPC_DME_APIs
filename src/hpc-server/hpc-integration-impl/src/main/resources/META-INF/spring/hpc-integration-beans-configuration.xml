@@ -77,6 +77,10 @@
 	      
 	<!--  Google Cloud Storage Connection  -->
 	<bean id="hpcGoogleCloudStorageConnection" class="gov.nih.nci.hpc.integration.googlecloudstorage.impl.HpcGoogleCloudStorageConnection" />
+	
+	<!-- Aspera Data Transfer Proxy -->
+	<bean id="hpcAsperaDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.aspera.impl.HpcDataTransferProxyImpl" />
 	 
 	<!-- HPC LDAP Authentication Proxy -->
 	<bean id="hpcLdapAuthenticationProxy"
@@ -113,6 +117,7 @@
 	      <constructor-arg value="${hpc.integration.irods.algorithm}" index="6" />
 	      <constructor-arg value="${hpc.integration.irods.pamAuthentication}" index="7" />
 	      <constructor-arg value="${hpc.integration.irods.maxFilesAndDirsQueryMax}" index="8" />
+	      <constructor-arg value="${hpc.integration.irods.maxIdlePerKey}" index="9" />
 	</bean>
 	
 	<!--  HPC Data Management Proxy -->
@@ -127,5 +132,8 @@
 	
 	<!--  Google Cloud Storage download executor (S3 -> Google Cloud Storage) thread pool -->
 	<task:executor id="hpcGoogleCloudStorageDownloadExecutor" pool-size="${hpc.integration.googlecloudstorage.downloadExecutorThreadPoolSize}"/>
+	
+	<!--  Aspera download executor (S3 -> Aspera) thread pool -->
+	<task:executor id="hpcAsperaDownloadExecutor" pool-size="${hpc.integration.aspera.downloadExecutorThreadPoolSize}"/>
 	
 </beans>

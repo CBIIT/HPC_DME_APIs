@@ -131,6 +131,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		if (!StringUtils.isBlank(loadMore)) {
 			loadMoreEntry = true;
 			getChildren = true;
+			logger.info("Load More Entries requested from browse");
 		}
 
 		try {
@@ -224,6 +225,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		if (!StringUtils.isBlank(loadMore)) {
 			loadMoreEntry = true;
 			getChildren = false;
+			logger.info("Load More Entries requested from tree node");
 		}
 
 		try {
@@ -396,6 +398,7 @@ public class HpcBrowseController extends AbstractHpcController {
               entries.add(browserEntry);
               if(basePath.equals(user.getDefaultBasePath())) {
                   model.addAttribute("browserEntryList", entries);
+                  session.setAttribute("browserEntry", browserEntry);
               }
           }
       }
@@ -594,6 +597,9 @@ public class HpcBrowseController extends AbstractHpcController {
 			//retrieve info on the selectedEntry also along with it's child list
 			//Else, we only get the child list, since we already have the
 			//info about the selectedEntry.
+			if (loadMore)
+				logger.info("Current size of children for " + path + ": " + (selectedEntry.getChildren() == null ? "null"
+						: new Integer(selectedEntry.getChildren().size()).toString()));
 			HpcCollectionListDTO collections = HpcClientUtil.getCollection(
 					authToken, collectionURL, path, 
 					//TODO testing with the child listing only
