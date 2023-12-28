@@ -223,7 +223,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "select CANCELLATION_REQUESTED from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
 
-	private static final String GET_TOTAL_DOWNLOADS_SIZE_SQL = "select sum(DATA_SIZE) from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ?";
+	private static final String GET_TOTAL_DOWNLOADS_SIZE_SQL = "select sum(DATA_SIZE) from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and DATA_TRANSFER_STATUS = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -1388,10 +1388,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public double getTotalDownloadsSize(String userId) throws HpcException {
+	public double getTotalDownloadsSize(String userId, HpcDataTransferDownloadStatus dataTransferDownloadStatus)
+			throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_TOTAL_DOWNLOADS_SIZE_SQL, Double.class, userId)
-					/ new Double(FileUtils.ONE_GB);
+			return jdbcTemplate.queryForObject(GET_TOTAL_DOWNLOADS_SIZE_SQL, Double.class, userId,
+					dataTransferDownloadStatus.value()) / new Double(FileUtils.ONE_GB);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to sum total downloads per user: " + e.getMessage(),
