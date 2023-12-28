@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.Calendar;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +32,9 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 
 /**
- * A data transfer listener for async streaming downloads. The streaming is done
- * from the S3 archive to AWS or Google Drive.
+ * A data transfer listener for async downloads. The streaming is done from the
+ * S3 archive to AWS or Google Drive. This listener is also used for downloading
+ * to Aspera.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
@@ -209,7 +211,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	}
 
 	/**
-	 * Update a download task for a streaming download (to AWS S3 or Google Drive).
+	 * Update a download task for a streaming download (to AWS S3 or Google Drive or Aspera).
 	 *
 	 * @param downloadTask The download task.
 	 * @throws HpcException If it failed to persist the task.
@@ -217,7 +219,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	private void updateDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		this.downloadTask.setId(downloadTask.getId());
 		this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
-		this.downloadTask.setDownloadFilePath(null);
+		this.downloadTask.setDownloadFilePath(downloadTask.getDownloadFilePath());
 		this.downloadTask.setUserId(downloadTask.getUserId());
 		this.downloadTask.setPath(downloadTask.getPath());
 		this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());
@@ -229,6 +231,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());
 		this.downloadTask
 				.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
+		this.downloadTask.setAsperaDownloadDestination(downloadTask.getAsperaDownloadDestination());
 		this.downloadTask.setCreated(downloadTask.getCreated());
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
@@ -243,6 +246,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		} else if (this.downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 			this.downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+		} else if (this.downloadTask.getAsperaDownloadDestination() != null) {
+			this.downloadTask.setDataTransferType(HpcDataTransferType.ASPERA);
+			this.downloadTask.setDestinationType(HpcDataTransferType.ASPERA);
 		}
 
 		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
@@ -257,6 +263,11 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	 */
 	private void completeDownloadTask(HpcDownloadResult result, String message, long bytesTransferred) {
 		try {
+			if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
+				// The task was cancelled / removed from the DB. Do some cleanup.
+				FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
+			}
+
 			Calendar completed = Calendar.getInstance();
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					bytesTransferred);
@@ -268,6 +279,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 				destinationLocation = downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
 			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 				destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
+			} else if (downloadTask.getAsperaDownloadDestination() != null) {
+				destinationLocation = downloadTask.getAsperaDownloadDestination().getDestinationLocation();
 			}
 
 			// Send a download completion or failed event (if requested to).
