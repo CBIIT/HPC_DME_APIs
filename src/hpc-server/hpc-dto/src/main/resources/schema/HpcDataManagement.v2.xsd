@@ -81,6 +81,8 @@
 					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 				<xsd:element name="googleCloudStorageDownloadDestination"
 					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
+				<xsd:element name="asperaDownloadDestination"
+					type="hpc-domain-datatransfer:HpcAsperaDownloadDestination" />
 				<xsd:element name="synchronousDownloadFilter"
 					type="hpc-domain-datatransfer:HpcSynchronousDownloadFilter" />
 			</xsd:sequence>
@@ -102,6 +104,8 @@
 					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 				<xsd:element name="googleCloudStorageDownloadDestination"
 					type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
+				<xsd:element name="asperaDownloadDestination"
+					type="hpc-domain-datatransfer:HpcAsperaDownloadDestination" />
 				<xsd:element name="appendPathToDownloadDestination"
 					type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
