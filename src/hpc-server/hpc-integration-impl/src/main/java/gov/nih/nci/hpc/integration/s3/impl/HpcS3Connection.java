@@ -20,8 +20,6 @@ import java.util.concurrent.Executors;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.AmazonClientException;
@@ -84,9 +82,6 @@ public class HpcS3Connection {
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
-
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
