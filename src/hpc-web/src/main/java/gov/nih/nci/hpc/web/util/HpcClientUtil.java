@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
@@ -2081,7 +2082,7 @@ public class HpcClientUtil {
   }
 
   public static HpcCollectionDownloadResponseDTO retryCollectionDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, HpcS3Account s3Account) {
     try {
     	HpcCollectionDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -2089,6 +2090,7 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
+        requestDTO.setS3Account(s3Account);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
@@ -2127,7 +2129,7 @@ public class HpcClientUtil {
   }
   
   public static HpcBulkDataObjectDownloadResponseDTO retryBulkDataObjectDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, HpcS3Account s3Account) {
     try {
     	HpcBulkDataObjectDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -2135,6 +2137,7 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
+        requestDTO.setS3Account(s3Account);
         
         Response restResponse = client.invoke("POST", requestDTO);
 
@@ -2173,7 +2176,7 @@ public class HpcClientUtil {
   }
   
   public static HpcDataObjectDownloadResponseDTO retryDataObjectDownloadTask(String token,
-	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
+	      String hpcQueryURL, String hpcCertPath, String hpcCertPassword, HpcS3Account s3Account) {
     try {
     	HpcDataObjectDownloadResponseDTO response = null;
         WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
@@ -2181,6 +2184,7 @@ public class HpcClientUtil {
 
         HpcDownloadRetryRequestDTO requestDTO = new HpcDownloadRetryRequestDTO();
         requestDTO.setDestinationOverwrite(true);
+        requestDTO.setS3Account(s3Account);
         
         Response restResponse = client.invoke("POST", requestDTO);
 

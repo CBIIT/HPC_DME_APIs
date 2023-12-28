@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -31,6 +34,8 @@ public class HpcUtil {
 
 	// Group name space encoding.
 	private static final String GROUP_NAME_SPACE_CODE = "_SPC_";
+	
+	private static final Logger logger = LoggerFactory.getLogger(new HpcUtil().getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// constructors
@@ -69,11 +74,14 @@ public class HpcUtil {
 	 *
 	 * @param command      The command to execute.
 	 * @param sudoPassword (Optional) if provided, the command will be executed w/
-	 *                     'sudo' using the provided password
+	 *                     'sudo' using the provided password.
+	 * @param envp         (Optional) array of environment variables
+	 * @param working      Directory The working directory to execute the command
 	 * @return The command's output
 	 * @throws HpcException If exec failed.
 	 */
-	public static String exec(String command, String sudoPassword) throws HpcException {
+	public static String exec(String command, String sudoPassword, String[] envp, File workingDirectory)
+			throws HpcException {
 		if (StringUtils.isEmpty(command)) {
 			throw new HpcException("Null / empty command", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -83,12 +91,12 @@ public class HpcUtil {
 		if (!StringUtils.isEmpty(sudoPassword)) {
 			execCommand = new String[] { "/bin/sh", "-c", "echo '" + sudoPassword + "'|sudo -S " + command };
 		} else {
-			execCommand = new String[] { command };
+			execCommand = new String[] { "/bin/sh", "-c", command };
 		}
 
 		Process process = null;
 		try {
-			process = Runtime.getRuntime().exec(execCommand);
+			process = Runtime.getRuntime().exec(execCommand, envp, workingDirectory);
 
 			if (process.waitFor() != 0) {
 				String message = null;
@@ -96,8 +104,8 @@ public class HpcUtil {
 					message = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
 					if (StringUtils.isEmpty(message) && process.getInputStream() != null) {
 						message = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
-					}
-					throw new HpcException("command [" + command + "] exec failed: " + message,
+					} 
+					throw new HpcException("command [" + command + "] exec error: " + message,
 							HpcErrorType.UNEXPECTED_ERROR);
 				}
 			} else if (process.getInputStream() != null) {

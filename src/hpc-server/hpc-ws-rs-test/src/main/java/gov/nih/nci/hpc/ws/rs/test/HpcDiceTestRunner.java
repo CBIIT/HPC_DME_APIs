@@ -57,7 +57,7 @@ public class HpcDiceTestRunner {
     // Default test config.
     String testScriptBaseDir =
         "/opt/HPC_DME_APIs/src/hpc-server/hpc-ws-rs-test/src/test/dice";
-    String testReportBaseDir = "/usr/share/tomcat8/webapps/dice";
+    String testReportBaseDir = "/usr/share/tomcat/webapps/dice";
     String reportEmailAddress = "HPC_DME_Admin@nih.gov";
 
     if (args.length == 3) {

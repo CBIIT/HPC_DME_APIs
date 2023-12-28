@@ -39,6 +39,7 @@
 		<prop key="hpc.scheduler.cron.startS3DataObjectDownloadTasks.delay">0/30 * * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGoogleCloudStorageDataObjectDownloadTasks.delay">39 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.startAsperaDataObjectDownloadTasks.delay">44 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">50 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">0/30 * * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeGlobusBunchingCollectionDownloadTasks.delay">47 0/1 * * * ?</prop>
