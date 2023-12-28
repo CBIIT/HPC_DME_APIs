@@ -3229,12 +3229,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				secondHopDownload.getDownloadTask().getUserId(), HpcDataTransferDownloadStatus.IN_PROGRESS);
 
 		if (totalDownloadsSize > maxPermittedTotalDownloadsSizePerUser) {
-			logger.info("The total downloads size [{}GB] for this user [{}] exceeds the max permitted [{}GB]",
+			logger.info("The total in-progress downloads size [{}GB] for this user [{}] exceeds the max permitted [{}GB]",
 					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
 					maxPermittedTotalDownloadsSizePerUser);
 			return false;
 		} else {
-			logger.info("The total downloads size [{}GB] for this user [{}] under the max permitted [{}GB]",
+			logger.info("The total in-progress downloads size [{}GB] for this user [{}] under the max permitted [{}GB]",
 					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
 					maxPermittedTotalDownloadsSizePerUser);
 		}
