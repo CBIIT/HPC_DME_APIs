@@ -31,6 +31,8 @@
 	      <prop key="hpc.integration.irods.algorithm">Configure Me</prop>
 	      <prop key="hpc.integration.irods.pamAuthentication">false</prop>
 	      <prop key="hpc.integration.irods.maxFilesAndDirsQueryMax">1000</prop>
+	      <prop key="hpc.integration.irods.maxIdlePerKey">10</prop>
+	      
 	      
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
 	      <prop key="hpc.integration.globus.queueSize">3</prop>
@@ -57,6 +59,10 @@
 		  
 		  <prop key="hpc.integration.googlecloudstorage.downloadExecutorThreadPoolSize">8</prop>
 		  
+		  <prop key="hpc.integration.aspera.downloadExecutorThreadPoolSize">8</prop>
+		  <prop key="hpc.integration.aspera.ascp">/Users/rosenbergea/Development/tools/aspera-connect/ascp</prop>
+		  <prop key="hpc.integration.aspera.privateKeyFile">/Users/rosenbergea/Development/tools/aspera-connect/aspera_tokenauth_id_rsa</prop>
+		  		  
 	      <prop key="hpc.integration.ldap.URL">ldaps://nihdcadhub2.nih.gov</prop>
 	      <prop key="hpc.integration.ldap.username">Configure Me</prop>
 	      <prop key="hpc.integration.ldap.password">Configure Me</prop>
@@ -90,5 +96,7 @@
 		          interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />
 	<osgi:service ref="hpcSpsAuthorizationProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy" />
+	<osgi:service ref="hpcAsperaDataTransferProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 
 </beans>

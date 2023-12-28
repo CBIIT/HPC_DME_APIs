@@ -38,12 +38,13 @@ public interface HpcDataDownloadDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void createDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException;
-	
+
 	/**
-	 * Update a data object download task 
+	 * Update a data object download task
 	 *
 	 * @param dataObjectDownloadTask The data object download task to persist.
-	 * @return true if the task was updated, or false if the task no longer exist (removed / canceled).
+	 * @return true if the task was updated, or false if the task no longer exist
+	 *         (removed / canceled).
 	 * @throws HpcException on database error.
 	 */
 	public boolean updateDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException;
@@ -391,7 +392,8 @@ public interface HpcDataDownloadDAO {
 	 * @return A list of active data object download requests.
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcUserDownloadRequest> getDataObjectDownloadRequestsForDoc(String doc, String userId) throws HpcException;
+	public List<HpcUserDownloadRequest> getDataObjectDownloadRequestsForDoc(String doc, String userId)
+			throws HpcException;
 
 	/**
 	 * Get all data object download requests.
@@ -409,7 +411,8 @@ public interface HpcDataDownloadDAO {
 	 * @return A list of active collection download requests.
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcUserDownloadRequest> getCollectionDownloadRequestsForDoc(String doc, String userId) throws HpcException;
+	public List<HpcUserDownloadRequest> getCollectionDownloadRequestsForDoc(String doc, String userId)
+			throws HpcException;
 
 	/**
 	 * Get all collection download requests.
@@ -429,7 +432,8 @@ public interface HpcDataDownloadDAO {
 	 * @return A list of completed download requests.
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResultsForDoc(String doc, String userId, int offset, int limit) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadResultsForDoc(String doc, String userId, int offset, int limit)
+			throws HpcException;
 
 	/**
 	 * Get all download results.
@@ -444,7 +448,7 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Get download results count for a doc.
 	 *
-	 * @param doc The doc to query for.
+	 * @param doc    The doc to query for.
 	 * @param userId The user ID to query for.
 	 * 
 	 * @return A total count of completed download requests.
@@ -459,5 +463,16 @@ public interface HpcDataDownloadDAO {
 	 * @throws HpcException on database error.
 	 */
 	public int getAllDownloadResultsCount() throws HpcException;
+
+	/**
+	 * Get total (active) download size of a given user
+	 *
+	 * @param userId                     The user ID to query for.
+	 * @param dataTransferDownloadStatus The transfer status to query by.
+	 * @return The total size of active downloads for the user in GB.
+	 * @throws HpcException on database error.
+	 */
+	public double getTotalDownloadsSize(String userId, HpcDataTransferDownloadStatus dataTransferDownloadStatus)
+			throws HpcException;
 
 }

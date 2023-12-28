@@ -180,18 +180,27 @@ public class HpcScheduledTasksImpl {
 				systemBusService::startGoogleCloudStorageDataObjectDownloadTasks, logger);
 	}
 
+	/**
+	 * Start Data Object Download Tasks that are in RECEIVED state for ASPERA
+	 * transfer.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.cron.startAsperaDataObjectDownloadTasks.delay}")
+	private void startAsperaDataObjectDownloadTasks() {
+		execute("startAsperaDataObjectDownloadTasks()", systemBusService::startAsperaDataObjectDownloadTasks, logger);
+	}
+
 	/** Complete In-Progress Data Object Download Tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay}")
 	private void completeInProgressDataObjectDownloadTasksTask() {
-		execute("completeDataObjectDownloadTasksTask()", systemBusService::completeInProgressDataObjectDownloadTasks,
-				logger);
+		execute("completeInProgressDataObjectDownloadTasksTask()",
+				systemBusService::completeInProgressDataObjectDownloadTasks, logger);
 	}
 
 	/** Complete Canceled Data Object Download Tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay}")
 	private void completeCanceledDataObjectDownloadTasksTask() {
-		execute("completeDataObjectDownloadTasksTask()", systemBusService::completeCanceledDataObjectDownloadTasks,
-				logger);
+		execute("completeCanceledDataObjectDownloadTasksTask()",
+				systemBusService::completeCanceledDataObjectDownloadTasks, logger);
 	}
 
 	/** Process collection download tasks. */
