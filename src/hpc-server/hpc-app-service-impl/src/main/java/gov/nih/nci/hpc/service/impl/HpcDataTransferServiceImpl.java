@@ -1464,7 +1464,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Check if the task got cancelled.
 		HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(downloadTask.getId());
 		if (task != null && HpcDataTransferDownloadStatus.CANCELED.equals(task.getDataTransferStatus())) {
-			logger.debug("download task: {} - cancelled - [transfer-type={}, destination-type={}]",
+			logger.info("download task: {} - cancelled - [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 			return false;
 		}
@@ -1486,8 +1486,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setStagingPercentComplete(null);
 		}
 
-		logger.debug("download task: {} - % complete - {} [transfer-type={}, destination-type={}]",
-				downloadTask.getId(), downloadTask.getPercentComplete(), downloadTask.getDataTransferType(),
+		logger.info("download task: {} - % complete - {} [transfer-type={}, destination-type={}]",
+				downloadTask.getId(), percentComplete, downloadTask.getDataTransferType(),
 				downloadTask.getDestinationType());
 
 		return dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
