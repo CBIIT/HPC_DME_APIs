@@ -1,44 +1,20 @@
 package common;
 
-import static io.restassured.RestAssured.when;
+//import com.jayway.jsonpath.JsonPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.Gson;
 
-import java.io.*;
-
-import Register.Pojo.BulkDataObjectRegister;
 import Register.Pojo.DataObjectRegistration;
 import Register.Pojo.S3AccountPojo;
 import Register.Pojo.S3StreamingUploadPojo;
 import Register.Pojo.SourceLocationPojo;
-import common.JsonHelper;
 import dataProviders.ConfigFileReader;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-//import io.cucumber.messages.internal.com.google.gson.Gson;
-import io.cucumber.datatable.DataTable;
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import io.restassured.path.json.JsonPath;
-import junit.framework.Assert;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
-import java.lang.Thread;
-//import com.jayway.jsonpath.JsonPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.restassured.specification.RequestSpecification;
 
 public class TaskHelper {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -63,7 +39,16 @@ public class TaskHelper {
 		return s3Account;
 	}
 
-	public void submitBulkRequest(String requestType, String requestBody, String requestUrl) {
+	public AsperaAccountPojo getAcctAspera() {
+		ConfigFileReader configFileReader = new ConfigFileReader();
+		AsperaAccountPojo asperaAccount = new AsperaAccountPojo();
+		asperaAccount.setUser(configFileReader.getAsperaUser());
+		asperaAccount.setPassword(configFileReader.getAsperaPassword());
+		asperaAccount.setHost(configFileReader.getAsperaHost());
+		return asperaAccount;
+	}
+
+	public boolean submitBulkRequest(String requestType, String requestBody, String requestUrl) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
 		String token = configFileReader.getToken();
@@ -114,21 +99,23 @@ public class TaskHelper {
 					taskFailed = true;
 					System.out.println("Failed set to true");
 					Object message = jsonPath.get("task.failedItems.message");
-					;
 					System.out.println(message.toString());
-					break;
+					return false;
 				}
 				pollingIteration++;
 				System.out.println("Task polling loop iteration: " + pollingIteration);
 			} while (pollingIteration < 10 && inProgress && !taskFailed);
 		} else {
 			JsonPath jsonPath = response.jsonPath();
+			System.out.println(jsonPath);
 			logger.error("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
 				jsonPath.getString("message") + " , Error Status Code: " + response.getStatusCode());
+			return false;
 		}
+		return true;
 	}
 
-	public void submitRequest(String requestType, String requestBody, String requestUrl) {
+	public boolean submitRequest(String requestType, String requestBody, String requestUrl) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
 		String token = configFileReader.getToken();
@@ -139,16 +126,14 @@ public class TaskHelper {
 				.header("Content-Type", "application/json").body(requestBody);
 		Response response = executeRequest(requestType, request, requestUrl);
 		int statusCode = response.getStatusCode();
-		System.out.println("The response is: " + response.asString());
+		System.out.println("The response status code is: " + statusCode);
+		JsonPath jsonPath = response.jsonPath();
+		//System.out.println("JSONPath =" + gson.toJson(jsonPath));
+		System.out.println("The response is: " + response.getBody().asString());
 		if (statusCode == 200 || statusCode == 201) {
-			//System.out.println("SUCCESS:" + statusCode);
-		}else {
-			JsonPath jsonPath = response.jsonPath();
-			if (jsonPath != null || jsonPath.get("errorType") != null) {
-				//logger.error("This test was a failure. ErrorType: " + (jsonPath.get("errorType") + "") + ", Error Message: " +
-				//		(jsonPath.getString("message") + "") + " , Error Status Code: " + response.getStatusCode());
-			}
-			//System.out.println("ERROR:" +response.getBody().asString());
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -160,6 +145,8 @@ public class TaskHelper {
 			 response = request.put(requestUrl);
 		} else if (requestType.equals("DELETE")) {
 			response  = request.delete(requestUrl);
+		} else if (requestType.equals("GET")) {
+			response  = request.get(requestUrl);
 		} else {
 			System.out.println("Unknown http method");
 			return null;
