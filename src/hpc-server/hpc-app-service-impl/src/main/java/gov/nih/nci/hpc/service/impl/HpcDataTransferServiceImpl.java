@@ -1312,7 +1312,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
 						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
-								+ " path={}], or transaction limit reached ",
+								+ " path={}], or transaction limit reached, or total in-progress download size for user eached",
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
 						downloadTask.getPath());
 				return;
@@ -3225,8 +3225,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// Check that the total downloads size for this user doesn't exceed the limit.
-		double totalDownloadsSize = dataDownloadDAO
-				.getTotalDownloadsSize(secondHopDownload.getDownloadTask().getUserId());
+		double totalDownloadsSize = dataDownloadDAO.getTotalDownloadsSize(
+				secondHopDownload.getDownloadTask().getUserId(), HpcDataTransferDownloadStatus.IN_PROGRESS);
 
 		if (totalDownloadsSize > maxPermittedTotalDownloadsSizePerUser) {
 			logger.info("The total downloads size [{}GB] for this user [{}] exceeds the max permitted [{}GB]",
