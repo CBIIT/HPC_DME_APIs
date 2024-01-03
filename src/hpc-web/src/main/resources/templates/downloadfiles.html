@@ -396,39 +396,46 @@
 
 			if (radioValue == 'async') {
 				var endPointName = document.getElementById("endPointName").value;
-				var endPointLocation = document
-						.getElementById("endPointLocation").value;
-				if (endPointLocation == null
-						|| endPointLocation.trim().length == 0
-						|| endPointName == null
-						|| endPointName.trim().length == 0) {
-					alert("Please enter asynchronous download values");
+				var endPointLocation = document.getElementById("endPointLocation").value;
+				if (endPointName == null || endPointName.trim().length == 0) {
+					alert("Enter Globus endpoint UUID");
+					return false;
+				} else if (endPointLocation == null || endPointLocation.trim().length == 0) {
+					alert("Enter Globus endpoint destination path");
+					return false;
+				} else if (endPointLocation.startsWith("http://") || endPointLocation.startsWith("https://")) {
+					alert("A URL is not acceptable as the Globus Endpoint (Destination) Path. Enter a valid Globus folder path.");
 					return false;
 				}
 			} else if (radioValue == 's3') {
 				var bucketName = document.getElementById("bucketName").value;
-				var s3Path = document
-						.getElementById("s3Path").value;
+				var s3Path = document.getElementById("s3Path").value;
 				var accessKey = document.getElementById("accessKey").value;
 				var secretKey = document.getElementById("secretKey").value;
 				var region = document.getElementById("region").value;
-				if (s3Path == null
-						|| s3Path.trim().length == 0
-						|| bucketName == null
-						|| bucketName.trim().length == 0
-						|| accessKey == null
-						|| accessKey.trim().length == 0
-						|| secretKey == null
-						|| secretKey.trim().length == 0
-						|| region == null
-						|| region.trim().length == 0) {
-					alert("Please enter asynchronous download values");
+				if (bucketName == null || bucketName.trim().length == 0) {
+					alert("Enter S3 bucket name");
+					return false;
+				}
+				if (s3Path == null || s3Path.trim().length == 0) {
+					alert("Enter S3 destination path");
+					return false;
+				}
+				if (accessKey == null || accessKey.trim().length == 0) {
+					alert("Enter access key");
+					return false;
+				}
+				if (secretKey == null || secretKey.trim().length == 0) {
+					alert("Enter secret key");
+					return false;
+				}
+				if (region == null || region.trim().length == 0) {
+					alert("Enter region");
 					return false;
 				}
 			} else if (radioValue == 'aspera') {
 				var asperaBucketName = document.getElementById("asperaBucketName").value;
-				var asperaPath = document
-						.getElementById("asperaPath").value;
+				var asperaPath = document.getElementById("asperaPath").value;
 				var asperaUser = document.getElementById("asperaUser").value;
 				var asperaPassword = document.getElementById("asperaPassword").value;
 				var asperaHost = document.getElementById("asperaHost").value;
@@ -453,11 +460,20 @@
 					return false;
 				}
 			} else if (radioValue == 'drive') {
-				var drivePath = document
-				.getElementById("drivePath").value;
-				if (drivePath == null
-						|| drivePath.trim().length == 0) {
-					alert("Please enter asynchronous download values");
+				var drivePath = document.getElementById("drivePath").value;
+				if (drivePath == null || drivePath.trim().length == 0) {
+					alert("Enter Google Drive destination path");
+					return false;
+				}
+			} else if (radioValue == 'googleCloud') {
+				var googleCloudPath = document.getElementById("googleCloudPath").value;
+				var googleCloudBucketName = document.getElementById("googleCloudBucketName").value;
+				if (googleCloudBucketName == null || googleCloudBucketName.trim().length == 0) {
+					alert("Enter Google Cloud bucket");
+					return false;
+				}
+				if (googleCloudPath == null || googleCloudPath.trim().length == 0) {
+					alert("Enter Google Cloud destination path");
 					return false;
 				}
 			}
@@ -478,9 +494,9 @@
 
 		$(document).ready(function(){
 			if($('#downloadType').val() == 'datafiles') {
-				$("#msgDownloadType").append("This page allows you to download the following selected data files to a Globus endpoint, an S3 bucket, Google Drive, or Google Cloud.");
+				$("#msgDownloadType").append("This page allows you to download the following selected data files to a Globus endpoint, S3 bucket, Google Drive, Google Cloud bucket or dbGaP bucket.");
 			} if($('#downloadType').val() == 'collections') {
-				$("#msgDownloadType").append("This page allows you to download the following selected collections to a Globus endpoint, an S3 bucket, Google Drive, or Google Cloud.");
+				$("#msgDownloadType").append("This page allows you to download the following selected collections to a Globus endpoint, S3 bucket, Google Drive, Google Cloud bucket or dbGaP bucket.");
 			}
 		});
 
