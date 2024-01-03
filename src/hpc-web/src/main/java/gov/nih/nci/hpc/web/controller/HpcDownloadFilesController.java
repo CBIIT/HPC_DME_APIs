@@ -236,6 +236,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
         if (code != null) {
             //Return from Google Drive Authorization
             final String returnURL = this.webServerName + "/downloadfiles";
+            model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
             try {
 				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
