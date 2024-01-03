@@ -64,6 +64,7 @@ public class HpcEventServiceImpl implements HpcEventService {
 	public static final String COLLECTION_PATH_PAYLOAD_ATTRIBUTE = "COLLECTION_PATH";
 	public static final String COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE = "UPDATE";
 	public static final String COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE = "UPDATE_DESCRIPTION";
+	public static final String COLLECTION_UPDATE_BY_PAYLOAD_ATTRIBUTE = "UPDATE_BY";
 	public static final String SOURCE_LOCATION_PAYLOAD_ATTRIBUTE = "SOURCE_LOCATION";
 	public static final String DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE = "DESTINATION_LOCATION";
 	public static final String COLLECTION_UPDATE_PRESIGNED_URL_PAYLOAD_ATTRIBUTE = "PRESIGNED_URL";
@@ -477,7 +478,7 @@ public class HpcEventServiceImpl implements HpcEventService {
 		HpcEvent event = new HpcEvent();
 		event.setType(HpcEventType.COLLECTION_UPDATED);
 		event.getPayloadEntries()
-				.addAll(toCollectionUpdatedPayloadEntries(path, updatePayloadValue, updateDescriptionPayloadValue));
+				.addAll(toCollectionUpdatedPayloadEntries(path, updatePayloadValue, updateDescriptionPayloadValue, userId));
 		if (presignURL != null) {
 			event.getPayloadEntries()
 					.add(toPayloadEntry(COLLECTION_UPDATE_PRESIGNED_URL_PAYLOAD_ATTRIBUTE, presignURL));
@@ -526,7 +527,7 @@ public class HpcEventServiceImpl implements HpcEventService {
 
 		// Get the users subscribed for this event.
 		userIds.addAll(notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED,
-				toCollectionUpdatedPayloadEntries(path, updatePayloadValue, updateDescriptionPayloadValue)));
+				toCollectionUpdatedPayloadEntries(path, updatePayloadValue, updateDescriptionPayloadValue, userId)));
 
 		// Add the user subscribed to the parent collection (if path is not root).
 		int parentCollectionIndex = path.lastIndexOf('/');
@@ -558,13 +559,15 @@ public class HpcEventServiceImpl implements HpcEventService {
 	 * @return A list of payload entries.
 	 */
 	private List<HpcEventPayloadEntry> toCollectionUpdatedPayloadEntries(String path, String updatePayloadValue,
-			String updateDescriptionPayloadValue) {
+			String updateDescriptionPayloadValue, String userId) {
 		List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
 		payloadEntries
 				.add(toPayloadEntry(COLLECTION_PATH_PAYLOAD_ATTRIBUTE, dataManagementProxy.getRelativePath(path)));
 		payloadEntries.add(toPayloadEntry(COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE, updatePayloadValue));
 		payloadEntries
 				.add(toPayloadEntry(COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE, updateDescriptionPayloadValue));
+		payloadEntries
+				.add(toPayloadEntry(COLLECTION_UPDATE_BY_PAYLOAD_ATTRIBUTE, userId));
 		return payloadEntries;
 	}
 
