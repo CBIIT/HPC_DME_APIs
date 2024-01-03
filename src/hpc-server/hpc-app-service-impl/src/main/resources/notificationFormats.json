@@ -417,7 +417,7 @@
 			"subjectFormat": "DME collection updated",
 			"subjectArguments": [
 			],
-			"textFormat": "Collection %1$s was updated.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
+			"textFormat": "Collection %1$s was updated by %4$s.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "COLLECTION_PATH",
@@ -430,6 +430,10 @@
 				{
 					"payloadEntryAttribute": "BASE_UI_URL",
 					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "UPDATE_BY",
+					"index": "3"
 				}
 			]
 		},
