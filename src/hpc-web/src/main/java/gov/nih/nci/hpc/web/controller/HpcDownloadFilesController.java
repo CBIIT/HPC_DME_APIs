@@ -236,7 +236,6 @@ public class HpcDownloadFilesController extends AbstractHpcController {
         if (code != null) {
             //Return from Google Drive Authorization
             final String returnURL = this.webServerName + "/downloadfiles";
-            model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
             try {
 				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
@@ -259,6 +258,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
               e.printStackTrace();
             }
             HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
+            boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(hpcSaveSearch.getTotalSize());
+            model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
             model.addAttribute("hpcSearch", hpcSaveSearch);
             HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
             model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
