@@ -56,6 +56,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -1464,8 +1465,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Check if the task got cancelled.
 		HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(downloadTask.getId());
 		if (task != null && HpcDataTransferDownloadStatus.CANCELED.equals(task.getDataTransferStatus())) {
-			logger.info("download task: {} - cancelled - [transfer-type={}, destination-type={}]",
-					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+			logger.info("download task: {} - cancelled - [transfer-type={}, destination-type={}]", downloadTask.getId(),
+					downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 			return false;
 		}
 
@@ -1486,9 +1487,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setStagingPercentComplete(null);
 		}
 
-		logger.info("download task: {} - % complete - {} [transfer-type={}, destination-type={}]",
-				downloadTask.getId(), percentComplete, downloadTask.getDataTransferType(),
-				downloadTask.getDestinationType());
+		logger.info("download task: {} - % complete - {} [transfer-type={}, destination-type={}]", downloadTask.getId(),
+				percentComplete, downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 
 		return dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 	}
@@ -1666,8 +1666,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, String retryUserId)
-			throws HpcException {
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken,
+			HpcAsperaAccount asperaAccount, String retryUserId) throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
 
@@ -1716,9 +1716,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		case S_3:
 			// Validate the S3 account.
-			HpcDomainValidationResult validationResult = isValidS3Account(s3Account);
-			if (!validationResult.getValid()) {
-				throw new HpcException("Invalid S3 account: " + validationResult.getMessage(),
+			HpcDomainValidationResult s3AccountValidationResult = isValidS3Account(s3Account);
+			if (!s3AccountValidationResult.getValid()) {
+				throw new HpcException("Invalid S3 account: " + s3AccountValidationResult.getMessage(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
@@ -1751,6 +1751,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			googleCloudStorageDownloadDestination.setAccessToken(googleAccessToken);
 			googleCloudStorageDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+			break;
+
+		case ASPERA:
+			// Validate the Aspera account.
+			HpcDomainValidationResult asperaAccountValidationResult = isValidAsperaAccount(asperaAccount);
+			if (!asperaAccountValidationResult.getValid()) {
+				throw new HpcException("Invalid Aspera account: " + asperaAccountValidationResult.getMessage(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			HpcAsperaDownloadDestination asperaDownloadDestination = new HpcAsperaDownloadDestination();
+			asperaDownloadDestination.setAccount(asperaAccount);
+			asperaDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
 			break;
 
 		default:
