@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -654,6 +655,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
 				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getAsperaAccount(),
 				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
@@ -780,6 +782,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
 				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getAsperaAccount(),
 				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
@@ -3921,6 +3924,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			googleCloudStorageDownloadDestination.setAccessToken(downloadRetryRequest.getGoogleAccessToken());
 			googleCloudStorageDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadRequest.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+			HpcAsperaDownloadDestination asperaDownloadDestination = new HpcAsperaDownloadDestination();
+			asperaDownloadDestination.setAccount(downloadRetryRequest.getAsperaAccount());
+			asperaDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadRequest.setAsperaDownloadDestination(asperaDownloadDestination);
 		}
 		return downloadRequest;
 	}
