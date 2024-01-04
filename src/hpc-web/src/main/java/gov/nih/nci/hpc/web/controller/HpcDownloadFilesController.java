@@ -233,10 +233,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		String code = request.getParameter("code");
 		String transferType = request.getParameter("transferType");
 		String googleAction =(String)session.getAttribute("googleAction");
-        if (code != null) {
-            //Return from Google Drive Authorization
-            final String returnURL = this.webServerName + "/downloadfiles";
-            try {
+		if (code != null) {
+			//Return from Google Drive Authorization
+			final String returnURL = this.webServerName + "/downloadfiles";
+			try {
 				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
 					session.setAttribute("accessToken", accessToken);
@@ -253,41 +253,44 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 					model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 					model.addAttribute("authorizedGC", "true");
 				}
-           } catch (Exception e) {
-              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-              e.printStackTrace();
-            }
-            HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
-            boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(hpcSaveSearch.getTotalSize());
-            model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
-            model.addAttribute("hpcSearch", hpcSaveSearch);
-            HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
-            model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-            return "downloadfiles";
-        } else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
+			} catch (Exception e) {
+				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+				e.printStackTrace();
+			}
+			HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
+			// Setting the flag that will determine if the download can be performed. 
+			// If the total list size is greater than the maximum allowable size for download, 
+			// this flag is will cause the download button to be disabled for Google Drive/Cloud in the UI
+			boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(hpcSaveSearch.getTotalSize());
+			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
+			model.addAttribute("hpcSearch", hpcSaveSearch);
+			HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
+			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+			return "downloadfiles";
+		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
 			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
-            String returnURL = this.webServerName + "/downloadfiles";
-            try {
-              return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
-            } catch (Exception e) {
-              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-              e.printStackTrace();
-            }
-        } else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
+			String returnURL = this.webServerName + "/downloadfiles";
+			try {
+				return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
+			} catch (Exception e) {
+				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+				e.printStackTrace();
+			}
+		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
 			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
-            String returnURL = this.webServerName + "/downloadfiles";
-            try {
-              return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
-            } catch (Exception e) {
-              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-              e.printStackTrace();
-            }
-        }
-        else if(endPointName == null) {
+			String returnURL = this.webServerName + "/downloadfiles";
+			try {
+				return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+			} catch (Exception e) {
+				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+		else if(endPointName == null) {
 			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
 					this.webServerName) + "/downloadfiles";
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
-			        "action=" + percentEncodedReturnURL;
+			"action=" + percentEncodedReturnURL;
 		}
 
 		//This is return from Globus site
