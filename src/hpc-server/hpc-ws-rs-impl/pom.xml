@@ -105,7 +105,7 @@
               <goal>copy</goal>
             </goals>
             <configuration>
-              <sourceFile>${JAVA_HOME}/jre/lib/security/${ca.certs.filename}</sourceFile>
+              <sourceFile>${JAVA_HOME}/lib/security/${ca.certs.filename}</sourceFile>
               <destinationFile>${main.resources.dir}/${ca.certs.jks.filename}</destinationFile>
             </configuration>
           </execution>
@@ -416,6 +416,14 @@
        <groupId>com.fasterxml.jackson.jaxrs</groupId>
        <artifactId>jackson-jaxrs-json-provider</artifactId>
     </dependency>
+    <dependency>
+	  <groupId>javax.xml.bind</groupId>
+	  <artifactId>jaxb-api</artifactId>
+	</dependency>
+	<dependency>
+	  <groupId>org.glassfish.jaxb</groupId>
+	  <artifactId>jaxb-runtime</artifactId>
+	</dependency>
   </dependencies>
 
 </project>
