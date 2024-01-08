@@ -257,15 +257,24 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
 				e.printStackTrace();
 			}
-			HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
-			// Setting the flag that will determine if the download can be performed. 
-			// If the total list size is greater than the maximum allowable size for download, 
-			// this flag is will cause the download button to be disabled for Google Drive/Cloud in the UI
-			boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(hpcSaveSearch.getTotalSize());
-			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
-			model.addAttribute("hpcSearch", hpcSaveSearch);
 			HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+			HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
+			model.addAttribute("hpcSearch", hpcSaveSearch);
+			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
+			if(hpcDownloadDatafile.getDownloadType().equals("collections")) {
+				// Setting the flag that will determine if the download can be performed.
+				// If the total list size is greater than the maximum allowable size for download,
+				// this flag is will cause the download button to be disabled for Google Drive/Cloud in the UI
+				boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(hpcSaveSearch.getTotalSize());
+				model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
+				if(!canDownloadFlag) {
+					model.addAttribute(ATTR_MAX_DOWNLOAD_SIZE_EXCEEDED_MSG,
+							"Collection list size exceeds the maximum permitted download limit of "
+									+ MiscUtil.humanReadableByteCount(Double.parseDouble(maxAllowedDownloadSize.toString()), true)
+									+ ". Contact <a href='mailto:" + contactEmail + "'>" + contactEmail + "</a> for support.");
+				}
+			}
 			return "downloadfiles";
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
 			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
