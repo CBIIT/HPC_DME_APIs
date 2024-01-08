@@ -86,13 +86,6 @@
       <artifactId>rest-assured</artifactId>
       <version>4.3.0</version>
      </dependency>
-     <!-- runner libraries -->
-     <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-testng</artifactId>
-      <version>7.1.0</version>
-      <scope>test</scope>
-    </dependency>
      <dependency>
 	      <groupId>org.awaitility</groupId>
 	      <artifactId>awaitility</artifactId>
