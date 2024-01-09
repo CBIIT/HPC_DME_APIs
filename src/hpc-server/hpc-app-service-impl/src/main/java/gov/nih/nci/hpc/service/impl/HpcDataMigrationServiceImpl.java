@@ -123,9 +123,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
 			boolean alignArchivePath, long size) throws HpcException {
 		// Check if a task already exist.
+		logger.error("ERAN 1 - path - {}", path);
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
 		if (migrationTask != null) {
+			logger.error("ERAN 2 - task-id - {}", migrationTask.getId());
 			return migrationTask;
 		}
 
@@ -134,6 +136,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		String taskId = dataMigrationDAO.getDataObjectMigrationTaskResultId(collectionMigrationTaskId, path);
 		if (!StringUtils.isEmpty(taskId)) {
 			migrationTask.setId(taskId);
+			logger.error("ERAN 3 - task-id - {}", migrationTask.getId());
 			return migrationTask;
 		}
 
@@ -153,6 +156,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+		logger.error("ERAN 4 - task-id - {}", migrationTask.getId());
 		return migrationTask;
 	}
 
