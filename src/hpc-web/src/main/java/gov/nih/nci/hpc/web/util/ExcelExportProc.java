@@ -52,6 +52,8 @@ public class ExcelExportProc {
         int cellnum = 0;
         for(String h: headers) {
             r.createCell(cellnum++).setCellValue(StringUtils.defaultString(h));
+            if(cellnum == 255)
+            	break;
         }
 
         for(List<String> row: data) {
@@ -59,6 +61,8 @@ public class ExcelExportProc {
             r = s.createRow(rownum++);
             for(String cell: row) {
                 r.createCell(cellnum++).setCellValue(cell);
+                if(cellnum == 255)
+                	break;
             }
         }
 
