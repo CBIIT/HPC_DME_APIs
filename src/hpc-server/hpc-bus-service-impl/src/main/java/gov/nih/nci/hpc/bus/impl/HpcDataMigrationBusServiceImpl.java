@@ -575,7 +575,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		}
 
 		// Create a migration task.
-		logger.error("ERAN 8 - parent-id:{}, path: {}", collectionMigrationTaskId, path);
+		logger.error("ERAN 8 - parent-id:{}, path: {}, size: {}", collectionMigrationTaskId, path, metadata.getSourceSize());
 		HpcDataMigrationTask task = dataMigrationService.createDataObjectMigrationTask(path, userId,
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
 				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
