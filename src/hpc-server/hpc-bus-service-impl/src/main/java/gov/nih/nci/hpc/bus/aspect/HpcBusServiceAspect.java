@@ -146,7 +146,7 @@ public class HpcBusServiceAspect {
 			} catch (HpcException e) {
 				throw e;
 			} catch (Throwable t) {
-				throw new HpcException("Failed to execute as system account", t);
+				throw new HpcException("Failed to execute as system account: " + t.getMessage(), t);
 			}
 		});
 	}
