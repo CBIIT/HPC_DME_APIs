@@ -403,6 +403,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 					HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
 
+		logger.error("ERAN: 4.5 - path: {}, md: {}", path, metadata);
 		return metadata;
 	}
 
@@ -554,7 +555,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
 		try {
 			metadata = validateDataObjectMigrationRequest(path, migrationRequest, alignArchivePath);
-			logger.error("ERAN 6 - parent-id:{}, path: {}", collectionMigrationTaskId, path);
+			logger.error("ERAN 6 - parent-id:{}, path: {}, md: {}", collectionMigrationTaskId, path, metadata);
 
 		} catch (Exception e) {
 			if (!StringUtils.isEmpty(collectionMigrationTaskId)) {
@@ -575,7 +576,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		}
 
 		// Create a migration task.
-		logger.error("ERAN 8 - parent-id:{}, path: {}, size: {}", collectionMigrationTaskId, path, metadata.getSourceSize());
+		logger.error("ERAN 8 - parent-id:{}, path: {}, size: {}, s3-conf: {}", collectionMigrationTaskId, path, metadata.getSourceSize(), metadata.getS3ArchiveConfigurationId());
 		HpcDataMigrationTask task = dataMigrationService.createDataObjectMigrationTask(path, userId,
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
 				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
