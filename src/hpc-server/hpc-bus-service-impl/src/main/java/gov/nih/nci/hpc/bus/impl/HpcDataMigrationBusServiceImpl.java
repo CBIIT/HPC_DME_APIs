@@ -554,13 +554,13 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
 		try {
 			metadata = validateDataObjectMigrationRequest(path, migrationRequest, alignArchivePath);
-			logger.error("ERAN 6 - parent-id:{}, path:", collectionMigrationTaskId, path);
+			logger.error("ERAN 6 - parent-id:{}, path: {}", collectionMigrationTaskId, path);
 
 		} catch (Exception e) {
 			if (!StringUtils.isEmpty(collectionMigrationTaskId)) {
 				// While processing a collection download, if a validation request invalid, we
 				// create a task and complete as failed.
-				logger.error("ERAN 7 - parent-id:{}, path:", collectionMigrationTaskId, path);
+				logger.error("ERAN 7 - parent-id:{}, path: {}", collectionMigrationTaskId, path);
 				HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(path,
 						userId, null, null,
 						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
@@ -575,12 +575,12 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		}
 
 		// Create a migration task.
-		logger.error("ERAN 8 - parent-id:{}, path:", collectionMigrationTaskId, path);
+		logger.error("ERAN 8 - parent-id:{}, path: {}", collectionMigrationTaskId, path);
 		migrationResponse.setTaskId(dataMigrationService.createDataObjectMigrationTask(path, userId,
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
 				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
 				collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize()).getId());
-		logger.error("ERAN 9 - parent-id:{}, path:", collectionMigrationTaskId, path);
+		logger.error("ERAN 9 - parent-id:{}, path: {}", collectionMigrationTaskId, path);
 
 		return migrationResponse;
 	}
@@ -596,7 +596,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	private void migrateCollection(HpcCollection collection, HpcDataMigrationTask collectionMigrationTask)
 			throws HpcException {
 		
-		logger.error("ERAN 5 - task-id: {} - path: ", collectionMigrationTask.getId(), collection.getAbsolutePath());
+		logger.error("ERAN 5 - task-id: {} - path: {}", collectionMigrationTask.getId(), collection.getAbsolutePath());
 
 		// Iterate through the data objects in the collection and migrate them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
