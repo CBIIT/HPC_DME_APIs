@@ -1,0 +1,32 @@
+
+<configuration>
+
+    <property name="SCHEDULER_SERVER_LOG" value="${catalina.base}/logs/hpc-server/hpc-scheduler.log"/>
+
+    <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${SCHEDULER_SERVER_LOG}</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${catalina.base}/logs/hpc-server/hpc-scheduler.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each archived file, size max 100MB -->
+            <maxFileSize>100MB</maxFileSize>
+            <!-- total size of all archive files, if total size > 200GB, it will delete old archived file -->
+            <totalSizeCap>200GB</totalSizeCap>
+            <!-- 90 days to keep -->
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d %p [%t] %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="gov.nih.nci.hpc" level="debug" additivity="false">
+        <appender-ref ref="FILE-ROLLING"/>
+    </logger>
+
+    <root level="error">
+        <appender-ref ref="FILE-ROLLING"/>
+    </root>
+
+</configuration>
