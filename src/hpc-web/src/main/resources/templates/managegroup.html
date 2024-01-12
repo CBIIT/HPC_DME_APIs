@@ -51,14 +51,11 @@
 	src="js/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+	
 <script th:inline="javascript">
-	/*<![CDATA[*/
-	var results = "[[${searchresults}]]";
-	/*]]>*/
-</script>
+/*<![CDATA[*/
+var results = [[${searchresults}]];
 
-<script>
-//<![CDATA[
 	var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
 	app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
 				$scope.gridOptions1 = {
