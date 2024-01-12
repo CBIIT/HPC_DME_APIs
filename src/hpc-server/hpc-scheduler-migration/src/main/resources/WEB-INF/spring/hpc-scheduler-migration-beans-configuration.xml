@@ -21,6 +21,8 @@
                            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
                            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 	<context:annotation-config />
+	<context:property-placeholder location="classpath:WEB-INF/spring/hpc-scheduler-migration.properties,file:${catalina.base}/conf/hpc-server/hpc-server.properties" />
+	<import resource="classpath*:/META-INF/spring/*-beans-configuration.xml"/>
 	
 	<task:annotation-driven executor="hpcMigrationScheduledTaskExecutor" scheduler="hpcMigrationScheduledTaskScheduler"/>
 	<task:executor id="hpcMigrationScheduledTaskExecutor" pool-size="20"/>
