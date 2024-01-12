@@ -154,3 +154,10 @@ utils/hpc-client/lib/jaxws-api-2.3.1.jar
 utils/hpc-client/lib/jboss-rmi-api_1.0_spec-1.0.6.Final.jar
 utils/hpc-client/lib/mimepull-1.9.7.jar
 utils/hpc-client/lib/saaj-impl-1.4.0-b03.jar
+src/hpc-server/hpc-scheduler-migration/.settings/.jsdtscope
+src/hpc-server/hpc-scheduler-migration/.settings/org.eclipse.wst.common.component
+src/hpc-server/hpc-scheduler-migration/.settings/org.eclipse.wst.common.project.facet.core.prefs.xml
+src/hpc-server/hpc-scheduler-migration/.settings/org.eclipse.wst.common.project.facet.core.xml
+src/hpc-server/hpc-scheduler-migration/.settings/org.eclipse.wst.jsdt.ui.superType.container
+src/hpc-server/hpc-scheduler-migration/.settings/org.eclipse.wst.jsdt.ui.superType.name
+src/hpc-server/hpc-scheduler-migration/.settings/org.eclipse.wst.validation.prefs
