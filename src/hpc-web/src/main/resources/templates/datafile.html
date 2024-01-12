@@ -207,8 +207,8 @@
                   </a>
 
                   &nbsp;&nbsp;&nbsp;
-                  <a class="btn btn-link btn-sm"
-                     th:onclick="'deleteObject(\''  + ${hpcDatafile.getDataObject().getAbsolutePath()} + '\')'">
+                  <a class="btn btn-link btn-sm" th:data-path="${hpcDatafile.getDataObject().getAbsolutePath()}"
+                     th:onclick="deleteObject(this.getAttribute('data-path'))">
                     <i class="fa fa-trash-o" title="Delete" aria-hidden="true"></i>
                   </a>
 								</div>
