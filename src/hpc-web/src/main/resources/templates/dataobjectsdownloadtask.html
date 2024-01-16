@@ -481,7 +481,7 @@
 
 					</div>
 				</div>
-				<!-- modal -->
+				<!-- modal S3 -->
 				<div class="modal fade" id="s3Modal" tabindex="-1" role="dialog"
 					aria-labelledby="s3ModalLabel" aria-hidden="true">
 					<div class="modal-dialog">
@@ -526,7 +526,61 @@
 						</div>
 					</div>
 				</div>
-				<!-- modal -->
+				<!-- modal S3 -->
+				<!-- modal Aspera -->
+				<div class="modal fade" id="asperaModal" tabindex="-1" role="dialog"
+					aria-labelledby="asperaModalLabel" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Re-enter Aspera Credentials</h4>
+							</div>
+							<div class="modal-body">
+								<div class="form-group" id="s3Div">
+									<div class="alert-danger" id="mandatoryAsperaUser"
+										style="display: none">
+										<p>Please re-enter Aspera user</p>
+									</div>
+									<div class="alert-danger" id="mandatoryAsperaPassword"
+										style="display: none">
+										<p>Please re-enter Aspera password</p>
+									</div>
+									<div class="alert-danger" id="mandatoryAsperaHost"
+										style="display: none">
+										<p>Please re-enter Aspera host</p>
+									</div>
+									<div class="col-sm-12 column">
+										<label for="accessKey">Aspera Account User:</label> <input
+											type="text" class="form-control"
+											name="asperaUser" id="asperaUserId"
+											placeholder="Enter Aspera User" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="asperaPassword">Aspera Account Password:</label> <input
+											type="password" autocomplete="aspera-key" class="form-control"
+											name="asperaPassword" id="asperaPasswordId"
+											placeholder="Enter Aspera password" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="region">Aspera Host:</label> <input
+											type="text" class="form-control"
+											th:value="${asperaHost}"
+											name="asperaHost" id="asperaHostId"
+											placeholder="Enter Aspera Host" size="40" />
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-md btn-primary"
+											id="retryButton">Retry</button>
+										<button type="button" class="btn btn-default"
+											data-dismiss="modal" id="close">Close</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- modal Aspera -->
 				<div class="row"></div>
 	<form class="form-horizontal" id="downloadForm"
 	    th:action="@{/downloadtask}"
@@ -536,6 +590,9 @@
 		<input type="hidden" id="accessKey" name="accessKey" />
 		<input type="hidden" id="secretKey" name="secretKey" />
 		<input type="hidden" id="region" name="region" />
+		<input type="hidden" id="asperaUser" name="asperaUser" />
+		<input type="hidden" id="asperaPassword" name="asperaPassword" />
+		<input type="hidden" id="asperaHost" name="asperaHost" />
 	</form>
 	<form class="form-horizontal" id="cancelForm"
 	    th:action="@{/downloadtask/cancel}"
@@ -570,21 +627,49 @@
 $(document).ready(function(){
 	$('#sub-menu-manage').addClass("active");
 	$('body').on('click', '#retryButton', function(event) {
-		var accessKey = document.getElementById("accessKeyId").value;
-		var secretKey = document.getElementById("secretKeyId").value;
-		var region = document.getElementById("regionId").value;
-		if (accessKey == null
-				|| accessKey.trim().length == 0
-				|| secretKey == null
-				|| secretKey.trim().length == 0
-				|| region == null
-				|| region.trim().length == 0) {
-			$("#mandatory").show();
-			return false;
+		destinationType=$('#destinationType').text();
+		if (destinationType == 'S3') {
+			var accessKey = document.getElementById("accessKeyId").value;
+			var secretKey = document.getElementById("secretKeyId").value;
+			var region = document.getElementById("regionId").value;
+			if (accessKey == null
+					|| accessKey.trim().length == 0
+					|| secretKey == null
+					|| secretKey.trim().length == 0
+					|| region == null
+					|| region.trim().length == 0) {
+				$("#mandatory").show();
+				return false;
+			}
+			document.getElementById("accessKey").value = accessKey;
+			document.getElementById("secretKey").value = secretKey;
+			document.getElementById("region").value = region;
+		} else if (destinationType == 'ASPERA') {
+			var asperaUser = document.getElementById("asperaUserId").value;
+			var asperaPassword = document.getElementById("asperaPasswordId").value;
+			var asperaHost= document.getElementById("asperaHostId").value;
+			if (asperaUser == null || asperaUser.trim().length == 0) {
+				$("#mandatoryAsperaUser").show();
+				$("#mandatoryAsperaPassword").hide();
+				$("#mandatoryAsperaHost").hide();
+				return false;
+			}
+			if (asperaPassword == null || asperaPassword.trim().length == 0) {
+				$("#mandatoryAsperaPassword").show();
+				$("#mandatoryAsperaUser").hide();
+				$("#mandatoryAsperaHost").hide();
+				return false;
+			}
+			if (asperaHost == null || asperaHost.trim().length == 0) {
+				$("#mandatoryAsperaHost").show();
+				$("#mandatoryAsperaUser").hide();
+				$("#mandatoryAsperaPassword").hide();
+				return false;
+			}
+			document.getElementById("asperaUser").value = asperaUser;
+			document.getElementById("asperaPassword").value = asperaPassword;
+			document.getElementById("asperaHost").value = asperaHost;
 		}
-		document.getElementById("accessKey").value = accessKey;
-		document.getElementById("secretKey").value = secretKey;
-		document.getElementById("region").value = region;
 		$('.downloadfailed').addClass('disabled');
 		$("#downloadForm").submit();
 	});
@@ -597,6 +682,8 @@ function retryDownload(task, taskType)
 	destinationType=$('#destinationType').text();
 	if (destinationType == 'S3') {
 		$('#s3Modal').modal({backdrop: 'static', keyboard: false});
+	} else if (destinationType == 'ASPERA') {
+		$('#asperaModal').modal({backdrop: 'static', keyboard: false});
 	} else {
 		$('.downloadfailed').addClass('disabled');
 		$("#downloadForm").submit();
