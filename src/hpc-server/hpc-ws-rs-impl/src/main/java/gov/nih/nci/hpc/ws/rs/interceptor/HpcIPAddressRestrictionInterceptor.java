@@ -22,7 +22,7 @@ import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.web.util.matcher.IpAddressMatcher;
+//import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -90,11 +90,13 @@ public class HpcIPAddressRestrictionInterceptor extends AbstractPhaseInterceptor
 	// ---------------------------------------------------------------------//
 
 	private boolean isRestrictedIPAddress(String remoteAddress) {
+		/*
 		for (String ip : restrictedIPAddress) {
 			IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(ip);
 			if (ipAddressMatcher.matches(remoteAddress))
 				return true;
 		}
+		*/
 		return false;
 	}
 }
