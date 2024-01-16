@@ -694,6 +694,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		destinationLocation.setFileContainerId("Presigned Download URL");
 		destinationLocation.setFileId("");
 		taskResult.setDestinationLocation(destinationLocation);
+		taskResult.setArchiveLocation(archiveLocation);
 		taskResult.setResult(HpcDownloadResult.COMPLETED);
 		taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
 		taskResult.setCompletionEvent(false);
@@ -1152,6 +1153,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setUserId(downloadTask.getUserId());
 		taskResult.setPath(downloadTask.getPath());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
+		taskResult.setArchiveLocation(downloadTask.getArchiveLocation());
 		taskResult.setDataTransferType(downloadTask.getDataTransferType());
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		if (downloadTask.getGlobusDownloadDestination() != null) {
