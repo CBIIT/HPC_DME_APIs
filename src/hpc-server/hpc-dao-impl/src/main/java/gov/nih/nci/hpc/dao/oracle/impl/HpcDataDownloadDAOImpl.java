@@ -913,10 +913,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			String collectionPaths = !taskResult.getCollectionPaths().isEmpty()
 					? toPathsString(taskResult.getCollectionPaths())
 					: null;
+			String archiveFileContainerId = taskResult.getArchiveLocation() != null ? 
+					taskResult.getArchiveLocation().getFileContainerId() : null;
+			String archiveFileId = taskResult.getArchiveLocation() != null ? 
+					taskResult.getArchiveLocation().getFileId() : null;
 
 			jdbcTemplate.update(UPSERT_DOWNLOAD_TASK_RESULT_SQL, taskResult.getId(), taskResult.getUserId(),
 					taskResult.getPath(), taskResult.getDataTransferRequestId(), dataTransferType,
-					taskResult.getArchiveLocation().getFileContainerId(), taskResult.getArchiveLocation().getFileId(),
+					archiveFileContainerId, archiveFileId,
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
