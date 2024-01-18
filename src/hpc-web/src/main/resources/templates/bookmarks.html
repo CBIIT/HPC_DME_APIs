@@ -13,11 +13,7 @@
 
 <link rel="stylesheet" href="css/ui-grid.css"
 	type="text/css" />
-<script th:inline="javascript">
-	/*<![CDATA[*/
-	var results = "[[${bookmarksList}]]";
-	/*]]>*/
-</script>
+
 <style>
 /*style.css*/
 /* Important part */
@@ -48,6 +44,8 @@
 </style>
 <script>
 //<![CDATA[
+	var results = "[[${bookmarksList}]]";
+
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
 			'ui.grid.pagination', 'ui.grid.resizeColumns',
 			'ui.grid.moveColumns' ]);
@@ -124,7 +122,7 @@
 						</td>
 							<td align="left">
 						
-						<button th:onclick="'return submitForm(\''  + ${bookmark.getName()} + '\');'">
+						<button th:data-name="${bookmark.getName()}" th:onclick="return submitForm(this.getAttribute('data-name'));">
 										<i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
 						
 					</tr>
