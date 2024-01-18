@@ -98,15 +98,13 @@
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
-    var results = "[[${results}]]";
-    var totalRows = "[[${totalCount}]]";
+    var results = [[${results}]];
+    var totalRows = [[${totalCount}]];
     var currentPageSize = "[[${currentPageSize}]]";
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
-/*]]>*/
-</script>
-<script>
+
 var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
 
 app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', function ($scope, $http, $interval, uiGridConstants ) {
@@ -160,6 +158,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 	    return row.entity.id;
 	  }	 
 }]);
+/*]]>*/
 </script>
 
 </head>
