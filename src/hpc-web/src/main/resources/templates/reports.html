@@ -164,14 +164,6 @@ body.loading .overlay{
 }
 
 </style>
-<script th:inline="javascript">
-/*<![CDATA[*/
-    var selected = [[${reportRequest.getReportType()}]];
-	var userselected = [[${reportRequest.getUser()}]];
-	var listOfDocs = [[${docs}]];
-	var listOfBasepaths = [[${basepaths}]];
-/*]]>*/
-</script>
 </head>
 
 <body>
@@ -485,8 +477,11 @@ body.loading .overlay{
 	<script src="js/select2-4.0.11.min.js"></script>
 
 	<script>
-	//<![CDATA[
-
+	/*<![CDATA[*/
+    var selected = "[[${reportRequest.getReportType()}]]";
+	var userselected = "[[${reportRequest.getUser()}]]";
+	var listOfDocs = /*[[${doc}]]*/ [];
+	var listOfBasepaths = /*[[${basepaths}]]*/ [];
 	// Single Report Datatable
 	$(document).ready(function () {
 		var reportType = document.getElementById("reportType").value;
@@ -593,7 +588,7 @@ body.loading .overlay{
 							}
 						 },
 						];
-				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]}; // Export visible columns but do not export the Archive Summary Button column
+				exportOptions = {columns: [ [0,1], ':visible:not(:nth-last-child(2))' ] }; // Export visible columns but do not export the Archive Summary Button column
 				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))']; // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
@@ -617,7 +612,7 @@ body.loading .overlay{
 							}
 						 },
 						];
-				exportOptions = {columns: [[0,1], ':visible:not(:nth-last-child(2))' ]};  // Export visible columns but do not export the Archive Summary Button column
+				exportOptions = {columns: [ [0,1], ':visible:not(:nth-last-child(2))' ] };  // Export visible columns but do not export the Archive Summary Button column
 				showHideCols = [':nth-child(n+3):not(:nth-last-child(1)):not(:nth-last-child(2))'];  // Exclude first two columns from show/hide. It starts from 3rd column. Also exclude Archive Summary fields
 				break;
 			case 'USAGE_SUMMARY_BY_DATA_OWNER':
@@ -688,9 +683,9 @@ body.loading .overlay{
 					columns: showHideCols
 				},
 				],
-				"order": [[ 1, 'asc' ]],
+				"order": [ [ 1, 'asc' ] ],
 				"columnDefs": colDefs,
-				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],     // page length options
+				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],     // page length options
 				"initComplete": function() {
 					$("body").removeClass("loading");
 					$(this).show();
@@ -1099,7 +1094,7 @@ body.loading .overlay{
     	  }
 		return true;
       }
-    //]]>
+  /*]]>*/
   </script>
 
 </body>
