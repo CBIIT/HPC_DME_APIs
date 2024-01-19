@@ -371,7 +371,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		String dataTransferType = rs.getString("DATA_TRANSFER_TYPE");
 		downloadTaskResult
 				.setDataTransferType(dataTransferType != null ? HpcDataTransferType.fromValue(dataTransferType) : null);
-
+		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
+		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
+		if (archiveLocationFileContainerId != null && archiveLocationFileId != null) {
+			HpcFileLocation archiveLocation = new HpcFileLocation();
+			archiveLocation.setFileContainerId(archiveLocationFileContainerId);
+			archiveLocation.setFileId(archiveLocationFileId);
+			downloadTaskResult.setArchiveLocation(archiveLocation);
+		}
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileContainerName = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_NAME");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
@@ -913,14 +920,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			String collectionPaths = !taskResult.getCollectionPaths().isEmpty()
 					? toPathsString(taskResult.getCollectionPaths())
 					: null;
-			String archiveFileContainerId = taskResult.getArchiveLocation() != null ? 
+			String archiveLocationFileContainerId = taskResult.getArchiveLocation() != null ?
 					taskResult.getArchiveLocation().getFileContainerId() : null;
-			String archiveFileId = taskResult.getArchiveLocation() != null ? 
+			String archiveLocationFileId = taskResult.getArchiveLocation() != null ?
 					taskResult.getArchiveLocation().getFileId() : null;
 
 			jdbcTemplate.update(UPSERT_DOWNLOAD_TASK_RESULT_SQL, taskResult.getId(), taskResult.getUserId(),
 					taskResult.getPath(), taskResult.getDataTransferRequestId(), dataTransferType,
-					archiveFileContainerId, archiveFileId,
+					archiveLocationFileContainerId, archiveLocationFileId,
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
@@ -1433,6 +1440,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			}
 			if (downloadItem.getResult() != null) {
 				jsonDownloadItem.put("result", downloadItem.getResult().value());
+			}
+			if(downloadItem.getArchiveLocation() != null) {
+				jsonDownloadItem.put("archiveLocationFileContainerId",
+						downloadItem.getArchiveLocation().getFileContainerId());
+				jsonDownloadItem.put("archiveLocationFileId", downloadItem.getArchiveLocation().getFileId());
 			}
 			jsonDownloadItem.put("destinationLocationFileContainerId",
 					downloadItem.getDestinationLocation().getFileContainerId());
