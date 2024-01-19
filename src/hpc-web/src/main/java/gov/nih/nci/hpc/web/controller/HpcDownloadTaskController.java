@@ -100,6 +100,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     try {
       model.addAttribute("taskId", taskId);
       model.addAttribute("taskType", type);
+      model.addAttribute("asperaUser", "asp-dbgap");
       model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
       HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
       String userId = (String) session.getAttribute("hpcUserId");
