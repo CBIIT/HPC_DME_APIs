@@ -114,7 +114,7 @@
 						</tr>
 						<tr><td>&nbsp;</td></tr>
 						<tr><td>Selected Files:<br/>
-						<div class="display: block;" th:each="selectedPath : ${hpcDownloadDatafile.getSelectedPaths()}">
+						<div class="display: block;" style="word-break: break-all" th:each="selectedPath : ${hpcDownloadDatafile.getSelectedPaths()}">
 							<label th:text="${selectedPath}"></label> 
 						</div>
 						</td></tr>
