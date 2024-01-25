@@ -88,10 +88,10 @@
 
 
 			<div class="pull-center" th:if="${downloadType == 'datafile'}">
-			  <p>This page allows you to download the selected data file either synchronously to your computer (file system), or asynchronously to a Globus endpoint, S3 bucket, Google Drive, Google Cloud bucket or dbGaP bucket.</p>
+			  <p>This page allows you to download the selected data file either synchronously to your computer (file system), or asynchronously to a Globus endpoint, an AWS S3 bucket, Google Drive, Google Cloud or dbGaP.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-              <p>This page allows you to download the selected collection to a Globus endpoint, S3 bucket, Google Drive, Google Cloud bucket or dbGaP bucket.</p>
+              <p>This page allows you to download the selected collection to a Globus endpoint, an AWS S3 bucket, Google Drive, Google Cloud or dbGaP.</p>
             </div>
      
 			<div class="panel panel-default">
