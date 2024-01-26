@@ -2377,6 +2377,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
 			dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
+		}  else if (downloadTask.getAsperaDownloadDestination()!= null) {
+			destinationLocation = downloadTask.getAsperaDownloadDestination().getDestinationLocation();
+			dataTransferType = HpcDataTransferType.ASPERA;
 		}
 
 		addDataTransferDownloadEvent(downloadTask.getUserId(), path, downloadTask.getType(), downloadTask.getId(),
