@@ -1142,23 +1142,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (downloadTask.getDownloadFilePath() != null) {
 			logger.info("download task: {} - Delete file at scratch space: {}", downloadTask.getId(),
 					downloadTask.getDownloadFilePath());
-			if (!FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
+			File downloadFile = new File(downloadTask.getDownloadFilePath());
+			if (downloadFile.exists() && !FileUtils.deleteQuietly(downloadFile)) {
 				logger.error("Failed to delete file: {}", downloadTask.getDownloadFilePath());
 			}
 		}
 
 		// Create a task result object.
-		logger.error("ERAN 1");
-		
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
 		taskResult.setId(downloadTask.getId());
 		taskResult.setUserId(downloadTask.getUserId());
 		taskResult.setPath(downloadTask.getPath());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
-		logger.error("ERAN 2");
-		//taskResult.setArchiveLocation(getArchiveLocation(downloadTask.getPath()));
-		taskResult.setArchiveLocation(downloadTask.getArchiveLocation());
-		logger.error("ERAN 3");
+		
+		
+		securityService.executeAsSystemAccount(Optional.empty(),
+				() -> taskResult.setArchiveLocation(getArchiveLocation(downloadTask.getPath())));
+		
+		logger.error("ERAN {} {}", downloadTask.getDestinationType(), downloadTask.getStagingPercentComplete());
+		//taskResult.setArchiveLocation(downloadTask.getArchiveLocation());
+		
 		taskResult.setDataTransferType(downloadTask.getDataTransferType());
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		if (downloadTask.getGlobusDownloadDestination() != null) {
@@ -1187,33 +1190,31 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setFirstHopRetried(downloadTask.getFirstHopRetried());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
-		logger.error("ERAN 4");
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
 				/ (taskResult.getCompleted().getTimeInMillis() - taskResult.getCreated().getTimeInMillis())));
 
 		taskResult.setDoc(
 				dataManagementService.getDataManagementConfiguration(downloadTask.getConfigurationId()).getDoc());
-		logger.error("ERAN 5");
+		
 		// Get the file container name.
 		try {
 			taskResult.getDestinationLocation().setFileContainerName(
 					getFileContainerName(taskResult.getDestinationType(), downloadTask.getConfigurationId(),
 							taskResult.getDestinationLocation().getFileContainerId()));
-			logger.error("ERAN 6");
 
 		} catch (HpcException e) {
 			logger.error(
 					"Failed to get file container name: " + taskResult.getDestinationLocation().getFileContainerId(),
 					e);
 		}
-		logger.error("ERAN 7");
+		
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
-		logger.error("ERAN 8");
+
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
-		logger.error("ERAN 9");
+		
 		return taskResult;
 	}
 
