@@ -1159,7 +1159,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		securityService.executeAsSystemAccount(Optional.empty(),
 				() -> taskResult.setArchiveLocation(getArchiveLocation(downloadTask.getPath())));
 		
-		logger.error("ERAN {} {}", downloadTask.getDestinationType(), downloadTask.getStagingPercentComplete());
+		logger.error("ERAN {} {}", downloadTask.getDestinationType(), downloadTask.getDownloadFilePath());
 		//taskResult.setArchiveLocation(downloadTask.getArchiveLocation());
 		
 		taskResult.setDataTransferType(downloadTask.getDataTransferType());
