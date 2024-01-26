@@ -1154,14 +1154,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setUserId(downloadTask.getUserId());
 		taskResult.setPath(downloadTask.getPath());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
-		
-		
-		securityService.executeAsSystemAccount(Optional.empty(),
-				() -> taskResult.setArchiveLocation(getArchiveLocation(downloadTask.getPath())));
-		
-		logger.error("ERAN {} {}", downloadTask.getDestinationType(), downloadTask.getDownloadFilePath());
-		//taskResult.setArchiveLocation(downloadTask.getArchiveLocation());
-		
+
+		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
+			securityService.executeAsSystemAccount(Optional.empty(),
+					() -> taskResult.setArchiveLocation(getArchiveLocation(downloadTask.getPath())));
+		} else {
+			taskResult.setArchiveLocation(downloadTask.getArchiveLocation());
+		}
+
 		taskResult.setDataTransferType(downloadTask.getDataTransferType());
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		if (downloadTask.getGlobusDownloadDestination() != null) {
@@ -1190,13 +1190,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setFirstHopRetried(downloadTask.getFirstHopRetried());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
+
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
 				/ (taskResult.getCompleted().getTimeInMillis() - taskResult.getCreated().getTimeInMillis())));
 
 		taskResult.setDoc(
 				dataManagementService.getDataManagementConfiguration(downloadTask.getConfigurationId()).getDoc());
-		
+
 		// Get the file container name.
 		try {
 			taskResult.getDestinationLocation().setFileContainerName(
@@ -1208,13 +1209,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					"Failed to get file container name: " + taskResult.getDestinationLocation().getFileContainerId(),
 					e);
 		}
-		
+
 		// Persist to the DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
-		
+
 		return taskResult;
 	}
 
