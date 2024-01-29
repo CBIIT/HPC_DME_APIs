@@ -4045,7 +4045,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
 							HpcDownloadTaskType.DATA_OBJECT, HpcDownloadResult.FAILED, downloadTask.getId(),
 							downloadTask.getGlobusDownloadDestination().getDestinationLocation(),
-							transferFailedTimestamp, message);
+							transferFailedTimestamp, message, downloadTask.getDestinationType());
 				}
 
 			} catch (HpcException e) {
