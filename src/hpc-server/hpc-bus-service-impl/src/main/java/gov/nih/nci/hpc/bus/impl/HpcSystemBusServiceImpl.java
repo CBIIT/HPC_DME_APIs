@@ -1732,19 +1732,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param message               A failure message.
 	 * @param destinationLocation   The download destination location.
 	 * @param dataTransferCompleted The download completion time.
+	 * @param destinationType       The destination type.
 	 */
 	private void addDataTransferDownloadEvent(String userId, String path, HpcDownloadTaskType downloadTaskType,
 			String downloadTaskId, HpcDataTransferType dataTransferType, String configurationId,
 			HpcDownloadResult result, String message, HpcFileLocation destinationLocation,
-			Calendar dataTransferCompleted) {
+			Calendar dataTransferCompleted, HpcDataTransferType destinationType) {
 		setFileContainerName(dataTransferType, configurationId, destinationLocation);
 		try {
 			if (result.equals(HpcDownloadResult.COMPLETED)) {
 				eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, downloadTaskId,
-						destinationLocation, dataTransferCompleted);
+						destinationLocation, dataTransferCompleted, destinationType);
 			} else {
 				eventService.addDataTransferDownloadFailedEvent(userId, path, downloadTaskType, result, downloadTaskId,
-						destinationLocation, dataTransferCompleted, message);
+						destinationLocation, dataTransferCompleted, message, destinationType);
 			}
 
 		} catch (HpcException e) {
@@ -2383,7 +2384,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 
 		addDataTransferDownloadEvent(downloadTask.getUserId(), path, downloadTask.getType(), downloadTask.getId(),
-				dataTransferType, downloadTask.getConfigurationId(), result, message, destinationLocation, completed);
+				dataTransferType, downloadTask.getConfigurationId(), result, message, destinationLocation, completed, dataTransferType);
 
 		logger.info("collection download task: {} - completed as {} [{}]", downloadTask.getId(), result.value(),
 				downloadTask.getType().value());
@@ -2440,7 +2441,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
 						HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), downloadTask.getDataTransferType(),
 						downloadTask.getConfigurationId(), result, message,
-						downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed);
+						downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed, downloadTask.getDestinationType());
 			}
 		} else {
 			// Download is still in progress. Update the progress (percent complete).
@@ -2468,7 +2469,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
 					HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), downloadTask.getDataTransferType(),
 					downloadTask.getConfigurationId(), HpcDownloadResult.CANCELED, null,
-					downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed);
+					downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed, downloadTask.getDestinationType());
 		}
 	}
 
