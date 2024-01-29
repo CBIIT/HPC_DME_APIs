@@ -195,6 +195,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setPercentComplete(0);
 		downloadTask.setSize(downloadRequest.getSize());
 		downloadTask.setFirstHopRetried(false);
+		downloadTask.setRetryTaskId(downloadRequest.getRetryTaskId());
+		downloadTask.setRetryUserId(downloadRequest.getRetryUserId());
 
 		if (downloadTask.getS3DownloadDestination() != null) {
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
@@ -211,7 +213,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	}
 
 	/**
-	 * Update a download task for a streaming download (to AWS S3 or Google Drive or Aspera).
+	 * Update a download task for a streaming download (to AWS S3 or Google Drive or
+	 * Aspera).
 	 *
 	 * @param downloadTask The download task.
 	 * @throws HpcException If it failed to persist the task.
@@ -236,6 +239,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
 		this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
+		this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
+		this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
 
 		if (this.downloadTask.getS3DownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
@@ -292,7 +297,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			if (downloadTask.getCompletionEvent()) {
 				if (result.equals(HpcDownloadResult.COMPLETED)) {
 					eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(), downloadTask.getPath(),
-							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed, destinationType);
+							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed,
+							destinationType);
 				} else {
 					eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
 							HpcDownloadTaskType.DATA_OBJECT, result, downloadTask.getId(), destinationLocation,
