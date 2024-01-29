@@ -273,25 +273,30 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 					bytesTransferred);
 
 			HpcFileLocation destinationLocation = null;
+			HpcDataTransferType destinationType = null;
 			if (downloadTask.getS3DownloadDestination() != null) {
 				destinationLocation = downloadTask.getS3DownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.S_3;
 			} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 				destinationLocation = downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.GOOGLE_DRIVE;
 			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 				destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 			} else if (downloadTask.getAsperaDownloadDestination() != null) {
 				destinationLocation = downloadTask.getAsperaDownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.ASPERA;
 			}
 
 			// Send a download completion or failed event (if requested to).
 			if (downloadTask.getCompletionEvent()) {
 				if (result.equals(HpcDownloadResult.COMPLETED)) {
 					eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(), downloadTask.getPath(),
-							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed);
+							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed, destinationType);
 				} else {
 					eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
 							HpcDownloadTaskType.DATA_OBJECT, result, downloadTask.getId(), destinationLocation,
-							completed, message);
+							completed, message, destinationType);
 				}
 			}
 
