@@ -2914,7 +2914,7 @@ function dm_download_collection_s3 {
 #Print Usage of dm_download_dataobject_aspera function
 function dm_show_download_dataobject_aspera_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_dataobject_aspera [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> <aspera_credentials_file_path>
+  usage: dm_download_dataobject_aspera [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> <aspera_credentials_path>
   Download the specified dataobject or list of dataobjects to an Aspera bucket
   [-D REST-response]       Filename to capture the REST response
   [-o output-file]         Filename to capture the error output. This is empty if the command is successful
@@ -3096,7 +3096,7 @@ function dm_download_dataobject_aspera {
 #Print Usage of dm_download_collection_aspera function
 function dm_show_download_collection_aspera_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_collection_aspera [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> <aws_credentials_file_path>
+  usage: dm_download_collection_aspera [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> <aspera_credentials_path>
   Download the specified collection or list of collections to an Aspera bucket
   [-D REST-response]       Filename to capture the REST response
   [-o output-file]         Filename to capture the error output. This will be empty if the command is successful
