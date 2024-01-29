@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# !/usr/bin/env bash
 # functions
 # @author: George Zaki 
 # 
@@ -17,19 +17,20 @@ function dm_list_commands {
 
   List of DME CLU commands.  
   
-	dm_add_bookmark                   dm_list_commands
-	dm_delete_collection              dm_query_dataobject
-	dm_delete_datafile                dm_register_collection
-	dm_download_collection            dm_register_dataobject
-	dm_download_collection_globus     dm_register_dataobject_multipart
-	dm_download_collection_s3         dm_register_dataobject_presigned
-	dm_download_dataobject            dm_register_directory
+    dm_add_bookmark                   dm_get_collection
+	dm_delete_collection              dm_get_dataobject
+	dm_delete_datafile                dm_list_commands
+	dm_download_collection            dm_query_dataobject
+	dm_download_collection_aspera     dm_register_collection
+	dm_download_collection_globus     dm_register_dataobject
+	dm_download_collection_s3         dm_register_dataobject_multipart
+	dm_download_dataobject            dm_register_dataobject_presigned
+	dm_download_dataobject_aspera     dm_register_directory
 	dm_download_dataobject_globus     dm_register_user
 	dm_download_dataobject_presigned  dm_rename
 	dm_download_dataobject_s3         dm_update_bookmark
 	dm_generate_token                 dm_update_user
-	dm_get_collection                 dm_get_download_presigned
-	dm_get_dataobject                 
+	dm_get_collection                 dm_get_download_presigned               
   
 To see the detailed information on each command, use '<command name> -h'
 
@@ -2273,8 +2274,8 @@ function dm_show_download_dataobject_globus_usage {
   Download the specified dataobject or list of dataobjects to the Globus endpoint
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
-  [-f paths-file]             New line delimited file which contains the file paths in DME to be downloaded
-  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  [-f paths-file]             Optionally specify newline delimited file which contains the file paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified)
   globus-destination_path     Full path of the destination file in the Globus endpoint
   [globus-endpoint]           The UUID of the Globus endpoint that you want to use. If this is not specified, then the one specified in the hpcdme.properties file is used.
 
@@ -2550,8 +2551,8 @@ function dm_show_download_dataobject_s3_usage {
   Download the specified dataobject or list of dataobjects to an S3 bucket
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
-  [-f paths-file]             New line delimited file which contains the data object paths in DME to be downloaded
-  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  [-f paths-file]             Newline delimited file which contains the data object paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified)
   destination-bucket          Destination S3 bucket to transfer data to
   destination_path            Full path of the destination file/folder in the S3 bucket
   [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
@@ -2738,8 +2739,8 @@ function dm_show_download_collection_s3_usage {
   Download the specified collection or list of collections to an S3 bucket
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This will be empty if the command is successful
-  [-f paths-file]             New line delimited file which contains the collection paths in DME to be downloaded
-  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  [-f paths-file]             Newline delimited file which contains the collection paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified)
   destination-bucket          Destination S3 bucket to transfer the data to
   destination_path            Full path of the destination folder in the S3 bucket
   [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
@@ -2910,6 +2911,367 @@ function dm_download_collection_s3 {
 }
 
 
+#Print Usage of dm_download_dataobject_aspera function
+function dm_show_download_dataobject_aspera_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_dataobject_aspera [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> <aspera_credentials_file_path>
+  Download the specified dataobject or list of dataobjects to an Aspera bucket
+  [-D REST-response]       Filename to capture the REST response
+  [-o output-file]         Filename to capture the error output. This is empty if the command is successful
+  [-f paths-file]          Newline delimited file which contains the data object paths in DME to be downloaded 
+  [archive-path]           Source path in the archive. Not required if the paths-file parameter is specified
+  destination-bucket       Destination Aspera bucket to transfer data to
+  destination_path         Full path of the destination file/folder in the Aspera bucket
+  aspera_credentials_path  Full path of the Aspera credentials file on the local machine containing the ASPERA_HOST, ASPERA_USER and ASPERA_SCP_PASS properties. If ASPERA_HOST or ASPERA_USER is not specified, then the dbGaP supplied values will be used.
+
+For a sample Aspera credentials file, refer to templates/aspera_credentials
+
+#For detailed information on this command, refer to the following page:
+#https://wiki.nci.nih.gov/x/bQRuG
+
+EOF
+  echo "$usage"
+}
+
+
+function dm_download_dataobject_aspera {
+
+    local DESCRIPTION=description.json
+
+    local credentials_file
+    local response_msg
+    local response_hdr
+	local path_file
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    dm_show_download_dataobject_aspera_usage >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    dm_show_download_dataobject_aspera_usage >&2
+                    return 1
+                fi
+            ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    dm_show_download_dataobject_aspera_usage >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
+    then
+        dm_show_download_dataobject_aspera_usage >&2
+        return 1
+    fi
+
+    if [ "$#" -gt 3 ]
+    then
+       credentials_file=$4
+    else
+       dm_show_download_dataobject_aspera_usage >&2
+       return 1
+    fi
+
+
+    local SOURCE_PATH="$1"
+    local DESTINATION_BUCKET="$2"
+    local DESTINATION_PATH="$3"
+
+    item_type="dataObject"
+	if [ ! -z "$path_file" ]
+	then
+		if [ ! -e "$path_file" ]
+		then
+			echo "Cannot find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			return 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+		item_type="dataObject"
+	fi
+
+
+   #Create description.json
+
+   local asperaHost=$(get_value $credentials_file ASPERA_HOST)
+   if [ -z "$asperaHost" ]
+   then
+       asperaHost="gap-submit.ncbi.nlm.nih.gov"
+   fi
+
+   local asperaUser=$(get_value $credentials_file ASPERA_USER)
+   if [ -z "$asperaUser" ]
+   then
+      asperaUser="asp-dbgap"
+   fi
+
+   local asperaPassword=$(get_value $credentials_file ASPERA_SCP_PASS)
+   if [ -z "$asperaPassword" ]
+   then
+       echo "ERROR: Credentials file does not contain ASPERA_SCP_PASS property"
+       return 1
+   fi
+
+   echo -e "{\n \"asperaDownloadDestination\": {\n \"destinationLocation\": {" > description.json
+   echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
+   echo -e " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
+   echo -e " \"account\": {\n \"host\": \"$asperaHost\"," >> description.json
+   echo " \"user\": \"$asperaUser\"," >> description.json
+   echo -e " \"password\": \"$asperaPassword\" \n}" >> description.json
+
+   if [ -z "$path_file" ]
+   then
+        echo -e "\n}\n} " >> description.json
+   else
+		echo -e "\n},\n \"dataObjectPaths\": [\n \"$SOURCE_PATHS\"\n]" >> description.json
+		echo -e "\n}" >> description.json
+   fi
+   echo "$description.json"
+
+
+    echo "Sending request to download the $item_type with path $SOURCE_PATH to Aspera endpoint $asperaUser@$asperaHost."
+    if [ -z "$response_msg" ]
+     then
+        response_msg=download-$item_type-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-$item_type-response-header.tmp
+    fi
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	else
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	fi
+    check_connection $response_hdr || exit 1
+
+    local code=$(get_http_code "$response_hdr")
+    echo "The response code is $code"
+    if [ "$code" -ne "200" ]
+    then
+      #In this case the destination path file will contain the error code
+      print_error_message "$response_msg" "$code"  || return 1
+    fi
+
+    #Parse the download receipt:
+
+    message=$(get_json_value $response_msg message)
+    if [ ! -z "$message" ]
+    then
+        echo "Error downloading $src_path:"  >&2
+        echo "$message" >&2
+        return 1
+    else
+        echo "Download request sent to Aspera endpoint at $asperaUser@$asperaHost."
+        task_id=$(get_json_value $response_msg taskId)
+        echo "taskID:$task_id"
+        echo "Check the full download receipt at $response_msg"
+    fi
+}
+
+#Print Usage of dm_download_collection_aspera function
+function dm_show_download_collection_aspera_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_collection_aspera [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> <aws_credentials_file_path>
+  Download the specified collection or list of collections to an Aspera bucket
+  [-D REST-response]       Filename to capture the REST response
+  [-o output-file]         Filename to capture the error output. This will be empty if the command is successful
+  [-f paths-file]          Newline delimited file which contains the collection paths in DME to be downloaded
+  [archive-path]           Source path in the archive (Not needed if the paths-file parameter is specified)
+  destination-bucket       Destination Aspera bucket to transfer the data to
+  destination_path         Full path of the destination folder in the Aspera bucket
+  aspera_credentials_path  Full path of the Aspera credentials file on the local machine containing the ASPERA_HOST, ASPERA_USER and ASPERA_SCP_PASS properties. If ASPERA_HOST or ASPERA_USER is not specified, then dbGap supplied values will be used.
+
+For a sample Aspera credentials file, refer to templates/aspera_credentials
+
+#For detailed information on this command, refer to the following page:
+#https://wiki.nci.nih.gov/x/q4tbG
+
+EOF
+  echo "$usage"
+}
+
+
+function dm_download_collection_aspera {
+
+    local DESCRIPTION=description.json
+
+    local credentials_file
+    local response_msg
+    local response_hdr
+	local path_file
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    dm_show_download_collection_aspera_usage >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    dm_show_download_collection_aspera_usage >&2
+                    return 1
+                fi
+            ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    dm_show_download_collection_aspera_usage >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
+    then
+        dm_show_download_collection_aspera_usage >&2
+        return 1
+    fi
+
+    if [ "$#" -gt 3 ]
+    then
+       credentials_file=$4
+    else
+       dm_show_download_collection_aspera_usage >&2
+       return 1
+    fi
+
+    local SOURCE_PATH="$1"
+    local DESTINATION_BUCKET="$2"
+    local DESTINATION_PATH="$3"
+
+	item_type="collection"
+	if [ ! -z "$path_file" ]
+	then
+		if [ ! -e "$path_file" ]
+		then
+			echo "Cannot find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			return 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+	fi
+
+
+   #Create description.json
+
+   local asperaHost=$(get_value $credentials_file ASPERA_HOST)
+   if [ -z "$asperaHost" ]
+   then
+       asperaHost="gap-submit.ncbi.nlm.nih.gov"
+   fi
+
+   local asperaUser=$(get_value $credentials_file ASPERA_USER)
+   if [ -z "$asperaUser" ]
+   then
+      asperaUser="asp-dbgap"
+   fi
+
+   local asperaPassword=$(get_value $credentials_file ASPERA_SCP_PASS)
+   if [ -z "$asperaPassword" ]
+   then
+       echo "ERROR: Credentials file does not contain ASPERA_SCP_PASS property"
+       return 1
+   fi
+
+   echo -e "{\n \"asperaDownloadDestination\": {\n \"destinationLocation\": {" > description.json
+   echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
+   echo -e " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
+   echo -e " \"account\": {\n \"host\": \"$asperaHost\"," >> description.json
+   echo " \"user\": \"$asperaUser\"," >> description.json
+   echo -e " \"password\": \"$asperaPassword\" \n}" >> description.json
+   if [ -z "$path_file" ]
+   then
+        echo -e "\n}\n} " >> description.json
+   else
+		echo -e "\n},\n \"collectionPaths\": [\n \"$SOURCE_PATHS\"\n]" >> description.json
+		echo -e "\n}" >> description.json
+   fi
+
+
+    echo "Sending request to download the $item_type $SOURCE_PATH to Aspera endpoint at $asperaUser@$asperaUser..."
+    if [ -z "$response_msg" ]
+     then
+        response_msg=download-$item_type-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-$item_type-response-header.tmp
+    fi
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	else
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	fi
+    check_connection $response_hdr || return 1
+
+
+    local code=$(get_http_code "$response_hdr")
+
+    if [ "$code" -ne 200 ]
+    then
+      #In this case the destination path file will contain the error code
+      print_error_message "$response_msg" "$code"  || return 1
+    fi
+
+    #Parse the download receipt:
+
+    message=$(get_json_value $response_msg message)
+    if [ ! -z "$message" ]
+    then
+        echo "Error downloading $src_path:"  >&2
+        echo "$message" >&2
+        return 1
+    else
+        echo "Download request sent to Aspera endpoint at $asperaUser@$asperaHost."
+        task_id=$(get_json_value $response_msg taskId)
+        echo "taskID:$task_id"
+        echo "Check the full download receipt at $response_msg"
+    fi
+}
+
 #Get the status of asynchronousl download request 
 #Input: [-o download-status-file]
 #       [-D REST-response]
@@ -2919,7 +3281,7 @@ function dm_download_collection_s3 {
 #Input: [REST-response] (for backward compatibility)
 function dm_get_download_status {
 
- 
+
     local USAGE="usage: dm_get_download_status [-D REST-response] [-o download-status-file] <download-taskId> <request-type>"
 
     local RESPONSE_MSG
