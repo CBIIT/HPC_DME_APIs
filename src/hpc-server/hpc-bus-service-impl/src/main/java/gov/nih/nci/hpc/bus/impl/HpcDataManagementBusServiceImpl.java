@@ -3629,6 +3629,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					generateDownloadURL);
 		}
 
+		if(metadata.getS3ArchiveConfigurationId() == null) {
+			logger.error("Could not locate data object: {}", path);
+			throw new HpcException(
+				"Could not locate data object path " + path,
+				HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		// Download to Google Drive / Google Cloud Storage destination is supported only
 		// from S3 archive.
 		if (googleOrAsperaDownloadDestination && (metadata.getDataTransferType() == null
