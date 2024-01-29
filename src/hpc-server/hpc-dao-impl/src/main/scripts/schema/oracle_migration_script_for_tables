@@ -428,11 +428,11 @@ comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DATA_SIZE" is 'The data obje
 
 comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_CONTAINER_NAME" is 'The download destination container name';
 
-comment on column "HPC_DOWNLOAD_TASK_RESULT"."DOC" is 'DOC of the data object ior collection downloaded';
+comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."DOC" is 'DOC of the data object ior collection downloaded';
 
-comment on column HPC_DOWNLOAD_TASK_RESULT.ARCHIVE_LOCATION_FILE_CONTAINER_ID is 'The bucket containing the data object';
+comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_CONTAINER_ID" is 'The bucket containing the data object';
 
-comment on column HPC_DOWNLOAD_TASK_RESULT.ARCHIVE_LOCATION_FILE_ID is 'The key/path of the data object';
+comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_ID" is 'The key or path of the data object';
 
 
 
