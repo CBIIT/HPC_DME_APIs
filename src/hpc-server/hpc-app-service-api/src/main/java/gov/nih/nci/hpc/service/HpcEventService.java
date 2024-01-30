@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.service;
 import java.util.Calendar;
 import java.util.List;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -58,10 +59,11 @@ public interface HpcEventService {
 	 * @param downloadTaskId        The download task ID.
 	 * @param destinationLocation   The data transfer destination location.
 	 * @param dataTransferCompleted The time the data download completed.
+	 * @param destinationType       The destination type.
 	 * @throws HpcException on service failure.
 	 */
 	public void addDataTransferDownloadCompletedEvent(String userId, String path, HpcDownloadTaskType downloadTaskType,
-			String downloadTaskId, HpcFileLocation destinationLocation, Calendar dataTransferCompleted)
+			String downloadTaskId, HpcFileLocation destinationLocation, Calendar dataTransferCompleted, HpcDataTransferType destinationType)
 			throws HpcException;
 
 	/**
@@ -75,11 +77,12 @@ public interface HpcEventService {
 	 * @param destinationLocation   The data transfer destination location.
 	 * @param dataTransferCompleted The time the data download failed.
 	 * @param errorMessage          The download failed error message.
+	 * @param destinationType       The destination type.
 	 * @throws HpcException on service failure.
 	 */
 	public void addDataTransferDownloadFailedEvent(String userId, String path, HpcDownloadTaskType downloadTaskType,
 			HpcDownloadResult downloadTaskResult, String downloadTaskId, HpcFileLocation destinationLocation,
-			Calendar dataTransferCompleted, String errorMessage) throws HpcException;
+			Calendar dataTransferCompleted, String errorMessage, HpcDataTransferType destinationType) throws HpcException;
 
 	/**
 	 * Add a data transfer upload in temporary archive event.
