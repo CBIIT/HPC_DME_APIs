@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -285,10 +286,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Attach the metadata.
 			if (created) {
+
 				boolean registrationCompleted = false;
 				try {
-					// Assign system account as an additional owner of the collection.
-					dataManagementService.setCoOwnership(path, userId);
+					//The below setCoOwnership method adds the system account and the creator of this
+					//collection as an additional owner of this collection.See HPCDATAMGM-1882 for
+					//details on why this method was created. This now gives error in irods 4.3.1 because
+					//a user with modify_object permission can now no longer set privileges to a higher
+					//level on itself nor assign higher level privileges to other accounts. However,
+					//in the newer DME operating mode, we assign the service account ownership to all
+					//Archives at the root level plus inheritance is always enabled. Also, there is no
+					//use case presently for a user with modify_object (write) only privileges to assign
+					//permissions to others. Hence for now the call to this method is being commented
+					//OUT. Please do not uncomment this method without reading HPCDATAMGM-1882.
+					//dataManagementService.setCoOwnership(path, userId);
 
 					// Add user provided metadata.
 					metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
@@ -305,9 +316,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					addCollectionUpdatedEvent(path, true, false, userId, null, null, null);
 
 					registrationCompleted = true;
+				} catch(Exception e) {
+					logger.error("Unable to complete collection creation: " + e.getMessage(), e.getStackTrace());
+					throw e;
 
 				} finally {
 					if (!registrationCompleted) {
+						logger.error("Collection registration failed, deleting new collection: {}", path);
 						// Collection registration failed. Remove it from Data Management.
 						dataManagementService.delete(path, true);
 					}
@@ -654,6 +669,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
 				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getAsperaAccount(),
 				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
@@ -780,6 +796,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
 				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
+				downloadRetryRequest.getAsperaAccount(),
 				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
@@ -1022,11 +1039,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (responseDTO.getRegistered()) {
 			HpcDataObjectUploadResponse uploadResponse = null;
 			try {
-				// Assign system account as an additional owner of the data-object.
-				timeBefore = System.currentTimeMillis();
-				dataManagementService.setCoOwnership(path, userId);
-				taskProfilingLog("Registration", path, "File permissions set in iRODS",
-						System.currentTimeMillis() - timeBefore);
+				//timeBefore = System.currentTimeMillis();
+				//The below setCoOwnership method adds the system account and the creator of this
+				//collection as an additional owner of this collection.See HPCDATAMGM-1882 for
+				//details on why this method was created. This now gives error in irods 4.3.1 because
+				//a user with modify_object permission can now no longer set privileges to a higher
+				//level on itself nor assign higher level privileges to other accounts. However,
+				//in the newer DME operating mode, we assign the service account ownership to all
+				//Archives at the root level plus inheritance is always enabled. Also, there is no
+				//use case presently for a user with modify_object (write) only privileges to assign
+				//permissions to others. Hence for now the call to this method is being commented
+				//OUT. Please do not uncomment this method without reading HPCDATAMGM-1882.
+				//dataManagementService.setCoOwnership(path, userId);
+				//taskProfilingLog("Registration", path, "File permissions set in iRODS",
+				//		System.currentTimeMillis() - timeBefore);
 
 				// Validate the new data object complies with the hierarchy definition.
 				securityService.executeAsSystemAccount(Optional.empty(),
@@ -3603,6 +3629,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					generateDownloadURL);
 		}
 
+		if(metadata.getS3ArchiveConfigurationId() == null) {
+			logger.error("Could not locate data object: {}", path);
+			throw new HpcException(
+				"Could not locate data object path " + path,
+				HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		// Download to Google Drive / Google Cloud Storage destination is supported only
 		// from S3 archive.
 		if (googleOrAsperaDownloadDestination && (metadata.getDataTransferType() == null
@@ -3921,6 +3954,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			googleCloudStorageDownloadDestination.setAccessToken(downloadRetryRequest.getGoogleAccessToken());
 			googleCloudStorageDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadRequest.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+			HpcAsperaDownloadDestination asperaDownloadDestination = new HpcAsperaDownloadDestination();
+			asperaDownloadDestination.setAccount(downloadRetryRequest.getAsperaAccount());
+			asperaDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadRequest.setAsperaDownloadDestination(asperaDownloadDestination);
 		}
 		return downloadRequest;
 	}
