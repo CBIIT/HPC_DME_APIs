@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -99,6 +100,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     try {
       model.addAttribute("taskId", taskId);
       model.addAttribute("taskType", type);
+      model.addAttribute("asperaUser", "asp-dbgap");
+      model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
       HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
       String userId = (String) session.getAttribute("hpcUserId");
       String authToken = (String) session.getAttribute("hpcUserToken");
@@ -155,6 +158,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
   public String retryDownload(@RequestBody(required = false) String body,
       @RequestParam String taskId, @RequestParam String taskType, 
       @RequestParam String accessKey, @RequestParam String secretKey, @RequestParam String region,
+      @RequestParam String asperaUser, @RequestParam String asperaPassword,  @RequestParam String asperaHost,
       Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
     AjaxResponseBody result = new AjaxResponseBody();
     try {
@@ -183,18 +187,25 @@ public class HpcDownloadTaskController extends AbstractHpcController {
             
         HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
                 .getDataObjectsDownloadTask(authToken, dataObjectsDownloadServiceURL + "/" + taskId, sslCertPath, sslCertPassword);
-        
-        HpcS3Account account = null;
+
+        HpcS3Account s3Account = null;
         if (downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)) {
-			account = new HpcS3Account();
-			account.setAccessKey(accessKey);
-			account.setSecretKey(secretKey);
-			account.setRegion(region);
+			s3Account = new HpcS3Account();
+			s3Account.setAccessKey(accessKey);
+			s3Account.setSecretKey(secretKey);
+			s3Account.setRegion(region);
+		}
+        HpcAsperaAccount asperaAccount = null;
+        if (downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+			asperaAccount = new HpcAsperaAccount();
+			asperaAccount.setUser(asperaUser);
+			asperaAccount.setPassword(asperaPassword);
+			asperaAccount.setHost(asperaHost);
 		}
         
 		try {
 			HpcBulkDataObjectDownloadResponseDTO downloadDTO = HpcClientUtil.retryBulkDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath,
-					sslCertPassword, account);
+					sslCertPassword, s3Account, asperaAccount);
 			if (downloadDTO != null) {
 				result.setMessage("Retry bulk download request successful. Task Id: " + downloadDTO.getTaskId());
 				model.addAttribute("message", "Retry bulk download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
@@ -219,17 +230,24 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     	List<HpcCollectionDownloadStatusDTO> previousTasks = retrieveOrigCollectionTaskItems(authToken, taskId, model, downloadTask,
     			new ArrayList<HpcCollectionDownloadStatusDTO>());
     	
-        HpcS3Account account = null;
+        HpcS3Account s3Account = null;
         if (downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)) {
-			account = new HpcS3Account();
-			account.setAccessKey(accessKey);
-			account.setSecretKey(secretKey);
-			account.setRegion(region);
+			s3Account = new HpcS3Account();
+			s3Account.setAccessKey(accessKey);
+			s3Account.setSecretKey(secretKey);
+			s3Account.setRegion(region);
+		}
+        HpcAsperaAccount asperaAccount = null;
+        if (downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+			asperaAccount = new HpcAsperaAccount();
+			asperaAccount.setUser(asperaUser);
+			asperaAccount.setPassword(asperaPassword);
+			asperaAccount.setHost(asperaHost);
 		}
         
 		try {
 			HpcCollectionDownloadResponseDTO downloadDTO = HpcClientUtil.retryCollectionDownloadTask(authToken, queryServiceURL, sslCertPath,
-					sslCertPassword, account);
+					sslCertPassword, s3Account, asperaAccount);
 			if (downloadDTO != null) {
 				result.setMessage("Retry request successful. Task Id: " + downloadDTO.getTaskId());
 				model.addAttribute("message", "Retry collection download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
@@ -250,17 +268,24 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     	            .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
     	String serviceURL = dataObjectDownloadServiceURL + "/" + taskId + "/retry";
     	    
-    	HpcS3Account account = null;
+    	HpcS3Account s3Account = null;
         if (downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)) {
-			account = new HpcS3Account();
-			account.setAccessKey(accessKey);
-			account.setSecretKey(secretKey);
-			account.setRegion(region);
+			s3Account = new HpcS3Account();
+			s3Account.setAccessKey(accessKey);
+			s3Account.setSecretKey(secretKey);
+			s3Account.setRegion(region);
+		}
+        HpcAsperaAccount asperaAccount = null;
+        if (downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA)) {
+			asperaAccount = new HpcAsperaAccount();
+			asperaAccount.setUser(asperaUser);
+			asperaAccount.setPassword(asperaPassword);
+			asperaAccount.setHost(asperaHost);
 		}
         
         try {
 			HpcDataObjectDownloadResponseDTO downloadDTO = HpcClientUtil.retryDataObjectDownloadTask(authToken, serviceURL, sslCertPath,
-					sslCertPassword, account);
+					sslCertPassword, s3Account, asperaAccount);
 			if (downloadDTO != null) {
 				result.setMessage("Retry request successful. Task Id: " + downloadDTO.getTaskId());
 				model.addAttribute("message", "Retry data object download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
@@ -378,8 +403,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
           if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
-              || downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA))
+              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE))
             retry = false;
 		}
 	}
@@ -404,8 +428,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
         if (downloadTask.getDestinationType() != null
             && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-                || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE))
-            	|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA))
+                || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
            retry = false;
 	} else {
 		//No retry button if download is in progress or has no failed or cancelled items
@@ -460,8 +483,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
       if (downloadTask.getDestinationType() != null
           && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE))
-          		|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA))
+              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
         retry = false;
 	} else {
 		//No retry button if download is in progress or has no failed or cancelled items
@@ -500,8 +522,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		{
             if (downloadTask.getDestinationType() != null
                 && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-                    || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE))
-                	|| downloadTask.getDestinationType().equals(HpcDataTransferType.ASPERA))
+                    || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
                retry = false;
 		} else {
 			//No retry button if download is in progress or has no failed or cancelled items
