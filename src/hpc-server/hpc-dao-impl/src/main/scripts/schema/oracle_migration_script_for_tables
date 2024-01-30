@@ -387,7 +387,9 @@ CREATE TABLE "IRODS"."HPC_DOWNLOAD_TASK_RESULT"
    DESTINATION_TYPE VARCHAR2(50),
    DATA_SIZE number(19),
    DESTINATION_LOCATION_FILE_CONTAINER_NAME VARCHAR2(250),
-   DOC VARCHAR(50)
+   DOC VARCHAR(50),
+   ARCHIVE_LOCATION_FILE_CONTAINER_ID VARCHAR2(200),
+   ARCHIVE_LOCATION_FILE_ID VARCHAR2(2700)
 )
 ;
 comment on table IRODS."HPC_DOWNLOAD_TASK_RESULT" is 'Download task (single file, collection, bulk) results';
@@ -426,7 +428,13 @@ comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DATA_SIZE" is 'The data obje
 
 comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_CONTAINER_NAME" is 'The download destination container name';
 
-comment on column "HPC_DOWNLOAD_TASK_RESULT"."DOC" is 'DOC of the data object ior collection downloaded';
+comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."DOC" is 'DOC of the data object ior collection downloaded';
+
+comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_CONTAINER_ID" is 'The bucket containing the data object';
+
+comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_ID" is 'The key or path of the data object';
+
+
 
 CREATE TABLE "IRODS"."HPC_EVENT"
 (

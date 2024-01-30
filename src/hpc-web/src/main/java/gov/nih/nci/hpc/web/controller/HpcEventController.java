@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -90,6 +91,9 @@ public class HpcEventController extends AbstractHpcController {
 					        if(entry.getValue().startsWith("<br>"))
 					          entry.setValue(entry.getValue().substring("<br>".length()));
 					      }
+					      TimeZone tz = TimeZone.getTimeZone("EST");
+					      receipt.getEventCreated().setTimeZone(tz);
+					      receipt.getDelivered().setTimeZone(tz);
 					    }
 						model.addAttribute("receipt", receipts.get(0));
 					}

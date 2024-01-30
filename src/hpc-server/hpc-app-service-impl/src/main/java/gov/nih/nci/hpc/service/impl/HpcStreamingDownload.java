@@ -195,6 +195,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setPercentComplete(0);
 		downloadTask.setSize(downloadRequest.getSize());
 		downloadTask.setFirstHopRetried(false);
+		downloadTask.setRetryTaskId(downloadRequest.getRetryTaskId());
+		downloadTask.setRetryUserId(downloadRequest.getRetryUserId());
 
 		if (downloadTask.getS3DownloadDestination() != null) {
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
@@ -211,7 +213,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	}
 
 	/**
-	 * Update a download task for a streaming download (to AWS S3 or Google Drive or Aspera).
+	 * Update a download task for a streaming download (to AWS S3 or Google Drive or
+	 * Aspera).
 	 *
 	 * @param downloadTask The download task.
 	 * @throws HpcException If it failed to persist the task.
@@ -236,6 +239,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
 		this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
+		this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
+		this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
 
 		if (this.downloadTask.getS3DownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
@@ -273,25 +278,31 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 					bytesTransferred);
 
 			HpcFileLocation destinationLocation = null;
+			HpcDataTransferType destinationType = null;
 			if (downloadTask.getS3DownloadDestination() != null) {
 				destinationLocation = downloadTask.getS3DownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.S_3;
 			} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 				destinationLocation = downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.GOOGLE_DRIVE;
 			} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 				destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
 			} else if (downloadTask.getAsperaDownloadDestination() != null) {
 				destinationLocation = downloadTask.getAsperaDownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.ASPERA;
 			}
 
 			// Send a download completion or failed event (if requested to).
 			if (downloadTask.getCompletionEvent()) {
 				if (result.equals(HpcDownloadResult.COMPLETED)) {
 					eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(), downloadTask.getPath(),
-							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed);
+							HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), destinationLocation, completed,
+							destinationType);
 				} else {
 					eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(), downloadTask.getPath(),
 							HpcDownloadTaskType.DATA_OBJECT, result, downloadTask.getId(), destinationLocation,
-							completed, message);
+							completed, message, destinationType);
 				}
 			}
 

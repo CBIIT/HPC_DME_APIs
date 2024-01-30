@@ -586,6 +586,8 @@
 				<xsd:element name="s3Account"
 					type="hpc-domain-datatransfer:HpcS3Account" />
 				<xsd:element name="googleAccessToken" type="xsd:string" />
+				<xsd:element name="asperaAccount"
+					type="hpc-domain-datatransfer:HpcAsperaAccount" />
 				<xsd:element name="retryUserId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>

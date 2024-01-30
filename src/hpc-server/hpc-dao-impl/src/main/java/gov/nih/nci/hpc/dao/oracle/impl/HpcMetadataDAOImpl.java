@@ -143,12 +143,20 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_COLLECTION_PATHS_SQL = "select distinct object_path from r_coll_hierarchy_meta_main main1 where ";
 
-	private static final String GET_DETAILED_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
+	private static final String GET_DETAILED_PARENT_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
 			+ "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
 			+ "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
 			+ "mv.meta_attr_name, mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label, mv.coll_id "
 			+ "from r_coll_hierarchy_meta_main mv, r_coll_main coll "
 			+ "where mv.object_id = coll.coll_id and mv.object_path in ";
+	
+	private static final String GET_DETAILED_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
+			+ "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
+			+ "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
+			+ "mv.meta_attr_name, mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label, mv.coll_id "
+			+ "from r_coll_hierarchy_meta_main mv, r_coll_main coll "
+			+ "where mv.object_id = coll.coll_id and ( exists (select 1 from ("
+			+ "select distinct object_id from r_coll_hierarchy_meta_main main1 where ";
 
 	private static final String GET_COLLECTION_COUNT_SQL = "select count(distinct object_id) from r_coll_hierarchy_meta_main main1 where ";
 
@@ -506,16 +514,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername, int offset, int limit,
 			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
 
-		List<HpcSearchMetadataEntryForCollection> collPaths = new ArrayList<>();
-		List<String> paths = getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL,
+		return getDetailedPathsForCollection(prepareQuery(GET_DETAILED_COLLECTION_PATHS_SQL, null,
 				toQuery(collectionSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, offset,
-				limit));
-
-		if (CollectionUtils.isEmpty(paths))
-			return collPaths;
-
-		return getDetailedPathsForCollection(
-				prepareQuery(GET_DETAILED_COLLECTION_PATHS_SQL, toQuery(paths), null, null, null));
+				limit, true));
 	}
 
 	@Override
@@ -611,7 +612,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		}
 
 		return getDetailedPathsForCollection(
-				prepareQuery(GET_DETAILED_COLLECTION_PATHS_SQL, toQuery(paths), null, null, null));
+				prepareQuery(GET_DETAILED_PARENT_COLLECTION_PATHS_SQL, toQuery(paths), null, null, null));
 	}
 
 	@Override
