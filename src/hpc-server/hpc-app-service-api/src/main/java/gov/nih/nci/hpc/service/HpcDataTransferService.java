@@ -19,6 +19,7 @@ import java.util.Map;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -723,13 +724,14 @@ public interface HpcDataTransferService {
 	 * @param s3Account            (Optional) s3Account for S3 destinations.
 	 * @param googleAccessToken    (Optional) access token for Google Drive / Cloud
 	 *                             storage destinations.
+	 * @param asperaAccount        (Optional) asperaAccount for Aspera destinations.
 	 * @param retryUserId          The User who is re-initiating the task
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
-			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken, String retryUserId)
-			throws HpcException;
+			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken,
+			HpcAsperaAccount asperaAccount, String retryUserId) throws HpcException;
 
 	/**
 	 * Get collection download tasks in process.
