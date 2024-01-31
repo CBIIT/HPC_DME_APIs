@@ -232,7 +232,7 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 			put(dataManagementConfiguration.getId(), dataManagementConfiguration);
 		}
 
-		logger.info("Data Management Configurations: " + toString());
+		logger.trace("Data Management Configurations: " + toString());
 		return basePathConfigurations.values();
 	}
 
