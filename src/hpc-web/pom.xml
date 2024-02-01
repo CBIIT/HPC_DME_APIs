@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.0.RELEASE</version>
+        <version>2.3.12.RELEASE</version>
         <relativePath />
         <!-- lookup parent from repository -->
     </parent>
@@ -25,6 +25,7 @@
         <app.configs.dir>${resources.basedir}/appconfigs</app.configs.dir>
         <google-drive-sdk.version>1.25.0</google-drive-sdk.version>
         <log4j2.version>2.20.0</log4j2.version>
+        <spring-framework.version>5.2.25.RELEASE</spring-framework.version>
     </properties>
     <dependencies>
         <dependency>
