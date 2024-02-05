@@ -1,2 +1,2 @@
 -k
--H "Authorization : Bearer xxxxx"
+-H "Authorization: Bearer xxxxx"
