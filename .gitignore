@@ -159,3 +159,11 @@ utils/hpc-client/lib/jaxws-api-2.3.1.jar
 utils/hpc-client/lib/jboss-rmi-api_1.0_spec-1.0.6.Final.jar
 utils/hpc-client/lib/mimepull-1.9.7.jar
 utils/hpc-client/lib/saaj-impl-1.4.0-b03.jar
+src/hpc-web/.settings/.jsdtscope
+src/hpc-web/.settings/org.eclipse.m2e.core.prefs
+src/hpc-web/.settings/org.eclipse.wst.common.component
+src/hpc-web/.settings/org.eclipse.wst.common.project.facet.core.prefs.xml
+src/hpc-web/.settings/org.eclipse.wst.common.project.facet.core.xml
+src/hpc-web/.settings/org.eclipse.wst.jsdt.ui.superType.container
+src/hpc-web/.settings/org.eclipse.wst.jsdt.ui.superType.name
+src/hpc-web/.settings/org.eclipse.wst.validation.prefs
