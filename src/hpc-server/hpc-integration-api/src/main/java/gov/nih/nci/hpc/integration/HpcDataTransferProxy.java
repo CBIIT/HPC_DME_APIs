@@ -228,11 +228,13 @@ public interface HpcDataTransferProxy {
 	 *
 	 * @param authenticatedToken    An authenticated token.
 	 * @param dataTransferRequestId The data transfer request ID.
+	 * @param successfulItems       True to include successful items in the
+	 *                              response.
 	 * @return The data transfer request status.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default HpcDataTransferDownloadReport getDataTransferDownloadStatus(Object authenticatedToken,
-			String dataTransferRequestId) throws HpcException {
+			String dataTransferRequestId, boolean successfulItems) throws HpcException {
 		throw new HpcException("getDataTransferDownloadStatus() not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
