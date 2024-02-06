@@ -183,3 +183,11 @@ utils/hpc-client/lib/spring-tx-5.2.12.RELEASE.jar
 utils/hpc-client/lib/spring-web-5.2.25.RELEASE.jar
 utils/hpc-client/lib/spring-webmvc-5.2.25.RELEASE.jar
 utils/hpc-client/lib/xmlschema-core-2.2.1.jar
+src/hpc-web/.settings/.jsdtscope
+src/hpc-web/.settings/org.eclipse.m2e.core.prefs
+src/hpc-web/.settings/org.eclipse.wst.common.component
+src/hpc-web/.settings/org.eclipse.wst.common.project.facet.core.prefs.xml
+src/hpc-web/.settings/org.eclipse.wst.common.project.facet.core.xml
+src/hpc-web/.settings/org.eclipse.wst.jsdt.ui.superType.container
+src/hpc-web/.settings/org.eclipse.wst.jsdt.ui.superType.name
+src/hpc-web/.settings/org.eclipse.wst.validation.prefs
