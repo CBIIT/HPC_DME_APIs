@@ -1355,7 +1355,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
 
 		for (HpcDataManagementConfiguration dataManagementConfiguration : securityService
-				.refreshDataManagementConfigurations()) {
+				.getDataManagementConfigurations()) {
 			if (dataManagementConfiguration.getStorageRecoveryConfiguration() != null) {
 				// Get a list of data objects to recover storage for this data management
 				// configuration.
@@ -2378,13 +2378,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			destinationLocation = downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation();
 			dataTransferType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE;
-		}  else if (downloadTask.getAsperaDownloadDestination()!= null) {
+		} else if (downloadTask.getAsperaDownloadDestination() != null) {
 			destinationLocation = downloadTask.getAsperaDownloadDestination().getDestinationLocation();
 			dataTransferType = HpcDataTransferType.ASPERA;
 		}
 
 		addDataTransferDownloadEvent(downloadTask.getUserId(), path, downloadTask.getType(), downloadTask.getId(),
-				dataTransferType, downloadTask.getConfigurationId(), result, message, destinationLocation, completed, dataTransferType);
+				dataTransferType, downloadTask.getConfigurationId(), result, message, destinationLocation, completed,
+				dataTransferType);
 
 		logger.info("collection download task: {} - completed as {} [{}]", downloadTask.getId(), result.value(),
 				downloadTask.getType().value());
@@ -2441,7 +2442,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
 						HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), downloadTask.getDataTransferType(),
 						downloadTask.getConfigurationId(), result, message,
-						downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed, downloadTask.getDestinationType());
+						downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed,
+						downloadTask.getDestinationType());
 			}
 		} else {
 			// Download is still in progress. Update the progress (percent complete).
@@ -2469,7 +2471,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
 					HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(), downloadTask.getDataTransferType(),
 					downloadTask.getConfigurationId(), HpcDownloadResult.CANCELED, null,
-					downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed, downloadTask.getDestinationType());
+					downloadTask.getGlobusDownloadDestination().getDestinationLocation(), completed,
+					downloadTask.getDestinationType());
 		}
 	}
 
