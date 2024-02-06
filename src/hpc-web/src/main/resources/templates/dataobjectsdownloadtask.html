@@ -91,16 +91,20 @@
 									and (hpcDataObjectsDownloadStatusDTO.getFailedItems() == null or hpcDataObjectsDownloadStatusDTO.getFailedItems().size() == 0) 
 									and (hpcDataObjectsDownloadStatusDTO.getCanceledItems() == null or hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() == 0)}">
 								  <h2>
-								    <strong> <a class="downloadfailed btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								    <strong> <button class="downloadfailed btn btn-link btn-sm" 
+								    th:data-task-id="${taskId}" th:data-task-type="${taskType}" 
+								    th:onclick="retryDownload(this.getAttribute('data-task-id'),this.getAttribute('data-task-type'));">
+								    <i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></button></strong>
 								  </h2>
 							    </div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() == null or (hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0) }">
 									<h2>
-										<strong> <a id="cancelDownload"
+										<strong> <button id="cancelDownload"
 											class="btn btn-link btn-sm"
-											th:href="@{'javascript:cancelDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i
-												class="fa fa-stop-circle-o" title="Cancel"
-												aria-hidden="true" style="font-size: 18px;"></i></a></strong>
+											th:data-task-id="${taskId}" th:data-task-type="${taskType}" 
+											th:onclick="cancelDownload(this.getAttribute('data-task-id'),this.getAttribute('data-task-type'));">
+											<i class="fa fa-stop-circle-o" title="Cancel"
+												aria-hidden="true" style="font-size: 18px;"></i></button></strong>
 									</h2>
 								<input type="hidden" id="inProgressItems" name="inProgressItems" value="true"/>
 								</div>
@@ -352,7 +356,10 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
 								  <h2>
-								    <strong> <a class="downloadfailed btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								    <strong> <button class="downloadfailed btn btn-link btn-sm" 
+								    th:data-task-id="${taskId}" th:data-task-type="${taskType}" 
+								    th:onclick="retryDownload(this.getAttribute('data-task-id'),this.getAttribute('data-task-type'));">
+								    <i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></button></strong>
 								  </h2>
 							   </div>
 							</div>
