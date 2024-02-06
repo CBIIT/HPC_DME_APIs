@@ -785,7 +785,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcDataTransferDownloadReport getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
-			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId, boolean successfulItems) throws HpcException {
 		// Input validation.
 		if (dataTransferRequestId == null) {
 			throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -793,7 +793,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return dataTransferProxies.get(dataTransferType).getDataTransferDownloadStatus(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				dataTransferRequestId);
+				dataTransferRequestId, successfulItems);
 	}
 
 	@Override
