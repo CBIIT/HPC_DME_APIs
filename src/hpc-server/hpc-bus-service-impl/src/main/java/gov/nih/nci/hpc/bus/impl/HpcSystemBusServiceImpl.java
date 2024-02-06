@@ -988,7 +988,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Get the data transfer download status.
 				HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService
 						.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS,
-								downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId(), null);
+								downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId(), null, true);
 
 				// Check the status of the data transfer.
 				HpcDataTransferDownloadStatus globusBunchingDownloadStatus = dataTransferDownloadReport.getStatus();
@@ -2410,7 +2410,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Get the data transfer download status.
 		HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService.getDataTransferDownloadStatus(
 				downloadTask.getDataTransferType(), downloadTask.getDataTransferRequestId(),
-				downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
+				downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId(), false);
 
 		// Check the status of the data transfer.
 		HpcDataTransferDownloadStatus dataTransferDownloadStatus = dataTransferDownloadReport.getStatus();
