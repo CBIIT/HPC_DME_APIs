@@ -402,7 +402,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public HpcDataTransferDownloadReport getDataTransferDownloadStatus(Object authenticatedToken,
-			String dataTransferRequestId) throws HpcException {
+			String dataTransferRequestId, boolean successfulItems) throws HpcException {
 		HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, dataTransferRequestId);
 
 		HpcDataTransferDownloadReport statusReport = new HpcDataTransferDownloadReport();
@@ -416,14 +416,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			recoverableFailureTasks.remove(dataTransferRequestId);
 
 			statusReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
-			statusReport.getSuccessfulItems()
-					.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
+			if (successfulItems) {
+				statusReport.getSuccessfulItems()
+						.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
+			}
 
 		} else if (transferFailed(authenticatedToken, dataTransferRequestId, report)) {
 			// Download failed.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
-			statusReport.getSuccessfulItems()
-					.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
+			if (successfulItems) {
+				statusReport.getSuccessfulItems()
+						.addAll(getSuccessfulTransfers(authenticatedToken, dataTransferRequestId, null));
+			}
 			if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
 				statusReport.setPermissionDenied(true);
 				statusReport.setMessage(report.niceStatusDescription
