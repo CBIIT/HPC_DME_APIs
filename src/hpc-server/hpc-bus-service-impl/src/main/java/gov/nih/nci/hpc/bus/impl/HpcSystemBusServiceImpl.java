@@ -2427,9 +2427,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					result = HpcDownloadResult.FAILED_PERMISSION_DENIED;
 				} else {
 					result = HpcDownloadResult.FAILED;
-					logger.error("download task: {} - failed [transfer-type={}, destination-type={}] - {}",
-							downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
-							dataTransferDownloadReport.getMessage());
 				}
 			}
 
