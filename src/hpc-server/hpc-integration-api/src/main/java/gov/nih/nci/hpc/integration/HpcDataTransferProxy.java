@@ -215,11 +215,13 @@ public interface HpcDataTransferProxy {
 	 * @param authenticatedToken     An authenticated token.
 	 * @param dataTransferRequestId  The data transfer request ID.
 	 * @param baseArchiveDestination The archive's base destination location.
+	 * @param loggingPrefix            Contextual (download/upload tasks etc)
+	 *                                 logging text to prefix in logging.
 	 * @return The data transfer request status.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default HpcDataTransferUploadReport getDataTransferUploadStatus(Object authenticatedToken,
-			String dataTransferRequestId, HpcArchive baseArchiveDestination) throws HpcException {
+			String dataTransferRequestId, HpcArchive baseArchiveDestination, String loggingPrefix) throws HpcException {
 		throw new HpcException("getDataTransferUploadStatus() not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
@@ -230,11 +232,13 @@ public interface HpcDataTransferProxy {
 	 * @param dataTransferRequestId The data transfer request ID.
 	 * @param successfulItems       True to include successful items in the
 	 *                              response.
+	 *                              @param loggingPrefix            Contextual (download/upload tasks etc)
+	 *                                 logging text to prefix in logging.
 	 * @return The data transfer request status.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default HpcDataTransferDownloadReport getDataTransferDownloadStatus(Object authenticatedToken,
-			String dataTransferRequestId, boolean successfulItems) throws HpcException {
+			String dataTransferRequestId, boolean successfulItems, String loggingPrefix) throws HpcException {
 		throw new HpcException("getDataTransferDownloadStatus() not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
