@@ -938,8 +938,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			// The transfer task is deemed failed and needs to be cancelled.
 			logger.error(loggingPrefix
-					+ "[GLOBUS} transfer recovery period expired. transferred deemed failed: globus-task-id: {}, status: {}, niceStatus: {}",
-					dataTransferRequestId, report.status, report.niceStatus);
+					+ "[GLOBUS} transfer recovery period expired [{} minutes]. transferred deemed failed: globus-task-id: {}, status: {}, niceStatus: {}",
+					recoverableFailureTimeout, dataTransferRequestId, report.status, report.niceStatus);
 			try {
 				cancelTransferRequest(authenticatedToken, dataTransferRequestId, "HPC-DME deemed task failed");
 				logger.info(loggingPrefix + "[GLOBUS] transfer successfully canceled: globus-task-id: {}",
