@@ -1105,8 +1105,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]", downloadTask.getId(),
-				result.value(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]. Message: {}", downloadTask.getId(),
+				result.value(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(), message);
 
 		// If it's a cancelled data-object download task to a Globus destination,
 		// request Globus to
