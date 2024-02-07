@@ -270,11 +270,14 @@ public interface HpcDataTransferService {
 	 *                                 Used to identify the S3 archive the
 	 *                                 data-object is stored in. This is only
 	 *                                 applicable for S3 archives, not POSIX.
+	 * @param loggingPrefix            Contextual (download/upload tasks etc)
+	 *                                 logging text to prefix in logging.
 	 * @return The data transfer upload request status.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataTransferUploadReport getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
-			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException;
+			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId, String loggingPrefix)
+			throws HpcException;
 
 	/**
 	 * Get a data transfer download request status.
@@ -289,12 +292,14 @@ public interface HpcDataTransferService {
 	 *                                 applicable for S3 archives, not POSIX.
 	 * @param successfulItems          True to include successful items in the
 	 *                                 response.
+	 * @param loggingPrefix            Contextual (download/upload tasks etc)
+	 *                                 logging text to prefix in logging.
 	 * @return The data transfer download request status.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataTransferDownloadReport getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
 			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId,
-			boolean successfulItems) throws HpcException;
+			boolean successfulItems, String loggingPrefix) throws HpcException;
 
 	/**
 	 * Get path attributes for a given file in Globus or S3 archive (using system

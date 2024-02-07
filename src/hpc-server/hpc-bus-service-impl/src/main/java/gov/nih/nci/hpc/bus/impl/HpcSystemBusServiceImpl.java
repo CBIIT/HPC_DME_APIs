@@ -264,7 +264,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getDataTransferType(),
 						systemGeneratedMetadata.getDataTransferRequestId(),
 						systemGeneratedMetadata.getConfigurationId(),
-						systemGeneratedMetadata.getS3ArchiveConfigurationId());
+						systemGeneratedMetadata.getS3ArchiveConfigurationId(), "upload data-object: " + path + " - ");
 
 				HpcDataTransferUploadStatus dataTransferStatus = dataTransferUploadReport.getStatus();
 				Calendar dataTransferCompleted = null;
@@ -988,7 +988,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Get the data transfer download status.
 				HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService
 						.getDataTransferDownloadStatus(HpcDataTransferType.GLOBUS,
-								downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId(), null, true);
+								downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId(), null, true,
+								"download task: " + downloadTask.getId() + " - ");
 
 				// Check the status of the data transfer.
 				HpcDataTransferDownloadStatus globusBunchingDownloadStatus = dataTransferDownloadReport.getStatus();
@@ -2411,7 +2412,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Get the data transfer download status.
 		HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService.getDataTransferDownloadStatus(
 				downloadTask.getDataTransferType(), downloadTask.getDataTransferRequestId(),
-				downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId(), false);
+				downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId(), false,
+				"download task: " + downloadTask.getId() + " - ");
 
 		// Check the status of the data transfer.
 		HpcDataTransferDownloadStatus dataTransferDownloadStatus = dataTransferDownloadReport.getStatus();

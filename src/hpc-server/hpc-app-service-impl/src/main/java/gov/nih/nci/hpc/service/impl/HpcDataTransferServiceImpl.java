@@ -768,7 +768,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcDataTransferUploadReport getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
-			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId, String loggingPrefix)
+			throws HpcException {
 		// Input validation.
 		if (dataTransferRequestId == null) {
 			throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -780,12 +781,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return dataTransferProxies.get(dataTransferType).getDataTransferUploadStatus(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				dataTransferRequestId, dataTransferConfiguration.getBaseArchiveDestination());
+				dataTransferRequestId, dataTransferConfiguration.getBaseArchiveDestination(), loggingPrefix);
 	}
 
 	@Override
 	public HpcDataTransferDownloadReport getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
-			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId, boolean successfulItems) throws HpcException {
+			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId,
+			boolean successfulItems, String loggingPrefix) throws HpcException {
 		// Input validation.
 		if (dataTransferRequestId == null) {
 			throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -793,7 +795,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return dataTransferProxies.get(dataTransferType).getDataTransferDownloadStatus(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				dataTransferRequestId, successfulItems);
+				dataTransferRequestId, successfulItems, loggingPrefix);
 	}
 
 	@Override
@@ -1105,8 +1107,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]. Message: {}", downloadTask.getId(),
-				result.value(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(), message);
+		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]. Message: {}",
+				downloadTask.getId(), result.value(), downloadTask.getDataTransferType(),
+				downloadTask.getDestinationType(), message);
 
 		// If it's a cancelled data-object download task to a Globus destination,
 		// request Globus to
