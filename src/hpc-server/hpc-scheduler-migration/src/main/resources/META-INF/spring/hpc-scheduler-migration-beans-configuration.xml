@@ -23,7 +23,7 @@
 	<context:annotation-config />
 	
 	<task:annotation-driven executor="hpcMigrationScheduledTaskExecutor" scheduler="hpcMigrationScheduledTaskScheduler"/>
-	<task:executor id="hpcMigrationScheduledTaskExecutor" pool-size="20"/>
+	<task:executor id="hpcMigrationScheduledTaskExecutor" pool-size="8"/>
 	<task:scheduler id="hpcMigrationScheduledTaskScheduler" pool-size="20"/>
 	
 	<!--  Scheduled tasks -->
