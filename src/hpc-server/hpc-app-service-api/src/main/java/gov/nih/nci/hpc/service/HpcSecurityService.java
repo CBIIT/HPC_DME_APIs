@@ -284,7 +284,14 @@ public interface HpcSecurityService {
 	 * 
 	 * @throws HpcException as service failure
 	 */
-	public Collection<HpcDataManagementConfiguration> refreshDataManagementConfigurations() throws HpcException;
+	public void refreshDataManagementConfigurations() throws HpcException;
+
+	/**
+	 * Get all data management configurations
+	 * 
+	 * @throws HpcException as service failure
+	 */
+	public Collection<HpcDataManagementConfiguration> getDataManagementConfigurations() throws HpcException;
 
 	/**
 	 * Obtain user's first and last name from LDAP.
@@ -365,7 +372,7 @@ public interface HpcSecurityService {
 	 */
 	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
 			String serverId, Calendar created, Calendar completed) throws HpcException;
-	
+
 	/**
 	 * Refresh investigators from AD
 	 * 
