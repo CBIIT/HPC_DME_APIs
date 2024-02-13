@@ -111,7 +111,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	// The Query Config DAO instance.
 	@Autowired
 	private HpcApiCallsAuditDAO apiCallsAuditDAO = null;
-	
+
 	// The Investigator DAO instance.
 	@Autowired
 	private HpcInvestigatorDAO investigatorDAO = null;
@@ -613,8 +613,13 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	}
 
 	@Override
-	public Collection<HpcDataManagementConfiguration> refreshDataManagementConfigurations() throws HpcException {
-		return dataManagementConfigurationLocator.reload();
+	public void refreshDataManagementConfigurations() throws HpcException {
+		dataManagementConfigurationLocator.reload();
+	}
+
+	@Override
+	public Collection<HpcDataManagementConfiguration> getDataManagementConfigurations() throws HpcException {
+		return dataManagementConfigurationLocator.values();
 	}
 
 	@Override
@@ -678,14 +683,14 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 			String serverId, Calendar created, Calendar completed) throws HpcException {
 		apiCallsAuditDAO.insert(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created, completed);
 	}
-	
+
 	@Override
 	public void refreshInvestigators() throws HpcException {
 		// Get all nedId from the table
 		List<String> nedIds = investigatorDAO.getAllNedIds();
-		
+
 		// For each id, obtain AD first name, last name and NIH SAC code and update
-		for (String nedId: nedIds) {
+		for (String nedId : nedIds) {
 			HpcNciAccount account = ldapAuthenticationProxy.getNihSac(nedId);
 			account.setNedId(nedId);
 			investigatorDAO.updateInvestigator(account);
