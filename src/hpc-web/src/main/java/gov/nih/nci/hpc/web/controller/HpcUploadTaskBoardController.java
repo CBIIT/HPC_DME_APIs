@@ -107,7 +107,7 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 			HpcRegistrationSummaryDTO registrations = HpcClientUtil
         .getRegistrationSummary(authToken, (queryAllOption == false ? queryServiceURL : queryAllServiceURL), paramsMap,
         this.sslCertPath, this.sslCertPassword);
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 			if (registrations.getActiveTasks() != null && !registrations.getActiveTasks().isEmpty())
 				for (HpcBulkDataObjectRegistrationTaskDTO registration : registrations.getActiveTasks()) {
 					HpcTask task = new HpcTask();
