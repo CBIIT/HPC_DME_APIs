@@ -2644,7 +2644,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					registrationTask.setResult(false);
 					registrationTask.setMessage("Data object upload failed");
 					registrationTask.setCompleted(Calendar.getInstance());
-					registrationTask.setPercentComplete(0);
 					return;
 				}
 
