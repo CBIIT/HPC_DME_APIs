@@ -3721,7 +3721,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		long totalBytesTransferred = 0;
 		for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
 			totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
-			totalBytesTransferred += item.getTask().getPercentComplete() != null
+			totalBytesTransferred += Optional.ofNullable(item.getTask().getPercentComplete()).orElse(0) > 0
 					? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
 					: 0;
 		}
