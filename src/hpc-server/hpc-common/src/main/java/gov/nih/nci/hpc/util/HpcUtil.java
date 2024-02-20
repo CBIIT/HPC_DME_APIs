@@ -16,6 +16,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -32,6 +34,13 @@ public class HpcUtil {
 
 	// Group name space encoding.
 	private static final String GROUP_NAME_SPACE_CODE = "_SPC_";
+
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
+
+	// The logger instance.
+	private static final Logger logger = LoggerFactory.getLogger(HpcUtil.class.getName());
 
 	// ---------------------------------------------------------------------//
 	// constructors
@@ -68,11 +77,11 @@ public class HpcUtil {
 	/**
 	 * Execute a (shell) command.
 	 *
-	 * @param command      The command to execute.
-	 * @param sudoPassword (Optional) if provided, the command will be executed w/
-	 *                     'sudo' using the provided password.
-	 * @param envp         (Optional) array of environment variables
-	 * @param working      Directory The working directory to execute the command
+	 * @param command          The command to execute.
+	 * @param sudoPassword     (Optional) if provided, the command will be executed
+	 *                         w/ 'sudo' using the provided password.
+	 * @param envp             (Optional) array of environment variables
+	 * @param workingDirectory The working directory to execute the command.
 	 * @return The command's output
 	 * @throws HpcException If exec failed.
 	 */
@@ -101,9 +110,11 @@ public class HpcUtil {
 					if (StringUtils.isEmpty(message) && process.getInputStream() != null) {
 						message = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
 					}
-					throw new HpcException("command [" + command + "] exec error: " + message,
-							HpcErrorType.UNEXPECTED_ERROR);
+
+					logger.error("command [" + command + "] exec error: " + message);
+					throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
 				}
+				
 			} else if (process.getInputStream() != null) {
 				return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
 			}
