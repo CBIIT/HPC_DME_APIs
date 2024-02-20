@@ -106,7 +106,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			HpcDownloadSummaryDTO downloads = HpcClientUtil.getDownloadSummary(authToken, serviceURL, sslCertPath,
 					sslCertPassword);
 
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 			if (downloads.getActiveTasks() != null && !downloads.getActiveTasks().isEmpty())
 				for (HpcUserDownloadRequest download : downloads.getActiveTasks()) {
 					HpcTask task = new HpcTask();
