@@ -3,6 +3,8 @@ CREATE PROCEDURE refresh_daily_materialized_view AS
 BEGIN
 
         DBMS_MVIEW.REFRESH('R_COLL_HIERARCHY_DATA_OWNER,
+                        R_DATA_HIERARCHY_METAMAP,
+                        R_DATA_HIERARCHY_META_MAIN,
                         R_DATA_HIERARCHY_USER_META_MAIN,
                         R_REPORT_COLL_REGISTERED_BY,
                         R_REPORT_COLL_REGISTERED_BY_BASEPATH,
@@ -27,8 +29,6 @@ BEGIN
         DBMS_MVIEW.REFRESH('R_COLL_HIERARCHY_METAMAP,
                         R_COLL_HIERARCHY_META_MAIN,
                         R_CATALOG_META_MAIN,
-                        R_DATA_HIERARCHY_METAMAP,
-                        R_DATA_HIERARCHY_META_MAIN,
                         R_REPORT_COLLECTION_PATH,
                         R_REPORT_SOURCE_FILE_SIZE,
                         R_REPORT_COLLECTION_SIZE',
