@@ -176,8 +176,8 @@ tfoot input {
 									<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
 									<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
 									<th class="column-heading" id='colheading008' th:text="'Transfer Result'"></th>
-									<th class="column-heading" id='colheading009' th:text="'Error'"></th>
-									<th class="column-heading" id='colheading010' th:text="'Retry User ID'"></th>
+									<th class="column-heading" id='colheading009' th:text="'Retry User ID'"></th>
+									<th class="column-heading" id='colheading010' th:text="'Error'"></th>
 								</tr>
 							</thead>
 							<tbody>
@@ -190,8 +190,8 @@ tfoot input {
 									<td id='col6' th:text="${result.created}"></td>
 									<td id='col7' th:text="${result.completed}"></td>
 									<td id='col8' th:text="${result.result}"></td>
-									<td id='col9' style="word-break:break-all;" th:text="${result.error}"></td>
-									<td id='col10' th:text="${result.retryUserId}"></td>
+									<td id='col9' th:text="${result.retryUserId}"></td>
+									<td id='col10' style="word-break:break-all;" th:text="${result.error}"></td>
 								</tr>
 							</tbody>
 							<tfoot>
@@ -204,8 +204,8 @@ tfoot input {
 									<td class="column-heading" id='colfoot006' th:text="'Created On'"></td>
 									<td class="column-heading" id='colfoot007' th:text="'Completed On'"></td>
 									<td class="column-heading" id='colfoot008' th:text="'Transfer Result'"></td>
-									<td class="column-heading" id='colfoot009' th:text="'Error'"></td>
-									<td class="column-heading" id='colfoot0010' th:text="'Retry User ID'"></td>
+									<td class="column-heading" id='colfoot009' th:text="'Retry User ID'"></td>
+									<td class="column-heading" id='colfoot0010' th:text="'Error'"></td>
 								</tr>
 							</tfoot>
 						</table>
@@ -324,8 +324,8 @@ tfoot input {
 							  {targets: 5, width: 110, visible: true},  // created
 							  {targets: 6, width: 110, visible: true},  // completed
 							  {targets: 7, width: 60, visible: true},  // transfer result
-							  {targets: 8, width:200, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
-							  {targets: 9, width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+							  {targets: 8, width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+							  {targets: 9, width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
 				],
 				"lengthMenu": [ [-1], ["All"] ],
 		} );
