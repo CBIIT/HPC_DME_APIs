@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" ng-app="app">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,7 +10,7 @@
 
 <title>NCI Data Management Environment</title>
 
-<link rel="stylesheet" type="text/css" href="css/style.css" />
+<link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
 <!-- Bootstrap CSS -->
 <link href="css/bootstrap.min.css" rel="stylesheet" />
 <!-- bootstrap theme -->
@@ -25,76 +25,70 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link href="css/select2-4.0.11.min.css" rel="stylesheet" />
+<link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
+<link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
+<link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
+
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
       <script src="js/respond.min.js"></script>
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
-<script src="js/angular/1.5.0/angular.js"></script>
-<script src="js/angular/1.5.0/angular-touch.js"></script>
-<script src="js/angular/1.5.0/angular-animate.js"></script>
+<script
+	src="js/angular/1.5.0/angular.js"></script>
+<script
+	src="js/angular/1.5.0/angular-touch.js"></script>
+<script
+	src="js/angular/1.5.0/angular-animate.js"></script>
 <script src="js/ui-grid/csv.js"></script>
 <script src="js/ui-grid/pdfmake.js"></script>
 <script src="js/ui-grid/vfs_fonts.js"></script>
 
 <script src="js/ui-grid/4.0.2/ui-grid.js"></script>
-<script src="js/jquery/3.1.1/jquery.min.js"></script>
-<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-<link rel="stylesheet" href="css/ui-grid.css" type="text/css" />
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+
+<link rel="stylesheet" href="css/ui-grid.css"
+	type="text/css" />
+<script
+	src="js/jquery/3.1.1/jquery.min.js"></script>
+
+<script
+	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+<script
+	src="js/select2-4.0.11.min.js"></script>
+
+<script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
+
 
 <style>
-/*style.css*/
-.gridStyle {
-	border: 1px solid rgb(212, 212, 212);
-	height: 300px
+
+.column-heading{
+	color: black; font-weight:bold
 }
 
-/*
-   This is the background of our overlay. We need it to be
-   absolutely positioned within the grid, and fill from
-   top to bottom, and the full width. It will also have
-   a black background with 40% opacity.
-*/
-.grid-msg-overlay {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 100%;
-	background: rgba(0, 0, 0, 0.4);
+thead input {
+        width: 100%;
+    }
+
+
+tfoot input {
+        width: 100%;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+
+/* Style for horizontal scroll on top */
+.dataTables_scrollBody {
+    transform:rotateX(180deg);
+}
+.dataTables_scrollBody table {
+    transform:rotateX(180deg);
 }
 
-/*
-  This guy will contain our message. We want it centered
-  so it's positioned absolutely with percentage-based
-  offsets and dimensions. It also has some basic border
-  stuff and most important is using "display: table" so
-  we can vertically center its contents.
-*/
-.grid-msg-overlay .msg {
-	opacity: 1;
-	position: absolute;
-	top: 20%;
-	left: 20%;
-	width: 60%;
-	height: 50%;
-	background-color: #eee;
-	border-radius: 4px;
-	border: 1px solid #555;
-	text-align: center;
-	font-size: 24px;
-	display: table;
-}
-
-/*
-  Lastly this is the actual message text. It uses
-  display: table-cell so the vertical alignment
-  works properly.
-*/
-.grid-msg-overlay .msg span {
-	display: table-cell;
-	vertical-align: middle;
-}
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -107,74 +101,13 @@
 /*]]>*/
 </script>
 <script>
-var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
 
-app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', function ($scope, $http, $interval,  uiGridConstants ) {
-
-	$scope.gridOptions1 = {
-    enableSorting: true,
-    enableFiltering: true,
-    paginationPageSize: 100,
-    minRowsToShow: currentPageSize,
-    enablePaginationControls: false,
-    enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
-    columnDefs: [
-    			 { field: 'userId', width:120, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
-    			 { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="downloadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
-                 { field: 'path', minWidth:200, displayName : 'Path' },
-                 { field: 'type', width:130, displayName : 'Type', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{grid.appScope.toTitleCase(row.entity.type)}}</div>'},
-                 { field: 'destinationType', width:150, displayName : 'Destination Type'},
-                 { field: 'created', width:130, displayName : 'Created On' },
-                 { field: 'completed', width:130, displayName : 'Completed On'},
-                 { field: 'result', width:130, displayName: 'Transfer Result'},
-                 { field: 'error', width:130, displayName: 'Error'},
-				 { field: 'retryUserId', width:120, displayName : 'Retry User ID'}
-               ],
-    onRegisterApi: function( gridApi ) {
-      $scope.grid1Api = gridApi;
-      $scope.totalPages = totalPages;
-      $scope.currentPage = currentPage;
-      $scope.totalRows = totalRows;
-      $scope.currentPageSize = currentPageSize;
-    }
-  };
-  $scope.gridOptions1.totalItems = totalRows;
-  $scope.gridOptions1.data = results;
-
-  if(queryAll == "false")
-  	$scope.gridOptions1.columnDefs[0].visible = false;
-
-  $scope.expandAll = function(){
-	    $scope.gridApi.treeBase.expandAllRows();
-	  };
-
-  $scope.getId = function(grid,row,col)
-	  {
-	    console.log(row);
-	    if(row.treeNode.children[0].row.treeNode.children[0])
-	    {
-	      var entity = row.treeNode.children[0].row.treeNode.children[0].row.entity;
-	      return entity.id;
-	    }
-	    else if(row.treeNode.children[0])
-	    {
-	      var entity = row.treeNode.children[0].row.entity;
-	      return entity.id;
-	    }
-
-	    return row.entity.id;
-	  }	 
-  $scope.toTitleCase = function( data ) {
-	    return data.toLowerCase().replace(/_/g, ' ').replace(/(^|\s)\S/g, function(t) { return t.toUpperCase() });
-	  };
-}]);
 
 </script>
 
 </head>
 <body>
-
-	<!-- container section start -->
+		<!-- container section start -->
 	<section id="container" class="">
 		<div th:include="header :: header"></div>
 		<!--main content start-->
@@ -188,67 +121,119 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 						</h4>
 					</div>
 				</div>
-				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<div class="col-lg-12 col-md-12">
-						<div class="panel panel-default">
-							<div class="panel-heading">
-								<div class="col-md-3">
-								<h2 th:if="${queryAll}">
-									<i class="fa fa-list-alt red"></i><strong>All
-										Tasks</strong>
-								</h2>
-								<h2 th:if="${!queryAll}">
-									<i class="fa fa-list-alt red"></i><strong>My
-										Tasks</strong>
-								</h2>
-								</div>
-								<div th:if="${canQueryAll}" class="col-md-3 col-md-offset-6" style="text-align: right;">
-								<h2 style="color: rgb(121, 121, 121)">
-									<strong>Display All Tasks</strong>
-								</h2>
-								<label class="switch">
-								  <input type="checkbox" id="allcheckbox" th:checked="${queryAll}" onclick="displayAll()"/>
-								  <span class="slider round"></span>
-								</label>
-								</div>
-							</div>
-							<!--panel-body start-->
-							<div class="panel-body">
-							<div ng-controller="MainCtrl">
-									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
-										ui-grid-pagination="true" ui-grid-grouping="true"
-										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
-									<p>Current Page: {{ currentPage }} of {{ totalPages }}
-										&nbsp;&nbsp;|&nbsp;&nbsp;Page Size: {{ currentPageSize }}
-										&nbsp;&nbsp;|&nbsp;&nbsp;Total Records: {{ totalRows }}</p>
-									<button type="button" id="btnFirst"
-										class="btn btn-md btn-primary" onclick="updatePage('first')">
-										First</button>
-									<button type="button" id="btnPrevious"
-										class="btn btn-md btn-primary"
-										onclick="updatePage('previous')">Previous</button>
-									<button type="button" id="btnNext"
-										class="btn btn-md btn-primary" onclick="updatePage('next')">
-										Next</button>
-									<button type="button" id="btnLast"
-										class="btn btn-md btn-primary" onclick="updatePage('last')">
-										Last</button>
-								</div>
-							</div>
+					<div class="col-lg-12 col-md-12"> <div class="panel panel-default"> <div class="panel-heading" style="width:100%">
+						<div class="col-md-3">
+							<h2 th:if="${queryAll}">
+								<i class="fa fa-list-alt red"></i><strong>All
+									Tasks</strong>
+							</h2>
+							<h2 th:if="${!queryAll}">
+								<i class="fa fa-list-alt red"></i><strong>My
+									Tasks</strong>
+							</h2>
 						</div>
-
+						<div th:if="${canQueryAll}" class="col-md-3 col-md-offset-6" style="text-align: right;">
+							<h2 style="color: rgb(121, 121, 121)">
+								<strong>Display All Tasks</strong>
+							</h2>
+							<label class="switch">
+							  <input type="checkbox" id="allcheckbox" th:checked="${queryAll}" onclick="displayAll()"/>
+							  <span class="slider round"></span>
+							</label>
+						</div>
 					</div>
-					<!--/col-->
-
+					<div>
+						<table id="pageDetails1" class="display" style="width:100%">
+							<tr>
+								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+								<button type="button" id="btnFirstTop"
+									class="btn btn-md btn-primary" onclick="updatePage('first')">
+									First</button>
+								<button type="button" id="btnPreviousTop"
+									class="btn btn-md btn-primary"
+									onclick="updatePage('previous')">Previous</button>
+								<button type="button" id="btnNextTop"
+									class="btn btn-md btn-primary" onclick="updatePage('next')">
+									Next</button>
+								<button type="button" id="btnLastTop"
+									class="btn btn-md btn-primary" onclick="updatePage('last')">
+									Last</button>
+							</tr>
+						</table>
+					</div>
+					<div th:if="${results != null and results.size() > 0}">
+						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
+							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
+							<thead>
+								<tr id='attrRow2'>
+									<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
+									<th class="column-heading" id='colheading002' th:text="'Task Id'"></th>
+									<th class="column-heading" id='colheading003' th:text="'Path'"></th>
+									<th class="column-heading" id='colheading004' th:text="'Type'"></th>
+									<th class="column-heading" id='colheading005' th:text="'Destination Type'"></th>
+									<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
+									<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
+									<th class="column-heading" id='colheading008' th:text="'Transfer Result'"></th>
+									<th class="column-heading" id='colheading009' th:text="'Error'"></th>
+									<th class="column-heading" id='colheading010' th:text="'Retry User ID'"></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr id='attrCol0' th:each="result : ${results}">
+									<td id='col1' th:text="${result.userId}"></td>
+									<td id='col2' style="white-space: nowrap;"><a th:href="@{/downloadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
+									<td style="word-break:break-all;" id='col3' th:text="${result.path}"></td>
+									<td id='col4' th:text="${result.type}"></td>
+									<td id='col5' th:text="${result.destinationType}"></td>
+									<td id='col6' th:text="${result.created}"></td>
+									<td id='col7' th:text="${result.completed}"></td>
+									<td id='col8' th:text="${result.result}"></td>
+									<td id='col9' style="word-break:break-all;" th:text="${result.error}"></td>
+									<td id='col10' th:text="${result.retryUserId}"></td>
+								</tr>
+							</tbody>
+							<tfoot>
+								<tr id='attrFooter2'>
+									<td class="column-heading" id='colfoot001' th:text="'User ID'"></td>
+									<td class="column-heading" id='colfoot002' th:text="'Task Id'"></td>
+									<td class="column-heading" id='colfoot003' th:text="'Path'"></td>
+									<td class="column-heading" id='colfoot004' th:text="'Type'"></td>
+									<td class="column-heading" id='colfoot005' th:text="'Destination Type'"></td>
+									<td class="column-heading" id='colfoot006' th:text="'Created On'"></td>
+									<td class="column-heading" id='colfoot007' th:text="'Completed On'"></td>
+									<td class="column-heading" id='colfoot008' th:text="'Transfer Result'"></td>
+									<td class="column-heading" id='colfoot009' th:text="'Error'"></td>
+									<td class="column-heading" id='colfoot0010' th:text="'Retry User ID'"></td>
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+				<div>
+					<table id="pageDetails2" class="display" style="width:100%">
+						<tr>
+							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+							<button type="button" id="btnFirst"
+								class="btn btn-md btn-primary" onclick="updatePage('first')">
+								First</button>
+							<button type="button" id="btnPrevious"
+								class="btn btn-md btn-primary"
+								onclick="updatePage('previous')">Previous</button>
+							<button type="button" id="btnNext"
+								class="btn btn-md btn-primary" onclick="updatePage('next')">
+								Next</button>
+							<button type="button" id="btnLast"
+								class="btn btn-md btn-primary" onclick="updatePage('last')">
+								Last</button>
+						</tr>
+					</table>
 				</div>
+				</div></div></div>
 			</section>
 			<div th:include="footer :: footer"></div>
 		</section>
-		<!--main content end-->
 	</section>
-	<!-- container section start -->
 
 	<!-- javascripts -->
 	<!-- bootstrap -->
@@ -266,7 +251,84 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 <script>
 /*<![CDATA[*/
 	$(document).ready(function(){
-		$('#sub-menu-manage').addClass("active");
+		var checkBox = document.getElementById("allcheckbox");
+		var queryAll = true;
+		var pathCharsVisible = 33;
+		var pathWidth = 250;
+		if (checkBox.checked == false){
+			queryAll = false;
+			pathCharsVisible = 43;
+			pathWidth = 300;
+		}
+
+		/* This is for sorting to ignore the empty strings.
+			In the column definitions below(when defining the grid),
+			if a value of type is set to 'non-empty-string',
+			the 'Ascending Sort' ignores empty cells and orders the non-empty cells and shows
+			them as the first set of rows.
+		*/
+		jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+		    "non-empty-string-asc": function (str1, str2) {
+		        if(str1 == "")
+		            return 1;
+		        if(str2 == "")
+		            return -1;
+		        return ((str1 < str2) ? -1 : ((str1 > str2) ? 1 : 0));
+		    },
+
+		    "non-empty-string-desc": function (str1, str2) {
+		        if(str1 == "")
+		            return 1;
+		        if(str2 == "")
+		            return -1;
+		        return ((str1 < str2) ? 1 : ((str1 > str2) ? -1 : 0));
+		    }
+		} );
+
+		$('#resultsGrid thead tr')
+        .clone(true)
+        .appendTo('#resultsGrid thead');
+
+		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
+		        var title = $(this).text();
+		        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+		        $( 'input', this ).on( 'keyup change', function () {
+		            if ( table.column(i).search() !== this.value ) {
+		                table
+		                    .column(i)
+		                    .search( this.value )
+		                    .draw();
+		            }
+		        } );
+		    } );
+
+		/*
+			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
+			hover showing the complete string.
+
+			The Path field, Error field and RetryUserId fields have empty strings in them.
+			Therefore, they are set to type 'non-empty-string' to force the sort to ignore empty strings.
+
+			aaSorting set to empty array, enforces no sorting on any column on the initial load of data of the page.
+		*/
+		var table = $('#' + 'resultsGrid').DataTable( {
+				orderCellsTop: true,
+				"aaSorting": [],
+				dom: 'rt',
+				scrollX : 'TRUE',
+				columnDefs: [ {targets: 0, width:80, visible: queryAll}, //user
+							  {targets: 1, width:280, visible: true},  // taskId
+							  {targets: 2, width:pathWidth, type: 'non-empty-string', render: DataTable.render.ellipsis( pathCharsVisible, true )}, // path
+							  {targets: 3, width:100, visible: true},  // type
+							  {targets: 4, width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
+							  {targets: 5, width: 110, visible: true},  // created
+							  {targets: 6, width: 110, visible: true},  // completed
+							  {targets: 7, width: 60, visible: true},  // transfer result
+							  {targets: 8, width:200, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
+							  {targets: 9, width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+				],
+				"lengthMenu": [ [-1], ["All"] ],
+		} );
 	});
 	
 	function displayAll()
@@ -310,6 +372,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnNext').prop('disabled', false);
 		$('#btnLast').removeClass('disabled');
 		$('#btnLast').prop('disabled', false);
+		$('#btnPreviousTop').addClass('disabled');
+		$('#btnPreviousTop').prop('disabled', true);
+		$('#btnFirstTop').addClass('disabled');
+		$('#btnFirstTop').prop('disabled', true);
+		$('#btnNextTop').removeClass('disabled');
+		$('#btnNextTop').prop('disabled', false);
+		$('#btnLastTop').removeClass('disabled');
+		$('#btnLastTop').prop('disabled', false);
 	}
 	else
 	{
@@ -317,6 +387,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnPrevious').prop('disabled', false);
 		$('#btnFirst').removeClass('disabled');
 		$('#btnFirst').prop('disabled', false);
+		$('#btnPreviousTop').removeClass('disabled');
+		$('#btnPreviousTop').prop('disabled', false);
+		$('#btnFirstTop').removeClass('disabled');
+		$('#btnFirstTop').prop('disabled', false);
 	}
 	
 	if(currentPage == totalPages)
@@ -325,6 +399,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnNext').prop('disabled', true);
 		$('#btnLast').addClass('disabled');
 		$('#btnLast').prop('disabled', true);
+		$('#btnNextTop').addClass('disabled');
+		$('#btnNextTop').prop('disabled', true);
+		$('#btnLastTop').addClass('disabled');
+		$('#btnLastTop').prop('disabled', true);
 	}
 	else
 	{
@@ -332,6 +410,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnNext').prop('disabled', false);
 		$('#btnLast').removeClass('disabled');
 		$('#btnLast').prop('disabled', false);
+		$('#btnNextTop').removeClass('disabled');
+		$('#btnNextTop').prop('disabled', false);
+		$('#btnLastTop').removeClass('disabled');
+		$('#btnLastTop').prop('disabled', false);
 	}
 
 /*]]>*/
