@@ -150,16 +150,16 @@ tfoot input {
 								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 								<button type="button" id="btnFirstTop"
 									class="btn btn-md btn-primary" onclick="updatePage('first')">
-									First</button>
+									First</button>&nbsp;
 								<button type="button" id="btnPreviousTop"
 									class="btn btn-md btn-primary"
-									onclick="updatePage('previous')">Previous</button>
+									onclick="updatePage('previous')">Previous</button>&nbsp;
 								<button type="button" id="btnNextTop"
 									class="btn btn-md btn-primary" onclick="updatePage('next')">
-									Next</button>
+									Next</button>&nbsp;
 								<button type="button" id="btnLastTop"
 									class="btn btn-md btn-primary" onclick="updatePage('last')">
-									Last</button>
+									Last</button>&nbsp;
 							</tr>
 						</table>
 					</div>
@@ -168,7 +168,6 @@ tfoot input {
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 							<thead>
 								<tr id='attrRow2'>
-									<th class="column-heading" id='colheading001'></th>
 									<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
 									<th class="column-heading" id='colheading002' th:text="'Task Id'"></th>
 									<th class="column-heading" id='colheading003' th:text="'Path'"></th>
@@ -183,7 +182,6 @@ tfoot input {
 							</thead>
 							<tbody>
 								<tr id='attrCol0' th:each="result : ${results}">
-									<td id='col1'></td>
 									<td id='col1' th:text="${result.userId}"></td>
 									<td id='col2' style="white-space: nowrap;"><a th:href="@{/downloadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
 									<td style="word-break:break-all;" id='col3' th:text="${result.path}"></td>
@@ -198,17 +196,16 @@ tfoot input {
 							</tbody>
 							<tfoot>
 								<tr id='attrFooter2'>
-									<th id='colf1'></th>
-									<th class="column-heading" id='colfoot001' th:text="'User ID'"></th>
-									<th class="column-heading" id='colfoot002' th:text="'Task Id'"></th>
-									<th class="column-heading" id='colfoot003' th:text="'Path'"></th>
-									<th class="column-heading" id='colfoot004' th:text="'Type'"></th>
-									<th class="column-heading" id='colfoot005' th:text="'Destination Type'"></th>
-									<th class="column-heading" id='colfoot006' th:text="'Created On'"></th>
-									<th class="column-heading" id='colfoot007' th:text="'Completed On'"></th>
-									<th class="column-heading" id='colfoot008' th:text="'Transfer Result'"></th>
-									<th class="column-heading" id='colfoot009' th:text="'Retry User ID'"></th>
-									<th class="column-heading" id='colfoot0010' th:text="'Error'"></th>
+									<td class="column-heading" id='colfoot001' th:text="'User ID'"></td>
+									<td class="column-heading" id='colfoot002' th:text="'Task Id'"></td>
+									<td class="column-heading" id='colfoot003' th:text="'Path'"></td>
+									<td class="column-heading" id='colfoot004' th:text="'Type'"></td>
+									<td class="column-heading" id='colfoot005' th:text="'Destination Type'"></td>
+									<td class="column-heading" id='colfoot006' th:text="'Created On'"></td>
+									<td class="column-heading" id='colfoot007' th:text="'Completed On'"></td>
+									<td class="column-heading" id='colfoot008' th:text="'Transfer Result'"></td>
+									<td class="column-heading" id='colfoot009' th:text="'Retry User ID'"></td>
+									<td class="column-heading" id='colfoot0010' th:text="'Error'"></td>
 								</tr>
 							</tfoot>
 						</table>
@@ -219,16 +216,16 @@ tfoot input {
 							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 							<button type="button" id="btnFirst"
 								class="btn btn-md btn-primary" onclick="updatePage('first')">
-								First</button>
+								First</button>&nbsp;
 							<button type="button" id="btnPrevious"
 								class="btn btn-md btn-primary"
-								onclick="updatePage('previous')">Previous</button>
+								onclick="updatePage('previous')">Previous</button>&nbsp;
 							<button type="button" id="btnNext"
 								class="btn btn-md btn-primary" onclick="updatePage('next')">
-								Next</button>
+								Next</button>&nbsp;
 							<button type="button" id="btnLast"
 								class="btn btn-md btn-primary" onclick="updatePage('last')">
-								Last</button>
+								Last</button>&nbsp;
 						</tr>
 					</table>
 				</div>
@@ -257,11 +254,11 @@ tfoot input {
 		var checkBox = document.getElementById("allcheckbox");
 		var queryAll = true;
 		var pathCharsVisible = 33;
-		var pathWidth = 220;
+		var pathWidth = 250;
 		if (checkBox.checked == false){
 			queryAll = false;
 			pathCharsVisible = 43;
-			pathWidth = 275;
+			pathWidth = 300;
 		}
 
 		/* This is for sorting to ignore the empty strings.
@@ -288,24 +285,21 @@ tfoot input {
 		    }
 		} );
 
-		/* Clone the header and add input text boxes for the column searches */
 		$('#resultsGrid thead tr')
         .clone(true)
         .appendTo('#resultsGrid thead');
 
 		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
-				if(title != "") {
-			        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
-			        $( 'input', this ).on( 'keyup change', function () {
-			            if ( table.column(i).search() !== this.value ) {
-			                table
-			                    .column(i)
-			                    .search( this.value )
-			                    .draw();
-			            }
-			        } );
-		        }
+		        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+		        $( 'input', this ).on( 'keyup change', function () {
+		            if ( table.column(i).search() !== this.value ) {
+		                table
+		                    .column(i)
+		                    .search( this.value )
+		                    .draw();
+		            }
+		        } );
 		    } );
 
 		/*
@@ -322,68 +316,20 @@ tfoot input {
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX : 'TRUE',
-				columnDefs: [ 
-							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
-							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
-							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
-							{targets: 3, data: 'path', width:pathWidth, type: 'non-empty-string', render: DataTable.render.ellipsis( pathCharsVisible, true )}, // path
-							{targets: 4, data: 'type', width:100, visible: true},  // type
-							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							{targets: 6, data: 'created', width: 110, visible: true},  // created
-							{targets: 7, data: 'completed', width: 110, visible: true},  // completed
-							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
-							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
-						],
+				columnDefs: [ {targets: 0, width:80, visible: queryAll}, //user
+							  {targets: 1, width:280, visible: true},  // taskId
+							  {targets: 2, width:pathWidth, type: 'non-empty-string', render: DataTable.render.ellipsis( pathCharsVisible, true )}, // path
+							  {targets: 3, width:100, visible: true},  // type
+							  {targets: 4, width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
+							  {targets: 5, width: 110, visible: true},  // created
+							  {targets: 6, width: 110, visible: true},  // completed
+							  {targets: 7, width: 60, visible: true},  // transfer result
+							  {targets: 8, width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+							  {targets: 9, width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
+				],
 				"lengthMenu": [ [-1], ["All"] ],
 		} );
-
-	// Add event listener for opening and closing details
-		table.on('click', 'td.dt-control', function (e) {
-			let tr = e.target.closest('tr');
-			let row = table.row(tr);
-
-
-			if (row.child.isShown()) {
-				// This row is already open - close it
-				row.child.hide();
-			}
-			else {
-				// Open this row
-				row.child(format(row.data())).show();
-			}
-		});
 	});
-
-	// Formatting function for row details - modify as you need
-	/*function format(d) {
-	    // `d` is the original data object for the row
-	    return (
-				'<dl>' +
-					'<dt>Transfer Result</dt>' +
-					'<dd>' +
-						d.result + 
-					'</dd>' +
-					'<dt>Path</dt>' +
-					'<dd>' +
-						d.path + 
-					'</dd>' +
-					'<dt>Error</dt>' +
-					'<dd>' +
-						d.error + 
-					'</dd>' +
-				'</dl>'
-			);
-	}*/
-
-	function format(d) {
-	    // `d` is the original data object for the row
-	    return (
-				'<b>Transfer Result:</b> ' + d.result + '<br/>' +
-					'<b>Path:</b> ' + d.path + '<br/>' +
-					'<b>Error:</b> ' + d.error + '<br/>'
-			);
- 	}
 
 	function displayAll()
 	{
