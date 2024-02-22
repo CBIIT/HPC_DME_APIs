@@ -440,10 +440,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			new ArrayList<HpcCollectionDownloadStatusDTO>());
 
 	long completedItemsSize = getCompletedItemsSize(downloadTask, previousTasks);
+	int completedItemsCount = 0;
+	int totalItemsCount = 0;
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
-		int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-		int totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+		completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
+		totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
@@ -453,7 +455,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
     model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
-
+    model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
     return "dataobjectsdownloadtask";
   }
 
@@ -495,10 +497,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			new ArrayList<HpcCollectionDownloadStatusDTO>());
 
 	long completedItemsSize = getCompletedItemsSize(downloadTask, previousTasks);
+	int completedItemsCount = 0;
+	int totalItemsCount = 0;
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
-		int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-		int totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+		completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
+		totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
@@ -508,7 +512,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
     model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
-
+    model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
     return "dataobjectsdownloadtask";
   }
 
@@ -533,10 +537,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 				new ArrayList<HpcCollectionDownloadStatusDTO>());
 
 		long completedItemsSize = getCompletedItemsSize(downloadTask, previousTasks);
+		int completedItemsCount = 0;
+		int totalItemsCount = 0;
 		//If previousTasks is not empty, update the message to include the items in it
 		if(!previousTasks.isEmpty()) {
-			int completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-			int totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+			completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
+			totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
 			//Override the server message
 			String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 			downloadTask.setMessage(message);
@@ -546,7 +552,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	    model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 	    model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
 	    model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
-
+	    model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
 	    return "dataobjectsdownloadtask";
   }
 
