@@ -264,7 +264,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems().size() > 0}">
+							<div class="panel-heading" th:if="${(hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getStagingInProgressItems().size() > 0) or (pendingItemsCount > hpcDataObjectsDownloadStatusDTO.getInProgressItems().size())}">
 								<div class="col-md-3">
 									<h2>
 										<i class="fa fa-list-alt red"></i><strong>Staging In Progress</strong>
