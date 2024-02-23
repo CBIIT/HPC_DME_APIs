@@ -378,11 +378,10 @@ tfoot input {
 
 	function format(d) {
 	    // `d` is the original data object for the row
-	    return (
-				'<b>Transfer Result:</b> ' + d.result + '<br/>' +
-					'<b>Path:</b> ' + d.path + '<br/>' +
-					'<b>Error:</b> ' + d.error + '<br/>'
-			);
+	    var result = (d.result === null) || (d.result === "") ? "" : '<b>Transfer Result:</b> ' + d.result + '<br/>';
+	    var path = (d.path === null) || (d.path === "") ? "" : '<b>Path:</b> ' + d.path + '<br/>';
+	    var error = (d.error === null ) || (d.error === "") ? "" : '<b>Error:</b> ' + d.error + '<br/>';
+		return(result + path + error);
  	}
 
 	function displayAll()
