@@ -186,7 +186,20 @@ tfoot input {
 									<td id='col1'></td>
 									<td id='col1' th:text="${result.userId}"></td>
 									<td id='col2' style="white-space: nowrap;"><a th:href="@{/downloadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
-									<td style="word-break:break-all;" id='col3' th:text="${result.path}"></td>
+									<td id='col3' th:if="${result.type} == 'COLLECTION'">
+										<a id="pathLinkId" th:href="@{/collection(path=${result.path}, action=displayOnly)}" target="_blank">
+											<span id="spanLinkId" style="width: 200px; display:inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${result.path}">
+											</span>
+										</a>
+									</td>
+									<td id='col3' th:if="${result.type} == 'DATA_OBJECT'">
+										<a id="pathLinkId" th:href="@{/datafile(path=${result.path}, action=displayOnly)}" target="_blank">
+											<span id="spanLinkId" style="width: 200px; display:inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${result.path}">
+											</span>
+										</a>
+									</td>
+									<td id='col3' th:if="${result.type} == 'COLLECTION_LIST'"></td>
+									<td id='col3' th:if="${result.type} == 'DATA_OBJECT_LIST'"></td>
 									<td id='col4' th:text="${result.type}"></td>
 									<td id='col5' th:text="${result.destinationType}"></td>
 									<td id='col6' th:text="${result.created}"></td>
@@ -194,6 +207,7 @@ tfoot input {
 									<td id='col8' th:text="${result.result}"></td>
 									<td id='col9' th:text="${result.retryUserId}"></td>
 									<td id='col10' style="word-break:break-all;" th:text="${result.error}"></td>
+									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
 								</tr>
 							</tbody>
 							<tfoot>
@@ -326,7 +340,7 @@ tfoot input {
 							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
 							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
 							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
-							{targets: 3, data: 'path', width:pathWidth, type: 'non-empty-string', render: DataTable.render.ellipsis( pathCharsVisible, true )}, // path
+							{targets: 3, data: 'path', width:200,  visible: true}, // path
 							{targets: 4, data: 'type', width:100, visible: true},  // type
 							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
 							{targets: 6, data: 'created', width: 110, visible: true},  // created
@@ -334,6 +348,7 @@ tfoot input {
 							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
 							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
 							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
+							{targets: 11, data: 'displayPath', visible: false},
 						],
 				"lengthMenu": [ [-1], ["All"] ],
 		} );
@@ -342,7 +357,6 @@ tfoot input {
 		table.on('click', 'td.dt-control', function (e) {
 			let tr = e.target.closest('tr');
 			let row = table.row(tr);
-
 
 			if (row.child.isShown()) {
 				// This row is already open - close it
@@ -355,31 +369,11 @@ tfoot input {
 		});
 	});
 
-	// Formatting function for row details - modify as you need
-	/*function format(d) {
-	    // `d` is the original data object for the row
-	    return (
-				'<dl>' +
-					'<dt>Transfer Result</dt>' +
-					'<dd>' +
-						d.result + 
-					'</dd>' +
-					'<dt>Path</dt>' +
-					'<dd>' +
-						d.path + 
-					'</dd>' +
-					'<dt>Error</dt>' +
-					'<dd>' +
-						d.error + 
-					'</dd>' +
-				'</dl>'
-			);
-	}*/
-
 	function format(d) {
 	    // `d` is the original data object for the row
 	    var result = (d.result === null) || (d.result === "") ? "" : '<b>Transfer Result:</b> ' + d.result + '<br/>';
-	    var path = (d.path === null) || (d.path === "") ? "" : '<b>Path:</b> ' + d.path + '<br/>';
+	    // The path has been converted to an anchor link. So we will use displayPath to show the path
+	    var path = (d.displayPath === null) || (d.displayPath === "") ? "" : '<b>Path:</b> ' + d.displayPath + '<br/>';
 	    var error = (d.error === null ) || (d.error === "") ? "" : '<b>Error:</b> ' + d.error + '<br/>';
 		return(result + path + error);
  	}
