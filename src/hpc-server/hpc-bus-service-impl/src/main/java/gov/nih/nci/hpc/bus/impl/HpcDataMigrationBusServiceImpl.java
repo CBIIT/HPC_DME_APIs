@@ -549,6 +549,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 */
 	private HpcMigrationResponseDTO migrateDataObject(String path, String userId, String collectionMigrationTaskId,
 			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath) throws HpcException {
+		logger.info("Migrating Data Object: path - {}, align-archive-path - {}", path, alignArchivePath);
+		
 		// Input validation.
 		HpcSystemGeneratedMetadata metadata = null;
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
