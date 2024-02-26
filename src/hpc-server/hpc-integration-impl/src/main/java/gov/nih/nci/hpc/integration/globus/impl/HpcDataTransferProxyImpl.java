@@ -366,7 +366,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public HpcDataTransferUploadReport getDataTransferUploadStatus(Object authenticatedToken,
 			String dataTransferRequestId, HpcArchive baseArchiveDestination, String loggingPrefix) throws HpcException {
-		HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, dataTransferRequestId, loggingPrefix);
+		HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, dataTransferRequestId,
+				loggingPrefix);
 
 		HpcDataTransferUploadReport statusReport = new HpcDataTransferUploadReport();
 		statusReport.setMessage(report.niceStatusDescription);
@@ -944,9 +945,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				cancelTransferRequest(authenticatedToken, dataTransferRequestId, "HPC-DME deemed task failed");
 				logger.info(loggingPrefix + "[GLOBUS] transfer successfully canceled: globus-task-id: {}",
 						dataTransferRequestId);
+				report.errorMessage = "Transfer error recovery period expired. Globus task cancelled";
 
 			} catch (HpcException e) {
 				logger.error(loggingPrefix + "[GLOBUS] Failed to cancel task", e);
+				report.errorMessage = "Transfer error recovery period expired. Globus task failed to cancel";
 			}
 
 			recoverableFailureTasks.remove(dataTransferRequestId);
