@@ -27,8 +27,9 @@ public class HpcTask {
     protected String retryUserId;
     @JsonView(Views.Public.class)
     protected String error;
+    @JsonView(Views.Public.class)
+    protected String displayPath;
 
-	
 	public String getUserId() {
 		return userId;
 	}
@@ -101,5 +102,10 @@ public class HpcTask {
     public void setError(String error) {
       this.error = error;
     }
-
+	public String getDisplayPath() {
+		return displayPath;
+	}
+	public void setDisplayPath(String displayPath) {
+		this.displayPath = displayPath;
+	}
 }
