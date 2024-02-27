@@ -1718,6 +1718,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(downloadTaskResult.getDoc());
 		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
 
+		// Set the configuration ID for collection(s) retry.
+		String configurationId = null;
+		if (!StringUtils.isEmpty(downloadTask.getPath())) {
+			configurationId = metadataService.getCollectionSystemGeneratedMetadata(downloadTask.getPath())
+					.getConfigurationId();
+		} else if (downloadTask.getCollectionPaths().size() > 0) {
+			configurationId = metadataService
+					.getCollectionSystemGeneratedMetadata(downloadTask.getCollectionPaths().iterator().next())
+					.getConfigurationId();
+		}
+		downloadTask.setConfigurationId(configurationId);
+
 		switch (downloadTaskResult.getDestinationType()) {
 		case GLOBUS:
 			HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
