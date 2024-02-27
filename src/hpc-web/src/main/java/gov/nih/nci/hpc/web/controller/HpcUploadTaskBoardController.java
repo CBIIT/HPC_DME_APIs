@@ -55,7 +55,7 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 	private String collectionURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryURL;
-	@Value("${gov.nih.nci.hpc.server.bulkregistration}")
+	@Value("${gov.nih.nci.hpc.server.v2.bulkregistration}")
 	private String queryServiceURL;
 	@Value("${gov.nih.nci.hpc.server.bulkregistration.all}")
 	private String queryAllServiceURL;
