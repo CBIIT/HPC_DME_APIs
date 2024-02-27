@@ -214,11 +214,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 						List<HpcMetadataAttrEntry> mergedMetadataEntries = mergeMatadataEntries(hpcCollection.getSelfMetadataEntries(), userMetadataEntries);
 						hpcCollection.setSelfMetadataEntries(mergedMetadataEntries);
 						model.addAttribute("collection", hpcCollection);
-						if (action != null && action.equals("displayOnly")) {
-							model.addAttribute("action", "displayOnly");
-						} else {
-							model.addAttribute("action", "edit");
-						}
+						model.addAttribute("action", "edit");
 					}
 				}
 			} else {
