@@ -373,6 +373,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// 4. Migration is not supported for links.
 		// 5. Migration is supported only from S3 archive to S3 Archive.
 		// 6. Data Object is archived (i.e. registration completed).
+		// 7. The source-size system metadata is available.
 
 		validateMigrationRequest(path, migrationRequest, alignArchivePath);
 
@@ -401,6 +402,12 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 					"Data Object [" + path + "] is not in archived or soft-deleted state. It is in "
 							+ metadata.getDataTransferStatus().value() + " state",
 					HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		}
+
+		// Validate a source-size system metadata is available.
+		if (metadata.getSourceSize() == null) {
+			throw new HpcException("Source size system-metadata is missing for data object to be migrated",
+					HpcErrorType.UNEXPECTED_ERROR);
 		}
 
 		return metadata;
@@ -549,6 +556,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 */
 	private HpcMigrationResponseDTO migrateDataObject(String path, String userId, String collectionMigrationTaskId,
 			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath) throws HpcException {
+		logger.info("Migrating Data Object: path - {}, align-archive-path - {}", path, alignArchivePath);
+
 		// Input validation.
 		HpcSystemGeneratedMetadata metadata = null;
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
