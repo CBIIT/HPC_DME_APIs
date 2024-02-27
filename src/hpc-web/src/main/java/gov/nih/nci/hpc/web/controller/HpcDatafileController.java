@@ -165,7 +165,11 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			model.addAttribute(ATTR_ERROR, e.getMessage());
 			return "datafile";
 		}
-		return "datafile";
+		if (action != null && action.equals("displayOnly")) {
+			return "viewdatafile";
+		} else {
+			return "datafile";
+		}
 	}
 
 
