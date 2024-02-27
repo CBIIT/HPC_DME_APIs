@@ -150,16 +150,16 @@ tfoot input {
 								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 								<button type="button" id="btnFirstTop"
 									class="btn btn-md btn-primary" onclick="updatePage('first')">
-									First</button>
+									First</button>&nbsp;
 								<button type="button" id="btnPreviousTop"
 									class="btn btn-md btn-primary"
-									onclick="updatePage('previous')">Previous</button>
+									onclick="updatePage('previous')">Previous</button>&nbsp;
 								<button type="button" id="btnNextTop"
 									class="btn btn-md btn-primary" onclick="updatePage('next')">
-									Next</button>
+									Next</button>&nbsp;
 								<button type="button" id="btnLastTop"
 									class="btn btn-md btn-primary" onclick="updatePage('last')">
-									Last</button>
+									Last</button>&nbsp;
 							</tr>
 						</table>
 					</div>
@@ -168,44 +168,61 @@ tfoot input {
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 							<thead>
 								<tr id='attrRow2'>
+									<th class="column-heading" id='colheading001'></th>
 									<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
-									<th class="column-heading" id='colheading002' th:text="'Task Id'"></th>
+									<th class="column-heading" id='colheading002' th:text="'Task ID'"></th>
 									<th class="column-heading" id='colheading003' th:text="'Path'"></th>
 									<th class="column-heading" id='colheading004' th:text="'Type'"></th>
 									<th class="column-heading" id='colheading005' th:text="'Destination Type'"></th>
 									<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
 									<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
 									<th class="column-heading" id='colheading008' th:text="'Transfer Result'"></th>
-									<th class="column-heading" id='colheading009' th:text="'Error'"></th>
-									<th class="column-heading" id='colheading010' th:text="'Retry User ID'"></th>
+									<th class="column-heading" id='colheading009' th:text="'Retry User ID'"></th>
+									<th class="column-heading" id='colheading010' th:text="'Error'"></th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr id='attrCol0' th:each="result : ${results}">
+									<td id='col1'></td>
 									<td id='col1' th:text="${result.userId}"></td>
 									<td id='col2' style="white-space: nowrap;"><a th:href="@{/downloadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
-									<td style="word-break:break-all;" id='col3' th:text="${result.path}"></td>
+									<td id='col3' th:if="${result.type} == 'COLLECTION'">
+										<a id="pathLinkId" th:href="@{/collection(path=${result.path}, action=displayOnly)}" target="_blank">
+											<span id="spanLinkId" style="width: 200px; display:inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${result.path}">
+											</span>
+										</a>
+									</td>
+									<td id='col3' th:if="${result.type} == 'DATA_OBJECT'">
+										<a id="pathLinkId" th:href="@{/datafile(path=${result.path}, action=displayOnly)}" target="_blank">
+											<span id="spanLinkId" style="width: 200px; display:inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${result.path}">
+											</span>
+										</a>
+									</td>
+									<td id='col3' th:if="${result.type} == 'COLLECTION_LIST'"></td>
+									<td id='col3' th:if="${result.type} == 'DATA_OBJECT_LIST'"></td>
 									<td id='col4' th:text="${result.type}"></td>
 									<td id='col5' th:text="${result.destinationType}"></td>
 									<td id='col6' th:text="${result.created}"></td>
 									<td id='col7' th:text="${result.completed}"></td>
 									<td id='col8' th:text="${result.result}"></td>
-									<td id='col9' style="word-break:break-all;" th:text="${result.error}"></td>
-									<td id='col10' th:text="${result.retryUserId}"></td>
+									<td id='col9' th:text="${result.retryUserId}"></td>
+									<td id='col10' style="word-break:break-all;" th:text="${result.error}"></td>
+									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
 								</tr>
 							</tbody>
 							<tfoot>
 								<tr id='attrFooter2'>
-									<td class="column-heading" id='colfoot001' th:text="'User ID'"></td>
-									<td class="column-heading" id='colfoot002' th:text="'Task Id'"></td>
-									<td class="column-heading" id='colfoot003' th:text="'Path'"></td>
-									<td class="column-heading" id='colfoot004' th:text="'Type'"></td>
-									<td class="column-heading" id='colfoot005' th:text="'Destination Type'"></td>
-									<td class="column-heading" id='colfoot006' th:text="'Created On'"></td>
-									<td class="column-heading" id='colfoot007' th:text="'Completed On'"></td>
-									<td class="column-heading" id='colfoot008' th:text="'Transfer Result'"></td>
-									<td class="column-heading" id='colfoot009' th:text="'Error'"></td>
-									<td class="column-heading" id='colfoot0010' th:text="'Retry User ID'"></td>
+									<th id='colf1'></th>
+									<th class="column-heading" id='colfoot001' th:text="'User ID'"></th>
+									<th class="column-heading" id='colfoot002' th:text="'Task ID'"></th>
+									<th class="column-heading" id='colfoot003' th:text="'Path'"></th>
+									<th class="column-heading" id='colfoot004' th:text="'Type'"></th>
+									<th class="column-heading" id='colfoot005' th:text="'Destination Type'"></th>
+									<th class="column-heading" id='colfoot006' th:text="'Created On'"></th>
+									<th class="column-heading" id='colfoot007' th:text="'Completed On'"></th>
+									<th class="column-heading" id='colfoot008' th:text="'Transfer Result'"></th>
+									<th class="column-heading" id='colfoot009' th:text="'Retry User ID'"></th>
+									<th class="column-heading" id='colfoot0010' th:text="'Error'"></th>
 								</tr>
 							</tfoot>
 						</table>
@@ -216,16 +233,16 @@ tfoot input {
 							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 							<button type="button" id="btnFirst"
 								class="btn btn-md btn-primary" onclick="updatePage('first')">
-								First</button>
+								First</button>&nbsp;
 							<button type="button" id="btnPrevious"
 								class="btn btn-md btn-primary"
-								onclick="updatePage('previous')">Previous</button>
+								onclick="updatePage('previous')">Previous</button>&nbsp;
 							<button type="button" id="btnNext"
 								class="btn btn-md btn-primary" onclick="updatePage('next')">
-								Next</button>
+								Next</button>&nbsp;
 							<button type="button" id="btnLast"
 								class="btn btn-md btn-primary" onclick="updatePage('last')">
-								Last</button>
+								Last</button>&nbsp;
 						</tr>
 					</table>
 				</div>
@@ -253,12 +270,8 @@ tfoot input {
 	$(document).ready(function(){
 		var checkBox = document.getElementById("allcheckbox");
 		var queryAll = true;
-		var pathCharsVisible = 33;
-		var pathWidth = 250;
 		if (checkBox.checked == false){
 			queryAll = false;
-			pathCharsVisible = 43;
-			pathWidth = 300;
 		}
 
 		/* This is for sorting to ignore the empty strings.
@@ -285,21 +298,24 @@ tfoot input {
 		    }
 		} );
 
+		/* Clone the header and add input text boxes for the column searches */
 		$('#resultsGrid thead tr')
         .clone(true)
         .appendTo('#resultsGrid thead');
 
 		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
-		        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
-		        $( 'input', this ).on( 'keyup change', function () {
-		            if ( table.column(i).search() !== this.value ) {
-		                table
-		                    .column(i)
-		                    .search( this.value )
-		                    .draw();
-		            }
-		        } );
+				if(title != "") {
+			        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+			        $( 'input', this ).on( 'keyup change', function () {
+			            if ( table.column(i).search() !== this.value ) {
+			                table
+			                    .column(i)
+			                    .search( this.value )
+			                    .draw();
+			            }
+			        } );
+		        }
 		    } );
 
 		/*
@@ -316,21 +332,48 @@ tfoot input {
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX : 'TRUE',
-				columnDefs: [ {targets: 0, width:80, visible: queryAll}, //user
-							  {targets: 1, width:280, visible: true},  // taskId
-							  {targets: 2, width:pathWidth, type: 'non-empty-string', render: DataTable.render.ellipsis( pathCharsVisible, true )}, // path
-							  {targets: 3, width:100, visible: true},  // type
-							  {targets: 4, width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							  {targets: 5, width: 110, visible: true},  // created
-							  {targets: 6, width: 110, visible: true},  // completed
-							  {targets: 7, width: 60, visible: true},  // transfer result
-							  {targets: 8, width:200, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
-							  {targets: 9, width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-				],
+				columnDefs: [ 
+							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
+							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
+							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
+							{targets: 3, data: 'path', width:200,  visible: true}, // path
+							{targets: 4, data: 'type', width:100, visible: true},  // type
+							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
+							{targets: 6, data: 'created', width: 110, visible: true},  // created
+							{targets: 7, data: 'completed', width: 110, visible: true},  // completed
+							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
+							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
+							{targets: 11, data: 'displayPath', visible: false},
+						],
 				"lengthMenu": [ [-1], ["All"] ],
 		} );
+
+	// Add event listener for opening and closing details
+		table.on('click', 'td.dt-control', function (e) {
+			let tr = e.target.closest('tr');
+			let row = table.row(tr);
+
+			if (row.child.isShown()) {
+				// This row is already open - close it
+				row.child.hide();
+			}
+			else {
+				// Open this row
+				row.child(format(row.data())).show();
+			}
+		});
 	});
-	
+
+	function format(d) {
+	    // `d` is the original data object for the row
+	    var result = (d.result === null) || (d.result === "") ? "" : '<b>Transfer Result:</b> ' + d.result + '<br/>';
+	    // The path has been converted to an anchor link. So we will use displayPath to show the path
+	    var path = (d.displayPath === null) || (d.displayPath === "") ? "" : '<b>Path:</b> ' + d.displayPath + '<br/>';
+	    var error = (d.error === null ) || (d.error === "") ? "" : '<b>Error:</b> ' + d.error + '<br/>';
+		return(result + path + error);
+ 	}
+
 	function displayAll()
 	{
 		var checkBox = document.getElementById("allcheckbox");
@@ -340,7 +383,7 @@ tfoot input {
 			window.location.href = "/downloadtasks?queryAll=false";
 		}
 	}
-	
+
     function updatePage(action)
     {
     	var checkBox = document.getElementById("allcheckbox");

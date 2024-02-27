@@ -25,6 +25,10 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
+<link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
+<link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
+
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -43,6 +47,12 @@
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
 <link rel="stylesheet" href="css/ui-grid.css" type="text/css" />
 
+
+<script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
+
+
 <style>
 /*style.css*/
 .gridStyle {
@@ -50,51 +60,14 @@
 	height: 300px
 }
 
-/*
-   This is the background of our overlay. We need it to be
-   absolutely positioned within the grid, and fill from
-   top to bottom, and the full width. It will also have
-   a black background with 40% opacity.
-*/
-.grid-msg-overlay {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 100%;
-	background: rgba(0, 0, 0, 0.4);
+/* Style for horizontal scroll on top */
+.dataTables_scrollBody {
+    transform:rotateX(180deg);
+}
+.dataTables_scrollBody table {
+    transform:rotateX(180deg);
 }
 
-/*
-  This guy will contain our message. We want it centered
-  so it's positioned absolutely with percentage-based
-  offsets and dimensions. It also has some basic border
-  stuff and most important is using "display: table" so
-  we can vertically center its contents.
-*/
-.grid-msg-overlay .msg {
-	opacity: 1;
-	position: absolute;
-	top: 20%;
-	left: 20%;
-	width: 60%;
-	height: 50%;
-	background-color: #eee;
-	border-radius: 4px;
-	border: 1px solid #555;
-	text-align: center;
-	font-size: 24px;
-	display: table;
-}
-
-/*
-  Lastly this is the actual message text. It uses
-  display: table-cell so the vertical alignment
-  works properly.
-*/
-.grid-msg-overlay .msg span {
-	display: table-cell;
-	vertical-align: middle;
-}
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -204,32 +177,83 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 								</label>
 								</div>
 							</div>
-							<!--panel-body start-->
-							<div class="panel-body">
-							<div ng-controller="MainCtrl">
-									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
-										ui-grid-pagination="true" ui-grid-grouping="true"
-										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
-									<p>Current Page: {{ currentPage }} of {{ totalPages }}
-										&nbsp;&nbsp;|&nbsp;&nbsp;Page Size: {{ currentPageSize }}
-										&nbsp;&nbsp;|&nbsp;&nbsp;Total Records: {{ totalRows }}</p>
-									<button type="button" id="btnFirst"
+							<div>
+								<table id="pageDetails1" class="display" style="width:100%">
+									<tr>
+										<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+										<button type="button" id="btnFirstTop"
 										class="btn btn-md btn-primary" onclick="updatePage('first')">
-										First</button>
-									<button type="button" id="btnPrevious"
+											First</button>&nbsp;
+										<button type="button" id="btnPreviousTop"
 										class="btn btn-md btn-primary"
-										onclick="updatePage('previous')">Previous</button>
-									<button type="button" id="btnNext"
+											onclick="updatePage('previous')">Previous</button>&nbsp;
+										<button type="button" id="btnNextTop"
 										class="btn btn-md btn-primary" onclick="updatePage('next')">
-										Next</button>
-									<button type="button" id="btnLast"
+											Next</button>&nbsp;
+										<button type="button" id="btnLastTop"
 										class="btn btn-md btn-primary" onclick="updatePage('last')">
+											Last</button>&nbsp;
+									</tr>
+								</table>
+							</div>
+							<div th:if="${results != null and results.size() > 0}">
+								<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
+									<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
+									<thead>
+										<tr id='attrRow2'>
+											<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
+											<th class="column-heading" id='colheading002' th:text="'Task ID'"></th>
+											<th class="column-heading" id='colheading004' th:text="'Source Type'"></th>
+											<th class="column-heading" id='colheading008' th:text="'Transfer Result'"></th>
+											<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
+											<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr id='attrCol0' th:each="result : ${results}">
+											<td id='col1' th:text="${result.userId}"></td>
+											<td id='col2' style="white-space: nowrap;">
+												<a th:href="@{/uploadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
+											<td id='col3' th:text="${result.sourceType}"></td>
+											<td id='col4' th:text="${result.result}"></td>
+											<td id='col5' th:text="${result.created}"></td>
+											<td id='col6' th:text="${result.completed}"></td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr id='attrFooter2'>
+											<td class="column-heading" id='colfoot001' th:text="'User ID'"></td>
+											<td class="column-heading" id='colfoot002' th:text="'Task ID'"></td>
+											<td class="column-heading" id='colfoot004' th:text="'Source Type'"></td>
+											<td class="column-heading" id='colfoot008' th:text="'Transfer Result'"></td>
+											<td class="column-heading" id='colfoot006' th:text="'Created On'"></td>
+											<td class="column-heading" id='colfoot007' th:text="'Completed On'"></td>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+
+							<div>
+								<table id="pageDetails1" class="display" style="width:100%">
+									<tr>
+										<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+										<button type="button" id="btnFirstTop"
+											class="btn btn-md btn-primary" onclick="updatePage('first')">
+											First</button>&nbsp;
+										<button type="button" id="btnPreviousTop"
+											class="btn btn-md btn-primary"
+											onclick="updatePage('previous')">Previous</button>&nbsp;
+										<button type="button" id="btnNextTop"
+											class="btn btn-md btn-primary" onclick="updatePage('next')">
+											Next</button>&nbsp;
+										<button type="button" id="btnLastTop"
+											class="btn btn-md btn-primary" onclick="updatePage('last')">&nbsp;
 										Last</button>
+									</tr>
+								</table>
 								</div>
 							</div>
 						</div>
-
-					</div>
 					<!--/col-->
 
 				</div>
@@ -257,6 +281,53 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 /*<![CDATA[*/
 	$(document).ready(function(){
 		$('#sub-menu-manage').addClass("active");
+
+		var checkBox = document.getElementById("allcheckbox");
+		var queryAll = true;
+		if (checkBox.checked == false){
+			queryAll = false;
+		}
+
+		$('#resultsGrid thead tr')
+        .clone(true)
+        .appendTo('#resultsGrid thead');
+
+		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
+		        var title = $(this).text();
+		        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+		        $( 'input', this ).on( 'keyup change', function () {
+		            if ( table.column(i).search() !== this.value ) {
+		                table
+		                    .column(i)
+		                    .search( this.value )
+		                    .draw();
+		            }
+		        } );
+		    } );
+
+		/*
+			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
+			hover showing the complete string.
+
+			The Path field, Error field and RetryUserId fields have empty strings in them.
+			Therefore, they are set to type 'non-empty-string' to force the sort to ignore empty strings.
+
+			aaSorting set to empty array, enforces no sorting on any column on the initial load of data of the page.
+		*/
+		var table = $('#' + 'resultsGrid').DataTable( {
+				orderCellsTop: true,
+				"aaSorting": [],
+				dom: 'rt',
+				scrollX : 'TRUE',
+				columnDefs: [ {targets: 0, width:100, visible: queryAll}, //userId
+							  {targets: 1, width:280, visible: true},  // taskId
+							  {targets: 2, width: 115, visible: true},  // source type
+							  {targets: 3, width: 100, visible: true},  // transfer result
+							  {targets: 4, width: 110, visible: true},  // created
+							  {targets: 5, width: 110, visible: true},  // completed
+				],
+				"lengthMenu": [ [-1], ["All"] ],
+		} );
 	});
 	
 	function displayAll()
@@ -300,6 +371,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnNext').prop('disabled', false);
 		$('#btnLast').removeClass('disabled');
 		$('#btnLast').prop('disabled', false);
+		$('#btnPreviousTop').addClass('disabled');
+		$('#btnPreviousTop').prop('disabled', true);
+		$('#btnFirstTop').addClass('disabled');
+		$('#btnFirstTop').prop('disabled', true);
+		$('#btnNextTop').removeClass('disabled');
+		$('#btnNextTop').prop('disabled', false);
+		$('#btnLastTop').removeClass('disabled');
+		$('#btnLastTop').prop('disabled', false);
 	}
 	else
 	{
@@ -307,6 +386,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnPrevious').prop('disabled', false);
 		$('#btnFirst').removeClass('disabled');
 		$('#btnFirst').prop('disabled', false);
+		$('#btnPreviousTop').removeClass('disabled');
+		$('#btnPreviousTop').prop('disabled', false);
+		$('#btnFirstTop').removeClass('disabled');
+		$('#btnFirstTop').prop('disabled', false);
 	}
 	
 	if(currentPage == totalPages)
@@ -315,6 +398,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnNext').prop('disabled', true);
 		$('#btnLast').addClass('disabled');
 		$('#btnLast').prop('disabled', true);
+		$('#btnNextTop').addClass('disabled');
+		$('#btnNextTop').prop('disabled', true);
+		$('#btnLastTop').addClass('disabled');
+		$('#btnLastTop').prop('disabled', true);
 	}
 	else
 	{
@@ -322,6 +409,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		$('#btnNext').prop('disabled', false);
 		$('#btnLast').removeClass('disabled');
 		$('#btnLast').prop('disabled', false);
+		$('#btnNextTop').removeClass('disabled');
+		$('#btnNextTop').prop('disabled', false);
+		$('#btnLastTop').removeClass('disabled');
+		$('#btnLastTop').prop('disabled', false);
 	}
 
 /*]]>*/
