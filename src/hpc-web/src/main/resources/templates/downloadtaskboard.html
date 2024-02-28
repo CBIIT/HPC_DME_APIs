@@ -336,7 +336,7 @@ tfoot input {
 							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
 							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
 							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
-							{targets: 3, data: 'path', width:200,  visible: true}, // path
+							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
 							{targets: 4, data: 'type', width:100, visible: true},  // type
 							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
 							{targets: 6, data: 'created', width: 110, visible: true},  // created
