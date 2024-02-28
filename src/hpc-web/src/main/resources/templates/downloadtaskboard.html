@@ -306,7 +306,7 @@ tfoot input {
 		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
 				if(title != "") {
-			        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+			        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
 			        $( 'input', this ).on( 'keyup change', function () {
 			            if ( table.column(i).search() !== this.value ) {
 			                table
