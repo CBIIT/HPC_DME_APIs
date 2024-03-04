@@ -195,12 +195,6 @@
    			<groupId>org.apache.tika</groupId>
     		<artifactId>tika-parsers</artifactId>
     		<version>1.24.1</version>
-    		<exclusions>
-				<exclusion>
-					<artifactId>xml-apis</artifactId>
-					<groupId>xml-apis</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 		    <groupId>ch.qos.logback</groupId>
