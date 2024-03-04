@@ -71,7 +71,7 @@
                         <directory>src/main/resources</directory>
                     </resource>
                 </webResources>
-                <warName>hpc-server</warName>
+                <warName>hpc-server##${project.version}</warName>
                 <attachClasses>true</attachClasses>
            	</configuration>
         </plugin>
