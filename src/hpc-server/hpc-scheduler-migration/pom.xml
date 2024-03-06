@@ -35,7 +35,7 @@
 	                        <directory>src/main/resources</directory>
 	                    </resource>
 	                </webResources>
-	                <warName>hpc-scheduler-migration</warName>
+	                <warName>${project.artifactId}-${project.version}</warName>
 	                <attachClasses>true</attachClasses>
 	           	</configuration>
 	        </plugin>
