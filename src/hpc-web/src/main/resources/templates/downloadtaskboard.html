@@ -144,7 +144,7 @@ tfoot input {
 							</label>
 						</div>
 					</div>
-					<div>
+					<div style="text-align:right">
 						<table id="pageDetails1" class="display" style="width:100%">
 							<tr>
 								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
@@ -163,6 +163,10 @@ tfoot input {
 							</tr>
 						</table>
 					</div>
+					<div>
+						<button id="btn-show-all-children" class="btn btn-md btn-primary" type="button">Expand All</button>
+						<button id="btn-hide-all-children" class="btn btn-md btn-primary" type="button">Collapse All</button>
+					<div>
 					<div th:if="${results != null and results.size() > 0}">
 						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
@@ -227,25 +231,25 @@ tfoot input {
 							</tfoot>
 						</table>
 					</div>
-				<div>
-					<table id="pageDetails2" class="display" style="width:100%">
-						<tr>
-							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-							<button type="button" id="btnFirst"
-								class="btn btn-md btn-primary" onclick="updatePage('first')">
-								First</button>&nbsp;
-							<button type="button" id="btnPrevious"
-								class="btn btn-md btn-primary"
-								onclick="updatePage('previous')">Previous</button>&nbsp;
-							<button type="button" id="btnNext"
-								class="btn btn-md btn-primary" onclick="updatePage('next')">
-								Next</button>&nbsp;
-							<button type="button" id="btnLast"
-								class="btn btn-md btn-primary" onclick="updatePage('last')">
-								Last</button>&nbsp;
-						</tr>
-					</table>
-				</div>
+					<div style="text-align:right">
+						<table id="pageDetails2" class="display" style="width:100%">
+							<tr>
+								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+								<button type="button" id="btnFirst"
+									class="btn btn-md btn-primary" onclick="updatePage('first')">
+									First</button>&nbsp;
+								<button type="button" id="btnPrevious"
+									class="btn btn-md btn-primary"
+									onclick="updatePage('previous')">Previous</button>&nbsp;
+								<button type="button" id="btnNext"
+									class="btn btn-md btn-primary" onclick="updatePage('next')">
+									Next</button>&nbsp;
+								<button type="button" id="btnLast"
+									class="btn btn-md btn-primary" onclick="updatePage('last')">
+									Last</button>&nbsp;
+							</tr>
+						</table>
+					</div>
 				</div></div></div>
 			</section>
 			<div th:include="footer :: footer"></div>
@@ -363,6 +367,32 @@ tfoot input {
 				row.child(format(row.data())).show();
 			}
 		});
+
+		// Handle click on "Expand All" button
+		$('#btn-show-all-children').on('click', function(){
+		    // Enumerate all rows
+		    table.rows().every(function(){
+		        // If row has details collapsed
+		        if(!this.child.isShown()){
+		            // Open this row
+		            this.child(format(this.data())).show();
+		            $(this.node()).addClass('shown');
+		        }
+		    });
+		});
+
+		// Handle click on "Collapse All" button
+		$('#btn-hide-all-children').on('click', function(){
+		    // Enumerate all rows
+		    table.rows().every(function(){
+		        // If row has details expanded
+		        if(this.child.isShown()){
+		            // Collapse row details
+		            this.child.hide();
+		            $(this.node()).removeClass('shown');
+		        }
+		    });
+		 });
 	});
 
 	function format(d) {
