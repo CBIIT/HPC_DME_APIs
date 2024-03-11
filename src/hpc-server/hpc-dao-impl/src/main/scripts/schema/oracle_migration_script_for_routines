@@ -15,8 +15,7 @@ BEGIN
                         R_REPORT_REGISTERED_BY,
                         R_REPORT_REGISTERED_BY_BASEPATH,
                         R_REPORT_REGISTERED_BY_DOC,
-                        R_REPORT_REGISTERED_BY_S3_ARCHIVE_CONFIGURATION,
-                        R_REPORT_REGISTERED_BY_PATH',
+                        R_REPORT_REGISTERED_BY_S3_ARCHIVE_CONFIGURATION',
                         METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
 
 END;
