@@ -98,6 +98,7 @@ tfoot input {
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
+    var expanded = false;
 /*]]>*/
 </script>
 <script>
@@ -163,10 +164,6 @@ tfoot input {
 							</tr>
 						</table>
 					</div>
-					<div>
-						<button id="btn-show-all-children" class="btn btn-md btn-primary" type="button">Expand All</button>
-						<button id="btn-hide-all-children" class="btn btn-md btn-primary" type="button">Collapse All</button>
-					<div>
 					<div th:if="${results != null and results.size() > 0}">
 						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
@@ -309,7 +306,7 @@ tfoot input {
 
 		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
-				if(title != "") {
+				if(i > 0) {
 			        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
 			        $( 'input', this ).on( 'keyup change', function () {
 			            if ( table.column(i).search() !== this.value ) {
@@ -319,6 +316,8 @@ tfoot input {
 			                    .draw();
 			            }
 			        } );
+		        } else {
+					$(this).html( '<div id="expandcollapseId"><button id="btn-show-all-doc" style="border:none;" title="Click for Archive Summary"><i class="fa fa-plus-circle fa-lg" aria-hidden="true" style="color:green;"></i></button></div>');
 		        }
 		    } );
 
@@ -336,6 +335,7 @@ tfoot input {
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX : 'TRUE',
+				'responsive': true,
 				columnDefs: [ 
 							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
 							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
@@ -353,7 +353,7 @@ tfoot input {
 				"lengthMenu": [ [-1], ["All"] ],
 		} );
 
-	// Add event listener for opening and closing details
+		// Add event listener for opening and closing details
 		table.on('click', 'td.dt-control', function (e) {
 			let tr = e.target.closest('tr');
 			let row = table.row(tr);
@@ -365,35 +365,38 @@ tfoot input {
 			else {
 				// Open this row
 				row.child(format(row.data())).show();
+				expanded = true;
 			}
 		});
 
-		// Handle click on "Expand All" button
-		$('#btn-show-all-children').on('click', function(){
-		    // Enumerate all rows
-		    table.rows().every(function(){
-		        // If row has details collapsed
-		        if(!this.child.isShown()){
-		            // Open this row
-		            this.child(format(this.data())).show();
-		            $(this.node()).addClass('shown');
-		        }
-		    });
-		});
+		$('#expandcollapseId').on('click', expandCollapseAll);
 
-		// Handle click on "Collapse All" button
-		$('#btn-hide-all-children').on('click', function(){
-		    // Enumerate all rows
-		    table.rows().every(function(){
-		        // If row has details expanded
-		        if(this.child.isShown()){
-		            // Collapse row details
-		            this.child.hide();
-		            $(this.node()).removeClass('shown');
-		        }
-		    });
-		 });
-	});
+		function expandCollapseAll() {
+			let expandCollapseButtonDiv = document.getElementById("expandcollapseId");
+			if(expanded) {
+				table.rows().every(function(){
+					// If row has details expanded
+					if(this.child.isShown()){
+						// Collapse row details
+						this.child.hide();
+						$(this.node()).removeClass('shown');
+					}
+					expanded = false;
+					expandCollapseButtonDiv.innerHTML = '<i class="fa fa-plus-circle fa-lg" style="color:green;" aria-hidden="true"></i>';
+				});
+			} else {
+			    table.rows().every(function(){
+			        // If row has details collapsed
+			        if(!this.child.isShown()){
+			            // Open this row
+			            this.child(format(this.data())).show();
+			            $(this.node()).addClass('shown');
+			        }
+			        expanded = true;
+					expandCollapseButtonDiv.innerHTML = '<i class="fa fa-minus-circle fa-lg" style="color:red;" aria-hidden="true"></i>';
+			    });
+			}}
+		});
 
 	function format(d) {
 	    // `d` is the original data object for the row
