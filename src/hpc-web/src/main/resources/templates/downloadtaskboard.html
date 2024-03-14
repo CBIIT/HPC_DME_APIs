@@ -169,7 +169,7 @@ tfoot input {
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 							<thead>
 								<tr id='attrRow2'>
-									<th class="column-heading" id='colheading001'></th>
+									<th id='colheading001'></th>
 									<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
 									<th class="column-heading" id='colheading002' th:text="'Task ID'"></th>
 									<th class="column-heading" id='colheading003' th:text="'Path'"></th>
@@ -317,7 +317,7 @@ tfoot input {
 			            }
 			        } );
 		        } else {
-					$(this).html( '<div id="expandcollapseId"><button id="btn-show-all-doc" style="border:none;" title="Click for Archive Summary"><i class="fa fa-plus-circle fa-lg" aria-hidden="true" style="color:green;"></i></button></div>');
+					$(this).html( '<div id="expandcollapseId"><button id="btn-show-all-doc" style="border:none;" title="Click to expand details of all rows"><img width="24" height="24" background-color="white" style="margin-left: auto; margin-right: auto" src="img/details_open.png"/></button></div>');
 		        }
 		    } );
 
@@ -382,7 +382,7 @@ tfoot input {
 						$(this.node()).removeClass('shown');
 					}
 					expanded = false;
-					expandCollapseButtonDiv.innerHTML = '<i class="fa fa-plus-circle fa-lg" style="color:green;" aria-hidden="true"></i>';
+					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" style="border:none; margin-left: auto; margin-right: auto"/>';
 				});
 			} else {
 			    table.rows().every(function(){
@@ -393,7 +393,7 @@ tfoot input {
 			            $(this.node()).addClass('shown');
 			        }
 			        expanded = true;
-					expandCollapseButtonDiv.innerHTML = '<i class="fa fa-minus-circle fa-lg" style="color:red;" aria-hidden="true"></i>';
+					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" style="border:none; margin-left: auto; margin-right: auto"/>';
 			    });
 			}}
 		});
