@@ -29,6 +29,7 @@
 			<xsd:enumeration value="USER_S_3_PROVIDER" />
 			<xsd:enumeration value="GOOGLE_STORAGE" />
 			<xsd:enumeration value="VAST" />
+			<xsd:enumeration value="BOX" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
