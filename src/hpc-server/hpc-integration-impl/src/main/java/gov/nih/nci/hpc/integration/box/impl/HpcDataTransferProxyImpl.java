@@ -18,6 +18,9 @@ import com.box.sdk.BoxCollection;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
+import com.box.sdk.BoxSearch;
+import com.box.sdk.BoxSearchParameters;
+import com.box.sdk.PartialCollection;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -125,6 +128,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// Stream the file to Box.
 		CompletableFuture<Void> boxDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
+				// Find the first 10 files matching "taxes"
+				long offsetValue = 0;
+				long limitValue = 10;
+				BoxSearch boxSearch = new BoxSearch(boxApi);
+				BoxSearchParameters searchParams = new BoxSearchParameters();
+				searchParams.setQuery("eran_pi_cli_test/Project_test");
+				searchParams.setType("folder");
+				PartialCollection<BoxItem.Info> searchResults = boxSearch.searchRange(offsetValue, limitValue, searchParams);
+				searchResults.forEach(info -> logger.error("ERAN 3.5 - {} - {} - {}", info.getID(), info.getName(), info.getPathCollection()));
+				
 				logger.error("ERAN 4");
 				// Find / Create the folder in Box where we download the file to
 				String destinationPath = toNormalizedPath(
@@ -175,6 +188,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				//BoxFile.Info fileInfo = boxFolder.uploadLargeFile(
 				//		new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
 				//		downloadRequest.getSize());
+				
+				
 				BoxFile.Info fileInfo = boxFolder.uploadFile(
 						new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName);
 				
