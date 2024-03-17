@@ -2,44 +2,24 @@ package gov.nih.nci.hpc.integration.box.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.locks.Lock;
 
-import org.apache.cxf.common.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxCollection;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.googleapis.media.MediaHttpUploader.UploadState;
-import com.google.api.client.http.InputStreamContent;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.Drive.Files.Create;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
-import com.google.common.util.concurrent.Striped;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -128,19 +108,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
-
+		logger.error("ERAN 1");
 		// Input validation
 		if (progressListener == null) {
 			throw new HpcException("[Box] No progress listener provided for a download to Box destination",
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
-
+		logger.error("ERAN 2");
 		// Authenticate the Box access token.
 		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
 
-		// Stream the file to Google Drive.
-		CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
+		logger.error("ERAN 3");
+
+		// Stream the file to Box.
+		CompletableFuture<Void> boxDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
+				logger.error("ERAN 4");
 				// Find / Create the folder in Box where we download the file to
 				String destinationPath = toNormalizedPath(
 						downloadRequest.getBoxDestination().getDestinationLocation().getFileId());
@@ -148,17 +131,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				String destinationFolderPath = destinationPath.substring(0, lastSlashIndex);
 				String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
 
+				logger.error("ERAN 5");
+
 				BoxCollection boxCollection = new BoxCollection(boxApi,
 						downloadRequest.getBoxDestination().getDestinationLocation().getFileContainerId());
+				logger.error("ERAN 6");
 				BoxFolder boxFolder = new BoxFolder(boxApi, destinationFolderPath);
+				logger.error("ERAN 7");
 				boxFolder.setCollections(boxCollection);
+				logger.error("ERAN 8");
 
 				// Transfer the file to Box, and complete the download task.
 				BoxFile.Info fileInfo = boxFolder.uploadLargeFile(
 						new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
 						downloadRequest.getSize());
+				logger.error("ERAN 9");
 
 				progressListener.transferCompleted(fileInfo.getSize());
+				logger.error("ERAN 10");
 
 			} catch (IOException | InterruptedException e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
@@ -168,7 +158,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		}, boxExecutor);
 
-		return String.valueOf(googleDriveDownloadFuture.hashCode());
+		return String.valueOf(boxDownloadFuture.hashCode());
 
 	}
 
