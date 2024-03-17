@@ -17,6 +17,7 @@ import com.box.sdk.BoxAPIException;
 import com.box.sdk.BoxCollection;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
+import com.box.sdk.BoxItem;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -154,6 +155,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				BoxFolder boxFolder = new BoxFolder(boxApi, destinationFolderPath);
 				boxFolder = BoxFolder.getRootFolder(boxApi);
 				
+				for (BoxItem.Info itemInfo : boxFolder) {
+				    if (itemInfo instanceof BoxFile.Info) {
+				        BoxFile.Info fileInfo = (BoxFile.Info) itemInfo;
+				        logger.error("ERAN 6.5 - {} - {}", fileInfo.getID(), fileInfo.getName());
+				        // Do something with the file.
+				    } else if (itemInfo instanceof BoxFolder.Info) {
+				        BoxFolder.Info folderInfo = (BoxFolder.Info) itemInfo;
+				        logger.error("ERAN 6.6 - {} - {}", folderInfo.getID(), folderInfo.getName());
+				        // Do something with the folder.
+				    }
+				}
+				
 				logger.error("ERAN 7");
 				//boxFolder.setCollections(boxCollection);
 				logger.error("ERAN 8 - {}", destinationFileName);
@@ -165,7 +178,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				BoxFile.Info fileInfo = boxFolder.uploadFile(
 						new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName);
 				
-				logger.error("ERAN 9 - {}, {} - {}", fileInfo.getID(), fileInfo.getName(), fileInfo.getSize());
+				logger.error("ERAN 9 - {}, - {} - {}", fileInfo.getID(), fileInfo.getName(), fileInfo.getSize());
 
 				progressListener.transferCompleted(fileInfo.getSize());
 				logger.error("ERAN 10");
