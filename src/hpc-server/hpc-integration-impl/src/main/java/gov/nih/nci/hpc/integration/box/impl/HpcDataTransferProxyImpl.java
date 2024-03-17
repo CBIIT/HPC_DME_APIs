@@ -135,6 +135,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				BoxCollection boxCollection = new BoxCollection(boxApi,
 						downloadRequest.getBoxDestination().getDestinationLocation().getFileContainerId());
+				logger.error("ERAN 5, {}", boxCollection != null ? boxCollection.getID() : "nil");
+				
+				boxCollection = new BoxCollection(boxApi, "Download");
+				logger.error("ERAN 5.5 , {}", boxCollection != null ? boxCollection.getID() : "nil");
+				
 				logger.error("ERAN 6");
 				BoxFolder boxFolder = new BoxFolder(boxApi, destinationFolderPath);
 				logger.error("ERAN 7");
