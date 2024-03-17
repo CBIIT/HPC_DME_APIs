@@ -152,15 +152,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				
 				logger.error("ERAN 6");
 				BoxFolder boxFolder = new BoxFolder(boxApi, destinationFolderPath);
+				boxFolder = BoxFolder.getRootFolder(boxApi);
+				
 				logger.error("ERAN 7");
 				//boxFolder.setCollections(boxCollection);
-				logger.error("ERAN 8");
+				logger.error("ERAN 8 - {}", destinationFileName);
 
 				// Transfer the file to Box, and complete the download task.
 				BoxFile.Info fileInfo = boxFolder.uploadLargeFile(
 						new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
 						downloadRequest.getSize());
-				logger.error("ERAN 9");
+				logger.error("ERAN 9 - {}, {}", fileInfo.getID(), fileInfo.getName());
 
 				progressListener.transferCompleted(fileInfo.getSize());
 				logger.error("ERAN 10");
