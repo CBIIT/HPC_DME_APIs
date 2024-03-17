@@ -1620,14 +1620,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to Google Drive / Google Cloud Storage / Aspera destination is
-		// supported
-		// only from S3 archive.
+		// 3. Download to Google Drive / Google Cloud Storage / Aspera / Box destination
+		// is supported only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
 				downloadRequest.getGoogleDriveDownloadDestination() != null
 						|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null
-						|| downloadRequest.getAsperaDownloadDestination() != null,
+						|| downloadRequest.getAsperaDownloadDestination() != null
+						|| downloadRequest.getBoxDownloadDestination() != null,
 				false);
 
 		// Download the data object.
@@ -1635,9 +1635,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
-				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getSynchronousDownloadFilter(),
-				metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
-				retryTaskId, userId, retryUserId, completionEvent, collectionDownloadTaskId,
+				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
+				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
+				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId, userId, retryUserId,
+				completionEvent, collectionDownloadTaskId,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
 				metadata.getDeepArchiveStatus());
 
@@ -3620,17 +3621,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Validate a download request.
 	 *
-	 * @param path                              The data object path.
-	 * @param googleOrAsperaDownloadDestination True if the download destination is
-	 *                                          Google Drive or Google Cloud
-	 *                                          Storage, or Aspera
-	 * @param generateDownloadURL               True if this is a request to
-	 *                                          generate a download URL.
+	 * @param path                                 The data object path.
+	 * @param downloadDestinationFromS3ArchiveOnly True if the download destination
+	 *                                             supports download from S3
+	 *                                             archives only (Google Drive,
+	 *                                             Google Cloud Storage, Aspera,
+	 *                                             Box)
+	 * @param generateDownloadURL                  True if this is a request to
+	 *                                             generate a download URL.
 	 * @return The system generated metadata
 	 * @throws HpcException If the request is invalid.
 	 */
 	private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(String path,
-			boolean googleOrAsperaDownloadDestination, boolean generateDownloadURL) throws HpcException {
+			boolean downloadDestinationFromS3ArchiveOnly, boolean generateDownloadURL) throws HpcException {
 
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
@@ -3642,7 +3645,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
-			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), googleOrAsperaDownloadDestination,
+			return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), downloadDestinationFromS3ArchiveOnly,
 					generateDownloadURL);
 		}
 
@@ -3651,12 +3654,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Could not locate data object path " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Download to Google Drive / Google Cloud Storage destination is supported only
-		// from S3 archive.
-		if (googleOrAsperaDownloadDestination && (metadata.getDataTransferType() == null
+		// Validate the file is stored in S3 archive if the download destination
+		// supports downloading from S3 only.
+		if (downloadDestinationFromS3ArchiveOnly && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
-			throw new HpcException(
-					"Google Drive / Google Cloud Storage / Aspera download request is not supported for POSIX based file system archive",
+			throw new HpcException("Download destination is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
