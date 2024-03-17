@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.box.sdk.BoxAPIConnection;
+import com.box.sdk.BoxAPIException;
 import com.box.sdk.BoxCollection;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
@@ -130,6 +131,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				int lastSlashIndex = destinationPath.lastIndexOf('/');
 				String destinationFolderPath = destinationPath.substring(0, lastSlashIndex);
 				String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
+				
+				//BoxCollection favorites = null;
+				for (BoxCollection.Info info : BoxCollection.getAllCollections(boxApi)) {
+					logger.error("ERAN 4.5 - {} - {} - {}", info.getID(), info.getName(), info.getCollectionType());
+				  //  if (info.getCollectionType().equals("favorites")) {
+				    //    favorites = info.getResource();
+				      //  break;
+				    //}
+				}
 
 				logger.error("ERAN 5");
 
@@ -143,7 +153,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				logger.error("ERAN 6");
 				BoxFolder boxFolder = new BoxFolder(boxApi, destinationFolderPath);
 				logger.error("ERAN 7");
-				boxFolder.setCollections(boxCollection);
+				//boxFolder.setCollections(boxCollection);
 				logger.error("ERAN 8");
 
 				// Transfer the file to Box, and complete the download task.
@@ -155,7 +165,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				progressListener.transferCompleted(fileInfo.getSize());
 				logger.error("ERAN 10");
 
-			} catch (Exception e) {
+			} catch (BoxAPIException | InterruptedException | IOException e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
