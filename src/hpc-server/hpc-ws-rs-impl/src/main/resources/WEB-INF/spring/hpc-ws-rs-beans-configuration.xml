@@ -24,45 +24,7 @@
 	<context:property-placeholder location="classpath:WEB-INF/spring/hpc-server.properties,file:${catalina.base}/conf/hpc-server/hpc-server.properties" />
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath*:/META-INF/spring/*-beans-configuration.xml"/>
-	<!-- HTTP-JETTY SSL Configuration >
-	<httpj:engine-factory bus="cxf">
-		<httpj:identifiedTLSServerParameters
-			id="hpcTLSServerParameters">
-			<httpj:tlsServerParameters>
-				<sec:keyManagers keyPassword="${hpc.ws.rs.ssl.keystore.password}">
-					<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}"
-						password="${hpc.ws.rs.ssl.keystore.password}" file="${hpc.ws.rs.ssl.keystore.path}" />
-				</sec:keyManagers>
-				<sec:trustManagers>
-					<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}"
-						password="${hpc.ws.rs.ssl.keystore.password}" file="${hpc.ws.rs.ssl.keystore.path}" />
-				</sec:trustManagers>
-				<sec:clientAuthentication want="${hpc.ws.rs.ssl.wantClientAuth}"
-					required="${hpc.ws.rs.ssl.needClientAuth}" />
-				<sec:cipherSuitesFilter>
-					<sec:include>.*_WITH_AES_.*</sec:include>							
-					<sec:include>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</sec:include>
-                    <sec:include>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</sec:include>
-                    <sec:include>TLS_RSA_WITH_AES_128_CBC_SHA</sec:include>
-                    <sec:include>TLS_RSA_WITH_AES_256_CBC_SHA</sec:include>
-					<sec:exclude>EDH-DSS-DES-CBC3-SHA</sec:exclude>
-					<sec:exclude>.*_DH_anon_.*</sec:exclude>
-				</sec:cipherSuitesFilter>
-				<sec:excludeProtocols>
-					<sec:excludeProtocol>SSLv2</sec:excludeProtocol>
-					<sec:excludeProtocol>SSLv3</sec:excludeProtocol>
-					<sec:excludeProtocol>TLSv1</sec:excludeProtocol>
-				</sec:excludeProtocols>
-			</httpj:tlsServerParameters>
-		</httpj:identifiedTLSServerParameters>
-
-		<httpj:engine port="${hpc.ws.rs.secured-port}">
-			<httpj:tlsServerParametersRef id="hpcTLSServerParameters" />
-			<httpj:threadingParameters minThreads="${hpc.ws.rs.jetty-engine.minThreads}"
-				maxThreads="${hpc.ws.rs.jetty-engine.maxThreads}" />
-		</httpj:engine>
-	</httpj:engine-factory-->
-
+	
 	<!-- JAXB Provider -->
 	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
 		<property name="marshallerProperties" ref="jaxbProviderMarshallerProperties" />
