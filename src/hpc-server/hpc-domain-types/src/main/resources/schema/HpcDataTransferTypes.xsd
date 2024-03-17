@@ -278,6 +278,15 @@
 				type="hpc-domain-datatransfer:HpcAsperaAccount" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType
+		name="HpcBoxDownloadDestination">
+		<xsd:sequence>
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="authCode" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 	<xsd:complexType name="HpcSynchronousDownloadFilter">
 		<xsd:sequence>
@@ -327,6 +336,8 @@
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="asperaDestination"
 				type="hpc-domain-datatransfer:HpcAsperaDownloadDestination" />
+			<xsd:element name="boxDestination"
+				type="hpc-domain-datatransfer:HpcBoxDownloadDestination" />
 			<xsd:element name="fileDestination"
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="configurationId" type="xsd:string" />
@@ -381,6 +392,8 @@
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="asperaDownloadDestination"
 				type="hpc-domain-datatransfer:HpcAsperaDownloadDestination" />
+			<xsd:element name="boxDownloadDestination"
+				type="hpc-domain-datatransfer:HpcBoxDownloadDestination" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
