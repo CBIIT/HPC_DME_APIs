@@ -72,7 +72,7 @@ public interface HpcDataTransferProxy {
 	public default Object authenticate(HpcS3Account s3Account) throws HpcException {
 		throw new HpcException("authenticate(s3Account) not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
-
+	
 	/**
 	 * Authenticate a Google Drive / Google Cloud Storage account.
 	 *
@@ -83,6 +83,20 @@ public interface HpcDataTransferProxy {
 	 */
 	public default Object authenticate(String accessToken) throws HpcException {
 		throw new HpcException("authenticate(Google access-token) not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	/**
+	 * Authenticate a Box account.
+	 *
+	 * @param dataTransferAccount The Data Transfer account to authenticate.
+	 * @param authCode            Box auth code.
+	 * @return An authenticated token, to be used in subsequent calls to data
+	 *         transfer.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String authCode)
+			throws HpcException {
+		throw new HpcException("authenticate(Box auth-code) not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
 	/**
@@ -215,8 +229,8 @@ public interface HpcDataTransferProxy {
 	 * @param authenticatedToken     An authenticated token.
 	 * @param dataTransferRequestId  The data transfer request ID.
 	 * @param baseArchiveDestination The archive's base destination location.
-	 * @param loggingPrefix            Contextual (download/upload tasks etc)
-	 *                                 logging text to prefix in logging.
+	 * @param loggingPrefix          Contextual (download/upload tasks etc) logging
+	 *                               text to prefix in logging.
 	 * @return The data transfer request status.
 	 * @throws HpcException on data transfer system failure.
 	 */
@@ -232,8 +246,8 @@ public interface HpcDataTransferProxy {
 	 * @param dataTransferRequestId The data transfer request ID.
 	 * @param successfulItems       True to include successful items in the
 	 *                              response.
-	 *                              @param loggingPrefix            Contextual (download/upload tasks etc)
-	 *                                 logging text to prefix in logging.
+	 * @param loggingPrefix         Contextual (download/upload tasks etc) logging
+	 *                              text to prefix in logging.
 	 * @return The data transfer request status.
 	 * @throws HpcException on data transfer system failure.
 	 */
