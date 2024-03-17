@@ -21,6 +21,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -154,6 +155,8 @@ public interface HpcDataTransferService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param synchronousDownloadFilter             (Optional) synchronous download
 	 *                                              filter to extract specific files
 	 *                                              from a data object that is
@@ -193,7 +196,7 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
