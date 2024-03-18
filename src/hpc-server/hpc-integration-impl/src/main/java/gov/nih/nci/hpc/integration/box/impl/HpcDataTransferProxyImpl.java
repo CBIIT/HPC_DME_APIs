@@ -136,7 +136,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				searchParams.setQuery("eran_pi_cli_test/Project_test");
 				searchParams.setType("folder");
 				PartialCollection<BoxItem.Info> searchResults = boxSearch.searchRange(offsetValue, limitValue, searchParams);
-				searchResults.forEach(info -> logger.error("ERAN 3.5 - {} - {} - {}", info.getID(), info.getName(), info.getPathCollection()));
+				searchResults.forEach(info -> {
+					StringBuffer buf = new StringBuffer();
+					info.getPathCollection().forEach(pathItem -> buf.append("/" + pathItem.getName()));
+					logger.error("ERAN 3.5 - {} - {} - {}", info.getID(), info.getName(), buf.toString());
+				});
 				
 				logger.error("ERAN 4");
 				// Find / Create the folder in Box where we download the file to
