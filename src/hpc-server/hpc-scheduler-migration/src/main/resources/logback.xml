@@ -8,10 +8,10 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${catalina.base}/logs/hpc-server/hpc-scheduler-migration.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <!-- each archived file, size max 100MB -->
-            <maxFileSize>100MB</maxFileSize>
+            <!-- each archived file, size max 500MB -->
+            <maxFileSize>500MB</maxFileSize>
             <!-- total size of all archive files, if total size > 200GB, it will delete old archived file -->
-            <totalSizeCap>200GB</totalSizeCap>
+            <totalSizeCap>15GB</totalSizeCap>
             <!-- 90 days to keep -->
             <maxHistory>90</maxHistory>
         </rollingPolicy>
