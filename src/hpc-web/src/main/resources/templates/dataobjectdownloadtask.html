@@ -165,12 +165,12 @@
 												for="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"
 												th:text="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"></label>
 										</div>
-										<div class="col-md-12 form-group">
+										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getDestinationLocation() != null}">
 											<label for="Name">Destination Endpoint:</label> <label
 												for="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileContainerId()}"
 												th:text="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileContainerId()}"></label>
 										</div>
-										<div class="col-md-12 form-group">
+										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getDestinationLocation() != null}">
 											<label for="Name">Destination Endpoint Path:</label> <label
 												for="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileId()}"
 												th:text="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileId()}"></label>
