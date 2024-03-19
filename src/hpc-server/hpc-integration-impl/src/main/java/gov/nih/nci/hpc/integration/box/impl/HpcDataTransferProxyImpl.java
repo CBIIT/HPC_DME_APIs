@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +15,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxAPIException;
-import com.box.sdk.BoxCollection;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
-import com.box.sdk.BoxSearch;
-import com.box.sdk.BoxSearchParameters;
-import com.box.sdk.PartialCollection;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -55,6 +52,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * // Google drive query for all files under a folder. private static final
 	 * String DIRECTORY_SCAN_QUERY = "'%s' in parents";
 	 */
+
+	// The file size in which we can use the 'transfer large file in chunks' API.
+	private static final Long BOX_LARGE_FILE_TRANSFER_THRESHOLD = 20000000L;
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -113,96 +114,45 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
-		logger.error("ERAN 1");
 		// Input validation
 		if (progressListener == null) {
 			throw new HpcException("[Box] No progress listener provided for a download to Box destination",
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
-		logger.error("ERAN 2");
+
 		// Authenticate the Box access token.
 		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
-
-		logger.error("ERAN 3");
 
 		// Stream the file to Box.
 		CompletableFuture<Void> boxDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				// Find the first 10 files matching "taxes"
-				long offsetValue = 0;
-				long limitValue = 10;
-				BoxSearch boxSearch = new BoxSearch(boxApi);
-				BoxSearchParameters searchParams = new BoxSearchParameters();
-				searchParams.setQuery("eran_pi_cli_test/Project_test");
-				searchParams.setType("folder");
-				PartialCollection<BoxItem.Info> searchResults = boxSearch.searchRange(offsetValue, limitValue, searchParams);
-				searchResults.forEach(info -> {
-					StringBuffer buf = new StringBuffer();
-					info.getPathCollection().forEach(pathItem -> buf.append("/" + pathItem.getName()));
-					logger.error("ERAN 3.5 - {} - {} - {}", info.getID(), info.getName(), buf.toString());
-				});
-				
-				logger.error("ERAN 4");
 				// Find / Create the folder in Box where we download the file to
 				String destinationPath = toNormalizedPath(
 						downloadRequest.getBoxDestination().getDestinationLocation().getFileId());
 				int lastSlashIndex = destinationPath.lastIndexOf('/');
 				String destinationFolderPath = destinationPath.substring(0, lastSlashIndex);
 				String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
-				
-				//BoxCollection favorites = null;
-				for (BoxCollection.Info info : BoxCollection.getAllCollections(boxApi)) {
-					logger.error("ERAN 4.5 - {} - {} - {}", info.getID(), info.getName(), info.getCollectionType());
-				  //  if (info.getCollectionType().equals("favorites")) {
-				    //    favorites = info.getResource();
-				      //  break;
-				    //}
+				logger.error("ERAN 1");
+				BoxFolder boxFolder = getFolder(boxApi, destinationFolderPath, true);
+				logger.error("ERAN 2", boxFolder.getID(), boxFolder.getInfo("name").getName());
+
+				// Transfer the file to Box.
+				BoxFile.Info fileInfo = null;
+				if (downloadRequest.getSize() > BOX_LARGE_FILE_TRANSFER_THRESHOLD) {
+					// Use the 'upload large file in chunks' API.
+					fileInfo = boxFolder.uploadLargeFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
+							destinationFileName, downloadRequest.getSize());
+				} else {
+					fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
+							destinationFileName);
 				}
 
-				logger.error("ERAN 5");
-
-				BoxCollection boxCollection = new BoxCollection(boxApi,
-						downloadRequest.getBoxDestination().getDestinationLocation().getFileContainerId());
-				logger.error("ERAN 5, {}", boxCollection != null ? boxCollection.getID() : "nil");
-				
-				boxCollection = new BoxCollection(boxApi, "Download");
-				logger.error("ERAN 5.5 , {}", boxCollection != null ? boxCollection.getID() : "nil");
-				
-				logger.error("ERAN 6");
-				BoxFolder boxFolder = new BoxFolder(boxApi, destinationFolderPath);
-				boxFolder = BoxFolder.getRootFolder(boxApi);
-				
-				for (BoxItem.Info itemInfo : boxFolder) {
-				    if (itemInfo instanceof BoxFile.Info) {
-				        BoxFile.Info fileInfo = (BoxFile.Info) itemInfo;
-				        logger.error("ERAN 6.5 - {} - {}", fileInfo.getID(), fileInfo.getName());
-				        // Do something with the file.
-				    } else if (itemInfo instanceof BoxFolder.Info) {
-				        BoxFolder.Info folderInfo = (BoxFolder.Info) itemInfo;
-				        logger.error("ERAN 6.6 - {} - {}", folderInfo.getID(), folderInfo.getName());
-				        // Do something with the folder.
-				    }
-				}
-				
-				logger.error("ERAN 7");
-				//boxFolder.setCollections(boxCollection);
-				logger.error("ERAN 8 - {}", destinationFileName);
-
-				// Transfer the file to Box, and complete the download task.
-				//BoxFile.Info fileInfo = boxFolder.uploadLargeFile(
-				//		new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
-				//		downloadRequest.getSize());
-				
-				
-				BoxFile.Info fileInfo = boxFolder.uploadFile(
-						new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName);
-				
 				logger.error("ERAN 9 - {}, - {} - {}", fileInfo.getID(), fileInfo.getName(), fileInfo.getSize());
 
 				progressListener.transferCompleted(fileInfo.getSize());
 				logger.error("ERAN 10");
 
-			} catch (BoxAPIException | /*InterruptedException | */IOException e) {
+			} catch (BoxAPIException | InterruptedException | IOException | HpcException e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
@@ -279,42 +229,70 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	/**
-	 * Find the ID of a folder in Google Drive. If not found, the folder is created.
+	 * Find a folder in Box.
 	 *
-	 * @param drive      A Google drive instance.
-	 * @param folderPath The folder path to find / create in Google Drive.
+	 * @param boxApi     A Box API instance.
+	 * @param folderPath The folder path to find in Box.
 	 * @param create     If true, the folder will be created if not found.
 	 * @return The folder ID or null if not found.
-	 * @throws IOException on data transfer system failure.
+	 * @throws HpcException on data transfer system failure.
 	 */
-	/*
-	 * private String getFolderId(Drive drive, String folderPath, boolean create)
-	 * throws IOException { String parentFolderId = "root"; if
-	 * (!StringUtils.isEmpty(folderPath)) { // If the request is to create a folder
-	 * if not found, we lock the path. Lock lock = pathLocks.get(folderPath); if
-	 * (create) { lock.lock(); }
-	 * 
-	 * try { boolean createNewFolder = false; for (String subFolderName :
-	 * folderPath.split("/")) { if (StringUtils.isEmpty(subFolderName)) { continue;
-	 * } if (!createNewFolder) { // Search for the sub-folder. FileList result =
-	 * drive.files().list() .setQ(String.format(FOLDER_QUERY, subFolderName,
-	 * parentFolderId)).setFields("files(id)") .execute(); if
-	 * (!result.getFiles().isEmpty()) { // Sub-folder was found. Note: In Google
-	 * Drive, it's possible to have multiple // folders // with the same name // We
-	 * simply grab the first one on the list. parentFolderId =
-	 * result.getFiles().get(0).getId(); continue;
-	 * 
-	 * } else { // Sub-folder was not found. if (!create) { // Requested to not
-	 * create folders. return null; } createNewFolder = true; } }
-	 * 
-	 * // Creating a new sub folder. parentFolderId = drive.files() .create(new
-	 * File().setName(subFolderName)
-	 * .setParents(Collections.singletonList(parentFolderId))
-	 * .setMimeType(FOLDER_MIME_TYPE)) .setFields("id").execute().getId(); } }
-	 * finally { if (create) { lock.unlock(); } } }
-	 * 
-	 * return parentFolderId; }
+
+	private BoxFolder getFolder(BoxAPIConnection boxApi, String folderPath, boolean create) throws HpcException {
+		// Get the root folder if requested.
+		BoxFolder boxFolder = null;
+		try {
+			boxFolder = BoxFolder.getRootFolder(boxApi);
+
+		} catch (BoxAPIException e) {
+			throw new HpcException("[Box] Failed to get root folder: " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR);
+		}
+
+		// Go through the folder path items and find/create the child folder.
+		for (String childFolderName : folderPath.split("/")) {
+			if (!StringUtils.isEmpty(childFolderName) && boxFolder != null) {
+				boxFolder = getChildFolder(boxApi, boxFolder, childFolderName, create);
+			}
+		}
+
+		return boxFolder;
+	}
+
+	/**
+	 * Find a Child in Box.
+	 *
+	 * @param boxApi          A Box API instance.
+	 * @param boxFolder       The box folder to search in for a child folder.
+	 * @param childFolderName The child folder name.
+	 * @param create          If true, the child folder will be created if not
+	 *                        found.
+	 * @return The folder ID or null if not found.
+	 * @throws HpcException on data transfer system failure.
 	 */
+
+	private BoxFolder getChildFolder(BoxAPIConnection boxApi, BoxFolder boxFolder, String childFolderName,
+			boolean create) throws HpcException {
+		try {
+			for (BoxItem.Info itemInfo : boxFolder) {
+				if (itemInfo instanceof BoxFolder.Info && itemInfo.getName().equals(childFolderName)) {
+					// Found the child folder.
+					return ((BoxFolder.Info) itemInfo).getResource();
+				}
+			}
+
+			// Child folder not found. Create if requested.
+			if (create) {
+				return boxFolder.createFolder(childFolderName).getResource();
+			}
+
+			return null;
+
+		} catch (BoxAPIException e) {
+			throw new HpcException("[Box] Failed to get child folder: " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR);
+		}
+	}
 
 	/**
 	 * Get a file/folder by ID or path.
