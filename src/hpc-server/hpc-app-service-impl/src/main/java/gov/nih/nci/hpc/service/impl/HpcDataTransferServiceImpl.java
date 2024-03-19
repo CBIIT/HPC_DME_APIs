@@ -138,6 +138,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Google Drive 'My Drive' ID.
 	private static final String MY_GOOGLE_DRIVE_ID = "MyDrive";
 
+	// Box 'My Box' ID.
+	private static final String MY_BOX_ID = "MyBox";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -2637,6 +2640,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (boxDownloadDestination != null) {
 			if (!isValidFileLocation(boxDownloadDestination.getDestinationLocation())) {
 				throw new HpcException("Invalid Box download destination location", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (!boxDownloadDestination.getDestinationLocation().getFileContainerId().equals(MY_BOX_ID)) {
+				// At this point we only support endpoint of Box to be 'MyBox'
+				throw new HpcException("Invalid file container ID. Only 'MyBox' is supported",
+						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
 			if (StringUtils.isEmpty(boxDownloadDestination.getAuthCode())) {
