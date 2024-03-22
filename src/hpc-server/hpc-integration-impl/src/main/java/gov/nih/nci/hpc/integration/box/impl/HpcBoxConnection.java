@@ -42,14 +42,17 @@ public class HpcBoxConnection {
 	 * Authenticate a Box account.
 	 *
 	 * @param dataTransferAccount The Data Transfer account to authenticate.
-	 * @param authCode            Box auth code.
+	 * @param accessToken         Box accessToken.
+	 * @param refreshToken        Box refreshToken.
 	 * @return An authenticated token, to be used in subsequent calls to data
 	 *         transfer.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String authCode) throws HpcException {
+	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken, String refreshToken)
+			throws HpcException {
 		try {
-			return new BoxAPIConnection(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(), authCode);
+			return new BoxAPIConnection(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(),
+					accessToken, refreshToken);
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("Failed to authenticate Box w/ auth-code: " + e.getMessage(),
