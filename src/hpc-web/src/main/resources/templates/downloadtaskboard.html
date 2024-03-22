@@ -89,6 +89,10 @@ tfoot input {
     transform:rotateX(180deg);
 }
 
+.imgDetails {
+	margin-left: auto; margin-right: auto; display: block;
+}
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -317,7 +321,7 @@ tfoot input {
 			            }
 			        } );
 		        } else {
-					$(this).html( '<div id="expandcollapseId"><button id="btn-show-all-doc" style="border:none;" title="Click to expand details of all rows"><img width="24" height="24" background-color="white" style="margin-left: auto; margin-right: auto" src="img/details_open.png"/></button></div>');
+					$(this).html( '<div id="expandcollapseId"><button id="btn-show-all-doc" style="border:none;" title="Click to expand details of all rows"><img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png"/></button></div>');
 		        }
 		    } );
 
@@ -381,7 +385,7 @@ tfoot input {
 						$(this.node()).removeClass('shown');
 					}
 					expanded = false;
-					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" style="border:none; margin-left: auto; margin-right: auto"/>';
+					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
 				});
 			} else {
 			    table.rows().every(function(){
@@ -392,7 +396,7 @@ tfoot input {
 			            $(this.node()).addClass('shown');
 			        }
 			        expanded = true;
-					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" style="border:none; margin-left: auto; margin-right: auto"/>';
+					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
 			    });
 			}}
 		});
