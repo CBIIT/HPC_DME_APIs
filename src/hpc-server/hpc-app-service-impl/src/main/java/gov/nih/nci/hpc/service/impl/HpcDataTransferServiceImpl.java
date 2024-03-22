@@ -2648,8 +2648,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
-			if (StringUtils.isEmpty(boxDownloadDestination.getAuthCode())) {
-				throw new HpcException("Invalid Box auth code", HpcErrorType.INVALID_REQUEST_INPUT);
+			if (StringUtils.isEmpty(boxDownloadDestination.getAccessToken())) {
+				throw new HpcException("Invalid Box access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			
+			if (StringUtils.isEmpty(boxDownloadDestination.getRefreshToken())) {
+				throw new HpcException("Invalid Box refresh token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
 
@@ -3208,7 +3212,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Get authenticated token to the user's box storage
 			Object authenticatedToken = dataTransferProxies.get(HpcDataTransferType.BOX).authenticate(
 					systemAccountLocator.getSystemAccount(HpcIntegratedSystem.BOX),
-					boxDownload.getDownloadTask().getBoxDownloadDestination().getAuthCode());
+					boxDownload.getDownloadTask().getBoxDownloadDestination().getAccessToken(),
+					boxDownload.getDownloadTask().getBoxDownloadDestination().getRefreshToken());
 
 			// Perform the download (From S3 Archive to User's Box).
 			dataTransferProxies.get(HpcDataTransferType.BOX).downloadDataObject(authenticatedToken, downloadRequest,
