@@ -102,12 +102,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String authCode) throws HpcException {
+	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken, String refreshToken)
+			throws HpcException {
 		if (dataTransferAccount == null) {
 			throw new HpcException("Box System account not registered", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		return boxConnection.authenticate(dataTransferAccount, authCode);
+		return boxConnection.authenticate(dataTransferAccount, accessToken, refreshToken);
 	}
 
 	@Override

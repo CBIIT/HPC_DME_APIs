@@ -72,7 +72,7 @@ public interface HpcDataTransferProxy {
 	public default Object authenticate(HpcS3Account s3Account) throws HpcException {
 		throw new HpcException("authenticate(s3Account) not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
-	
+
 	/**
 	 * Authenticate a Google Drive / Google Cloud Storage account.
 	 *
@@ -89,13 +89,14 @@ public interface HpcDataTransferProxy {
 	 * Authenticate a Box account.
 	 *
 	 * @param dataTransferAccount The Data Transfer account to authenticate.
-	 * @param authCode            Box auth code.
+	 * @param accessToken         Box access token.
+	 * @param refreshToken        Box refresh token.
 	 * @return An authenticated token, to be used in subsequent calls to data
 	 *         transfer.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public default Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String authCode)
-			throws HpcException {
+	public default Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken,
+			String refreshToken) throws HpcException {
 		throw new HpcException("authenticate(Box auth-code) not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
