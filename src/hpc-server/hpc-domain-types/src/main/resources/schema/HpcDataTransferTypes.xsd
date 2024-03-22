@@ -284,7 +284,8 @@
 		<xsd:sequence>
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="authCode" type="xsd:string" />
+			<xsd:element name="accessToken" type="xsd:string" />
+			<xsd:element name="refreshToken" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
