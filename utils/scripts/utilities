@@ -592,7 +592,7 @@ function get_type  {
         rm -f $get_response_msg 2>/dev/null
         echo "collection"
         return 
-    elif [ "$code" -ne 204 ] 
+    elif [ "$code" -ne 400 ] 
     then 
       print_error_message "$get_response_msg" "$code" 
       exit 1
