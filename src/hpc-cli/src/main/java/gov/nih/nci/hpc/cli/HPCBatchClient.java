@@ -230,7 +230,7 @@ public abstract class HPCBatchClient {
 			}
 			else
 			{
-				System.out.println("Cmd process is not Successful. Please refer to error log for details.");
+				System.out.printf("Cmd process is not Successful. Please refer to the error log located in %s directory for details.%n", logDir);
 				return errorCode;
 			}
 		} catch (IOException e) {
