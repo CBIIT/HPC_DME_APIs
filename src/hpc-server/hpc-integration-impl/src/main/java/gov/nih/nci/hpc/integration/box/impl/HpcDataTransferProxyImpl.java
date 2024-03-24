@@ -153,7 +153,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				progressListener.transferCompleted(fileInfo.getSize());
 				logger.error("ERAN 10");
 
-			} catch (BoxAPIException | InterruptedException | IOException | HpcException e) {
+			} catch (/*BoxAPIException | InterruptedException | IOException | HpcException |*/ Exception e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
