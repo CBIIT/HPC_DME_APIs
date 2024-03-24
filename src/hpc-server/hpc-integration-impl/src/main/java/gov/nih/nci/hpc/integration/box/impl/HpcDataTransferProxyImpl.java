@@ -247,7 +247,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("[Box] Failed to get root folder: " + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR);
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 
 		// Go through the folder path items and find/create the child folder.
@@ -291,7 +291,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("[Box] Failed to get child folder: " + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR);
+					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	}
 
