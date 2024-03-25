@@ -61,16 +61,8 @@ public class HpcBoxConnection {
 	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken, String refreshToken)
 			throws HpcException {
 		try {
-			BoxAPIConnection boxApi = new BoxAPIConnection(dataTransferAccount.getUsername(),
-					dataTransferAccount.getPassword(), accessToken, refreshToken);
-
-			logger.error(
-					"ERAN BOX connection - token: {}, can-refresh: {}, connect-timeout: {}, expires: {}, auto-refresh: {}, last-refresh: {}, max-retry-attempts: {}, needs-refresh: {}",
-					accessToken, boxApi.canRefresh(), boxApi.getConnectTimeout(), boxApi.getExpires(),
-					boxApi.getAutoRefresh(), boxApi.getLastRefresh(), boxApi.getMaxRetryAttempts(),
-					boxApi.needsRefresh());
-
-			return boxApi;
+			return new BoxAPIConnection(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(),
+					accessToken, refreshToken);
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("Failed to authenticate Box w/ auth-code: " + e.getMessage(),
@@ -91,5 +83,12 @@ public class HpcBoxConnection {
 		}
 
 		return (BoxAPIConnection) authenticatedToken;
+	}
+
+	public void logBoxApi(BoxAPIConnection boxApi, String msg) {
+		logger.error(
+				"ERAN BOX connection [{}]- token: {}, can-refresh: {}, connect-timeout: {}, expires: {}, auto-refresh: {}, last-refresh: {}, max-retry-attempts: {}, needs-refresh: {}",
+				msg, boxApi.getAccessToken(), boxApi.canRefresh(), boxApi.getConnectTimeout(), boxApi.getExpires(),
+				boxApi.getAutoRefresh(), boxApi.getLastRefresh(), boxApi.getMaxRetryAttempts(), boxApi.needsRefresh());
 	}
 }
