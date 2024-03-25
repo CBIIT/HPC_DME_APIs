@@ -2,7 +2,6 @@ package gov.nih.nci.hpc.integration.box.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -146,6 +145,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				} else {
 					fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
 							destinationFileName);
+					boxConnection.logBoxApi(boxApi, "uploadFile");
 				}
 
 				logger.error("ERAN 9 - {}, - {} - {}", fileInfo.getID(), fileInfo.getName(), fileInfo.getSize());
@@ -153,7 +153,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				progressListener.transferCompleted(fileInfo.getSize());
 				logger.error("ERAN 10");
 
-			} catch (/*BoxAPIException | InterruptedException | IOException | HpcException |*/ Exception e) {
+			} catch (/* BoxAPIException | InterruptedException | IOException | HpcException | */ Exception e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
@@ -244,6 +244,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		BoxFolder boxFolder = null;
 		try {
 			boxFolder = BoxFolder.getRootFolder(boxApi);
+			boxConnection.logBoxApi(boxApi, "getRootFolder");
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("[Box] Failed to get root folder: " + e.getMessage(),
@@ -254,6 +255,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		for (String childFolderName : folderPath.split("/")) {
 			if (!StringUtils.isEmpty(childFolderName) && boxFolder != null) {
 				boxFolder = getChildFolder(boxApi, boxFolder, childFolderName, create);
+				boxConnection.logBoxApi(boxApi, "getChildFolder");
 			}
 		}
 
