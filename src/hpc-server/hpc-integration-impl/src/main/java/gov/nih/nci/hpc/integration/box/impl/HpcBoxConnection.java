@@ -87,8 +87,8 @@ public class HpcBoxConnection {
 
 	public void logBoxApi(BoxAPIConnection boxApi, String msg) {
 		logger.error(
-				"ERAN BOX connection [{}]- token: {}, can-refresh: {}, connect-timeout: {}, expires: {}, auto-refresh: {}, last-refresh: {}, max-retry-attempts: {}, needs-refresh: {}",
-				msg, boxApi.getAccessToken(), boxApi.canRefresh(), boxApi.getConnectTimeout(), boxApi.getExpires(),
+				"ERAN BOX connection [{}]- token: {}, refresh-token: {}, can-refresh: {}, connect-timeout: {}, expires: {}, auto-refresh: {}, last-refresh: {}, max-retry-attempts: {}, needs-refresh: {}",
+				msg, boxApi.getAccessToken(), boxApi.getRefreshToken(), boxApi.canRefresh(), boxApi.getConnectTimeout(), boxApi.getExpires(),
 				boxApi.getAutoRefresh(), boxApi.getLastRefresh(), boxApi.getMaxRetryAttempts(), boxApi.needsRefresh());
 	}
 }
