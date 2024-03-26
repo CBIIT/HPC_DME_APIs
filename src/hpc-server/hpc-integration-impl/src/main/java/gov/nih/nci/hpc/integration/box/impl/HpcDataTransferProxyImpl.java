@@ -107,7 +107,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("Box System account not registered", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		return boxConnection.authenticate(dataTransferAccount, accessToken, refreshToken);
+		Object token = boxConnection.authenticate(dataTransferAccount, accessToken, refreshToken);
+		boxConnection.logBoxApi(boxConnection.getBoxAPIConnection(token), "authenticate");
+		return token;
 	}
 
 	@Override
