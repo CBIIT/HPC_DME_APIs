@@ -84,15 +84,6 @@ public abstract class HpcLocalEntityProcessor {
         nameEntry.setValue(file.getName());
         metadataEntries.add(nameEntry);
       }
-      HpcMetadataEntry dateEntry = new HpcMetadataEntry();
-      dateEntry.setAttribute("modified_date");
-      if (file.getUpdatedDate() != null) {
-        dateEntry.setValue(file.getUpdatedDate());
-      } else {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-        dateEntry.setValue(sdf.format(new Date()));
-      }
-      metadataEntries.add(dateEntry);
       if (file.getIsDirectory()) {
         HpcMetadataEntry typeEntry = new HpcMetadataEntry();
         typeEntry.setAttribute("collection_type");

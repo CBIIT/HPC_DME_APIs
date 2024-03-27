@@ -71,6 +71,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcDupMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
@@ -1308,6 +1309,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@HpcExecuteAsSystemAccount
 	public void refreshDailyViews() throws HpcException {
 		reportService.refreshViews();
+		
+		logger.info("calling detectDupMetadataEntries()");
+		metadataService.detectDupMetadataEntries();
+		logger.info("completed detectDupMetadataEntries()");
 	}
 
 	@Override

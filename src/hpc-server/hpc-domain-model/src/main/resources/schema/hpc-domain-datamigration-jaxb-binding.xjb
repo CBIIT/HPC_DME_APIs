@@ -70,6 +70,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcAsperaDownloadDestination']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcBoxDownloadDestination']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcGoogleDownloadDestination']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination" />
       </jxb:bindings>
