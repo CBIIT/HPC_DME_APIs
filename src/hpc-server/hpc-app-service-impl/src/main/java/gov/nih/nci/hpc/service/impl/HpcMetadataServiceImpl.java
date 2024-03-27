@@ -75,6 +75,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.xml.sax.SAXException;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
@@ -88,6 +89,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcDupMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -95,6 +97,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcSelfMetadataEntries;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearch;
 import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -958,6 +961,16 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	@Override
 	public List<String> getDataObjectSystemMetadataAttributeNames() throws HpcException {
 		return metadataValidator.getDataObjectSystemGeneratedMetadataAttributeNames();
+	}
+	
+	@Override
+	public void detectDupMetadataEntries() throws HpcException {
+		List<HpcDupMetadataEntry> dupMetadataEntries = metadataDAO.getDupDataObjectMetadataEntries();
+		if (!CollectionUtils.isEmpty(dupMetadataEntries)) {
+			throw new HpcException("Duplicate data object metadata detected ["
+					+ StringUtils.join(dupMetadataEntries, ",") + "]",
+					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.ORACLE);
+		}
 	}
 
 	// ---------------------------------------------------------------------//
