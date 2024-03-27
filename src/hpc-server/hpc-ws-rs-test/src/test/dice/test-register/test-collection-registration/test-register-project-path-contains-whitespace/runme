@@ -23,7 +23,7 @@ POLICIES_FILE=../../../../../hpc-server/hpc-app-service-impl/src/main/resources/
 ./cleanme
 
 # Encoded destination storage path for collection
-DESTINATION_PATH=%2FTEST_NO_HIER_Archive%2Fthis-is%20%20bad-path-to-try
+DESTINATION_PATH=TEST_NO_HIER_Archive/this-is%20%20bad-path-to-try
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 SERVER=`cat ../../../utils/server`

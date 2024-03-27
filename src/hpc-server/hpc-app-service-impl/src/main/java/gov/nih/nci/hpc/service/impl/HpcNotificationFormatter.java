@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,6 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
@@ -51,6 +56,10 @@ public class HpcNotificationFormatter {
 	private Map<HpcSystemAdminNotificationType, HpcNotificationFormat> systemAdminNotificationFormats = new HashMap<>();
 
 	private String defaultBaseUiURL = null;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -301,15 +310,35 @@ public class HpcNotificationFormatter {
 	 * @throws HpcException on service failure.
 	 */
 	private void initNotificationFormats(String notificationFormatPath) throws HpcException {
+		logger.info("Loading notifications format from: {}", notificationFormatPath);
+		
+		Resource resource = new DefaultResourceLoader().getResource(notificationFormatPath);
+		if (!resource.exists()) {
+			throw new HpcException("Notification formats file not found: " + notificationFormatPath,
+					HpcErrorType.SPRING_CONFIGURATION_ERROR);
+		}
+
 		// Open and Parse the notification formats JSON file.
 		JSONArray jsonNotificationFormats = null;
-		try (FileReader reader = new FileReader(notificationFormatPath)) {
-			jsonNotificationFormats = (JSONArray) ((JSONObject) new JSONParser().parse(reader))
-					.get("notificationFormats");
 
-		} catch (Exception e) {
-			throw new HpcException("Could not open or parse: " + notificationFormatPath,
-					HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
+		if (resource.isFile()) {
+			try (FileReader reader = new FileReader(resource.getFile())) {
+				jsonNotificationFormats = (JSONArray) ((JSONObject) new JSONParser().parse(reader))
+						.get("notificationFormats");
+
+			} catch (Exception e) {
+				throw new HpcException("Could not open or parse file: " + notificationFormatPath,
+						HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
+			}
+		} else {
+			try (InputStreamReader reader = new InputStreamReader(resource.getInputStream())) {
+				jsonNotificationFormats = (JSONArray) ((JSONObject) new JSONParser().parse(reader))
+						.get("notificationFormats");
+
+			} catch (Exception e) {
+				throw new HpcException("Could not open or parse input-stream: " + notificationFormatPath,
+						HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
+			}
 		}
 
 		// Validate formats are defined.
@@ -346,6 +375,8 @@ public class HpcNotificationFormatter {
 						HpcSystemAdminNotificationType.valueOf(systemAdminNotificationTypeStr), notificationFormat);
 			}
 		}
+		
+		logger.info("Loaded {} notification formats", notificationFormats.size());
 	}
 
 	/**
