@@ -58,6 +58,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -136,6 +137,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// Google Drive 'My Drive' ID.
 	private static final String MY_GOOGLE_DRIVE_ID = "MyDrive";
+
+	// Box 'My Box' ID.
+	private static final String MY_BOX_ID = "MyBox";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -551,7 +555,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
@@ -564,8 +568,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate the destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				googleCloudStorageDownloadDestination, asperaDownloadDestination, synchronousDownloadFilter,
-				configurationId, false);
+				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination,
+				synchronousDownloadFilter, configurationId, false);
 
 		// Create a download request.
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -576,6 +580,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setGoogleDriveDestination(googleDriveDownloadDestination);
 		downloadRequest.setGoogleCloudStorageDestination(googleCloudStorageDownloadDestination);
 		downloadRequest.setAsperaDestination(asperaDownloadDestination);
+		downloadRequest.setBoxDestination(boxDownloadDestination);
 		downloadRequest.setPath(path);
 		downloadRequest.setConfigurationId(configurationId);
 		downloadRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
@@ -593,7 +598,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
-		// There are 6 methods of downloading data object:
+		// There are 8 methods of downloading data object:
 		// 1. Data is in deep archive, restoration is required. Supported by
 		// S3 (Cloudian)
 		// archive.
@@ -607,6 +612,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// provided Google Drive. Supported by S3 archive only.
 		// 6. Asynchronous download via streaming data object from S3 Archive to user
 		// provided Google Cloud Storage. Supported by S3 archive only.
+		// 7. Asynchronous 2-hop download using Aspera Connect (CLI). Supported by S3
+		// archive only.
+		// 8. Asynchronous download via streaming data object from S3 Archive to user
+		// provided Box. Supported by S3 archive only.
 		if (deepArchiveStatus != null) {
 			// If status is DEEP_ARCHIVE, and object is not restored, submit a restore
 			// request
@@ -635,7 +644,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		if (globusDownloadDestination == null && s3DownloadDestination == null && googleDriveDownloadDestination == null
-				&& googleCloudStorageDownloadDestination == null && asperaDownloadDestination == null) {
+				&& googleCloudStorageDownloadDestination == null && asperaDownloadDestination == null
+				&& boxDownloadDestination == null) {
 			// This is a synchronous download request.
 			performSynchronousDownload(downloadRequest, response, dataTransferConfiguration, synchronousDownloadFilter);
 
@@ -669,7 +679,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Storage destination.
 			performGoogleCloudStorageAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
-		} else {
+		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && boxDownloadDestination != null) {
+			// This is an asynchronous download request from a S3 archive to a Box
+			// destination.
+			performBoxAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
+
+		} else
+
+		{
 			throw new HpcException("Invalid download request", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
@@ -1179,6 +1196,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 		} else if (downloadTask.getAsperaDownloadDestination() != null) {
 			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
+		} else if (downloadTask.getBoxDownloadDestination() != null) {
+			taskResult.setDestinationLocation(downloadTask.getBoxDownloadDestination().getDestinationLocation());
 		}
 		taskResult.setDestinationType(downloadTask.getDestinationType());
 		taskResult.setResult(result);
@@ -1515,8 +1534,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throws HpcException {
 
 		// Validate the download destination.
+		// TODO - add Box support for bulk download
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, configurationId, true);
+				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, null, configurationId, true);
 
 		if (globusDownloadDestination != null) {
 			checkForDuplicateCollectionDownloadRequests(path, globusDownloadDestination);
@@ -1552,8 +1572,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the download destination.
+		// TODO - add Box support for bulk download
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, configurationId, true);
+				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, null, configurationId, true);
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -1587,8 +1608,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
 		// configuration IDs.
+		// TODO - add Box support for bulk download
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, configurationId, true);
+				googleCloudStorageDownloadDestination, asperaDownloadDestination, null, null, configurationId, true);
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -2457,6 +2479,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param synchronousDownloadFilter             (Optional) synchronous download
 	 *                                              filter to extract specific files
 	 *                                              from a data object that is
@@ -2473,10 +2497,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void validateDownloadDestination(HpcGlobusDownloadDestination globusDownloadDestination,
 			HpcS3DownloadDestination s3DownloadDestination, HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, String configurationId, boolean bulkDownload)
 			throws HpcException {
-		// Validate the destination (if provided) is either Globus, S3, or Google Drive.
+		// Validate a single destination is provided.
 		int destinations = 0;
 		if (globusDownloadDestination != null) {
 			destinations++;
@@ -2490,9 +2514,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (asperaDownloadDestination != null) {
 			destinations++;
 		}
+		if (boxDownloadDestination != null) {
+			destinations++;
+		}
 		if (destinations > 1) {
 			throw new HpcException(
-					"Multiple download destinations provided (Globus, S3, Google Drive / Cloud Storage, Aspera)",
+					"Multiple download destinations provided (Globus, S3, Google Drive / Cloud Storage, Aspera, Box)",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -2500,14 +2527,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// synchronous download request.
 		if (destinations == 1 && synchronousDownloadFilter != null) {
 			throw new HpcException(
-					"A download destination (Globus, S3, Google Drive, Aspera) provided w/ synchronous download filter",
+					"A download destination (Globus, S3, Google Drive / Cloud Storage, Aspera, Box) provided w/ synchronous download filter",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate the destination for collection/bulk download is provided.
 		if (bulkDownload && destinations == 0) {
 			throw new HpcException(
-					"No download destination provided (Globus, S3, Google Drive / Cloud Storage, Aspera)",
+					"No download destination provided (Globus, S3, Google Drive / Cloud Storage, Aspera, Box)",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -2606,6 +2633,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (!validationResult.getValid()) {
 				throw new HpcException("Invalid Aspera account: " + validationResult.getMessage(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		// Validate the Box destination.
+		if (boxDownloadDestination != null) {
+			if (!isValidFileLocation(boxDownloadDestination.getDestinationLocation())) {
+				throw new HpcException("Invalid Box download destination location", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (!boxDownloadDestination.getDestinationLocation().getFileContainerId().equals(MY_BOX_ID)) {
+				// At this point we only support endpoint of Box to be 'MyBox'
+				throw new HpcException("Invalid file container ID. Only 'MyBox' is supported",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (StringUtils.isEmpty(boxDownloadDestination.getAccessToken())) {
+				throw new HpcException("Invalid Box access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			
+			if (StringUtils.isEmpty(boxDownloadDestination.getRefreshToken())) {
+				throw new HpcException("Invalid Box refresh token", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
 
@@ -3069,13 +3117,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcStreamingDownload googleDriveDownload = new HpcStreamingDownload(downloadRequest, dataDownloadDAO,
 				eventService, this);
 
-		// Generate a download URL from the S3 archive.
-		downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
-				downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-				downloadRequest.getS3ArchiveConfigurationId()));
-
-		// Perform the download (From S3 Archive to User's Google Drive).
 		try {
+			// Generate a download URL from the S3 archive.
+			downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+					downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+					downloadRequest.getS3ArchiveConfigurationId()));
+
+			// Perform the download (From S3 Archive to User's Google Drive).
 			dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE).downloadDataObject(null, downloadRequest,
 					dataTransferConfiguration.getBaseArchiveDestination(), googleDriveDownload,
 					dataTransferConfiguration.getEncryptedTransfer());
@@ -3112,13 +3160,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcStreamingDownload googleCloudStorageDownload = new HpcStreamingDownload(downloadRequest, dataDownloadDAO,
 				eventService, this);
 
-		// Generate a download URL from the S3 archive.
-		downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
-				downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-				downloadRequest.getS3ArchiveConfigurationId()));
-
-		// Perform the download (From S3 Archive to User's Google Cloud Storage).
 		try {
+			// Generate a download URL from the S3 archive.
+			downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+					downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+					downloadRequest.getS3ArchiveConfigurationId()));
+
+			// Perform the download (From S3 Archive to User's Google Cloud Storage).
 			dataTransferProxies.get(HpcDataTransferType.GOOGLE_CLOUD_STORAGE).downloadDataObject(null, downloadRequest,
 					dataTransferConfiguration.getBaseArchiveDestination(), googleCloudStorageDownload,
 					dataTransferConfiguration.getEncryptedTransfer());
@@ -3132,6 +3180,55 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Cleanup the download task and rethrow.
 			completeDataObjectDownloadTask(googleCloudStorageDownload.getDownloadTask(), HpcDownloadResult.FAILED,
 					e.getMessage(), Calendar.getInstance(), 0);
+
+			throw (e);
+		}
+	}
+
+	/**
+	 * Perform a download request to user's provided Box destination from S3
+	 * archive.
+	 *
+	 * @param downloadRequest           The data object download request.
+	 * @param response                  The download response object. This method
+	 *                                  sets download task id and destination
+	 *                                  location on the response.
+	 * @param dataTransferConfiguration The data transfer configuration.
+	 * @throws HpcException on service failure.
+	 */
+	private void performBoxAsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
+			HpcDataObjectDownloadResponse response, HpcDataTransferConfiguration dataTransferConfiguration)
+			throws HpcException {
+
+		HpcStreamingDownload boxDownload = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
+				this);
+
+		try {
+			// Generate a download URL from the S3 archive.
+			downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+					downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+					downloadRequest.getS3ArchiveConfigurationId()));
+
+			// Get authenticated token to the user's box storage
+			Object authenticatedToken = dataTransferProxies.get(HpcDataTransferType.BOX).authenticate(
+					systemAccountLocator.getSystemAccount(HpcIntegratedSystem.BOX),
+					boxDownload.getDownloadTask().getBoxDownloadDestination().getAccessToken(),
+					boxDownload.getDownloadTask().getBoxDownloadDestination().getRefreshToken());
+
+			// Perform the download (From S3 Archive to User's Box).
+			dataTransferProxies.get(HpcDataTransferType.BOX).downloadDataObject(authenticatedToken, downloadRequest,
+					dataTransferConfiguration.getBaseArchiveDestination(), boxDownload,
+					dataTransferConfiguration.getEncryptedTransfer());
+
+			// Populate the response object.
+			response.setDownloadTaskId(boxDownload.getDownloadTask().getId());
+			response.setDestinationLocation(
+					boxDownload.getDownloadTask().getBoxDownloadDestination().getDestinationLocation());
+
+		} catch (HpcException e) {
+			// Cleanup the download task and rethrow.
+			completeDataObjectDownloadTask(boxDownload.getDownloadTask(), HpcDownloadResult.FAILED, e.getMessage(),
+					Calendar.getInstance(), 0);
 
 			throw (e);
 		}

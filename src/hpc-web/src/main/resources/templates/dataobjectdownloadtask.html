@@ -88,7 +88,10 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
 								<h2>
-									<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+									<strong> <button id="downloadfailed" class="btn btn-link btn-sm" 
+									th:data-task-id="${taskId}" th:data-task-type="${taskType}" 
+									th:onclick="retryDownload(this.getAttribute('data-task-id'),this.getAttribute('data-task-type'));">
+									<i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></button></strong>
 								</h2>
 								</div>
 							</div>
@@ -162,12 +165,12 @@
 												for="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"
 												th:text="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"></label>
 										</div>
-										<div class="col-md-12 form-group">
+										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getDestinationLocation() != null}">
 											<label for="Name">Destination Endpoint:</label> <label
 												for="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileContainerId()}"
 												th:text="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileContainerId()}"></label>
 										</div>
-										<div class="col-md-12 form-group">
+										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getDestinationLocation() != null}">
 											<label for="Name">Destination Endpoint Path:</label> <label
 												for="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileId()}"
 												th:text="${hpcDataObjectDownloadStatusDTO.getDestinationLocation().getFileId()}"></label>

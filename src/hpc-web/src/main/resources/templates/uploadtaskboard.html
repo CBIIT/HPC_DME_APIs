@@ -71,12 +71,66 @@
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
-    var results = "[[${results}]]";
-    var totalRows = "[[${totalCount}]]";
+    var results = [[${results}]];
+    var totalRows = [[${totalCount}]];
     var currentPageSize = "[[${currentPageSize}]]";
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
+
+var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
+
+app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', function ($scope, $http, $interval, uiGridConstants ) {
+
+	$scope.gridOptions1 = {
+    enableSorting: true,
+    enableFiltering: true,
+    paginationPageSize: 100,
+    minRowsToShow: currentPageSize,
+    enablePaginationControls: false,
+    enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
+    columnDefs: [
+		 		 { field: 'userId', width:150, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
+                 { field: 'taskId', minWidth:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="uploadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'sourceType', width:200, displayName : 'Source Type'},
+                 { field: 'result', width:150, displayName: 'Transfer Result'},
+                 { field: 'created', width:175, displayName : 'Created On' },
+                 { field: 'completed', width:175, displayName : 'Completed On'}
+                ],
+    onRegisterApi: function( gridApi ) {
+      $scope.grid1Api = gridApi;
+      $scope.totalPages = totalPages;
+      $scope.currentPage = currentPage;
+      $scope.totalRows = totalRows;
+      $scope.currentPageSize = currentPageSize;
+    }
+  };
+  $scope.gridOptions1.totalItems = totalRows;
+  $scope.gridOptions1.data = results;
+  if(queryAll == "false")
+	  $scope.gridOptions1.columnDefs[0].visible = false;
+
+  $scope.expandAll = function(){
+	    $scope.gridApi.treeBase.expandAllRows();
+	  };
+
+  $scope.getId = function(grid,row,col)
+	  {
+	    console.log(row);
+	    if(row.treeNode.children[0].row.treeNode.children[0])
+	    {
+	      var entity = row.treeNode.children[0].row.treeNode.children[0].row.entity;
+	      return entity.id;
+	    }
+	    else if(row.treeNode.children[0])
+	    {
+	      var entity = row.treeNode.children[0].row.entity;
+	      return entity.id;
+	    }
+
+	    return row.entity.id;
+	  }	 
+}]);
 /*]]>*/
 </script>
 
@@ -123,21 +177,21 @@
 								</label>
 								</div>
 							</div>
-							<div>
+							<div style="text-align:right">
 								<table id="pageDetails1" class="display" style="width:100%">
 									<tr>
 										<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 										<button type="button" id="btnFirstTop"
-											class="btn btn-md btn-primary" onclick="updatePage('first')">
+										class="btn btn-md btn-primary" onclick="updatePage('first')">
 											First</button>&nbsp;
 										<button type="button" id="btnPreviousTop"
-											class="btn btn-md btn-primary"
+										class="btn btn-md btn-primary"
 											onclick="updatePage('previous')">Previous</button>&nbsp;
 										<button type="button" id="btnNextTop"
-											class="btn btn-md btn-primary" onclick="updatePage('next')">
+										class="btn btn-md btn-primary" onclick="updatePage('next')">
 											Next</button>&nbsp;
 										<button type="button" id="btnLastTop"
-											class="btn btn-md btn-primary" onclick="updatePage('last')">
+										class="btn btn-md btn-primary" onclick="updatePage('last')">
 											Last</button>&nbsp;
 									</tr>
 								</table>
@@ -179,7 +233,7 @@
 								</table>
 							</div>
 
-							<div>
+							<div style="text-align:right">
 								<table id="pageDetails1" class="display" style="width:100%">
 									<tr>
 										<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
@@ -194,12 +248,12 @@
 											Next</button>&nbsp;
 										<button type="button" id="btnLastTop"
 											class="btn btn-md btn-primary" onclick="updatePage('last')">&nbsp;
-											Last</button>
+										Last</button>
 									</tr>
 								</table>
+								</div>
 							</div>
 						</div>
-					</div>
 					<!--/col-->
 
 				</div>

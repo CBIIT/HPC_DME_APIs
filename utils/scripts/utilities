@@ -526,7 +526,7 @@ function check_java {
 
   java -version &>/dev/null
   if [ $? -ne 0 ]
-  then 
+  then
     echo "No java found in PATH" >&2
     exit 1
   else
@@ -534,9 +534,16 @@ function check_java {
   fi
 
   if [[ "$_java" ]]; then
-    local java_version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-    if [[ "$java_version" < "1.8" ]]; then
-      echo "java version is less than 1.8" >&2
+    local ver=$("$_java" -version 2>&1 | grep 'version' 2>&1 | awk -F\" '{ split($2,a,"."); print a[1]"."a[2]}')
+    if [[ $ver = "1."* ]]
+    then
+        java_version=$(echo $ver | awk -F. '{print $2}')
+    else
+        java_version=$(echo $ver | awk -F. '{print $1}')
+    fi
+
+    if [[ "$java_version" -lt "8" ]]; then
+      echo "java version is less than 8" >&2
       exit 1
     fi
   fi
@@ -585,7 +592,7 @@ function get_type  {
         rm -f $get_response_msg 2>/dev/null
         echo "collection"
         return 
-    elif [ "$code" -ne 204 ] 
+    elif [ "$code" -ne 400 ] 
     then 
       print_error_message "$get_response_msg" "$code" 
       exit 1

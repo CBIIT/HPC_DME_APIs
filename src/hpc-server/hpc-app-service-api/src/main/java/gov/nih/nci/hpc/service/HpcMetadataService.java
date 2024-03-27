@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcDupMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -368,4 +369,12 @@ public interface HpcMetadataService {
 	 * @throws HpcException on database error.
 	 */
 	public Map<Integer, HpcCollectionListingEntry> getMetadataForBrowseByIds(List<Integer> ids) throws HpcException;
+	
+	/**
+	 * Detect if there are any duplicate data object metadata in the system.
+	 *
+	 * @throws HpcException on database error.
+	 */
+	public void detectDupMetadataEntries() throws HpcException;
+
 }
