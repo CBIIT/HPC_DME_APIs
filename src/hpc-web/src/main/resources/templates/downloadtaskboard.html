@@ -98,6 +98,7 @@ tfoot input {
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
+    var expanded = false;
 /*]]>*/
 </script>
 <script>
@@ -144,7 +145,7 @@ tfoot input {
 							</label>
 						</div>
 					</div>
-					<div>
+					<div style="text-align:right">
 						<table id="pageDetails1" class="display" style="width:100%">
 							<tr>
 								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
@@ -227,25 +228,25 @@ tfoot input {
 							</tfoot>
 						</table>
 					</div>
-				<div>
-					<table id="pageDetails2" class="display" style="width:100%">
-						<tr>
-							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-							<button type="button" id="btnFirst"
-								class="btn btn-md btn-primary" onclick="updatePage('first')">
-								First</button>&nbsp;
-							<button type="button" id="btnPrevious"
-								class="btn btn-md btn-primary"
-								onclick="updatePage('previous')">Previous</button>&nbsp;
-							<button type="button" id="btnNext"
-								class="btn btn-md btn-primary" onclick="updatePage('next')">
-								Next</button>&nbsp;
-							<button type="button" id="btnLast"
-								class="btn btn-md btn-primary" onclick="updatePage('last')">
-								Last</button>&nbsp;
-						</tr>
-					</table>
-				</div>
+					<div style="text-align:right">
+						<table id="pageDetails2" class="display" style="width:100%">
+							<tr>
+								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+								<button type="button" id="btnFirst"
+									class="btn btn-md btn-primary" onclick="updatePage('first')">
+									First</button>&nbsp;
+								<button type="button" id="btnPrevious"
+									class="btn btn-md btn-primary"
+									onclick="updatePage('previous')">Previous</button>&nbsp;
+								<button type="button" id="btnNext"
+									class="btn btn-md btn-primary" onclick="updatePage('next')">
+									Next</button>&nbsp;
+								<button type="button" id="btnLast"
+									class="btn btn-md btn-primary" onclick="updatePage('last')">
+									Last</button>&nbsp;
+							</tr>
+						</table>
+					</div>
 				</div></div></div>
 			</section>
 			<div th:include="footer :: footer"></div>
@@ -305,7 +306,7 @@ tfoot input {
 
 		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
-				if(title != "") {
+				if(i > 0) {
 			        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
 			        $( 'input', this ).on( 'keyup change', function () {
 			            if ( table.column(i).search() !== this.value ) {
@@ -315,6 +316,8 @@ tfoot input {
 			                    .draw();
 			            }
 			        } );
+		        } else {
+					$(this).html( '<div id="expandcollapseId"><button id="btn-show-all-doc" style="border:none;" title="Click for Archive Summary"><i class="fa fa-plus-circle fa-lg" aria-hidden="true" style="color:green;"></i></button></div>');
 		        }
 		    } );
 
@@ -332,6 +335,7 @@ tfoot input {
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX : 'TRUE',
+				'responsive': true,
 				columnDefs: [ 
 							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
 							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
@@ -349,7 +353,7 @@ tfoot input {
 				"lengthMenu": [ [-1], ["All"] ],
 		} );
 
-	// Add event listener for opening and closing details
+		// Add event listener for opening and closing details
 		table.on('click', 'td.dt-control', function (e) {
 			let tr = e.target.closest('tr');
 			let row = table.row(tr);
@@ -361,9 +365,38 @@ tfoot input {
 			else {
 				// Open this row
 				row.child(format(row.data())).show();
+				expanded = true;
 			}
 		});
-	});
+
+		$('#expandcollapseId').on('click', expandCollapseAll);
+
+		function expandCollapseAll() {
+			let expandCollapseButtonDiv = document.getElementById("expandcollapseId");
+			if(expanded) {
+				table.rows().every(function(){
+					// If row has details expanded
+					if(this.child.isShown()){
+						// Collapse row details
+						this.child.hide();
+						$(this.node()).removeClass('shown');
+					}
+					expanded = false;
+					expandCollapseButtonDiv.innerHTML = '<i class="fa fa-plus-circle fa-lg" style="color:green;" aria-hidden="true"></i>';
+				});
+			} else {
+			    table.rows().every(function(){
+			        // If row has details collapsed
+			        if(!this.child.isShown()){
+			            // Open this row
+			            this.child(format(this.data())).show();
+			            $(this.node()).addClass('shown');
+			        }
+			        expanded = true;
+					expandCollapseButtonDiv.innerHTML = '<i class="fa fa-minus-circle fa-lg" style="color:red;" aria-hidden="true"></i>';
+			    });
+			}}
+		});
 
 	function format(d) {
 	    // `d` is the original data object for the row
