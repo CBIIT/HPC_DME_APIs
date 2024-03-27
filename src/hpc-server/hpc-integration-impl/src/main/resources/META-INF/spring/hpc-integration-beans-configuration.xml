@@ -70,7 +70,6 @@
 	<!--  Google Drive Connection  -->
 	<bean id="hpcGoogleDriveConnection" class="gov.nih.nci.hpc.integration.googledrive.impl.HpcGoogleDriveConnection" />
 	
-	
 	<!-- Google Cloud Storage Data Transfer Proxy -->
 	<bean id="hpcGoogleCloudStorageDataTransferProxy" 
 	      class="gov.nih.nci.hpc.integration.googlecloudstorage.impl.HpcDataTransferProxyImpl" />
@@ -81,6 +80,13 @@
 	<!-- Aspera Data Transfer Proxy -->
 	<bean id="hpcAsperaDataTransferProxy" 
 	      class="gov.nih.nci.hpc.integration.aspera.impl.HpcDataTransferProxyImpl" />
+	      
+	<!--  Box Connection  -->
+	<bean id="hpcBoxConnection" class="gov.nih.nci.hpc.integration.box.impl.HpcBoxConnection" />
+	      
+	<!-- Box Data Transfer Proxy -->
+	<bean id="hpcBoxDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.box.impl.HpcDataTransferProxyImpl" />
 	 
 	<!-- HPC LDAP Authentication Proxy -->
 	<bean id="hpcLdapAuthenticationProxy"
@@ -135,5 +141,8 @@
 	
 	<!--  Aspera download executor (S3 -> Aspera) thread pool -->
 	<task:executor id="hpcAsperaDownloadExecutor" pool-size="${hpc.integration.aspera.downloadExecutorThreadPoolSize}"/>
+	
+	<!--  Box download executor (S3 -> Box) thread pool -->
+	<task:executor id="hpcBoxDownloadExecutor" pool-size="${hpc.integration.box.downloadExecutorThreadPoolSize}"/>
 	
 </beans>

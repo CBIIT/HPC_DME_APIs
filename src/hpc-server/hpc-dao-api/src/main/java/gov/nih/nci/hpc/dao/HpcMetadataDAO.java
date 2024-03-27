@@ -16,6 +16,7 @@ import java.util.List;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcDupMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -294,5 +295,13 @@ public interface HpcMetadataDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void refreshViews() throws HpcException;
+
+	/**
+	 * Get a list of any duplicate data object metadata in the system.
+	 *
+	 * @return A list of HpcDupMetadataEntry
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcDupMetadataEntry> getDupDataObjectMetadataEntries() throws HpcException;
 
 }
