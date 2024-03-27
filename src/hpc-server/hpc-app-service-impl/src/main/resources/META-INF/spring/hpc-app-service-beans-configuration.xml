@@ -47,6 +47,7 @@
   		<entry key="GOOGLE_DRIVE" value-ref="hpcGoogleDriveDataTransferProxy" />
   		<entry key="GOOGLE_CLOUD_STORAGE" value-ref="hpcGoogleCloudStorageDataTransferProxy" />
   		<entry key="ASPERA" value-ref="hpcAsperaDataTransferProxy" />
+  		<entry key="BOX" value-ref="hpcBoxDataTransferProxy" />
 	</util:map>
 	
 	<!--  HPC System Accounts Locator -->
