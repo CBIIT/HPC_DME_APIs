@@ -18,10 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -53,7 +52,6 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -72,7 +70,6 @@ import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -151,15 +148,18 @@ public class HpcReportsController extends AbstractHpcController {
 			docs.add(user.getDoc());
 			model.addAttribute("docs", docs);
 		} else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-			if (!model.containsAttribute("docs")) {
+		    docs = (List<String>) model.getAttribute("docs");
+			if (CollectionUtils.isEmpty(docs)) {
+			    docs = new ArrayList<>();
 				docs.addAll(HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
 				docs.sort(String.CASE_INSENSITIVE_ORDER);
 				model.addAttribute("docs", docs);
 			}
 		}
 		// Populate Basepaths
-		if (!model.containsAttribute("basepaths")) {
-			List<String> basepaths = new ArrayList<>();
+		List<String> basepaths = (List<String>) model.getAttribute("basepaths");
+		if (CollectionUtils.isEmpty(basepaths)) {
+			basepaths = new ArrayList<>();
 			for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
 				if (docs.contains(docRule.getDoc())) {
 					for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
