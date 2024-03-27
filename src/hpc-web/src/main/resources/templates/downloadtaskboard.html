@@ -89,15 +89,20 @@ tfoot input {
     transform:rotateX(180deg);
 }
 
+.imgDetails {
+	margin-left: auto; margin-right: auto; display: block;
+}
+
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
-    var results = "[[${results}]]";
-    var totalRows = "[[${totalCount}]]";
+    var results = [[${results}]];
+    var totalRows = [[${totalCount}]];
     var currentPageSize = "[[${currentPageSize}]]";
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
+    var expanded = false;
 /*]]>*/
 </script>
 <script>
@@ -144,7 +149,7 @@ tfoot input {
 							</label>
 						</div>
 					</div>
-					<div>
+					<div style="text-align:right">
 						<table id="pageDetails1" class="display" style="width:100%">
 							<tr>
 								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
@@ -168,7 +173,7 @@ tfoot input {
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 							<thead>
 								<tr id='attrRow2'>
-									<th class="column-heading" id='colheading001'></th>
+									<th id='colheading001'></th>
 									<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
 									<th class="column-heading" id='colheading002' th:text="'Task ID'"></th>
 									<th class="column-heading" id='colheading003' th:text="'Path'"></th>
@@ -227,25 +232,25 @@ tfoot input {
 							</tfoot>
 						</table>
 					</div>
-				<div>
-					<table id="pageDetails2" class="display" style="width:100%">
-						<tr>
-							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-							<button type="button" id="btnFirst"
-								class="btn btn-md btn-primary" onclick="updatePage('first')">
-								First</button>&nbsp;
-							<button type="button" id="btnPrevious"
-								class="btn btn-md btn-primary"
-								onclick="updatePage('previous')">Previous</button>&nbsp;
-							<button type="button" id="btnNext"
-								class="btn btn-md btn-primary" onclick="updatePage('next')">
-								Next</button>&nbsp;
-							<button type="button" id="btnLast"
-								class="btn btn-md btn-primary" onclick="updatePage('last')">
-								Last</button>&nbsp;
-						</tr>
-					</table>
-				</div>
+					<div style="text-align:right">
+						<table id="pageDetails2" class="display" style="width:100%">
+							<tr>
+								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+								<button type="button" id="btnFirst"
+									class="btn btn-md btn-primary" onclick="updatePage('first')">
+									First</button>&nbsp;
+								<button type="button" id="btnPrevious"
+									class="btn btn-md btn-primary"
+									onclick="updatePage('previous')">Previous</button>&nbsp;
+								<button type="button" id="btnNext"
+									class="btn btn-md btn-primary" onclick="updatePage('next')">
+									Next</button>&nbsp;
+								<button type="button" id="btnLast"
+									class="btn btn-md btn-primary" onclick="updatePage('last')">
+									Last</button>&nbsp;
+							</tr>
+						</table>
+					</div>
 				</div></div></div>
 			</section>
 			<div th:include="footer :: footer"></div>
@@ -305,7 +310,7 @@ tfoot input {
 
 		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
-				if(title != "") {
+				if(i > 0) {
 			        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
 			        $( 'input', this ).on( 'keyup change', function () {
 			            if ( table.column(i).search() !== this.value ) {
@@ -315,6 +320,8 @@ tfoot input {
 			                    .draw();
 			            }
 			        } );
+		        } else {
+					$(this).html( '<div id="expandcollapseId"><img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" /></div>');
 		        }
 		    } );
 
@@ -332,6 +339,7 @@ tfoot input {
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX : 'TRUE',
+				'responsive': true,
 				columnDefs: [ 
 							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
 							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
@@ -349,7 +357,7 @@ tfoot input {
 				"lengthMenu": [ [-1], ["All"] ],
 		} );
 
-	// Add event listener for opening and closing details
+		// Add event listener for opening and closing details
 		table.on('click', 'td.dt-control', function (e) {
 			let tr = e.target.closest('tr');
 			let row = table.row(tr);
@@ -363,7 +371,35 @@ tfoot input {
 				row.child(format(row.data())).show();
 			}
 		});
-	});
+
+		$('#expandcollapseId').on('click', expandCollapseAll);
+
+		function expandCollapseAll() {
+			let expandCollapseButtonDiv = document.getElementById("expandcollapseId");
+			if(expanded) {
+				table.rows().every(function(){
+					// If row has details expanded
+					if(this.child.isShown()){
+						// Collapse row details
+						this.child.hide();
+						$(this.node()).removeClass('shown');
+					}
+					expanded = false;
+					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
+				});
+			} else {
+			    table.rows().every(function(){
+			        // If row has details collapsed
+			        if(!this.child.isShown()){
+			            // Open this row
+			            this.child(format(this.data())).show();
+			            $(this.node()).addClass('shown');
+			        }
+			        expanded = true;
+					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
+			    });
+			}}
+		});
 
 	function format(d) {
 	    // `d` is the original data object for the row
