@@ -542,8 +542,8 @@ function check_java {
         java_version=$(echo $ver | awk -F. '{print $1}')
     fi
 
-    if [[ "$java_version" -lt "11" ]]; then
-      echo "java version is less than 11" >&2
+    if [[ "$java_version" -lt "8" ]]; then
+      echo "java version is less than 8" >&2
       exit 1
     fi
   fi
@@ -592,7 +592,7 @@ function get_type  {
         rm -f $get_response_msg 2>/dev/null
         echo "collection"
         return 
-    elif [ "$code" -ne 204 ] 
+    elif [ "$code" -ne 400 ] 
     then 
       print_error_message "$get_response_msg" "$code" 
       exit 1
