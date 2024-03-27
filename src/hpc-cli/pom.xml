@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>2.41.0</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<groupId>gov.nih.nci.hpc.cli</groupId>
@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>4.3.21.RELEASE</version>
+			<version>5.2.25.RELEASE</version>
 			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
@@ -57,17 +57,17 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>4.1.0.RELEASE</version>
+			<version>5.2.25.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>4.1.0.RELEASE</version>
+			<version>5.2.25.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-http</artifactId>
-			<version>4.1.0.RELEASE</version>
+			<version>5.2.11.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -112,13 +112,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-bundle-jaxrs</artifactId>
-			<version>2.7.18</version>
+			<artifactId>cxf-rt-rs-client</artifactId>
+			<version>3.1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
-			<version>2.0-m10</version>
+			<version>2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.easybatch</groupId>

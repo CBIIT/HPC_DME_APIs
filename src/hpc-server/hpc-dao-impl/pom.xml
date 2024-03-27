@@ -18,41 +18,11 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>2.41.0</version>
+		<version>3.0.0</version>
 	</parent>
 	<artifactId>hpc-dao-impl</artifactId>
-	<packaging>bundle</packaging>
+	<packaging>jar</packaging>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package />
-						<Private-Package>
-							gov.nih.nci.hpc.dao.oracle.impl
-						</Private-Package>
-						<Import-Package>
-							oracle.jdbc.driver,
-							*
-						</Import-Package>
-					</instructions>
-				</configuration>
-			</plugin>
-		</plugins>
-		<resources>
-			<resource>
-            	<directory>src/main/resources/</directory>
-        	</resource>
-        	<resource>
-            	<directory>src/main/scripts/</directory>
-        	</resource>
-    	</resources>
-	</build>
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -84,6 +54,11 @@
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>commons-dbcp</groupId>
+		    <artifactId>commons-dbcp</artifactId>
+		    <version>1.4</version>
 		</dependency>
 	</dependencies>
 </project>

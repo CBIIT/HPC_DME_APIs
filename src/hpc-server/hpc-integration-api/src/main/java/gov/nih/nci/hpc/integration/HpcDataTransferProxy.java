@@ -86,6 +86,21 @@ public interface HpcDataTransferProxy {
 	}
 
 	/**
+	 * Authenticate a Box account.
+	 *
+	 * @param dataTransferAccount The Data Transfer account to authenticate.
+	 * @param accessToken         Box access token.
+	 * @param refreshToken        Box refresh token.
+	 * @return An authenticated token, to be used in subsequent calls to data
+	 *         transfer.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken,
+			String refreshToken) throws HpcException {
+		throw new HpcException("authenticate(Box auth-code) not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	/**
 	 * Check if upload/download requests are accepted at the moment.
 	 *
 	 * @param authenticatedToken An authenticated token.
@@ -215,8 +230,8 @@ public interface HpcDataTransferProxy {
 	 * @param authenticatedToken     An authenticated token.
 	 * @param dataTransferRequestId  The data transfer request ID.
 	 * @param baseArchiveDestination The archive's base destination location.
-	 * @param loggingPrefix            Contextual (download/upload tasks etc)
-	 *                                 logging text to prefix in logging.
+	 * @param loggingPrefix          Contextual (download/upload tasks etc) logging
+	 *                               text to prefix in logging.
 	 * @return The data transfer request status.
 	 * @throws HpcException on data transfer system failure.
 	 */
@@ -232,8 +247,8 @@ public interface HpcDataTransferProxy {
 	 * @param dataTransferRequestId The data transfer request ID.
 	 * @param successfulItems       True to include successful items in the
 	 *                              response.
-	 *                              @param loggingPrefix            Contextual (download/upload tasks etc)
-	 *                                 logging text to prefix in logging.
+	 * @param loggingPrefix         Contextual (download/upload tasks etc) logging
+	 *                              text to prefix in logging.
 	 * @return The data transfer request status.
 	 * @throws HpcException on data transfer system failure.
 	 */

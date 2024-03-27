@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcDupMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -231,6 +232,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "where user_main.USER_ID = groups.USER_ID and groups.GROUP_USER_ID = obj_access.USER_ID "
 			+ "and obj_access.object_id = data_main.DATA_ID and user_main.USER_NAME = ?)";
 
+	private static final String GET_DUP_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, object_id, count(*) "
+			+ "FROM r_meta_main a, r_objt_metamap b, r_data_main c "
+			+ "WHERE a.meta_id = b.meta_id AND b.object_id = c.data_id "
+			+ "GROUP BY a.meta_attr_name, b.object_id having count(*)> 1";
+	
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -411,6 +417,15 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		return dataObject;
 	};
 
+	private RowMapper<HpcDupMetadataEntry> dupMetadataRowMapper = (rs, rowNum) -> {
+		HpcDupMetadataEntry dupMetadataEntry = new HpcDupMetadataEntry();
+
+		dupMetadataEntry.setId(rs.getInt("OBJECT_ID"));
+		dupMetadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
+
+		return dupMetadataEntry;
+	};
+	
 	// SQL Maps from operators to queries and filters.
 	private HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
 	private HpcSQLMaps collectionSQL = new HpcSQLMaps();
@@ -745,6 +760,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		}
 	}
 
+	@Override
+	public List<HpcDupMetadataEntry> getDupDataObjectMetadataEntries() throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_DUP_DATA_OBJECT_METADATA_SQL, dupMetadataRowMapper);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to detect data object duplicate metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

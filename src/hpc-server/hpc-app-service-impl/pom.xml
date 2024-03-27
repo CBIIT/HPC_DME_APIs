@@ -11,32 +11,13 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>2.41.0</version>
+		<version>3.0.0</version>
 	</parent>
 	<artifactId>hpc-app-service-impl</artifactId>
-	<packaging>bundle</packaging>
+	<packaging>jar</packaging>
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package />
-						<Private-Package>
-							gov.nih.nci.hpc.service.impl
-						</Private-Package>
-						<Import-Package>
-							<!-- Spring Security LDAP Implicit Import Packages -->
-							javax.net.ssl,
-							*
-						</Import-Package>
-					</instructions>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -69,12 +50,12 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-dao-api</artifactId>
+			<artifactId>hpc-dao-impl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-integration-api</artifactId>
+			<artifactId>hpc-integration-impl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -108,6 +89,10 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
+		</dependency>
+		<dependency>
+    		<groupId>javax.mail</groupId>
+    		<artifactId>mail</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>

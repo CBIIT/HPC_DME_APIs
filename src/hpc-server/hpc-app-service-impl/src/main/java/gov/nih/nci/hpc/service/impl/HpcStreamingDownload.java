@@ -191,6 +191,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
 		downloadTask.setGoogleDriveDownloadDestination(downloadRequest.getGoogleDriveDestination());
 		downloadTask.setGoogleCloudStorageDownloadDestination(downloadRequest.getGoogleCloudStorageDestination());
+		downloadTask.setAsperaDownloadDestination(downloadRequest.getAsperaDestination());
+		downloadTask.setBoxDownloadDestination(downloadRequest.getBoxDestination());
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setPercentComplete(0);
 		downloadTask.setSize(downloadRequest.getSize());
@@ -207,6 +209,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			downloadTask.setDataTransferType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
 			downloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+		} else if (downloadTask.getBoxDownloadDestination() != null) {
+			downloadTask.setDataTransferType(HpcDataTransferType.BOX);
+			downloadTask.setDestinationType(HpcDataTransferType.BOX);
 		}
 
 		dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
@@ -235,6 +240,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask
 				.setGoogleCloudStorageDownloadDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		this.downloadTask.setAsperaDownloadDestination(downloadTask.getAsperaDownloadDestination());
+		this.downloadTask.setBoxDownloadDestination(downloadTask.getBoxDownloadDestination());
 		this.downloadTask.setCreated(downloadTask.getCreated());
 		this.downloadTask.setPercentComplete(0);
 		this.downloadTask.setSize(downloadTask.getSize());
@@ -254,6 +260,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		} else if (this.downloadTask.getAsperaDownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.ASPERA);
 			this.downloadTask.setDestinationType(HpcDataTransferType.ASPERA);
+		} else if (this.downloadTask.getBoxDownloadDestination() != null) {
+			this.downloadTask.setDataTransferType(HpcDataTransferType.BOX);
+			this.downloadTask.setDestinationType(HpcDataTransferType.BOX);
 		}
 
 		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
@@ -291,6 +300,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			} else if (downloadTask.getAsperaDownloadDestination() != null) {
 				destinationLocation = downloadTask.getAsperaDownloadDestination().getDestinationLocation();
 				destinationType = HpcDataTransferType.ASPERA;
+			} else if (downloadTask.getBoxDownloadDestination() != null) {
+				destinationLocation = downloadTask.getBoxDownloadDestination().getDestinationLocation();
+				destinationType = HpcDataTransferType.BOX;
 			}
 
 			// Send a download completion or failed event (if requested to).

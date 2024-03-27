@@ -22,7 +22,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.amazonaws.util.CollectionUtils;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -103,6 +107,9 @@ public class HpcMetadataValidator {
 
 	// Date formatter to format user date to system date.
 	private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+	// The logger instance.
+		private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -286,20 +293,25 @@ public class HpcMetadataValidator {
 				}
 			}
 
-			//Ensure that the add/update metadata entry defined in the validation rules
+			//If the restrict_metadata flag is set in the database, then ensure
+			//that the add/update metadata entry defined in the validation rules
 			//i.e. it is a mandatory or optional metadata for the applicable DOC
 			if(restrictMetadata) {
-			    boolean matchFound = false;
-			    for (HpcMetadataValidationRule metadataValidationRule : metadataValidationRules) {
-				    if(metadataValidationRule.getAttribute().contentEquals(metadataEntry.getAttribute())) {
-					    matchFound = true;
-					    break;
-				    }
-			    }
-			    if(!matchFound) {
-				    throw new HpcException("Metadata attribute is not declared in the system: " + metadataEntry.getAttribute(),
+				//Do this check only for new files or collections so that fixing
+				//of existing ones is not necessitated
+				if(CollectionUtils.isNullOrEmpty(existingMetadataEntries)) {
+					boolean matchFound = false;
+			        for (HpcMetadataValidationRule metadataValidationRule : metadataValidationRules) {
+				        if(metadataValidationRule.getAttribute().contentEquals(metadataEntry.getAttribute())) {
+					        matchFound = true;
+					        break;
+				        }
+			        }
+			        if(!matchFound) {
+				        throw new HpcException("Metadata attribute is not declared in the system: " + metadataEntry.getAttribute(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
-			    }
+			        }
+				}
 			}
 		}
 

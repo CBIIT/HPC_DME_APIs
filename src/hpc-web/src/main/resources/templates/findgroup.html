@@ -53,12 +53,8 @@
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
 <script th:inline="javascript">
 	/*<![CDATA[*/
-	var results = "[[${searchresults}]]";
-	/*]]>*/
-</script>
+	var results = [[${searchresults}]];
 
-<script>
-//<![CDATA[
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
 			'ui.grid.pagination', 'ui.grid.resizeColumns',
 			'ui.grid.moveColumns', 'ui.grid.selection' ]);
