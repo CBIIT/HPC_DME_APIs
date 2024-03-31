@@ -10,6 +10,8 @@
  */
 package gov.nih.nci.hpc.integration.box.impl;
 
+import java.util.HashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +31,9 @@ public class HpcBoxConnection {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
+
+	// In memory local cache of access and refresh tokens
+	private final HashMap<String, String> tokensMap = new HashMap<>();
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -61,11 +66,21 @@ public class HpcBoxConnection {
 	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken, String refreshToken)
 			throws HpcException {
 		try {
-			BoxAPIConnection boxApi = new BoxAPIConnection(dataTransferAccount.getUsername(),
-					dataTransferAccount.getPassword(), accessToken, refreshToken);
-			// Temporarily disable auto-refresh
-			boxApi.setAutoRefresh(false);
-			return boxApi;
+			synchronized (accessToken) {
+				// Establish the Box API connection
+				BoxAPIConnection boxApi = new BoxAPIConnection(dataTransferAccount.getUsername(),
+						dataTransferAccount.getPassword(), accessToken,
+						tokensMap.containsKey(accessToken) ? tokensMap.get(accessToken) : refreshToken);
+
+				// Update the tokens in-memory cache w/ the freshly created refresh-token.
+				tokensMap.put(accessToken, boxApi.getRefreshToken());
+
+				// Temporarily disable auto-refresh.
+				logger.error("ERAN tokens cache - {} {}", refreshToken, boxApi.getRefreshToken());
+
+				// boxApi.setAutoRefresh(false);
+				return boxApi;
+			}
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("Failed to authenticate Box w/ auth-code: " + e.getMessage(),
