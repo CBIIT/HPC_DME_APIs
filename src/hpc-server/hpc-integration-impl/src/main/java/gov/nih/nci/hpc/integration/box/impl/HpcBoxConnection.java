@@ -84,6 +84,7 @@ public class HpcBoxConnection {
 			throw new HpcException("Invalid Box authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		logBoxApi((BoxAPIConnection) authenticatedToken, "getBoxAPIConnection");
 		return (BoxAPIConnection) authenticatedToken;
 	}
 
