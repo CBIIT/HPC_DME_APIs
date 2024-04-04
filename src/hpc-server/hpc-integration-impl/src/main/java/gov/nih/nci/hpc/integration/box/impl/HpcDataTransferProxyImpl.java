@@ -117,10 +117,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		// Update the tokens in-memory cache w/ the freshly created refresh-token.
 		BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(token);
+		logger.error("ERAN tokens cache 1 - {} {}", refreshToken, boxApi.getRefreshToken());
+
+		boxApi.refresh();
 		tokensMap.put(accessToken, boxApi.getRefreshToken());
 
-		// Temporarily disable auto-refresh.
-		logger.error("ERAN tokens cache - {} {}", refreshToken, boxApi.getRefreshToken());
+		logger.error("ERAN tokens cache 2 - {} {}", refreshToken, boxApi.getRefreshToken());
+		
+		logger.error("ERAN tokens cache 3 - {} {}", refreshToken, tokensMap.get(accessToken));
 
 		boxConnection.logBoxApi(boxConnection.getBoxAPIConnection(token), "authenticate");
 		return token;
