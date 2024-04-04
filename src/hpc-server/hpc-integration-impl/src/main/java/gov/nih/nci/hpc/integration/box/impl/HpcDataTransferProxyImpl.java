@@ -114,14 +114,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		Object token = boxConnection.authenticate(dataTransferAccount, accessToken,
 				tokensMap.containsKey(accessToken) ? tokensMap.get(accessToken) : refreshToken);
-		
+
 		// Update the tokens in-memory cache w/ the freshly created refresh-token.
-		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(token);
+		BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(token);
 		tokensMap.put(accessToken, boxApi.getRefreshToken());
 
 		// Temporarily disable auto-refresh.
 		logger.error("ERAN tokens cache - {} {}", refreshToken, boxApi.getRefreshToken());
-		
+
 		boxConnection.logBoxApi(boxConnection.getBoxAPIConnection(token), "authenticate");
 		return token;
 	}
@@ -129,7 +129,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public HpcIntegratedSystemTokens getIntegratedSystemTokens(Object authenticatedToken) throws HpcException {
 		// Get the Box connection.
-		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
+		BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
 
 		HpcIntegratedSystemTokens boxTokens = new HpcIntegratedSystemTokens();
 		boxTokens.setAccessToken(boxApi.getAccessToken());
