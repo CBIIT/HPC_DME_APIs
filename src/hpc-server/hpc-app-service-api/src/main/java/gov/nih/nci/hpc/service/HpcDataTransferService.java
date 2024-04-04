@@ -597,6 +597,8 @@ public interface HpcDataTransferService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param configurationId                       The configuration ID (needed to
@@ -609,14 +611,14 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId)
-			throws HpcException;
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			String userId, String configurationId) throws HpcException;
 
 	/**
 	 * Submit a request to download collections.
 	 *
 	 * @param collectionPaths                       A list of collection paths.
-	 * @param globusDownloadDestination             The user requested Glopbus
+	 * @param globusDownloadDestination             The user requested Globus
 	 *                                              download destination.
 	 * @param s3DownloadDestination                 The user requested S3 download
 	 *                                              destination.
@@ -626,6 +628,7 @@ public interface HpcDataTransferService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 *  @param boxDownloadDestination                The user requested Box download destination.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param configurationId                       A configuration ID used to
@@ -645,7 +648,7 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
@@ -662,6 +665,7 @@ public interface HpcDataTransferService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 *         @param boxDownloadDestination                The user requested Box download destination.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param configurationId                       A configuration ID used to
@@ -681,7 +685,7 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String configurationId,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination, String userId, String configurationId,
 			boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
