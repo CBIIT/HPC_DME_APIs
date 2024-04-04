@@ -3,6 +3,7 @@ package gov.nih.nci.hpc.integration.box.impl;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -69,6 +70,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Autowired
 	private HpcBoxConnection boxConnection = null;
 
+	// In memory local cache of access and refresh tokens
+	private final HashMap<String, String> tokensMap = new HashMap<>();
+
 	/*
 	 * // The maximum size of individual chunks that will get uploaded by single
 	 * HTTP // request.
@@ -102,13 +106,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken, String refreshToken)
-			throws HpcException {
+	public synchronized Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken,
+			String refreshToken) throws HpcException {
 		if (dataTransferAccount == null) {
 			throw new HpcException("Box System account not registered", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		Object token = boxConnection.authenticate(dataTransferAccount, accessToken, refreshToken);
+		Object token = boxConnection.authenticate(dataTransferAccount, accessToken,
+				tokensMap.containsKey(accessToken) ? tokensMap.get(accessToken) : refreshToken);
+		
+		// Update the tokens in-memory cache w/ the freshly created refresh-token.
+		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(token);
+		tokensMap.put(accessToken, boxApi.getRefreshToken());
+
+		// Temporarily disable auto-refresh.
+		logger.error("ERAN tokens cache - {} {}", refreshToken, boxApi.getRefreshToken());
+		
 		boxConnection.logBoxApi(boxConnection.getBoxAPIConnection(token), "authenticate");
 		return token;
 	}
