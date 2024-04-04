@@ -47,6 +47,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -71,7 +72,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
-import gov.nih.nci.hpc.domain.metadata.HpcDupMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
@@ -659,7 +659,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						&& (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
 								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE)
 								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA))
+								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA)
+								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.BOX))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: {}", downloadTask.getId());
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);
@@ -727,7 +728,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			// We also limit a user overall to a configured number of collection download
 			// tasks at a time if they are not system admin or group admin
-
 			int totalTasksInProcessCount = dataTransferService
 					.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
 			// Get the current user role.
@@ -768,7 +768,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
 										downloadTask.getGoogleCloudStorageDownloadDestination(),
-										downloadTask.getAsperaDownloadDestination(), downloadTask.getUserId(),
+										downloadTask.getAsperaDownloadDestination(),
+										downloadTask.getBoxDownloadDestination(), downloadTask.getUserId(),
 										downloadTask.getId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
@@ -786,6 +787,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getGoogleDriveDownloadDestination(),
 										downloadTask.getGoogleCloudStorageDownloadDestination(),
 										downloadTask.getAsperaDownloadDestination(),
+										downloadTask.getBoxDownloadDestination(),
 										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
 										collectionDownloadBreaker, downloadTask.getId(), excludedPaths);
 
@@ -796,6 +798,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getGoogleDriveDownloadDestination(),
 										downloadTask.getGoogleCloudStorageDownloadDestination(),
 										downloadTask.getAsperaDownloadDestination(),
+										downloadTask.getBoxDownloadDestination(),
 										downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
 										downloadTask.getId());
 
@@ -815,6 +818,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											downloadTask.getGoogleDriveDownloadDestination(),
 											downloadTask.getGoogleCloudStorageDownloadDestination(),
 											downloadTask.getAsperaDownloadDestination(),
+											downloadTask.getBoxDownloadDestination(),
 											downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
 											collectionDownloadBreaker, downloadTask.getId(), excludedPaths);
 
@@ -1309,7 +1313,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@HpcExecuteAsSystemAccount
 	public void refreshDailyViews() throws HpcException {
 		reportService.refreshViews();
-		
+
 		logger.info("calling detectDupMetadataEntries()");
 		metadataService.detectDupMetadataEntries();
 		logger.info("completed detectDupMetadataEntries()");
@@ -1774,6 +1778,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param appendPathToDownloadDestination       If true, the (full) object path
 	 *                                              will be used in the destination
 	 *                                              path, otherwise just the object
@@ -1798,8 +1804,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, boolean appendPathToDownloadDestination,
-			String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker, String collectionDownloadTaskId,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			boolean appendPathToDownloadDestination, String userId,
+			HpcCollectionDownloadBreaker collectionDownloadBreaker, String collectionDownloadTaskId,
 			Set<String> excludedPaths) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
@@ -1819,7 +1826,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// this is a retry request.
 				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
 						globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-						googleCloudStorageDownloadDestination, asperaDownloadDestination,
+						googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination,
 						appendPathToDownloadDestination, userId, null, collectionDownloadTaskId);
 				downloadItems.add(downloadItem);
 				if (collectionDownloadBreaker.abortDownload(downloadItem)) {
@@ -1850,6 +1857,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								subCollectionPath, appendPathToDownloadDestination ? null : false, null),
 						calculateAsperaDownloadDestination(asperaDownloadDestination, subCollectionPath,
 								appendPathToDownloadDestination ? null : false, null),
+						calculateBoxDownloadDestination(boxDownloadDestination, subCollectionPath,
+								appendPathToDownloadDestination ? null : false, null),
 						appendPathToDownloadDestination, userId, collectionDownloadBreaker, collectionDownloadTaskId,
 						excludedPaths));
 			}
@@ -1873,6 +1882,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param appendPathToDownloadDestination       If true, the (full) object path
 	 *                                              will be used in the destination
 	 *                                              path, otherwise just the object
@@ -1890,15 +1901,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, boolean appendPathToDownloadDestination,
-			String userId, String collectionDownloadTaskId) throws HpcException {
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			boolean appendPathToDownloadDestination, String userId, String collectionDownloadTaskId)
+			throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
 		for (String dataObjectPath : dataObjectPaths) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectPath, globusDownloadDestination,
 					s3DownloadDestination, googleDriveDownloadDestination, googleCloudStorageDownloadDestination,
-					asperaDownloadDestination, appendPathToDownloadDestination, userId, null, collectionDownloadTaskId);
+					asperaDownloadDestination, boxDownloadDestination, appendPathToDownloadDestination, userId, null,
+					collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
 
@@ -1922,6 +1935,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param userId                                The user ID who requested the
 	 *                                              collection download.
 	 * @param collectionDownloadTaskId              The collection download task ID
@@ -1935,8 +1950,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, String userId, String collectionDownloadTaskId)
-			throws HpcException {
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			String userId, String collectionDownloadTaskId) throws HpcException {
 
 		HpcCollectionDownloadStatusDTO retryTaskStatus = retryTaskType.equals(HpcDownloadTaskType.COLLECTION)
 				? dataManagementBusService.getCollectionDownloadStatus(retryTaskId)
@@ -1962,8 +1977,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTaskItem retryItem : retryItems) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(retryItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, asperaDownloadDestination, true, userId, null,
-					collectionDownloadTaskId);
+					googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, true,
+					userId, null, collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
 
@@ -2022,6 +2037,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                              storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param appendPathToDownloadDestination       If true, the (full) object path
 	 *                                              will be used in the destination
 	 *                                              path, otherwise just the object
@@ -2042,8 +2059,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, boolean appendPathToDownloadDestination,
-			String userId, HpcFileLocation retryDestinationLocation, String collectionDownloadTaskId) {
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			boolean appendPathToDownloadDestination, String userId, HpcFileLocation retryDestinationLocation,
+			String collectionDownloadTaskId) {
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
 		dataObjectDownloadRequest.setGlobusDownloadDestination(calculateGlobusDownloadDestination(
 				globusDownloadDestination, path, appendPathToDownloadDestination, retryDestinationLocation));
@@ -2056,6 +2074,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						appendPathToDownloadDestination, retryDestinationLocation));
 		dataObjectDownloadRequest.setAsperaDownloadDestination(calculateAsperaDownloadDestination(
 				asperaDownloadDestination, path, appendPathToDownloadDestination, retryDestinationLocation));
+		dataObjectDownloadRequest.setBoxDownloadDestination(calculateBoxDownloadDestination(boxDownloadDestination,
+				path, appendPathToDownloadDestination, retryDestinationLocation));
 
 		// Instantiate a download item for this data object.
 		HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -2086,6 +2106,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				destinationLocation = googleCloudStorageDownloadDestination.getDestinationLocation();
 			} else if (asperaDownloadDestination != null) {
 				destinationLocation = asperaDownloadDestination.getDestinationLocation();
+			} else if (boxDownloadDestination != null) {
+				destinationLocation = boxDownloadDestination.getDestinationLocation();
 			}
 			downloadItem.setDestinationLocation(destinationLocation);
 			downloadItem.setMessage(e.getMessage());
@@ -2269,6 +2291,42 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		calcAsperaDestination.setAccount(collectionDestination.getAccount());
 
 		return calcAsperaDestination;
+	}
+
+	/**
+	 * Calculate a Box download destination path for a collection entry under a
+	 * collection.
+	 *
+	 * @param collectionDestination           The Box collection destination.
+	 * @param collectionListingEntryPath      The entry path under the collection to
+	 *                                        calculate the destination location
+	 *                                        for.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used. If null - not used.
+	 * @param retryDestinationLocation        (Optional) A retry destination
+	 *                                        location - download retry is always
+	 *                                        attempted into the original calculated
+	 *                                        download destination.
+	 * 
+	 * @return A calculated destination location.
+	 */
+	private HpcBoxDownloadDestination calculateBoxDownloadDestination(HpcBoxDownloadDestination collectionDestination,
+			String collectionListingEntryPath, Boolean appendPathToDownloadDestination,
+			HpcFileLocation retryDestinationLocation) {
+		if (collectionDestination == null) {
+			return null;
+		}
+
+		HpcBoxDownloadDestination calcBoxDestination = new HpcBoxDownloadDestination();
+		calcBoxDestination.setDestinationLocation(retryDestinationLocation != null ? retryDestinationLocation
+				: calculateDownloadDestinationlocation(collectionDestination.getDestinationLocation(),
+						collectionListingEntryPath, appendPathToDownloadDestination));
+		calcBoxDestination.setAccessToken(collectionDestination.getAccessToken());
+		calcBoxDestination.setRefreshToken(collectionDestination.getRefreshToken());
+
+		return calcBoxDestination;
 	}
 
 	/**

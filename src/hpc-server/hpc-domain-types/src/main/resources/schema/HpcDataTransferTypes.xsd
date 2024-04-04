@@ -476,6 +476,8 @@
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="asperaDownloadDestination"
 				type="hpc-domain-datatransfer:HpcAsperaDownloadDestination" />
+			<xsd:element name="boxDownloadDestination"
+				type="hpc-domain-datatransfer:HpcBoxDownloadDestination" />
 			<xsd:element name="appendPathToDownloadDestination"
 				type="xsd:boolean" />
 			<xsd:element name="status"
