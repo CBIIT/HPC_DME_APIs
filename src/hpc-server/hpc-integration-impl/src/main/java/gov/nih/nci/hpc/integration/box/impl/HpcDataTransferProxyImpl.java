@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemTokens;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -113,6 +114,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
+	public HpcIntegratedSystemTokens getIntegratedSystemTokens(Object authenticatedToken) throws HpcException {
+		// Get the Box connection.
+		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
+
+		HpcIntegratedSystemTokens boxTokens = new HpcIntegratedSystemTokens();
+		boxTokens.setAccessToken(boxApi.getAccessToken());
+		boxTokens.setRefreshToken(boxApi.getRefreshToken());
+
+		boxConnection.logBoxApi(boxApi, "getIntegratedSystemTokens");
+
+		return boxTokens;
+	}
+
+	@Override
 	public String downloadDataObject(Object authenticatedToken, HpcDataObjectDownloadRequest downloadRequest,
 			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener,
 			Boolean encryptedTransfer) throws HpcException {
@@ -122,7 +137,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		// Authenticate the Box access token.
+		// Get the Box connection.
 		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
 
 		// Stream the file to Box.

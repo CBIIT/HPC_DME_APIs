@@ -292,6 +292,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcIntegratedSystemAccountProperty']">
          <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcIntegratedSystemTokens']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemTokens" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcIntegratedSystemAccount']">
          <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount" />
       </jxb:bindings>
