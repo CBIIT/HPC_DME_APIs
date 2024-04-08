@@ -1712,7 +1712,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
 			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken,
-			HpcAsperaAccount asperaAccount, String retryUserId) throws HpcException {
+			HpcAsperaAccount asperaAccount, String boxAccessToken, String boxRefreshToken, String retryUserId)
+			throws HpcException {
 		// Validate the task failed with at least one failed item before submitting it
 		// for a retry.
 
@@ -1824,6 +1825,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
 			break;
 
+		case BOX:
+			// Validate the Box access and refresh tokens.
+			if (StringUtils.isEmpty(boxAccessToken) || StringUtils.isEmpty(boxRefreshToken)) {
+				throw new HpcException("Invalid Box access/refresh token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			HpcBoxDownloadDestination boxDownloadDestination = new HpcBoxDownloadDestination();
+			boxDownloadDestination.setAccessToken(boxAccessToken);
+			boxDownloadDestination.setRefreshToken(boxRefreshToken);
+			boxDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadTask.setBoxDownloadDestination(boxDownloadDestination);
+			break;
+
 		default:
 			throw new HpcException("Download retry not supported for destination type: "
 					+ downloadTaskResult.getDestinationType().value(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1926,6 +1940,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (downloadTask.getAsperaDownloadDestination() != null) {
 			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.ASPERA);
+		} else if (downloadTask.getBoxDownloadDestination() != null) {
+			taskResult.setDestinationLocation(downloadTask.getBoxDownloadDestination().getDestinationLocation());
+			taskResult.setDestinationType(HpcDataTransferType.BOX);
 		}
 		taskResult.setResult(result);
 		taskResult.setType(downloadTask.getType());
@@ -3702,6 +3719,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 				response.setDestinationLocation(
 						downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			} else if (downloadTask.getBoxDownloadDestination() != null) {
+				downloadTask.setDataTransferType(HpcDataTransferType.BOX);
+				downloadTask.setDestinationType(HpcDataTransferType.BOX);
+				dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
+				response.setDestinationLocation(downloadTask.getBoxDownloadDestination().getDestinationLocation());
 			} else if (downloadTask.getAsperaDownloadDestination() != null) {
 				downloadTask.setDestinationType(HpcDataTransferType.ASPERA);
 				HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
