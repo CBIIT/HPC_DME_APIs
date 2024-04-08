@@ -628,7 +628,8 @@ public interface HpcDataTransferService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
-	 *  @param boxDownloadDestination                The user requested Box download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param configurationId                       A configuration ID used to
@@ -648,8 +649,8 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination, String userId, String configurationId,
-			boolean appendPathToDownloadDestination) throws HpcException;
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
 	 * Submit a request to download data objects.
@@ -665,7 +666,8 @@ public interface HpcDataTransferService {
 	 *                                              Storage download destination.
 	 * @param asperaDownloadDestination             The user requested Aspera
 	 *                                              download destination.
-	 *         @param boxDownloadDestination                The user requested Box download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
 	 * @param userId                                The user ID submitting the
 	 *                                              download request.
 	 * @param configurationId                       A configuration ID used to
@@ -685,8 +687,8 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination, String userId, String configurationId,
-			boolean appendPathToDownloadDestination) throws HpcException;
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
 	 * Update a collection download task.
@@ -740,13 +742,18 @@ public interface HpcDataTransferService {
 	 * @param googleAccessToken    (Optional) access token for Google Drive / Cloud
 	 *                             storage destinations.
 	 * @param asperaAccount        (Optional) asperaAccount for Aspera destinations.
+	 * @param boxAccessToken       (Optional) access token for Box storage
+	 *                             destinations.
+	 * @param boxRefreshToken      (Optional) refresh token for Box storage
+	 *                             destinations.
 	 * @param retryUserId          The User who is re-initiating the task
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask retryCollectionDownloadTask(HpcDownloadTaskResult downloadTaskResult,
 			Boolean destinationOverwrite, HpcS3Account s3Account, String googleAccessToken,
-			HpcAsperaAccount asperaAccount, String retryUserId) throws HpcException;
+			HpcAsperaAccount asperaAccount, String boxAccessToken, String boxRefreshToken, String retryUserId)
+			throws HpcException;
 
 	/**
 	 * Get collection download tasks in process.
