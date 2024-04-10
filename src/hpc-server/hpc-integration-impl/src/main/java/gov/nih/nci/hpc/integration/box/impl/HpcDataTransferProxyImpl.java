@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxAPIException;
+import com.box.sdk.BoxAPIResponseException;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
@@ -93,6 +94,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(token);
 		try {
 			boxApi.refresh();
+
+		} catch (BoxAPIResponseException e) {
+			// Token expired.
+			throw new HpcException("[Box] Invalid token: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT, e);
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("[Box] Failed to refresh token: " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
