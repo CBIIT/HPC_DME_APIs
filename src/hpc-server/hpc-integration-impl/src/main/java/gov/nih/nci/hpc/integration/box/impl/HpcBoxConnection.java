@@ -10,9 +10,6 @@
  */
 package gov.nih.nci.hpc.integration.box.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxAPIException;
 
@@ -26,12 +23,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcBoxConnection {
-	// ---------------------------------------------------------------------//
-	// Instance members
-	// ---------------------------------------------------------------------//
-
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -85,13 +76,5 @@ public class HpcBoxConnection {
 		}
 
 		return (BoxAPIConnection) authenticatedToken;
-	}
-
-	public void logBoxApi(BoxAPIConnection boxApi, String msg) {
-		logger.error(
-				"ERAN BOX connection [{}]- token: {}, refresh-token: {}, can-refresh: {}, connect-timeout: {}, expires: {}, auto-refresh: {}, last-refresh: {}, max-retry-attempts: {}, needs-refresh: {}",
-				msg, boxApi.getAccessToken(), boxApi.getRefreshToken(), boxApi.canRefresh(), boxApi.getConnectTimeout(),
-				boxApi.getExpires(), boxApi.getAutoRefresh(), boxApi.getLastRefresh(), boxApi.getMaxRetryAttempts(),
-				boxApi.needsRefresh());
 	}
 }
