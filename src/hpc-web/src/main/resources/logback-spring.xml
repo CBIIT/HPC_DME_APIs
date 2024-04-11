@@ -23,7 +23,7 @@
         </encoder>
     </appender>
 
-    <logger name="gov.nih.nci.hpc.web" level="debug" additivity="false">
+    <logger name="gov.nih.nci.hpc.web" level="info" additivity="false">
         <appender-ref ref="WEB_SERVER_FILE_ROLLING"/>
     </logger>
 
