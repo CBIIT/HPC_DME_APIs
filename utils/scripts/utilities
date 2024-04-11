@@ -542,8 +542,8 @@ function check_java {
         java_version=$(echo $ver | awk -F. '{print $1}')
     fi
 
-    if [[ "$java_version" -lt "8" ]]; then
-      echo "java version is less than 8" >&2
+    if [[ "$java_version" -lt "11" ]]; then
+      echo "java version is less than 11" >&2
       exit 1
     fi
   fi
