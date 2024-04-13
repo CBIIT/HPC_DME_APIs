@@ -257,6 +257,19 @@ public interface HpcDataSearchRestService {
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response queryCatalog(HpcCatalogRequestDTO catalogRequest);
   
+
+  /**
+   * Send Email Export of Query
+   *
+   * @param compoundMetadataQueryDTO query DTO
+   * @return The REST service response
+   */
+  @POST
+  @Path("/emailExport/query")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response emailExport(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+
   /**
    * Refresh the metadata views.
    *
