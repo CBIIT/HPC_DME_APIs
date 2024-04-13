@@ -201,4 +201,12 @@ public interface HpcDataSearchBusService {
   public void sendWeeklyQueryResults()
       throws HpcException;
 
+  /**
+   * Send weekly scheduled user stored query results.
+   *
+   * @throws HpcException on service failure.
+   */
+  public boolean sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+      throws HpcException;
+
 }
