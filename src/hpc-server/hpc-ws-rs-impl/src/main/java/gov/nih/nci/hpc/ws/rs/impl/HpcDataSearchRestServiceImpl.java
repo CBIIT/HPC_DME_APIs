@@ -347,6 +347,19 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
+  public Response emailExport(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) {
+    try {
+      boolean success = dataSearchBusService.sendCurrentQueryResults(compoundMetadataQueryDTO);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+ }
+
+
+  @Override
   public Response refreshMetadataViews() {
     try {
       systemBusService.refreshHourlyViews();
