@@ -69,6 +69,47 @@
     var deselectedColumns = [[${deselectedColumns}]];
 /*]]>*/
 </script>
+<style>
+.dropbtn {
+  background-color: #3498DB;
+  color: white;
+  padding: 12px;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {background-color: #ddd;}
+
+.show {display: block;}
+</style>
+
 <script>
 //<![CDATA[
 var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection']);
@@ -396,7 +437,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
     $scope.editSearch = function() {
     	document.getElementById("editsearchform").submit();
     };
-    
+        
     $scope.export = function() {
     	
     	$scope.gridOptions1.columnDefs.forEach(function(col){
@@ -404,7 +445,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
             	deselectedColumns.push(col.field);
           }  
  		});
-    	
 		if(source == "'search'" || source == 'search')
 			document.getElementById("simplesearchform").action = "/search/export";
 		else
@@ -416,6 +456,25 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 		document.getElementById("simplesearchform").submit();
     };
+
+    function sendExportByEmail() {
+    	//e.preventDefault();
+    	$scope.gridOptions1.columnDefs.forEach(function(col){
+            if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
+            	deselectedColumns.push(col.field);
+          }  
+ 		});
+		document.getElementById("simplesearchform").action = "/savesearch/exportByEmail";
+		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+		document.getElementById("simplesearchform").submit();
+    }
+    
+    $scope.exportByEmail = function() {
+    	alert("Export will be emailed to your User account");
+    	setTimeout(sendExportByEmail, 5000);
+    };
+    
+    
     
     $scope.bulkUpdate = function() {
     	var updatedList = [];
@@ -538,6 +597,28 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 </script>
 
 </head>
+
+<script>
+/* When the user clicks on the button, 
+toggle between hiding and showing the dropdown content */
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+</script>
 <body th:attr="ng-init='searchresults=\'' + ${searchresults} +'\''">
 	<section id="container" class="">
 		<div th:include="header :: header"></div>
@@ -572,9 +653,18 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 									<a id="editsearchlink"
 										class="btn btn-link btn-sm" ng-click="editSearch()"
 										>Edit Search Criteria</a>
-									<a id="exportLink"
+									<div class="dropdown">
+									  <button onclick="myFunction()" class="dropbtn">Export Search Results</button>
+									  <div id="myDropdown" class="dropdown-content">
+										<a id="exportLink"
 										class="btn btn-link btn-sm" ng-click="export()"
-										>Export Search Results</a>
+										>File Export</a>	  
+										<a id="exportLink2"
+										class="btn btn-link btn-sm" ng-click="exportByEmail()"
+										>Email Export</a>	  
+									  </div>
+									</div>
+
 									<a id="bulkUpdate"
 										class="btn btn-link btn-sm" ng-click="bulkUpdate()"
 										>Update Metadata on All Search Results </a>
