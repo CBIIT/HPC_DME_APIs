@@ -206,7 +206,7 @@ public interface HpcDataSearchBusService {
    *
    * @throws HpcException on service failure.
    */
-  public boolean sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+  public void sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
       throws HpcException;
 
 }
