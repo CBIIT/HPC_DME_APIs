@@ -502,7 +502,7 @@ body.loading .overlay{
 				reportHeaderTitle = "Data Archival Usage Report for DOC: " + document.getElementById("doc").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE':
-				exportFileName= pretag + "User" + tag;
+				exportFileName= pretag + "User" + tag + "_" + userselected;
 				reportHeaderTitle = "Data Archival Usage Report for User: " + userselected + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_DATE_RANGE':
