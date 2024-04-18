@@ -10,13 +10,17 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -28,7 +32,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
@@ -50,9 +56,11 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
+import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import org.springframework.web.util.UriComponentsBuilder;
+import com.google.gson.Gson;
 
 /**
  * <p>
@@ -71,7 +79,11 @@ public class HpcSaveSearchController extends AbstractHpcController {
 	private String queryServiceURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryURL;
+    @Value("${gov.nih.nci.hpc.server.emailexport}")
+    private String exportByEmailURL;
 	private String hpcMetadataAttrsURL;
+	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
+    private Gson gson = new Gson();
 
 	/**
 	 * GET action to prepare save search page
@@ -220,4 +232,43 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			return result;
 		}
 	}
+	
+	@JsonView(Views.Public.class)
+    @PostMapping(value = "/exportByEmail")
+	@ResponseBody
+	public String exportByEmail(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model,
+        BindingResult bindingResult, HttpSession session, HttpServletRequest request, @RequestParam("deselectedColumns")  List<String> deselectedColumns) {
+    
+      HpcCompoundMetadataQueryDTO compoundQuery = null;
+      if (session.getAttribute("compoundQuery") != null) {
+          compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
+      }
+      if (compoundQuery != null) {
+        logger.info("Email Export of Query: " + gson.toJson(compoundQuery));
+      } else {
+        logger.info("Compund query is null @");
+        HpcNamedCompoundMetadataQuery namedCompoundQuery = null;
+        if (session.getAttribute("namedCompoundQuery") != null)
+            namedCompoundQuery = (HpcNamedCompoundMetadataQuery) session.getAttribute("namedCompoundQuery");
+        compoundQuery = new HpcCompoundMetadataQueryDTO();
+        compoundQuery.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
+        compoundQuery.setCompoundQueryType(namedCompoundQuery.getCompoundQueryType());
+        compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
+    }
+
+      System.out.println(gson.toJson(compoundQuery));
+      System.out.println(gson.toJson(deselectedColumns));
+
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      WebClient client = HpcClientUtil.getWebClient(exportByEmailURL, sslCertPath, sslCertPassword);
+      client.header("Authorization", "Bearer " + authToken);
+
+      Response restResponse = client.invoke("POST", compoundQuery);;
+      if (restResponse.getStatus() == 201) {
+        logger.info("Successful submission of Email Export");
+      } else {
+        logger.info("Failure of submission of Email Export");
+      }
+      return null;
+    }
 }
