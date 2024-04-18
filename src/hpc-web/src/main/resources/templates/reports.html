@@ -496,7 +496,8 @@ body.loading .overlay{
 				reportHeaderTitle= "Data Archival Usage Report for Basepath: " + document.getElementById("basepath").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
-				exportFileName= pretag + "DOC" + tag;
+				var docValue = document.getElementById("doc").value;
+				exportFileName= pretag + "DOC" + tag + "_" + docValue;
 				reportHeaderTitle = "Data Archival Usage Report for DOC: " + document.getElementById("doc").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE':
