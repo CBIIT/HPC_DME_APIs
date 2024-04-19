@@ -233,42 +233,46 @@ public class HpcSaveSearchController extends AbstractHpcController {
 		}
 	}
 	
-	@JsonView(Views.Public.class)
-    @PostMapping(value = "/exportByEmail")
+	@PostMapping(value = "/exportByEmail")
 	@ResponseBody
-	public String exportByEmail(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model,
-        BindingResult bindingResult, HttpSession session, HttpServletRequest request, @RequestParam("deselectedColumns")  List<String> deselectedColumns) {
-    
-      HpcCompoundMetadataQueryDTO compoundQuery = null;
-      if (session.getAttribute("compoundQuery") != null) {
-          compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
-      }
-      if (compoundQuery != null) {
-        logger.info("Email Export of Query: " + gson.toJson(compoundQuery));
-      } else {
-        logger.info("Compund query is null @");
-        HpcNamedCompoundMetadataQuery namedCompoundQuery = null;
-        if (session.getAttribute("namedCompoundQuery") != null)
-            namedCompoundQuery = (HpcNamedCompoundMetadataQuery) session.getAttribute("namedCompoundQuery");
-        compoundQuery = new HpcCompoundMetadataQueryDTO();
-        compoundQuery.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
-        compoundQuery.setCompoundQueryType(namedCompoundQuery.getCompoundQueryType());
-        compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
-    }
+	public AjaxResponseBody exportByEmail(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search,
+			HttpSession session, HttpServletRequest request) {
 
-      System.out.println(gson.toJson(compoundQuery));
-      System.out.println(gson.toJson(deselectedColumns));
+		HpcCompoundMetadataQueryDTO compoundQuery = null;
+		if (session.getAttribute("compoundQuery") != null) {
+			compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
+		}
+		if (compoundQuery != null) {
+			logger.info("Email Export of Query: " + gson.toJson(compoundQuery));
+		} else {
+			logger.info("Compund query is null @");
+			HpcNamedCompoundMetadataQuery namedCompoundQuery = null;
+			if (session.getAttribute("namedCompoundQuery") != null)
+				namedCompoundQuery = (HpcNamedCompoundMetadataQuery) session.getAttribute("namedCompoundQuery");
+			logger.debug("Name query = " + gson.toJson(namedCompoundQuery));
+			compoundQuery = new HpcCompoundMetadataQueryDTO();
+			compoundQuery.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
+			compoundQuery.setCompoundQueryType(namedCompoundQuery.getCompoundQueryType());
+			compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
+		}
 
-      String authToken = (String) session.getAttribute("hpcUserToken");
-      WebClient client = HpcClientUtil.getWebClient(exportByEmailURL, sslCertPath, sslCertPassword);
-      client.header("Authorization", "Bearer " + authToken);
+		AjaxResponseBody result = new AjaxResponseBody();
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		if (authToken == null) {
+			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+			return result;
+		}
 
-      Response restResponse = client.invoke("POST", compoundQuery);;
-      if (restResponse.getStatus() == 201) {
-        logger.info("Successful submission of Email Export");
-      } else {
-        logger.info("Failure of submission of Email Export");
-      }
-      return null;
-    }
+		WebClient client = HpcClientUtil.getWebClient(exportByEmailURL, sslCertPath, sslCertPassword);
+		client.header("Authorization", "Bearer " + authToken);
+
+		Response restResponse = client.invoke("POST", compoundQuery);
+		;
+		if (restResponse.getStatus() == 201) {
+			logger.info("Successful submission of Email Export");
+		} else {
+			logger.info("Failure of submission of Email Export");
+		}
+		return result;
+	}
 }
