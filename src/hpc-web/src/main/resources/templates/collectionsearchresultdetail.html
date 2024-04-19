@@ -457,25 +457,30 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 		document.getElementById("simplesearchform").submit();
     };
 
-    function sendExportByEmail() {
-    	//e.preventDefault();
+    $scope.exportByEmail = function() {
     	$scope.gridOptions1.columnDefs.forEach(function(col){
             if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
             	deselectedColumns.push(col.field);
           }  
  		});
-		document.getElementById("simplesearchform").action = "/savesearch/exportByEmail";
 		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
-		document.getElementById("simplesearchform").submit();
-    }
-    
-    $scope.exportByEmail = function() {
-    	alert("Export will be emailed to your User account");
-    	setTimeout(sendExportByEmail, 5000);
-    };
-    
-    
-    
+		var data  = (deselectedColumns.length==0) ? {deselectedColumns: []} : {deselectedColumns: deselectedColumns};
+		alert("The export will be sent to your email. ");
+		$.ajax({
+		    type: 'POST',
+		    url: '/savesearch/exportByEmail',
+		    data:  $('simplesearchform').serialize(),
+		    contentType: 'application/json',
+		    dataType: 'json',
+		    success : function(msg) {
+		    	alert("Email of export sent.")
+			},
+			error : function(e) {
+				 console.log(JSON.stringify(e));
+			}
+		});
+	};
+
     $scope.bulkUpdate = function() {
     	var updatedList = [];
     	document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
