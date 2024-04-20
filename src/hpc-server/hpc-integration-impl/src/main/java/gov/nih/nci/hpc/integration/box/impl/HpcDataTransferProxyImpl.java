@@ -296,6 +296,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return null;
 
 		} catch (BoxAPIException e) {
+			if (e.getResponseCode() == 409) {
+				// The folder was created (by another thread running concurrently). Find it.
+				BoxFolder childFolder = getChildFolder(boxApi, boxFolder, childFolderName, false);
+				if (childFolder != null) {
+					return childFolder;
+				}
+				logger.error("Box child folder was not found after 409 response on create - {}", childFolderName);
+			}
 			throw new HpcException("[Box] Failed to get child folder: " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
