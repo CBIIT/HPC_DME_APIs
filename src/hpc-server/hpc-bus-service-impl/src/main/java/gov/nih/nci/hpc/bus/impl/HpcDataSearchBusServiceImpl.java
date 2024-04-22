@@ -130,9 +130,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	private String exportDirectory = null;
 	
 	//The email exported task executor.
-    //@Autowired
-    //@Qualifier("hpcEmailExportTaskExecutor")
-    //Executor emailExporterTaskExecutor = null;
+    @Autowired
+    @Qualifier("hpcEmailExporterTaskExecutor")
+    Executor emailExporterTaskExecutor = null;
 
 
 	// The logger instance.
@@ -561,19 +561,47 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		sendQueryResults(HpcCompoundMetadataQueryFrequency.MONTHLY);
 	}
 
-    @Override
+	public void sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) throws HpcException {
+		logger.info("In bus impl " + "sendCurrentQueryResults");
+		try {
+			final String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+			logger.debug("retrieved userId=" + userId);
+			// Process this email export async.
+			CompletableFuture.runAsync(() -> {
+				try {
+					logger.debug("Before executeAsUserAccount");
+					// Executed in a separate thread.
+					executeAsUserAccount(() -> sendCurrentQueryResultsByEmail(compoundMetadataQueryDTO, userId), userId);
+				} catch (final HpcException e) {
+					logger.error("Error exporting query result", e);
+				}
+
+			}, emailExporterTaskExecutor);
+
+		} catch (Exception e) {
+			logger.debug("Exception: " + gson.toJson(e));
+		}
+		logger.debug("returning from sendCurrentQueryResults");
+	}
+
+	/*
+	 * 
+	@Override
     public void sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) throws HpcException {
       logger.info("In BUS SERVICE " + "sendCurrentQueryResults");
+	  String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+	  logger.debug("retrieved userId=" + userId);
+  
       //CompletableFuture.runAsync(() -> {
         try {
-          sendCurrentQueryResultsByEmail(compoundMetadataQueryDTO);
+          sendCurrentQueryResultsByEmail(compoundMetadataQueryDTO, userId);
         } catch (HpcException e) {
-          logger.info("Printing exeption:");
+          logger.info("PPrinting exeption:", e);
         }
         logger.debug("returning from sendCurrentQueryResults");
       //});
-    }
-	
+    }*/
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -819,21 +847,14 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
      * @throws HpcException If the user query failed or failed to export
      */
 	//@Scheduled(initialDelay = 1, fixedDelay=Long.MAX_VALUE)
-    private void sendCurrentQueryResultsByEmail(HpcCompoundMetadataQueryDTO query) throws HpcException {
+    private boolean sendCurrentQueryResultsByEmail(HpcCompoundMetadataQueryDTO query, String userId) throws HpcException {
         logger.debug("In sendCurrentQueryResultsByEmail");
         // Construct the excel file name
         String tempExportDirectory = "/Users/schintal/emailexport";
         String exportFileName = tempExportDirectory + File.separator + "Search_Results"
-                + MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xls";
+                + MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xlsx";
 
         logger.debug("Export file name before invoking user: " + exportFileName);
-        logger.debug(exportFileName);
-         String userId = "";
-         try {
-           userId = securityService.getRequestInvoker().getNciAccount().getUserId();   
-         } catch(Exception e) {
-           logger.debug("Exception: " + gson.toJson(e));
-         }
         String queryName = gson.toJson(query);
         logger.info("Generating email export for user: " + userId + " with query: " + queryName);
         try {
@@ -854,7 +875,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
               if (CollectionUtils.isEmpty(dataobjectListDTO.getDataObjectPaths())
                       && CollectionUtils.isEmpty(dataobjectListDTO.getDataObjects())) {
                   logger.info("No results found from query {} for user {}", queryName, userId);
-                  return;
+                  return false;
               }
               exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getDeselectedColumns());
           } else {
@@ -865,20 +886,22 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
                   query.setPage(pageNumber++);
                   query.setPageSize(USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
                   // Switch context to the query user
-				  HpcCollectionListDTO collectionsDTO = executeAsUserAccount(
-							() -> getCollections(query), userId);
+                  // Removed executeAsUserAccount
+                  // HpcCollectionListDTO collectionsDTO = executeAsUserAccount(
+				 //	() -> getCollections(compoundMetadataQueryDTO), userId);
+				  HpcCollectionListDTO collectionsDTO =  getCollections(query);
                   collectionListDTO.getCollectionPaths().addAll(collectionsDTO.getCollectionPaths());
                   collectionListDTO.getCollections().addAll(collectionsDTO.getCollections());
                   totalPages = getTotalPages(collectionsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
                   logger.debug("In loop: ");
                   logger.debug("Incremental size" + collectionsDTO.getCollections().size());
-                  logger.debug("Added size" + collectionListDTO.getCollections().size());
+                  logger.debug("Added size " + collectionListDTO.getCollections().size());
                   logger.debug("totalPages="+totalPages);
               } while (pageNumber <= totalPages);
               if (CollectionUtils.isEmpty(collectionListDTO.getCollectionPaths())
                       && CollectionUtils.isEmpty(collectionListDTO.getCollections())) {
                   logger.info("No results found from query {} for user {}", queryName, userId);
-                  return;
+                  return false;
               }
               logger.debug("collectionListDTO.getCollections() size=" + collectionListDTO.getCollections().size());
               exporter.exportCollections(exportFileName, collectionListDTO, query.getDeselectedColumns());
@@ -898,6 +921,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
               logger.error("Failed to delete file: {}", exportFileName, e);
           }
       }
+        return true;
     }
 
 	/**
