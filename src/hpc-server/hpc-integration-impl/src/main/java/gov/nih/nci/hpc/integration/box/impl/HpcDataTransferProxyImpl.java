@@ -297,7 +297,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (BoxAPIException e) {
 			if (e.getResponseCode() == 409) {
-				// The folder was created (by another thread running concurrently). Find it.
+				// The folder was created, or in the process of getting created (by another
+				// thread running concurrently). Wait and find it.
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException ie) {
+				}
+
 				BoxFolder childFolder = getChildFolder(boxApi, boxFolder, childFolderName, false);
 				if (childFolder != null) {
 					return childFolder;
