@@ -254,6 +254,7 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			compoundQuery.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
 			compoundQuery.setCompoundQueryType(namedCompoundQuery.getCompoundQueryType());
 			compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
+			compoundQuery.setTotalCount(namedCompoundQuery.getTotalCount());
 		}
 
 		AjaxResponseBody result = new AjaxResponseBody();
