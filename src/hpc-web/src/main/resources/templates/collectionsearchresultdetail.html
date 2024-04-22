@@ -71,8 +71,8 @@
 </script>
 <style>
 .dropbtn {
-  background-color: #3498DB;
-  color: white;
+  background-color: transparent;
+  color: #007aff;
   padding: 12px;
   font-size: 12px;
   border: none;
@@ -81,6 +81,7 @@
 
 .dropbtn:hover, .dropbtn:focus {
   background-color: #2980B9;
+  color: white
 }
 
 .dropdown {
@@ -659,7 +660,7 @@ window.onclick = function(event) {
 										class="btn btn-link btn-sm" ng-click="editSearch()"
 										>Edit Search Criteria</a>
 									<div class="dropdown">
-									  <button onclick="myFunction()" class="dropbtn">Export Search Results</button>
+									  <button onclick="myFunction()" class="dropbtn">Export Search Results &#62;</button>
 									  <div id="myDropdown" class="dropdown-content">
 										<a id="exportLink"
 										class="btn btn-link btn-sm" ng-click="export()"
