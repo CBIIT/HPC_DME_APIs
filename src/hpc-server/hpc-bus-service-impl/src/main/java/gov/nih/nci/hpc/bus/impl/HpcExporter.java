@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -20,13 +19,10 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -52,7 +48,6 @@ public class HpcExporter
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
 	
-	private Gson gson = new Gson();
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -203,16 +198,12 @@ public class HpcExporter
 			Row r = null;
 
 			int rownum = 0;
-			logger.debug("Before creating row");
 			r = s.createRow(rownum++); // header row
-			logger.debug("After creating row");
 			int cellnum = 0;
 			int i = 0;
 			for (Object h : headers) {
 				r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
-				logger.debug("Creating header cell");
 			}
-			logger.debug("header size=" + headers.size());
 			for (List<String> row : data) {
 				cellnum = 0;
 				r = s.createRow(rownum++);
@@ -220,7 +211,6 @@ public class HpcExporter
 					r.createCell(cellnum++).setCellValue(cell);
 				}
 			}
-			logger.debug(filename);
 			try {
 				FileOutputStream outputStream = new FileOutputStream(filename);
 				wb.write(outputStream);
@@ -228,11 +218,6 @@ public class HpcExporter
 				logger.error("Error writing to workbook", e);
 				e.printStackTrace();
 		 	}
-		}
-		catch (Throwable t){
-			   logger.debug("in throwable");
-			   logger.debug(t.toString());
-			   t.printStackTrace();
 		} finally {
 			try {
 				wb.close();
