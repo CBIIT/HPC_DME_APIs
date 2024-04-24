@@ -161,9 +161,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_COLLECTION_COUNT_SQL = "select count(distinct object_id) from r_coll_hierarchy_meta_main main1 where ";
 
-	private static final String GET_DATA_OBJECT_PATHS_SQL = "select distinct object_path from r_data_hierarchy_meta_main main1 where ";
+	private static final String GET_DATA_OBJECT_PATHS_SQL = "select /*+ use_hash */ distinct object_path from r_data_hierarchy_meta_main main1 where ";
 
-	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
+	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select /*+ use_hash */ mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
 			+ "data.data_path, data.data_owner_name, data.create_ts, mv.meta_attr_name, "
 			+ "mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label "
 			+ "from r_data_hierarchy_meta_main mv, r_data_main data, r_coll_main coll "
@@ -819,8 +819,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		// Add query to limit results to within the path if specified
 		if (path != null) {
-			sqlQueryBuilder.append("object_path LIKE ?");
-			args.add(path + "%");
+			sqlQueryBuilder.append("INSTR(object_path,?)>0");
+			args.add(path);
 		}
 
 		// Add query to search for requested metadata
