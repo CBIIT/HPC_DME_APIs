@@ -678,6 +678,35 @@
 					"index": "3"
 				}
 			]
+		},
+		{
+			"eventType": "USER_QUERY_CURRENT_RESULTS_SENT",
+			"subjectFormat": "Query Results requested at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "FREQUENCY",
+					"index": "0"
+				}
+			],
+			"textFormat": "Hello %1$s %2$s,<br/><br/>Results from the following search are attached in a file: <br/><br/><b> %3$s </b><br/><br/> You are receiving this email because you requested a search result export from the DME web application. <br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "FIRST_NAME",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "LAST_NAME",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "QUERY_NAME",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "3"
+				}
+			]
 		}
 	]
 }
