@@ -68,6 +68,69 @@
 /*]]>*/
 </script>
 
+<style>
+.dropbtn {
+  background-color: transparent;
+  color: #007aff;
+  padding: 12px;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+  color: white
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {background-color: #ddd;}
+
+.show {display: block;}
+</style>
+<script>
+/* When the user clicks on the button, 
+toggle between hiding and showing the dropdown content */
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+</script>
+
 <script>
 //<![CDATA[
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
@@ -423,6 +486,30 @@
     		document.getElementById("simplesearchform").submit();
         };
         
+        $scope.exportByEmail = function() {
+        	$scope.gridOptions1.columnDefs.forEach(function(col){
+                if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
+                	deselectedColumns.push(col.field);
+              }  
+     		});
+    		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+    		var data  = (deselectedColumns.length==0) ? {deselectedColumns: []} : {deselectedColumns: deselectedColumns};
+    		alert("The export will be sent to your email. ");
+    		$.ajax({
+    		    type: 'POST',
+    		    url: '/savesearch/exportByEmail',
+    		    data:  $('simplesearchform').serialize(),
+    		    contentType: 'application/json',
+    		    dataType: 'json',
+    		    success : function(msg) {
+    		    	alert("Email of export sent.")
+    			},
+    			error : function(e) {
+    				 console.log(JSON.stringify(e));
+    			}
+    		});
+    	};      
+        
         $scope.performActionSelectedRows = function(action) {
           console.log('$scope.selectedRows: ', $scope.selectedRows);
           console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
@@ -585,9 +672,17 @@
 									<a id="editsearchlink"
 										class="btn btn-link btn-sm" ng-click="editSearch()"
 										>Edit Search Criteria</a>
-									<a id="exportLink"
+									<div class="dropdown">
+									  <button onclick="myFunction()" class="dropbtn">Export Search Results &#62;</button>
+									  <div id="myDropdown" class="dropdown-content">
+										<a id="exportLink"
 										class="btn btn-link btn-sm" ng-click="export()"
-										>Export Search Results</a>
+										>File Export</a>	  
+										<a id="exportLink2"
+										class="btn btn-link btn-sm" ng-click="exportByEmail()"
+										>Email Export</a>	  
+									  </div>
+									</div>										
 								</div>
 							  </div>
 							  <div class="row" style="background-color: #fff;border-top: 1px solid #ccc;border-bottom: none;">
