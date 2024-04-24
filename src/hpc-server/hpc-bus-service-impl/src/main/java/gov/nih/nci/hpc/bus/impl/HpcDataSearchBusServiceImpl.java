@@ -131,7 +131,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	// Directory to create the user query excel export.
 	@Value("${hpc.bus.exportDirectory}")
 	private String exportDirectory = null;
-	//private String exportDirectory = "/Users/schintal/emailexport"; //TODO REMOVE!!
 	
 	//The email exported task executor.
     @Autowired
@@ -564,7 +563,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	}
 
 	public void sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) throws HpcException {
-		logger.info("In bus impl 1237" + "sendCurrentQueryResults");
+		logger.info("In bus impl " + "sendCurrentQueryResults");
 		try {
 			// Get the user-id of the request invoker.
 			HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
@@ -842,7 +841,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		String userId = invoker.getNciAccount().getUserId();
 		// Construct the excel file name
 		// TODO REMOVE local directory
-		String exportFileName =  "/Users/schintal/emailexport" + File.separator + "Search_Results"
+		String exportFileName =  exportDirectory + File.separator + "Search_Results"
 				+ MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xlsx";
 
 		logger.debug("Export file name before invoking user: " + exportFileName);
