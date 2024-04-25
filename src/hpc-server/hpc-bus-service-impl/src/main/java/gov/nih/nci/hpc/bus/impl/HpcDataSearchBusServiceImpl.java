@@ -833,14 +833,12 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     private boolean sendCurrentQueryResultsByEmail(HpcCompoundMetadataQueryDTO query, HpcRequestInvoker invoker) throws HpcException {
 		logger.debug("In sendCurrentQueryResultsByEmail");
 		try {
-			logger.debug("invoker=" + gson.toJson(invoker));
 			HpcRequestContext.setRequestInvoker(invoker);
 		} catch (Exception e) {
 			logger.debug(e.toString());
 		}
 		String userId = invoker.getNciAccount().getUserId();
 		// Construct the excel file name
-		// TODO REMOVE local directory
 		String exportFileName =  exportDirectory + File.separator + "Search_Results"
 				+ MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xlsx";
 
@@ -1039,7 +1037,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	 */
 	private void sendQueryCurrentNotification(String nciUserId, String exportFileName, String queryString, String requestTime)
 			throws HpcException {
-		logger.debug("sendQueryCurrentNotification");
 		logger.info("Sending {} query result for {} generated at {}", queryString, nciUserId, requestTime);
 		if (nciUserId == null) {
 			throw new HpcException("Null nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
