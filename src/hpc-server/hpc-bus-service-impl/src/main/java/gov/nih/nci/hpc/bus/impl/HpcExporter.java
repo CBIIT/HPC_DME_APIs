@@ -106,7 +106,7 @@ public class HpcExporter
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
-							if ((entry.getAttribute() != null) && header.equals(entry.getAttribute())) {
+							if ((entry != null) && (entry.getAttribute() != null) && header.equals(entry.getAttribute())) {
 								result.add(entry.getValue());
 								found = true;
 								break;
