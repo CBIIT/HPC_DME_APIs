@@ -65,6 +65,7 @@
     var selectedRowsData = [];
     var totalSize = [[${totalSize}]];
     var deselectedColumns = [[${deselectedColumns}]];
+    var fileExportRowsThreshold = [[${fileExportRowsThreshold}]];    
 /*]]>*/
 </script>
 
@@ -487,6 +488,9 @@ window.onclick = function(event) {
         };
         
         $scope.exportByEmail = function() {
+        	if (confirm("DME will send the export to your email address. Do you wish to continue?") == false) {
+        		return;
+        	}        	
         	$scope.gridOptions1.columnDefs.forEach(function(col){
                 if(col.visible != undefined && !col.visible && deselectedColumns.indexOf(col.field) < 0) {
                 	deselectedColumns.push(col.field);
@@ -494,7 +498,6 @@ window.onclick = function(event) {
      		});
     		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
     		var data  = (deselectedColumns.length==0) ? {deselectedColumns: []} : {deselectedColumns: deselectedColumns};
-    		alert("The export will be sent to your email. ");
     		$.ajax({
     		    type: 'POST',
     		    url: '/savesearch/exportByEmail',
@@ -674,10 +677,17 @@ window.onclick = function(event) {
 									<div class="dropdown">
 									  <button onclick="myFunction()" class="dropbtn">Export Search Results &#62;</button>
 									  <div id="myDropdown" class="dropdown-content">
-										<a id="exportLink"
-										class="btn btn-link btn-sm" ng-click="export()"
-										>File Export</a>	  
-										<a id="exportLink2"
+									  	<div id="showExportLink">
+											<a id="exportLink"
+											class="btn btn-link btn-sm" ng-click="export()"
+											>File Export</a>
+										</div>
+									  	<div id="hideExportLink">
+											<a id="exportLink"
+											class="btn btn-link btn-sm" style="pointer-events: none"
+											>File Export</a>
+										</div>
+										<a id="exportEmailLink2"
 										class="btn btn-link btn-sm" ng-click="exportByEmail()"
 										>Email Export</a>	  
 									  </div>
@@ -818,6 +828,12 @@ window.onclick = function(event) {
 		if(totalSize > 0)
 			$("#totalSizeLabel").show();
 		$("#totalSizeDisplay").text(totalSize.toString() + " (" + formatBytes(totalSize, 1) + ")");
+		var showFileExportLink = (parseFloat(totalRows) <= parseFloat(fileExportRowsThreshold)) ? true : false;
+		if(showFileExportLink){
+			$('#hideExportLink').hide(); 
+		} else {
+			$('#showExportLink').hide(); 
+		}
 	});
 	
     function updatePage(action, newPageSize)
