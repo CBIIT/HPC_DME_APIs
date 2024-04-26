@@ -831,24 +831,27 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
      * @throws HpcException If the user query failed or failed to export
      */
     private boolean sendCurrentQueryResultsByEmail(HpcCompoundMetadataQueryDTO query, HpcRequestInvoker invoker) throws HpcException {
-		logger.debug("In sendCurrentQueryResultsByEmail");
+		logger.debug("EmailExport: In sendCurrentQueryResultsByEmail");
 		try {
 			HpcRequestContext.setRequestInvoker(invoker);
 		} catch (Exception e) {
 			logger.debug(e.toString());
 		}
 		String userId = invoker.getNciAccount().getUserId();
-		// Construct the excel file name
-		String exportFileName =  exportDirectory + File.separator + "Search_Results"
-				+ MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xlsx";
-
-		logger.debug("Export file name before invoking user: " + exportFileName);
-		String queryName = gson.toJson(query);
-		logger.info("Generating email export for user: " + userId + " with query: " + queryName);
+		
 		// Save Current Datetime to send in Email Subject
 		Date currentDate = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String currentDateTime = dateFormat.format(currentDate);        
+		String currentDateTime = dateFormat.format(currentDate);
+		String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
+
+		// Construct the excel file name
+		String exportFileName =  exportDirectory + File.separator + "Search_Results_"
+				+ userId + "_" + fileSuffix + ".xlsx";
+
+		logger.debug("EmailExport: Export file name before invoking user: " + exportFileName);
+		String queryName = gson.toJson(query);
+		logger.info("EmailExport: Generating email export for user: " + userId + " with query: " + queryName);
 		try {
 			if (query.getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)) {
 				HpcDataObjectListDTO dataobjectListDTO = new HpcDataObjectListDTO();
@@ -860,6 +863,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					HpcDataObjectListDTO dataobjectsDTO = getDataObjects(null, query);
 					dataobjectListDTO.getDataObjectPaths().addAll(dataobjectsDTO.getDataObjectPaths());
 					dataobjectListDTO.getDataObjects().addAll(dataobjectsDTO.getDataObjects());
+					logger.debug("EmailExport: In loop, retrieving rows=" + dataobjectListDTO.getDataObjects().size());
 					totalPages = getTotalPages(dataobjectsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
 				} while (pageNumber <= totalPages);
 				if (CollectionUtils.isEmpty(dataobjectListDTO.getDataObjectPaths())
@@ -867,7 +871,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					logger.info("No results found from query {} for user {}", queryName, userId);
 					return false;
 				}
+				logger.debug("EmailExport: dataobjects size=" + dataobjectListDTO.getDataObjects().size());
 				exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getDeselectedColumns());
+				logger.debug("EmailExport: created export in temp directory");
 			} else {
 				HpcCollectionListDTO collectionListDTO = new HpcCollectionListDTO();
 				int pageNumber = 1;
@@ -878,6 +884,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					HpcCollectionListDTO collectionsDTO = getCollections(query);
 					collectionListDTO.getCollectionPaths().addAll(collectionsDTO.getCollectionPaths());
 					collectionListDTO.getCollections().addAll(collectionsDTO.getCollections());
+					logger.debug("EmailExport: In loop, retrieving rows=" + collectionListDTO.getCollections().size());
 					totalPages = getTotalPages(collectionsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
 				} while (pageNumber <= totalPages);
 				if (CollectionUtils.isEmpty(collectionListDTO.getCollectionPaths())
@@ -885,12 +892,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					logger.info("No results found from query {} for user {}", queryName, userId);
 					return false;
 				}
-				logger.debug("collectionListDTO.getCollections() size=" + collectionListDTO.getCollections().size());
+				logger.info("EmailExport: collection size=" + collectionListDTO.getCollections().size());
 				exporter.exportCollections(exportFileName, collectionListDTO, query.getDeselectedColumns());
+				logger.debug("EmailExport: created export in temp directory");
 			}
-			logger.info("Done with creating export file: " + exportFileName);
-			// Send the file to the user
-			//sendQueryNotification(userId, exportFileName, "", "");
+			logger.info("EmailExport: Done with creating export file: " + exportFileName + " for user="+ userId);
 			sendQueryCurrentNotification(userId, exportFileName, queryName, currentDateTime);
 		} catch (Exception e) {
 			throw new HpcException("Error exporting search result for query: " + gson.toJson(query),
