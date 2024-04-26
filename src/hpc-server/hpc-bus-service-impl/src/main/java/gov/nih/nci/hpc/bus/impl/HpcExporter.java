@@ -106,13 +106,16 @@ public class HpcExporter
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
-							if ((entry != null) && (entry.getAttribute() != null) && header.equals(entry.getAttribute())) {
+							if ((header != null) && (entry != null) && (entry.getAttribute() != null) && header.equals(entry.getAttribute())) {
 								result.add(entry.getValue());
 								found = true;
 								break;
 							}
 						}
-						if(!found && !header.equals("path") && !header.equals("created_on"))
+						if(!found && (header == null)){
+							result.add("");
+						}
+						if(!found && (header != null) && !header.equals("path") && !header.equals("created_on"))
 							result.add("");
 					}
 				}
