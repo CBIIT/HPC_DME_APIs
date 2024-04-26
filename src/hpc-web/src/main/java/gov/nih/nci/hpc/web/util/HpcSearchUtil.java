@@ -372,7 +372,7 @@ public class HpcSearchUtil {
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getParentMetadataEntries());
 					for(HpcMetadataEntry entry : combinedMetadataEntries) {
-                      if(entry.getAttribute().equals("registered_by"))
+                      if((entry != null) && entry.getAttribute().equals("registered_by"))
                         entry.setAttribute("registeredBy");
                       if(!headers.contains(entry.getAttribute()) && deselectedColumns == null || 
                          !headers.contains(entry.getAttribute()) && deselectedColumns != null && !deselectedColumns.contains(entry.getAttribute()))
