@@ -198,12 +198,16 @@ public class HpcExporter
 			Row r = null;
 
 			int rownum = 0;
+			logger.debug("Before creating row");
 			r = s.createRow(rownum++); // header row
+			logger.debug("After creating row");
 			int cellnum = 0;
 			int i = 0;
 			for (Object h : headers) {
 				r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
+				logger.debug("Creating header cell");
 			}
+			logger.debug("header size=" + headers.size());
 			for (List<String> row : data) {
 				cellnum = 0;
 				r = s.createRow(rownum++);
@@ -211,6 +215,7 @@ public class HpcExporter
 					r.createCell(cellnum++).setCellValue(cell);
 				}
 			}
+			logger.debug(filename);
 			try {
 				FileOutputStream outputStream = new FileOutputStream(filename);
 				wb.write(outputStream);
@@ -218,6 +223,11 @@ public class HpcExporter
 				logger.error("Error writing to workbook", e);
 				e.printStackTrace();
 		 	}
+		}
+		catch (Throwable t){
+			   logger.debug("in throwable");
+			   logger.debug(t.toString());
+			   t.printStackTrace();
 		} finally {
 			try {
 				wb.close();
