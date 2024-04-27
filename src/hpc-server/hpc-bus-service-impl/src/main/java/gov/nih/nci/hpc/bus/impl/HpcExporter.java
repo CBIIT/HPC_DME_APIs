@@ -114,9 +114,9 @@ public class HpcExporter
 						}
 						if(!found && (header == null)){
 							result.add("");
-						}
-						if(!found && (header != null) && !header.equals("path") && !header.equals("created_on"))
+						} else if (!found && !header.equals("path") && !header.equals("created_on")){
 							result.add("");
+						}
 					}
 				}
 				rows.add(result);
@@ -171,14 +171,17 @@ public class HpcExporter
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
-							if (header.equals(entry.getAttribute())) {
+							if ((header != null) && (entry != null) && (entry.getAttribute() != null) && header.equals(entry.getAttribute())) {
 								result.add(entry.getValue());
 								found = true;
 								break;
 							}
 						}
-						if(!found && !header.equals("path") && !header.equals("created_on"))
+						if(!found && (header == null)){
 							result.add("");
+						} else if(!found && !header.equals("path") && !header.equals("created_on")) {
+							result.add("");
+						}
 					}
 				}
 				rows.add(result);
@@ -209,18 +212,20 @@ public class HpcExporter
 					r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
 				}
 				logger.debug("Header size=" + headers.size());
-				for (List<String> row : data) {
-					cellnum = 0;
-					r = s.createRow(rownum++);
-					for (String cell : row) {
-						r.createCell(cellnum++).setCellValue(cell);
-					}
-				}
 				try {
+					for (List<String> row : data) {
+						cellnum = 0;
+						r = s.createRow(rownum++);
+						for (String cell : row) {
+							r.createCell(cellnum++).setCellValue(cell);
+						}
+					}
 					wb.write(outputStream);
 				} catch (Exception e) {
 					logger.error("Error writing to workbook", e);
 			 	}
+			} catch (OutOfMemoryError e) {
+				logger.error("OutOfMemoryError", e);
 			} catch (Throwable t){
 				   logger.debug("In throwable of export method");
 				   logger.debug(t.toString());
