@@ -194,51 +194,41 @@ public class HpcExporter
      * 
      * @param text The text to encrypt.
      */
-	private void export(String filename, List<String> headers, List<List<String>> data) throws IOException {
-		XSSFWorkbook wb = new XSSFWorkbook();
-		try {
-			XSSFSheet s = wb.createSheet("Sheet1");
-			Row r = null;
+		private void export(String filename, List<String> headers, List<List<String>> data) throws IOException {
+			XSSFWorkbook wb = new XSSFWorkbook();
+			FileOutputStream outputStream = new FileOutputStream(filename);
+			try {
+				XSSFSheet s = wb.createSheet("Sheet1");
+				Row r = null;
 
-			int rownum = 0;
-			logger.debug("Before creating row");
-			r = s.createRow(rownum++); // header row
-			logger.debug("After creating row");
-			int cellnum = 0;
-			int i = 0;
-			for (Object h : headers) {
-				r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
-				logger.debug("Creating header cell");
-			}
-			logger.debug("header size=" + headers.size());
-			for (List<String> row : data) {
-				cellnum = 0;
-				r = s.createRow(rownum++);
-				for (String cell : row) {
-					r.createCell(cellnum++).setCellValue(cell);
+				int rownum = 0;
+				r = s.createRow(rownum++); // header row
+				int cellnum = 0;
+				int i = 0;
+				for (Object h : headers) {
+					r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
+				}
+				for (List<String> row : data) {
+					cellnum = 0;
+					r = s.createRow(rownum++);
+					for (String cell : row) {
+						r.createCell(cellnum++).setCellValue(cell);
+					}
+				}
+				try {
+					wb.write(outputStream);
+				} catch (Exception e) {
+					logger.error("Error writing to workbook", e);
+			 	}
+			} finally {
+				try {
+					wb.close();
+					outputStream.close();
+				} catch (IOException e) {
+					logger.error("Error closing excel workbook {}", filename, e);
 				}
 			}
-			logger.debug(filename);
-			try {
-				FileOutputStream outputStream = new FileOutputStream(filename);
-				wb.write(outputStream);
-			} catch (Exception e) {
-				logger.error("Error writing to workbook", e);
-				e.printStackTrace();
-		 	}
 		}
-		catch (Throwable t){
-			   logger.debug("in throwable");
-			   logger.debug(t.toString());
-			   t.printStackTrace();
-		} finally {
-			try {
-				wb.close();
-			} catch (IOException e) {
-				logger.error("Error closing excel workbook {}", filename, e);
-			}
-		}
-	}
 }
 
  
