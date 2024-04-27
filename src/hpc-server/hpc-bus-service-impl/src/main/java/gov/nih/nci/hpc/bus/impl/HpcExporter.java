@@ -197,7 +197,7 @@ public class HpcExporter
      * 
      * @param text The text to encrypt.
      */
-		private void export(String filename, List<String> headers, List<List<String>> data) throws IOException {
+		private void export(String filename, List<String> headers, List<List<String>> data) throws IOException, OutOfMemoryError  {
 			XSSFWorkbook wb = new XSSFWorkbook();
 			FileOutputStream outputStream = new FileOutputStream(filename);
 			try {
@@ -226,11 +226,8 @@ public class HpcExporter
 			 	}
 			} catch (OutOfMemoryError e) {
 				logger.error("OutOfMemoryError", e);
-			} catch (Throwable t){
-				   logger.debug("In throwable of export method");
-				   logger.debug(t.toString());
-					wb.close();
-					outputStream.close();				   
+				wb.close();
+				outputStream.close();
 			} finally {
 				try {
 					wb.close();
