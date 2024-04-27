@@ -872,8 +872,19 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					return false;
 				}
 				logger.debug("EmailExport: dataobjects size=" + dataobjectListDTO.getDataObjects().size());
-				exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getDeselectedColumns());
+				try {
+					exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getDeselectedColumns());
+				} catch (IOException e) {
+					logger.error("IO Exception occured processing dataObjects . Failed to export file: {}", exportFileName, e);
+					sendQueryCurrentErrorNotification(userId, exportFileName, queryName, "IOException", e.toString());
+					return false;
+				} catch (OutOfMemoryError e) {
+					logger.error("OutOfMemoryError occured. Failed to export file: {}", exportFileName, e);
+					sendQueryCurrentErrorNotification(userId, exportFileName, queryName, "OutOfMemoryError", e.toString());
+					return false;
+				}
 				logger.debug("EmailExport: created export in temp directory");
+				query.setPageSize(dataobjectListDTO.getDataObjects().size());
 			} else {
 				HpcCollectionListDTO collectionListDTO = new HpcCollectionListDTO();
 				int pageNumber = 1;
@@ -893,10 +904,23 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					return false;
 				}
 				logger.info("EmailExport: collection size=" + collectionListDTO.getCollections().size());
-				exporter.exportCollections(exportFileName, collectionListDTO, query.getDeselectedColumns());
+				try {
+					exporter.exportCollections(exportFileName, collectionListDTO, query.getDeselectedColumns());
+				} catch (IOException e) {
+					logger.error("IO Exception occured processing collections. Failed to export file: {}", exportFileName, e);
+					sendQueryCurrentErrorNotification(userId, exportFileName, queryName, "IOException", e.toString());
+					return false;
+				} catch (OutOfMemoryError e) {
+					logger.error("OutOfMemoryError occured. Failed to export file: {}", exportFileName, e);
+					sendQueryCurrentErrorNotification(userId, exportFileName, queryName, "OutOfMemoryError", e.toString());
+					return false;
+				}
 				logger.debug("EmailExport: created export in temp directory");
+				query.setPageSize(collectionListDTO.getCollections().size());
 			}
 			logger.info("EmailExport: Done with creating export file: " + exportFileName + " for user="+ userId);
+			queryName = gson.toJson(query);
+			logger.debug("After page size update=" + queryName);
 			sendQueryCurrentNotification(userId, exportFileName, queryName, currentDateTime);
 		} catch (Exception e) {
 			throw new HpcException("Error exporting search result for query: " + gson.toJson(query),
@@ -1066,7 +1090,49 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		notificationService.sendNotification(nciUserId, HpcEventType.USER_QUERY_CURRENT_RESULTS_SENT, payloadEntries,
 				HpcNotificationDeliveryMethod.EMAIL, exportFileName);
-	}	
+	}
+	
+	/**
+	 * Email the exported user query results to the user.
+	 *
+	 * @param nciUserId      The NCI user ID.
+	 * @param exportFileName The exported query results.
+	 * @param queryName      The query name.
+	 * @param frequency      The scheduled frequency.
+	 * @throws HpcException
+	 */
+	private void sendQueryCurrentErrorNotification(String nciUserId, String exportFileName, String queryString, String errorString, String stackTraceMessage)
+			throws HpcException {
+		logger.info("Sending {} error for query result: {} generated at {} with stack trace: {}", queryString, nciUserId, errorString, stackTraceMessage);
+		if (nciUserId == null) {
+			throw new HpcException("Null nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcUser user = securityService.getUser(nciUserId);
+		if (user == null) {
+			throw new HpcException("User doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
+		HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
+		payloadEntry.setAttribute("QUERY_NAME");
+		payloadEntry.setValue(queryString);
+		payloadEntries.add(payloadEntry);
+
+		payloadEntry = new HpcEventPayloadEntry();
+		payloadEntry.setAttribute("ERROR_MESSAGE");
+		payloadEntry.setValue(errorString);
+		payloadEntries.add(payloadEntry);
+
+		payloadEntry = new HpcEventPayloadEntry();
+		payloadEntry.setAttribute("STACK_TRACE");
+		payloadEntry.setValue(errorString);
+		payloadEntries.add(payloadEntry);
+
+		notificationService.sendNotification(nciUserId, HpcEventType.USER_QUERY_CURRENT_RESULTS_ERROR, payloadEntries,
+				HpcNotificationDeliveryMethod.EMAIL, exportFileName);
+	}		
+	
 
 	/**
 	 * When the scheduler job is running using system account, the query results
