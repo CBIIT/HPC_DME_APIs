@@ -208,6 +208,7 @@ public class HpcExporter
 				for (Object h : headers) {
 					r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
 				}
+				logger.debug("Header size=" + headers.size());
 				for (List<String> row : data) {
 					cellnum = 0;
 					r = s.createRow(rownum++);
@@ -220,6 +221,11 @@ public class HpcExporter
 				} catch (Exception e) {
 					logger.error("Error writing to workbook", e);
 			 	}
+			} catch (Throwable t){
+				   logger.debug("In throwable of export method");
+				   logger.debug(t.toString());
+					wb.close();
+					outputStream.close();				   
 			} finally {
 				try {
 					wb.close();
