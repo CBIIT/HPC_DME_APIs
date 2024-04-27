@@ -707,27 +707,6 @@
 					"index": "3"
 				}
 			]
-		},
-		{
-			"systemAdminNotificationType": "USER_QUERY_CURRENT_RESULTS_ERROR",
-			"subjectFormat": "Email Export %1$s error",
-			"subjectArguments": [
-				{
-					"payloadEntryAttribute": "ERROR_MESSAGE",
-					"index": "1"
-				}
-			],
-			"textFormat": "The Email Export of the following query: <br/> %2$s <br/> has failed due to %1$s error.<br/><br/>",
-			"textArguments": [
-				{
-					"payloadEntryAttribute": "STACK_TRACE",
-					"index": "1"
-				},
-				{
-					"payloadEntryAttribute": "QUERY_NAME",
-					"index": "2"
-				}
-			]
 		}
 	]
 }
