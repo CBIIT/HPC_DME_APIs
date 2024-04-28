@@ -150,8 +150,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				BoxFile.Info fileInfo = null;
 				if (downloadRequest.getSize() > BOX_LARGE_FILE_TRANSFER_THRESHOLD) {
 					// Use the 'upload large file in chunks' API.
-					fileInfo = boxFolder.uploadLargeFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
-							destinationFileName, downloadRequest.getSize());
+					try {
+						logger.error("ERAN: before upload large file");
+						fileInfo = boxFolder.uploadLargeFile(
+								new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
+								downloadRequest.getSize());
+						logger.error("ERAN: after upload large file");
+
+					} catch (Exception e) {
+						logger.error("ERAN: {}", e);
+						throw new HpcException(e.getMessage(), e);
+					}
+
 				} else {
 					fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
 							destinationFileName);
@@ -159,7 +169,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				progressListener.transferCompleted(fileInfo.getSize());
 
-			} catch (BoxAPIException | InterruptedException | IOException | HpcException e) {
+			} catch (BoxAPIException | IOException | HpcException e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
