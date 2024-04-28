@@ -49,6 +49,6 @@
 	<task:executor id="hpcCollectionDownloadTaskExecutor" pool-size="${hpc.bus.collectionDownloadTaskExecutorThreadPoolSize}"/>
 	<task:executor id="hpcDataObjectDownloadTaskExecutor" pool-size="${hpc.bus.dataObjectDownloadTaskExecutorThreadPoolSize}"/>
 	<task:executor id="hpcDataObjectFileSystemUploadTaskExecutor" pool-size="${hpc.bus.dataObjectFileSystemTaskExecutorThreadPoolSize}"/>
-	<task:executor id="hpcEmailExporterTaskExecutor" pool-size="3"/>
+	<task:executor id="hpcEmailExporterTaskExecutor" pool-size="1"/>
 	
 </beans>
