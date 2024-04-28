@@ -219,7 +219,12 @@ public class HpcExporter
 						for (String cell : row) {
 							r.createCell(cellnum++).setCellValue(cell);
 						}
+						logger.debug("rownum=" + rownum);
 					}
+				} catch (Exception e) {
+					logger.error("Error creating row data", e);
+			 	}
+				try {
 					wb.write(outputStream);
 				} catch (Exception e) {
 					logger.error("Error writing to workbook", e);
