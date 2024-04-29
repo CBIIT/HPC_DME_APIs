@@ -16,6 +16,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -29,6 +30,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -132,6 +137,20 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 				}
 			for (HpcBulkDataObjectRegistrationTaskDTO registration : registrations.getCompletedTasks()) {
 				HpcTask task = new HpcTask();
+				if(!registration.getResult()) {
+					if(CollectionUtils.isNotEmpty(registration.getFailedItems())) {
+						HpcDataObjectRegistrationTaskItem item = registration.getFailedItems().stream()
+			            .filter(t -> !t.getResult())
+			            .findFirst()
+			            .orElse(null);
+						if(item != null)
+							task.setError(item.getMessage() != null ? item.getMessage().replaceAll("'", "\\\\'") : "");
+						else
+							task.setError(registration.getMessage() != null? registration.getMessage().replaceAll("'", "\\\\'") : "");
+					} else {
+						task.setError(registration.getMessage() != null ? registration.getMessage().replaceAll("'", "\\\\'") : "");
+					}
+				}
 				task.setUserId(registration.getUserId());
 				task.setTaskId(registration.getTaskId());
 				task.setSourceType(registration.getUploadMethod() != null ? registration.getUploadMethod().toString() : "");
