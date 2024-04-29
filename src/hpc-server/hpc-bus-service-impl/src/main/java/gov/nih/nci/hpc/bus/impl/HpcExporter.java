@@ -106,17 +106,14 @@ public class HpcExporter
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
-							if ((header != null) && (entry != null) && (entry.getAttribute() != null) && header.equals(entry.getAttribute())) {
+							if (header.equals(entry.getAttribute())) {
 								result.add(entry.getValue());
 								found = true;
 								break;
 							}
 						}
-						if(!found && (header == null)){
+						if(!found && !header.equals("path") && !header.equals("created_on"))
 							result.add("");
-						} else if (!found && !header.equals("path") && !header.equals("created_on")){
-							result.add("");
-						}
 					}
 				}
 				rows.add(result);
@@ -171,17 +168,14 @@ public class HpcExporter
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
-							if ((header != null) && (entry != null) && (entry.getAttribute() != null) && header.equals(entry.getAttribute())) {
+							if (header.equals(entry.getAttribute())) {
 								result.add(entry.getValue());
 								found = true;
 								break;
 							}
 						}
-						if(!found && (header == null)){
+						if(!found && !header.equals("path") && !header.equals("created_on"))
 							result.add("");
-						} else if(!found && !header.equals("path") && !header.equals("created_on")) {
-							result.add("");
-						}
 					}
 				}
 				rows.add(result);
