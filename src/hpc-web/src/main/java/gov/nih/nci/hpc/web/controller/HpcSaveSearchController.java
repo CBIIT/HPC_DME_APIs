@@ -237,7 +237,7 @@ public class HpcSaveSearchController extends AbstractHpcController {
 	@ResponseBody
 	public AjaxResponseBody exportByEmail(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search,
 			HttpSession session, HttpServletRequest request) {
-
+		AjaxResponseBody result = new AjaxResponseBody();
 		HpcCompoundMetadataQueryDTO compoundQuery = null;
 		if (session.getAttribute("compoundQuery") != null) {
 			compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
@@ -245,11 +245,16 @@ public class HpcSaveSearchController extends AbstractHpcController {
 		if (compoundQuery != null) {
 			logger.info("Email Export of Query: " + gson.toJson(compoundQuery));
 		} else {
-			logger.info("Compund query is null @");
+			logger.info("Compund query is null.");
 			HpcNamedCompoundMetadataQuery namedCompoundQuery = null;
-			if (session.getAttribute("namedCompoundQuery") != null)
-				namedCompoundQuery = (HpcNamedCompoundMetadataQuery) session.getAttribute("namedCompoundQuery");
-			logger.debug("Name query = " + gson.toJson(namedCompoundQuery));
+			if (session.getAttribute("namedCompoundQuery") == null) {
+				logger.info("Named Query is Null");
+				result.setMessage("Please rerun your search results.");
+				result.setCode("400");
+				return result;
+			}
+			namedCompoundQuery = (HpcNamedCompoundMetadataQuery) session.getAttribute("namedCompoundQuery");
+			logger.info("Name query = " + gson.toJson(namedCompoundQuery));
 			compoundQuery = new HpcCompoundMetadataQueryDTO();
 			compoundQuery.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
 			compoundQuery.setCompoundQueryType(namedCompoundQuery.getCompoundQueryType());
@@ -257,7 +262,6 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			compoundQuery.setTotalCount(namedCompoundQuery.getTotalCount());
 		}
 
-		AjaxResponseBody result = new AjaxResponseBody();
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (authToken == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -271,8 +275,6 @@ public class HpcSaveSearchController extends AbstractHpcController {
 		;
 		if (restResponse.getStatus() == 201) {
 			logger.info("Successful submission of Email Export");
-		} else {
-			logger.info("Failure of submission of Email Export");
 		}
 		return result;
 	}
