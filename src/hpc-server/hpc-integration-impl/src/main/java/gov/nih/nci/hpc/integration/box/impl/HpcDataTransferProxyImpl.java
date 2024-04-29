@@ -148,6 +148,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				// Transfer the file to Box.
 				BoxFile.Info fileInfo = null;
+				/*
 				if (downloadRequest.getSize() > BOX_LARGE_FILE_TRANSFER_THRESHOLD) {
 					// Use the 'upload large file in chunks' API.
 					try {
@@ -162,10 +163,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						throw new HpcException(e.getMessage(), e);
 					}
 
-				} else {
+				} else {*/
 					fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
 							destinationFileName);
-				}
+				//}
 
 				progressListener.transferCompleted(fileInfo.getSize());
 
