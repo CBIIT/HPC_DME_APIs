@@ -207,6 +207,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 											<th class="column-heading" id='colheading008' th:text="'Transfer Result'"></th>
 											<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
 											<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
+											<th class="column-heading" id='colheading009' th:text="'Error'"></th>
 										</tr>
 									</thead>
 									<tbody>
@@ -218,6 +219,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 											<td id='col4' th:text="${result.result}"></td>
 											<td id='col5' th:text="${result.created}"></td>
 											<td id='col6' th:text="${result.completed}"></td>
+											<td id='col7' th:text="${result.error}"></td>
 										</tr>
 									</tbody>
 									<tfoot>
@@ -228,6 +230,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 											<td class="column-heading" id='colfoot008' th:text="'Transfer Result'"></td>
 											<td class="column-heading" id='colfoot006' th:text="'Created On'"></td>
 											<td class="column-heading" id='colfoot007' th:text="'Completed On'"></td>
+											<td class="column-heading" id='colfoot009' th:text="'Error'"></td>
 										</tr>
 									</tfoot>
 								</table>
@@ -320,11 +323,12 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 				dom: 'rt',
 				scrollX : 'TRUE',
 				columnDefs: [ {targets: 0, width:100, visible: queryAll}, //userId
-							  {targets: 1, width:280, visible: true},  // taskId
-							  {targets: 2, width: 115, visible: true},  // source type
+							  {targets: 1, width:250, visible: true},  // taskId
+							  {targets: 2, width: 110, visible: true},  // source type
 							  {targets: 3, width: 100, visible: true},  // transfer result
 							  {targets: 4, width: 110, visible: true},  // created
 							  {targets: 5, width: 110, visible: true},  // completed
+							  {targets: 6, width: 200, data: 'error', type: 'non-empty-string', render: DataTable.render.ellipsis( 40, true )}, // error
 				],
 				"lengthMenu": [ [-1], ["All"] ],
 		} );

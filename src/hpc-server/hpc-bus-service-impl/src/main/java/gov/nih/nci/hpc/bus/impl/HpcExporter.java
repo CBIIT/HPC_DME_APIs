@@ -10,11 +10,6 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -23,12 +18,17 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 
 /**
  * <p>
@@ -191,38 +191,53 @@ public class HpcExporter
      * 
      * @param text The text to encrypt.
      */
-    private void export(String filename, List<String> headers, List<List<String>> data) throws IOException {
-    	
+		private void export(String filename, List<String> headers, List<List<String>> data) throws IOException, OutOfMemoryError  {
+			XSSFWorkbook wb = new XSSFWorkbook();
+			FileOutputStream outputStream = new FileOutputStream(filename);
+			try {
+				XSSFSheet s = wb.createSheet("Sheet1");
+				Row r = null;
 
-        Workbook wb = new HSSFWorkbook();
-        try (FileOutputStream outputStream = new FileOutputStream(filename); ) {
-	        Sheet s = wb.createSheet();
-	        Row r = null;
-	
-	        int rownum = 0;
-	        r = s.createRow(rownum++); // header row
-	        int cellnum = 0;
-	        for(String h: headers) {
-	            r.createCell(cellnum++).setCellValue(StringUtils.defaultString(h));
-	        }
-	
-	        for(List<String> row: data) {
-	            cellnum = 0;
-	            r = s.createRow(rownum++);
-	            for(String cell: row) {
-	                r.createCell(cellnum++).setCellValue(cell);
-	            }
-	        }
-        
-        	wb.write(outputStream);
-        } finally {
-            try {
-            	wb.close();
-            } catch (IOException e) {
-            	logger.error("Error closing excel workbook {}", filename, e);
-            }
-        }
-    }
+				int rownum = 0;
+				r = s.createRow(rownum++); // header row
+				int cellnum = 0;
+				int i = 0;
+				for (Object h : headers) {
+					r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
+				}
+				logger.debug("Header size=" + headers.size());
+				try {
+					for (List<String> row : data) {
+						cellnum = 0;
+						r = s.createRow(rownum++);
+						for (String cell : row) {
+							r.createCell(cellnum++).setCellValue(cell);
+						}
+						if(rownum % 1000 == 0) {
+							logger.debug("rownum=" + rownum);
+						}
+					}
+				} catch (Exception e) {
+					logger.error("Error creating row data", e);
+			 	}
+				try {
+					wb.write(outputStream);
+				} catch (Exception e) {
+					logger.error("Error writing to workbook", e);
+			 	}
+			} catch (OutOfMemoryError e) {
+				logger.error("OutOfMemoryError", e);
+				wb.close();
+				outputStream.close();
+			} finally {
+				try {
+					wb.close();
+					outputStream.close();
+				} catch (IOException e) {
+					logger.error("Error closing excel workbook {}", filename, e);
+				}
+			}
+		}
 }
 
  

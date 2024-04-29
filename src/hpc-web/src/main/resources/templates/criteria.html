@@ -440,16 +440,7 @@ function populateLevelAttributes(level, id)
 	
 		}
 	}
-
-	if(level == "DataObject")
-	{
-		for(var i=0;i<dataattributes.length;i++)
-		{
-			var attr = dataattributes[i];
-			attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
-		}
 	
-	}
     $('#attrName'+(row)).empty();
     $('#attrName'+(row)).append(attrOptions);
     //$('#attrName'+(row)).val($('#attrName1').val());
