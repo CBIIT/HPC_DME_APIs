@@ -13,6 +13,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.ws.rs.core.Response;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
@@ -345,6 +346,19 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(!CollectionUtils.isEmpty(catalogs.getCatalogs()) ? catalogs : null, true);
   }
+
+  @Override
+  public Response emailExport(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) {
+    try {
+      dataSearchBusService.sendCurrentQueryResults(compoundMetadataQueryDTO);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+ }
+
 
   @Override
   public Response refreshMetadataViews() {
