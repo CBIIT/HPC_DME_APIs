@@ -41,6 +41,8 @@
 			<xsd:enumeration value="REVIEW_SENT" />
 			<xsd:enumeration value="REVIEW_REMINDER_SENT" />
 			<xsd:enumeration value="USER_QUERY_SENT" />
+			<xsd:enumeration value="USER_QUERY_CURRENT_RESULTS_SENT" />
+			<xsd:enumeration value="USER_QUERY_CURRENT_RESULTS_ERROR" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
