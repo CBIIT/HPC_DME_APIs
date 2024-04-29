@@ -93,7 +93,7 @@
   display: none;
   position: absolute;
   background-color: #f1f1f1;
-  min-width: 160px;
+  min-width: 148px;
   overflow: auto;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
@@ -505,6 +505,9 @@ window.onclick = function(event) {
     		    contentType: 'application/json',
     		    dataType: 'json',
     		    success : function(msg) {
+					if(msg.code == "400") {
+						alert(msg.message);
+					}
     			},
     			error : function(e) {
     				 console.log(JSON.stringify(e));
@@ -689,7 +692,7 @@ window.onclick = function(event) {
 										</div>
 										<a id="exportEmailLink2"
 										class="btn btn-link btn-sm" ng-click="exportByEmail()"
-										>Email Export</a>	  
+										>&nbsp;&nbsp;&nbsp;Email Export</a>	  
 									  </div>
 									</div>										
 								</div>
