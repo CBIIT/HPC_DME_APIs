@@ -2,7 +2,9 @@ package gov.nih.nci.hpc.integration.box.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxAPIException;
+import com.box.sdk.BoxAPIResponseException;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
@@ -24,6 +27,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemTokens;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -37,20 +41,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
-	/*
-	 * // Google drive folder mime-type. private static final String
-	 * FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
-	 * 
-	 * // Google drive search query for a folder. private static final String
-	 * FOLDER_QUERY = "mimeType = '" + FOLDER_MIME_TYPE +
-	 * "' and name = '%s' and '%s' in parents";
-	 * 
-	 * // Google drive search query for a file / folder. private static final String
-	 * PATH_QUERY = "name = '%s' and '%s' in parents";
-	 * 
-	 * // Google drive query for all files under a folder. private static final
-	 * String DIRECTORY_SCAN_QUERY = "'%s' in parents";
-	 */
 
 	// The file size in which we can use the 'transfer large file in chunks' API.
 	private static final Long BOX_LARGE_FILE_TRANSFER_THRESHOLD = 20000000L;
@@ -68,18 +58,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Autowired
 	private HpcBoxConnection boxConnection = null;
 
-	/*
-	 * // The maximum size of individual chunks that will get uploaded by single
-	 * HTTP // request.
-	 * 
-	 * @Value("${hpc.integration.googledrive.chunkSize}") int chunkSize = -1;
-	 * 
-	 * // Locks to synchronize threads executing on path. private Striped<Lock>
-	 * pathLocks = Striped.lock(127);
-	 * 
-	 * // Date formatter to format files last-modified date private DateFormat
-	 * dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
-	 */
+	// In memory local cache of access and refresh tokens
+	private final HashMap<String, String> tokensMap = new HashMap<>();
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -101,15 +81,45 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken, String refreshToken)
-			throws HpcException {
+	public synchronized Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken,
+			String refreshToken) throws HpcException {
 		if (dataTransferAccount == null) {
 			throw new HpcException("Box System account not registered", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		Object token = boxConnection.authenticate(dataTransferAccount, accessToken, refreshToken);
-		boxConnection.logBoxApi(boxConnection.getBoxAPIConnection(token), "authenticate");
+		Object token = boxConnection.authenticate(dataTransferAccount, accessToken,
+				tokensMap.containsKey(accessToken) ? tokensMap.get(accessToken) : refreshToken);
+
+		// Refresh the token.
+		BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(token);
+		try {
+			boxApi.refresh();
+
+		} catch (BoxAPIResponseException e) {
+			// Token expired.
+			throw new HpcException("[Box] Invalid token: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT, e);
+
+		} catch (BoxAPIException e) {
+			throw new HpcException("[Box] Failed to refresh token: " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
+					e);
+		}
+
+		// Update the tokens in-memory cache w/ the freshly created refresh-token.
+		tokensMap.put(accessToken, boxApi.getRefreshToken());
+
 		return token;
+	}
+
+	@Override
+	public HpcIntegratedSystemTokens getIntegratedSystemTokens(Object authenticatedToken) throws HpcException {
+		// Get the Box connection.
+		BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
+
+		HpcIntegratedSystemTokens boxTokens = new HpcIntegratedSystemTokens();
+		boxTokens.setAccessToken(boxApi.getAccessToken());
+		boxTokens.setRefreshToken(boxApi.getRefreshToken());
+
+		return boxTokens;
 	}
 
 	@Override
@@ -122,7 +132,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		// Authenticate the Box access token.
+		// Get the Box connection.
 		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
 
 		// Stream the file to Box.
@@ -134,28 +144,33 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				int lastSlashIndex = destinationPath.lastIndexOf('/');
 				String destinationFolderPath = destinationPath.substring(0, lastSlashIndex);
 				String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
-				logger.error("ERAN 1");
 				BoxFolder boxFolder = getFolder(boxApi, destinationFolderPath, true);
-				logger.error("ERAN 2", boxFolder.getID(), boxFolder.getInfo("name").getName());
 
 				// Transfer the file to Box.
 				BoxFile.Info fileInfo = null;
+				/*
 				if (downloadRequest.getSize() > BOX_LARGE_FILE_TRANSFER_THRESHOLD) {
 					// Use the 'upload large file in chunks' API.
-					fileInfo = boxFolder.uploadLargeFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
-							destinationFileName, downloadRequest.getSize());
-				} else {
+					try {
+						logger.error("ERAN: before upload large file");
+						fileInfo = boxFolder.uploadLargeFile(
+								new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
+								downloadRequest.getSize());
+						logger.error("ERAN: after upload large file");
+
+					} catch (Exception e) {
+						logger.error("ERAN: {}", e);
+						throw new HpcException(e.getMessage(), e);
+					}
+
+				} else {*/
 					fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
 							destinationFileName);
-					boxConnection.logBoxApi(boxApi, "uploadFile");
-				}
-
-				logger.error("ERAN 9 - {}, - {} - {}", fileInfo.getID(), fileInfo.getName(), fileInfo.getSize());
+				//}
 
 				progressListener.transferCompleted(fileInfo.getSize());
-				logger.error("ERAN 10");
 
-			} catch (/* BoxAPIException | InterruptedException | IOException | HpcException | */ Exception e) {
+			} catch (BoxAPIException | IOException | HpcException e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
@@ -246,7 +261,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		BoxFolder boxFolder = null;
 		try {
 			boxFolder = BoxFolder.getRootFolder(boxApi);
-			boxConnection.logBoxApi(boxApi, "getRootFolder");
 
 		} catch (BoxAPIException e) {
 			throw new HpcException("[Box] Failed to get root folder: " + e.getMessage(),
@@ -257,7 +271,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		for (String childFolderName : folderPath.split("/")) {
 			if (!StringUtils.isEmpty(childFolderName) && boxFolder != null) {
 				boxFolder = getChildFolder(boxApi, boxFolder, childFolderName, create);
-				boxConnection.logBoxApi(boxApi, "getChildFolder");
 			}
 		}
 
@@ -294,6 +307,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return null;
 
 		} catch (BoxAPIException e) {
+			if (e.getResponseCode() == 409) {
+				// The folder was created, or in the process of getting created (by another
+				// thread running concurrently). Wait and find it.
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException ie) {
+				}
+
+				BoxFolder childFolder = getChildFolder(boxApi, boxFolder, childFolderName, false);
+				if (childFolder != null) {
+					return childFolder;
+				}
+				logger.error("Box child folder was not found after 409 response on create - {}", childFolderName);
+			}
 			throw new HpcException("[Box] Failed to get child folder: " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}

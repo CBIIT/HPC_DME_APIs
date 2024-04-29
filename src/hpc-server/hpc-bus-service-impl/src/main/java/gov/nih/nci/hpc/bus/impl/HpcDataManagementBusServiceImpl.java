@@ -53,6 +53,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -529,7 +530,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 				downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
-				downloadRequest.getAsperaDownloadDestination(),
+				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId());
 
 		// Create and return a DTO with the request receipt.
@@ -588,7 +589,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
-					downloadRequest.getAsperaDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		} else {
@@ -627,7 +628,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
-					downloadRequest.getAsperaDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination());
 		}
@@ -678,7 +679,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
 				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
-				downloadRetryRequest.getAsperaAccount(),
+				downloadRetryRequest.getAsperaAccount(), downloadRetryRequest.getBoxAccessToken(),
+				downloadRetryRequest.getBoxRefreshToken(),
 				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
@@ -805,7 +807,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
 				downloadRetryRequest.getS3Account(), downloadRetryRequest.getGoogleAccessToken(),
-				downloadRetryRequest.getAsperaAccount(),
+				downloadRetryRequest.getAsperaAccount(), downloadRetryRequest.getBoxAccessToken(),
+				downloadRetryRequest.getBoxRefreshToken(),
 				securityService.getRequestInvoker().getNciAccount().getUserId());
 
 		// Create and return a DTO with the request receipt.
@@ -1685,6 +1688,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} else if (taskStatus.getDataObjectDownloadTask().getAsperaDownloadDestination() != null) {
 				downloadStatus.setDestinationLocation(
 						taskStatus.getDataObjectDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
+			} else if (taskStatus.getDataObjectDownloadTask().getBoxDownloadDestination() != null) {
+				downloadStatus.setDestinationLocation(
+						taskStatus.getDataObjectDownloadTask().getBoxDownloadDestination().getDestinationLocation());
 			}
 			downloadStatus.setDestinationType(taskStatus.getDataObjectDownloadTask().getDestinationType());
 			downloadStatus.setPercentComplete(taskStatus.getDataObjectDownloadTask().getPercentComplete());
@@ -2858,6 +2864,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationLocation(
 						taskStatus.getCollectionDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
 				downloadStatus.setDestinationType(HpcDataTransferType.ASPERA);
+			} else if (taskStatus.getCollectionDownloadTask().getBoxDownloadDestination() != null) {
+				downloadStatus.setDestinationLocation(
+						taskStatus.getCollectionDownloadTask().getBoxDownloadDestination().getDestinationLocation());
+				downloadStatus.setDestinationType(HpcDataTransferType.BOX);
 			}
 
 			// Get the status of the individual data object download tasks if the collection
@@ -3933,6 +3943,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.getDestinationLocation();
 		} else if (collectionDownloadTask.getAsperaDownloadDestination() != null) {
 			destinationLocation = collectionDownloadTask.getAsperaDownloadDestination().getDestinationLocation();
+		} else if (collectionDownloadTask.getBoxDownloadDestination() != null) {
+			destinationLocation = collectionDownloadTask.getBoxDownloadDestination().getDestinationLocation();
 		}
 
 		return destinationLocation;
@@ -3975,7 +3987,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			asperaDownloadDestination.setAccount(downloadRetryRequest.getAsperaAccount());
 			asperaDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadRequest.setAsperaDownloadDestination(asperaDownloadDestination);
+		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.BOX)) {
+			HpcBoxDownloadDestination boxDownloadDestination = new HpcBoxDownloadDestination();
+			boxDownloadDestination.setAccessToken(downloadRetryRequest.getBoxAccessToken());
+			boxDownloadDestination.setRefreshToken(downloadRetryRequest.getBoxRefreshToken());
+			boxDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			downloadRequest.setBoxDownloadDestination(boxDownloadDestination);
 		}
+
 		return downloadRequest;
 	}
 

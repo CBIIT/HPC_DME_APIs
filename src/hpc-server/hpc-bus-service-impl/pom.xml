@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.0.0</version>
+		<version>3.1.0</version>
 	</parent>
 	<artifactId>hpc-bus-service-impl</artifactId>
 	<packaging>jar</packaging>
@@ -54,10 +54,12 @@
 		    <groupId>com.google.guava</groupId>
 		    <artifactId>guava</artifactId>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
 		<dependency>
 		    <groupId>org.apache.poi</groupId>
-		    <artifactId>poi</artifactId>
-	    </dependency>
+		    <artifactId>poi-ooxml</artifactId>
+		    <version>4.1.2</version>
+		</dependency>
 	    <dependency>
 				<groupId>org.aspectj</groupId>
 				<artifactId>aspectjrt</artifactId>

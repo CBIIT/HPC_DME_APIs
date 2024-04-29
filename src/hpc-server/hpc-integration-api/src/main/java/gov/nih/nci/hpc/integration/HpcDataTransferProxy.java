@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemTokens;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -98,6 +99,17 @@ public interface HpcDataTransferProxy {
 	public default Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String accessToken,
 			String refreshToken) throws HpcException {
 		throw new HpcException("authenticate(Box auth-code) not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	/**
+	 * Get integrated system tokens (access & refresh) out of the abstracted token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return Integrated system tokens (access & refresh)
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default HpcIntegratedSystemTokens getIntegratedSystemTokens(Object authenticatedToken) throws HpcException {
+		throw new HpcException("getIntegratedSystemTokens() not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
 	/**

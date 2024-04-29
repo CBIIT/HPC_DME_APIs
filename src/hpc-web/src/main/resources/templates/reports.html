@@ -492,16 +492,18 @@ body.loading .overlay{
 		let messageTopDateRange = " Date Range: " +  document.getElementById("fromDate").value + "-" + document.getElementById("toDate").value;
 		switch (reportType) {
 			case 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE':
-				exportFileName= pretag + "Basepath" + tag;
+				var basePathValue = document.getElementById("basepath").value;
+				exportFileName= pretag + "Basepath" + tag + "_" + basePathValue.substring(1);
 				reportHeaderTitle= "Data Archival Usage Report for Basepath: " + document.getElementById("basepath").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE':
-				exportFileName= pretag + "DOC" + tag;
+				var docValue = document.getElementById("doc").value;
+				exportFileName= pretag + "DOC" + tag + "_" + docValue;
 				reportHeaderTitle = "Data Archival Usage Report for DOC: " + document.getElementById("doc").value + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE':
-				exportFileName= pretag + "User" + tag;
-				reportHeaderTitle = "Data Archival Usage Report for User: " + document.getElementById("user").value + ", " + messageTopDateRange;
+				exportFileName= pretag + "User" + tag + "_" + userselected;
+				reportHeaderTitle = "Data Archival Usage Report for User: " + userselected + ", " + messageTopDateRange;
 				break;
 			case 'USAGE_SUMMARY_BY_DATE_RANGE':
 				exportFileName= pretag + "Summary" + tag;
