@@ -99,6 +99,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	private String hpcMetadataAttrsURL;
 	@Value("${gov.nih.nci.hpc.server.user.group}")
     private String userGroupServiceURL;
+	@Value("${gov.nih.nci.hpc.fileExportRowsThreshold}")
+    private String fileExportRowsThreshold;
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -193,6 +195,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("pageSize", search.getPageSize());
 		model.addAttribute("totalSize", search.getTotalSize());
 		model.addAttribute("deselectedColumns", search.getDeselectedColumns());
+		model.addAttribute("fileExportRowsThreshold", fileExportRowsThreshold);
 		boolean success = false;
 		try {
 
