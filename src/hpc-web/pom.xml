@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>gov.nih.nci.hpc</groupId>
     <artifactId>hpc-web</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <packaging>war</packaging>
     <name>HPC-DME Web Application</name>
     <description>HPC Data Management</description>
@@ -17,30 +17,19 @@
         <!-- lookup parent from repository -->
     </parent>
 	<properties>
-		<api.version>3.0.0</api.version>
+		<api.version>3.1.0</api.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <start-class>gov.nih.nci.hpc.web.HpcWebApplication</start-class>
         <java.version>11</java.version>
         <resources.basedir>src/main/resources</resources.basedir>
         <app.configs.dir>${resources.basedir}/appconfigs</app.configs.dir>
         <google-drive-sdk.version>1.25.0</google-drive-sdk.version>
-        <log4j2.version>2.20.0</log4j2.version>
         <spring-framework.version>5.2.25.RELEASE</spring-framework.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
-            <exclusions>                                  
-            	<exclusion>                                     
-            		<groupId>org.apache.logging.log4j</groupId>         
-            		<artifactId>log4j-to-slf4j</artifactId>             
-            	</exclusion>
-            	<exclusion>                                     
-                	<groupId>ch.qos.logback</groupId>               
-                	<artifactId>logback-classic</artifactId>     
-            	</exclusion>
-        	</exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -54,11 +43,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
-        <dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-log4j2</artifactId>
-		    <scope>runtime</scope>
-		  </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -215,7 +199,6 @@
                                 <exclude>.bowerrc</exclude>
                                 <exclude>bower.json</exclude>                                
                                 <exclude>keystore.jks</exclude>
-                                <exclude>logback.xml</exclude>
                             </excludes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
