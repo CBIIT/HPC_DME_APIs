@@ -17,7 +17,7 @@
   <parent>
     <groupId>gov.nih.nci.hpc</groupId>
     <artifactId>hpc-server</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
   </parent>
   <artifactId>hpc-ws-rs-impl</artifactId>
   <packaging>war</packaging>

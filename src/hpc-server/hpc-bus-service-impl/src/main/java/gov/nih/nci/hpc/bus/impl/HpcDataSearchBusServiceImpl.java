@@ -20,10 +20,15 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.Async;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -33,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
@@ -71,6 +78,8 @@ import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
+import gov.nih.nci.hpc.service.impl.HpcRequestContext;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 
 /**
  * HPC Data Search Business Service Implementation.
@@ -80,6 +89,8 @@ import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
 public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 	private static final int USER_QUERY_SEARCH_RESULTS_PAGE_SIZE = 10000;
+	
+	private static final int EMAIL_EXPORT_QUERY_BLOCK_RETRIEVAL_SIZE = 20000;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -120,9 +131,16 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	// Directory to create the user query excel export.
 	@Value("${hpc.bus.exportDirectory}")
 	private String exportDirectory = null;
+	
+	//The email exported task executor.
+    @Autowired
+    @Qualifier("hpcEmailExporterTaskExecutor")
+    Executor emailExporterTaskExecutor = null;
+
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -147,7 +165,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (compoundMetadataQueryDTO == null) {
 			throw new HpcException("Null compound metadata query", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
 		boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null
 				&& compoundMetadataQueryDTO.getDetailedResponse();
 		int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
@@ -179,7 +196,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			collectionsDTO.setTotalCount((page == 1 && count < limit) ? count
 					: dataSearchService.getCollectionCount(compoundMetadataQueryDTO.getCompoundQuery()));
 		}
-
 		return collectionsDTO;
 	}
 
@@ -546,6 +562,29 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		sendQueryResults(HpcCompoundMetadataQueryFrequency.MONTHLY);
 	}
 
+	public void sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) throws HpcException {
+		logger.info("In bus impl " + "sendCurrentQueryResults");
+		try {
+			// Get the user-id of the request invoker.
+			HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+			// Process this email export async.
+			CompletableFuture.runAsync(() -> {
+				try {
+					logger.debug("Before executeAsUserAccount - no call");
+					// Executed in a separate thread.
+					sendCurrentQueryResultsByEmail(compoundMetadataQueryDTO, invoker);
+				} catch (final HpcException e) {
+					logger.error("Error exporting query result", e);
+				}
+
+			}, emailExporterTaskExecutor);
+
+		} catch (Exception e) {
+			logger.debug("Exception: " + gson.toJson(e));
+		}
+		logger.debug("returning from sendCurrentQueryResults");
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -779,6 +818,117 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		}
 	}
+	
+
+    /**
+     * Run and construct the excel export of the specified query results and send to
+     * the user This needs to run with correct user account to get the search
+     * results with user permissions
+     * 
+     
+     * @param query     Query to be run
+     * @param invoker   User information
+     * @throws HpcException If the user query failed or failed to export
+     */
+    private boolean sendCurrentQueryResultsByEmail(HpcCompoundMetadataQueryDTO query, HpcRequestInvoker invoker) throws HpcException {
+		logger.debug("EmailExport: In sendCurrentQueryResultsByEmail");
+		try {
+			HpcRequestContext.setRequestInvoker(invoker);
+		} catch (Exception e) {
+			logger.debug(e.toString());
+		}
+		String userId = invoker.getNciAccount().getUserId();
+		
+		// Save Current Datetime to send in Email Subject
+		Date currentDate = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentDateTime = dateFormat.format(currentDate);
+		String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
+
+		// Construct the excel file name
+		String exportFileName =  exportDirectory + File.separator + "Search_Results_"
+				+ userId + "_" + fileSuffix + ".xlsx";
+
+		logger.debug("EmailExport: Export file name before invoking user: " + exportFileName);
+		String queryName = gson.toJson(query);
+		logger.info("EmailExport: Generating email export for user: " + userId + " with query: " + queryName);
+		try {
+			if (query.getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)) {
+				HpcDataObjectListDTO dataobjectListDTO = new HpcDataObjectListDTO();
+				int pageNumber = 1;
+				int totalPages = 1;
+				do {
+					query.setPage(pageNumber++);
+					query.setPageSize(USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
+					HpcDataObjectListDTO dataobjectsDTO = getDataObjects(null, query);
+					dataobjectListDTO.getDataObjectPaths().addAll(dataobjectsDTO.getDataObjectPaths());
+					dataobjectListDTO.getDataObjects().addAll(dataobjectsDTO.getDataObjects());
+					logger.debug("EmailExport: In loop, retrieving rows=" + dataobjectListDTO.getDataObjects().size());
+					totalPages = getTotalPages(dataobjectsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
+				} while (pageNumber <= totalPages);
+				if (CollectionUtils.isEmpty(dataobjectListDTO.getDataObjectPaths())
+						&& CollectionUtils.isEmpty(dataobjectListDTO.getDataObjects())) {
+					logger.info("No results found from query {} for user {}", queryName, userId);
+					return false;
+				}
+				logger.debug("EmailExport: dataobjects size=" + dataobjectListDTO.getDataObjects().size());
+				try {
+					exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getDeselectedColumns());
+					logger.info("EmailExport: Done with creating export file: " + exportFileName + " for user="+ userId);
+				} catch (IOException e) {
+					logger.error("IO Exception occured processing dataObjects . Failed to export file: {}", exportFileName, e);
+				} catch (OutOfMemoryError e) {
+					logger.error("OutOfMemoryError occured. Failed to export file: {}", exportFileName, e);
+				}
+				logger.debug("EmailExport: created export in temp directory");
+				query.setPageSize(dataobjectListDTO.getDataObjects().size());
+			} else {
+				HpcCollectionListDTO collectionListDTO = new HpcCollectionListDTO();
+				int pageNumber = 1;
+				int totalPages = 1;
+				do {
+					query.setPage(pageNumber++);
+					query.setPageSize(USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
+					HpcCollectionListDTO collectionsDTO = getCollections(query);
+					collectionListDTO.getCollectionPaths().addAll(collectionsDTO.getCollectionPaths());
+					collectionListDTO.getCollections().addAll(collectionsDTO.getCollections());
+					logger.debug("EmailExport: In loop, retrieving rows=" + collectionListDTO.getCollections().size());
+					totalPages = getTotalPages(collectionsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
+				} while (pageNumber <= totalPages);
+				if (CollectionUtils.isEmpty(collectionListDTO.getCollectionPaths())
+						&& CollectionUtils.isEmpty(collectionListDTO.getCollections())) {
+					logger.info("No results found from query {} for user {}", queryName, userId);
+					return false;
+				}
+				logger.info("EmailExport: collection size=" + collectionListDTO.getCollections().size());
+				try {
+					exporter.exportCollections(exportFileName, collectionListDTO, query.getDeselectedColumns());
+					logger.info("EmailExport: Done with creating export file: " + exportFileName + " for user="+ userId);
+				} catch (IOException e) {
+					logger.error("IO Exception occured processing collections. Failed to export file: {}", exportFileName, e);
+				} catch (OutOfMemoryError e) {
+					logger.error("OutOfMemoryError occured. Failed to export file: {}", exportFileName, e);
+				}
+				logger.debug("EmailExport: created export in temp directory");
+				query.setPageSize(collectionListDTO.getCollections().size());
+			}
+			queryName = gson.toJson(query);
+			logger.debug("After page size update=" + queryName);
+			sendQueryCurrentNotification(userId, exportFileName, queryName, currentDateTime);
+		} catch (Exception e) {
+			throw new HpcException("Error exporting search result for query: " + gson.toJson(query),
+					HpcErrorType.UNEXPECTED_ERROR, e);
+		} finally {
+			// Delete the file
+			Path path = FileSystems.getDefault().getPath(exportFileName);
+			try {
+				Files.deleteIfExists(path);
+			} catch (IOException e) {
+				logger.error("Failed to delete file: {}", exportFileName, e);
+			}
+		}
+		return true;
+    }
 
 	/**
 	 * Run and construct the excel export of the specified query results and send to
@@ -896,6 +1046,42 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		payloadEntries.add(payloadEntry);
 
 		notificationService.sendNotification(nciUserId, HpcEventType.USER_QUERY_SENT, payloadEntries,
+				HpcNotificationDeliveryMethod.EMAIL, exportFileName);
+	}
+	
+	/**
+	 * Email the exported user query results to the user.
+	 *
+	 * @param nciUserId      The NCI user ID.
+	 * @param exportFileName The exported query results.
+	 * @param queryName      The query name.
+	 * @param frequency      The scheduled frequency.
+	 * @throws HpcException
+	 */
+	private void sendQueryCurrentNotification(String nciUserId, String exportFileName, String queryString, String requestTime)
+			throws HpcException {
+		logger.info("Sending {} query result for {} generated at {}", queryString, nciUserId, requestTime);
+		if (nciUserId == null) {
+			throw new HpcException("Null nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcUser user = securityService.getUser(nciUserId);
+		if (user == null) {
+			throw new HpcException("User doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
+		HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
+		payloadEntry.setAttribute("QUERY_NAME");
+		payloadEntry.setValue(queryString);
+		payloadEntries.add(payloadEntry);
+
+		payloadEntry = new HpcEventPayloadEntry();
+		payloadEntry.setAttribute("FREQUENCY");
+		payloadEntry.setValue(requestTime);
+		payloadEntries.add(payloadEntry);
+
+		notificationService.sendNotification(nciUserId, HpcEventType.USER_QUERY_CURRENT_RESULTS_SENT, payloadEntries,
 				HpcNotificationDeliveryMethod.EMAIL, exportFileName);
 	}
 
