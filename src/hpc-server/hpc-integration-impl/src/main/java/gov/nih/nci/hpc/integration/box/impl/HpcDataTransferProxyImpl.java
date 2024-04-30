@@ -42,6 +42,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// Constants
 	// ---------------------------------------------------------------------//
 
+	// TODO - remove this
 	// The file size in which we can use the 'transfer large file in chunks' API.
 	private static final Long BOX_LARGE_FILE_TRANSFER_THRESHOLD = 20000000L;
 
@@ -58,8 +59,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Autowired
 	private HpcBoxConnection boxConnection = null;
 
-	// In memory local cache of access and refresh tokens
-	private final HashMap<String, String> tokensMap = new HashMap<>();
+	// In memory local cache of Box connections. This is needed to be able to reuse
+	// tokens
+	// provided by users on subsequent calls as well as using same set of tokens for
+	// bulk transfers.
+	private final HashMap<String, BoxAPIConnection> boxApiConnections = new HashMap<>();
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -87,29 +91,37 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("Box System account not registered", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		Object token = boxConnection.authenticate(dataTransferAccount, accessToken,
-				tokensMap.containsKey(accessToken) ? tokensMap.get(accessToken) : refreshToken);
+		// Search for an active connection. If found, refresh and use it for this
+		// transfer request.
+		if (boxApiConnections.containsKey(accessToken)) {
+			BoxAPIConnection boxApiConnection = boxApiConnections.get(accessToken);
 
-		// Refresh the token.
-		BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(token);
-		try {
-			boxApi.refresh();
+			// Refresh the token.
+			try {
+				boxApiConnection.refresh();
 
-		} catch (BoxAPIResponseException e) {
-			// Token expired.
-			throw new HpcException("[Box] Invalid token: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT, e);
+			} catch (BoxAPIResponseException e) {
+				// Token expired.
+				boxApiConnections.remove(accessToken);
+				throw new HpcException("[Box] Invalid token: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT, e);
 
-		} catch (BoxAPIException e) {
-			throw new HpcException("[Box] Failed to refresh token: " + e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
-					e);
+			} catch (BoxAPIException e) {
+				boxApiConnections.remove(accessToken);
+				throw new HpcException("[Box] Failed to refresh token: " + e.getMessage(),
+						HpcErrorType.DATA_TRANSFER_ERROR, e);
+			}
+
 		}
 
-		// Update the tokens in-memory cache w/ the freshly created refresh-token.
-		tokensMap.put(accessToken, boxApi.getRefreshToken());
+		// Active connection not found. Establish a new one and cache it
+		BoxAPIConnection boxApiConnection = boxConnection
+				.getBoxAPIConnection(boxConnection.authenticate(dataTransferAccount, accessToken, refreshToken));
+		boxApiConnections.put(accessToken, boxApiConnection);
 
-		return token;
+		return boxApiConnection;
 	}
 
+	// TODO: remove this
 	@Override
 	public HpcIntegratedSystemTokens getIntegratedSystemTokens(Object authenticatedToken) throws HpcException {
 		// Get the Box connection.
@@ -149,24 +161,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				// Transfer the file to Box.
 				BoxFile.Info fileInfo = null;
 				/*
-				if (downloadRequest.getSize() > BOX_LARGE_FILE_TRANSFER_THRESHOLD) {
-					// Use the 'upload large file in chunks' API.
-					try {
-						logger.error("ERAN: before upload large file");
-						fileInfo = boxFolder.uploadLargeFile(
-								new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
-								downloadRequest.getSize());
-						logger.error("ERAN: after upload large file");
-
-					} catch (Exception e) {
-						logger.error("ERAN: {}", e);
-						throw new HpcException(e.getMessage(), e);
-					}
-
-				} else {*/
-					fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
-							destinationFileName);
-				//}
+				 * if (downloadRequest.getSize() > BOX_LARGE_FILE_TRANSFER_THRESHOLD) { // Use
+				 * the 'upload large file in chunks' API. try {
+				 * logger.error("ERAN: before upload large file"); fileInfo =
+				 * boxFolder.uploadLargeFile( new
+				 * URL(downloadRequest.getArchiveLocationURL()).openStream(),
+				 * destinationFileName, downloadRequest.getSize());
+				 * logger.error("ERAN: after upload large file");
+				 * 
+				 * } catch (Exception e) { logger.error("ERAN: {}", e); throw new
+				 * HpcException(e.getMessage(), e); }
+				 * 
+				 * } else {
+				 */
+				fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
+						destinationFileName);
+				// }
 
 				progressListener.transferCompleted(fileInfo.getSize());
 
