@@ -457,14 +457,14 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel)
       throws HpcException {
 
-    return metadataDAO.getCollectionMetadataAttributes(levelLabel, null);
+    return metadataDAO.getCollectionMetadataAttributes(levelLabel);
   }
 
   @Override
   public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel)
       throws HpcException {
 
-    return metadataDAO.getDataObjectMetadataAttributes(levelLabel, null);
+    return metadataDAO.getDataObjectMetadataAttributes(levelLabel);
   }
 
   //---------------------------------------------------------------------//
