@@ -251,23 +251,19 @@ public interface HpcMetadataDAO {
 	 * Get a list of collection metadata attributes currently registered.
 	 *
 	 * @param levelLabel             Filter the results by level label. (Optional).
-	 * @param dataManagementUsername The Data Management user name.
 	 * @return A list of metadata attributes for each level.
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel,
-			String dataManagementUsername) throws HpcException;
+	public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel) throws HpcException;
 
 	/**
 	 * Get a list of data object metadata attributes currently registered.
 	 *
 	 * @param levelLabel             Filter the results by level label. (Optional).
-	 * @param dataManagementUsername The Data Management user name.
 	 * @return A list of metadata attributes for each level.
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel,
-			String dataManagementUsername) throws HpcException;
+	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel) throws HpcException;
 
 	/**
 	 * Get the latest metadata modification time of a given collection or
