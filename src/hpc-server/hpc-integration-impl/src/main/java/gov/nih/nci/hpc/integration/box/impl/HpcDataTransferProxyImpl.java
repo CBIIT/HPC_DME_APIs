@@ -149,7 +149,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			try {
 				// Get the Box connection.
 				BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
-				
+
 				// Find / Create the folder in Box where we download the file to
 				String destinationPath = toNormalizedPath(
 						downloadRequest.getBoxDestination().getDestinationLocation().getFileId());
@@ -158,26 +158,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
 				BoxFolder boxFolder = getFolder(boxApi, destinationFolderPath, true);
 
-				// Transfer the file to Box.
-				BoxFile.Info fileInfo = null;
-				/*
-				 * if (downloadRequest.getSize() > BOX_LARGE_FILE_TRANSFER_THRESHOLD) { // Use
-				 * the 'upload large file in chunks' API. try {
-				 * logger.error("ERAN: before upload large file"); fileInfo =
-				 * boxFolder.uploadLargeFile( new
-				 * URL(downloadRequest.getArchiveLocationURL()).openStream(),
-				 * destinationFileName, downloadRequest.getSize());
-				 * logger.error("ERAN: after upload large file");
-				 * 
-				 * } catch (Exception e) { logger.error("ERAN: {}", e); throw new
-				 * HpcException(e.getMessage(), e); }
-				 * 
-				 * } else {
-				 */
-				fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
-						destinationFileName);
-				// }
+                // Download the file to box and attach a progress listener
+				BoxFile.Info fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
+						destinationFileName, downloadRequest.getSize(), new HpcBoxProgressListener(progressListener,
+								"download to " + destinationPath));
 
+				// Transfer completed.
 				progressListener.transferCompleted(fileInfo.getSize());
 
 			} catch (BoxAPIException | IOException | HpcException e) {
