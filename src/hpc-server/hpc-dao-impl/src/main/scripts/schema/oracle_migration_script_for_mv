@@ -826,3 +826,24 @@ comment on column irods.r_coll_hierarchy_data_owner.data_curator is 'Metadata ID
 
 create index r_coll_hierarchy_data_owner_path_query
     on irods.r_coll_hierarchy_data_owner (object_path);
+    
+    
+create materialized view irods.r_data_meta_attributes as
+select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main dataObject;
+
+comment on column irods.r_data_meta_attributes.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level';
+
+comment on column irods.r_data_meta_attributes.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
+
+create index r_data_meta_attributes_level
+    on irods.r_data_meta_attributes (level_label);
+    
+create materialized view irods.r_coll_meta_attributes as
+select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main collection;
+
+comment on column irods.r_coll_meta_attributes.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level';
+
+comment on column irods.r_coll_meta_attributes.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
+
+create index r_coll_meta_attributes_level
+    on irods.r_coll_meta_attributes (level_label);
