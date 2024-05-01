@@ -121,12 +121,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER = " and dataObject.level_label = ?)";
 	private static final String DATA_OBJECT_LEVEL_LABEL_NOT_EQUAL_FILTER = " and dataObject.level_label <> ?)";
 	private static final String DATA_OBJECT_LEVEL_LABEL_LIKE_FILTER = " and dataObject.level_label like ?)";
-	private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER_TERM = " dataObject.level_label = ?)";
+	private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER_TERM = " level_label = ? ";
 
 	private static final String COLLECTION_LEVEL_LABEL_EQUAL_FILTER = " and collection.level_label = ?)";
 	private static final String COLLECTION_LEVEL_LABEL_NOT_EQUAL_FILTER = " and collection.level_label <> ?)";
 	private static final String COLLECTION_LEVEL_LABEL_LIKE_FILTER = " and collection.level_label like ?)";
-	private static final String COLLECTION_LEVEL_LABEL_EQUAL_FILTER_TERM = " collection.level_label = ?)";
+	private static final String COLLECTION_LEVEL_LABEL_EQUAL_FILTER_TERM = " level_label = ? ";
 
 	private static final String USER_ACCESS_SQL = "(select 1 from R_USER_MAIN user_main, R_USER_GROUP groups, R_OBJT_ACCESS obj_access "
 			+ "where user_main.USER_ID=groups.USER_ID " + "and groups.GROUP_USER_ID=obj_access.USER_ID "
@@ -205,16 +205,16 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "where user_main.USER_ID = groups.USER_ID and groups.GROUP_USER_ID = obj_access.USER_ID "
 			+ "and obj_access.object_id = data_main.DATA_ID and user_main.USER_NAME = ?)";
 
-	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main collection";
+	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "r_coll_meta_attributes ";
 
-	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main dataObject";
+	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "r_data_meta_attributes ";
 
 	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "select level_label, rtrim(xmlagg(xmlelement(e, meta_attr_name, ',').extract('//text()') "
-			+ "order by meta_attr_name).getClobVal(),',') as attributes from ("
+			+ "order by meta_attr_name).getClobVal(),',') as attributes from "
 			+ GET_COLLECTION_METADATA_ATTRIBUTES_SQL;
 
 	private static final String GET_DATA_OBJECT_METADATA_AGGREGATE_SQL = "select level_label, rtrim(xmlagg(xmlelement(e, meta_attr_name, ',').extract('//text()') "
-			+ "order by meta_attr_name).getClobVal(),',') as attributes from ("
+			+ "order by meta_attr_name).getClobVal(),',') as attributes from "
 			+ GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL;
 
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = " group by level_label order by level_label";
@@ -702,16 +702,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 
 	@Override
-	public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel,
-			String dataManagementUsername) throws HpcException {
-		return getMetadataAttributes(GET_COLLECTION_METADATA_AGGREGATE_SQL, levelLabel, dataManagementUsername,
+	public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel) throws HpcException {
+		return getMetadataAttributes(GET_COLLECTION_METADATA_AGGREGATE_SQL, levelLabel,
 				COLLECTION_LEVEL_LABEL_EQUAL_FILTER_TERM);
 	}
 
 	@Override
-	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel,
-			String dataManagementUsername) throws HpcException {
-		return getMetadataAttributes(GET_DATA_OBJECT_METADATA_AGGREGATE_SQL, levelLabel, dataManagementUsername,
+	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel) throws HpcException {
+		return getMetadataAttributes(GET_DATA_OBJECT_METADATA_AGGREGATE_SQL, levelLabel,
 				DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER_TERM);
 	}
 
@@ -1149,40 +1147,23 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	 * @param query                  The query to invoke (for collection or data
 	 *                               object metadata attributes).
 	 * @param levelLabel             Filter the results by level label. (Optional).
-	 * @param dataManagementUsername The Data Management user name.
 	 * @param sqlLevelLabelFilter    The SQL filter to apply for level label
 	 *                               ('where' condition).
 	 * @return A list of metadata attributes for each level.
 	 * @throws HpcException on database.
 	 */
 	private List<HpcMetadataLevelAttributes> getMetadataAttributes(String query, String levelLabel,
-			String dataManagementUsername, String sqlLevelLabelFilter) throws HpcException {
+			String sqlLevelLabelFilter) throws HpcException {
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
 
 		sqlQueryBuilder.append(query);
-		boolean usernamePresent = false;
-
-		// Add a query to only include entities the user can access.
-		if (dataManagementUsername != null && !dataManagementUsername.isEmpty()) {
-			sqlQueryBuilder.append(" where exists ");
-			sqlQueryBuilder.append(USER_ACCESS_SQL);
-			args.add(dataManagementUsername);
-			usernamePresent = true;
-		}
 
 		// Add level label filter if provided.
 		if (levelLabel != null && !levelLabel.isEmpty()) {
-			if (usernamePresent) {
-				sqlQueryBuilder.append(" and");
-			} else {
-				sqlQueryBuilder.append(" where");
-			}
+			sqlQueryBuilder.append(" where");
 			sqlQueryBuilder.append(sqlLevelLabelFilter);
 			args.add(levelLabel);
-		} else {
-
-			sqlQueryBuilder.append(")");
 		}
 
 		// Add the grouping and order SQL.
