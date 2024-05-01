@@ -99,6 +99,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// Refresh the token.
 			try {
 				boxApiConnection.refresh();
+				return boxApiConnection;
 
 			} catch (BoxAPIResponseException e) {
 				// Token expired.
@@ -121,7 +122,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return boxApiConnection;
 	}
 
-	// TODO: remove this
 	@Override
 	public HpcIntegratedSystemTokens getIntegratedSystemTokens(Object authenticatedToken) throws HpcException {
 		// Get the Box connection.
@@ -144,12 +144,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		// Get the Box connection.
-		final BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
-
 		// Stream the file to Box.
 		CompletableFuture<Void> boxDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
+				// Get the Box connection.
+				BoxAPIConnection boxApi = boxConnection.getBoxAPIConnection(authenticatedToken);
+				
 				// Find / Create the folder in Box where we download the file to
 				String destinationPath = toNormalizedPath(
 						downloadRequest.getBoxDestination().getDestinationLocation().getFileId());
