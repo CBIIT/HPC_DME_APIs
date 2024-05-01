@@ -3242,21 +3242,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getAccessToken(),
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getRefreshToken());
 
-			/* TODO: Remove this
-			// Update the download task with the fresh set of Box tokens created after
-			// authenticating the user.
+			
+			// Update the download task with the latest refresh token 
 			HpcIntegratedSystemTokens boxTokens = dataTransferProxies.get(HpcDataTransferType.BOX)
 					.getIntegratedSystemTokens(authenticatedToken);
 			HpcDataObjectDownloadTask downloadTask = boxDownload.getDownloadTask();
 
+			// TODO - remove this.
 			logger.error("ERAN: box tokens before & after - {} -> {}, {} -> {}",
 					downloadTask.getBoxDownloadDestination().getAccessToken(), boxTokens.getAccessToken(),
 					downloadTask.getBoxDownloadDestination().getRefreshToken(), boxTokens.getRefreshToken());
 
-			downloadTask.getBoxDownloadDestination().setAccessToken(boxTokens.getAccessToken());
 			downloadTask.getBoxDownloadDestination().setRefreshToken(boxTokens.getRefreshToken());
 			dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
-			*/
 
 			// Perform the download (From S3 Archive to User's Box).
 			dataTransferProxies.get(HpcDataTransferType.BOX).downloadDataObject(authenticatedToken, downloadRequest,
