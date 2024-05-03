@@ -158,10 +158,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
 				BoxFolder boxFolder = getFolder(boxApi, destinationFolderPath, true);
 
-                // Download the file to box and attach a progress listener
-				BoxFile.Info fileInfo = boxFolder.uploadFile(new URL(downloadRequest.getArchiveLocationURL()).openStream(),
-						destinationFileName, downloadRequest.getSize(), new HpcBoxProgressListener(progressListener,
-								"download to " + destinationPath));
+				// Download the file to box and attach a progress listener
+				BoxFile.Info fileInfo = boxFolder.uploadFile(
+						new URL(downloadRequest.getArchiveLocationURL()).openStream(), destinationFileName,
+						downloadRequest.getSize(),
+						new HpcBoxProgressListener(progressListener,
+								"download " + downloadRequest.getPath() + " to " + destinationPath,
+								downloadRequest.getSize()));
 
 				// Transfer completed.
 				progressListener.transferCompleted(fileInfo.getSize());
