@@ -289,6 +289,11 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		var queryAll = true;
 		if (checkBox && checkBox.checked == false){
 			queryAll = false;
+		} else if (checkBox && checkBox.checked == true){
+			queryAll = true;
+		} else {
+			// User Role
+			queryAll = false;
 		}
 
 		$('#resultsGrid thead tr')
