@@ -287,7 +287,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 
 		var checkBox = document.getElementById("allcheckbox");
 		var queryAll = true;
-		if (checkBox.checked == false){
+		if (checkBox && checkBox.checked == false){
 			queryAll = false;
 		}
 
