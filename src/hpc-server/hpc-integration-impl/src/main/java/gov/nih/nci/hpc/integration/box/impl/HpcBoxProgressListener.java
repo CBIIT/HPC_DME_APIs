@@ -37,14 +37,16 @@ public class HpcBoxProgressListener implements ProgressListener {
 	// ---------------------------------------------------------------------//
 
 	// HPC progress listener
-	HpcDataTransferProgressListener progressListener = null;
+	private HpcDataTransferProgressListener progressListener = null;
 
 	// Bytes transferred and logged.
-	// AtomicLong bytesTransferred = new AtomicLong(0);
-	long bytesTransferredReported = 0;
+	private long bytesTransferredReported = 0;
 
 	// Transfer source and/or destination (for logging purposed)
-	String transferSourceDestination = null;
+	private String transferSourceDestination = null;
+	
+	// Transfer size (for logging purposes)
+	private long size = 0;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
@@ -58,15 +60,17 @@ public class HpcBoxProgressListener implements ProgressListener {
 	 * @param progressListener          The HPC progress listener.
 	 * @param transferSourceDestination The transfer source and destination (for
 	 *                                  logging progress).
+	 *                                  @param size The file size
 	 * @throws HpcException if no progress listener provided.
 	 */
-	public HpcBoxProgressListener(HpcDataTransferProgressListener progressListener, String transferSourceDestination)
+	public HpcBoxProgressListener(HpcDataTransferProgressListener progressListener, String transferSourceDestination, long size)
 			throws HpcException {
 		if (progressListener == null) {
 			throw new HpcException("Null progress listener", HpcErrorType.UNEXPECTED_ERROR);
 		}
 		this.progressListener = progressListener;
 		this.transferSourceDestination = transferSourceDestination;
+		this.size = size / MB;
 	}
 
 	/**
@@ -92,12 +96,12 @@ public class HpcBoxProgressListener implements ProgressListener {
 		if (bytesTransferred > 0) {
 			if (bytesTransferredReported == 0) {
 				bytesTransferredReported = bytesTransferred;
-				logger.info("Box transfer [{}] started. {} bytes transferred so far", transferSourceDestination,
+				logger.info("Box transfer [{}] started. {} bytes transferred so far ", transferSourceDestination,
 						bytesTransferredReported);
 			} else if (bytesTransferred - bytesTransferredReported >= TRANSFER_PROGRESS_REPORTING_RATE) {
 				bytesTransferredReported = bytesTransferred;
-				logger.info("Box transfer [{}] in progress. {}MB transferred so far", transferSourceDestination,
-						bytesTransferredReported / MB);
+				logger.info("Box transfer [{}] in progress. {}MB / {}MB transferred so far", transferSourceDestination,
+						bytesTransferredReported / MB, size);
 
 				progressListener.transferProgressed(bytesTransferredReported);
 			}
