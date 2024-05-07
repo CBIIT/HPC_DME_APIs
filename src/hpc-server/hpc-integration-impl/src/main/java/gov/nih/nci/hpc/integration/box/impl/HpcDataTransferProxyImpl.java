@@ -169,7 +169,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				// Transfer completed.
 				progressListener.transferCompleted(fileInfo.getSize());
 
-			} catch (BoxAPIException | IOException | HpcException e) {
+			} catch (BoxAPIException e) {
+				String message = "[Box] Failed to download object: " + e.getMessage();
+				logger.error(
+						message + " . API Response Code: " + e.getResponseCode() + ". API Response: " + e.getResponse(),
+						HpcErrorType.DATA_TRANSFER_ERROR, e);
+				progressListener.transferFailed(message);
+
+			} catch (IOException | HpcException e) {
 				String message = "[Box] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
