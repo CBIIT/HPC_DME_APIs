@@ -635,6 +635,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void startBoxDataObjectDownloadTasks() throws HpcException {
+		// Iterate through all the data object download tasks that are received and type
+		// is Box.
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.BOX);
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void completeInProgressDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.IN_PROGRESS, null);
