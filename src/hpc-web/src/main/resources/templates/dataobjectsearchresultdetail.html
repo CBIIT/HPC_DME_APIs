@@ -104,9 +104,21 @@
   padding: 12px 16px;
   text-decoration: none;
   display: block;
+  text-align: left;
 }
 
 .dropdown a:hover {background-color: #ddd;}
+
+.isDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.isDisabled > a {
+  color: currentColor;
+  display: inline-block;  /* For IE11/ MS Edge bug */
+  pointer-events: none;
+  text-decoration: none;
+}
 
 .show {display: block;}
 </style>
@@ -677,25 +689,26 @@ window.onclick = function(event) {
 									<a id="editsearchlink"
 										class="btn btn-link btn-sm" ng-click="editSearch()"
 										>Edit Search Criteria</a>
-									<div class="dropdown">
-									  <button onclick="myFunction()" class="dropbtn">Export Search Results &#62;</button>
-									  <div id="myDropdown" class="dropdown-content">
-									  	<div id="showExportLink">
-											<a id="exportLink"
-											class="btn btn-link btn-sm" ng-click="export()"
-											>File Export</a>
+										<div class="dropdown">
+											<button onclick="myFunction()" class="dropbtn">Export
+												Search Results &#62;</button>
+											<div id="myDropdown" class="dropdown-content">
+												<div id="showExportLink">
+													<a id="exportLink" class="btn btn-link btn-sm"
+														ng-click="export()">File Export</a>
+												</div>
+												<div id="hideExportLink">
+													<span class="isDisabled"><a id="exportLink"
+														class="btn btn-link btn-sm">File Export</a>
+													</span>
+												</div>
+												<div id="exportEmailLinkId">
+													<a id="exportEmailLink2" class="btn btn-link btn-sm"
+														ng-click="exportByEmail()">Email Export</a>
+												</div>
+											</div>
 										</div>
-									  	<div id="hideExportLink">
-											<a id="exportLink"
-											class="btn btn-link btn-sm" style="pointer-events: none"
-											>File Export</a>
-										</div>
-										<a id="exportEmailLink2"
-										class="btn btn-link btn-sm" ng-click="exportByEmail()"
-										>&nbsp;&nbsp;&nbsp;Email Export</a>	  
-									  </div>
-									</div>										
-								</div>
+									</div>
 							  </div>
 							  <div class="row" style="background-color: #fff;border-top: 1px solid #ccc;border-bottom: none;">
 							    <div class="pull-left">
