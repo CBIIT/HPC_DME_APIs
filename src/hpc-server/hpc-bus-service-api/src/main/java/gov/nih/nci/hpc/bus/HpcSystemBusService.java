@@ -138,12 +138,20 @@ public interface HpcSystemBusService {
 	public void startGoogleCloudStorageDataObjectDownloadTasks() throws HpcException;
 
 	/**
-	 * Start all received data objects download tasks forAspera and process to make
+	 * Start all received data objects download tasks for Aspera and process to make
 	 * them in progress.
 	 *
 	 * @throws HpcException on service failure.
 	 */
 	public void startAsperaDataObjectDownloadTasks() throws HpcException;
+
+	/**
+	 * Start all received data objects download tasks for Box and process to make
+	 * them in progress.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void startBoxDataObjectDownloadTasks() throws HpcException;
 
 	/**
 	 * Check status of all in-progress data objects download tasks and complete
