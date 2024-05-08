@@ -189,6 +189,14 @@ public class HpcScheduledTasksImpl {
 		execute("startAsperaDataObjectDownloadTasks()", systemBusService::startAsperaDataObjectDownloadTasks, logger);
 	}
 
+	/**
+	 * Start Data Object Download Tasks that are in RECEIVED state for Box transfer.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.cron.startBoxDataObjectDownloadTasks.delay}")
+	private void startBoxDataObjectDownloadTasks() {
+		execute("startBoxDataObjectDownloadTasks()", systemBusService::startBoxDataObjectDownloadTasks, logger);
+	}
+
 	/** Complete In-Progress Data Object Download Tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay}")
 	private void completeInProgressDataObjectDownloadTasksTask() {
