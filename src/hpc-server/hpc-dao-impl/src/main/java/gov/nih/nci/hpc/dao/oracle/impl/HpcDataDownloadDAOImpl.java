@@ -370,6 +370,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			boxDownloadDestination.setDestinationLocation(destinationLocation);
 			boxDownloadDestination.setAccessToken(boxAccessToken);
 			boxDownloadDestination.setRefreshToken(boxRefreshToken);
+			dataObjectDownloadTask.setBoxDownloadDestination(boxDownloadDestination);
 		}
 
 		return dataObjectDownloadTask;
