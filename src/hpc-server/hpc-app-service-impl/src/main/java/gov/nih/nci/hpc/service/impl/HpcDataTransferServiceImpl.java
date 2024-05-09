@@ -1536,7 +1536,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
 
 		// Validate the download destination.
 		// TODO - add Box support for bulk download
@@ -1564,6 +1564,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setAppendPathToDownloadDestination(false);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
