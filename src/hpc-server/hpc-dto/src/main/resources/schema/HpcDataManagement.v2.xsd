@@ -87,6 +87,8 @@
 					type="hpc-domain-datatransfer:HpcBoxDownloadDestination" />
 				<xsd:element name="synchronousDownloadFilter"
 					type="hpc-domain-datatransfer:HpcSynchronousDownloadFilter" />
+				<xsd:element name="appendPathToDownloadDestination"
+					type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -522,6 +522,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
+			// Default to false - i.e. don't use the absolute data object path in the
+			// download
+			// destination.
+			downloadRequest.setAppendPathToDownloadDestination(true);
+		}
+
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
 
@@ -531,7 +538,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
-				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId());
+				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
+				downloadRequest.getAppendPathToDownloadDestination());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -557,7 +565,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
-			// Default to true - i.e. use the full data object path in the download
+			// Default to true - i.e. use the absolute data object path in the download
 			// destination.
 			downloadRequest.setAppendPathToDownloadDestination(true);
 		}

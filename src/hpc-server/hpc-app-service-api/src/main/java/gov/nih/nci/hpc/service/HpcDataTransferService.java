@@ -604,6 +604,10 @@ public interface HpcDataTransferService {
 	 * @param configurationId                       The configuration ID (needed to
 	 *                                              determine the archive connection
 	 *                                              config).
+	 * @param appendPathToDownloadDestination       If true, the (absolute) object
+	 *                                              path will be used in the
+	 *                                              destination path, otherwise just
+	 *                                              the object name will be used.
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -612,7 +616,7 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId) throws HpcException;
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
 	 * Submit a request to download collections.
@@ -638,10 +642,10 @@ public interface HpcDataTransferService {
 	 *                                              from from different
 	 *                                              configurations (DOCs) but we
 	 *                                              validate just for one.
-	 * @param appendPathToDownloadDestination       If true, the (full) object path
-	 *                                              will be used in the destination
-	 *                                              path, otherwise just the object
-	 *                                              name will be used.
+	 * @param appendPathToDownloadDestination       If true, the (absolute) object
+	 *                                              path will be used in the
+	 *                                              destination path, otherwise just
+	 *                                              the object name will be used.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
