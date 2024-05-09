@@ -70,13 +70,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL = " select object_id from r_coll_hierarchy_meta_main where num_greater_or_equal(meta_attr_value, ?) = '1'";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_THAN_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_less_than(meta_attr_value, ?) = '1'";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_THAN_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_less_than(meta_attr_value, ?, ?) = '1'";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_THAN_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_greater_than(meta_attr_value, ?) = '1'";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_THAN_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_greater_than(meta_attr_value, ?, ?) = '1'";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_OR_EQUAL_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_less_or_equal(meta_attr_value, ?) = '1'";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_OR_EQUAL_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_less_or_equal(meta_attr_value, ?, ?) = '1'";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_OR_EQUAL_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_greater_or_equal(meta_attr_value, ?) = '1'";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_OR_EQUAL_SQL = " select object_id from r_coll_hierarchy_meta_main where timestamp_greater_or_equal(meta_attr_value, ?, ?) = '1'";
 
 	private static final String GET_COLLECTION_EXACT_ATTRIBUTE_MATCH_FILTER = " and meta_attr_name = ?";
 
