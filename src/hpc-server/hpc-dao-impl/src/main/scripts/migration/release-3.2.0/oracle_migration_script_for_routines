@@ -6,7 +6,7 @@ BEGIN
                         METHOD => 'C', ATOMIC_REFRESH => FALSE, PARALLELISM => 4);
 
 	DBMS_MVIEW.REFRESH('R_DATA_HIERARCHY_META_MAIN',
-                        METHOD => 'C', ATOMIC_REFRESH => TRUE, PARALLELISM => 4);
+                        METHOD => 'C', ATOMIC_REFRESH => FALSE, PARALLELISM => 4);
 
 	DBMS_MVIEW.REFRESH('R_DATA_HIERARCHY_USER_META_MAIN,
                         R_COLL_HIERARCHY_DATA_OWNER,
@@ -22,22 +22,6 @@ BEGIN
                         R_REPORT_REGISTERED_BY_S3_ARCHIVE_CONFIGURATION,
                         R_DATA_META_ATTRIBUTES,
                         R_COLL_META_ATTRIBUTES',
-                        METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE, PARALLELISM => 4);
-
-END;
-
-
-CREATE or replace PROCEDURE refresh_hourly_materialized_view AS
-
-BEGIN
-
-        DBMS_MVIEW.REFRESH('R_COLL_HIERARCHY_METAMAP,
-                        R_COLL_HIERARCHY_META_MAIN,
-                        R_CATALOG_META_MAIN,
-                        R_REPORT_COLLECTION_PATH,
-                        R_REPORT_SOURCE_FILE_SIZE,
-                        R_REPORT_COLLECTION_SIZE',
-                        METHOD => 'C',  ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE, PARALLELISM=>4);
-
+                        METHOD => 'C', ATOMIC_REFRESH => FALSE, PARALLELISM => 4);
 
 END;
