@@ -288,7 +288,7 @@ public class HpcSearchUtil {
 	{
 		session.removeAttribute("hpcSelectedDatafileList");
 	}
-	
+
 	public static void exportCollectionResults(HttpSession session, HttpServletRequest request,
 			HttpServletResponse response, List<String> deselectedColumns) throws IOException {
 		
@@ -299,6 +299,7 @@ public class HpcSearchUtil {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
 			headers.add("uuid");
+			headers.add("createdOn");
           
 			for (HpcCollectionSearchResultDetailed collection : collectionResults) {
 				List<String> result = new ArrayList<String>();
@@ -349,9 +350,9 @@ public class HpcSearchUtil {
 			
 			proc.doExport(request, response); 
 		}
-		
 	}
-	
+
+
 	public static void exportDataObjectResults(HttpSession session, HttpServletRequest request,
 			HttpServletResponse response, List<String> deselectedColumns) throws IOException {
 		
@@ -362,6 +363,7 @@ public class HpcSearchUtil {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
 			headers.add("uuid");
+			headers.add("createdOn");
 			
 			for (HpcDatafileSearchResultDetailed datafile : datafileResults) {
 				List<String> result = new ArrayList<String>();
@@ -408,7 +410,5 @@ public class HpcSearchUtil {
 			
 			proc.doExport(request, response); 
 		}
-		
 	}
-
 }
