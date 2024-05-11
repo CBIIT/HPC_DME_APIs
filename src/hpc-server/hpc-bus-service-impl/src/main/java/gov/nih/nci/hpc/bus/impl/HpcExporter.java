@@ -74,13 +74,13 @@ public class HpcExporter
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
 			if (deselectedColumns != null && !deselectedColumns.contains(("createdOn")))
-				headers.add("created_on");
+				headers.add("createdOn");
 			if (deselectedColumns != null && !deselectedColumns.contains(("uniqueId")))
               headers.add("uuid");
 			if (deselectedColumns != null && !deselectedColumns.contains(("registeredBy")))
-              headers.add("registered_by");
+              headers.add("registeredBy");
 			if (deselectedColumns != null && !deselectedColumns.contains(("collectionType")))
-              headers.add("collection_type");
+              headers.add("collectionType");
           
 			// For non-detailed search
 			for (String path: collectionsDTO.getCollectionPaths()) {
@@ -92,15 +92,20 @@ public class HpcExporter
 			for (HpcCollectionDTO collection : collectionsDTO.getCollections()) {
 				List<String> result = new ArrayList<String>();
 				result.add(collection.getCollection().getAbsolutePath());
-				if(headers.contains("created_on"))
+				if(headers.contains("createdOn"))
 					result.add(format.format(collection.getCollection().getCreatedAt().getTime()));
 				if (collection != null && collection.getMetadataEntries() != null) {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getSelfMetadataEntries());
 					combinedMetadataEntries.addAll(collection.getMetadataEntries().getParentMetadataEntries());
-					for(HpcMetadataEntry entry : combinedMetadataEntries) {
-						if(!headers.contains(entry.getAttribute()) && deselectedColumns == null || 
-						   !headers.contains(entry.getAttribute()) && deselectedColumns != null && !deselectedColumns.contains(entry.getAttribute()))
+					for (HpcMetadataEntry entry : combinedMetadataEntries) {
+						if (entry.getAttribute().equals("registered_by"))
+							entry.setAttribute("registeredBy");
+						if (entry.getAttribute().equals("collection_type"))
+							entry.setAttribute("collectionType");
+						if (!headers.contains(entry.getAttribute()) && deselectedColumns == null
+								|| !headers.contains(entry.getAttribute()) && deselectedColumns != null
+										&& !deselectedColumns.contains(entry.getAttribute()))
 							headers.add(entry.getAttribute());
 					}
 					for (String header : headers) {
@@ -112,7 +117,7 @@ public class HpcExporter
 								break;
 							}
 						}
-						if(!found && !header.equals("path") && !header.equals("created_on"))
+						if(!found && !header.equals("path") && !header.equals("createdOn"))
 							result.add("");
 					}
 				}
@@ -138,11 +143,11 @@ public class HpcExporter
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
 			if (deselectedColumns != null && !deselectedColumns.contains(("createdOn")))
-              headers.add("created_on");
+              headers.add("createdOn");
             if (deselectedColumns != null && !deselectedColumns.contains(("uniqueId")))
               headers.add("uuid");
             if (deselectedColumns != null && !deselectedColumns.contains(("registeredBy")))
-              headers.add("registered_by");
+              headers.add("registeredBy");
 
 			// For non-detailed search
 			for (String path: dataObjectsDTO.getDataObjectPaths()) {
@@ -154,17 +159,20 @@ public class HpcExporter
 			for (HpcDataObjectDTO datafile : dataObjectsDTO.getDataObjects()) {
 				List<String> result = new ArrayList<String>();
 				result.add(datafile.getDataObject().getAbsolutePath());
-				if(headers.contains("created_on"))
+				if(headers.contains("createdOn"))
 					result.add(format.format(datafile.getDataObject().getCreatedAt().getTime()));
 				if (datafile != null && datafile.getMetadataEntries() != null) {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getParentMetadataEntries());
-					for(HpcMetadataEntry entry : combinedMetadataEntries) {
-                      if(!headers.contains(entry.getAttribute()) && deselectedColumns == null || 
-                         !headers.contains(entry.getAttribute()) && deselectedColumns != null && !deselectedColumns.contains(entry.getAttribute()))
-                          headers.add(entry.getAttribute());
-                    }
+					for (HpcMetadataEntry entry : combinedMetadataEntries) {
+						if (entry.getAttribute().equals("registered_by"))
+							entry.setAttribute("registeredBy");
+						if (!headers.contains(entry.getAttribute()) && deselectedColumns == null
+								|| !headers.contains(entry.getAttribute()) && deselectedColumns != null
+										&& !deselectedColumns.contains(entry.getAttribute()))
+							headers.add(entry.getAttribute());
+					}
 					for (String header : headers) {
 						boolean found = false;
 						for (HpcMetadataEntry entry : combinedMetadataEntries) {
@@ -174,7 +182,7 @@ public class HpcExporter
 								break;
 							}
 						}
-						if(!found && !header.equals("path") && !header.equals("created_on"))
+						if(!found && !header.equals("path") && !header.equals("createdOn"))
 							result.add("");
 					}
 				}
