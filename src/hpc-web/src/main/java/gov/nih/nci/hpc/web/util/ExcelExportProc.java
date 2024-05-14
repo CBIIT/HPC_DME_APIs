@@ -11,9 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -38,8 +41,12 @@ public class ExcelExportProc {
         Workbook wb = new HSSFWorkbook();
         Sheet s = wb.createSheet();
         Row r = null;
-        String filename = this.fileName
-            + MessageFormat.format("{0, date, MM_dd_yyyy}", new Date()).trim() + this.extension;
+		Date currentDate = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentDateTime = dateFormat.format(currentDate);
+		String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
+
+		String filename =  this.fileName + fileSuffix +  this.extension;
 
         String characterEncoding = response.getCharacterEncoding();
         if (characterEncoding != null) {
