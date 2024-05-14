@@ -61,6 +61,8 @@ public class HpcSearchController extends AbstractHpcController {
 	private String compoundDataObjectSearchServiceURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryURL;
+	@Value("${gov.nih.nci.hpc.fileExportRowsThreshold}")
+    private String fileExportRowsThreshold;
 
 	/**
 	 * GET action to query by saved search name
@@ -120,6 +122,7 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("queryName", queryName);
 		model.addAttribute("pageNumber", new Integer(page).intValue());
 		model.addAttribute("totalSize", search.getTotalSize());
+		model.addAttribute("fileExportRowsThreshold", fileExportRowsThreshold);
 		if(query != null) {
 			model.addAttribute("deselectedColumns", query.getNamedCompoundQuery().getDeselectedColumns());
 			search.getDeselectedColumns().addAll(query.getNamedCompoundQuery().getDeselectedColumns());
