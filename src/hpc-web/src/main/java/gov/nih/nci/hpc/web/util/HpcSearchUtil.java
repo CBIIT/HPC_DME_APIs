@@ -292,6 +292,8 @@ public class HpcSearchUtil {
 	public static void exportCollectionResults(HttpSession session, HttpServletRequest request,
 			HttpServletResponse response, List<String> deselectedColumns) throws IOException {
 		
+		final String userId = (String) session.getAttribute("hpcUserId");
+		
 		List<HpcCollectionSearchResultDetailed> collectionResults = (List<HpcCollectionSearchResultDetailed>) session.getAttribute("searchresults");
 		
 		List<String> headers = new ArrayList<String>();
@@ -343,7 +345,7 @@ public class HpcSearchUtil {
 			proc.setReportName("Export Search Results");
 			proc.setHeaders(headers);
 			proc.setData(rows);
-			proc.setFileName("export_search_results_");
+			proc.setFileName("export_search_results_" + userId + "_");
 			proc.setExtension(".xls");
 			proc.setMimeType("application/vnd.ms-excel");
 			proc.setFieldSeparator("\t");
@@ -356,6 +358,8 @@ public class HpcSearchUtil {
 	public static void exportDataObjectResults(HttpSession session, HttpServletRequest request,
 			HttpServletResponse response, List<String> deselectedColumns) throws IOException {
 		
+		final String userId = (String) session.getAttribute("hpcUserId");
+
 		List<HpcDatafileSearchResultDetailed> datafileResults = (List<HpcDatafileSearchResultDetailed>) session.getAttribute("searchresults");
 		
 		List<String> headers = new ArrayList<String>();
@@ -403,7 +407,7 @@ public class HpcSearchUtil {
 			proc.setReportName("Export Search Results");
 			proc.setHeaders(headers);
 			proc.setData(rows);
-			proc.setFileName("export_search_results_");
+			proc.setFileName("export_search_results_" + userId + "_");
 			proc.setExtension(".xls");
 			proc.setMimeType("application/vnd.ms-excel");
 			proc.setFieldSeparator("\t");
