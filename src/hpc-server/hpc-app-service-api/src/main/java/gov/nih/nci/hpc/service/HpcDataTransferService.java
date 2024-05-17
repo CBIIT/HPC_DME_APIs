@@ -608,6 +608,11 @@ public interface HpcDataTransferService {
 	 *                                              path will be used in the
 	 *                                              destination path, otherwise just
 	 *                                              the object name will be used.
+	 * @param appendPathToDownloadDestination       If true, the collection name
+	 *                                              (containing this object) will be
+	 *                                              used in the destination path,
+	 *                                              otherwise just the object name
+	 *                                              will be used.
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -616,36 +621,46 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException;
 
 	/**
 	 * Submit a request to download collections.
 	 *
-	 * @param collectionPaths                       A list of collection paths.
-	 * @param globusDownloadDestination             The user requested Globus
-	 *                                              download destination.
-	 * @param s3DownloadDestination                 The user requested S3 download
-	 *                                              destination.
-	 * @param googleDriveDownloadDestination        The user requested Google Drive
-	 *                                              download destination.
-	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
-	 *                                              Storage download destination.
-	 * @param asperaDownloadDestination             The user requested Aspera
-	 *                                              download destination.
-	 * @param boxDownloadDestination                The user requested Box download
-	 *                                              destination.
-	 * @param userId                                The user ID submitting the
-	 *                                              download request.
-	 * @param configurationId                       A configuration ID used to
-	 *                                              validate destination location.
-	 *                                              The list of data objects can be
-	 *                                              from from different
-	 *                                              configurations (DOCs) but we
-	 *                                              validate just for one.
-	 * @param appendPathToDownloadDestination       If true, the (absolute) object
-	 *                                              path will be used in the
-	 *                                              destination path, otherwise just
-	 *                                              the object name will be used.
+	 * @param collectionPaths                           A list of collection paths.
+	 * @param globusDownloadDestination                 The user requested Globus
+	 *                                                  download destination.
+	 * @param s3DownloadDestination                     The user requested S3
+	 *                                                  download destination.
+	 * @param googleDriveDownloadDestination            The user requested Google
+	 *                                                  Drive download destination.
+	 * @param googleCloudStorageDownloadDestination     The user requested Google
+	 *                                                  Cloud Storage download
+	 *                                                  destination.
+	 * @param asperaDownloadDestination                 The user requested Aspera
+	 *                                                  download destination.
+	 * @param boxDownloadDestination                    The user requested Box
+	 *                                                  download destination.
+	 * @param userId                                    The user ID submitting the
+	 *                                                  download request.
+	 * @param configurationId                           A configuration ID used to
+	 *                                                  validate destination
+	 *                                                  location. The list of data
+	 *                                                  objects can be from from
+	 *                                                  different configurations
+	 *                                                  (DOCs) but we validate just
+	 *                                                  for one.
+	 * @param appendPathToDownloadDestination           If true, the (absolute)
+	 *                                                  object path will be used in
+	 *                                                  the destination path,
+	 *                                                  otherwise just the object
+	 *                                                  name will be used.
+	 * @param appendCollectionNameToDownloadDestination If true, the collection name
+	 *                                                  (that containing the object)
+	 *                                                  will be used in the
+	 *                                                  destination path, otherwise
+	 *                                                  just the object name will be
+	 *                                                  used.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -654,7 +669,8 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException;
 
 	/**
 	 * Submit a request to download data objects.
@@ -684,6 +700,11 @@ public interface HpcDataTransferService {
 	 *                                              will be used in the destination
 	 *                                              path, otherwise just the object
 	 *                                              name will be used.
+	 * @param appendPathToDownloadDestination       If true, the collection name
+	 *                                              (containing the object) will be
+	 *                                              used in the destination path,
+	 *                                              otherwise just the object name
+	 *                                              will be used.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -692,7 +713,8 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException;
 
 	/**
 	 * Update a collection download task.

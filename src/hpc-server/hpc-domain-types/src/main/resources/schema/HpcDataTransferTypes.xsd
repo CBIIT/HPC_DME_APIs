@@ -480,6 +480,8 @@
 				type="hpc-domain-datatransfer:HpcBoxDownloadDestination" />
 			<xsd:element name="appendPathToDownloadDestination"
 				type="xsd:boolean" />
+			<xsd:element name="appendCollectionNameToDownloadDestination"
+				type="xsd:boolean" />
 			<xsd:element name="status"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
 			<xsd:element name="message" type="xsd:string" />
