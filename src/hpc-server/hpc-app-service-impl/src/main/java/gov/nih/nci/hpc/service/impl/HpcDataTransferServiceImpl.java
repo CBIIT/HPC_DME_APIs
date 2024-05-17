@@ -1536,7 +1536,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
 
 		// Validate the download destination.
 		// TODO - add Box support for bulk download
@@ -1562,9 +1562,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
-		downloadTask.setAppendPathToDownloadDestination(false);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
+		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
@@ -1578,7 +1578,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, null,
@@ -1599,6 +1599,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
+		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 
 		// Persist the request.
@@ -1613,7 +1614,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
@@ -1638,6 +1639,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
+		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);

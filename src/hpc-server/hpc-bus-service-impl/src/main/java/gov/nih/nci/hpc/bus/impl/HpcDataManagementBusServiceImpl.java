@@ -524,9 +524,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
 			// Default to false - i.e. don't use the absolute data object path in the
-			// download
+			// download destination.
+			downloadRequest.setAppendPathToDownloadDestination(false);
+		}
+
+		if (downloadRequest.getAppendCollectionNameToDownloadDestination() == null) {
+			// Default to false - i.e. don't use the collection name in the download
 			// destination.
-			downloadRequest.setAppendPathToDownloadDestination(true);
+			downloadRequest.setAppendCollectionNameToDownloadDestination(false);
+		}
+
+		if (downloadRequest.getAppendPathToDownloadDestination()
+				&& downloadRequest.getAppendCollectionNameToDownloadDestination()) {
+			throw new HpcException("Both append indicators are set: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the System generated metadata.
@@ -539,7 +549,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
-				downloadRequest.getAppendPathToDownloadDestination());
+				downloadRequest.getAppendPathToDownloadDestination(),
+				downloadRequest.getAppendCollectionNameToDownloadDestination());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -568,6 +579,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Default to true - i.e. use the absolute data object path in the download
 			// destination.
 			downloadRequest.setAppendPathToDownloadDestination(true);
+		}
+		if (downloadRequest.getAppendCollectionNameToDownloadDestination() == null) {
+			// Default to false - i.e. use the collection name in the download destination.
+			downloadRequest.setAppendCollectionNameToDownloadDestination(false);
+		}
+		if (downloadRequest.getAppendPathToDownloadDestination()
+				&& downloadRequest.getAppendCollectionNameToDownloadDestination()) {
+			throw new HpcException("Both append indicators are set", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		HpcCollectionDownloadTask collectionDownloadTask = null;
@@ -599,7 +618,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
-					downloadRequest.getAppendPathToDownloadDestination());
+					downloadRequest.getAppendPathToDownloadDestination(), downloadRequest.getAppendCollectionNameToDownloadDestination());
 		} else {
 			// Submit a request to download a list of collections.
 
@@ -638,7 +657,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
-					downloadRequest.getAppendPathToDownloadDestination());
+					downloadRequest
+							.getAppendPathToDownloadDestination(), downloadRequest.getAppendCollectionNameToDownloadDestination());
 		}
 
 		// Create and return a DTO with the request receipt.
@@ -1626,6 +1646,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Append path/collection-name is only for collection download request.
+		if (downloadRequest
+				.getAppendPathToDownloadDestination() != null
+				|| downloadRequest.getAppendCollectionNameToDownloadDestination() != null) {
+			throw new HpcException("Append path/collection-name is not applicable", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate the following:
