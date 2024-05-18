@@ -2008,8 +2008,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		for (HpcCollectionDownloadTaskItem retryItem : retryItems) {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(retryItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-					googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, false, false,
-					userId, retryItem.getDestinationLocation(), collectionDownloadTaskId);
+					googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, false,
+					false, userId, retryItem.getDestinationLocation(), collectionDownloadTaskId);
 			downloadItems.add(downloadItem);
 		}
 
@@ -2461,8 +2461,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		if (subCollectionDestination) {
 			if (!appendPathToDownloadDestination) {
-				// If it's a sub-collection destination calculation, w/o appending absolute
-				// path. Append just the file/sub-collection name to the calculated destination.
+				// For sub-collection destination calculation w/o appending absolute
+				// path. Append just the sub-collection name to the calculated destination.
 				fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
 			}
 
@@ -2474,6 +2474,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Append the collection name + file name to the to the calculated destination.
 			fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'),
 					collectionListingEntryPath.lastIndexOf('/') - 1);
+
+		} else if (!appendPathToDownloadDestination && !appendCollectionNameToDownloadDestination) {
+			// For data object destination calculation w/o any 'append indicators' set,
+			// append just the file name.
+			fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
 		}
 
 		calcDestinationLocation.setFileId(fileId);
