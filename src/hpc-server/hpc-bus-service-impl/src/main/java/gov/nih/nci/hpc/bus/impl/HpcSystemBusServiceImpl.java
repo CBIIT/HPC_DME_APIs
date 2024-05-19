@@ -2472,10 +2472,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		} else if (appendCollectionNameToDownloadDestination) {
 			// Append the collection name + file name to the to the calculated destination.
-			logger.error("ERAN calc : {}", fileId);
-			fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'),
-					collectionListingEntryPath.lastIndexOf('/') - 1);
-			logger.error("ERAN calc : {}", fileId);
+			logger.error("ERAN calc : {}", collectionListingEntryPath);
+			String fileName = collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
+			String collectionPath = collectionListingEntryPath.substring(0,
+					collectionListingEntryPath.lastIndexOf('/'));
+			String collectionName = collectionPath.substring(collectionPath.lastIndexOf('/'));
+			logger.error("ERAN calc : {} - {} - {} ", fileId, collectionName, fileName);
+
+			fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
+
 		} else if (!appendPathToDownloadDestination && !appendCollectionNameToDownloadDestination) {
 			// For data object destination calculation w/o any 'append indicators' set,
 			// append just the file name.
