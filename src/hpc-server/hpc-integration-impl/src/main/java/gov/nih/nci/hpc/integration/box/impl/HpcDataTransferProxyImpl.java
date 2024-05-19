@@ -39,14 +39,6 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
  */
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// ---------------------------------------------------------------------//
-	// Constants
-	// ---------------------------------------------------------------------//
-
-	// TODO - remove this
-	// The file size in which we can use the 'transfer large file in chunks' API.
-	private static final Long BOX_LARGE_FILE_TRANSFER_THRESHOLD = 20000000L;
-
-	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
 
