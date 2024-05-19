@@ -1539,7 +1539,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
 
 		// Validate the download destination.
-		// TODO - add Box support for bulk download
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, null,
 				configurationId, true);
