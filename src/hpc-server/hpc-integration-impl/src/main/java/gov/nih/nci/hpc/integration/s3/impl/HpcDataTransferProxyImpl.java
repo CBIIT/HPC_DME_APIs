@@ -1052,7 +1052,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				s3Download.addProgressListener(new HpcS3ProgressListener(progressListener,
 						"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
 
-				// TODO - remove. This is added to get additional insights on internal
+				// This listener is added to get additional insights on internal
 				// exceptions thrown in AWS transfer manager while doing 1st hop download.
 				s3Download.addProgressListener(
 						ProgressListener.ExceptionReporter.wrap(new ProgressListener.NoOpProgressListener()));
