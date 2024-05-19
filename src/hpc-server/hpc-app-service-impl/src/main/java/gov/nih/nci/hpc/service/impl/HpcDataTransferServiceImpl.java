@@ -3250,12 +3250,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcIntegratedSystemTokens boxTokens = dataTransferProxies.get(HpcDataTransferType.BOX)
 					.getIntegratedSystemTokens(authenticatedToken);
 			HpcDataObjectDownloadTask downloadTask = boxDownload.getDownloadTask();
-
-			// TODO - remove this.
-			logger.error("ERAN: box tokens before & after - {} -> {}, {} -> {}",
-					downloadTask.getBoxDownloadDestination().getAccessToken(), boxTokens.getAccessToken(),
-					downloadTask.getBoxDownloadDestination().getRefreshToken(), boxTokens.getRefreshToken());
-
 			downloadTask.getBoxDownloadDestination().setRefreshToken(boxTokens.getRefreshToken());
 			dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 
