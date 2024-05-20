@@ -24,6 +24,7 @@ public class HpcDownloadDatafile {
 	private String asperaHost;
 	private String searchType;
 	private String downloadType;
+	private String downloadDestinationType;
 	private List<String> selectedPaths;
 
 	
@@ -187,6 +188,14 @@ public class HpcDownloadDatafile {
 
 	public void setAsperaPath(String asperaPath) {
 		this.asperaPath = asperaPath;
+	}
+
+	public String getDownloadDestinationType() {
+		return downloadDestinationType;
+	}
+
+	public void setDownloadDestinationType(String downloadDestinationType) {
+		this.downloadDestinationType = downloadDestinationType;
 	}
 	
 }
