@@ -136,7 +136,6 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			} else {
 				model.addAttribute("asperaBucketName", asperaBucket);
 			}
-
 			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
 			} else {
@@ -422,6 +421,25 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
 				logger.info("GoogleCloud file download json: " + gson.toJson(dto));
             }
+			if (downloadFile.getDownloadDestinationType() != null
+					&& downloadFile.getDownloadDestinationType().equals("downloadToDestination")) {
+				logger.debug("DownloadDestinationType: downloadToDestination");
+				dto.setAppendPathToDownloadDestination(false);
+				dto.setAppendCollectionNameToDownloadDestination(false);
+			} else if (downloadFile.getDownloadDestinationType() != null
+					&& downloadFile.getDownloadDestinationType().equals("createCollectionFolder")) {
+				logger.debug(" DownloadDestinationType: createCollectionFolder");
+				dto.setAppendPathToDownloadDestination(false);
+				dto.setAppendCollectionNameToDownloadDestination(true);
+			} else if (downloadFile.getDownloadDestinationType() != null
+					&& downloadFile.getDownloadDestinationType().equals("createFullPath")) {
+				logger.debug("DownloadDestinationType: createFullPath");
+				dto.setAppendPathToDownloadDestination(true);
+				dto.setAppendCollectionNameToDownloadDestination(false);
+			} else {
+				dto.setAppendPathToDownloadDestination(false);
+				dto.setAppendCollectionNameToDownloadDestination(false);
+			}
 
 			try {
 				HpcBulkDataObjectDownloadResponseDTO downloadDTO = null;
