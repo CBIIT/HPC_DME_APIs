@@ -40,6 +40,7 @@
         <spring.security.version>4.2.10.RELEASE</spring.security.version>
         <aspectj.version>1.9.6</aspectj.version>
 		<amazon-aws.version>1.12.420</amazon-aws.version>
+		<amazon-aws-v2.version>2.25.60</amazon-aws-v2.version>
 		<jackson.version>2.12.7</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.9.1</jjwt.version>
@@ -308,6 +309,8 @@
 				<artifactId>mockito-core</artifactId>
 				<version>1.10.19</version>
 			</dependency>
+			
+			<!-- TODO remove AWS V1 -->
 			<dependency>
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-s3</artifactId>
@@ -318,6 +321,15 @@
 				<artifactId>aws-java-sdk-secretsmanager</artifactId>
 				<version>${amazon-aws.version}</version>
 			</dependency>
+			<!-- TODO remove AWS V1 -->
+			
+			<dependency>
+          		<groupId>software.amazon.awssdk</groupId>
+          		<artifactId>bom</artifactId>
+          		<version>${amazon-aws-v2.version}</version>
+          		<type>pom</type>
+          		<scope>import</scope>
+        	</dependency>
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-core</artifactId>
