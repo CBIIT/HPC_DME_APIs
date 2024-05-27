@@ -48,9 +48,6 @@ public class HpcS3ProgressListener implements TransferListener {
 	// Transfer source and/or destination (for logging purposed)
 	private String transferSourceDestination = null;
 
-	// The completable future used for S3 transfer.
-	private CompletableFuture<?> completableFuture = null;
-
 	// Logger
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
@@ -89,15 +86,6 @@ public class HpcS3ProgressListener implements TransferListener {
 	// Methods
 	// ---------------------------------------------------------------------//
 
-	/**
-	 * Completable future setter
-	 *
-	 * @param completableFuture The transfer future instance.
-	 */
-	public void setCompletableFuture(CompletableFuture<?> completableFuture) {
-		this.completableFuture = completableFuture;
-	}
-
 	// ---------------------------------------------------------------------//
 	// ProgressListener Interface Implementation
 	// ---------------------------------------------------------------------//
@@ -119,10 +107,7 @@ public class HpcS3ProgressListener implements TransferListener {
 			logger.info("S3 transfer [{}] in progress. {}MB transferred so far", transferSourceDestination,
 					bytesTransferredReported / MB);
 
-			boolean proceedTransfer = progressListener.transferProgressed(bytesTransferredReported);
-			if (!proceedTransfer && completableFuture != null) {
-				completableFuture.cancel(true);
-			}
+			progressListener.transferProgressed(bytesTransferredReported);
 		}
 	}
 
