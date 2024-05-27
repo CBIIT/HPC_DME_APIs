@@ -466,196 +466,167 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
-	/* TODO: implement w/ SDK V2
-	 
-	@Override
-	public HpcArchiveObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
-			throws HpcException {
-
-		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
-		// Get metadata for the data-object in the S3 archive.
-		try {
-			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-					.getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
-			HpcMetadataEntry entry = new HpcMetadataEntry();
-			entry.setAttribute("storage_class");
-			// x-amz-storage-class is not returned for standard S3 object
-			logger.debug("Storage class " + s3Metadata.getStorageClass());
-			if (s3Metadata.getStorageClass() != null)
-				objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.fromValue(s3Metadata.getStorageClass()));
-
-			// Check the restoration status of the object.
-			Boolean restoreFlag = s3Metadata.getOngoingRestore();
-			if (s3Metadata.getOngoingRestore() == null) {
-				// the x-amz-restore header is not present on the response from the service (eg.
-				// no restore request has been received).
-				// Failed.
-				objectMetadata.setRestorationStatus("not in progress");
-			} else if (s3Metadata.getOngoingRestore() != null && s3Metadata.getOngoingRestore()) {
-				// the x-amz-restore header is present and has a value of true (eg. a restore
-				// operation was received and is currently ongoing).
-				// Ongoing
-				objectMetadata.setRestorationStatus("in progress");
-			} else if (s3Metadata.getOngoingRestore() != null && !s3Metadata.getOngoingRestore()
-					&& s3Metadata.getRestoreExpirationTime() != null) {
-				// the x-amz-restore header is present and has a value of false (eg the object
-				// has been restored and can currently be read from S3).
-				// Completed. Success.
-				objectMetadata.setRestorationStatus("success");
-			}
-
-			if (restoreFlag != null)
-				logger.info("Restoration status: {}",
-						restoreFlag ? "in progress" : "not in progress (finished or failed)");
-
-			objectMetadata.setChecksum(s3Metadata.getETag());
-
-		} catch (AmazonClientException ace) {
-			throw new HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, ace);
-		}
-
-		return objectMetadata;
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public synchronized void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
-			String tieringBucket, String tieringProtocol) throws HpcException {
-		// Create a rule to archive objects with the prefix to Glacier
-		// immediately.
-		BucketLifecycleConfiguration.Rule newRule = new BucketLifecycleConfiguration.Rule().withId(prefix)
-				.addTransition(new Transition().withDays(0).withStorageClass(StorageClass.Glacier))
-				.withFilter(new LifecycleFilter(new LifecyclePrefixPredicate(prefix)))
-				.withStatus(BucketLifecycleConfiguration.ENABLED);
-
-		try {
-
-			AmazonS3 s3Client = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
-
-			// Retrieve the configuration.
-			BucketLifecycleConfiguration configuration = s3Client
-					.getBucketLifecycleConfiguration(archiveLocation.getFileContainerId());
-
-			List<Rule> rules = new ArrayList<Rule>();
-			rules.add(newRule);
-
-			if (configuration != null) {
-				for (Rule rule : configuration.getRules()) {
-					// Rules existing in Cloudian is retrieved with the prefix
-					// set to the same value as filter.
-					// Removing since it fails if this value is provided.
-					rule.setPrefix(null);
-					rules.add(rule);
-				}
-			} else
-				configuration = new BucketLifecycleConfiguration();
-
-			// Add a new rule
-			configuration.setRules(rules);
-
-			// Save the configuration.
-			SetBucketLifecycleConfigurationRequest request = new SetBucketLifecycleConfigurationRequest(
-					archiveLocation.getFileContainerId(), configuration);
-
-			// Add Cloudian custom tiering header, no impact to AWS S3 requests
-			String customHeader = tieringProtocol + "|EndPoint:"
-					+ URLEncoder.encode(tieringEndpoint, StandardCharsets.UTF_8.toString()) + ",TieringBucket:"
-					+ tieringBucket;
-			String encodedCustomHeader = URLEncoder.encode(customHeader, StandardCharsets.UTF_8.toString());
-			request.putCustomRequestHeader(CLOUDIAN_TIERING_INFO_HEADER, encodedCustomHeader);
-
-			s3Client.setBucketLifecycleConfiguration(request);
-
-		} catch (UnsupportedEncodingException e) {
-			throw new HpcException(
-					"[S3] Failed to add a new rule to life cycle policy on bucket "
-							+ archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		} catch (AmazonServiceException e) {
-			throw new HpcException(
-					"[S3] Failed to add a new rule to life cycle policy on bucket "
-							+ archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		} catch (AmazonClientException e) {
-			throw new HpcException(
-					"[S3] Failed to add a new rule to life cycle policy on bucket "
-							+ archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		}
-	}
-
-	@Override
-	public void restoreDataObject(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
-
-		try {
-			AmazonS3 s3Client = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
-
-			// Create and submit a request to restore an object from Glacier for configured
-			// number of days.
-			RestoreObjectRequest requestRestore = new RestoreObjectRequest(archiveLocation.getFileContainerId(),
-					archiveLocation.getFileId(), restoreNumDays);
-			s3Client.restoreObjectV2(requestRestore);
-
-		} catch (AmazonServiceException e) {
-			throw new HpcException(
-					"[S3] Failed to restore data object " + archiveLocation.getFileContainerId() + ":"
-							+ archiveLocation.getFileId() + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		} catch (AmazonClientException e) {
-			throw new HpcException(
-					"[S3] Failed to restore data object " + archiveLocation.getFileContainerId() + ":"
-							+ archiveLocation.getFileId() + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		}
-	}
-
-	@Override
-	public boolean existsTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
-
-		try {
-			AmazonS3 s3Client = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
-
-			// Retrieve the configuration.
-			BucketLifecycleConfiguration configuration = s3Client
-					.getBucketLifecycleConfiguration(archiveLocation.getFileContainerId());
-
-			if (configuration != null) {
-				for (Rule rule : configuration.getRules()) {
-					// Look through filter prefix applied to lifecycle policy
-					boolean hasTransition = false;
-
-					if (rule.getTransitions() != null) {
-						for (Transition transition : rule.getTransitions()) {
-							if (transition.getStorageClassAsString() != null
-									&& !transition.getStorageClassAsString().isEmpty())
-								hasTransition = true;
-						}
-					}
-
-					if (hasTransition && rule.getFilter() != null && rule.getFilter().getPredicate() != null) {
-						LifecycleFilterPredicate predicate = rule.getFilter().getPredicate();
-						if (predicate instanceof LifecyclePrefixPredicate) {
-							LifecyclePrefixPredicate prefixPredicate = (LifecyclePrefixPredicate) predicate;
-							if (archiveLocation.getFileId().contains(prefixPredicate.getPrefix()))
-								return true;
-						}
-					} else if (hasTransition) {
-						// This is a transition without prefix applies to entire bucket.
-						return true;
-					}
-				}
-			}
-		} catch (AmazonServiceException e) {
-			throw new HpcException(
-					"[S3] Failed to retrieve life cycle policy on bucket " + archiveLocation.getFileContainerId()
-							+ e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
-		}
-		return false;
-	}
-	
-	*/
+	/*
+	 * TODO: implement w/ SDK V2
+	 * 
+	 * @Override public HpcArchiveObjectMetadata getDataObjectMetadata(Object
+	 * authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
+	 * 
+	 * HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata(); //
+	 * Get metadata for the data-object in the S3 archive. try { ObjectMetadata
+	 * s3Metadata =
+	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+	 * .getObjectMetadata(fileLocation.getFileContainerId(),
+	 * fileLocation.getFileId()); HpcMetadataEntry entry = new HpcMetadataEntry();
+	 * entry.setAttribute("storage_class"); // x-amz-storage-class is not returned
+	 * for standard S3 object logger.debug("Storage class " +
+	 * s3Metadata.getStorageClass()); if (s3Metadata.getStorageClass() != null)
+	 * objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.fromValue(s3Metadata
+	 * .getStorageClass()));
+	 * 
+	 * // Check the restoration status of the object. Boolean restoreFlag =
+	 * s3Metadata.getOngoingRestore(); if (s3Metadata.getOngoingRestore() == null) {
+	 * // the x-amz-restore header is not present on the response from the service
+	 * (eg. // no restore request has been received). // Failed.
+	 * objectMetadata.setRestorationStatus("not in progress"); } else if
+	 * (s3Metadata.getOngoingRestore() != null && s3Metadata.getOngoingRestore()) {
+	 * // the x-amz-restore header is present and has a value of true (eg. a restore
+	 * // operation was received and is currently ongoing). // Ongoing
+	 * objectMetadata.setRestorationStatus("in progress"); } else if
+	 * (s3Metadata.getOngoingRestore() != null && !s3Metadata.getOngoingRestore() &&
+	 * s3Metadata.getRestoreExpirationTime() != null) { // the x-amz-restore header
+	 * is present and has a value of false (eg the object // has been restored and
+	 * can currently be read from S3). // Completed. Success.
+	 * objectMetadata.setRestorationStatus("success"); }
+	 * 
+	 * if (restoreFlag != null) logger.info("Restoration status: {}", restoreFlag ?
+	 * "in progress" : "not in progress (finished or failed)");
+	 * 
+	 * objectMetadata.setChecksum(s3Metadata.getETag());
+	 * 
+	 * } catch (AmazonClientException ace) { throw new
+	 * HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
+	 * HpcErrorType.DATA_TRANSFER_ERROR, ace); }
+	 * 
+	 * return objectMetadata; }
+	 * 
+	 * @SuppressWarnings("deprecation")
+	 * 
+	 * @Override public synchronized void setTieringPolicy(Object
+	 * authenticatedToken, HpcFileLocation archiveLocation, String prefix, String
+	 * tieringBucket, String tieringProtocol) throws HpcException { // Create a rule
+	 * to archive objects with the prefix to Glacier // immediately.
+	 * BucketLifecycleConfiguration.Rule newRule = new
+	 * BucketLifecycleConfiguration.Rule().withId(prefix) .addTransition(new
+	 * Transition().withDays(0).withStorageClass(StorageClass.Glacier))
+	 * .withFilter(new LifecycleFilter(new LifecyclePrefixPredicate(prefix)))
+	 * .withStatus(BucketLifecycleConfiguration.ENABLED);
+	 * 
+	 * try {
+	 * 
+	 * AmazonS3 s3Client =
+	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
+	 * 
+	 * // Retrieve the configuration. BucketLifecycleConfiguration configuration =
+	 * s3Client
+	 * .getBucketLifecycleConfiguration(archiveLocation.getFileContainerId());
+	 * 
+	 * List<Rule> rules = new ArrayList<Rule>(); rules.add(newRule);
+	 * 
+	 * if (configuration != null) { for (Rule rule : configuration.getRules()) { //
+	 * Rules existing in Cloudian is retrieved with the prefix // set to the same
+	 * value as filter. // Removing since it fails if this value is provided.
+	 * rule.setPrefix(null); rules.add(rule); } } else configuration = new
+	 * BucketLifecycleConfiguration();
+	 * 
+	 * // Add a new rule configuration.setRules(rules);
+	 * 
+	 * // Save the configuration. SetBucketLifecycleConfigurationRequest request =
+	 * new SetBucketLifecycleConfigurationRequest(
+	 * archiveLocation.getFileContainerId(), configuration);
+	 * 
+	 * // Add Cloudian custom tiering header, no impact to AWS S3 requests String
+	 * customHeader = tieringProtocol + "|EndPoint:" +
+	 * URLEncoder.encode(tieringEndpoint, StandardCharsets.UTF_8.toString()) +
+	 * ",TieringBucket:" + tieringBucket; String encodedCustomHeader =
+	 * URLEncoder.encode(customHeader, StandardCharsets.UTF_8.toString());
+	 * request.putCustomRequestHeader(CLOUDIAN_TIERING_INFO_HEADER,
+	 * encodedCustomHeader);
+	 * 
+	 * s3Client.setBucketLifecycleConfiguration(request);
+	 * 
+	 * } catch (UnsupportedEncodingException e) { throw new HpcException(
+	 * "[S3] Failed to add a new rule to life cycle policy on bucket " +
+	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
+	 * HpcErrorType.DATA_TRANSFER_ERROR,
+	 * s3Connection.getS3Provider(authenticatedToken), e); } catch
+	 * (AmazonServiceException e) { throw new HpcException(
+	 * "[S3] Failed to add a new rule to life cycle policy on bucket " +
+	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
+	 * HpcErrorType.DATA_TRANSFER_ERROR,
+	 * s3Connection.getS3Provider(authenticatedToken), e); } catch
+	 * (AmazonClientException e) { throw new HpcException(
+	 * "[S3] Failed to add a new rule to life cycle policy on bucket " +
+	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
+	 * HpcErrorType.DATA_TRANSFER_ERROR,
+	 * s3Connection.getS3Provider(authenticatedToken), e); } }
+	 * 
+	 * @Override public void restoreDataObject(Object authenticatedToken,
+	 * HpcFileLocation archiveLocation) throws HpcException {
+	 * 
+	 * try { AmazonS3 s3Client =
+	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
+	 * 
+	 * // Create and submit a request to restore an object from Glacier for
+	 * configured // number of days. RestoreObjectRequest requestRestore = new
+	 * RestoreObjectRequest(archiveLocation.getFileContainerId(),
+	 * archiveLocation.getFileId(), restoreNumDays);
+	 * s3Client.restoreObjectV2(requestRestore);
+	 * 
+	 * } catch (AmazonServiceException e) { throw new HpcException(
+	 * "[S3] Failed to restore data object " + archiveLocation.getFileContainerId()
+	 * + ":" + archiveLocation.getFileId() + e.getMessage(),
+	 * HpcErrorType.DATA_TRANSFER_ERROR,
+	 * s3Connection.getS3Provider(authenticatedToken), e); } catch
+	 * (AmazonClientException e) { throw new HpcException(
+	 * "[S3] Failed to restore data object " + archiveLocation.getFileContainerId()
+	 * + ":" + archiveLocation.getFileId() + e.getMessage(),
+	 * HpcErrorType.DATA_TRANSFER_ERROR,
+	 * s3Connection.getS3Provider(authenticatedToken), e); } }
+	 * 
+	 * @Override public boolean existsTieringPolicy(Object authenticatedToken,
+	 * HpcFileLocation archiveLocation) throws HpcException {
+	 * 
+	 * try { AmazonS3 s3Client =
+	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
+	 * 
+	 * // Retrieve the configuration. BucketLifecycleConfiguration configuration =
+	 * s3Client
+	 * .getBucketLifecycleConfiguration(archiveLocation.getFileContainerId());
+	 * 
+	 * if (configuration != null) { for (Rule rule : configuration.getRules()) { //
+	 * Look through filter prefix applied to lifecycle policy boolean hasTransition
+	 * = false;
+	 * 
+	 * if (rule.getTransitions() != null) { for (Transition transition :
+	 * rule.getTransitions()) { if (transition.getStorageClassAsString() != null &&
+	 * !transition.getStorageClassAsString().isEmpty()) hasTransition = true; } }
+	 * 
+	 * if (hasTransition && rule.getFilter() != null &&
+	 * rule.getFilter().getPredicate() != null) { LifecycleFilterPredicate predicate
+	 * = rule.getFilter().getPredicate(); if (predicate instanceof
+	 * LifecyclePrefixPredicate) { LifecyclePrefixPredicate prefixPredicate =
+	 * (LifecyclePrefixPredicate) predicate; if
+	 * (archiveLocation.getFileId().contains(prefixPredicate.getPrefix())) return
+	 * true; } } else if (hasTransition) { // This is a transition without prefix
+	 * applies to entire bucket. return true; } } } } catch (AmazonServiceException
+	 * e) { throw new HpcException(
+	 * "[S3] Failed to retrieve life cycle policy on bucket " +
+	 * archiveLocation.getFileContainerId() + e.getMessage(),
+	 * HpcErrorType.DATA_TRANSFER_ERROR,
+	 * s3Connection.getS3Provider(authenticatedToken), e); } return false; }
+	 * 
+	 */
 
 	@Override
 	public void shutdown(Object authenticatedToken) throws HpcException {
@@ -712,7 +683,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		Calendar dataTransferCompleted = null;
 		try {
 			fileUpload = s3Connection.getTransferManager(authenticatedToken).uploadFile(uploadFileRequest);
-			listener.setCompletableFuture(fileUpload.completionFuture());
 			fileUpload.completionFuture().join();
 
 			dataTransferCompleted = Calendar.getInstance();
@@ -720,6 +690,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} catch (CompletionException e) {
 			throw new HpcException("[S3] Failed to upload file.", HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), e.getCause());
+
 		}
 
 		// Upload completed. Create and populate the response object.
@@ -836,7 +807,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 												.key(archiveDestinationLocation.getFileId())
 												.metadata(toS3Metadata(metadataEntries)).storageClass(storageClass))
 								.requestBody(body).addTransferListener(listener));
-				listener.setCompletableFuture(streamUpload.completionFuture());
 
 				// Stream the data.
 				body.writeInputStream(sourceInputStream);
@@ -846,7 +816,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			} catch (CompletionException | HpcException | IOException e) {
 				logger.error("[S3] Failed to upload from AWS S3 destination: " + e.getCause().getMessage(), e);
 				progressListener.transferFailed(e.getCause().getMessage());
+
 			}
+
 		}, s3Executor);
 
 		// Create and populate the response object.
@@ -1025,24 +997,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 */
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			File destinationLocation, HpcDataTransferProgressListener progressListener) throws HpcException {
-		// Instantiate a transfer listener if needed.
-		HpcS3ProgressListener listener = null;
-		if (progressListener != null) {
-			listener = new HpcS3ProgressListener(progressListener,
-					"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId());
-		}
-
 		// Create a S3 download request.
 		DownloadFileRequest downloadFileRequest = DownloadFileRequest.builder()
 				.getObjectRequest(b -> b.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId()))
-				.addTransferListener(listener).destination(destinationLocation).build();
+				.destination(destinationLocation).build();
 
 		FileDownload downloadFile = null;
 		try {
 			downloadFile = s3Connection.getTransferManager(authenticatedToken).downloadFile(downloadFileRequest);
-			if (listener != null) {
-				// Download asynchronously.
-				listener.setCompletableFuture(downloadFile.completionFuture());
+
+			if (progressListener != null) {
+				downloadFileRequest.transferListeners().add(new HpcS3ProgressListener(progressListener,
+						"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
+
 			} else {
 				// Download synchronously.
 				downloadFile.completionFuture().join();
@@ -1159,7 +1126,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 								.putObjectRequest(request -> request.bucket(destinationLocation.getFileContainerId())
 										.key(destinationLocation.getFileId()))
 								.requestBody(body).addTransferListener(listener));
-				listener.setCompletableFuture(streamUpload.completionFuture());
 
 				logger.info("S3 download Archive->AWS/S3 Provider [{}] started. Source size - {} bytes",
 						sourceDestinationLogMessage, fileSize);
@@ -1171,7 +1137,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			} catch (CompletionException | HpcException | IOException e) {
 				logger.error("[S3] Failed to download to S3 destination: " + e.getCause().getMessage(), e);
 				progressListener.transferFailed(e.getCause().getMessage());
+
 			}
+
 		}, s3Executor);
 
 		return String.valueOf(s3TransferManagerDownloadFuture.hashCode());
