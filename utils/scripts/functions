@@ -1642,7 +1642,7 @@ function dm_show_register_directory_usage {
   -r                      Replace files if modified date is newer than DME file creation date 
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
-  -t[NUM_THREADS]         The number of threads to use while uploading files to the archive. This number should be between [1, 32].
+  -t[NUM_THREADS]         The number of threads to use while uploading files to the archive. This number should be between [1, 5].
 
 
 For detailed information on this command, refer to the following page: 
@@ -1735,9 +1735,9 @@ function dm_register_directory {
              echo "ERROR: The number of threads $numthreads is not a positive integer." >&2; exit 1
           fi
 
-          if [ "$numthreads" -lt "0" ] || [ "$numthreads" -gt "32" ]
+          if [ "$numthreads" -lt "0" ] || [ "$numthreads" -gt "5" ]
           then
-             echo "ERROR: The number of threads $numthreads should be between [1, 32]" >&2; exit 1
+             echo "ERROR: The number of threads $numthreads should be between [1, 5]" >&2; exit 1
           fi
           ;;
         *)
