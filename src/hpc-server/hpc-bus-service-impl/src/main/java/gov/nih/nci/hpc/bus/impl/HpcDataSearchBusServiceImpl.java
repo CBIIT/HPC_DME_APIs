@@ -846,7 +846,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
 
 		// Construct the excel file name
-		String exportFileName =  exportDirectory + File.separator + "Search_Results_"
+		String exportFileName =  exportDirectory + File.separator + "Email_Export_Search_Results_"
 				+ userId + "_" + fileSuffix + ".xlsx";
 
 		logger.debug("EmailExport: Export file name before invoking user: " + exportFileName);
@@ -945,7 +945,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		HpcNamedCompoundMetadataQuery query = dataSearchService.getQuery(userId, queryName);
 		// Construct the excel file name
 		String exportFileName = exportDirectory + File.separator + "Search_Results_" + queryName
-				+ MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xls";
+				+ MessageFormat.format("_{0,date,MM_dd_yyyy}", new Date()).trim() + ".xlsx";
 
 		// Construct the query
 		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
