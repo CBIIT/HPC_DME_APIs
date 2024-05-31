@@ -351,6 +351,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
 			String downloadType = request.getParameter("downloadType");
+			logger.debug("DownloadType = " + downloadType);
 			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
 			} else {
