@@ -468,6 +468,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
+	// TODO: implement w/ SDK V2 - remove this temp impl
+	@Override public boolean existsTieringPolicy(Object authenticatedToken,
+			 HpcFileLocation archiveLocation) throws HpcException {
+		return false;
+	}
+	
 	/*
 	 * TODO: implement w/ SDK V2
 	 * 
