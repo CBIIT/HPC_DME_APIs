@@ -181,6 +181,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (uploadRequest.getGlobusUploadSource() != null) {
 			throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}
+		
+		logger.error("ERAN: uploadDataObject() V2 - start");
 
 		// Calculate the archive destination.
 		HpcFileLocation archiveDestinationLocation = getArchiveDestinationLocation(
