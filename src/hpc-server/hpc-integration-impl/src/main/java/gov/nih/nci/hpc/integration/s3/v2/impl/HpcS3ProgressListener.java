@@ -8,7 +8,6 @@
  */
 package gov.nih.nci.hpc.integration.s3.v2.impl;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -92,7 +91,7 @@ public class HpcS3ProgressListener implements TransferListener {
 
 	@Override
 	public void transferInitiated(TransferListener.Context.TransferInitiated context) {
-		bytesTransferred.getAndAdd(context.progressSnapshot().transferredBytes());
+		bytesTransferred.getAndSet(context.progressSnapshot().transferredBytes());
 		bytesTransferredReported = bytesTransferred.get();
 		logger.info("S3 transfer [{}] started. {} bytes transferred so far", transferSourceDestination,
 				bytesTransferredReported);
@@ -100,7 +99,7 @@ public class HpcS3ProgressListener implements TransferListener {
 
 	@Override
 	public void bytesTransferred(TransferListener.Context.BytesTransferred context) {
-		bytesTransferred.getAndAdd(context.progressSnapshot().transferredBytes());
+		bytesTransferred.getAndSet(context.progressSnapshot().transferredBytes());
 
 		if (bytesTransferred.get() - bytesTransferredReported >= TRANSFER_PROGRESS_REPORTING_RATE) {
 			bytesTransferredReported = bytesTransferred.get();
@@ -113,13 +112,15 @@ public class HpcS3ProgressListener implements TransferListener {
 
 	@Override
 	public void transferComplete(TransferListener.Context.TransferComplete context) {
+		bytesTransferred.getAndSet(context.progressSnapshot().transferredBytes());
+
 		logger.info("S3 transfer [{}] completed. {} bytes transferred", transferSourceDestination, bytesTransferred);
 		progressListener.transferCompleted(bytesTransferred.get());
 	}
 
 	@Override
 	public void transferFailed(TransferListener.Context.TransferFailed context) {
-		bytesTransferred.getAndAdd(context.progressSnapshot().transferredBytes());
+		bytesTransferred.getAndSet(context.progressSnapshot().transferredBytes());
 
 		logger.error("S3 transfer [{}] failed. {}MB transferred.", transferSourceDestination,
 				bytesTransferred.get() / MB, context.exception());
