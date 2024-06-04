@@ -221,6 +221,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (downloadRequest.getArchiveLocation() == null) {
 			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
 		}
+		
+		logger.error("ERAN: downloadDataObject() V2 - start");
 
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a download request to a local file.
