@@ -181,7 +181,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (uploadRequest.getGlobusUploadSource() != null) {
 			throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}
-		
+
 		logger.error("ERAN: uploadDataObject() V2 - start");
 
 		// Calculate the archive destination.
@@ -469,11 +469,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	// TODO: implement w/ SDK V2 - remove this temp impl
-	@Override public boolean existsTieringPolicy(Object authenticatedToken,
-			 HpcFileLocation archiveLocation) throws HpcException {
+	@Override
+	public boolean existsTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
 		return false;
 	}
-	
+
 	/*
 	 * TODO: implement w/ SDK V2
 	 * 
@@ -1006,19 +1006,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			File destinationLocation, HpcDataTransferProgressListener progressListener) throws HpcException {
 		// Create a S3 download request.
-		DownloadFileRequest downloadFileRequest = DownloadFileRequest.builder()
+		DownloadFileRequest.Builder downloadFileRequestBuilder = DownloadFileRequest.builder()
 				.getObjectRequest(b -> b.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId()))
-				.destination(destinationLocation).build();
+				.destination(destinationLocation);
+		if (progressListener != null) {
+			downloadFileRequestBuilder.addTransferListener(new HpcS3ProgressListener(progressListener,
+					"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
+		}
 
 		FileDownload downloadFile = null;
 		try {
-			downloadFile = s3Connection.getTransferManager(authenticatedToken).downloadFile(downloadFileRequest);
+			downloadFile = s3Connection.getTransferManager(authenticatedToken)
+					.downloadFile(downloadFileRequestBuilder.build());
 
-			if (progressListener != null) {
-				downloadFileRequest.transferListeners().add(new HpcS3ProgressListener(progressListener,
-						"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
-
-			} else {
+			if (progressListener == null) {
 				// Download synchronously.
 				downloadFile.completionFuture().join();
 			}
