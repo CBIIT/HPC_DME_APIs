@@ -64,6 +64,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     private int tokenExpirationPeriod;
     @Value("${gov.nih.nci.hpc.server.childCollections.acl.user}")
 	private String childCollectionsAclURL;
+    @Value("${gov.nih.nci.hpc.oidc.header}")
+    private String oidcHeader;
     
     @Autowired
     private HpcModelBuilder hpcModelBuilder;
@@ -85,7 +87,7 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 		HttpSession session = request.getSession();
 		String userId = (String) session.getAttribute("hpcUserId");
 		String smUser = request.getHeader("SM_USER");
-		String oidcAccessToken = request.getHeader("Oidc_access_token"); //TODO Make this a property
+		String oidcAccessToken = request.getHeader(oidcHeader);
 		Date tokenExpiration = (Date) session.getAttribute("tokenExpiration");
 
         if (StringUtils.isBlank(userId) || StringUtils.isNotBlank(smUser) && isTokenExpired(tokenExpiration)) {
