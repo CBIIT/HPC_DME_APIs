@@ -42,7 +42,7 @@
 		<amazon-aws.version>1.12.420</amazon-aws.version>
 		<jackson.version>2.12.7</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
-		<jjwt.version>0.9.1</jjwt.version>
+		<jjwt.version>0.12.5</jjwt.version>
 		<bouncycastle.version>1.68</bouncycastle.version>
 		<globus.version>1.0</globus.version>
 		<tika.version>1.28.3</tika.version>
@@ -392,8 +392,20 @@
    			 </dependency>
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt</artifactId>
+				<artifactId>jjwt-api</artifactId>
 				<version>${jjwt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-impl</artifactId>
+				<version>${jjwt.version}</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+			    <groupId>io.jsonwebtoken</groupId>
+			    <artifactId>jjwt-jackson</artifactId>
+			    <version>${jjwt.version}</version>
+			    <scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>javax.mail</groupId>
