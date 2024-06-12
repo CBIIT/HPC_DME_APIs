@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -221,7 +222,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (downloadRequest.getArchiveLocation() == null) {
 			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
 		}
-		
+
 		logger.error("ERAN: downloadDataObject() V2 - start");
 
 		if (downloadRequest.getFileDestination() != null) {
@@ -430,7 +431,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
 					directoryScanItem.setFilePath(s3Object.key());
 					directoryScanItem.setFileName(FilenameUtils.getName(s3Object.key()));
-					directoryScanItem.setLastModified(dateFormat.format(s3Object.lastModified()));
+					directoryScanItem.setLastModified(dateFormat.format(Date.from(s3Object.lastModified())));
 					directoryScanItems.add(directoryScanItem);
 				}
 			});
