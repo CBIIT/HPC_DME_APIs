@@ -183,8 +183,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		logger.error("ERAN: uploadDataObject() V2 - start");
-
 		// Calculate the archive destination.
 		HpcFileLocation archiveDestinationLocation = getArchiveDestinationLocation(
 				baseArchiveDestination.getFileLocation(), uploadRequest.getPath(), uploadRequest.getCallerObjectId(),
@@ -222,8 +220,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		if (downloadRequest.getArchiveLocation() == null) {
 			throw new HpcException("Null archive location", HpcErrorType.UNEXPECTED_ERROR);
 		}
-
-		logger.error("ERAN: downloadDataObject() V2 - start");
 
 		if (downloadRequest.getFileDestination() != null) {
 			// This is a download request to a local file.
@@ -694,6 +690,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		Calendar dataTransferCompleted = null;
 		try {
 			fileUpload = s3Connection.getTransferManager(authenticatedToken).uploadFile(uploadFileRequest);
+			progressListener.setCompletableFuture(fileUpload.completionFuture());
 			fileUpload.completionFuture().join();
 
 			dataTransferCompleted = Calendar.getInstance();
@@ -821,7 +818,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				// Stream the data.
 				body.writeInputStream(sourceInputStream);
-
+				progressListener.setCompletableFuture(streamUpload.completionFuture());
 				streamUpload.completionFuture().join();
 
 			} catch (CompletionException | HpcException | IOException e) {
@@ -1025,6 +1022,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (progressListener == null) {
 				// Download synchronously.
 				downloadFile.completionFuture().join();
+			} else {
+				progressListener.setCompletableFuture(downloadFile.completionFuture());
 			}
 
 		} catch (CompletionException | SdkException e) {
@@ -1144,6 +1143,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				// Stream the data.
 				body.writeInputStream(sourceInputStream);
+				progressListener.setCompletableFuture(streamUpload.completionFuture());
 				streamUpload.completionFuture().join();
 
 			} catch (CompletionException | HpcException | IOException e) {

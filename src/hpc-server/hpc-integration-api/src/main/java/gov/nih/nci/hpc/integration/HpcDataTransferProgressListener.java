@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.integration;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * <p>
  * HPC Data Transfer Completion Listener Interface.
@@ -35,10 +37,20 @@ public interface HpcDataTransferProgressListener {
 	public void transferFailed(String message);
 
 	/**
-	 * Called when data transfer (upload or download) progressed.
+	 * (Optional) Called when data transfer (upload or download) progressed.
 	 * 
 	 * @param bytesTransferred total bytes transferred so far.
 	 */
 	public default void transferProgressed(long bytesTransferred) {
+	}
+
+	/**
+	 * (Optional) Setter for a CompletableFuture which allows a listener to cancel a
+	 * transfer if needed.
+	 * 
+	 * @param completableFuture The CompletableFuture instance that can be used to
+	 *                          cancel the transfer.
+	 */
+	public default void setCompletableFuture(CompletableFuture<?> completableFuture) {
 	}
 }

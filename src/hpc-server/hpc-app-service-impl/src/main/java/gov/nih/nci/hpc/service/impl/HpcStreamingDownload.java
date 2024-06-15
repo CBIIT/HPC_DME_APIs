@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +59,10 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
 	// Indicator whether task has removed / cancelled
 	private boolean taskCancelled = false;
+
+	// The CompletableFuture instance that is executing the transfer. Used to cancel
+	// if needed.
+	private CompletableFuture<?> completableFuture = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -156,15 +161,26 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
 		try {
 			if (!dataTransferService.updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
-				// The task was cancelled / removed from the DB. Stop 1st hop download thread.
+				// The task was cancelled / removed from the DB. Stop download thread.
+				logger.info("download task: {} - Task cancelled", downloadTask.getId());
 				taskCancelled = true;
-				logger.info("Interrupting thread due to task cancellation");
-				Thread.currentThread().interrupt();
+
+				// Stopping the transfer thread.
+				if (completableFuture != null) {
+					boolean cancelStatus = completableFuture.cancel(true);
+					logger.info("download task: {} - transfer cancellation result: ", downloadTask.getId(),
+							cancelStatus);
+				}
 			}
 
 		} catch (HpcException e) {
 			logger.error("Failed to update Streaming download task progress", e);
 		}
+	}
+
+	@Override
+	public void setCompletableFuture(CompletableFuture<?> completableFuture) {
+		this.completableFuture = completableFuture;
 	}
 
 	// ---------------------------------------------------------------------//
