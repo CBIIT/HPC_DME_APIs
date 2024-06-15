@@ -4,8 +4,8 @@ package gov.nih.nci.hpc.web.util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +38,9 @@ public class ExcelExportProc {
     public static final String XLS_MIMETYPE = "application/vnd.ms-excel";
 
     public void doExport(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Workbook wb = new HSSFWorkbook();
-        Sheet s = wb.createSheet();
-        Row r = null;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet s = wb.createSheet("Sheet1");
+		Row r = null;
 		Date currentDate = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String currentDateTime = dateFormat.format(currentDate);
