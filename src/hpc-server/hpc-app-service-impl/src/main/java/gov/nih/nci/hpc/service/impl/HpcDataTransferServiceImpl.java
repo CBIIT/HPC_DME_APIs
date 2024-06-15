@@ -39,6 +39,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -1536,7 +1537,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -1577,7 +1579,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, null,
@@ -1613,7 +1616,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
@@ -3244,8 +3248,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getAccessToken(),
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getRefreshToken());
 
-			
-			// Update the download task with the latest refresh token 
+			// Update the download task with the latest refresh token
 			HpcIntegratedSystemTokens boxTokens = dataTransferProxies.get(HpcDataTransferType.BOX)
 					.getIntegratedSystemTokens(authenticatedToken);
 			HpcDataObjectDownloadTask downloadTask = boxDownload.getDownloadTask();
@@ -3860,6 +3863,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Indicator whether task has removed / cancelled
 		private boolean taskCancelled = false;
 
+		// The CompletableFuture instance that is executing the transfer. Used to cancel
+		// if needed.
+		private CompletableFuture<?> completableFuture = null;
+
 		// ---------------------------------------------------------------------//
 		// Constructors
 		// ---------------------------------------------------------------------//
@@ -4086,14 +4093,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			try {
 				if (!updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
 					// The task was cancelled / removed from the DB. Stop 1st hop download thread.
+					logger.info("download task: {} - Task cancelled", downloadTask.getId());
 					taskCancelled = true;
-					logger.info("Interrupting thread due to task cancellation");
-					Thread.currentThread().interrupt();
+
+					// Stopping the transfer thread.
+					if (completableFuture != null) {
+						boolean cancelStatus = completableFuture.cancel(true);
+						logger.info("download task: {} - transfer cancellation result: ", downloadTask.getId(),
+								cancelStatus);
+					}
 				}
 
 			} catch (HpcException e) {
 				logger.error("Failed to update 1st hop download task progress", e);
 			}
+		}
+
+		@Override
+		public void setCompletableFuture(CompletableFuture<?> completableFuture) {
+			this.completableFuture = completableFuture;
 		}
 
 		// ---------------------------------------------------------------------//
