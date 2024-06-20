@@ -282,25 +282,7 @@ public class HpcDownloadController extends AbstractHpcController {
 					}
 				}
 			}
-		} else {
-			//Disable the download button if the collection size exceeds the limit
-			Long collectionSize = 0L;
-			//Get the total size of the collection
-			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionServiceURL, downloadFilePath, false,
-								false, false, sslCertPath, sslCertPassword);
-			//Get the collection size if present
-			collectionSize = getCollectionSizeFromReport(collections.getCollections().get(0));
-			
-			boolean canDownloadFlag = determineIfDataSetCanBeDownloaded(collectionSize);
-			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.toString(canDownloadFlag));
-			if(!canDownloadFlag) {
-				String contactEmail = (String) session.getAttribute("contactEmail");
-				model.addAttribute(ATTR_MAX_DOWNLOAD_SIZE_EXCEEDED_MSG,
-						"Collection size exceeds the maximum permitted download limit of "
-								+ MiscUtil.humanReadableByteCount(Double.parseDouble(maxAllowedDownloadSize.toString()), true)
-								+ ". Contact <a href='mailto:" + contactEmail + "'>" + contactEmail + "</a> for support.");	
-			}
-		}
+		} 
 		
 		return "download";
 	}
