@@ -5,11 +5,8 @@ import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestina
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -34,24 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.SetBucketLifecycleConfigurationRequest;
-import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter;
-import com.amazonaws.services.s3.model.lifecycle.LifecycleFilterPredicate;
-import com.amazonaws.services.s3.model.lifecycle.LifecyclePrefixPredicate;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
@@ -86,6 +72,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.RestoreObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -123,9 +110,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Value("${hpc.integration.s3.tieringEndpoint}")
 	private String tieringEndpoint = null;
 
+	// TODO: clean up from config. Can't set this value in V2 SDK
 	// Number of days the restored data object will be available.
-	@Value("${hpc.integration.s3.restoreNumDays}")
-	private int restoreNumDays = 2;
+	// @Value("${hpc.integration.s3.restoreNumDays}")
+	// private int restoreNumDays = 2;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -467,6 +455,29 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
+	@Override
+	public void restoreDataObject(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
+
+		try {
+
+			// Create and submit a request to restore an object from Glacier.
+			RestoreObjectRequest restoreRequest = RestoreObjectRequest.builder()
+					.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId()).build();
+			s3Connection.getClient(authenticatedToken).restoreObject(restoreRequest).join();
+
+			// Eran: code review notes
+			// There is no option to set the 'expirationInDays' in V2, like V1 supported.
+			// Unclear what the value is
+			// need to clean up restoreNumDays property
+
+		} catch (CompletionException e) {
+			throw new HpcException(
+					"[S3] Failed to restore data object" + archiveLocation.getFileContainerId() + ":"
+							+ archiveLocation.getFileId() + " - " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
+		}
+	}
+
 	// TODO: implement w/ SDK V2 - remove this temp impl
 	@Override
 	public boolean existsTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
@@ -575,29 +586,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * (AmazonClientException e) { throw new HpcException(
 	 * "[S3] Failed to add a new rule to life cycle policy on bucket " +
 	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
-	 * HpcErrorType.DATA_TRANSFER_ERROR,
-	 * s3Connection.getS3Provider(authenticatedToken), e); } }
-	 * 
-	 * @Override public void restoreDataObject(Object authenticatedToken,
-	 * HpcFileLocation archiveLocation) throws HpcException {
-	 * 
-	 * try { AmazonS3 s3Client =
-	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
-	 * 
-	 * // Create and submit a request to restore an object from Glacier for
-	 * configured // number of days. RestoreObjectRequest requestRestore = new
-	 * RestoreObjectRequest(archiveLocation.getFileContainerId(),
-	 * archiveLocation.getFileId(), restoreNumDays);
-	 * s3Client.restoreObjectV2(requestRestore);
-	 * 
-	 * } catch (AmazonServiceException e) { throw new HpcException(
-	 * "[S3] Failed to restore data object " + archiveLocation.getFileContainerId()
-	 * + ":" + archiveLocation.getFileId() + e.getMessage(),
-	 * HpcErrorType.DATA_TRANSFER_ERROR,
-	 * s3Connection.getS3Provider(authenticatedToken), e); } catch
-	 * (AmazonClientException e) { throw new HpcException(
-	 * "[S3] Failed to restore data object " + archiveLocation.getFileContainerId()
-	 * + ":" + archiveLocation.getFileId() + e.getMessage(),
 	 * HpcErrorType.DATA_TRANSFER_ERROR,
 	 * s3Connection.getS3Provider(authenticatedToken), e); } }
 	 * 
