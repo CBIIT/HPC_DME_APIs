@@ -64,9 +64,12 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetBucketLifecycleConfigurationRequest;
+import software.amazon.awssdk.services.s3.model.GetBucketLifecycleConfigurationResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.LifecycleRule;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
@@ -74,6 +77,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.Transition;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -457,9 +461,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public void restoreDataObject(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
-
 		try {
-
 			// Create and submit a request to restore an object from Glacier.
 			RestoreObjectRequest restoreRequest = RestoreObjectRequest.builder()
 					.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId()).build();
@@ -478,10 +480,48 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
-	// TODO: implement w/ SDK V2 - remove this temp impl
 	@Override
 	public boolean existsTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
-		return false;
+		try {
+			// Retrieve the configuration.
+			GetBucketLifecycleConfigurationRequest bucketLifeCycleConfigurationRequest = GetBucketLifecycleConfigurationRequest
+					.builder().bucket(archiveLocation.getFileContainerId()).build();
+			GetBucketLifecycleConfigurationResponse bucketLifeCycleConfigurationResponse = s3Connection
+					.getClient(authenticatedToken).getBucketLifecycleConfiguration(bucketLifeCycleConfigurationRequest)
+					.join();
+
+			if (bucketLifeCycleConfigurationResponse != null) {
+				for (LifecycleRule rule : bucketLifeCycleConfigurationResponse.rules()) {
+					// Look through filter prefix applied to lifecycle policy
+					boolean hasTransition = false;
+
+					if (rule.hasTransitions()) {
+						for (Transition transition : rule.transitions()) {
+							if (!StringUtils.isEmpty(transition.storageClassAsString())) {
+								hasTransition = true;
+							}
+						}
+					}
+
+					if (hasTransition && rule.filter() != null && rule.filter().prefix() != null) {
+						if (archiveLocation.getFileId().contains(rule.filter().prefix())) {
+							return true;
+						}
+					} else if (hasTransition) {
+						// This is a transition without prefix applies to entire bucket.
+						return true;
+					}
+				}
+			}
+
+			return false;
+
+		} catch (CompletionException e) {
+			throw new HpcException(
+					"[S3] Failed to retrieve life cycle policy on bucket: " + archiveLocation.getFileContainerId()
+							+ "- " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
+		}
 	}
 
 	/*
@@ -588,39 +628,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
 	 * HpcErrorType.DATA_TRANSFER_ERROR,
 	 * s3Connection.getS3Provider(authenticatedToken), e); } }
-	 * 
-	 * @Override public boolean existsTieringPolicy(Object authenticatedToken,
-	 * HpcFileLocation archiveLocation) throws HpcException {
-	 * 
-	 * try { AmazonS3 s3Client =
-	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
-	 * 
-	 * // Retrieve the configuration. BucketLifecycleConfiguration configuration =
-	 * s3Client
-	 * .getBucketLifecycleConfiguration(archiveLocation.getFileContainerId());
-	 * 
-	 * if (configuration != null) { for (Rule rule : configuration.getRules()) { //
-	 * Look through filter prefix applied to lifecycle policy boolean hasTransition
-	 * = false;
-	 * 
-	 * if (rule.getTransitions() != null) { for (Transition transition :
-	 * rule.getTransitions()) { if (transition.getStorageClassAsString() != null &&
-	 * !transition.getStorageClassAsString().isEmpty()) hasTransition = true; } }
-	 * 
-	 * if (hasTransition && rule.getFilter() != null &&
-	 * rule.getFilter().getPredicate() != null) { LifecycleFilterPredicate predicate
-	 * = rule.getFilter().getPredicate(); if (predicate instanceof
-	 * LifecyclePrefixPredicate) { LifecyclePrefixPredicate prefixPredicate =
-	 * (LifecyclePrefixPredicate) predicate; if
-	 * (archiveLocation.getFileId().contains(prefixPredicate.getPrefix())) return
-	 * true; } } else if (hasTransition) { // This is a transition without prefix
-	 * applies to entire bucket. return true; } } } } catch (AmazonServiceException
-	 * e) { throw new HpcException(
-	 * "[S3] Failed to retrieve life cycle policy on bucket " +
-	 * archiveLocation.getFileContainerId() + e.getMessage(),
-	 * HpcErrorType.DATA_TRANSFER_ERROR,
-	 * s3Connection.getS3Provider(authenticatedToken), e); } return false; }
-	 * 
 	 */
 
 	@Override
