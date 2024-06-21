@@ -40,8 +40,8 @@
         <spring.security.version>4.2.10.RELEASE</spring.security.version>
         <aspectj.version>1.9.6</aspectj.version>
 		<amazon-aws.version>1.12.420</amazon-aws.version>
-		<amazon-aws-v2.version>2.25.60</amazon-aws-v2.version>
-		<amazon-aws-crt.version>0.29.19</amazon-aws-crt.version>
+		<amazon-aws-v2.version>2.26.7</amazon-aws-v2.version>
+		<amazon-aws-crt.version>0.29.24</amazon-aws-crt.version>
 		<jackson.version>2.12.7</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.9.1</jjwt.version>

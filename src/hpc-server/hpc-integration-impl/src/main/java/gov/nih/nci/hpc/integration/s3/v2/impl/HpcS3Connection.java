@@ -250,7 +250,7 @@ public class HpcS3Connection {
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
 					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
-					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(false)
+					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(true)
 					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
 					.build();
 
@@ -261,6 +261,7 @@ public class HpcS3Connection {
 			// - shutDownThreadPools(false)
 			// - clientConfiguration() - used to set socket timeout
 			// 2. New options in V2 to consider in the config
+			//   (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3CrtAsyncClientBuilder.html)
 			// - initialReadBufferSizeInBytes
 			// - maxConcurrency
 			// - maxNativeMemoryLimitInBytes
