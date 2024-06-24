@@ -17,20 +17,21 @@ function dm_list_commands {
 
   List of DME CLU commands.  
   
-    dm_add_bookmark                   dm_get_collection
-	dm_delete_collection              dm_get_dataobject
-	dm_delete_datafile                dm_list_commands
-	dm_download_collection            dm_query_dataobject
-	dm_download_collection_aspera     dm_register_collection
-	dm_download_collection_globus     dm_register_dataobject
+	dm_add_bookmark                   dm_generate_token
+	dm_delete_collection              dm_get_collection
+	dm_delete_datafile                dm_get_dataobject
+	dm_download_collection            dm_get_download_presigned
+	dm_download_collection_aspera     dm_list_command
+	dm_download_collection_globus     dm_query_dataobject
+	dm_download_collection_retry      dm_register_collection
+	dm_download_dataobject_retry      dm_register_dataobject
 	dm_download_collection_s3         dm_register_dataobject_multipart
 	dm_download_dataobject            dm_register_dataobject_presigned
 	dm_download_dataobject_aspera     dm_register_directory
 	dm_download_dataobject_globus     dm_register_user
 	dm_download_dataobject_presigned  dm_rename
 	dm_download_dataobject_s3         dm_update_bookmark
-	dm_generate_token                 dm_update_user
-	dm_get_collection                 dm_get_download_presigned               
+	dm_download_list_retry	          dm_update_user
   
 To see the detailed information on each command, use '<command name> -h'
 
@@ -2054,6 +2055,421 @@ function dm_register_globus_directory {
     fi
 
 }
+
+
+
+#Print Usage of dm_download_dataobject_retry function
+function dm_show_download_dataobject_retry_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_dataobject_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]
+
+  Retry the dataobject download task for the given Globus download task ID.
+  [-D REST-response]          Optionally specify the filename to capture the REST response status
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  <task-id>                   The taskID of the download transaction to retry
+  <endpoint type>             Specify the type of the endpoint - 'globus' for Globus, 's3' for AWS S3 bucket, or 'aspera' for dbGaP
+  <aspera_credentials file>   Full path of the Aspera credentials file on the local machine. Provide for aspera endpoint only
+  <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
+
+For detailed information on this command, refer to the following page:
+https://wiki.nci.nih.gov/x/JYlNG
+EOF
+  echo "$usage"
+}
+
+
+function dm_download_dataobject_retry {
+
+    #local USAGE="usage: dm_download_dataobject_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file] | aspera_credentials_file]"
+
+    local response_msg
+    local response_hdr
+    local credentials_file
+    local sourcepaths="source-paths"
+    local globus_endpoint="globus"
+    local s3_endpoint="s3"
+    local aspera_endpoint="aspera"
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    dm_show_download_dataobject_retry_usage >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    dm_show_download_dataobject_retry_usage >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_show_download_dataobject_retry_usage >&2
+          return 1
+          ;;
+      esac
+    done
+
+    if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]
+    then
+        dm_show_download_dataobject_retry_usage >&2
+        return 1
+    fi
+
+    local taskId="$1"
+    local endpoint_type="$2"
+
+   if [ "$endpoint_type" != "$globus_endpoint" ] && [ "$endpoint_type" != "$s3_endpoint" ] && [ "$endpoint_type" != "$aspera_endpoint" ]
+    then
+        dm_show_download_dataobject_retry_usage >&2
+        return 1
+   fi
+
+    if [ "$endpoint_type" = "$globus_endpoint" ] && [ "$#" -ne 2 ]
+     then
+        dm_show_download_dataobject_retry_usage >&2
+        return 1
+    fi
+    if [ "$endpoint_type" = "$aspera_endpoint" ] && [ "$#" -ne 3 ]
+    then
+        dm_show_download_dataobject_retry_usage >&2
+        return 1
+     fi
+
+    if [ "$#" -gt 2 ]
+    then
+        credentials_file=$3
+    else
+       if [ "$endpoint_type" = "$s3_endpoint" ]
+       then
+           credentials_file=~/.aws/credentials
+		    if ! [ -f "$credentials_file" ]
+		    then
+		       echo "Credentials file does not exist"
+		       return 1
+		    fi
+       else
+           credentials_file=$HPC_DM_UTILS/templates/empty_template.json
+       fi
+    fi
+
+    if [ -z "$response_msg" ]
+    then
+        response_msg=download-dataobject-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-dataobject-response-header.tmp
+    fi
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+    curl -H "Content-Type: application/json" -d @$credentials_file -X POST ${SERVER}/dataObject/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+
+    check_connection $response_hdr
+
+    local response_code=$(get_http_code "$response_hdr")
+    if [ "$response_code" -ne 200 ]
+    then
+      print_error_message "$response_msg" "$response_code"
+    else
+        cat $response_msg
+        return 1
+    fi
+}
+
+
+
+#Print Usage of dm_download_collection_retry function
+function dm_show_download_collection_retry_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_collection_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]
+
+  Retry the collection download task for the given Globus download task ID.
+  [-D REST-response]          Optionally specify the filename to capture the REST response status
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  <task-id>                   The taskID of the download transaction to retry
+  <endpoint type>             Specify the type of the endpoint - 'globus' for Globus, 's3' for AWS S3 bucket, or 'aspera' for dbGaP
+  <aspera_credentials file>   Full path of the Aspera credentials file on the local machine. Provide for aspera endpoint only
+  <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
+
+For detailed information on this command, refer to the following page:
+https://wiki.nci.nih.gov/x/JYlNG
+EOF
+  echo "$usage"
+}
+
+
+
+function dm_download_collection_retry {
+
+    #local USAGE="usage: dm_download_collection_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]"
+
+    local response_msg
+    local response_hdr
+    local credentials_file
+    local sourcepaths="source-paths"
+    local globus_endpoint="globus"
+    local s3_endpoint="s3"
+    local aspera_endpoint="aspera"
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    dm_show_download_collection_retry_usage >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    dm_show_download_collection_retry_usage >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_show_download_collection_retry_usage >&2
+          return 1
+          ;;
+      esac
+    done
+
+    if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]
+    then
+        dm_show_download_collection_retry_usage >&2
+        return 1
+    fi
+
+    local taskId="$1"
+    local endpoint_type="$2"
+
+   if [ "$endpoint_type" != "$globus_endpoint" ] && [ "$endpoint_type" != "$s3_endpoint" ] && [ "$endpoint_type" != "$aspera_endpoint" ]
+    then
+        dm_show_download_collection_retry_usage >&2
+        return 1
+   fi
+
+    if [ "$endpoint_type" = "$globus_endpoint" ] && [ "$#" -ne 2 ]
+     then
+        dm_show_download_collection_retry_usage >&2
+        return 1
+    fi
+    if [ "$endpoint_type" = "$aspera_endpoint" ] && [ "$#" -ne 3 ]
+    then
+        dm_show_download_collection_retry_usage >&2
+        return 1
+     fi
+
+    if [ "$#" -gt 2 ]
+    then
+        credentials_file=$3
+    else
+       if [ "$endpoint_type" = "$s3_endpoint" ]
+       then
+           credentials_file=~/.aws/credentials
+		    if ! [ -f "$credentials_file" ]
+		    then
+		       echo "Credentials file does not exist"
+		       return 1
+		    fi
+       else
+           credentials_file=$HPC_DM_UTILS/templates/empty_template.json
+       fi
+    fi
+
+    if [ -z "$response_msg" ]
+    then
+        response_msg=download-collection-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-collection-response-header.tmp
+    fi
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+    curl -H "Content-Type: application/json" -d @$credentials_file -X POST ${SERVER}/collection/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+
+    check_connection $response_hdr
+
+    local response_code=$(get_http_code "$response_hdr")
+    if [ "$response_code" -ne 200 ]
+    then
+      print_error_message "$response_msg" "$response_code"
+    else
+        cat $response_msg
+        return 1
+    fi
+}
+
+
+
+#Print Usage of dm_download_list_retry function
+function dm_show_download_list_retry_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_list_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]
+
+  Retry the data object list or collection list download task for the given Globus download task ID.
+  [-D REST-response]          Optionally specify the filename to capture the REST response status
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  <task-id>                   The taskID of the download transaction to retry
+  <endpoint type>             Specify the type of the endpoint - 'globus' for Globus, 's3' for AWS S3 bucket, or 'aspera' for dbGaP
+  <aspera_credentials file>   Full path of the Aspera credentials file on the local machine. Provide for aspera endpoint only
+  <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
+
+For detailed information on this command, refer to the following page:
+https://wiki.nci.nih.gov/x/JYlNG
+EOF
+  echo "$usage"
+}
+
+
+function dm_download_list_retry {
+
+    #local USAGE="usage: dm_download_list_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]"
+
+    local response_msg
+    local response_hdr
+    local credentials_file
+    local globus_endpoint="globus"
+    local s3_endpoint="s3"
+    local aspera_endpoint="aspera"
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    dm_show_download_list_retry_usage >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    dm_show_download_list_retry_usage >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_show_download_list_retry_usage >&2
+          return 1
+          ;;
+      esac
+    done
+
+    if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]
+    then
+        dm_show_download_list_retry_usage >&2
+        return 1
+    fi
+
+    local taskId="$1"
+    local endpoint_type="$2"
+
+   if [ "$endpoint_type" != "$globus_endpoint" ] && [ "$endpoint_type" != "$s3_endpoint" ] && [ "$endpoint_type" != "$aspera_endpoint" ]
+    then
+        dm_show_download_list_retry_usage >&2
+        return 1
+   fi
+
+    if [ "$endpoint_type" = "$globus_endpoint" ] && [ "$#" -ne 2 ]
+     then
+        dm_show_download_list_retry_usage >&2
+        return 1
+    fi
+    if [ "$endpoint_type" = "$aspera_endpoint" ] && [ "$#" -ne 3 ]
+    then
+        dm_show_download_list_retry_usage >&2
+        return 1
+     fi
+
+    if [ "$#" -gt 2 ]
+    then
+        credentials_file=$3
+    else
+       if [ "$endpoint_type" = "$s3_endpoint" ]
+       then
+           credentials_file=~/.aws/credentials
+		    if ! [ -f "$credentials_file" ]
+		    then
+		       echo "Credentials file does not exist"
+		       return 1
+		    fi
+       else
+           credentials_file=$HPC_DM_UTILS/templates/empty_template.json
+       fi
+    fi
+
+    if [ -z "$response_msg" ]
+    then
+        response_msg=download-list-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-list-response-header.tmp
+    fi
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+    curl -H "Content-Type: application/json" -d @$credentials_file -X POST ${SERVER}/list/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+
+    check_connection $response_hdr
+
+    local response_code=$(get_http_code "$response_hdr")
+    if [ "$response_code" -ne 200 ]
+    then
+      print_error_message "$response_msg" "$response_code"
+    else
+        cat $response_msg
+        return 1
+    fi
+}
+
 
 
 #Print Usage of dm_download_collection_globus function
