@@ -2164,7 +2164,7 @@ function dm_download_dataobject_retry {
 		       return 1
 		    fi
        else
-           credentials_file=$HPC_DM_UTILS/templates/empty_template.json
+           credentials_file=$HPC_DM_UTILS/templates/empty-template.json
        fi
     fi
 
