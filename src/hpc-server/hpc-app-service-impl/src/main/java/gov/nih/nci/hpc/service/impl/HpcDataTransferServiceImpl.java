@@ -50,6 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.google.gson.Gson;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -239,6 +241,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -1998,17 +2002,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc,
-			int activeRequestsOffset) throws HpcException {
+			int activeRequestsOffset, Integer pageSize) throws HpcException {
+		if (page < 1) {
+			throw new HpcException("Invalid search results page: " + page, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// If pageSize is specified, replace the default defined
+		int finalPageSize = pagination.getPageSize();
+		if (pageSize != null || pageSize != 0) {
+			finalPageSize = pageSize;
+		}
 		List<HpcUserDownloadRequest> downloadResults = null;
 		if (doc == null) {
-			downloadResults = dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getDownloadResults(userId, (page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		} else if (doc.equals("ALL")) {
-			downloadResults = dataDownloadDAO.getAllDownloadResults(pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getAllDownloadResults((page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		} else {
-			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, (page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		}
 		return downloadResults;
 	}
