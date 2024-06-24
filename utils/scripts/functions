@@ -2063,7 +2063,7 @@ function dm_show_download_dataobject_retry_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_dataobject_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]
 
-  Retry the dataobject download task for the given Globus download task ID.
+  Retry the dataobject download task for the given download task ID.
   [-D REST-response]          Optionally specify the filename to capture the REST response status
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   <task-id>                   The taskID of the download transaction to retry
@@ -2072,7 +2072,7 @@ function dm_show_download_dataobject_retry_usage {
   <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
 
 For detailed information on this command, refer to the following page:
-https://wiki.nci.nih.gov/x/JYlNG
+TBD
 EOF
   echo "$usage"
 }
@@ -2201,7 +2201,7 @@ function dm_show_download_collection_retry_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_collection_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]
 
-  Retry the collection download task for the given Globus download task ID.
+  Retry the collection download task for the given download task ID.
   [-D REST-response]          Optionally specify the filename to capture the REST response status
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   <task-id>                   The taskID of the download transaction to retry
@@ -2210,7 +2210,7 @@ function dm_show_download_collection_retry_usage {
   <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
 
 For detailed information on this command, refer to the following page:
-https://wiki.nci.nih.gov/x/JYlNG
+TBD
 EOF
   echo "$usage"
 }
@@ -2340,7 +2340,7 @@ function dm_show_download_list_retry_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_list_retry [-D REST-response] [-o output-file] <task-id> <endpoint_type> [aws_credentials_file | aspera_credentials_file]
 
-  Retry the data object list or collection list download task for the given Globus download task ID.
+  Retry the data object list or collection list download task for the given download task ID.
   [-D REST-response]          Optionally specify the filename to capture the REST response status
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   <task-id>                   The taskID of the download transaction to retry
@@ -2349,7 +2349,7 @@ function dm_show_download_list_retry_usage {
   <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
 
 For detailed information on this command, refer to the following page:
-https://wiki.nci.nih.gov/x/JYlNG
+TBD
 EOF
   echo "$usage"
 }
