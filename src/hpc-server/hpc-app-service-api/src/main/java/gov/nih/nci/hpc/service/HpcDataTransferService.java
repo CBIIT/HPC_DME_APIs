@@ -906,7 +906,7 @@ public interface HpcDataTransferService {
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset)
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset, Integer pageSize)
 			throws HpcException;
 
 	/**
