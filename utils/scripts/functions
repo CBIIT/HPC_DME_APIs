@@ -2071,6 +2071,9 @@ function dm_show_download_dataobject_retry_usage {
   <aspera_credentials file>   Full path of the Aspera credentials file on the local machine. Provide for aspera endpoint only
   <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
 
+For a sample Aspera credentials file for dbGaP, refer to templates/dbGaP-aspera-credentials
+For a sample AWS credentials file, refer to templates/aws-credentials
+
 For detailed information on this command, refer to the following page:
 TBD
 EOF
@@ -2164,7 +2167,7 @@ function dm_download_dataobject_retry {
 		       return 1
 		    fi
        else
-           credentials_file=$HPC_DM_UTILS/templates/empty_template.json
+           credentials_file=$HPC_DM_UTILS/templates/empty-template.json
        fi
     fi
 
@@ -2208,6 +2211,9 @@ function dm_show_download_collection_retry_usage {
   <endpoint type>             Specify the type of the endpoint - 'globus' for Globus, 's3' for AWS S3 bucket, or 'aspera' for dbGaP
   <aspera_credentials file>   Full path of the Aspera credentials file on the local machine. Provide for aspera endpoint only
   <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
+
+For a sample Aspera credentials file for dbGaP, refer to templates/dbGaP-aspera-credentials
+For a sample AWS credentials file, refer to templates/aws-credentials
 
 For detailed information on this command, refer to the following page:
 TBD
@@ -2347,6 +2353,9 @@ function dm_show_download_list_retry_usage {
   <endpoint type>             Specify the type of the endpoint - 'globus' for Globus, 's3' for AWS S3 bucket, or 'aspera' for dbGaP
   <aspera_credentials file>   Full path of the Aspera credentials file on the local machine. Provide for aspera endpoint only
   <aws_credentials_file>      Full path of the AWS credentials file on the local machine. Provide for S3 endpoint only. If this is not specified, then the default file located at ~/.aws/credentials will be used
+
+For a sample Aspera credentials file for dbGaP, refer to templates/dbGaP-aspera-credentials
+For a sample AWS credentials file, refer to templates/aws-credentials
 
 For detailed information on this command, refer to the following page:
 TBD
@@ -3340,7 +3349,7 @@ function dm_show_download_dataobject_aspera_usage {
   destination_path         Full path of the destination file/folder in the Aspera bucket
   aspera_credentials_path  Full path of the Aspera credentials file on the local machine containing the ASPERA_HOST, ASPERA_USER and ASPERA_SCP_PASS properties. If ASPERA_HOST or ASPERA_USER is not specified, then the dbGaP supplied values will be used.
 
-For a sample Aspera credentials file, refer to templates/aspera_credentials
+For a sample Aspera credentials file for dbGaP, refer to templates/dbGaP-aspera-credentials
 
 #For detailed information on this command, refer to the following page:
 #https://wiki.nci.nih.gov/x/bQRuG
@@ -3522,7 +3531,7 @@ function dm_show_download_collection_aspera_usage {
   destination_path         Full path of the destination folder in the Aspera bucket
   aspera_credentials_path  Full path of the Aspera credentials file on the local machine containing the ASPERA_HOST, ASPERA_USER and ASPERA_SCP_PASS properties. If ASPERA_HOST or ASPERA_USER is not specified, then dbGap supplied values will be used.
 
-For a sample Aspera credentials file, refer to templates/aspera_credentials
+For a sample Aspera credentials file for dbGaP, refer to templates/dbGaP-aspera-credentials
 
 #For detailed information on this command, refer to the following page:
 #https://wiki.nci.nih.gov/x/q4tbG
@@ -3919,7 +3928,7 @@ function dm_show_add_bookmark_usage {
   bookmark_name               Display name for the bookmark 
   description-json            Path to the JSON file containing the bookmark path in the archive
 
-For a sample description.json file, refer to templates/add_bookmark_group_admin-template.json.
+For a sample description.json file, refer to templates/add-bookmark-group-admin-template.json.
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/ooheFw
