@@ -5,8 +5,11 @@ import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestina
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -54,17 +57,19 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import software.amazon.awssdk.awscore.AwsRequestOverrideConfiguration;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.services.s3.model.BucketLifecycleConfiguration;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetBucketLifecycleConfigurationRequest;
+import software.amazon.awssdk.services.s3.model.ExpirationStatus;
 import software.amazon.awssdk.services.s3.model.GetBucketLifecycleConfigurationResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -78,6 +83,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.Transition;
+import software.amazon.awssdk.services.s3.model.TransitionStorageClass;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -484,10 +490,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public boolean existsTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
 		try {
 			// Retrieve the configuration.
-			GetBucketLifecycleConfigurationRequest bucketLifeCycleConfigurationRequest = GetBucketLifecycleConfigurationRequest
-					.builder().bucket(archiveLocation.getFileContainerId()).build();
 			GetBucketLifecycleConfigurationResponse bucketLifeCycleConfigurationResponse = s3Connection
-					.getClient(authenticatedToken).getBucketLifecycleConfiguration(bucketLifeCycleConfigurationRequest)
+					.getClient(authenticatedToken)
+					.getBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId()))
 					.join();
 
 			if (bucketLifeCycleConfigurationResponse != null) {
@@ -567,68 +572,68 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * HpcErrorType.DATA_TRANSFER_ERROR, ace); }
 	 * 
 	 * return objectMetadata; }
-	 * 
-	 * @SuppressWarnings("deprecation")
-	 * 
-	 * @Override public synchronized void setTieringPolicy(Object
-	 * authenticatedToken, HpcFileLocation archiveLocation, String prefix, String
-	 * tieringBucket, String tieringProtocol) throws HpcException { // Create a rule
-	 * to archive objects with the prefix to Glacier // immediately.
-	 * BucketLifecycleConfiguration.Rule newRule = new
-	 * BucketLifecycleConfiguration.Rule().withId(prefix) .addTransition(new
-	 * Transition().withDays(0).withStorageClass(StorageClass.Glacier))
-	 * .withFilter(new LifecycleFilter(new LifecyclePrefixPredicate(prefix)))
-	 * .withStatus(BucketLifecycleConfiguration.ENABLED);
-	 * 
-	 * try {
-	 * 
-	 * AmazonS3 s3Client =
-	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
-	 * 
-	 * // Retrieve the configuration. BucketLifecycleConfiguration configuration =
-	 * s3Client
-	 * .getBucketLifecycleConfiguration(archiveLocation.getFileContainerId());
-	 * 
-	 * List<Rule> rules = new ArrayList<Rule>(); rules.add(newRule);
-	 * 
-	 * if (configuration != null) { for (Rule rule : configuration.getRules()) { //
-	 * Rules existing in Cloudian is retrieved with the prefix // set to the same
-	 * value as filter. // Removing since it fails if this value is provided.
-	 * rule.setPrefix(null); rules.add(rule); } } else configuration = new
-	 * BucketLifecycleConfiguration();
-	 * 
-	 * // Add a new rule configuration.setRules(rules);
-	 * 
-	 * // Save the configuration. SetBucketLifecycleConfigurationRequest request =
-	 * new SetBucketLifecycleConfigurationRequest(
-	 * archiveLocation.getFileContainerId(), configuration);
-	 * 
-	 * // Add Cloudian custom tiering header, no impact to AWS S3 requests String
-	 * customHeader = tieringProtocol + "|EndPoint:" +
-	 * URLEncoder.encode(tieringEndpoint, StandardCharsets.UTF_8.toString()) +
-	 * ",TieringBucket:" + tieringBucket; String encodedCustomHeader =
-	 * URLEncoder.encode(customHeader, StandardCharsets.UTF_8.toString());
-	 * request.putCustomRequestHeader(CLOUDIAN_TIERING_INFO_HEADER,
-	 * encodedCustomHeader);
-	 * 
-	 * s3Client.setBucketLifecycleConfiguration(request);
-	 * 
-	 * } catch (UnsupportedEncodingException e) { throw new HpcException(
-	 * "[S3] Failed to add a new rule to life cycle policy on bucket " +
-	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
-	 * HpcErrorType.DATA_TRANSFER_ERROR,
-	 * s3Connection.getS3Provider(authenticatedToken), e); } catch
-	 * (AmazonServiceException e) { throw new HpcException(
-	 * "[S3] Failed to add a new rule to life cycle policy on bucket " +
-	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
-	 * HpcErrorType.DATA_TRANSFER_ERROR,
-	 * s3Connection.getS3Provider(authenticatedToken), e); } catch
-	 * (AmazonClientException e) { throw new HpcException(
-	 * "[S3] Failed to add a new rule to life cycle policy on bucket " +
-	 * archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
-	 * HpcErrorType.DATA_TRANSFER_ERROR,
-	 * s3Connection.getS3Provider(authenticatedToken), e); } }
 	 */
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public synchronized void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
+			String tieringBucket, String tieringProtocol) throws HpcException {
+
+		try {
+			// Create a list of life cycle rules
+			List<LifecycleRule> lifeCycleRules = new ArrayList<>();
+
+			// Add the new rule.
+			Transition transition = Transition.builder().days(0).storageClass(TransitionStorageClass.GLACIER).build();
+			lifeCycleRules.add(LifecycleRule.builder().id(prefix).transitions(transition)
+					.filter(builder -> builder.prefix(prefix)).status(ExpirationStatus.ENABLED).build());
+
+			// Retrieve the configuration
+			GetBucketLifecycleConfigurationResponse bucketLifeCycleConfigurationResponse = s3Connection
+					.getClient(authenticatedToken)
+					.getBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId()))
+					.join();
+
+			// Add the existing rules to the list.
+			if (bucketLifeCycleConfigurationResponse != null) {
+				for (LifecycleRule lifeCycleRule : bucketLifeCycleConfigurationResponse.rules()) {
+					// Rules existing in Cloudian is retrieved with the prefix
+					// set to the same value as filter.
+					// Removing since it fails if this value is provided.
+					lifeCycleRules.add(lifeCycleRule.toBuilder().prefix(null).build());
+				}
+			}
+
+			// Add Cloudian custom tiering header, no impact to AWS S3 requests.
+			String customHeader = tieringProtocol + "|EndPoint:"
+					+ URLEncoder.encode(tieringEndpoint, StandardCharsets.UTF_8.toString()) + ",TieringBucket:"
+					+ tieringBucket;
+			String encodedCustomHeader = URLEncoder.encode(customHeader, StandardCharsets.UTF_8.toString());
+
+			BucketLifecycleConfiguration lifeCycleConfiguration = BucketLifecycleConfiguration.builder()
+					.rules(lifeCycleRules).build();
+			AwsRequestOverrideConfiguration requestOverrideConfiguration = AwsRequestOverrideConfiguration.builder()
+					.putHeader(customHeader, encodedCustomHeader).build();
+
+			s3Connection.getClient(authenticatedToken)
+					.putBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId())
+							.lifecycleConfiguration(lifeCycleConfiguration)
+							.overrideConfiguration(requestOverrideConfiguration))
+					.join();
+
+		} catch (UnsupportedEncodingException e) {
+			throw new HpcException(
+					"[S3] Failed to add a new rule to life cycle policy on bucket "
+							+ archiveLocation.getFileContainerId() + ":" + prefix + " - " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
+
+		} catch (CompletionException e) {
+			throw new HpcException(
+					"[S3] Failed to add a new rule to life cycle policy on bucket "
+							+ archiveLocation.getFileContainerId() + ":" + prefix + " - " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
+		}
+	}
 
 	@Override
 	public void shutdown(Object authenticatedToken) throws HpcException {
