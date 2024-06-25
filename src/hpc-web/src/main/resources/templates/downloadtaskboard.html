@@ -70,6 +70,32 @@
 	color: black; font-weight:bold
 }
 
+#resultsGrid{
+  display:none;
+}
+
+.overlay{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: rgba(255,255,255,0.8) url("img/spinner.gif") center no-repeat;
+}
+
+.div1 {
+	width: 50%;
+	float: left;
+}
+
+.div2 {
+	width: 50%;
+	float: right;
+	text-align:right;
+}
+
 thead input {
         width: 100%;
     }
@@ -102,6 +128,7 @@ tfoot input {
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
+    var pageSize = [[${pageSize}]];
     var expanded = false;
 /*]]>*/
 </script>
@@ -149,10 +176,19 @@ tfoot input {
 							</label>
 						</div>
 					</div>
-					<div style="text-align:right">
+					<div class="div1">
+						<label for>Show Entries </label>
+						<select name="pageSizeName1" id="pageSizeId1" class="form-control" style="width:100px">
+							<option value="100" th:selected="${pageSize} == '100'">100</option>
+							<option value="200" th:selected="${pageSize} == '200'">200</option>
+							<option value="500" th:selected="${pageSize} == '500'">500</option>
+							<option value="1000" th:selected="${pageSize} == '1000'">1000</option>
+						</select>
+					</div>
+					<div class="div2">
+						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 						<table id="pageDetails1" class="display" style="width:100%">
 							<tr>
-								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 								<button type="button" id="btnFirstTop"
 									class="btn btn-md btn-primary" onclick="updatePage('first')">
 									First</button>&nbsp;
@@ -168,6 +204,7 @@ tfoot input {
 							</tr>
 						</table>
 					</div>
+					<!-- div id="spinner" class="overlay"></div -->
 					<div th:if="${results != null and results.size() > 0}">
 						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
@@ -329,7 +366,7 @@ tfoot input {
 					$(this).html( '<div id="expandcollapseId"><img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" /></div>');
 		        }
 		    } );
-
+		
 		/*
 			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
 			hover showing the complete string.
@@ -360,6 +397,7 @@ tfoot input {
 							{targets: 11, data: 'displayPath', visible: false},
 						],
 				"lengthMenu": [ [-1], ["All"] ],
+				"initComplete": () => {$("#resultsGrid").show();}
 		} );
 
 		// Add event listener for opening and closing details
@@ -425,25 +463,48 @@ tfoot input {
 		}
 	}
 
+	$("#pageSizeId1").on("change",function(){
+		var checkBox = document.getElementById("allcheckbox");
+	    pageSize = $("#pageSizeId1").val();
+	    //$("#pageSizeId2").val(pageSize);
+		if(checkBox.checked == true) {
+			window.location.href = "/downloadtasks?queryAll=true&page=1" +  "&pageSize="+ pageSize;
+		} else {
+			window.location.href = "/downloadtasks?queryAll=false&page=1" + "&pageSize="+ pageSize;
+		}
+	});
+
+	$("#pageSizeId2").on("change",function(){
+		var checkBox = document.getElementById("allcheckbox");
+	    pageSize = $("#pageSizeId1").val();
+	    $("#pageSizeId1").val(pageSize);
+		if(checkBox.checked == true) {
+			window.location.href = "/downloadtasks?queryAll=true&page=1" +  "&pageSize="+ pageSize;
+		} else {
+			window.location.href = "/downloadtasks?queryAll=false&page=1" + "&pageSize="+ pageSize;
+		}
+	});
+
     function updatePage(action)
     {
     	var checkBox = document.getElementById("allcheckbox");
+		var pageSize = $("#pageSizeId1").val();
 		if(action == "next" && checkBox != null && checkBox.checked == true)
-		 	window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) +1);
+		 	window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) +1) + "&pageSize="+ pageSize;
 		else if (action == "next")
-			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) +1);
+			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) +1) + "&pageSize="+ pageSize;
 		else if(action == "previous" && checkBox != null && checkBox.checked == true)
-			window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) - 1);
+			window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) - 1) + "&pageSize="+ pageSize;
 		else if(action == "previous")
-			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) - 1);
+			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) - 1) + "&pageSize="+ pageSize;
 		else if(action == "first" && checkBox != null && checkBox.checked == true)
-			window.location.href = "/downloadtasks?queryAll=true&page=1";
+			window.location.href = "/downloadtasks?queryAll=true&page=1" + "&pageSize="+ pageSize;
 		else if(action == "first")
-			window.location.href = "/downloadtasks?queryAll=false&page=1";
+			window.location.href = "/downloadtasks?queryAll=false&page=1" + + "&pageSize=" + pageSize;
 		else if(action == "last" && checkBox != null && checkBox.checked == true)
-			window.location.href = "/downloadtasks?queryAll=true&page=" + totalPages;
+			window.location.href = "/downloadtasks?queryAll=true&page=" + totalPages + "&pageSize="+ pageSize;
 		else if(action == "last")
-			window.location.href = "/downloadtasks?queryAll=false&page=" + totalPages;
+			window.location.href = "/downloadtasks?queryAll=false&page=" + totalPages + "&pageSize="+ pageSize;
     }
     
 	if(currentPage == "1")
