@@ -36,11 +36,13 @@ import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
@@ -529,50 +531,58 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
-	/*
-	 * TODO: implement w/ SDK V2
-	 * 
-	 * @Override public HpcArchiveObjectMetadata getDataObjectMetadata(Object
-	 * authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
-	 * 
-	 * HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata(); //
-	 * Get metadata for the data-object in the S3 archive. try { ObjectMetadata
-	 * s3Metadata =
-	 * s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-	 * .getObjectMetadata(fileLocation.getFileContainerId(),
-	 * fileLocation.getFileId()); HpcMetadataEntry entry = new HpcMetadataEntry();
-	 * entry.setAttribute("storage_class"); // x-amz-storage-class is not returned
-	 * for standard S3 object logger.debug("Storage class " +
-	 * s3Metadata.getStorageClass()); if (s3Metadata.getStorageClass() != null)
-	 * objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.fromValue(s3Metadata
-	 * .getStorageClass()));
-	 * 
-	 * // Check the restoration status of the object. Boolean restoreFlag =
-	 * s3Metadata.getOngoingRestore(); if (s3Metadata.getOngoingRestore() == null) {
-	 * // the x-amz-restore header is not present on the response from the service
-	 * (eg. // no restore request has been received). // Failed.
-	 * objectMetadata.setRestorationStatus("not in progress"); } else if
-	 * (s3Metadata.getOngoingRestore() != null && s3Metadata.getOngoingRestore()) {
-	 * // the x-amz-restore header is present and has a value of true (eg. a restore
-	 * // operation was received and is currently ongoing). // Ongoing
-	 * objectMetadata.setRestorationStatus("in progress"); } else if
-	 * (s3Metadata.getOngoingRestore() != null && !s3Metadata.getOngoingRestore() &&
-	 * s3Metadata.getRestoreExpirationTime() != null) { // the x-amz-restore header
-	 * is present and has a value of false (eg the object // has been restored and
-	 * can currently be read from S3). // Completed. Success.
-	 * objectMetadata.setRestorationStatus("success"); }
-	 * 
-	 * if (restoreFlag != null) logger.info("Restoration status: {}", restoreFlag ?
-	 * "in progress" : "not in progress (finished or failed)");
-	 * 
-	 * objectMetadata.setChecksum(s3Metadata.getETag());
-	 * 
-	 * } catch (AmazonClientException ace) { throw new
-	 * HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
-	 * HpcErrorType.DATA_TRANSFER_ERROR, ace); }
-	 * 
-	 * return objectMetadata; }
-	 */
+	@Override
+	public HpcArchiveObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
+			throws HpcException {
+		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
+		String s3ObjectName = fileLocation.getFileContainerId() + ":" + fileLocation.getFileId();
+
+		// Get metadata for the data-object in the S3 archive.
+		try {
+			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(fileLocation.getFileContainerId())
+					.key(fileLocation.getFileId()).build();
+			HeadObjectResponse headObjectResponse = s3Connection.getClient(authenticatedToken)
+					.headObject(headObjectRequest).join();
+
+			// x-amz-storage-class is not returned for standard S3 object
+			logger.info("[S3] Storage class [{}] - {}", s3ObjectName, headObjectResponse.storageClass());
+
+			if (headObjectResponse.storageClass() != null) {
+				objectMetadata.setDeepArchiveStatus(
+						HpcDeepArchiveStatus.fromValue(headObjectResponse.storageClassAsString()));
+			}
+			// Check the restoration status of the object.
+			String restoreHeader = headObjectResponse.restore();
+			logger.info("[S3] Restore header [{}] - {}", s3ObjectName, restoreHeader);
+
+			if (StringUtils.isEmpty(restoreHeader) || !restoreHeader.contains("x-amz-restore")) {
+				// the x-amz-restore header is not present on the response from the service (eg.
+				// no restore request has been received).
+				// Failed.
+				objectMetadata.setRestorationStatus("not in progress");
+			} else if (restoreHeader.contains("ongoing-request=\"true\"")) {
+				// the x-amz-restore header is present and has a value of true (eg. a restore
+				// operation was received and is currently ongoing).
+				// Ongoing
+				objectMetadata.setRestorationStatus("in progress");
+			} else if (restoreHeader.contains("ongoing-request=\"false\"")) {
+				// the x-amz-restore header is present and has a value of false (eg the object
+				// has been restored and can currently be read from S3).
+				// Completed. Success.
+				objectMetadata.setRestorationStatus("success");
+			}
+
+			logger.info("[S3] eTag [{}] - {}", s3ObjectName, headObjectResponse.eTag());
+			objectMetadata.setChecksum(headObjectResponse.eTag());
+
+		} catch (CompletionException e) {
+			throw new HpcException(
+					"[S3] Failed to get object metadata [" + s3ObjectName + "] - " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
+		}
+
+		return objectMetadata;
+	}
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -613,7 +623,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			BucketLifecycleConfiguration lifeCycleConfiguration = BucketLifecycleConfiguration.builder()
 					.rules(lifeCycleRules).build();
 			AwsRequestOverrideConfiguration requestOverrideConfiguration = AwsRequestOverrideConfiguration.builder()
-					.putHeader(customHeader, encodedCustomHeader).build();
+					.putHeader(CLOUDIAN_TIERING_INFO_HEADER, encodedCustomHeader).build();
 
 			s3Connection.getClient(authenticatedToken)
 					.putBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId())
