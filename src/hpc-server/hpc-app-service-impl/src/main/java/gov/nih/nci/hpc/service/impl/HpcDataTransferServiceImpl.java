@@ -50,8 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.google.gson.Gson;
-
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -241,8 +239,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
-	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -2008,8 +2004,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 		// If pageSize is specified, replace the default defined
 		int finalPageSize = pagination.getPageSize();
-		if (pageSize != null || pageSize != 0) {
-			finalPageSize = pageSize;
+		if (pageSize != null || pageSize.intValue() > 0) {
+			finalPageSize = pageSize.intValue();
 		}
 		List<HpcUserDownloadRequest> downloadResults = null;
 		if (doc == null) {
