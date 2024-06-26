@@ -74,6 +74,8 @@
   display:none;
 }
 
+.bold-option{font-weight: bolder;}
+
 .overlay{
     display: none;
     position: fixed;
@@ -86,12 +88,12 @@
 }
 
 .div1 {
-	width: 50%;
+	width: 10%;
 	float: left;
 }
 
 .div2 {
-	width: 50%;
+	width: 100%;
 	float: right;
 	text-align:right;
 }
@@ -176,34 +178,39 @@ tfoot input {
 							</label>
 						</div>
 					</div>
-					<div class="div1">
-						<label for>Show Entries </label>
-						<select name="pageSizeName1" id="pageSizeId1" class="form-control" style="width:100px">
-							<option value="100" th:selected="${pageSize} == '100'">100</option>
-							<option value="200" th:selected="${pageSize} == '200'">200</option>
-							<option value="500" th:selected="${pageSize} == '500'">500</option>
-							<option value="1000" th:selected="${pageSize} == '1000'">1000</option>
-						</select>
-					</div>
 					<div class="div2">
 						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-						<table id="pageDetails1" class="display" style="width:100%">
-							<tr>
-								<button type="button" id="btnFirstTop"
-									class="btn btn-md btn-primary" onclick="updatePage('first')">
-									First</button>&nbsp;
-								<button type="button" id="btnPreviousTop"
-									class="btn btn-md btn-primary"
-									onclick="updatePage('previous')">Previous</button>&nbsp;
-								<button type="button" id="btnNextTop"
-									class="btn btn-md btn-primary" onclick="updatePage('next')">
-									Next</button>&nbsp;
-								<button type="button" id="btnLastTop"
-									class="btn btn-md btn-primary" onclick="updatePage('last')">
-									Last</button>&nbsp;
-							</tr>
-						</table>
-					</div>
+						<div class="form-group">
+							<div class="col-md-4">&nbsp;</div>
+						    <div class="col-md-8">
+								<div class="col-md-6">
+									<label for="pageSizeId1" class="control-label"><b>Show</b>&nbsp;&nbsp;</label>
+									<label for="pageSizeId1" class="col-md-2 control-label" style="float:right;"><b>Entries</b></label>
+									<select name="pageSizeName1" id="pageSizeId1"
+										class="form-control" style="width: 85px; float:right;">
+										<option value="100" class="bold-option" th:selected="${pageSize} == '100'">100</option>
+										<option value="200" class="bold-option" th:selected="${pageSize} == '200'">200</option>
+										<option value="500" class="bold-option" th:selected="${pageSize} == '500'">500</option>
+										<option value="1000" class="bold-option" th:selected="${pageSize} == '1000'">1000</option>
+									</select>
+								</div>
+								<div class="col-md-6"  style="float:right;">
+									<button type="button" id="btnFirstTop"
+										class="btn btn-md btn-primary" onclick="updatePage('first')">
+										First</button>&nbsp;
+									<button type="button" id="btnPreviousTop"
+										class="btn btn-md btn-primary"
+										onclick="updatePage('previous')">Previous</button>&nbsp;
+									<button type="button" id="btnNextTop"
+										class="btn btn-md btn-primary" onclick="updatePage('next')">
+										Next</button>&nbsp;
+									<button type="button" id="btnLastTop"
+										class="btn btn-md btn-primary" onclick="updatePage('last')">
+										Last</button>&nbsp;
+								</div>
+							</div> <!-- col-md-8 -->
+						</div> <!-- form-group -->
+					</div> <!-- div2 -->
 					<!-- div id="spinner" class="overlay"></div -->
 					<div th:if="${results != null and results.size() > 0}">
 						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
