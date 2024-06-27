@@ -12,10 +12,13 @@ package gov.nih.nci.hpc.web.controller;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -61,6 +64,8 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.download.all}")
 	private String queryAllServiceURL;
 	
+	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
+
 	/**
 	 * GET action to display dashboard page
 	 * 
@@ -72,7 +77,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public String home(@RequestBody(required = false) String q,  @RequestParam(required = false) String queryAll, Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q,  @RequestParam(required = false) String queryAll, @RequestParam(required = false) String pageSize, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
@@ -101,12 +106,17 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			{
 				page = Integer.parseInt(pageStr);
 			}
-			
-			String serviceURL = (queryAllOption == false ? queryServiceURL : queryAllServiceURL) + "?page=" + page + "&totalCount=true";
+			if(pageSize == null) {
+				pageSize="100";
+			}
+			int ipageSize =  Integer.valueOf(pageSize);
+			String serviceURL = (queryAllOption == false ? queryServiceURL : queryAllServiceURL) + "?page=" + page + "&totalCount=true" + "&pageSize=" + ipageSize;
+			logger.info("serviceURL = " + serviceURL);
 			HpcDownloadSummaryDTO downloads = HpcClientUtil.getDownloadSummary(authToken, serviceURL, sslCertPath,
 					sslCertPassword);
-
+			logger.info("downloads retrieved size=" + downloads.getCompletedTasks().size());
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+			SimpleDateFormat sortFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 			if (downloads.getActiveTasks() != null && !downloads.getActiveTasks().isEmpty())
 				for (HpcUserDownloadRequest download : downloads.getActiveTasks()) {
 					HpcTask task = new HpcTask();
@@ -117,8 +127,12 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setDestinationType(download.getDestinationType() != null ? download.getDestinationType().name() : "");
 					task.setCreated(
 							download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
+					task.setSortCreated(
+							download.getCreated() != null ? sortFormat.format(download.getCreated().getTime()) : "");
 					task.setCompleted(
 							download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
+					task.setSortCompleted(
+							download.getCompleted() != null ? sortFormat.format(download.getCompleted().getTime()) : "");
 					task.setResult(getResultDisplayText(download.getResult()));
 					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					task.setDisplayPath(download.getPath()); // For display purpose only. The above path gets modified to a link
@@ -148,7 +162,10 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				task.setCreated(download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
 				task.setCompleted(
 						download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
-				task.setResult(getResultDisplayText(download.getResult()));
+				task.setSortCreated(
+						download.getCreated() != null ? sortFormat.format(download.getCreated().getTime()) : "");
+				task.setSortCompleted(
+						download.getCompleted() != null ? sortFormat.format(download.getCompleted().getTime()) : "");task.setResult(getResultDisplayText(download.getResult()));
 				task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 				task.setDisplayPath(download.getPath());// For display purpose only. The above path gets modified to a link in the display
 				result.add(task);
@@ -158,9 +175,11 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(downloads.getTotalCount(), downloads.getLimit()));
 			model.addAttribute("currentPageSize", result.size());
 			model.addAttribute("results", result);
+			model.addAttribute("pageSize", pageSize);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get download tasks: "+e.getMessage());
 		}
+		logger.info("all size=" + result.size());
 		return "downloadtaskboard";
 	}
 	
