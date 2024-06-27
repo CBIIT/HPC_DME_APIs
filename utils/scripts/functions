@@ -2056,6 +2056,93 @@ function dm_register_globus_directory {
 
 }
 
+#Create description.json for retries
+function create_credentials_json {
+ #Create description.json
+  
+   local endpoint_type=$1 
+   local credentials_file=$2
+   local globus_endpoint="globus"
+   local s3_endpoint="s3"
+   local aspera_endpoint="aspera"
+   local e_option
+   
+   #use the -e option in the echo command not linux servers only, it is not required for Mac
+   case "$(uname -s)" in
+    
+       Linux)
+        e_option="-e"
+       ;;
+       
+    esac
+   
+   if [ "$endpoint_type" = "$globus_endpoint" ]
+   then
+   	echo $e_option "{\n}" > description.json
+   fi
+
+   if [ "$endpoint_type" = "$s3_endpoint" ]
+   then
+   	local awsAccessKeyId=$(get_value $credentials_file aws_access_key_id)
+   	if [ -z "$awsAccessKeyId" ]
+   	then
+       echo "ERROR: Credentials file does not contain aws_access_key_id property"
+       exit 1
+   	fi
+
+   	local awsSecretAccessKey=$(get_value $credentials_file aws_secret_access_key)
+   	if [ -z "$awsSecretAccessKey" ]
+   	then
+       echo "ERROR: Credentials file does not contain aws_secret_access_key property"
+       exit 1
+   	fi
+
+   	local awsRegion=$(get_value $credentials_file region)
+   	if [ -z "$awsRegion" ]
+   	then
+       echo "ERROR: Credentials file does not contain region property"
+       exit 1
+   	fi
+
+   	echo $e_option "{\n \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," > description.json
+   	echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
+   	echo $e_option " \"region\": \"$awsRegion\" \n}" >> description.json
+    echo $e_option "\n} " >> description.json
+   	
+   fi
+   
+
+   if [ "$endpoint_type" = "$aspera_endpoint" ]
+   then
+   
+   	local asperaHost=$(get_value $credentials_file ASPERA_HOST)
+   	if [ -z "$asperaHost" ]
+   	then
+       asperaHost="gap-submit.ncbi.nlm.nih.gov"
+   	fi
+
+   	local asperaUser=$(get_value $credentials_file ASPERA_USER)
+   	if [ -z "$asperaUser" ]
+   	then
+      asperaUser="asp-dbgap"
+   	fi
+
+   	local asperaPassword=$(get_value $credentials_file ASPERA_SCP_PASS)
+   	if [ -z "$asperaPassword" ]
+   	then
+       echo "ERROR: Credentials file does not contain ASPERA_SCP_PASS property"
+       return 1
+   	fi
+
+   	echo $e_option "{\n \"account\": {\n \"host\": \"$asperaHost\"," > description.json
+   	echo " \"user\": \"$asperaUser\"," >> description.json
+   	echo $e_option " \"password\": \"$asperaPassword\" \n}" >> description.json
+
+   	echo $e_option "\n} " >> description.json
+   
+   fi
+
+}
 
 
 #Print Usage of dm_download_dataobject_retry function
@@ -2166,10 +2253,12 @@ function dm_download_dataobject_retry {
 		       echo "Credentials file does not exist"
 		       return 1
 		    fi
-       else
-           credentials_file=$HPC_DM_UTILS/templates/empty-template.json
        fi
     fi
+   
+    #Create the description.json file to input the credentials in the required JSON format
+    create_credentials_json $endpoint_type $credentials_file
+   
 
     if [ -z "$response_msg" ]
     then
@@ -2183,7 +2272,7 @@ function dm_download_dataobject_retry {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$credentials_file -X POST ${SERVER}/dataObject/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    curl -H "Content-Type: application/json" -d @description.json -X POST ${SERVER}/dataObject/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 
     check_connection $response_hdr
 
@@ -2308,10 +2397,11 @@ function dm_download_collection_retry {
 		       echo "Credentials file does not exist"
 		       return 1
 		    fi
-       else
-           credentials_file=$HPC_DM_UTILS/templates/empty_template.json
        fi
     fi
+    
+    #Create the description.json file to input the credentials in the required JSON format
+    create_credentials_json $endpoint_type $credentials_file
 
     if [ -z "$response_msg" ]
     then
@@ -2325,7 +2415,7 @@ function dm_download_collection_retry {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$credentials_file -X POST ${SERVER}/collection/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    curl -H "Content-Type: application/json" -d @description.json -X POST ${SERVER}/collection/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 
     check_connection $response_hdr
 
@@ -2448,8 +2538,6 @@ function dm_download_list_retry {
 		       echo "Credentials file does not exist"
 		       return 1
 		    fi
-       else
-           credentials_file=$HPC_DM_UTILS/templates/empty_template.json
        fi
     fi
 
@@ -2461,11 +2549,14 @@ function dm_download_list_retry {
     then
         response_hdr=download-list-response-header.tmp
     fi
+    
+    #Create the description.json file to input the credentials in the required JSON format
+    create_credentials_json $endpoint_type $credentials_file
 
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$credentials_file -X POST ${SERVER}/list/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    curl -H "Content-Type: application/json" -d @description.json -X POST ${SERVER}/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 
     check_connection $response_hdr
 
