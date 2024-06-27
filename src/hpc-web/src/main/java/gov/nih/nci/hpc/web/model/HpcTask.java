@@ -18,7 +18,11 @@ public class HpcTask {
 	@JsonView(Views.Public.class)
     protected String created;
 	@JsonView(Views.Public.class)
+    protected String sortCreated;
+	@JsonView(Views.Public.class)
     protected String completed;
+	@JsonView(Views.Public.class)
+    protected String sortCompleted;
 	@JsonView(Views.Public.class)
     protected String result;
 	@JsonView(Views.Public.class)
@@ -83,6 +87,18 @@ public class HpcTask {
 	}
 	public void setCompleted(String completed) {
 		this.completed = completed;
+	}
+	public String getSortCreated() {
+		return sortCreated;
+	}
+	public void setSortCreated(String sortCreated) {
+		this.sortCreated = sortCreated;
+	}
+	public String getSortCompleted() {
+		return sortCompleted;
+	}
+	public void setSortCompleted(String sortCompleted) {
+		this.sortCompleted = sortCompleted;
 	}
 	public String getResult() {
 		return result;
