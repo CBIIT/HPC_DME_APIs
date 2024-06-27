@@ -116,6 +116,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					sslCertPassword);
 			logger.info("downloads retrieved size=" + downloads.getCompletedTasks().size());
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+			SimpleDateFormat sortFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 			if (downloads.getActiveTasks() != null && !downloads.getActiveTasks().isEmpty())
 				for (HpcUserDownloadRequest download : downloads.getActiveTasks()) {
 					HpcTask task = new HpcTask();
@@ -126,8 +127,12 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setDestinationType(download.getDestinationType() != null ? download.getDestinationType().name() : "");
 					task.setCreated(
 							download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
+					task.setSortCreated(
+							download.getCreated() != null ? sortFormat.format(download.getCreated().getTime()) : "");
 					task.setCompleted(
 							download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
+					task.setSortCompleted(
+							download.getCompleted() != null ? sortFormat.format(download.getCompleted().getTime()) : "");
 					task.setResult(getResultDisplayText(download.getResult()));
 					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					task.setDisplayPath(download.getPath()); // For display purpose only. The above path gets modified to a link
@@ -157,7 +162,10 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				task.setCreated(download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
 				task.setCompleted(
 						download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
-				task.setResult(getResultDisplayText(download.getResult()));
+				task.setSortCreated(
+						download.getCreated() != null ? sortFormat.format(download.getCreated().getTime()) : "");
+				task.setSortCompleted(
+						download.getCompleted() != null ? sortFormat.format(download.getCompleted().getTime()) : "");task.setResult(getResultDisplayText(download.getResult()));
 				task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 				task.setDisplayPath(download.getPath());// For display purpose only. The above path gets modified to a link in the display
 				result.add(task);
