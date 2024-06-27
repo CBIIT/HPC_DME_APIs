@@ -257,6 +257,8 @@ tfoot input {
 									<td id='col9' th:text="${result.retryUserId}"></td>
 									<td id='col10' style="word-break:break-all;" th:text="${result.error}"></td>
 									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
+									<td id='col12' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
+									<td id='col13' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
 								</tr>
 							</tbody>
 							<tfoot>
@@ -396,12 +398,14 @@ tfoot input {
 							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
 							{targets: 4, data: 'type', width:100, visible: true},  // type
 							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							{targets: 6, data: 'created', width: 110, visible: true},  // created
-							{targets: 7, data: 'completed', width: 110, visible: true},  // completed
+							{targets: 6, data: 'sortCreated', width: 110, visible: true, orderData:[12]},  // created
+							{targets: 7, data: 'sortCompleted', width: 110, visible: true, orderData:[13]},  // completed
 							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
 							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
 							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
 							{targets: 11, data: 'displayPath', visible: false},
+							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
+							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
 						],
 				"lengthMenu": [ [-1], ["All"] ],
 				"initComplete": () => {$("#resultsGrid").show();}
