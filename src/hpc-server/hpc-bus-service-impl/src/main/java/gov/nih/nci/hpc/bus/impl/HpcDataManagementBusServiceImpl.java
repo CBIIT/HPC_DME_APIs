@@ -859,8 +859,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			else
 				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
 		}
-
-		int limit = pageSize.intValue();
+		int limit = dataTransferService.getDownloadResultsPageSize();
+		if (pageSize != null || pageSize.intValue() > 0) {
+			limit = pageSize.intValue();
+		}
 
 		// Populate the DTO with active and completed download requests for this user.
 		HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
