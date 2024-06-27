@@ -181,8 +181,7 @@ tfoot input {
 					<div class="div2">
 						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 						<div class="form-group">
-							<div class="col-md-4">&nbsp;</div>
-						    <div class="col-md-8">
+							<div class="col-md-offset-3">
 								<div class="col-md-6">
 									<label for="pageSizeId1" class="control-label"><b>Show</b>&nbsp;&nbsp;</label>
 									<label for="pageSizeId1" class="col-md-2 control-label" style="float:right;"><b>Entries</b></label>
@@ -208,7 +207,7 @@ tfoot input {
 										class="btn btn-md btn-primary" onclick="updatePage('last')">
 										Last</button>&nbsp;
 								</div>
-							</div> <!-- col-md-8 -->
+							</div> <!-- col-md-offset -->
 						</div> <!-- form-group -->
 					</div> <!-- div2 -->
 					<!-- div id="spinner" class="overlay"></div -->
