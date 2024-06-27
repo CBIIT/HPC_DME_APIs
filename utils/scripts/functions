@@ -2075,8 +2075,7 @@ function create_credentials_json {
        ;;
        
     esac
-    
-
+   
    if [ "$endpoint_type" = "$globus_endpoint" ]
    then
    	echo $e_option "{\n}" > description.json
@@ -2105,13 +2104,10 @@ function create_credentials_json {
        exit 1
    	fi
 
-   	echo $e_option "{\n \"s3DownloadDestination\": {\n \"destinationLocation\": {" > description.json
-   	echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
-   	echo $e_option " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
-   	echo $e_option " \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," >> description.json
+   	echo $e_option "{\n \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," > description.json
    	echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
    	echo $e_option " \"region\": \"$awsRegion\" \n}" >> description.json
-    echo $e_option "\n}\n} " >> description.json
+    echo $e_option "\n} " >> description.json
    	
    fi
    
@@ -2138,14 +2134,11 @@ function create_credentials_json {
        return 1
    	fi
 
-   	echo $e_option "{\n \"asperaDownloadDestination\": {\n \"destinationLocation\": {" > description.json
-   	echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
-   	echo $e_option " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
-   	echo $e_option " \"account\": {\n \"host\": \"$asperaHost\"," >> description.json
+   	echo $e_option "{\n \"account\": {\n \"host\": \"$asperaHost\"," > description.json
    	echo " \"user\": \"$asperaUser\"," >> description.json
    	echo $e_option " \"password\": \"$asperaPassword\" \n}" >> description.json
 
-   	echo $e_option "\n}\n} " >> description.json
+   	echo $e_option "\n} " >> description.json
    
    fi
 
