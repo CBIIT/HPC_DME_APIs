@@ -74,6 +74,8 @@
   display:none;
 }
 
+.bold-option{font-weight: bolder;}
+
 .overlay{
     display: none;
     position: fixed;
@@ -86,12 +88,12 @@
 }
 
 .div1 {
-	width: 50%;
+	width: 10%;
 	float: left;
 }
 
 .div2 {
-	width: 50%;
+	width: 100%;
 	float: right;
 	text-align:right;
 }
@@ -176,34 +178,38 @@ tfoot input {
 							</label>
 						</div>
 					</div>
-					<div class="div1">
-						<label for>Show Entries </label>
-						<select name="pageSizeName1" id="pageSizeId1" class="form-control" style="width:100px">
-							<option value="100" th:selected="${pageSize} == '100'">100</option>
-							<option value="200" th:selected="${pageSize} == '200'">200</option>
-							<option value="500" th:selected="${pageSize} == '500'">500</option>
-							<option value="1000" th:selected="${pageSize} == '1000'">1000</option>
-						</select>
-					</div>
 					<div class="div2">
 						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-						<table id="pageDetails1" class="display" style="width:100%">
-							<tr>
-								<button type="button" id="btnFirstTop"
-									class="btn btn-md btn-primary" onclick="updatePage('first')">
-									First</button>&nbsp;
-								<button type="button" id="btnPreviousTop"
-									class="btn btn-md btn-primary"
-									onclick="updatePage('previous')">Previous</button>&nbsp;
-								<button type="button" id="btnNextTop"
-									class="btn btn-md btn-primary" onclick="updatePage('next')">
-									Next</button>&nbsp;
-								<button type="button" id="btnLastTop"
-									class="btn btn-md btn-primary" onclick="updatePage('last')">
-									Last</button>&nbsp;
-							</tr>
-						</table>
-					</div>
+						<div class="form-group">
+							<div class="col-md-offset-3">
+								<div class="col-md-7">
+									<label for="pageSizeId1" class="control-label"><b>Show</b>&nbsp;&nbsp;</label>
+									<label for="pageSizeId1" class="col-md-2 control-label" style="float:right;"><b>Entries</b></label>
+									<select name="pageSizeName1" id="pageSizeId1"
+										class="form-control" style="width: 85px; float:right;">
+										<option value="100" class="bold-option" th:selected="${pageSize} == '100'">100</option>
+										<option value="200" class="bold-option" th:selected="${pageSize} == '200'">200</option>
+										<option value="500" class="bold-option" th:selected="${pageSize} == '500'">500</option>
+										<option value="1000" class="bold-option" th:selected="${pageSize} == '1000'">1000</option>
+									</select>
+								</div>
+								<div class="col-md-5"  style="float:right;">
+									<button type="button" id="btnFirstTop"
+										class="btn btn-md btn-primary" onclick="updatePage('first')">
+										First</button>&nbsp;
+									<button type="button" id="btnPreviousTop"
+										class="btn btn-md btn-primary"
+										onclick="updatePage('previous')">Previous</button>&nbsp;
+									<button type="button" id="btnNextTop"
+										class="btn btn-md btn-primary" onclick="updatePage('next')">
+										Next</button>&nbsp;
+									<button type="button" id="btnLastTop"
+										class="btn btn-md btn-primary" onclick="updatePage('last')">
+										Last</button>&nbsp;
+								</div>
+							</div> <!-- col-md-offset -->
+						</div> <!-- form-group -->
+					</div> <!-- div2 -->
 					<!-- div id="spinner" class="overlay"></div -->
 					<div th:if="${results != null and results.size() > 0}">
 						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
@@ -250,6 +256,8 @@ tfoot input {
 									<td id='col9' th:text="${result.retryUserId}"></td>
 									<td id='col10' style="word-break:break-all;" th:text="${result.error}"></td>
 									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
+									<td id='col12' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
+									<td id='col13' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
 								</tr>
 							</tbody>
 							<tfoot>
@@ -389,12 +397,14 @@ tfoot input {
 							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
 							{targets: 4, data: 'type', width:100, visible: true},  // type
 							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							{targets: 6, data: 'created', width: 110, visible: true},  // created
-							{targets: 7, data: 'completed', width: 110, visible: true},  // completed
+							{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
+							{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
 							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
 							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
 							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
 							{targets: 11, data: 'displayPath', visible: false},
+							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
+							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
 						],
 				"lengthMenu": [ [-1], ["All"] ],
 				"initComplete": () => {$("#resultsGrid").show();}
