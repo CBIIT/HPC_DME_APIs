@@ -179,7 +179,7 @@ tfoot input {
 						</div>
 					</div>
 					<div class="div2">
-						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/>&nbsp;&nbsp;&nbsp; </p>
 						<div class="form-group">
 							<div class="col-md-offset-4">
 								<div class="col-md-7">
@@ -278,20 +278,20 @@ tfoot input {
 						</table>
 					</div>
 					<div style="text-align:right">
-						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
 						<div class="form-group col-md-12">
-						<button type="button" id="btnFirst"
-							class="btn btn-md btn-primary" onclick="updatePage('first')">
-							First</button>&nbsp;
-						<button type="button" id="btnPrevious"
-							class="btn btn-md btn-primary"
-							onclick="updatePage('previous')">Previous</button>&nbsp;
-						<button type="button" id="btnNext"
-							class="btn btn-md btn-primary" onclick="updatePage('next')">
-							Next</button>&nbsp;
-						<button type="button" id="btnLast"
-							class="btn btn-md btn-primary" onclick="updatePage('last')">
-							Last</button>&nbsp;
+							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+							<button type="button" id="btnFirst"
+								class="btn btn-md btn-primary" onclick="updatePage('first')">
+								First</button>&nbsp;
+							<button type="button" id="btnPrevious"
+								class="btn btn-md btn-primary"
+								onclick="updatePage('previous')">Previous</button>&nbsp;
+							<button type="button" id="btnNext"
+								class="btn btn-md btn-primary" onclick="updatePage('next')">
+								Next</button>&nbsp;
+							<button type="button" id="btnLast"
+								class="btn btn-md btn-primary" onclick="updatePage('last')">
+								Last</button>&nbsp;
 						</div>
 					</div>
 				</div></div></div>
