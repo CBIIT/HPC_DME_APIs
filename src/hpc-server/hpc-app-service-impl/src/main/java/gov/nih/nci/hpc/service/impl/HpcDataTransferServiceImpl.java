@@ -1998,17 +1998,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc,
-			int activeRequestsOffset) throws HpcException {
+			int activeRequestsOffset, Integer pageSize) throws HpcException {
+		if (page < 1) {
+			throw new HpcException("Invalid search results page: " + page, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// If pageSize is specified, replace the default defined
+		int finalPageSize = pagination.getPageSize();
+		if (pageSize != null || pageSize.intValue() > 0) {
+			finalPageSize = pageSize.intValue();
+		}
 		List<HpcUserDownloadRequest> downloadResults = null;
 		if (doc == null) {
-			downloadResults = dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getDownloadResults(userId, (page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		} else if (doc.equals("ALL")) {
-			downloadResults = dataDownloadDAO.getAllDownloadResults(pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getAllDownloadResults((page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		} else {
-			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, (page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		}
 		return downloadResults;
 	}
