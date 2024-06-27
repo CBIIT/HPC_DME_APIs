@@ -28,7 +28,7 @@
 		<commons-collections4.version>4.4</commons-collections4.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
 		<commons-io.version>2.7</commons-io.version>
-		<commons-compress.version>1.21</commons-compress.version>
+		<commons-compress.version>1.26.0</commons-compress.version>
 		<commons-pool2.version>2.11.1</commons-pool2.version>
 		<cxf.version>3.1.9</cxf.version>
 		<cxf-xjc.version>3.2.3</cxf-xjc.version>
