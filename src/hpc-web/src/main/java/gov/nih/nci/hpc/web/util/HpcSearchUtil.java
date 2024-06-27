@@ -346,7 +346,7 @@ public class HpcSearchUtil {
 			proc.setHeaders(headers);
 			proc.setData(rows);
 			proc.setFileName("export_search_results_" + userId + "_");
-			proc.setExtension(".xls");
+			proc.setExtension(".xlsx");
 			proc.setMimeType("application/vnd.ms-excel");
 			proc.setFieldSeparator("\t");
 			
@@ -408,7 +408,7 @@ public class HpcSearchUtil {
 			proc.setHeaders(headers);
 			proc.setData(rows);
 			proc.setFileName("export_search_results_" + userId + "_");
-			proc.setExtension(".xls");
+			proc.setExtension(".xlsx");
 			proc.setMimeType("application/vnd.ms-excel");
 			proc.setFieldSeparator("\t");
 			
