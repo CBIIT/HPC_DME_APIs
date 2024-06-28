@@ -2104,7 +2104,7 @@ function create_credentials_json {
        exit 1
    	fi
 
-   	echo $e_option "{\n \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," > description.json
+   	echo $e_option "{\n \"s3Account\": {\n \"accessKey\": \"$awsAccessKeyId\"," > description.json
    	echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
    	echo $e_option " \"region\": \"$awsRegion\" \n}" >> description.json
     echo $e_option "\n} " >> description.json
@@ -2134,7 +2134,7 @@ function create_credentials_json {
        return 1
    	fi
 
-   	echo $e_option "{\n \"account\": {\n \"host\": \"$asperaHost\"," > description.json
+   	echo $e_option "{\n \"asperaAccount\": {\n \"host\": \"$asperaHost\"," > description.json
    	echo " \"user\": \"$asperaUser\"," >> description.json
    	echo $e_option " \"password\": \"$asperaPassword\" \n}" >> description.json
 
