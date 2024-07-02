@@ -1345,14 +1345,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			progressListener = secondHopDownload;
 
 			// Validate that the 2-hop download can be performed at this time.
-			if (!canPerfom2HopDownload(secondHopDownload)) {
+			HpcCanPerform2HopDownloadResponse canPerfom2HopDownloadResponse = canPerfom2HopDownload(secondHopDownload);
+			if (!canPerfom2HopDownloadResponse.value) {
 				// Can’t perform the 2-hop download at this time. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
-						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
-								+ " path={}], or transaction limit reached, or total in-progress download size for user eached",
+						"download task: {} - 2 Hop download can't be restarted [transfer-type={}, destination-type={},"
+								+ " path={}] - {}",
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
-						downloadTask.getPath());
+						downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
 				return;
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
@@ -3316,29 +3317,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())
-					&& canPerfom2HopDownload(secondHopDownload)) {
-				// We start the 1st hop here for a single file download request. For collection
-				// download task, the 1st hop will get kicked off by a scheduled task.
-				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
-						getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-								downloadRequest.getS3ArchiveConfigurationId()),
-						downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
-						dataTransferConfiguration.getEncryptedTransfer());
+			if (StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
+				HpcCanPerform2HopDownloadResponse canPerfom2HopDownloadResponse = canPerfom2HopDownload(
+						secondHopDownload);
+				if (canPerfom2HopDownloadResponse.value) {
+					// We start the 1st hop here for a single file download request. For collection
+					// download task, the 1st hop will get kicked off by a scheduled task.
+					dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
+							getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+									downloadRequest.getS3ArchiveConfigurationId()),
+							downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
+							dataTransferConfiguration.getEncryptedTransfer());
 
-				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
-						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
-			} else {
-				// Can't perform the 2-hop download at this time, or this data-object download
-				// is part of a collection. Reset the task
-				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
-
-				logger.info(
-						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={},"
-								+ " path = {}] or transaction limit reached ",
-						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
+					logger.info(
+							"download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
+							secondHopDownload.downloadTask.getId(),
+							secondHopDownload.downloadTask.getDataTransferType(),
+							secondHopDownload.downloadTask.getDestinationType(),
+							secondHopDownload.downloadTask.getPath());
+				} else {
+					// Can't perform the 2-hop download at this time, or this data-object download
+					// is part of a collection. Reset the task
+					resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+					logger.info(
+							"download task: {} - 2 Hop download can't be initiated [transfer-type={}, destination-type={},"
+									+ " path = {}] - {} ",
+							secondHopDownload.downloadTask.getId(),
+							secondHopDownload.downloadTask.getDataTransferType(),
+							secondHopDownload.downloadTask.getDestinationType(),
+							secondHopDownload.downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
+				}
 			}
 
 		} catch (HpcException e) {
@@ -3360,8 +3368,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * 
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
-	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
+	class HpcCanPerform2HopDownloadResponse {
+		boolean value = true;
+		String message = null;
+	}
 
+	private HpcCanPerform2HopDownloadResponse canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload)
+			throws HpcException {
+		HpcCanPerform2HopDownloadResponse response = new HpcCanPerform2HopDownloadResponse();
 		int inProcessS3DownloadsForGlobus = dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(
 				HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS, HpcDataTransferDownloadStatus.IN_PROGRESS,
 				s3DownloadTaskServerId);
@@ -3379,14 +3393,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
 							.getUsableSpace();
 					if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
-						// Not enough space disk space to perform the first hop download. Log an error
-						// and reset the
-						// task.
-						logger.error(
-								"Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
-								secondHopDownload.getDownloadTask().getPath(), freeSpace,
-								secondHopDownload.getDownloadTask().getSize());
-						return false;
+						// Not enough space disk space to perform the first hop download.
+						response.value = false;
+						response.message = "Insufficient disk space. Free Space: " + freeSpace + " bytes. File size: "
+								+ secondHopDownload.getDownloadTask().getSize() + " bytes";
+						return response;
 					}
 
 				} catch (IOException e) {
@@ -3395,9 +3406,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			} else {
 				// A download from this user for this path is already in progress
-				logger.info("The file {} is already being downloaded for user {} ",
-						secondHopDownload.getDownloadTask().getPath(), secondHopDownload.getDownloadTask().getUserId());
-				return false;
+				response.value = false;
+				response.message = "The file is already being downloaded for user "
+						+ secondHopDownload.getDownloadTask().getUserId();
+				return response;
 			}
 
 			logger.info(
@@ -3406,12 +3418,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					secondHopDownload.getDownloadTask().getPath());
 
 		} else {
-			// We are over the allowed number of transactions
-			logger.info(
-					"Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
-					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus,
-					secondHopDownload.getDownloadTask().getPath());
-			return false;
+			// We are over the allowed number of transactions.
+			response.value = false;
+			response.message = "Transaction limit reached - inProcessS3DownloadsForGlobus: "
+					+ inProcessS3DownloadsForGlobus + ", maxPermittedS3DownloadsForGlobus: "
+					+ maxPermittedS3DownloadsForGlobus;
+			return response;
 		}
 
 		// Check that the total downloads size for this user doesn't exceed the limit.
@@ -3419,18 +3431,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				secondHopDownload.getDownloadTask().getUserId(), HpcDataTransferDownloadStatus.IN_PROGRESS);
 
 		if (totalDownloadsSize > maxPermittedTotalDownloadsSizePerUser) {
-			logger.info(
-					"The total in-progress downloads size [{}GB] for this user [{}] exceeds the max permitted [{}GB]",
-					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
-					maxPermittedTotalDownloadsSizePerUser);
-			return false;
+			response.value = false;
+			response.message = "The total in-progress downloads size [" + totalDownloadsSize + "GB] for this user ["
+					+ secondHopDownload.getDownloadTask().getUserId() + "] exceeds the max permitted ["
+					+ maxPermittedTotalDownloadsSizePerUser + "GB]";
+			return response;
+
 		} else {
 			logger.info("The total in-progress downloads size [{}GB] for this user [{}] under the max permitted [{}GB]",
 					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
 					maxPermittedTotalDownloadsSizePerUser);
 		}
 
-		return true;
+		return response;
 	}
 
 	/**
