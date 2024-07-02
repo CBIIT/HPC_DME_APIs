@@ -181,10 +181,10 @@ tfoot input {
 					<div class="div2">
 						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/>&nbsp;&nbsp;&nbsp; </p>
 						<div class="form-group">
-							<div>
-								<div class="col-md-9">
+							<div style="display: flex; float: right;">
+								<div>
 									<label for="pageSizeId1"><b>Show</b>&nbsp;&nbsp;</label>
-									<label for="pageSizeId1" style="float:right;"><b>&nbsp; Entries</b></label>
+									<label for="pageSizeId1" style="float:right;"><b>&nbsp;Entries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></label>
 									<select name="pageSizeName1" id="pageSizeId1"
 										class="form-control" style="width: 85px; float:right;">
 										<option value="100" class="bold-option" th:selected="${pageSize} == '100'">100</option>
@@ -193,7 +193,7 @@ tfoot input {
 										<option value="1000" class="bold-option" th:selected="${pageSize} == '1000'">1000</option>
 									</select>
 								</div>
-								<div class="col-md-3"  style="float:right;">
+								<div>
 									<button type="button" id="btnFirstTop"
 										class="btn btn-md btn-primary" onclick="updatePage('first')">
 										First</button>&nbsp;
