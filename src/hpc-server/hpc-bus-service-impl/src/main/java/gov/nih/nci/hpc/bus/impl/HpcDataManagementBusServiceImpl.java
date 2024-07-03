@@ -860,7 +860,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
 		}
 		int limit = dataTransferService.getDownloadResultsPageSize();
-		if (pageSize != null || pageSize.intValue() > 0) {
+		if (pageSize != null && pageSize != 0) {
 			limit = pageSize.intValue();
 		}
 
