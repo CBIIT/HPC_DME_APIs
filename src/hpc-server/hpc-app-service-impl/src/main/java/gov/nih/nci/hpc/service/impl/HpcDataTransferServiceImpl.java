@@ -2005,7 +2005,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 		// If pageSize is specified, replace the default defined
 		int finalPageSize = pagination.getPageSize();
-		if (pageSize != null || pageSize.intValue() > 0) {
+		if (pageSize != null && pageSize != 0) {
 			finalPageSize = pageSize.intValue();
 		}
 		List<HpcUserDownloadRequest> downloadResults = null;
