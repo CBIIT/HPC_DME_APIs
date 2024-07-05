@@ -4027,6 +4027,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					}
 
 					downloadTask.setInProcess(false);
+					downloadTask.setProcessed(Calendar.getInstance());
 					downloadTask.setPercentComplete(0);
 
 					// Persist the download task.
