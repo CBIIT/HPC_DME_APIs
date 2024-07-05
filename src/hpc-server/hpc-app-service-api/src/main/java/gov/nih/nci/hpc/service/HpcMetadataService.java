@@ -24,7 +24,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.metadata.HpcDupMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -320,7 +319,8 @@ public interface HpcMetadataService {
 	 *
 	 * @param path                  The data object's path.
 	 * @param excludeParentMetadata True if parent metadata is to be excluded.
-	 * @return HpcMetadataEntries The data object's metadata entries, or null if not found.
+	 * @return HpcMetadataEntries The data object's metadata entries, or null if not
+	 *         found.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcMetadataEntries getDataObjectMetadataEntries(String path, boolean excludeParentMetadata)
@@ -330,7 +330,8 @@ public interface HpcMetadataService {
 	 * Get metadata of a data object grouped by user / extracted / system
 	 *
 	 * @param path The data object's path.
-	 * @return HpcMetadataEntries The data object's metadata entries, or null if not found.
+	 * @return HpcMetadataEntries The data object's metadata entries, or null if not
+	 *         found.
 	 * @param excludeParentMetadata True if parent metadata is to be excluded.
 	 *
 	 * @throws HpcException on service failure.
@@ -369,7 +370,7 @@ public interface HpcMetadataService {
 	 * @throws HpcException on database error.
 	 */
 	public Map<Integer, HpcCollectionListingEntry> getMetadataForBrowseByIds(List<Integer> ids) throws HpcException;
-	
+
 	/**
 	 * Detect if there are any duplicate data object metadata in the system.
 	 *
