@@ -14,21 +14,19 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.text.SimpleDateFormat;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.CompletableFuture;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.annotation.Async;
-import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,8 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
+
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
@@ -79,7 +77,6 @@ import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
 import gov.nih.nci.hpc.service.impl.HpcRequestContext;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 
 /**
  * HPC Data Search Business Service Implementation.
@@ -89,8 +86,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 	private static final int USER_QUERY_SEARCH_RESULTS_PAGE_SIZE = 10000;
-	
-	private static final int EMAIL_EXPORT_QUERY_BLOCK_RETRIEVAL_SIZE = 20000;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -131,12 +126,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	// Directory to create the user query excel export.
 	@Value("${hpc.bus.exportDirectory}")
 	private String exportDirectory = null;
-	
-	//The email exported task executor.
-    @Autowired
-    @Qualifier("hpcEmailExporterTaskExecutor")
-    Executor emailExporterTaskExecutor = null;
 
+	// The email exported task executor.
+	@Autowired
+	@Qualifier("hpcEmailExporterTaskExecutor")
+	Executor emailExporterTaskExecutor = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -458,8 +452,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (compoundMetadataQueryDTO.getCompoundQueryType() != null) {
 			namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
 		}
-		if (compoundMetadataQueryDTO.getDeselectedColumns() != null && !compoundMetadataQueryDTO.getDeselectedColumns().isEmpty()) {
-			if(namedCompoundMetadataQuery.getDeselectedColumns() != null)
+		if (compoundMetadataQueryDTO.getDeselectedColumns() != null
+				&& !compoundMetadataQueryDTO.getDeselectedColumns().isEmpty()) {
+			if (namedCompoundMetadataQuery.getDeselectedColumns() != null)
 				namedCompoundMetadataQuery.getDeselectedColumns().clear();
 			namedCompoundMetadataQuery.getDeselectedColumns().addAll(compoundMetadataQueryDTO.getDeselectedColumns());
 		}
@@ -505,9 +500,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 				.addAll(dataSearchService.getCollectionMetadataAttributes(levelLabel));
 		metadataAttributes.getDataObjectMetadataAttributes()
 				.addAll(metadataAttributes.getCollectionMetadataAttributes());
-		if(levelLabel == null || levelLabel.isEmpty() || levelLabel.equals("DataObject"))
+		if (levelLabel == null || levelLabel.isEmpty() || levelLabel.equals("DataObject"))
 			metadataAttributes.getDataObjectMetadataAttributes()
-				.addAll(dataSearchService.getDataObjectMetadataAttributes("DataObject"));
+					.addAll(dataSearchService.getDataObjectMetadataAttributes("DataObject"));
 
 		return metadataAttributes;
 	}
@@ -818,19 +813,19 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		}
 	}
-	
 
-    /**
-     * Run and construct the excel export of the specified query results and send to
-     * the user This needs to run with correct user account to get the search
-     * results with user permissions
-     * 
-     
-     * @param query     Query to be run
-     * @param invoker   User information
-     * @throws HpcException If the user query failed or failed to export
-     */
-    private boolean sendCurrentQueryResultsByEmail(HpcCompoundMetadataQueryDTO query, HpcRequestInvoker invoker) throws HpcException {
+	/**
+	 * Run and construct the excel export of the specified query results and send to
+	 * the user This needs to run with correct user account to get the search
+	 * results with user permissions
+	 * 
+	 * 
+	 * @param query   Query to be run
+	 * @param invoker User information
+	 * @throws HpcException If the user query failed or failed to export
+	 */
+	private boolean sendCurrentQueryResultsByEmail(HpcCompoundMetadataQueryDTO query, HpcRequestInvoker invoker)
+			throws HpcException {
 		logger.debug("EmailExport: In sendCurrentQueryResultsByEmail");
 		try {
 			HpcRequestContext.setRequestInvoker(invoker);
@@ -838,7 +833,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			logger.debug(e.toString());
 		}
 		String userId = invoker.getNciAccount().getUserId();
-		
+
 		// Save Current Datetime to send in Email Subject
 		Date currentDate = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -846,8 +841,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
 
 		// Construct the excel file name
-		String exportFileName =  exportDirectory + File.separator + "Email_Export_Search_Results_"
-				+ userId + "_" + fileSuffix + ".xlsx";
+		String exportFileName = exportDirectory + File.separator + "Email_Export_Search_Results_" + userId + "_"
+				+ fileSuffix + ".xlsx";
 
 		logger.debug("EmailExport: Export file name before invoking user: " + exportFileName);
 		String queryName = gson.toJson(query);
@@ -874,9 +869,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 				logger.debug("EmailExport: dataobjects size=" + dataobjectListDTO.getDataObjects().size());
 				try {
 					exporter.exportDataObjects(exportFileName, dataobjectListDTO, query.getDeselectedColumns());
-					logger.info("EmailExport: Done with creating export file: " + exportFileName + " for user="+ userId);
+					logger.info(
+							"EmailExport: Done with creating export file: " + exportFileName + " for user=" + userId);
 				} catch (IOException e) {
-					logger.error("IO Exception occured processing dataObjects . Failed to export file: {}", exportFileName, e);
+					logger.error("IO Exception occured processing dataObjects . Failed to export file: {}",
+							exportFileName, e);
 				} catch (OutOfMemoryError e) {
 					logger.error("OutOfMemoryError occured. Failed to export file: {}", exportFileName, e);
 				}
@@ -903,9 +900,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 				logger.info("EmailExport: collection size=" + collectionListDTO.getCollections().size());
 				try {
 					exporter.exportCollections(exportFileName, collectionListDTO, query.getDeselectedColumns());
-					logger.info("EmailExport: Done with creating export file: " + exportFileName + " for user="+ userId);
+					logger.info(
+							"EmailExport: Done with creating export file: " + exportFileName + " for user=" + userId);
 				} catch (IOException e) {
-					logger.error("IO Exception occured processing collections. Failed to export file: {}", exportFileName, e);
+					logger.error("IO Exception occured processing collections. Failed to export file: {}",
+							exportFileName, e);
 				} catch (OutOfMemoryError e) {
 					logger.error("OutOfMemoryError occured. Failed to export file: {}", exportFileName, e);
 				}
@@ -928,7 +927,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 			}
 		}
 		return true;
-    }
+	}
 
 	/**
 	 * Run and construct the excel export of the specified query results and send to
@@ -1048,7 +1047,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		notificationService.sendNotification(nciUserId, HpcEventType.USER_QUERY_SENT, payloadEntries,
 				HpcNotificationDeliveryMethod.EMAIL, exportFileName);
 	}
-	
+
 	/**
 	 * Email the exported user query results to the user.
 	 *
@@ -1058,8 +1057,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	 * @param frequency      The scheduled frequency.
 	 * @throws HpcException
 	 */
-	private void sendQueryCurrentNotification(String nciUserId, String exportFileName, String queryString, String requestTime)
-			throws HpcException {
+	private void sendQueryCurrentNotification(String nciUserId, String exportFileName, String queryString,
+			String requestTime) throws HpcException {
 		logger.info("Sending {} query result for {} generated at {}", queryString, nciUserId, requestTime);
 		if (nciUserId == null) {
 			throw new HpcException("Null nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
