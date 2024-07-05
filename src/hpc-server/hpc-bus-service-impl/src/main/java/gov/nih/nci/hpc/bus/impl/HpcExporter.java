@@ -209,7 +209,6 @@ public class HpcExporter
 				int rownum = 0;
 				r = s.createRow(rownum++); // header row
 				int cellnum = 0;
-				int i = 0;
 				for (Object h : headers) {
 					r.createCell(cellnum++).setCellValue(StringUtils.defaultString((String)h));
 				}
