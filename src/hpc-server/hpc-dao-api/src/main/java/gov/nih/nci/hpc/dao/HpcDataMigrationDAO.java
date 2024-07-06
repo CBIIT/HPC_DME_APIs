@@ -158,4 +158,12 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void updateBulkDataMigrationTaskPercentComplete(String id) throws HpcException;
+
+	/**
+	 * Cleanup migration tasks that are completed w/ result.
+	 *
+	 * @return The number of records cleand up.
+	 * @throws HpcException on database error.
+	 */
+	public int cleanupDataMigrationTasks() throws HpcException;
 }
