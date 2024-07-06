@@ -57,9 +57,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	// SQL Queries.
 	private static final String UPSERT_DATA_MIGRATION_TASK_SQL = "merge into HPC_DATA_MIGRATION_TASK using dual on (ID = ?) "
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
-			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, PERCENT_COMPLETE = ? "
+			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, PERCENT_COMPLETE = ?, SERVER_ID = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
-			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED, ALIGN_ARCHIVE_PATH, DATA_SIZE, PERCENT_COMPLETE) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED, ALIGN_ARCHIVE_PATH, DATA_SIZE, PERCENT_COMPLETE, SERVER_ID) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -94,6 +94,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	private static final String SET_MIGRATION_TASK_IN_PROCESS_SQL = "update HPC_DATA_MIGRATION_TASK set IN_PROCESS = ? where ID = ? and IN_PROCESS != ?";
 
 	private static final String SET_MIGRATION_TASK_SERVER_ID_SQL = "update HPC_DATA_MIGRATION_TASK set SERVER_ID = ? where ID = ?";
+
+	private static final String CLEANUP_DATA_MIGRATION_TASKS_SQL = "delete from HPC_DATA_MIGRATION_TASK task where exists (select result.id from HPC_DATA_MIGRATION_TASK_RESULT result where task.id = result.id)";
 
 	private static final String UPDATE_BULK_MIGRATION_TASK_PERCENT_COMPLETE_SQL = "update HPC_DATA_MIGRATION_TASK set PERCENT_COMPLETE = "
 			+ "(select FLOOR(sum(transferred) / sum(total) * 100) from "
@@ -186,13 +188,13 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
 					dataMigrationTask.getStatus().value(), dataMigrationTask.getCreated(),
 					dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getSize(),
-					dataMigrationTask.getPercentComplete(), dataMigrationTask.getId(), dataMigrationTask.getParentId(),
-					dataMigrationTask.getUserId(), dataMigrationTask.getPath(), dataMigrationTask.getConfigurationId(),
-					dataMigrationTask.getFromS3ArchiveConfigurationId(),
+					dataMigrationTask.getPercentComplete(), dataMigrationTask.getServerId(), dataMigrationTask.getId(),
+					dataMigrationTask.getParentId(), dataMigrationTask.getUserId(), dataMigrationTask.getPath(),
+					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
 					dataMigrationTask.getStatus().value(), dataMigrationTask.getCreated(),
 					dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getSize(),
-					dataMigrationTask.getPercentComplete());
+					dataMigrationTask.getPercentComplete(), dataMigrationTask.getServerId());
 
 			jdbcTemplate.update(UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL,
 					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler),
@@ -402,5 +404,17 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			throw new HpcException("Failed to update bulk data migration percent complete: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
+	}
+
+	@Override
+	public int cleanupDataMigrationTasks() throws HpcException {
+		try {
+			return jdbcTemplate.update(CLEANUP_DATA_MIGRATION_TASKS_SQL);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to cleanup a data migration tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+
 	}
 }
