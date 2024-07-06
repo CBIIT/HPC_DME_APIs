@@ -861,7 +861,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		int limit = dataTransferService.getDownloadResultsPageSize();
 		if (pageSize != null && pageSize != 0) {
-			limit = pageSize.intValue();
+			limit = pageSize;
 		}
 
 		// Populate the DTO with active and completed download requests for this user.
