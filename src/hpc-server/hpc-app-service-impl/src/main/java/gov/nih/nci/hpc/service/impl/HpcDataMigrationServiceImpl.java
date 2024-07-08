@@ -389,6 +389,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				HpcDataMigrationStatus.RECEIVED);
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
+
+		int taskCount = dataMigrationDAO.cleanupDataMigrationTasks();
+		logger.info("Cleaned up {} data migration tasks", taskCount);
+
 	}
 
 	@Override
