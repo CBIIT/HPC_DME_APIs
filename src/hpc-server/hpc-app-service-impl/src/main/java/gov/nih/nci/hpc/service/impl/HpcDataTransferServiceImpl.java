@@ -1537,7 +1537,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -1578,7 +1579,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, null,
@@ -1614,7 +1616,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
@@ -3253,8 +3256,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getAccessToken(),
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getRefreshToken());
 
-			
-			// Update the download task with the latest refresh token 
+			// Update the download task with the latest refresh token
 			HpcIntegratedSystemTokens boxTokens = dataTransferProxies.get(HpcDataTransferType.BOX)
 					.getIntegratedSystemTokens(authenticatedToken);
 			HpcDataObjectDownloadTask downloadTask = boxDownload.getDownloadTask();
@@ -3297,7 +3299,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void perform2HopDownload(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataObjectDownloadResponse response, HpcDataTransferConfiguration dataTransferConfiguration)
 			throws HpcException {
-
 		HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
 				HpcDataTransferDownloadStatus.IN_PROGRESS);
 
@@ -3314,7 +3315,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
+			if (!StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
+				// The download task created from a collection task breakdown, is queued to be
+				// picked up by the schedulers.
+				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+				logger.info(
+						"download task: {} - 2 Hop download task created from a collection download request [transfer-type={}, destination-type={},"
+								+ " path = {}, collection download task = {}]",
+						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath(),
+						downloadRequest.getCollectionDownloadTaskId());
+			} else {
+				// Single data object download task.
 				HpcCanPerform2HopDownloadResponse canPerfom2HopDownloadResponse = canPerfom2HopDownload(
 						secondHopDownload);
 				if (canPerfom2HopDownloadResponse.value) {
@@ -3333,8 +3345,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							secondHopDownload.downloadTask.getDestinationType(),
 							secondHopDownload.downloadTask.getPath());
 				} else {
-					// Can't perform the 2-hop download at this time, or this data-object download
-					// is part of a collection. Reset the task
+					// Can't perform the 2-hop download at this time.
 					resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 					logger.info(
 							"download task: {} - 2 Hop download can't be initiated [transfer-type={}, destination-type={},"
