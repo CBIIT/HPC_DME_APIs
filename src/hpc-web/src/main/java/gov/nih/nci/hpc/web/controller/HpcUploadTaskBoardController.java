@@ -113,6 +113,7 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
         .getRegistrationSummary(authToken, (queryAllOption == false ? queryServiceURL : queryAllServiceURL), paramsMap,
         this.sslCertPath, this.sslCertPassword);
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+			SimpleDateFormat sortFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 			if (registrations.getActiveTasks() != null && !registrations.getActiveTasks().isEmpty())
 				for (HpcBulkDataObjectRegistrationTaskDTO registration : registrations.getActiveTasks()) {
 					HpcTask task = new HpcTask();
@@ -126,6 +127,10 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 					task.setCompleted(
 							registration.getCompleted() != null ? format.format(registration.getCompleted().getTime()) : "");
 					String transferResult = "In Process";
+					task.setSortCreated(
+							registration.getCreated() != null ? sortFormat.format(registration.getCreated().getTime()) : "");
+					task.setSortCompleted(
+							registration.getCompleted() != null ? sortFormat.format(registration.getCompleted().getTime()) : "");
 					if (registration.getResult() != null) {
 						if (registration.getResult())
 							transferResult = "Completed";
@@ -159,6 +164,9 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 				task.setCreated(registration.getCreated() != null ? format.format(registration.getCreated().getTime()) : "");
 				task.setCompleted(
 						registration.getCompleted() != null ? format.format(registration.getCompleted().getTime()) : "");
+				task.setSortCreated(registration.getCreated() != null ? sortFormat.format(registration.getCreated().getTime()) : "");
+				task.setSortCompleted(
+						registration.getCompleted() != null ? sortFormat.format(registration.getCompleted().getTime()) : "");
 				String transferResult = "In Process";
 				if (registration.getResult() != null) {
 					if (registration.getResult())
