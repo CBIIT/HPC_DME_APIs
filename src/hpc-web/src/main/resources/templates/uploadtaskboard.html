@@ -330,7 +330,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 				dom: 'rt',
 				scrollX : 'TRUE',
 				columnDefs: [ {targets: 0,  data: 'userId', width:100, visible: queryAll}, //userId
-							{targets: 1, data: 'taskId', data: 'result', width:250, visible: true},  // taskId
+							{targets: 1, data: 'taskId', data: 'taskId', width:250, visible: true},  // taskId
 							{targets: 2, data: 'result', width: 110, visible: true},  // source type
 							{targets: 3, data: 'sourceType', data: 'result', width: 100, visible: true},  // transfer result
 							{targets: 4, data: 'created', width: 110, visible: true, orderData:[7]},  // created
