@@ -183,7 +183,7 @@
 											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 								    </div>								
 									<div class="col-sm-12 column">
-										<label for="endPointLocation">Globus Endpoint (Destination) Path:</label> <input
+										<label for="endPointLocation">Endpoint Path:</label> <input
 											type="text" class="form-control" name="endPointLocation"
 											th:value="${endPointLocation}" id="endPointLocation"
 											placeholder="Enter Globus Endpoint Path" size="40" />
@@ -197,11 +197,11 @@
 											id="bucketName" placeholder="Enter S3 Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="s3Path">S3 (Destination) Path:</label> <input
+										<label for="s3Path">Endpoint Path:</label> <input
 											type="text" class="form-control"
 											th:value="${s3Path}"
 											name="s3Path" id="s3Path"
-											placeholder="Enter S3 (Destination) Path" size="40" />
+											placeholder="Enter S3 Endpoint Path" size="40" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="accessKey">Access Key:</label> <input
@@ -234,14 +234,14 @@
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
 									<div class="col-sm-12 column">
-										<label for="drivePath">Google Drive (Destination) Path:</label>
+										<label for="drivePath">Endpoint Path:</label>
 										<a th:if="${authorized != null}" id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">
 											Select from Google Drive (Optional)</a>
 										<input
 											type="text" class="form-control"
 											th:value="${drivePath}"
 											name="drivePath" id="drivePath"
-											placeholder="Enter Google Drive (Destination) Path" size="40" />
+											placeholder="Enter Google Drive Endpoint Path" size="40" />
 									</div>
 								</div>
 								<div class="form-group" id="googleCloudDiv" style="display: none">
@@ -259,18 +259,18 @@
 											id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="googleCloudPath">Google Cloud (Destination) Path:</label>
+										<label for="googleCloudPath">Endpoint Path:</label>
 										<input
 											type="text" class="form-control"
 											th:value="${googleCloudPath}"
 											name="googleCloudPath" id="googleCloudPath"
-											placeholder="Enter Google Cloud (Destination) Path" size="40" />
+											placeholder="Enter Google Cloud Endpoint Path" size="40" />
 									</div>
 								</div>
 								<!--- DbGap inputs -->
 								<div class="form-group" id="asperaDiv" style="display: none">
 									<div class="col-sm-12 column">
-										<label for="asperaBucketName">Aspera Destination Directory:</label>
+										<label for="asperaBucketName">Endpoint Path:</label>
 										<div th:if="${asperaBucketName == 'test'}" id="oneOption">
 											<select name="asperaBucketName" id="asperaBucketName" class="form-control">
 												<option th:value="test" th:text="test" selected="selected"></option>
