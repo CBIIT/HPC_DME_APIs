@@ -88,7 +88,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_ACCESS_TOKEN = ?, "
 			+ "ASPERA_ACCOUNT_USER = ?, ASPERA_ACCOUNT_PASSWORD = ?, ASPERA_ACCOUNT_HOST = ?, BOX_ACCESS_TOKEN = ?, BOX_REFRESH_TOKEN = ?, "
 			+ "COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, PERCENT_COMPLETE = ?, STAGING_PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ?, "
-			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ? where ID = ?";
+			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, GLOBUS_ACCOUNT = ? where ID = ?";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -228,6 +228,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_TOTAL_DOWNLOADS_SIZE_SQL = "select sum(DATA_SIZE) from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and DATA_TRANSFER_STATUS = ?";
 
+	private static final String GET_GLOBUS_ACCOUNTS_USED_BY_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select GLOBUS_ACCOUNT,count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK "
+			+ "where GLOBUS_ACCOUNT is not null group by GLOBUS_ACCOUNT order by count(*)";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -267,6 +270,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		dataObjectDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		dataObjectDownloadTask.setDoc(rs.getString("DOC"));
+		dataObjectDownloadTask.setGlobusAccount(rs.getString("GLOBUS_ACCOUNT"));
 
 		int stagingPercentComplete = rs.getInt("STAGING_PERCENT_COMPLETE");
 		dataObjectDownloadTask.setStagingPercentComplete(stagingPercentComplete > 0 ? stagingPercentComplete : null);
@@ -614,6 +618,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		return userDownloadRequest;
 	};
 
+	private RowMapper<String> globusAccountsRowMapper = (rs, rowNum) -> {
+		return rs.getString("GLOBUS_ACCOUNT");
+	};
+	
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -794,7 +802,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
 					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
-					dataObjectDownloadTask.getId()) > 0;
+					dataObjectDownloadTask.getGlobusAccount(), dataObjectDownloadTask.getId()) > 0;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
@@ -1485,6 +1493,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 	}
 
+	@Override
+	public List<String> getGlobusAccountsUsedByDataObjectDownloadRequests() throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_GLOBUS_ACCOUNTS_USED_BY_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL, globusAccountsRowMapper);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get globus accounts used by download tasks: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
