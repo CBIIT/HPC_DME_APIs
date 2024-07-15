@@ -1393,6 +1393,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.ofNullable(dataDownloadDAO.getDataObjectDownloadTaskStatus(downloadTask.getId()))
 				.orElse(HpcDataTransferDownloadStatus.CANCELED).equals(HpcDataTransferDownloadStatus.CANCELED)) {
 			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+			downloadTask.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 			dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 		}
 
@@ -2263,6 +2264,37 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return token;
 	}
 
+	/**
+	 * Get the data transfer authenticated token from cache.
+	 *
+	 * @param token         The data transfer authenticated token.
+	 * @return A data transfer authenticated token.
+	 * @throws HpcException If it failed to find an authentication token.
+	 */
+	private HpcDataTransferAuthenticatedToken getDataTransferAuthenticatedToken(Object token) throws HpcException {
+
+		// Get the DataTransferAuthenticatedToken for this token
+		HpcDataTransferAuthenticatedToken dataTransferAuthenticatedToken = null;
+		
+		// Search for stored system account for this token.
+		Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator();
+		while (tokenItr.hasNext()) {
+			HpcDataTransferAuthenticatedToken authenticatedToken = tokenItr.next();
+			if (authenticatedToken.getDataTransferAuthenticatedToken().equals(token)) {
+				logger.info("Found stored globus access token: {}", authenticatedToken.getSystemAccountId());
+				dataTransferAuthenticatedToken = authenticatedToken;
+				break;
+			}
+		}
+
+		if (dataTransferAuthenticatedToken == null) {
+			throw new HpcException("System account not found for token " + token.toString(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		return dataTransferAuthenticatedToken;
+	}
+	
 	/**
 	 * Create an empty file.
 	 *
@@ -3554,8 +3586,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				"checkIfTransferCanBeLaunched: Update to call system account locator's setGlobusAccountQueueSize passing in (%s, %s)",
 				globusClientId, Integer.toString(transferAcceptanceResponse.getQueueSize())));
 
-		this.systemAccountLocator.setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
-
 		logger.info("checkIfTransferCanBeLaunched: About to return");
 
 		return transferAcceptanceResponse.canAcceptTransfer();
@@ -3622,8 +3652,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info(String.format(
 				"checkIfTransferCanBeLaunched: Update to call system account locator's setGlobusAccountQueueSize passing in (%s, %s)",
 				globusClientId, Integer.toString(transferAcceptanceResponse.getQueueSize())));
-
-		this.systemAccountLocator.setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
 
 		logger.info("checkIfTransferCanBeLaunched: About to return");
 

@@ -127,7 +127,7 @@ function get_username {
     if [ -z "$USER_NAME" ]
     then 
         echo "ERROR: Can not retrieve username from $PROPERTIES_FILE" >&2
-        exit 1
+        return 1
     fi
     echo $USER_NAME
 }
@@ -172,7 +172,7 @@ function get_server {
     if [ -z "$SERVER_NAME" ]
     then 
         echo "ERROR: Can not retrieve server from $PROPERTIES_FILE" >&2
-        exit 1 
+        return 1 
     fi
     echo $SERVER_NAME
 }
@@ -509,7 +509,7 @@ function get_config {
   then
     echo "Cannot find the configuration file $CONFIG_FILE" >&2 
     echo "Run dm_generate_token" >&2 
-    exit 1
+    return 1
   fi
   echo "--config $CONFIG_FILE"
   
