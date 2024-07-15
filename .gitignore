@@ -193,3 +193,5 @@ utils/hpc-client/lib/spring-tx-5.2.12.RELEASE.jar
 utils/hpc-client/lib/spring-web-5.2.25.RELEASE.jar
 utils/hpc-client/lib/spring-webmvc-5.2.25.RELEASE.jar
 utils/hpc-client/lib/xmlschema-core-2.2.1.jar
+src/.idea/misc.xml
+src/.idea/vcs.xml

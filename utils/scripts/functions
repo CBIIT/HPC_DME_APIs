@@ -77,8 +77,8 @@ function dm_generate_token () {
     local CONFIG_PATH=$HPC_DM_UTILS/tokens/curl-conf
     rm -f $LOG_FILE 2>/dev/null
 
-    SERVER=$(get_server) || exit 1
-    USERNAME=$(get_username) || exit 1
+    SERVER=$(get_server) || return 1
+    USERNAME=$(get_username) || return 1
 
     if [ -z "$1" ]
     then
@@ -177,9 +177,9 @@ function dm_register () {
       return 1
     fi
     
-    USERID=$(get_username) || exit 1
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
+    USERID=$(get_username) || return 1
+    SERVER=$(get_server) || return 1
+    CONFIG=$(get_config) || return 1
 
 	JSON=`get_file_value "$DESCRIPTION"`
     if [ "" == "$JSON" ]
@@ -711,8 +711,8 @@ function dm_get_item {
       RESPONSE_HEADER=get-item-response-header.tmp
     fi 
 
-    CONFIG=$(get_config) || exit 1
-    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || return 1
+    SERVER=$(get_server) || return 1
 
     local TOTAL_PATH="$ITEM_PATH"
     local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
@@ -1058,8 +1058,8 @@ case $1 in
         RESPONSE_HEADER=query-dataobject-response-header.tmp
     fi
 
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
+    SERVER=$(get_server) || return 1
+    CONFIG=$(get_config) || return 1
 
     if [ -z "$SEARCH_PATH" ]
     then
@@ -1183,8 +1183,8 @@ function dm_download_dataobject {
     fi
     local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
   fi
-  local CONFIG=$(get_config)
-  local SERVER=$(get_server)
+  local CONFIG=$(get_config) || return 1
+  local SERVER=$(get_server) || return 1
   local CODE=0
   if [ -z "$RESPONSE_HEADER" ]
     then
@@ -1329,8 +1329,8 @@ function dm_download_dataobject_presigned {
     fi
     local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
   fi
-  local CONFIG=$(get_config)
-  local SERVER=$(get_server)
+  local CONFIG=$(get_config) || return 1
+  local SERVER=$(get_server) || return 1
   local CODE=0
   local SUFFIX=`date +"%Y%m%d%H%M%S"_$RANDOM`
   if [ -z "$RESPONSE_STATUS" ]
@@ -2269,8 +2269,8 @@ function dm_download_dataobject_retry {
         response_hdr=download-dataobject-response-header.tmp
     fi
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
     curl -H "Content-Type: application/json" -d @description.json -X POST ${SERVER}/dataObject/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 
@@ -2412,8 +2412,8 @@ function dm_download_collection_retry {
         response_hdr=download-collection-response-header.tmp
     fi
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
     curl -H "Content-Type: application/json" -d @description.json -X POST ${SERVER}/collection/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 
@@ -2553,8 +2553,8 @@ function dm_download_list_retry {
     #Create the description.json file to input the credentials in the required JSON format
     create_credentials_json $endpoint_type $credentials_file
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
     curl -H "Content-Type: application/json" -d @description.json -X POST ${SERVER}/download/$taskId/retry $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 
@@ -2749,8 +2749,8 @@ function dm_download_collection_globus {
         response_hdr=download-collection-response-header.tmp
     fi
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
 	if [ -z "$path_file" ]
 	then
@@ -2961,8 +2961,8 @@ function dm_download_dataobject_globus {
     fi
 
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
 	if [ -z "$path_file" ]
 	then
@@ -3027,8 +3027,8 @@ function dm_download_s3_deprecated {
     local response_hdr=download-$item_type-response-header.tmp
     local response_msg=download-$item_type-response-message.json.tmp
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
     curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
     check_connection $response_hdr || exit 1
@@ -3212,8 +3212,8 @@ function dm_download_dataobject_s3 {
         response_hdr=download-$item_type-response-header.tmp
     fi
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
 	if [ -z "$path_file" ]
 	then
@@ -3390,8 +3390,8 @@ function dm_download_collection_s3 {
         response_hdr=download-$item_type-response-header.tmp
     fi
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
 	if [ -z "$path_file" ]
 	then
@@ -3574,8 +3574,8 @@ function dm_download_dataobject_aspera {
         response_hdr=download-$item_type-response-header.tmp
     fi
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
 	if [ -z "$path_file" ]
 	then
@@ -3752,8 +3752,8 @@ function dm_download_collection_aspera {
         response_hdr=download-$item_type-response-header.tmp
     fi
 
-    local SERVER=$(get_server)
-    local CONFIG=$(get_config)
+    local SERVER=$(get_server) || return 1
+    local CONFIG=$(get_config) || return 1
 
 	if [ -z "$path_file" ]
 	then
@@ -3863,8 +3863,8 @@ function dm_get_download_status {
     fi 
 
 
-    config=$(get_config) || exit 1
-    server=$(get_server) || exit 1
+    config=$(get_config) || return 1
+    server=$(get_server) || return 1
 
    
     curl -G -X GET ${server}${request_type}/download?taskId="$task_id"  $config  -H "Accept: application/json" -D $response_header -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status
@@ -3979,8 +3979,8 @@ function dm_rename() {
       RESPONSE_HEADER=rename-response-header.tmp
     fi 
 
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
+    SERVER=$(get_server) || return 1
+    CONFIG=$(get_config) || return 1
 
     local CURL_FLAGS="-X POST ${SERVER}/move  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
@@ -4076,9 +4076,9 @@ function dm_add_bookmark () {
     local BOOKMARK_NAME="$1"
     local DESCRIPTION_PATH="$2"
     
-    USERID=$(get_username) || exit 1
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
+    USERID=$(get_username) || return 1
+    SERVER=$(get_server) || return 1
+    CONFIG=$(get_config) || return 1
 
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
@@ -4194,9 +4194,9 @@ function dm_update_bookmark () {
     local BOOKMARK_NAME="$1"
     local DESCRIPTION_PATH="$2"
 
-    USERID=$(get_username) || exit 1
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
+    USERID=$(get_username) || return 1
+    SERVER=$(get_server) || return 1
+    CONFIG=$(get_config) || return 1
 
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
@@ -4311,9 +4311,9 @@ function dm_register_user () {
     local USER_ID="$1"
     local DESCRIPTION_PATH="$2"
    
-    USERID=$(get_username) || exit 1
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
+    USERID=$(get_username) || return 1
+    SERVER=$(get_server) || return 1
+    CONFIG=$(get_config) || return 1
 
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
@@ -4428,9 +4428,9 @@ function dm_update_user () {
     local USER_ID="$1"
     local DESCRIPTION_PATH="$2"
 
-    USERID=$(get_username) || exit 1
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
+    USERID=$(get_username) || return 1
+    SERVER=$(get_server) || return 1
+    CONFIG=$(get_config) || return 1
 
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
@@ -4716,8 +4716,8 @@ function dm_get_download_presigned () {
     return 1
   fi
   local OBJECT_PATH="$1"
-  local CONFIG=$(get_config)
-  local SERVER=$(get_server)
+  local CONFIG=$(get_config) || return 1
+  local SERVER=$(get_server) || return 1
   local CODE=0
   local SUFFIX=`date +"%Y%m%d%H%M%S"_$RANDOM`
   
