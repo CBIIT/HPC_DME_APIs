@@ -195,3 +195,5 @@ utils/hpc-client/lib/spring-webmvc-5.2.25.RELEASE.jar
 utils/hpc-client/lib/xmlschema-core-2.2.1.jar
 src/.idea/misc.xml
 src/.idea/vcs.xml
+src/.idea/compiler.xml
+src/.idea/encodings.xml
