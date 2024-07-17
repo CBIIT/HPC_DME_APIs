@@ -147,27 +147,6 @@
 									</div>
 									<br/>
 								</div>
-								<div th:if="${downloadType == 'collection'}" style="width: 100%">
-									<div class="form-group" id="radioset2">
-										<p style="margin-left: 15px">Destination Location:</p>
-										<div class="pull-left" style="margin-left: 15px" th:if="${downloadType == 'collection'}">
-											<label class="radio-inline"><input type="radio"
-											name="downloadDestinationType" id="downloadToDestinationId" value="downloadToDestination" checked
-											/>Download to Specified Folder</label>
-										</div>
-										<div class="pull-left" style="margin-left: 15px" th:if="${downloadType == 'collection'}">
-											<label class="radio-inline"><input type="radio"
-											name="downloadDestinationType" id="createCollectionFolderId" value="createCollectionFolder"
-											/>Create Parent Folder</label>
-										</div>
-										<div class="pull-left" style="margin-left: 15px" th:if="${downloadType == 'collection'}">
-											<label class="radio-inline"><input type="radio"
-											name="downloadDestinationType" id="createFullPathId" value="createFullPath"
-											/>Create Full Path</label>
-										</div>
-									</div>
-									<br/>
-								</div>
 		                        <div id="globus-help-links" style="display: none;">
                                     To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
                                     <br/><br/>
@@ -180,13 +159,13 @@
                                             Obtain from Globus (Optional)</a>
 										<input type="hidden" name="actionType" id="actionType" />
 										<input
-											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
+											type="text" style="margin-top: 10px; margin-bottom: 10px;" class="form-control" name="endPointName" th:value="${endPointName}"
 											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="endPointLocation">Endpoint Path:</label> 
 										<input
-											type="text" class="form-control"
+											type="text" class="form-control" style="margin-top: 7px; margin-bottom: 1px;"
 											th:value="${endPointLocation}"
 											name="endPointLocation" id="endPointLocation"
 											placeholder="Enter Globus Endpoint Path" size="40" />
@@ -322,7 +301,21 @@
 											placeholder="Enter Aspera Host" size="40" />
 									</div>
 								</div>
-								<div>
+								<div class="form-group" th:if="${downloadType == 'collection'}">
+									<div class="col-sm-12 column" id="radioset2">
+										<div class="col-sm-6" style="margin-left: -15px; margin-top: -10px">
+											<label for="downloadDestinationType">Destination Location:</label>
+											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control" size="1">
+												<option th:value="'downloadToDestination'" th:text="'Endpoint Path'"></option>
+												<option th:value="'createCollectionFolder'" th:text="'Create Parent Collection'"></option>
+												<option th:value="'createFullPath'" th:text="'Replicate Full Source Path'"></option>
+											</select>
+										</div>
+										<div class="col-sm-6"> &nbsp;</div>
+									</div>
+									<br/>
+								</div>
+								<div class="form-group col-sm-12 column" style="margin-left: -10px; margin-top: -1px">
 									<button class="btn btn-primary" id="submit" th:if="${canDownload == 'true'}"
 										onClick="return validateAndSubmit()">Download</button>
 									<button class="btn btn-primary" id="nosubmit" title="Collection size exceeds max download limit"
