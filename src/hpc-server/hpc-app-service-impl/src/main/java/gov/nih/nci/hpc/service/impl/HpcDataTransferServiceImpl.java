@@ -1263,7 +1263,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+	public boolean continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -1327,7 +1327,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
-					return;
+					return false;
 				}
 			}
 		}
@@ -1353,7 +1353,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 								+ " path={}] - {}",
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
 						downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
-				return;
+				return false;
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
@@ -1382,7 +1382,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Failed to submit a transfer request. Cleanup the download task.
 			completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage(),
 					Calendar.getInstance(), 0);
-			return;
+			return true;
 		}
 
 		// Persist the download task. Note: In case we used a progress listener - it
@@ -1399,6 +1399,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info("download task: {} - continued  - archive file-id = {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), downloadRequest.getArchiveLocation().getFileId(),
 				downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+		
+		return true;
 	}
 
 	@Override
