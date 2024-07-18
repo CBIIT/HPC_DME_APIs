@@ -527,9 +527,10 @@ public interface HpcDataTransferService {
 	 * Continue a data object download task that was queued.
 	 *
 	 * @param downloadTask The download task to continue.
+	 * @return true if the task was processed or false otherwise.
 	 * @throws HpcException on service failure.
 	 */
-	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+	public boolean continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
 
 	/**
 	 * Stage a data object for download from Hyperfile to Globus. Once staged, set
