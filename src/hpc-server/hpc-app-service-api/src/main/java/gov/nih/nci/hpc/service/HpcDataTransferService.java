@@ -1009,4 +1009,12 @@ public interface HpcDataTransferService {
 	 */
 	public List<HpcMetadataEntry> generateArchiveMetadata(String configurationId, String objectId, String registrarId);
 
+	/**
+	 * Remove active Globus transfer requests when Globus requests are no longer active.
+	 *
+	 * @param dataTransferRequestId The globus data transfer request ID.
+	 * @throws HpcException on service failure.
+	 */
+	public void deleteGlobusTransferTask(String dataTransferRequestId) throws HpcException;
+
 }

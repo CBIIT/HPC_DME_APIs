@@ -294,4 +294,15 @@
 				type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="HpcGlobusTransferTask">
+		<xsd:sequence>
+		    <xsd:element name="globusAccount" type="xsd:string" />
+		    <xsd:element name="dataTransferRequestId" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="download" type="xsd:boolean" />
+			<xsd:element name="created" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>
