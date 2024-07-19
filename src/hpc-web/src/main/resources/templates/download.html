@@ -125,26 +125,23 @@
 											placeholder="Enter Download File Name" />
 									</div>
 								</div>
-
+								<!-- AWS block -->
 								<div th:replace = "downloadFragment.html :: awsBlock"></div>
-
+								<!-- Google Drive block -->
 								<div th:replace = "downloadFragment.html :: googleDriveBlock"></div>
-
+								<!-- Google Cloud block -->
 								<div th:replace = "downloadFragment.html :: googleCloudBlock"></div>
-
+								<!-- Aspera/DbGap block -->
 								<div th:replace = "downloadFragment.html :: asperaBlock"></div>
 
-								<div class="form-group" th:if="${downloadType == 'collection'}">
+								<div class="form-group" th:if="${downloadType == 'collection'}" style="margin-top: -10px">
 									<div class="col-sm-12 column" id="radioset2">
-										<div class="col-sm-6" style="margin-left: -15px; margin-top: -10px">
 											<label for="downloadDestinationType">Destination Location:</label>
-											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control" size="1">
+											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control fieldWidth" size="1" style="margin-top: 1px; margin-bottom: -15px;">
 												<option th:value="'downloadToDestination'" th:text="'Endpoint Path'"></option>
 												<option th:value="'createCollectionFolder'" th:text="'Create Parent Collection'"></option>
 												<option th:value="'createFullPath'" th:text="'Replicate Full Source Path'"></option>
 											</select>
-										</div>
-										<div class="col-sm-6"> &nbsp;</div>
 									</div>
 									<br/>
 								</div>
