@@ -309,6 +309,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							null, null, null, null, null, null, null, null, null);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
 
+					//Remove from HPC_GLOBUS_TRANSFER_TASK
+					dataTransferService.deleteGlobusTransferTask(systemGeneratedMetadata.getDataTransferRequestId());
+					
 					break;
 
 				case FAILED:
