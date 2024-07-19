@@ -43,10 +43,9 @@
 
 
 
-<th:block th:fragment="globusHelpFragment">
+<th:block th:fragment="globusHelpFragment" style="margin-top: 20px; margin-bottom: 20px">
     <div id="globus-help-links" style="display: none;">
               To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
-              <br/><br/>
     </div> 
 </th:block>
 
@@ -65,9 +64,9 @@
 		<div class="col-sm-12 column">
 			<label for="endPointLocation">Endpoint Path:</label> 
 			<input
-				type="text" class="form-control fieldWidth fieldMargin"
+				type="text" class="form-control fieldWidth"
 				th:value="${endPointLocation}"
-				name="endPointLocation" id="endPointLocation"
+				name="endPointLocation" id="endPointLocation" style="margin-top: 1px; margin-bottom: 1px;" 
 				placeholder="Enter Globus Endpoint Path" />
 		</div>
 	</div>
@@ -163,7 +162,6 @@
 
 
 <th:block th:fragment="asperaBlock">
-	<!--- DbGap inputs -->
 	<div class="form-group" id="asperaDiv" style="display: none; margin: -15px">
 		<div class="col-sm-12 column">
 			<label for="asperaBucketName">Aspera Destination Directory:</label>
@@ -200,7 +198,7 @@
 				type="text" class="form-control fieldWidth"
 				th:value="${asperaHost}"
 				name="asperaHost" id="asperaHost"
-				placeholder="Enter Aspera Host" style="margin-top: 1px; margin-bottom: 19px;" />
+				placeholder="Enter Aspera Host" style="margin-top: 1px; margin-bottom: 21px;" />
 		</div>
 	</div>
 </th:block>
