@@ -29,6 +29,7 @@ import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
+import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -97,9 +98,9 @@ public class HpcSystemAccountLocator {
 	@Autowired
 	HpcSystemAccountDAO systemAccountDAO = null;
 	
-	// Data Download DAO
+	// Globus Transfer DAO
 	@Autowired
-	HpcDataDownloadDAO dataDownloadDAO = null;
+	HpcGlobusTransferTaskDAO globusTransferDAO = null;
 
 	@Autowired
 	HpcDataManagementConfigurationLocator dataMgmtConfigLocator = null;
@@ -352,7 +353,7 @@ public class HpcSystemAccountLocator {
 	private PooledSystemAccountWrapper selectLeastUsedGlobusAccount(
 			List<PooledSystemAccountWrapper> theGlobusAcctsPool) throws HpcException {
 		// Obtain the list of currently used Globus accounts ordered by least used from DB
-		List<String> usedAccounts = dataDownloadDAO.getGlobusAccountsUsedByDataObjectDownloadRequests();
+		List<String> usedAccounts = globusTransferDAO.getGlobusAccountsUsed();
 		// Iterate over the accounts in the pool to see if there is any that are not used
 		for (PooledSystemAccountWrapper accountFromPool: theGlobusAcctsPool) {
 			if(usedAccounts == null || usedAccounts.isEmpty())
