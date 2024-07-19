@@ -43,7 +43,7 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	private static final String DELETE_REQUEST_SQL = "delete from HPC_GLOBUS_TRANSFER_TASK where DATA_TRANSFER_REQUEST_ID = ?";
 
 	private static final String GET_GLOBUS_ACCOUNTS_USED_SQL = "select GLOBUS_ACCOUNT,count(*) from HPC_GLOBUS_TRANSFER_TASK "
-			+ "where GLOBUS_ACCOUNT is not null group by GLOBUS_ACCOUNT order by count(*)";
+			+ "group by GLOBUS_ACCOUNT order by count(*)";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
