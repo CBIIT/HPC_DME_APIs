@@ -24,7 +24,7 @@ comment on table HPC_GLOBUS_TRANSFER_TASK is 'Lists all ongoing Globus transfer 
 comment on column HPC_GLOBUS_TRANSFER_TASK.GLOBUS_ACCOUNT is 'The globus account used for the transfer';
 comment on column HPC_GLOBUS_TRANSFER_TASK.DATA_TRANSFER_REQUEST_ID is 'The globus transfer request ID';
 comment on column HPC_GLOBUS_TRANSFER_TASK.PATH is 'The DME path';
-comment on column HPC_GLOBUS_TRANSFER_TASK.DOWNLOAD is 'An indicator if the transfer is a download task';
+comment on column HPC_GLOBUS_TRANSFER_TASK.DOWNLOAD is 'An indicator if the transfer is a download task or an upload task';
 comment on column HPC_GLOBUS_TRANSFER_TASK.CREATED is 'The date and time the request was created';
 
 
