@@ -134,10 +134,10 @@
 								<!-- Aspera/DbGap block -->
 								<div th:replace = "downloadFragment.html :: asperaBlock"></div>
 
-								<div class="form-group" th:if="${downloadType == 'collection'}" style="margin-top: -10px">
+								<div class="form-group" th:if="${downloadType == 'collection'}" style="margin-top: -10px; margin-bottom: -1px">
 									<div class="col-sm-12 column" id="radioset2">
 											<label for="downloadDestinationType">Destination Location:</label>
-											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control fieldWidth" size="1" style="margin-top: 1px; margin-bottom: -15px;">
+											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control fieldWidth" size="1" style="margin-top: 1px; margin-bottom: -16px;">
 												<option th:value="'downloadToDestination'" th:text="'Endpoint Path'"></option>
 												<option th:value="'createCollectionFolder'" th:text="'Create Parent Collection'"></option>
 												<option th:value="'createFullPath'" th:text="'Replicate Full Source Path'"></option>
@@ -145,7 +145,7 @@
 									</div>
 									<br/>
 								</div>
-								<div class="form-group col-sm-12 column" style="margin-left: -10px; margin-top: -1px">
+								<div style="margin-left: 3px; margin-top: 15px">
 									<button class="btn btn-primary" id="submit" th:if="${canDownload == 'true'}"
 										onClick="return validateAndSubmit()">Download</button>
 									<button class="btn btn-primary" id="nosubmit" title="Collection size exceeds max download limit"
