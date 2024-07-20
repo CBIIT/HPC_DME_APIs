@@ -43,8 +43,8 @@
 
 
 
-<th:block th:fragment="globusHelpFragment" style="margin-top: 20px; margin-bottom: 20px">
-    <div id="globus-help-links" style="display: none;">
+<th:block th:fragment="globusHelpFragment">
+    <div id="globus-help-links" style="display: none; margin-top: -15px; margin-bottom: 15px">
               To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
     </div> 
 </th:block>
@@ -114,7 +114,7 @@
 
 <th:block th:fragment="googleDriveBlock">
 	<div class="form-group" id="driveDiv" style="display: none">
-		<div class="col-sm-12 column">
+		<div class="col-sm-12 column" style="margin:-10px">
 			<a class="btn btn-primary" id="driveAuthlink" 
                                      th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">
                                      Authorize DME to Access Your Google Drive</a>
@@ -136,7 +136,7 @@
 
 <th:block th:fragment="googleCloudBlock">
 	<div class="form-group" id="googleCloudDiv" style="display: none">
-		<div class="col-sm-12 column">
+		<div class="col-sm-12 column" style="margin:-10px">
 			<a class="btn btn-primary" id="googleCloudAuthlink"
                                      th:href="@{../download(type=${downloadType},source=${source},actionType=googleCloud,downloadFilePath=${downloadFilePath})}">
                                      Authorize DME to Access Your Google Cloud</a>
