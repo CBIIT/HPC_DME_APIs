@@ -118,7 +118,7 @@ function dm_generate_token () {
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <destination-path> <collection|dataObject> [data-object-file]"
+    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <collection|dataObject> <destination-path> [data-object-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -148,12 +148,17 @@ function dm_register () {
         shift
     done
 
-    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
+    if [ -z "$1" ] || [ -z "$2" ]
     then
         echo "$USAGE" >&2
         return 1
     fi
 
+
+    if [ ! -z "$3" ]
+    then
+        local local DESTINATION_PATH="$3"
+    fi
 
     if [ ! -z "$4" ]
     then
@@ -167,8 +172,7 @@ function dm_register () {
 
         
     local DESCRIPTION="$1"
-    local DESTINATION_PATH="$2"
-    local TYPE="$3"
+    local TYPE="$2"
 
     local VALDN_RES=$(validate_archive_path "$DESTINATION_PATH")
     if [ "" != "$VALDN_RES" ]
@@ -201,13 +205,13 @@ function dm_register () {
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS_COLLECTION="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-    local CURL_FLAGS="-X PUT ${SERVER}/v2/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="-X PUT ${SERVER}/v2/registration  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
         then
-            curl -F "dataObjectRegistration=$JSON;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
+            curl -H "Content-type: application/json" -d @$DESCRIPTION $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
         else
             curl -F "dataObjectRegistration=$JSON;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status 
         fi
@@ -298,9 +302,8 @@ function dm_register_collection {
         RESPONSE_HEADER=collection-registration-response-header.tmp
     fi
 
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" "$DESTINATION_PATH" collection || return 1
-    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
-
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" collection "$DESTINATION_PATH" || return 1
+    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG"
 }
 
 
@@ -394,13 +397,12 @@ function dm_register_dataobject_presigned {
     local description_json=`get_file_value "$description"`
     description_json=$(echo $description_json | sed "s|{|{ \"checksum\": \""${checksum_val}"\",|")
 
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" "$destination_path" dataObject 
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" dataObject "$destination_path"
     if [ "$?" -eq  1 ]
     then
       return 1
     fi
 
-    #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
     presigned_url=`get_json_value $RESPONSE_MSG uploadRequestURL`
     if [ -z "$presigned_url" ]
     then
@@ -411,7 +413,7 @@ function dm_register_dataobject_presigned {
     rm -f $response_header $response_msg 2>/dev/null
     response_header=presignedURL-registration-response-header.tmp
     response_msg=presignedURL-registration-response-message.tmp
-    curl -X PUT  -H "Content-Type: application/octet-stream" -H "content-md5: ${checksum_val}" --upload-file ${source_file} "${presigned_url}" -D $response_header -o $response_msg 
+    curl -X PUT  -H "Content-Type: application/octet-stream" -H "content-md5: ${checksum_val}" --upload-file ${source_file} "${presigned_url}" -D $response_header -o $response_msg
     if [ "$?" -ne 0 ]
     then
       echo "Error during presigned URL registration for $destination_path" >&2
@@ -427,14 +429,14 @@ function dm_register_dataobject_presigned {
 #Print Usage of dm_register_dataobject function
 function dm_show_register_dataobject_usage {
   read -d  '' usage <<- EOF
-  usage: dm_register_dataobject [-D REST-response] [-o output-file] <description.json> <archive-path> [source-file]
+  usage: dm_register_dataobject [-D REST-response] [-o output-file] <description.json> [archive-path] [source-file]
 
   Register a dataobject
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
-  [description-json]          Path to the JSON file containing the metadata and source info for the new dataobject 
-  [archive-path]              Destination path in the archive
-  [source-file]               Path to the source file for synchronous uploads. Omit the parameter for asynchronous upload (Globus and S3).
+  [description-json]          Path to the JSON file containing the metadata and path info for the new dataobject
+  [archive-path]              Destination path in the archive. Omit the parameter for asynchronous upload (Globus and S3).
+  [source-file]               Path to the file at source. Omit the parameter for asynchronous upload (Globus and S3).
 
 For sample description.json files for synchronous uploads, refer to templates/dataobject-sync-metadata-template.json and templates/dataobject-sync-metadata-extraction-template.json.
 For sample description.json files for asynchronous uploads, refer to templates/dataobject-globus-metadata-template.json and templates/dataobject-s3-metadata-template.json.
@@ -483,7 +485,7 @@ function dm_register_dataobject {
         shift
     done
 
-    if [ -z "$1" ] || [ -z "$2" ] 
+    if [ -z "$1" ]
     then
         dm_show_register_dataobject_usage >&2
         return
@@ -501,12 +503,12 @@ function dm_register_dataobject {
     local DESCRIPTION="$1"
     local DESTINATION_PATH="$2"
     local SOURCE_FILE=$3
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" "$DESTINATION_PATH" dataObject $SOURCE_FILE 
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" dataObject "$DESTINATION_PATH" $SOURCE_FILE
     if [ "$?" -eq  1 ]
     then
       return 1
     fi
-    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
+    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG"
 }
 
 #Print Usage of dm_register_dataobject_multipart function
@@ -640,7 +642,7 @@ function dm_sync_globus_endpoint  {
       local DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
       echo $DESC_JSON >  temp.json
       echo "dm_register_dataobject  temp.json $DST_PATH $SRC_PATH"
-      echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG $DST_PATH"
+      echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG"
 
       rm -f $RESPONSE_HEADER 2>/dev/null
       rm -f $RESPONSE_MSG 2>/dev/null
