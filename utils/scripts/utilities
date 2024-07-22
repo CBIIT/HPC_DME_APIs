@@ -229,19 +229,17 @@ function check_connection {
 #Verify that a collection or a dataObject  was registered correctly
 #Input  <registration-response-header>
 #Input  <registration-response-message>
-#Input  <path>
 function verify_registration {
 
-    if [ -z "$1" ] || [ -z "$2" ] || [ -z $3 ]
+    if [ -z "$1" ] || [ -z "$2" ]
     then
-        echo "ERROR: using check_registration"
-        echo "USAGE: check_registration <registration-response-header-file> <registration-response-message> <destination-path>" 
+        echo "ERROR: using verify_registration"
+        echo "USAGE: verify_registration <registration-response-header-file> <registration-response-message>"
         return 1
     fi
 
     RESPONSE_HEADER="$1"
     RESPONSE_MSG="$2"
-    DESTINATION_PATH="$3"
     REG_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
     if [ "$REG_HTTP_CODE" != "201" ]  && [ "$REG_HTTP_CODE" != "200" ]
     then
@@ -255,6 +253,12 @@ function verify_registration {
           echo "ERROR MESSAGE: $MESSAGE" 1>&2
           return 1
         fi 
+    else
+      TASK_ID=$(get_json_value "$RESPONSE_MSG" taskId)
+      if [ -n "$TASK_ID" ]
+      then
+        echo "Registration request submitted, taskID is $TASK_ID" 1>&2
+      fi
     fi
 }
 
