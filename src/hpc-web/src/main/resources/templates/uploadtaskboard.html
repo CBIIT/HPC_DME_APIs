@@ -239,19 +239,19 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 							</div>
 
 							<div style="text-align:right">
-								<table id="pageDetails1" class="display" style="width:100%">
+								<table  class="display" style="width:100%">
 									<tr>
 										<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-										<button type="button" id="btnFirstTop"
+										<button type="button" id="btnFirst"
 											class="btn btn-md btn-primary" onclick="updatePage('first')">
 											First</button>&nbsp;
-										<button type="button" id="btnPreviousTop"
+										<button type="button" id="btnPrevious"
 											class="btn btn-md btn-primary"
 											onclick="updatePage('previous')">Previous</button>&nbsp;
-										<button type="button" id="btnNextTop"
+										<button type="button" id="btnNext"
 											class="btn btn-md btn-primary" onclick="updatePage('next')">
 											Next</button>&nbsp;
-										<button type="button" id="btnLastTop"
+										<button type="button" id="btnLast"
 											class="btn btn-md btn-primary" onclick="updatePage('last')">&nbsp;
 										Last</button>
 									</tr>
