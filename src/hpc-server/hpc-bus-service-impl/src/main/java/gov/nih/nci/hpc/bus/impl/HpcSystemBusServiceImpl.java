@@ -309,6 +309,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							null, null, null, null, null, null, null, null, null);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
 
+					//Remove from HPC_GLOBUS_TRANSFER_TASK
+					dataTransferService.deleteGlobusTransferTask(systemGeneratedMetadata.getDataTransferRequestId());
+					
 					break;
 
 				case FAILED:
@@ -1533,7 +1536,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType());
-								dataTransferService.continueDataObjectDownloadTask(downloadTask);
+								if(!dataTransferService.continueDataObjectDownloadTask(downloadTask)) {
+									//logger.info("GLOBUS transfers are not accepted at this time. Stop iterating through the Globus tasks");
+									//return;
+									// TODO - uncomment. change to return once we have all Globus accounts not associated w/ DOC.
+								}
 
 							} catch (HpcException e) {
 								logger.error(
