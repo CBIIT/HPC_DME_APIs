@@ -1,57 +1,57 @@
 
 <th:block th:fragment="downloadSelectFragment">
 	<div style="width: 100%">
-		<div class="form-group" id="radioset">
-			<p style="margin-left: 15px">Transfer Type:</p>
-			<div class="pull-left" style="margin-left: 15px"
+		<div id="radioset">
+			<p>Transfer Type:</p>
+			<div class="pull-left radioMargin"
 				th:if="${downloadType == 'datafile'}">
 				<label class="radio-inline"><input type="radio"
 					id="searchTypeSync" name="searchType" value="sync"
 					onChange="display('sync')" checked="checked" />Local
 					System</label>
 			</div>
-			<div class="pull-left" style="margin-left: 15px">
-				<label class="radio-inline"><input type="radio"
+			<div class="pull-left">
+				<label class="radio-inline radioMargin"><input type="radio"
 					name="searchType" id="searchTypeAsync" value="async"
 					onChange="display('async')" />Globus</label>
 			</div>
-			<div class="pull-left" style="margin-left: 15px">
-				<label class="radio-inline"><input type="radio"
+			<div class="pull-left">
+				<label class="radio-inline radioMargin"><input type="radio"
 					name="searchType" id="searchTypeS3" value="s3"
 					onChange="display('s3')" />AWS S3</label>
 			</div>
-			<div class="pull-left" style="margin-left: 15px">
-				<label class="radio-inline"><input type="radio"
+			<div class="pull-left">
+				<label class="radio-inline radioMargin"><input type="radio"
 					name="searchType" id="searchTypeDrive" value="drive"
 					onChange="display('drive')" />Google Drive</label>
 			</div>
-			<div class="pull-left" style="margin-left: 15px">
-				<label class="radio-inline"><input type="radio"
+			<div class="pull-left">
+				<label class="radio-inline radioMargin"><input type="radio"
 					name="searchType" id="searchTypeGoogleCloud"
 					value="googleCloud" onChange="display('googleCloud')" />Google
 					Cloud</label>
 			</div>
-			<div class="pull-left" style="margin-left: 15px">
-				<label class="radio-inline"><input type="radio"
+			<div class="pull-left">
+				<label class="radio-inline radioMargin"><input type="radio"
 					name="searchType" id="searchTypeAspera" value="aspera"
 					onChange="display('aspera')" />dbGaP</label>
 			</div>
 		</div>
-		<br/>
+		<br/><br/><br/>
 	</div>
 </th:block>
 
 
 
 <th:block th:fragment="globusHelpFragment">
-    <div id="globus-help-links" style="display: none; margin-top: -15px; margin-bottom: 15px">
+    <div id="globus-help-links" style="display: none; margin-top: -15px; margin-bottom: 20px">
               To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
-    </div> 
+    </div>
 </th:block>
 
 <th:block th:fragment="globusDivFragment">
-	<div class="form-group" id="AsyncDiv" style="display: none">
-	    <div class="col-sm-12 column">
+	<div id="AsyncDiv" style="display: none">
+	    <div class="col-sm-12 column leftMargin">
 			<label for="endPointName">Globus Endpoint UUID:</label> 
 			<a id="downloadlink" 
 	                                    th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">                                  
@@ -61,7 +61,7 @@
 				type="text" style="margin-top: 2px; margin-bottom: 10px;" class="form-control fieldWidth" name="endPointName" th:value="${endPointName}"
 				id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 		</div>
-		<div class="col-sm-12 column">
+		<div class="col-sm-12 column leftMargin">
 			<label for="endPointLocation">Endpoint Path:</label> 
 			<input
 				type="text" class="form-control fieldWidth"
@@ -73,7 +73,7 @@
 </th:block>
 
 <th:block th:fragment="awsBlock">		
-		<div class="form-group" id="s3Div" style="display: none; margin: -15px">
+		<div id="s3Div" style="display: none; margin: -15px">
 			<div class="col-sm-12 column">
 				<label for="bucketName">S3 Bucket:</label>
 				<input
@@ -113,15 +113,15 @@
 
 
 <th:block th:fragment="googleDriveBlock">
-	<div class="form-group" id="driveDiv" style="display: none">
+	<div id="driveDiv" style="display: none">
 		<div class="col-sm-12 column" style="margin:-10px">
 			<a class="btn btn-primary" id="driveAuthlink" 
                                      th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">
                                      Authorize DME to Access Your Google Drive</a>
 		</div>
-		<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+		<div th:if="${authorized != null}" class="alert-success" style="margin-top: 10px"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 		<br/>
-		<div class="col-sm-12 column">
+		<div class="col-sm-12 column leftMargin">
 			<label for="drivePath">Endpoint Path:</label>
 			<a th:if="${authorized != null}" id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">
                                      Select from Google Drive (Optional)</a>
@@ -135,21 +135,21 @@
 </th:block>
 
 <th:block th:fragment="googleCloudBlock">
-	<div class="form-group" id="googleCloudDiv" style="display: none">
+	<div id="googleCloudDiv" style="display: none">
 		<div class="col-sm-12 column" style="margin:-10px">
 			<a class="btn btn-primary" id="googleCloudAuthlink"
                                      th:href="@{../download(type=${downloadType},source=${source},actionType=googleCloud,downloadFilePath=${downloadFilePath})}">
                                      Authorize DME to Access Your Google Cloud</a>
 		</div>
-		<div th:if="${authorizedGC != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+		<div th:if="${authorizedGC != null}" class="alert-success" style="margin-top: 10px"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 		<br/>
-		<div class="col-sm-12 column">
+		<div class="col-sm-12 column leftMargin">
 			<label for="googleCloudBucketName">Google Cloud Bucket</label>
 			<input
-				type="text" class="form-control" name="googleCloudBucketName" th:value="${googleCloudBucketName}"
+				type="text" class="form-control fieldWidth" name="googleCloudBucketName" th:value="${googleCloudBucketName}"
 				id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name" />
 		</div>
-		<div class="col-sm-12 column">
+		<div class="col-sm-12 column leftMargin">
 			<label for="googleCloudPath">Endpoint Path:</label>
 			<input
 				type="text" class="form-control fieldWidth"
@@ -162,7 +162,7 @@
 
 
 <th:block th:fragment="asperaBlock">
-	<div class="form-group" id="asperaDiv" style="display: none; margin: -15px">
+	<div id="asperaDiv" style="display: none; margin: -15px">
 		<div class="col-sm-12 column">
 			<label for="asperaBucketName">Aspera Destination Directory:</label>
 			<div th:if="${asperaBucketName == 'test'}" id="oneOption">
