@@ -124,7 +124,7 @@
 								<div th:replace = "downloadFragment.html :: globusDivFragment"></div>
 
 								<div id="SyncDiv" style="display: show" th:if="${downloadType == 'datafile'}">
-									<div class="col-sm-12 column">
+									<div class="col-sm-12 column leftMargin">
 										<label for="downloadFileName">Download File Name:</label> <input
 											type="text" class="form-control"
 											id="downloadFileName" size="45" name="downloadFileName" th:value="${downloadFilePathName}"
@@ -166,6 +166,7 @@
 						<input type="hidden" name="transferType" id="transferType"
 							th:value="${transferType}" />
 	                  </div>
+	               </div>
                  </div> 
                </form>
                <form class="form-horizontal" id="downloadSyncForm"
@@ -208,7 +209,7 @@
 						class="form-control" name="deselectedColumns" id="deselectedColumns"/>
 				</form>
             </div>
-          </div></div>
+          </div>
          </div>
         </div>
       </div>
