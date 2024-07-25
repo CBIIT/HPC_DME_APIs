@@ -205,15 +205,18 @@ function dm_register () {
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS_COLLECTION="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-    local CURL_FLAGS="-X PUT ${SERVER}/v2/registration  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="-X PUT ${SERVER}/v2/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS_ASYNC="-X PUT ${SERVER}/v2/registration  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
         then
-            curl -H "Content-type: application/json" -d @$DESCRIPTION $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
+            #Perform async upload
+            curl -H "Content-type: application/json" -d @$DESCRIPTION $CURL_FLAGS_ASYNC -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
         else
-            curl -F "dataObjectRegistration=$JSON;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status 
+            #Perform sync upload
+            curl -F "dataObjectRegistration=$JSON;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
         fi
     elif [ "$TYPE" == "collection" ]
     then
