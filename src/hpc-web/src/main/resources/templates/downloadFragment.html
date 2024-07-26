@@ -114,7 +114,7 @@
 
 <th:block th:fragment="googleDriveBlock">
 	<div id="driveDiv" style="display: none">
-		<div class="col-sm-12 column" style="margin:-10px">
+		<div class="col-sm-12 column leftMargin">
 			<a class="btn btn-primary" id="driveAuthlink" 
                                      th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">
                                      Authorize DME to Access Your Google Drive</a>
@@ -136,7 +136,7 @@
 
 <th:block th:fragment="googleCloudBlock">
 	<div id="googleCloudDiv" style="display: none">
-		<div class="col-sm-12 column" style="margin:-10px">
+		<div class="col-sm-12 column leftMargin">
 			<a class="btn btn-primary" id="googleCloudAuthlink"
                                      th:href="@{../download(type=${downloadType},source=${source},actionType=googleCloud,downloadFilePath=${downloadFilePath})}">
                                      Authorize DME to Access Your Google Cloud</a>
