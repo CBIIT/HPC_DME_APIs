@@ -2642,6 +2642,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (googleDriveDownloadDestination != null) {
 			destinations++;
 		}
+		if (googleCloudStorageDownloadDestination != null) {
+			destinations++;
+		}
 		if (asperaDownloadDestination != null) {
 			destinations++;
 		}
