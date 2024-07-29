@@ -118,7 +118,7 @@ function dm_generate_token () {
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <collection|dataObject> <destination-path> [data-object-file]"
+    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <collection|dataObject|dataobject_presigned> <destination-path> [data-object-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -205,7 +205,7 @@ function dm_register () {
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS_COLLECTION="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-    local CURL_FLAGS="-X PUT ${SERVER}/v2/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="-X PUT ${SERVER}/v2/dataObject/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     local CURL_FLAGS_ASYNC="-X PUT ${SERVER}/v2/registration  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     if [ "$TYPE" == "dataObject" ]
@@ -220,8 +220,10 @@ function dm_register () {
         fi
     elif [ "$TYPE" == "collection" ]
     then
-            
            curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS_COLLECTION  -H "Accept: application/json" 2>$HPC_DM_UTILS/temp/curl-status
+    elif [ $TYPE == "dataObject_presigned" ]
+    then
+      curl -F "dataObjectRegistration=$JSON;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
         return 1
@@ -389,7 +391,7 @@ function dm_register_dataobject_presigned {
     local description="$1"
     local destination_path="$2"
     local source_file="$3"
-    
+
     checksum_val=`openssl md5 -binary ${source_file} | base64`
     if [ -z "$checksum_val" ]
     then
@@ -400,7 +402,7 @@ function dm_register_dataobject_presigned {
     local description_json=`get_file_value "$description"`
     description_json=$(echo $description_json | sed "s|{|{ \"checksum\": \""${checksum_val}"\",|")
 
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" dataObject "$destination_path"
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" dataObject_presigned "$destination_path"
     if [ "$?" -eq  1 ]
     then
       return 1
