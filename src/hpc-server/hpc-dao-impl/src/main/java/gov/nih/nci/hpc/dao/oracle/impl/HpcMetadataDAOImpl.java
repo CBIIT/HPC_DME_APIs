@@ -776,7 +776,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 	
 	@Override
-	public void refreshDataObjectMetadata(String path) throws HpcException {
+	public void upsertDataObjectMetadata(String path) throws HpcException {
 		try {
 			String collName = path.substring(0, path.lastIndexOf('/'));
 			String dataName = path.substring(path.lastIndexOf('/') + 1);
