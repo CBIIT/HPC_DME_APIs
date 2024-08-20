@@ -41,6 +41,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
@@ -104,6 +106,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private static Gson gson = new Gson();
 
 	/**
 	 * GET action to display criteria page. Populate levels, metadata attributes
@@ -187,6 +190,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch.setPageSize(search.getPageSize());
 			hpcSearch.setTotalSize(search.getTotalSize());
 			hpcSearch.setDeselectedColumns(search.getDeselectedColumns());
+			hpcSearch.setGlobalMetadataSearchText(search.getGlobalMetadataSearchText());
 			search = hpcSearch;
 		}
 
@@ -196,6 +200,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("totalSize", search.getTotalSize());
 		model.addAttribute("deselectedColumns", search.getDeselectedColumns());
 		model.addAttribute("fileExportRowsThreshold", fileExportRowsThreshold);
+		model.addAttribute("globalMetadataSearchText", search.getGlobalMetadataSearchText());
 		boolean success = false;
 		try {
 
@@ -207,6 +212,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			if (search.isDetailed())
 				compoundQuery.setDetailedResponse(true);
 
+			logger.debug("The compoundQuery is: " + gson.toJson(compoundQuery));
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = compoundDataObjectSearchServiceURL;
 			if (search.getSearchType() != null && search.getSearchType().equals("collection"))
@@ -333,6 +339,18 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		else
 			query = buildSimpleSearch(hierarchy, search);
 
+		if(search.getGlobalMetadataSearchText() != null && !search.getGlobalMetadataSearchText().trim().isEmpty()) {
+			HpcMetadataQuery criteria = new HpcMetadataQuery();
+			criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
+			criteria.setOperator(HpcMetadataQueryOperator.fromValue("LIKE"));
+			String searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
+			criteria.setValue(searchLikeText);
+			HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+			levelFilter.setLevel(1);
+			levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
+			criteria.setLevelFilter(levelFilter);
+			query.getQueries().add(criteria);
+		}
 		dto.setCompoundQuery(query);
 		dto.setDetailedResponse(search.isDetailed());
 		if (search.getSearchType().equals("collection"))

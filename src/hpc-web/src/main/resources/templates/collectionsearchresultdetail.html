@@ -67,7 +67,8 @@
     var selectedRowsData = [];
     var totalSize = [[${totalSize}]];
     var deselectedColumns = [[${deselectedColumns}]];
-    var fileExportRowsThreshold = [[${fileExportRowsThreshold}]]; 
+    var fileExportRowsThreshold = [[${fileExportRowsThreshold}]];
+    var globalMetadataSearchText = [[${globalMetadataSearchText}]];
    
 /*]]>*/
 </script>
@@ -721,6 +722,11 @@ window.onclick = function(event) {
 											Collections: <strong id="totalSizeDisplay"></strong>
 										</label>
 									</div>
+									<div class="pull-right">
+										<label> Global Metadata Search
+											<input name="globalMetadataSearchText" id="globalMetadataSearchTextId" placeholder="Global Metadata Search" style="height: 30px"  th:value="${globalMetadataSearchText}" >
+										</label>
+									</div>
 								</div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
@@ -761,6 +767,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="totalSize" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText" name="globalMetadataSearchText"/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}"
@@ -837,6 +844,15 @@ window.onclick = function(event) {
 		}
 	});
 	
+	$('#globalMetadataSearchTextId').keypress(function(event) {
+	    if (event.which === 13) {
+	      event.preventDefault();
+	      document.getElementById("simplesearchform").elements.namedItem("globalMetadataSearchText").value =  this.value;
+	      globalMetadataSearchText = this.value;
+		  updatePage('first', 100);
+	    }
+	  });
+
     function updatePage(action, newPageSize)
     {
     	$('.ui-grid-pager-next').prop('disabled', true);
