@@ -739,7 +739,7 @@ window.onclick = function(event) {
 									</div>
 									<div class="pull-right">
 										<div class="btn-group">
-											<label> Search Metadata <input type="search"
+											<label>Search Metadata&nbsp;&nbsp;<input type="search"
 												name="globalMetadataSearchText" id="searchInput"
 												style="height: 30px" th:value="${globalMetadataSearchText}">
 												<span id="searchClear"
@@ -877,6 +877,7 @@ window.onclick = function(event) {
 
 	$("#searchClear").click(function(){
 	    $("#searchInput").val('');
+	    globalMetadataSearchText = '';
 	    updatePage('first', currentPageSize);
 	});
 
