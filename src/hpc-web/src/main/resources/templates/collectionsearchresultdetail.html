@@ -124,6 +124,21 @@
 }
 
 .show {display: block;}
+
+#searchInput {
+    width: 200px;
+}
+#searchClear {
+    position: absolute;
+    right: 5px;
+    top: 0;
+    bottom: 0;
+    height: 14px;
+    margin: auto;
+    font-size: 14px;
+    cursor: pointer;
+    color: #ccc;
+}
 </style>
 
 <script>
@@ -723,9 +738,14 @@ window.onclick = function(event) {
 										</label>
 									</div>
 									<div class="pull-right">
-										<label> Search Metadata
-											<input name="globalMetadataSearchText" id="globalMetadataSearchTextId" style="height: 30px"  th:value="${globalMetadataSearchText}" >
-										</label>
+										<div class="btn-group">
+											<label> Search Metadata <input type="search"
+												name="globalMetadataSearchText" id="searchInput"
+												style="height: 30px" th:value="${globalMetadataSearchText}">
+												<span id="searchClear"
+												class="glyphicon glyphicon-remove-circle"></span>
+											</label>
+										</div>
 									</div>
 								</div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -844,14 +864,19 @@ window.onclick = function(event) {
 		}
 	});
 	
-	$('#globalMetadataSearchTextId').keypress(function(event) {
+	$('#searchInput').keypress(function(event) {
 	    if (event.which === 13) {
 	      event.preventDefault();
 	      document.getElementById("simplesearchform").elements.namedItem("globalMetadataSearchText").value =  this.value;
 	      globalMetadataSearchText = this.value;
-		  updatePage('first', 100);
+		  updatePage('first', currentPageSize);
 	    }
 	  });
+
+	$("#searchClear").click(function(){
+	    $("#searchInput").val('');
+	    updatePage('first', currentPageSize);
+	});
 
     function updatePage(action, newPageSize)
     {
