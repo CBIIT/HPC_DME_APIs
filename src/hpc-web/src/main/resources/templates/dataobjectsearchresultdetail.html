@@ -739,7 +739,7 @@ window.onclick = function(event) {
 										><i class="fa fa-link" title="Create Links for Selected Data Files"></i></a>
 									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Data Files: <strong id="totalSizeDisplay"></strong></label>
 								</div>
-								<div class="pull-right">
+								<div class="pull-right" id="searchInputDiv">
 									<div class="btn-group">
 										<label>Search Metadata&nbsp;&nbsp;<input type="search"
 											name="globalMetadataSearchText" id="searchInput"
@@ -879,6 +879,10 @@ window.onclick = function(event) {
 			$('#hideExportLink').hide(); 
 		} else {
 			$('#showExportLink').hide(); 
+		}
+		if(source == "'search'" || source == 'search'){
+			// If NamedQuery, hide the search box
+			$('#searchInputDiv').hide();
 		}
 	});
 
