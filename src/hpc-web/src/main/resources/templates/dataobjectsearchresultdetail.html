@@ -819,6 +819,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="queryName1" name="queryName"/>
 						<input type="hidden" id="totalSize1" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns1" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText1" name="globalMetadataSearchText"/>
 					</form> 
 					<form class="form-horizontal" id="linkFilesform" action="#"
 						role="form" th:action="@{/linkfiles}" 
@@ -830,6 +831,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="queryName2" name="queryName"/>
 						<input type="hidden" id="totalSize2" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns2" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText2" name="globalMetadataSearchText"/>	
 					</form> 
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -842,6 +844,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="queryName3" name="queryName"/>
 						<input type="hidden" id="totalSize3" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText3" name="globalMetadataSearchText"/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -882,7 +885,6 @@ window.onclick = function(event) {
 	$('#searchInput').keypress(function(event) {
 	    if (event.which === 13) {
 	      event.preventDefault();
-	      document.getElementById("simplesearchform").elements.namedItem("globalMetadataSearchText").value =  this.value;
 	      globalMetadataSearchText = this.value;
 		  updatePage('first', 100);
 	    }
@@ -940,7 +942,8 @@ window.onclick = function(event) {
 	    			updatedList.push(selectedRowsData[i]);
 	    	}
     	}
-    	
+
+		document.getElementById("simplesearchform").elements.namedItem("globalMetadataSearchText").value =  globalMetadataSearchText;
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
 		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
