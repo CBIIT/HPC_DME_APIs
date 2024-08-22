@@ -69,6 +69,7 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataHierarchy;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
 import gov.nih.nci.hpc.web.model.HpcSearch;
+import gov.nih.nci.hpc.web.model.HpcSearchResult;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcCompoundSearchBuilder;
 import gov.nih.nci.hpc.web.util.HpcEncryptionUtil;
@@ -228,11 +229,25 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				session.setAttribute("compoundQuery", compoundQuery);
 				session.setAttribute("hpcSearch", hpcSearch != null ? hpcSearch : search);
 			} else {
-				String message = "No matching results!";
-				ObjectError error = new ObjectError("hpcSearch", message);
-				bindingResult.addError(error);
-				model.addAttribute("error", message);
-				return "criteria";
+				if (search.getGlobalMetadataSearchText() == null || search.getGlobalMetadataSearchText().trim().isEmpty()) {
+					String message = "No matching results!";
+					ObjectError error = new ObjectError("hpcSearch", message);
+					bindingResult.addError(error);
+					model.addAttribute("error", message);
+					return "criteria";
+				} else {
+					// Search metadata by text entered on query results page did not return any results
+					success = true;
+					if (search.getSearchType().equalsIgnoreCase("collection"))
+						model.addAttribute("searchType", "collection");
+					else
+						model.addAttribute("searchType", "datafile");
+					model.addAttribute("detailed", "yes");
+					model.addAttribute("searchresults", new ArrayList<HpcSearchResult>());
+					model.addAttribute("totalCount", 0);
+					model.addAttribute("currentPageSize", search.getPageSize());
+					model.addAttribute("totalPages", 0);
+				}
 			}
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			log.error(e.getMessage(), e);
