@@ -87,23 +87,6 @@ comment on column irods.r_data_hierarchy_meta_main.meta_attr_value is 'Metadata 
 
 comment on column irods.r_data_hierarchy_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
 
-create unique index r_data_hierarchy_meta_main_unique
-    on irods.r_data_hierarchy_meta_main (object_id, meta_id, data_level);
-
-create index r_data_hierarchy_meta_main_path_query
-    on irods.r_data_hierarchy_meta_main (object_path);
-
-create index r_data_hierarchy_meta_main_id_query
-    on irods.r_data_hierarchy_meta_main (object_id);
-
-create index r_data_hierarchy_meta_main_metadata_query_level
-    on irods.r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, data_level);
-
-create index r_data_hierarchy_meta_main_metadata_query_level_label
-    on irods.r_data_hierarchy_meta_main (meta_attr_name, level_label);
-
-create index r_data_hierarchy_meta_main_metadata_query_level_lower
-    on irods.r_data_hierarchy_meta_main (meta_attr_name, lower(meta_attr_value), data_level);
 
 -- Recreate r_data_hierarchy_user_meta_main
     
@@ -141,11 +124,25 @@ select * from R_DATA_HIERARCHY_META_MAIN where META_ATTR_NAME not in
 'deep_archive_date',
 'deleted_date');
 
+-- Recreate indexes on r_data_hierarchy_meta_main and r_data_hierarchy_user_meta_main
+  
+create unique index r_data_hierarchy_meta_main_unique
+    on irods.r_data_hierarchy_meta_main (object_id, meta_id, data_level);
+
+create index r_data_hierarchy_meta_main_id_query
+    on irods.r_data_hierarchy_meta_main (object_id);
+
+create index r_data_hierarchy_meta_main_metadata_query_level
+    on irods.r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, data_level);
+
+create index r_data_hierarchy_meta_main_metadata_query_level_label
+    on irods.r_data_hierarchy_meta_main (meta_attr_name, level_label);
+
+create index r_data_hierarchy_meta_main_metadata_query_level_lower
+    on irods.r_data_hierarchy_meta_main (meta_attr_name, lower(meta_attr_value), data_level);
+
 create unique index r_data_hierarchy_user_meta_main_unique
     on irods.r_data_hierarchy_user_meta_main (object_id, meta_id, data_level);
-
-create index r_data_hierarchy_user_meta_main_path_query
-    on irods.r_data_hierarchy_user_meta_main (object_path);
 
 create index r_data_hierarchy_user_meta_main_id_query
     on irods.r_data_hierarchy_user_meta_main (object_id);
@@ -155,5 +152,9 @@ create index r_data_hierarchy_user_meta_main_metadata_query_level
 
 create index r_data_hierarchy_user_meta_main_metadata_query_level_label
     on irods.r_data_hierarchy_user_meta_main (meta_attr_name, level_label);
-    
-    
+   
+create index r_data_hierarchy_meta_main_path_query
+    on irods.r_data_hierarchy_meta_main (object_path);
+
+create index r_data_hierarchy_user_meta_main_path_query
+    on irods.r_data_hierarchy_user_meta_main (object_path);
