@@ -152,7 +152,8 @@ create index r_data_hierarchy_user_meta_main_metadata_query_level
 
 create index r_data_hierarchy_user_meta_main_metadata_query_level_label
     on irods.r_data_hierarchy_user_meta_main (meta_attr_name, level_label);
-   
+
+-- Recreating these indexes at the end as it takes the longest.
 create index r_data_hierarchy_meta_main_path_query
     on irods.r_data_hierarchy_meta_main (object_path);
 
