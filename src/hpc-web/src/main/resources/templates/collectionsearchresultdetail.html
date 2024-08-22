@@ -673,7 +673,9 @@ window.onclick = function(event) {
 									</div>
 									<div class="pull-right" id="searchInputDiv">
 										<div class="btn-group">
-											<label>Search Metadata&nbsp;&nbsp;<input type="search"
+											<label
+												title="Enter text followed by carriage return. All the Metadata columns(except Path) in all the pages will be searched.">
+												Search Metadata&nbsp;&nbsp;<input type="search"
 												name="globalMetadataSearchText" id="searchInput"
 												style="height: 30px" th:value="${globalMetadataSearchText}">
 												<span id="searchClear"
