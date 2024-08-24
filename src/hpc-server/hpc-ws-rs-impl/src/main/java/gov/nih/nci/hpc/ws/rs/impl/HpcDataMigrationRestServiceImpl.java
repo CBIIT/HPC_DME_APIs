@@ -106,4 +106,30 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 
 		return okResponse(migrationResponse, false);
 	}
+
+	@Override
+	public Response retryCollectionMigrationTask(String taskId) {
+		HpcMigrationResponseDTO migrationResponse = null;
+		try {
+			migrationResponse = dataMigrationBusService.retryCollectionMigrationTask(taskId);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(migrationResponse, false);
+	}
+
+	@Override
+	public Response retryDataObjectsOrCollectionsMigrationTask(String taskId) {
+		HpcMigrationResponseDTO migrationResponse = null;
+		try {
+			migrationResponse = dataMigrationBusService.retryDataObjectsOrCollectionsMigrationTask(taskId);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(migrationResponse, false);
+	}
 }
