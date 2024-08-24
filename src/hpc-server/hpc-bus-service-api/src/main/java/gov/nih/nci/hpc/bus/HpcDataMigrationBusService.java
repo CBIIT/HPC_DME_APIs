@@ -60,6 +60,15 @@ public interface HpcDataMigrationBusService {
 			throws HpcException;
 
 	/**
+	 * Retry migration task of a data object.
+	 *
+	 * @param taskId The migration task ID.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO retryDataObjectMigrationTask(String taskId) throws HpcException;
+
+	/**
 	 * Process received data object migration tasks.
 	 *
 	 * @throws HpcException on service failure.
