@@ -522,6 +522,7 @@ window.onclick = function(event) {
 	          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 		      document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
 		      document.getElementById("downloadFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+		      document.getElementById("downloadFilesform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;      
 	          document.getElementById("downloadType").value = "datafiles";
 	          document.getElementById("downloadFilesform").submit();
           } else {
@@ -535,6 +536,7 @@ window.onclick = function(event) {
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("bulkPermissionsform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
 	        document.getElementById("downloadType3").value = "datafiles";
 	        document.getElementById("bulkPermissionsform").submit();
           }
@@ -581,6 +583,7 @@ window.onclick = function(event) {
             document.getElementById("linkFilesform").elements.namedItem("queryName").value = queryName;
             document.getElementById("linkFilesform").elements.namedItem("totalSize").value = totalSize.toString();
             document.getElementById("linkFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("linkFilesform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
             document.getElementById("linkFilesform").submit();
           };
           

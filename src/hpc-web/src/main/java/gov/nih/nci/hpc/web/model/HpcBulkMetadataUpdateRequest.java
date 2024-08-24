@@ -7,6 +7,15 @@ public class HpcBulkMetadataUpdateRequest {
 	protected String metadataName;
 	protected String metadataValue;
 	protected String selectedFilePaths;
+	protected String globalMetadataSearchText;
+
+	public String getGlobalMetadataSearchText() {
+		return globalMetadataSearchText;
+	}
+
+	public void setGlobalMetadataSearchText(String globalMetadataSearchText) {
+		this.globalMetadataSearchText = globalMetadataSearchText;
+	}
 
 	public String getSelectedFilePaths() {
 		return selectedFilePaths;
