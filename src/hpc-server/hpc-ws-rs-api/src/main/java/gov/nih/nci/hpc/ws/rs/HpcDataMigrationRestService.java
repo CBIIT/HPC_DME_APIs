@@ -76,4 +76,28 @@ public interface HpcDataMigrationRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response retryDataObjectMigrationTask(@PathParam("taskId") String taskId);
+	
+	/**
+	 * Retry a collection migration task.
+	 *
+	 * @param taskId The migration task ID to retry
+	 * @return The REST service response w/ HpcMigrationResponseDTO entity.
+	 */
+	@POST
+	@Path("/collection/migrate/{taskId}/retry")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response retryCollectionMigrationTask(@PathParam("taskId") String taskId);
+	
+	/**
+	 * Retry migration task of a list of data objects or a list of collections.
+	 *
+	 * @param taskId The migration task ID to retry
+	 * @return The REST service response w/ HpcMigrationResponseDTO entity.
+	 */
+	@POST
+	@Path("/migrate/{taskId}/retry")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response retryDataObjectsOrCollectionsMigrationTask(@PathParam("taskId") String taskId);
 }
