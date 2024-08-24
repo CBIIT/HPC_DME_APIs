@@ -103,45 +103,15 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	@Override
 	public HpcMigrationResponseDTO migrateCollection(String path, HpcMigrationRequestDTO migrationRequest,
 			boolean alignArchivePath) throws HpcException {
-		// Input validation.
-		HpcSystemGeneratedMetadata metadata = validateCollectionMigrationRequest(path, migrationRequest,
-				alignArchivePath);
-
-		// Create a migration task.
-		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
-		migrationResponse.setTaskId(dataMigrationService.createCollectionMigrationTask(path,
-				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
-				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null, alignArchivePath)
-				.getId());
-
-		return migrationResponse;
+		return migrateCollection(path, securityService.getRequestInvoker().getNciAccount().getUserId(),
+				migrationRequest, alignArchivePath, null, null);
 	}
 
 	@Override
 	public HpcMigrationResponseDTO migrateDataObjectsOrCollections(HpcBulkMigrationRequestDTO migrationRequest)
 			throws HpcException {
-		// Input validation.
-		HpcSystemGeneratedMetadata metadata = validateBulkMigrationRequest(migrationRequest);
-
-		HpcDataMigrationTask migrationTask = null;
-		if (!migrationRequest.getDataObjectPaths().isEmpty()) {
-			// Submit a request to migrate a list of data objects.
-			migrationTask = dataMigrationService.createDataObjectsMigrationTask(migrationRequest.getDataObjectPaths(),
-					securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
-					migrationRequest.getS3ArchiveConfigurationId());
-
-		} else {
-			// Submit a request to migrate a list of collections.
-			migrationTask = dataMigrationService.createCollectionsMigrationTask(migrationRequest.getCollectionPaths(),
-					securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
-					migrationRequest.getS3ArchiveConfigurationId());
-		}
-		// Create and return a DTO with the request receipt.
-		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
-		migrationResponse.setTaskId(migrationTask.getId());
-
-		return migrationResponse;
-
+		return migrateDataObjectsOrCollections(migrationRequest,
+				securityService.getRequestInvoker().getNciAccount().getUserId(), null, null);
 	}
 
 	@Override
@@ -168,6 +138,62 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		return migrateDataObject(migrationTask.getPath(), migrationTask.getUserId(), null, migrationRequest,
 				migrationTask.getAlignArchivePath(), taskId,
+				securityService.getRequestInvoker().getNciAccount().getUserId());
+	}
+
+	@Override
+	public HpcMigrationResponseDTO retryCollectionMigrationTask(String taskId) throws HpcException {
+		// Input validation.
+		HpcDataMigrationTaskStatus taskStatus = dataMigrationService.getMigrationTaskStatus(taskId,
+				HpcDataMigrationType.COLLECTION);
+		if (taskStatus == null) {
+			throw new HpcException("Collection migration task not found: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getInProgress() || taskStatus.getResult() == null) {
+			throw new HpcException("Collection migration task in-progress: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getResult() != null
+				&& taskStatus.getResult().getResult().equals(HpcDataMigrationResult.COMPLETED)) {
+			throw new HpcException("Collection migration task already completed: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		HpcDataMigrationTaskResult migrationTask = taskStatus.getResult();
+		HpcMigrationRequestDTO migrationRequest = new HpcMigrationRequestDTO();
+		migrationRequest.setS3ArchiveConfigurationId(migrationTask.getToS3ArchiveConfigurationId());
+
+		return migrateCollection(migrationTask.getPath(), migrationTask.getUserId(), migrationRequest,
+				migrationTask.getAlignArchivePath(), taskId,
+				securityService.getRequestInvoker().getNciAccount().getUserId());
+	}
+
+	@Override
+	public HpcMigrationResponseDTO retryDataObjectsOrCollectionsMigrationTask(String taskId) throws HpcException {
+		// Input validation.
+		HpcDataMigrationTaskStatus taskStatus = dataMigrationService.getMigrationTaskStatus(taskId,
+				HpcDataMigrationType.DATA_OBJECT_LIST);
+		if (taskStatus == null) {
+			taskStatus = dataMigrationService.getMigrationTaskStatus(taskId, HpcDataMigrationType.COLLECTION_LIST);
+		}
+		if (taskStatus == null) {
+			throw new HpcException("Bulk migration task not found: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getInProgress() || taskStatus.getResult() == null) {
+			throw new HpcException("Bulk migration task in-progress: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (taskStatus.getResult() != null
+				&& taskStatus.getResult().getResult().equals(HpcDataMigrationResult.COMPLETED)) {
+			throw new HpcException("Bulk migration task already completed: " + taskId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		HpcDataMigrationTaskResult migrationTask = taskStatus.getResult();
+		HpcBulkMigrationRequestDTO migrationRequest = new HpcBulkMigrationRequestDTO();
+		migrationRequest.setS3ArchiveConfigurationId(migrationTask.getToS3ArchiveConfigurationId());
+		migrationRequest.getDataObjectPaths().addAll(migrationTask.getDataObjectPaths());
+		migrationRequest.getCollectionPaths().addAll(migrationTask.getCollectionPaths());
+
+		return migrateDataObjectsOrCollections(migrationRequest, migrationTask.getUserId(), taskId,
 				securityService.getRequestInvoker().getNciAccount().getUserId());
 	}
 
@@ -623,6 +649,75 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
 						collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize(), retryTaskId, retryUserId)
 				.getId());
+
+		return migrationResponse;
+	}
+
+	/**
+	 * Migrate a collection to another archive.
+	 *
+	 * @param path             The collection path.
+	 * @param userId           The user ID submitted the request.
+	 * @param migrationRequest The migration request DTO.
+	 * @param alignArchivePath If true, the file is moved within its current archive
+	 *                         to align w/ the iRODs path.
+	 * @param retryTaskId      The previous task ID if this is a retry request.
+	 * @param retryUserId      The user retrying the request if this is a retry
+	 *                         request.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	private HpcMigrationResponseDTO migrateCollection(String path, String userId,
+			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath, String retryTaskId, String retryUserId)
+			throws HpcException {
+		// Input validation.
+		HpcSystemGeneratedMetadata metadata = validateCollectionMigrationRequest(path, migrationRequest,
+				alignArchivePath);
+
+		// Create a migration task.
+		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
+		migrationResponse.setTaskId(
+				dataMigrationService.createCollectionMigrationTask(path, userId, metadata.getConfigurationId(),
+						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
+						alignArchivePath, retryTaskId, retryUserId).getId());
+
+		return migrationResponse;
+	}
+
+	/**
+	 * Migrate data objects or collections. Note: API doesn't support mixed, so user
+	 * expected to provide a list of data objects or a list of collections, not
+	 * both.
+	 *
+	 * @param migrationRequest The migration request DTO.
+	 * @param userId           The user ID submitted the request.
+	 * @param retryTaskId      The previous task ID if this is a retry request.
+	 * @param retryUserId      The user retrying the request if this is a retry
+	 *                         request.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	private HpcMigrationResponseDTO migrateDataObjectsOrCollections(HpcBulkMigrationRequestDTO migrationRequest,
+			String userId, String retryTaskId, String retryUserId) throws HpcException {
+		// Input validation.
+		HpcSystemGeneratedMetadata metadata = validateBulkMigrationRequest(migrationRequest);
+
+		HpcDataMigrationTask migrationTask = null;
+		if (!migrationRequest.getDataObjectPaths().isEmpty()) {
+			// Submit a request to migrate a list of data objects.
+			migrationTask = dataMigrationService.createDataObjectsMigrationTask(migrationRequest.getDataObjectPaths(),
+					userId, metadata.getConfigurationId(), migrationRequest.getS3ArchiveConfigurationId(), retryTaskId,
+					retryUserId);
+
+		} else {
+			// Submit a request to migrate a list of collections.
+			migrationTask = dataMigrationService.createCollectionsMigrationTask(migrationRequest.getCollectionPaths(),
+					userId, metadata.getConfigurationId(), migrationRequest.getS3ArchiveConfigurationId(), retryTaskId,
+					retryUserId);
+		}
+		// Create and return a DTO with the request receipt.
+		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
+		migrationResponse.setTaskId(migrationTask.getId());
 
 		return migrationResponse;
 	}
