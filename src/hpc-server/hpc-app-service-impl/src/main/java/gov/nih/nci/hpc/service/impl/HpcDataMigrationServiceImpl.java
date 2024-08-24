@@ -401,7 +401,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId, boolean alignArchivePath) throws HpcException {
+			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.setPath(path);
@@ -414,6 +414,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setAlignArchivePath(alignArchivePath);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(retryTaskId);
+		migrationTask.setRetryUserId(retryUserId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -422,7 +424,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId) throws HpcException {
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.getDataObjectPaths().addAll(dataObjectPaths);
@@ -435,6 +437,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setAlignArchivePath(false);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(retryTaskId);
+		migrationTask.setRetryUserId(retryUserId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -443,7 +447,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId) throws HpcException {
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.getCollectionPaths().addAll(collectionPaths);
@@ -456,6 +460,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setAlignArchivePath(false);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(retryTaskId);
+		migrationTask.setRetryUserId(retryUserId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);

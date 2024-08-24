@@ -120,11 +120,16 @@ public interface HpcDataMigrationService {
 	 *                                   configuration ID.
 	 * @param alignArchivePath           If true, the file is moved within its
 	 *                                   current archive to align w/ the iRODs path.
+	 * @param retryTaskId                The previous task ID if this is a retry
+	 *                                   request.
+	 * @param retryUserId                The user retrying the request if this is a
+	 *                                   retry request.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId, boolean alignArchivePath) throws HpcException;
+			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId)
+			throws HpcException;
 
 	/**
 	 * Create a data object list migration task.
@@ -134,11 +139,16 @@ public interface HpcDataMigrationService {
 	 * @param configurationId            The The data object configuration ID.
 	 * @param toS3ArchiveConfigurationId The migration target S3 archive
 	 *                                   configuration ID.
+	 * @param retryTaskId                The previous task ID if this is a retry
+	 *                                   request.
+	 * @param retryUserId                The user retrying the request if this is a
+	 *                                   retry request.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId) throws HpcException;
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId)
+			throws HpcException;
 
 	/**
 	 * Create a collection list migration task.
@@ -148,11 +158,16 @@ public interface HpcDataMigrationService {
 	 * @param configurationId            The The data object configuration ID.
 	 * @param toS3ArchiveConfigurationId The migration target S3 archive
 	 *                                   configuration ID.
+	 * @param retryTaskId                The previous task ID if this is a retry
+	 *                                   request.
+	 * @param retryUserId                The user retrying the request if this is a
+	 *                                   retry request.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId) throws HpcException;
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId)
+			throws HpcException;
 
 	/**
 	 * Update a migration task.
