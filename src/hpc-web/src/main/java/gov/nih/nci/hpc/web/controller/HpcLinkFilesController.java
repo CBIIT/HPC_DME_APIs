@@ -94,6 +94,10 @@ public class HpcLinkFilesController extends AbstractHpcController {
 			HpcSearchUtil.cacheSelectedRows(session, request, model);
 			HpcLinkDatafile hpcLinkDatafile = new HpcLinkDatafile();
 
+			String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+			hpcLinkDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+			model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
 
 			if (selectedPathsStr.isEmpty()) {
