@@ -118,6 +118,9 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		hpcDownloadDatafile.setDownloadType(downloadType);
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+		hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
 
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("error", "Data file list is missing!");
@@ -191,6 +194,10 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		hpcDownloadDatafile.setDownloadType(downloadType);
 		
+		String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+		hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("updateStatus", "Data file list is missing!");
 		} else {

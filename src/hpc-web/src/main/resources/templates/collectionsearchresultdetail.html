@@ -464,6 +464,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
         document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
         document.getElementById("bulkMetadataform").elements.namedItem("totalSize").value = totalSize.toString();
         document.getElementById("bulkMetadataform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+        document.getElementById("bulkMetadataform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
         document.getElementById("downloadType3").value = "collections";
         document.getElementById("bulkMetadataform").submit();
     };
@@ -515,6 +516,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("downloadFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("downloadFilesform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
 	        document.getElementById("downloadType").value = "collections";
 	        document.getElementById("downloadFilesform").submit();
         } else if (action == 'permission') {
@@ -528,6 +530,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("bulkPermissionsform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
 	        document.getElementById("downloadType2").value = "collections";
 	        document.getElementById("bulkPermissionsform").submit();
         }  else if (action == 'updatemetadata') {
@@ -541,6 +544,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkMetadataform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("bulkMetadataform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("bulkMetadataform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
 	        document.getElementById("downloadType3").value = "collections";
 	        document.getElementById("bulkMetadataform").submit();
         }
