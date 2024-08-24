@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -39,12 +40,16 @@ public interface HpcDataMigrationService {
 	 *                                     current archive to align w/ the iRODs
 	 *                                     path.
 	 * @param size                         The data object size.
+	 * @param retryTaskId                  The previous task ID if this is a retry
+	 *                                     request.
+	 * @param retryUserId                  The user retrying the request if this is
+	 *                                     a retry request.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size) throws HpcException;
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException;
 
 	/**
 	 * Get a list of migration tasks in specific status and type.
@@ -179,5 +184,19 @@ public interface HpcDataMigrationService {
 	 * @throws HpcException on service failure.
 	 */
 	public boolean markInProcess(HpcDataMigrationTask dataObjectMigrationTask, boolean inProcess) throws HpcException;
+
+	/**
+	 * Get migration task status.
+	 *
+	 * @param taskId   The migration task ID.
+	 * @param taskType The migration task type (data-object or collection).
+	 * @return A migration status object, or null if the task can't be found. Note:
+	 *         The returned object is associated with a 'task' object if the
+	 *         migration is in-progress. If the migration completed or failed, the
+	 *         returned object is associated with a 'result' object.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTaskStatus getMigrationTaskStatus(String taskId, HpcDataMigrationType taskType)
+			throws HpcException;
 
 }
