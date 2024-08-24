@@ -137,8 +137,10 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 
 		// Set paths to be displayed on the updatemetadatabulk page
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
 		selectedPathsStr = selectedPathsStr.replaceAll("\\[", "").replaceAll("\\]","");
 		logger.info("selectedPathsStr ="+ gson.toJson(selectedPathsStr));
+		logger.debug("globalMetadataSearchText ="+ globalMetadataSearchText);
 		String updateAll = request.getParameter("updateAll");
 		String totalCount = request.getParameter("totalCount");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
@@ -166,6 +168,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("pathDetails", pathDetails);
 			bulkMetadataUpdateRequest.setSelectedFilePaths(selectedPathsStr); //TODO
 		}
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+		bulkMetadataUpdateRequest.setGlobalMetadataSearchText(globalMetadataSearchText);
 		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 
 		// Set all session and model attributes to retain data/state of the previous page(collectionsearchresult.html or collectionsearchresultdetail.html)
@@ -220,6 +224,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		logger.info("Enter /assignbulkmetadata bulkMetadataUpdateRequest= " + gson.toJson(bulkMetadataUpdateRequest));
+		String globalMetadataSearchText = bulkMetadataUpdateRequest.getGlobalMetadataSearchText();
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
 		
 		List<HpcMetadataEntry> userMetadataList = new ArrayList<HpcMetadataEntry>();
 		Enumeration<String> params = request.getParameterNames();
