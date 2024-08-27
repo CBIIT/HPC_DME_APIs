@@ -104,16 +104,13 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 
 		try {
 			final String serviceURL = UriComponentsBuilder.fromHttpUrl(connection.getHpcServerURL())
-					.path("/dataObject/{dme-archive-path}/download").buildAndExpand(objectPath).encode().toUri().toURL()
+					.path("/dataObject/{dme-archive-path}/generateDownloadRequestURL").buildAndExpand(objectPath).encode().toUri().toURL()
 					.toExternalForm();
-
-			final HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
-			dto.setGenerateDownloadRequestURL(true);
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, connection.getHpcServerProxyURL(),
 					connection.getHpcServerProxyPort(), connection.getHpcCertPath(), connection.getHpcCertPassword());
 			client.header("Authorization", "Bearer " + connection.getAuthToken());
-			Response restResponse = client.invoke("POST", dto);
+			Response restResponse = client.post("{}");
 
 			if (restResponse.getStatus() == 200) {
 
@@ -121,17 +118,6 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 						.getObject(restResponse, HpcDataObjectDownloadResponseDTO.class);
 				downloadToUrl(downloadDTO.getDownloadRequestURL(), downloadPathTemp.toString());
 
-			} else if (restResponse.getStatus() == 400) {
-				// Bad request so assume that request can be retried without any state
-				// to indicate S3-presigned-URL desired (or other such special
-				// handling)
-				dto.setGenerateDownloadRequestURL(false);
-				restResponse = client.invoke("POST", dto);
-				if (restResponse.getStatus() == 200) {
-					handleStreamingDownloadData(downloadPathTemp.toString(), restResponse);
-				} else {
-					handleDownloadProblem(restResponse);
-				}
 			} else {
 				handleDownloadProblem(restResponse);
 			}
