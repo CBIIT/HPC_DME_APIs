@@ -1537,9 +1537,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType());
 								if(!dataTransferService.continueDataObjectDownloadTask(downloadTask)) {
-									//logger.info("GLOBUS transfers are not accepted at this time. Stop iterating through the Globus tasks");
-									//return;
-									// TODO - uncomment. change to return once we have all Globus accounts not associated w/ DOC.
+									logger.info("GLOBUS transfers are not accepted at this time. Stop iterating through the Globus tasks");
+									return;
 								}
 
 							} catch (HpcException e) {
