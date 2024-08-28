@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
+import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -99,6 +100,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcGlobusTransferTask;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -185,6 +187,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Autowired
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
 
+	// Globus Transfer DAO
+	@Autowired
+	HpcGlobusTransferTaskDAO globusTransferDAO = null;
+		
 	// Data management configuration locator.
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
@@ -1239,6 +1245,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
+		//Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
+		if(downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
+				&& !StringUtils.isEmpty(downloadTask.getDataTransferRequestId()))
+			deleteGlobusTransferTask(downloadTask.getDataTransferRequestId());
+			
 		return taskResult;
 	}
 
@@ -1263,7 +1274,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+	public boolean continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -1327,7 +1338,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
-					return;
+					return false;
 				}
 			}
 		}
@@ -1344,15 +1355,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			progressListener = secondHopDownload;
 
 			// Validate that the 2-hop download can be performed at this time.
-			if (!canPerfom2HopDownload(secondHopDownload)) {
+			HpcCanPerform2HopDownloadResponse canPerfom2HopDownloadResponse = canPerfom2HopDownload(secondHopDownload);
+			if (!canPerfom2HopDownloadResponse.value) {
 				// Can’t perform the 2-hop download at this time. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
-						"download task: {} - 2 Hop download can't be restarted. Low screatch space [transfer-type={}, destination-type={},"
-								+ " path={}], or transaction limit reached, or total in-progress download size for user eached",
+						"download task: {} - 2 Hop download can't be restarted [transfer-type={}, destination-type={},"
+								+ " path={}] - {}",
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
-						downloadTask.getPath());
-				return;
+						downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
+				return false;
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
@@ -1373,15 +1385,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Submit a data object download request.
 		try {
-			downloadTask.setDataTransferRequestId(dataTransferProxies.get(downloadRequest.getDataTransferType())
+			String dataTransferRequestId = dataTransferProxies.get(downloadRequest.getDataTransferType())
 					.downloadDataObject(authenticatedToken, downloadRequest, baseArchiveDestination, progressListener,
-							encryptedTransfer));
+							encryptedTransfer);
+			downloadTask.setDataTransferRequestId(dataTransferRequestId);
 
+			// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
+			if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+				HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
+				globusRequest.setDataTransferRequestId(dataTransferRequestId);
+				globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
+				globusRequest.setPath(downloadTask.getPath());
+				globusRequest.setDownload(true);
+				globusTransferDAO.insertRequest(globusRequest);
+				
+			}
 		} catch (HpcException e) {
 			// Failed to submit a transfer request. Cleanup the download task.
 			completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage(),
 					Calendar.getInstance(), 0);
-			return;
+			return true;
 		}
 
 		// Persist the download task. Note: In case we used a progress listener - it
@@ -1397,6 +1420,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info("download task: {} - continued  - archive file-id = {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), downloadRequest.getArchiveLocation().getFileId(),
 				downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+		
+		return true;
 	}
 
 	@Override
@@ -1536,7 +1561,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -1577,7 +1603,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, null,
@@ -1613,7 +1640,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
@@ -1687,13 +1715,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, HpcDataTransferType.S_3);
 
 		// Submit the transfer request to Globus.
+		Object authenticatedToken = getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId, s3ArchiveConfigurationId);
+		String dataTransferRequestId = dataTransferProxies.get(HpcDataTransferType.GLOBUS).transferData(
+				authenticatedToken,
+				globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer());
 		collectionDownloadTask
-				.setDataTransferRequestId(dataTransferProxies.get(HpcDataTransferType.GLOBUS).transferData(
-						getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId, s3ArchiveConfigurationId),
-						globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer()));
+				.setDataTransferRequestId(dataTransferRequestId);
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING);
 		collectionDownloadTask.setConfigurationId(configurationId);
 		collectionDownloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+		
+		// Add to HPC_GLOBUS_TRANSFER_TASK
+		HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
+		globusRequest.setDataTransferRequestId(dataTransferRequestId);
+		globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
+		globusRequest.setPath(collectionDownloadTask.getPath());
+		globusRequest.setDownload(true);
+		globusTransferDAO.insertRequest(globusRequest);
 	}
 
 	@Override
@@ -1918,6 +1956,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteCollectionDownloadTask(downloadTask.getId());
+		
+		//Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
+		if(downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
+				&& !StringUtils.isEmpty(downloadTask.getDataTransferRequestId()))
+			deleteGlobusTransferTask(downloadTask.getDataTransferRequestId());
 
 		// Create a task result object.
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
@@ -1998,17 +2041,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc,
-			int activeRequestsOffset) throws HpcException {
+			int activeRequestsOffset, Integer pageSize) throws HpcException {
+		if (page < 1) {
+			throw new HpcException("Invalid search results page: " + page, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// If pageSize is specified, replace the default defined
+		int finalPageSize = pagination.getPageSize();
+		if (pageSize != null && pageSize != 0) {
+			finalPageSize = pageSize.intValue();
+		}
 		List<HpcUserDownloadRequest> downloadResults = null;
 		if (doc == null) {
-			downloadResults = dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getDownloadResults(userId, (page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		} else if (doc.equals("ALL")) {
-			downloadResults = dataDownloadDAO.getAllDownloadResults(pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getAllDownloadResults((page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		} else {
-			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, pagination.getOffset(page),
-					pagination.getPageSize() - activeRequestsOffset);
+			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, userId, (page - 1) * finalPageSize,
+					finalPageSize - activeRequestsOffset);
 		}
 		return downloadResults;
 	}
@@ -2142,6 +2193,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return metadataEntries;
 	}
+	
+	@Override
+	public void deleteGlobusTransferTask(String dataTransferRequestId) throws HpcException {
+		globusTransferDAO.deleteRequest(dataTransferRequestId);
+	}
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods
@@ -2250,6 +2306,37 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return token;
 	}
 
+	/**
+	 * Get the data transfer authenticated token from cache.
+	 *
+	 * @param token         The data transfer authenticated token.
+	 * @return A data transfer authenticated token.
+	 * @throws HpcException If it failed to find an authentication token.
+	 */
+	private HpcDataTransferAuthenticatedToken getDataTransferAuthenticatedToken(Object token) throws HpcException {
+
+		// Get the DataTransferAuthenticatedToken for this token
+		HpcDataTransferAuthenticatedToken dataTransferAuthenticatedToken = null;
+		
+		// Search for stored system account for this token.
+		Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator();
+		while (tokenItr.hasNext()) {
+			HpcDataTransferAuthenticatedToken authenticatedToken = tokenItr.next();
+			if (authenticatedToken.getDataTransferAuthenticatedToken().equals(token)) {
+				logger.info("Found stored globus access token: {}", authenticatedToken.getSystemAccountId());
+				dataTransferAuthenticatedToken = authenticatedToken;
+				break;
+			}
+		}
+
+		if (dataTransferAuthenticatedToken == null) {
+			throw new HpcException("System account not found for token " + token.toString(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		return dataTransferAuthenticatedToken;
+	}
+	
 	/**
 	 * Create an empty file.
 	 *
@@ -2378,13 +2465,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Upload the data object using the appropriate data transfer system proxy and
 		// archive
 		// configuration.
-		return dataTransferProxies.get(dataTransferType).uploadDataObject(
-				!globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
-						: null,
+		
+		Object authenticatedToken = !globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
+				: null;
+		HpcDataObjectUploadResponse dataObjectUploadResponse = dataTransferProxies.get(dataTransferType).uploadDataObject(
+				authenticatedToken,
 				uploadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
 				dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
 				generateArchiveMetadata(configurationId, uploadRequest.getDataObjectId(), uploadRequest.getUserId()),
 				dataTransferConfiguration.getEncryptedTransfer(), dataTransferConfiguration.getStorageClass());
+		
+		// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
+		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+			HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
+			globusRequest.setDataTransferRequestId(dataObjectUploadResponse.getDataTransferRequestId());
+			globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
+			globusRequest.setPath(uploadRequest.getPath());
+			globusRequest.setDownload(false);
+			globusTransferDAO.insertRequest(globusRequest);
+			
+		}
+		
+		return dataObjectUploadResponse;
 	}
 
 	/**
@@ -2538,6 +2640,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			destinations++;
 		}
 		if (googleDriveDownloadDestination != null) {
+			destinations++;
+		}
+		if (googleCloudStorageDownloadDestination != null) {
 			destinations++;
 		}
 		if (asperaDownloadDestination != null) {
@@ -3244,8 +3349,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getAccessToken(),
 					boxDownload.getDownloadTask().getBoxDownloadDestination().getRefreshToken());
 
-			
-			// Update the download task with the latest refresh token 
+			// Update the download task with the latest refresh token
 			HpcIntegratedSystemTokens boxTokens = dataTransferProxies.get(HpcDataTransferType.BOX)
 					.getIntegratedSystemTokens(authenticatedToken);
 			HpcDataObjectDownloadTask downloadTask = boxDownload.getDownloadTask();
@@ -3288,7 +3392,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void perform2HopDownload(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataObjectDownloadResponse response, HpcDataTransferConfiguration dataTransferConfiguration)
 			throws HpcException {
-
 		HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
 				HpcDataTransferDownloadStatus.IN_PROGRESS);
 
@@ -3305,29 +3408,46 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Perform the first hop download (From S3 Archive to DME Server local file
 		// system).
 		try {
-			if (StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())
-					&& canPerfom2HopDownload(secondHopDownload)) {
-				// We start the 1st hop here for a single file download request. For collection
-				// download task, the 1st hop will get kicked off by a scheduled task.
-				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
-						getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-								downloadRequest.getS3ArchiveConfigurationId()),
-						downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
-						dataTransferConfiguration.getEncryptedTransfer());
-
-				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
-						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
-			} else {
-				// Can't perform the 2-hop download at this time, or this data-object download
-				// is part of a collection. Reset the task
+			if (!StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
+				// The download task created from a collection task breakdown, is queued to be
+				// picked up by the schedulers.
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
-
 				logger.info(
-						"download task: {} - 2 Hop download can't be initiated. Low screatch space [transfer-type={}, destination-type={},"
-								+ " path = {}] or transaction limit reached ",
+						"download task: {} - 2 Hop download task created from a collection download request [transfer-type={}, destination-type={},"
+								+ " path = {}, collection download task = {}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
-						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath(),
+						downloadRequest.getCollectionDownloadTaskId());
+			} else {
+				// Single data object download task.
+				HpcCanPerform2HopDownloadResponse canPerfom2HopDownloadResponse = canPerfom2HopDownload(
+						secondHopDownload);
+				if (canPerfom2HopDownloadResponse.value) {
+					// We start the 1st hop here for a single file download request. For collection
+					// download task, the 1st hop will get kicked off by a scheduled task.
+					dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
+							getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+									downloadRequest.getS3ArchiveConfigurationId()),
+							downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
+							dataTransferConfiguration.getEncryptedTransfer());
+
+					logger.info(
+							"download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
+							secondHopDownload.downloadTask.getId(),
+							secondHopDownload.downloadTask.getDataTransferType(),
+							secondHopDownload.downloadTask.getDestinationType(),
+							secondHopDownload.downloadTask.getPath());
+				} else {
+					// Can't perform the 2-hop download at this time.
+					resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+					logger.info(
+							"download task: {} - 2 Hop download can't be initiated [transfer-type={}, destination-type={},"
+									+ " path = {}] - {} ",
+							secondHopDownload.downloadTask.getId(),
+							secondHopDownload.downloadTask.getDataTransferType(),
+							secondHopDownload.downloadTask.getDestinationType(),
+							secondHopDownload.downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
+				}
 			}
 
 		} catch (HpcException e) {
@@ -3349,8 +3469,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * 
 	 * @return True if there is enough disk space to start the 2-hop download.
 	 */
-	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) throws HpcException {
+	class HpcCanPerform2HopDownloadResponse {
+		boolean value = true;
+		String message = null;
+	}
 
+	private HpcCanPerform2HopDownloadResponse canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload)
+			throws HpcException {
+		HpcCanPerform2HopDownloadResponse response = new HpcCanPerform2HopDownloadResponse();
 		int inProcessS3DownloadsForGlobus = dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(
 				HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS, HpcDataTransferDownloadStatus.IN_PROGRESS,
 				s3DownloadTaskServerId);
@@ -3368,14 +3494,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
 							.getUsableSpace();
 					if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
-						// Not enough space disk space to perform the first hop download. Log an error
-						// and reset the
-						// task.
-						logger.error(
-								"Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
-								secondHopDownload.getDownloadTask().getPath(), freeSpace,
-								secondHopDownload.getDownloadTask().getSize());
-						return false;
+						// Not enough space disk space to perform the first hop download.
+						response.value = false;
+						response.message = "Insufficient disk space. Free Space: " + freeSpace + " bytes. File size: "
+								+ secondHopDownload.getDownloadTask().getSize() + " bytes";
+						return response;
 					}
 
 				} catch (IOException e) {
@@ -3384,9 +3507,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			} else {
 				// A download from this user for this path is already in progress
-				logger.info("The file {} is already being downloaded for user {} ",
-						secondHopDownload.getDownloadTask().getPath(), secondHopDownload.getDownloadTask().getUserId());
-				return false;
+				response.value = false;
+				response.message = "The file is already being downloaded for user "
+						+ secondHopDownload.getDownloadTask().getUserId();
+				return response;
 			}
 
 			logger.info(
@@ -3395,12 +3519,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					secondHopDownload.getDownloadTask().getPath());
 
 		} else {
-			// We are over the allowed number of transactions
-			logger.info(
-					"Transaction limit reached - inProcessS3DownloadsForGlobus: {}, maxPermittedS3DownloadsForGlobus: {}, path: {}",
-					inProcessS3DownloadsForGlobus, maxPermittedS3DownloadsForGlobus,
-					secondHopDownload.getDownloadTask().getPath());
-			return false;
+			// We are over the allowed number of transactions.
+			response.value = false;
+			response.message = "Transaction limit reached - inProcessS3DownloadsForGlobus: "
+					+ inProcessS3DownloadsForGlobus + ", maxPermittedS3DownloadsForGlobus: "
+					+ maxPermittedS3DownloadsForGlobus;
+			return response;
 		}
 
 		// Check that the total downloads size for this user doesn't exceed the limit.
@@ -3408,18 +3532,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				secondHopDownload.getDownloadTask().getUserId(), HpcDataTransferDownloadStatus.IN_PROGRESS);
 
 		if (totalDownloadsSize > maxPermittedTotalDownloadsSizePerUser) {
-			logger.info(
-					"The total in-progress downloads size [{}GB] for this user [{}] exceeds the max permitted [{}GB]",
-					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
-					maxPermittedTotalDownloadsSizePerUser);
-			return false;
+			response.value = false;
+			response.message = "The total in-progress downloads size [" + totalDownloadsSize + "GB] for this user ["
+					+ secondHopDownload.getDownloadTask().getUserId() + "] exceeds the max permitted ["
+					+ maxPermittedTotalDownloadsSizePerUser + "GB]";
+			return response;
+
 		} else {
 			logger.info("The total in-progress downloads size [{}GB] for this user [{}] under the max permitted [{}GB]",
 					totalDownloadsSize, secondHopDownload.getDownloadTask().getUserId(),
 					maxPermittedTotalDownloadsSizePerUser);
 		}
 
-		return true;
+		return response;
 	}
 
 	/**
@@ -3521,8 +3646,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				"checkIfTransferCanBeLaunched: Update to call system account locator's setGlobusAccountQueueSize passing in (%s, %s)",
 				globusClientId, Integer.toString(transferAcceptanceResponse.getQueueSize())));
 
-		this.systemAccountLocator.setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
-
 		logger.info("checkIfTransferCanBeLaunched: About to return");
 
 		return transferAcceptanceResponse.canAcceptTransfer();
@@ -3589,8 +3712,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info(String.format(
 				"checkIfTransferCanBeLaunched: Update to call system account locator's setGlobusAccountQueueSize passing in (%s, %s)",
 				globusClientId, Integer.toString(transferAcceptanceResponse.getQueueSize())));
-
-		this.systemAccountLocator.setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
 
 		logger.info("checkIfTransferCanBeLaunched: About to return");
 
@@ -4006,6 +4127,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					}
 
 					downloadTask.setInProcess(false);
+					downloadTask.setProcessed(Calendar.getInstance());
 					downloadTask.setPercentComplete(0);
 
 					// Persist the download task.

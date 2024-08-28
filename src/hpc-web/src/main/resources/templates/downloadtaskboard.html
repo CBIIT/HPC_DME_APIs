@@ -70,6 +70,34 @@
 	color: black; font-weight:bold
 }
 
+#resultsGrid{
+  display:none;
+}
+
+.bold-option{font-weight: bolder;}
+
+.overlay{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: rgba(255,255,255,0.8) url("img/spinner.gif") center no-repeat;
+}
+
+.div1 {
+	width: 10%;
+	float: left;
+}
+
+.div2 {
+	width: 100%;
+	float: right;
+	text-align:right;
+}
+
 thead input {
         width: 100%;
     }
@@ -102,6 +130,7 @@ tfoot input {
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
+    var pageSize = [[${pageSize}]];
     var expanded = false;
 /*]]>*/
 </script>
@@ -149,25 +178,39 @@ tfoot input {
 							</label>
 						</div>
 					</div>
-					<div style="text-align:right">
-						<table id="pageDetails1" class="display" style="width:100%">
-							<tr>
-								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-								<button type="button" id="btnFirstTop"
-									class="btn btn-md btn-primary" onclick="updatePage('first')">
-									First</button>&nbsp;
-								<button type="button" id="btnPreviousTop"
-									class="btn btn-md btn-primary"
-									onclick="updatePage('previous')">Previous</button>&nbsp;
-								<button type="button" id="btnNextTop"
-									class="btn btn-md btn-primary" onclick="updatePage('next')">
-									Next</button>&nbsp;
-								<button type="button" id="btnLastTop"
-									class="btn btn-md btn-primary" onclick="updatePage('last')">
-									Last</button>&nbsp;
-							</tr>
-						</table>
-					</div>
+					<div class="div2">
+						<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/>&nbsp;&nbsp;&nbsp; </p>
+						<div class="form-group">
+							<div style="display: flex; float: right;">
+								<div>
+									<label for="pageSizeId1"><b>Show</b>&nbsp;&nbsp;</label>
+									<label for="pageSizeId1" style="float:right;"><b>&nbsp;Entries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></label>
+									<select name="pageSizeName1" id="pageSizeId1"
+										class="form-control" style="width: 85px; float:right;">
+										<option value="100" class="bold-option" th:selected="${pageSize} == '100'">100</option>
+										<option value="200" class="bold-option" th:selected="${pageSize} == '200'">200</option>
+										<option value="500" class="bold-option" th:selected="${pageSize} == '500'">500</option>
+										<option value="1000" class="bold-option" th:selected="${pageSize} == '1000'">1000</option>
+									</select>
+								</div>
+								<div>
+									<button type="button" id="btnFirstTop"
+										class="btn btn-md btn-primary" onclick="updatePage('first')">
+										First</button>&nbsp;
+									<button type="button" id="btnPreviousTop"
+										class="btn btn-md btn-primary"
+										onclick="updatePage('previous')">Previous</button>&nbsp;
+									<button type="button" id="btnNextTop"
+										class="btn btn-md btn-primary" onclick="updatePage('next')">
+										Next</button>&nbsp;
+									<button type="button" id="btnLastTop"
+										class="btn btn-md btn-primary" onclick="updatePage('last')">
+										Last</button>&nbsp;
+								</div>
+							</div> <!-- col-md-offset -->
+						</div> <!-- form-group -->
+					</div> <!-- div2 -->
+					<!-- div id="spinner" class="overlay"></div -->
 					<div th:if="${results != null and results.size() > 0}">
 						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
@@ -213,6 +256,8 @@ tfoot input {
 									<td id='col9' th:text="${result.retryUserId}"></td>
 									<td id='col10' style="word-break:break-all;" th:text="${result.error}"></td>
 									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
+									<td id='col12' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
+									<td id='col13' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
 								</tr>
 							</tbody>
 							<tfoot>
@@ -233,23 +278,21 @@ tfoot input {
 						</table>
 					</div>
 					<div style="text-align:right">
-						<table id="pageDetails2" class="display" style="width:100%">
-							<tr>
-								<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
-								<button type="button" id="btnFirst"
-									class="btn btn-md btn-primary" onclick="updatePage('first')">
-									First</button>&nbsp;
-								<button type="button" id="btnPrevious"
-									class="btn btn-md btn-primary"
-									onclick="updatePage('previous')">Previous</button>&nbsp;
-								<button type="button" id="btnNext"
-									class="btn btn-md btn-primary" onclick="updatePage('next')">
-									Next</button>&nbsp;
-								<button type="button" id="btnLast"
-									class="btn btn-md btn-primary" onclick="updatePage('last')">
-									Last</button>&nbsp;
-							</tr>
-						</table>
+						<div class="form-group col-md-12">
+							<p>Current page <span th:text="${currentPage}"/> of <span th:text="${totalPages}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Page Size:  <span th:text="${currentPageSize}"/>&nbsp;&nbsp;|&nbsp;&nbsp;Total Records:  <span th:text="${totalCount}"/> </p>
+							<button type="button" id="btnFirst"
+								class="btn btn-md btn-primary" onclick="updatePage('first')">
+								First</button>&nbsp;
+							<button type="button" id="btnPrevious"
+								class="btn btn-md btn-primary"
+								onclick="updatePage('previous')">Previous</button>&nbsp;
+							<button type="button" id="btnNext"
+								class="btn btn-md btn-primary" onclick="updatePage('next')">
+								Next</button>&nbsp;
+							<button type="button" id="btnLast"
+								class="btn btn-md btn-primary" onclick="updatePage('last')">
+								Last</button>&nbsp;
+						</div>
 					</div>
 				</div></div></div>
 			</section>
@@ -329,7 +372,7 @@ tfoot input {
 					$(this).html( '<div id="expandcollapseId"><img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" /></div>');
 		        }
 		    } );
-
+		
 		/*
 			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
 			hover showing the complete string.
@@ -352,14 +395,17 @@ tfoot input {
 							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
 							{targets: 4, data: 'type', width:100, visible: true},  // type
 							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							{targets: 6, data: 'created', width: 110, visible: true},  // created
-							{targets: 7, data: 'completed', width: 110, visible: true},  // completed
+							{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
+							{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
 							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
 							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
 							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
 							{targets: 11, data: 'displayPath', visible: false},
+							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
+							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
 						],
 				"lengthMenu": [ [-1], ["All"] ],
+				"initComplete": () => {$("#resultsGrid").show();}
 		} );
 
 		// Add event listener for opening and closing details
@@ -425,25 +471,48 @@ tfoot input {
 		}
 	}
 
+	$("#pageSizeId1").on("change",function(){
+		var checkBox = document.getElementById("allcheckbox");
+	    pageSize = $("#pageSizeId1").val();
+	    //$("#pageSizeId2").val(pageSize);
+		if(checkBox.checked == true) {
+			window.location.href = "/downloadtasks?queryAll=true&page=1" +  "&pageSize="+ pageSize;
+		} else {
+			window.location.href = "/downloadtasks?queryAll=false&page=1" + "&pageSize="+ pageSize;
+		}
+	});
+
+	$("#pageSizeId2").on("change",function(){
+		var checkBox = document.getElementById("allcheckbox");
+	    pageSize = $("#pageSizeId1").val();
+	    $("#pageSizeId1").val(pageSize);
+		if(checkBox.checked == true) {
+			window.location.href = "/downloadtasks?queryAll=true&page=1" +  "&pageSize="+ pageSize;
+		} else {
+			window.location.href = "/downloadtasks?queryAll=false&page=1" + "&pageSize="+ pageSize;
+		}
+	});
+
     function updatePage(action)
     {
     	var checkBox = document.getElementById("allcheckbox");
+		var pageSize = $("#pageSizeId1").val();
 		if(action == "next" && checkBox != null && checkBox.checked == true)
-		 	window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) +1);
+		 	window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) +1) + "&pageSize="+ pageSize;
 		else if (action == "next")
-			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) +1);
+			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) +1) + "&pageSize="+ pageSize;
 		else if(action == "previous" && checkBox != null && checkBox.checked == true)
-			window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) - 1);
+			window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) - 1) + "&pageSize="+ pageSize;
 		else if(action == "previous")
-			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) - 1);
+			window.location.href = "/downloadtasks?queryAll=false&page=" + (parseInt(currentPage) - 1) + "&pageSize="+ pageSize;
 		else if(action == "first" && checkBox != null && checkBox.checked == true)
-			window.location.href = "/downloadtasks?queryAll=true&page=1";
+			window.location.href = "/downloadtasks?queryAll=true&page=1" + "&pageSize="+ pageSize;
 		else if(action == "first")
-			window.location.href = "/downloadtasks?queryAll=false&page=1";
+			window.location.href = "/downloadtasks?queryAll=false&page=1" + + "&pageSize=" + pageSize;
 		else if(action == "last" && checkBox != null && checkBox.checked == true)
-			window.location.href = "/downloadtasks?queryAll=true&page=" + totalPages;
+			window.location.href = "/downloadtasks?queryAll=true&page=" + totalPages + "&pageSize="+ pageSize;
 		else if(action == "last")
-			window.location.href = "/downloadtasks?queryAll=false&page=" + totalPages;
+			window.location.href = "/downloadtasks?queryAll=false&page=" + totalPages + "&pageSize="+ pageSize;
     }
     
 	if(currentPage == "1")

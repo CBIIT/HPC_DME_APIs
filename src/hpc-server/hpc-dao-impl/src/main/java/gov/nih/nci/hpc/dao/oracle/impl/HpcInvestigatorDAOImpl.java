@@ -12,8 +12,6 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -55,9 +53,6 @@ public class HpcInvestigatorDAOImpl implements HpcInvestigatorDAO {
 
 	// Row mapper.
 	private SingleColumnRowMapper<String> rowMapper = new SingleColumnRowMapper<>();
-
-	// The logger instance.
-	private static final Logger logger = LoggerFactory.getLogger(HpcInvestigatorDAOImpl.class.getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors

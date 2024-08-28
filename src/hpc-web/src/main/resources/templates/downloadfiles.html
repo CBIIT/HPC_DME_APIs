@@ -51,6 +51,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var selectedPaths = [[${hpcDownloadDatafile.getSelectedPaths()}]];
+    var globalMetadataSearchText = [[${hpcDownloadDatafile.getGlobalMetadataSearchText()}]];
 /*]]>*/
 </script>
 <style>
@@ -183,7 +184,7 @@
 											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 								    </div>								
 									<div class="col-sm-12 column">
-										<label for="endPointLocation">Globus Endpoint (Destination) Path:</label> <input
+										<label for="endPointLocation">Endpoint Path:</label> <input
 											type="text" class="form-control" name="endPointLocation"
 											th:value="${endPointLocation}" id="endPointLocation"
 											placeholder="Enter Globus Endpoint Path" size="40" />
@@ -197,11 +198,11 @@
 											id="bucketName" placeholder="Enter S3 Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="s3Path">S3 (Destination) Path:</label> <input
+										<label for="s3Path">Endpoint Path:</label> <input
 											type="text" class="form-control"
 											th:value="${s3Path}"
 											name="s3Path" id="s3Path"
-											placeholder="Enter S3 (Destination) Path" size="40" />
+											placeholder="Enter S3 Endpoint Path" size="40" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="accessKey">Access Key:</label> <input
@@ -234,14 +235,14 @@
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
 									<div class="col-sm-12 column">
-										<label for="drivePath">Google Drive (Destination) Path:</label>
+										<label for="drivePath">Endpoint Path:</label>
 										<a th:if="${authorized != null}" id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">
 											Select from Google Drive (Optional)</a>
 										<input
 											type="text" class="form-control"
 											th:value="${drivePath}"
 											name="drivePath" id="drivePath"
-											placeholder="Enter Google Drive (Destination) Path" size="40" />
+											placeholder="Enter Google Drive Endpoint Path" size="40" />
 									</div>
 								</div>
 								<div class="form-group" id="googleCloudDiv" style="display: none">
@@ -259,12 +260,12 @@
 											id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="googleCloudPath">Google Cloud (Destination) Path:</label>
+										<label for="googleCloudPath">Endpoint Path:</label>
 										<input
 											type="text" class="form-control"
 											th:value="${googleCloudPath}"
 											name="googleCloudPath" id="googleCloudPath"
-											placeholder="Enter Google Cloud (Destination) Path" size="40" />
+											placeholder="Enter Google Cloud Endpoint Path" size="40" />
 									</div>
 								</div>
 								<!--- DbGap inputs -->
@@ -307,7 +308,7 @@
 											placeholder="Enter Aspera Host" size="40" />
 									</div>
 								</div>
-								<div class="modal-footer">
+								<div style="margin-left: 3px; margin-top: 15px">
 									<button class="btn btn-primary" id="submit" th:if="${canDownload == 'true'}"
 										onClick="return validateAndSubmit()">Download</button>
 									<button class="btn btn-primary" id="nosubmit" title="Dataset size exceeds max download limit"
@@ -326,6 +327,8 @@
 						th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
 					<input type="hidden" name="transferType" id="transferType"
 						th:value="${transferType}" />
+					<input type="hidden" name="globalMetadataSearchText" id="globalMetadataSearchText"
+						th:value="${hpcDownloadDatafile.getGlobalMetadataSearchText()}" />
 				</div>
 			</div>
 		</form>
@@ -351,6 +354,8 @@
 				 th:value="${hpcSearch.getTotalSize()}"/>
 			<input type="hidden"
 				class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>
+			<input type="hidden"
+				class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 		</form>
 		<form class="form-horizontal" id="searchForm"
 			th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -365,6 +370,8 @@
 				 th:value="${hpcSearch.getTotalSize()}"/>
 			<input type="hidden"
 				class="form-control" name="deselectedColumns" id="deselectedColumns"/>
+			<input type="hidden"
+				class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 		</form>
 						</div>
 				</div>

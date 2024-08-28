@@ -300,4 +300,20 @@ public interface HpcMetadataDAO {
 	 */
 	public List<HpcDupMetadataEntry> getDupDataObjectMetadataEntries() throws HpcException;
 
+	/**
+	 * Upsert data object metadata in the table used for search.
+	 *
+	 * @param path
+	 * @throws HpcException on database error.
+	 */
+	public void upsertDataObjectMetadata(String path) throws HpcException;
+
+	/**
+	 * Delete data object metadata in the table used for search.
+	 *
+	 * @param path
+	 * @throws HpcException on database error.
+	 */
+	public void deleteDataObjectMetadata(String path) throws HpcException;
+
 }

@@ -38,6 +38,7 @@ import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.dao.HpcBulkUpdateAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
@@ -127,6 +128,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Autowired
 	private HpcBulkUpdateAuditDAO bulkUpdateAuditDAO = null;
 	
+	// Metadata DAO.
+	@Autowired
+	private HpcMetadataDAO metadataDAO = null;
+		
 	// Notification Application Service.
 	@Autowired
 	private HpcNotificationService notificationService = null;
@@ -420,6 +425,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			// Delete the data object file.
 			dataManagementProxy.delete(dataManagementAuthenticator.getAuthenticatedToken(), path);
 
+			// Delete the data object metadata.
+			metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
+			
 		} catch (HpcException e) {
 			if (quiet) {
 				logger.error("Failed to delete a file: {}", path, e);

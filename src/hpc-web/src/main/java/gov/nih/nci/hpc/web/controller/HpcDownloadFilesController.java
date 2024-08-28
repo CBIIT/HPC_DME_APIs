@@ -127,6 +127,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			String downloadType = request.getParameter("downloadType");
 			hpcDownloadDatafile.setDownloadType(downloadType);
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
+			String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+			hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+			model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+
 			// Setting default values for Aspera variables
 			model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
 			model.addAttribute("asperaUser", "asp-dbgap");
@@ -257,6 +261,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				e.printStackTrace();
 			}
 			HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
+			String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+			hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+			model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 			HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
 			model.addAttribute("hpcSearch", hpcSaveSearch);

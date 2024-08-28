@@ -750,7 +750,7 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/download")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDownloadSummary(@QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount);
+	public Response getDownloadSummary(@QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount, @QueryParam("pageSize") Integer pageSize);
 
 	/**
 	 * Get download summary (for the request invoker's DOC or all for system
@@ -765,7 +765,7 @@ public interface HpcDataManagementRestService {
 	@Path("/download/all")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response getAllDownloadSummary(@QueryParam("page") Integer page,
-			@QueryParam("totalCount") Boolean totalCount);
+			@QueryParam("totalCount") Boolean totalCount, @QueryParam("pageSize") Integer pageSize);
 
 	/**
 	 * Get data management model. This includes all rules.

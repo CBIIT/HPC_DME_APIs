@@ -181,76 +181,23 @@ create unique index r_catalog_meta_main_uidx1
 
 
 
-
-create materialized view irods.r_data_hierarchy_metamap as
-WITH r_data_hierarchy(parent_coll_name, coll_name, coll_id, object_id, object_path, data_level) AS (
-    SELECT data_coll.coll_name,
-           cast(NULL as varchar2(2700)),
-           cast(NULL as number(19)),
-           data_base.data_id,
-           (cast(data_coll.coll_name as varchar2(2700)) || cast('/' as varchar2(1))) || cast(data_base.data_name as varchar2(2700)),
-           1
-    FROM r_data_main data_base,
-         r_coll_main data_coll
-    WHERE data_base.coll_id = data_coll.coll_id
-    UNION ALL
-    SELECT coll_iter.parent_coll_name,
-           coll_iter.coll_name,
-           coll_iter.coll_id,
-           coll_hierarchy_iter.object_id,
-           coll_hierarchy_iter.object_path,
-           coll_hierarchy_iter.data_level + 1
-    FROM r_coll_main coll_iter,
-         r_data_hierarchy coll_hierarchy_iter
-    WHERE cast(coll_iter.coll_name as varchar2(2700)) <> cast('/' as varchar2(1))
-      AND cast(coll_iter.coll_name as varchar2(2700)) = cast(coll_hierarchy_iter.parent_coll_name as varchar2(2700))
-)
-SELECT data_hierarchy.object_id,
-       data_hierarchy.object_path,
-       metamap.meta_id,
-       data_hierarchy.coll_id,
-       data_hierarchy.data_level
-FROM r_data_hierarchy data_hierarchy,
-     r_objt_metamap metamap
-WHERE data_hierarchy.object_id = metamap.object_id AND data_hierarchy.coll_id IS NULL
-   OR data_hierarchy.coll_id = metamap.object_id;
-
-comment on column irods.r_data_hierarchy_metamap.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
-
-comment on column irods.r_data_hierarchy_metamap.object_path is 'Data object Hierarchy Path:  r_coll_main.coll_name / r_data_main.data_name';
-
-comment on column irods.r_data_hierarchy_metamap.meta_id is 'Metadata ID: r_meta_main.meta_id';
-
-comment on column irods.r_data_hierarchy_metamap.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
-
-comment on column irods.r_data_hierarchy_metamap.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
-
-create unique index r_data_hierarchy_metamap_unique
-    on irods.r_data_hierarchy_metamap (object_id, meta_id, data_level);
-
-
-
-
 create materialized view irods.r_data_hierarchy_meta_main as
-SELECT data_hierarchy_metamap.object_id,
-       data_hierarchy_metamap.object_path,
-       data_hierarchy_metamap.coll_id,
-       data_hierarchy_metamap.meta_id,
-       data_hierarchy_metamap.data_level,
-       CASE
-           WHEN data_hierarchy_metamap.data_level = 1 THEN cast('DataObject' as  varchar2(50))
-           ELSE coll_type_metadata.meta_attr_value
-           END AS level_label,
-       meta_main.meta_attr_name,
-       meta_main.meta_attr_value,
-       meta_main.meta_attr_unit
-FROM r_data_hierarchy_metamap data_hierarchy_metamap
-         LEFT JOIN r_meta_main meta_main ON data_hierarchy_metamap.meta_id = meta_main.meta_id
-         LEFT JOIN (r_objt_metamap metamap
-    JOIN r_meta_main coll_type_metadata ON metamap.meta_id = coll_type_metadata.meta_id AND
-                                           cast(coll_type_metadata.meta_attr_name as varchar2(250)) = cast('collection_type' as varchar2(50)))
-                   ON metamap.object_id = data_hierarchy_metamap.coll_id
-ORDER BY data_hierarchy_metamap.object_id;
+select *
+from hpc_data_meta_main
+union
+select data.data_id                           as object_id,
+       (cast(coll.OBJECT_PATH as varchar2(2700)) || cast('/' as varchar2(1))) ||
+       cast(data.data_name as varchar2(2700)) as object_path,
+       coll.coll_id                           as coll_id,
+       coll.META_ID                           as coll_meta_id,
+       coll.DATA_LEVEL + 1                    as coll_data_level,
+       coll.LEVEL_LABEL                       as coll_level_label,
+       coll.META_ATTR_NAME                    as coll_meta_attr_name,
+       coll.META_ATTR_VALUE                   as coll_meta_attr_value,
+       coll.META_ATTR_UNIT                    as coll_meta_attr_unit
+from r_data_main data,
+     r_coll_hierarchy_meta_main coll
+where coll.object_id = data.COLL_ID;
 
 comment on column irods.r_data_hierarchy_meta_main.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
 

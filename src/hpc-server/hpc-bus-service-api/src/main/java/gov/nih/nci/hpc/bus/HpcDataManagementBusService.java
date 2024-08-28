@@ -230,7 +230,7 @@ public interface HpcDataManagementBusService {
 	 * @return A summary of download tasks for the request invoker.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers) throws HpcException;
+	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers, Integer pageSize) throws HpcException;
 
 	/**
 	 * Set collection permissions.
