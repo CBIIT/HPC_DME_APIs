@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.3.0</version>
+		<version>3.6.0</version>
 	</parent>
 	<artifactId>hpc-common</artifactId>
 	<packaging>jar</packaging>
@@ -41,7 +41,6 @@
 		<dependency>
        	             <groupId>org.slf4j</groupId>
                      <artifactId>slf4j-api</artifactId>
-                     <version>${slf4j.version}</version>
 		</dependency>
 	</dependencies>
 </project>

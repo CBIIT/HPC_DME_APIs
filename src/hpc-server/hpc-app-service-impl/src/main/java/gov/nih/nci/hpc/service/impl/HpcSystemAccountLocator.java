@@ -10,10 +10,9 @@ package gov.nih.nci.hpc.service.impl;
 
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.simple.JSONObject;
@@ -22,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.secretsmanager.AWSSecretsManager;
@@ -30,6 +28,8 @@ import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 
+import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
+import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -46,27 +46,19 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public class HpcSystemAccountLocator {
 
-	protected static class PooledSystemAccountWrapper implements Comparable<PooledSystemAccountWrapper> {
+	protected static class PooledSystemAccountWrapper {
 
 		private HpcIntegratedSystemAccount systemAccount;
-		private double utilizationScore;
-		private Date lastUsed = new Date(0);
-
-		protected PooledSystemAccountWrapper(HpcIntegratedSystemAccount pAccount, double pScore) {
-			this.systemAccount = pAccount;
-			this.utilizationScore = pScore;
-		}
 
 		protected PooledSystemAccountWrapper(HpcIntegratedSystemAccount pAccount) {
-			this(pAccount, 0.0);
+			this.systemAccount = pAccount;
 		}
 
 		protected PooledSystemAccountWrapper() {
-			this(null, 0.0);
+			this(null);
 		}
 
 		protected HpcIntegratedSystemAccount getSystemAccount() {
-			lastUsed = new Date();
 			return systemAccount;
 		}
 
@@ -74,30 +66,6 @@ public class HpcSystemAccountLocator {
 			systemAccount = pAccount;
 		}
 
-		protected double getUtilizationScore() {
-			return utilizationScore;
-		}
-
-		protected Date getLastUsed() {
-			return lastUsed;
-		}
-
-		protected void setUtilizationScore(double pScore) {
-			utilizationScore = pScore;
-		}
-
-		@Override
-		public int compareTo(PooledSystemAccountWrapper o) {
-			int retVal = -1;
-			if (o instanceof PooledSystemAccountWrapper) {
-				PooledSystemAccountWrapper convPsaWrapper = (PooledSystemAccountWrapper) o;
-				retVal = Double.valueOf(utilizationScore).compareTo(convPsaWrapper.getUtilizationScore());
-				if (retVal == 0) {
-					retVal = lastUsed.compareTo(convPsaWrapper.getLastUsed());
-				}
-			}
-			return retVal;
-		}
 	}
 
 	private static final String DOC_CLASSIFIER_DEFAULT = "DEFAULT";
@@ -129,6 +97,10 @@ public class HpcSystemAccountLocator {
 	// System Accounts DAO
 	@Autowired
 	HpcSystemAccountDAO systemAccountDAO = null;
+	
+	// Globus Transfer DAO
+	@Autowired
+	HpcGlobusTransferTaskDAO globusTransferDAO = null;
 
 	@Autowired
 	HpcDataManagementConfigurationLocator dataMgmtConfigLocator = null;
@@ -215,71 +187,6 @@ public class HpcSystemAccountLocator {
 		return retSysAcct;
 	}
 
-	/**
-	 * Sets account queue size for particular Globus system account.
-	 *
-	 * @param systemAccountId The ID of the Globus system account (should be client
-	 *                        ID in UUID format)
-	 * @param queueSize       Size of the transfer queue of the Globus system
-	 *                        account
-	 */
-	public void setGlobusAccountQueueSize(String systemAccountId, int queueSize) {
-		logger.info(String.format("setGlobusAccountQueueSize: Entered with systemAccountId = %s, queueSize = %s",
-				systemAccountId, Integer.toString(queueSize)));
-		boolean scoreUpdated = false;
-		final Map<String, List<PooledSystemAccountWrapper>> classifier2ListMap = multiDataTransferAccounts
-				.get(HpcDataTransferType.GLOBUS);
-		if (null == classifier2ListMap || classifier2ListMap.isEmpty()) {
-			logger.warn("setGlobusAccountQueueSize: There are no pools of GLOBUS app accounts, so do nothing.");
-		} else {
-			for (Map.Entry<String, List<PooledSystemAccountWrapper>> mapEntry : classifier2ListMap.entrySet()) {
-				final List<PooledSystemAccountWrapper> thePool = mapEntry.getValue();
-				final String poolClassifier = mapEntry.getKey();
-				if (null == thePool) {
-					logger.warn(
-							String.format(
-									"setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is null."),
-							poolClassifier);
-				} else if (thePool.isEmpty()) {
-					logger.warn(
-							String.format(
-									"setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is empty."),
-							poolClassifier);
-				} else if (scoreUpdated = updateAppAccountUtilizationScore(thePool, systemAccountId, queueSize)) {
-					logger.info(String.format(
-							"setGlobusAccountQueueSize: Updated Globus app account's utilization score; found it in pool having classifier \"%s\"",
-							poolClassifier));
-					break;
-				} else {
-					// do nothing, pool was neither null nor empty and didn't have the app account
-				}
-			}
-		}
-		logger.info(
-				"setGlobusAccountQueueSize: About to exit.  Score was " + (scoreUpdated ? "" : "NOT") + " updated.");
-	}
-
-	private boolean updateAppAccountUtilizationScore(List<PooledSystemAccountWrapper> pWrappedSysAccounts,
-			String pSysAccountId, int pQueueSize) {
-		boolean modifiedScoreFlag = false;
-		if (null == pWrappedSysAccounts || pWrappedSysAccounts.isEmpty() || null == pSysAccountId
-				|| pSysAccountId.isEmpty() || pQueueSize < 0) {
-			// do nothing, as one or more inputs are invalid
-		} else {
-			for (PooledSystemAccountWrapper psaWrapper : pWrappedSysAccounts) {
-				final HpcIntegratedSystemAccount sysAccnt = psaWrapper.getSystemAccount();
-				if (null != sysAccnt && pSysAccountId.equals(sysAccnt.getUsername())) {
-					// Internally, queueSize is treated as a utilization score, higher meaning
-					// experiencing
-					// greater utilization
-					psaWrapper.setUtilizationScore(Integer.valueOf(pQueueSize).doubleValue());
-					modifiedScoreFlag = true;
-					break;
-				}
-			}
-		}
-		return modifiedScoreFlag;
-	}
 
 	// Populate the system accounts maps.
 	private void initSystemAccountsData() throws HpcException {
@@ -429,13 +336,8 @@ public class HpcSystemAccountLocator {
 				hpcDataMgmtConfigId));
 		final List<PooledSystemAccountWrapper> theGlobusAcctsPool = accessProperPool(hpcDataMgmtConfigId);
 
-		// Choose PooledSystemAccountWrapper instance from pool that has least value
-		// according
-		// to natural ordering of PooledSystemAccountWrapper, which is by
-		// utilizationScore
-		// property. Lower score indicates the wrapped system account is being utilized
-		// less.
-		final PooledSystemAccountWrapper wrapperObj = Collections.min(theGlobusAcctsPool);
+		// Choose PooledSystemAccountWrapper instance from pool that has least active tasks from DB
+		final PooledSystemAccountWrapper wrapperObj = selectLeastUsedGlobusAccount(theGlobusAcctsPool);
 		if (null == wrapperObj) {
 			throw new HpcException("Unable to obtain Globus app account credentials from pool",
 					HpcErrorType.UNEXPECTED_ERROR);
@@ -446,6 +348,26 @@ public class HpcSystemAccountLocator {
 					retSysAcct.getUsername()));
 			return retSysAcct;
 		}
+	}
+
+	private PooledSystemAccountWrapper selectLeastUsedGlobusAccount(
+			List<PooledSystemAccountWrapper> theGlobusAcctsPool) throws HpcException {
+		// Obtain the list of currently used Globus accounts ordered by least used from DB
+		List<String> usedAccounts = globusTransferDAO.getGlobusAccountsUsed();
+		// Iterate over the accounts in the pool to see if there is any that are not used
+		for (PooledSystemAccountWrapper accountFromPool: theGlobusAcctsPool) {
+			if(usedAccounts == null || usedAccounts.isEmpty())
+				return accountFromPool;
+			if(!usedAccounts.contains(accountFromPool.getSystemAccount().getUsername()))
+				return accountFromPool;
+		}
+		// If all accounts are used, return the least used
+		for (String usedAccount: usedAccounts) {
+			Optional<PooledSystemAccountWrapper> account = theGlobusAcctsPool.stream().filter(o -> o.getSystemAccount().getUsername().equals(usedAccount)).findFirst();
+			if(account != null)
+				return account.orElse(null);
+		}
+		return null;
 	}
 
 	private String fetchSysAcctPropertyValue(HpcIntegratedSystemAccount someAcct, String propertyName) {

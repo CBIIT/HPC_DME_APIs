@@ -52,6 +52,7 @@
 /*<![CDATA[*/
     var selectedPaths = [[${hpcLinkDatafile.getSelectedPaths()}]];
     var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
+    var globalMetadataSearchText = [[${globalMetadataSearchText}]];
 /*]]>*/
 </script>
 <style>
@@ -143,6 +144,8 @@
 					</table>
 					<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 						th:value="${hpcLinkDatafile.getSelectedPaths()}" />
+					<input type="hidden" name="globalMetadataSearchText" id="globalMetadataSearchText"
+						th:value="${hpcLinkDatafile.getGlobalMetadataSearchText()}" />
 				</div>
 			</div>
 		</form>
@@ -159,7 +162,9 @@
 				class="form-control" name="totalSize" id="totalSizeId"
 				 th:value="${hpcSearch.getTotalSize()}"/>
 			<input type="hidden"
-				class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>		
+				class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>
+			<input type="hidden"
+				class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 		</form>
 		<form class="form-horizontal" id="searchForm"
 			th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -174,6 +179,8 @@
 				 th:value="${hpcSearch.getTotalSize()}"/>
 			<input type="hidden"
 				class="form-control" name="deselectedColumns" id="deselectedColumns"/>
+			<input type="hidden"
+				class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 		</form>
 						</div>
 				</div>
