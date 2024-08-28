@@ -10,12 +10,15 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+
 import javax.ws.rs.core.Response;
-import org.springframework.scheduling.annotation.Async;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -38,348 +41,317 @@ import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 
-public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
-    implements HpcDataSearchRestService {
-  // ---------------------------------------------------------------------//
-  // Constants
-  // ---------------------------------------------------------------------//
+public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl implements HpcDataSearchRestService {
+	// ---------------------------------------------------------------------//
+	// Constants
+	// ---------------------------------------------------------------------//
 
-  // ---------------------------------------------------------------------//
-  // Instance members
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
 
-  // The Data Search Business Service instance.
-  @Autowired
-  private HpcDataSearchBusService dataSearchBusService = null;
+	// The Data Search Business Service instance.
+	@Autowired
+	private HpcDataSearchBusService dataSearchBusService = null;
 
-  @Autowired
-  private HpcSystemBusService systemBusService = null;
+	@Autowired
+	private HpcSystemBusService systemBusService = null;
 
-  // ---------------------------------------------------------------------//
-  // constructors
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// constructors
+	// ---------------------------------------------------------------------//
 
-  /**
-   * Constructor for Spring Dependency Injection.
-   * 
-   */
-  private HpcDataSearchRestServiceImpl() {}
-
-  // ---------------------------------------------------------------------//
-  // Methods
-  // ---------------------------------------------------------------------//
-
-  // ---------------------------------------------------------------------//
-  // HpcDataSearchRestService Interface Implementation
-  // ---------------------------------------------------------------------//
-
-  @Override
-  public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
-    HpcCollectionListDTO collections = null;
-    try {
-      collections = dataSearchBusService.getCollections(compoundMetadataQuery);
-
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
-
-    return okResponse(
-        !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
-            ? collections
-            : null,
-        true);
-  }
-
-  @Override
-  public Response queryCollections(String queryName, Boolean detailedResponse, Integer page,
-      Integer pageSize, Boolean totalCount) {
-    HpcCollectionListDTO collections = null;
-    try {
-      collections = dataSearchBusService.getCollections(decodeString(queryName), detailedResponse,
-          page, pageSize, totalCount);
-
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
-
-    return okResponse(
-        !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
-            ? collections
-            : null,
-        true);
-  }
-
-
-  @Override
-  public Response queryDataObjects(Boolean returnParent, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
-    HpcDataObjectListDTO dataObjects = null;
-
-    try {
-		if(returnParent != null && returnParent) {
-			HpcCollectionListDTO collections = null;
-
-			collections = dataSearchBusService.getDataObjectParents(null, compoundMetadataQuery);
-
-			return okResponse(
-	            !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
-	                ? collections
-	                : null,
-	            true);
-		} else {
-			dataObjects = dataSearchBusService.getDataObjects(null, compoundMetadataQuery);
-			return okResponse(
-                !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-                ? dataObjects
-                : null,
-                true);
-		}
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
-  }
-
-
-  @Override
-  public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page,
-      Integer pageSize, Boolean totalCount, Boolean returnParent) {
-
-	try {
-		if(returnParent != null && returnParent) {
-			HpcCollectionListDTO collections = null;
-
-			collections = dataSearchBusService.getDataObjectParents(decodeString(queryName), detailedResponse,
-	          page, pageSize, totalCount);
-
-			return okResponse(
-	            !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
-	                ? collections
-	                : null,
-	            true);
-		} else {
-			HpcDataObjectListDTO dataObjects = null;
-			dataObjects = dataSearchBusService.getDataObjects(decodeString(queryName), detailedResponse,
-					page, pageSize, totalCount);
-
-			return okResponse(
-					!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-					? dataObjects
-					: null,
-            true);
-		}
-	} catch(HpcException e) {
-		return errorResponse(e);
+	/**
+	 * Constructor for Spring Dependency Injection.
+	 * 
+	 */
+	private HpcDataSearchRestServiceImpl() {
 	}
-  }
 
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
 
-  @Override
-  public Response queryDataObjectsInPath(String path, Boolean returnParent,
-      HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+	// ---------------------------------------------------------------------//
+	// HpcDataSearchRestService Interface Implementation
+	// ---------------------------------------------------------------------//
 
-    try {
-        if(returnParent != null && returnParent) {
-			HpcCollectionListDTO collections = null;
+	@Override
+	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+		HpcCollectionListDTO collections = null;
+		try {
+			collections = dataSearchBusService.getCollections(compoundMetadataQuery);
 
-			collections = dataSearchBusService.getDataObjectParents(toNormalizedPath(path),
-					compoundMetadataQuery);
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(
+				!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty() ? collections
+						: null,
+				true);
+	}
+
+	@Override
+	public Response queryCollections(String queryName, Boolean detailedResponse, Integer page, Integer pageSize,
+			Boolean totalCount) {
+		HpcCollectionListDTO collections = null;
+		try {
+			collections = dataSearchBusService.getCollections(decodeString(queryName), detailedResponse, page, pageSize,
+					totalCount);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(
+				!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty() ? collections
+						: null,
+				true);
+	}
+
+	@Override
+	public Response queryDataObjects(Boolean returnParent, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+		HpcDataObjectListDTO dataObjects = null;
+
+		try {
+			if (returnParent != null && returnParent) {
+				HpcCollectionListDTO collections = null;
+
+				collections = dataSearchBusService.getDataObjectParents(null, compoundMetadataQuery);
+
+				return okResponse(!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
+						? collections
+						: null, true);
+			} else {
+				dataObjects = dataSearchBusService.getDataObjects(null, compoundMetadataQuery);
+				return okResponse(!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
+						? dataObjects
+						: null, true);
+			}
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+	}
+
+	@Override
+	public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page, Integer pageSize,
+			Boolean totalCount, Boolean returnParent) {
+
+		try {
+			if (returnParent != null && returnParent) {
+				HpcCollectionListDTO collections = null;
+
+				collections = dataSearchBusService.getDataObjectParents(decodeString(queryName), detailedResponse, page,
+						pageSize, totalCount);
+
+				return okResponse(!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
+						? collections
+						: null, true);
+			} else {
+				HpcDataObjectListDTO dataObjects = null;
+				dataObjects = dataSearchBusService.getDataObjects(decodeString(queryName), detailedResponse, page,
+						pageSize, totalCount);
+
+				return okResponse(!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
+						? dataObjects
+						: null, true);
+			}
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+	}
+
+	@Override
+	public Response queryDataObjectsInPath(String path, Boolean returnParent,
+			HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+
+		try {
+			if (returnParent != null && returnParent) {
+				HpcCollectionListDTO collections = null;
+
+				collections = dataSearchBusService.getDataObjectParents(toNormalizedPath(path), compoundMetadataQuery);
+
+				return okResponse(!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
+						? collections
+						: null, true);
+			} else {
+				HpcDataObjectListDTO dataObjects = null;
+				dataObjects = dataSearchBusService.getDataObjects(toNormalizedPath(path), compoundMetadataQuery);
+
+				return okResponse(!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
+						? dataObjects
+						: null, true);
+			}
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+	}
+
+	@Override
+	public Response queryAllDataObjects(Integer page, Integer pageSize, Boolean totalCount) {
+
+		try {
+			HpcDataObjectListDTO dataObjects = null;
+			dataObjects = dataSearchBusService.getAllDataObjects(null, page, pageSize, totalCount);
 
 			return okResponse(
-	            !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
-	                ? collections
-	                : null,
-	            true);
-        } else {
-            HpcDataObjectListDTO dataObjects = null;
-            dataObjects =
-                dataSearchBusService.getDataObjects(toNormalizedPath(path), compoundMetadataQuery);
+					!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects
+							: null,
+					true);
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+	}
 
-            return okResponse(
-                !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-                ? dataObjects
-                : null,
-                true);
-        }
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
-  }
-  
-  @Override
-  public Response queryAllDataObjects(Integer page,
-		  Integer pageSize, Boolean totalCount) {
+	@Override
+	public Response queryAllDataObjectsInPath(String path, Integer page, Integer pageSize, Boolean totalCount) {
 
-    try {
-        HpcDataObjectListDTO dataObjects = null;
-        dataObjects =
-            dataSearchBusService.getAllDataObjects(null, page, pageSize, totalCount);
+		try {
+			HpcDataObjectListDTO dataObjects = null;
+			dataObjects = dataSearchBusService.getAllDataObjects(toNormalizedPath(path), page, pageSize, totalCount);
 
-        return okResponse(
-            !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-            ? dataObjects
-            : null,
-            true);
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
-  }
-  
-  @Override
-  public Response queryAllDataObjectsInPath(String path, Integer page,
-		  Integer pageSize, Boolean totalCount) {
+			return okResponse(
+					!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects
+							: null,
+					true);
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+	}
 
-    try {
-        HpcDataObjectListDTO dataObjects = null;
-        dataObjects =
-            dataSearchBusService.getAllDataObjects(toNormalizedPath(path), page, pageSize, totalCount);
+	@Override
+	public Response addQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+		try {
+			dataSearchBusService.addQuery(decodeString(queryName), null, compoundMetadataQuery);
 
-        return okResponse(
-            !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-            ? dataObjects
-            : null,
-            true);
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
-  }
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-  @Override
-  public Response addQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
-    try {
-      dataSearchBusService.addQuery(decodeString(queryName), null, compoundMetadataQuery);
+		return createdResponse(null);
+	}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+	@Override
+	public Response addQueryByUser(String queryName, String userId, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+		try {
+			dataSearchBusService.addQuery(decodeString(queryName), userId, compoundMetadataQuery);
 
-    return createdResponse(null);
-  }
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
+		return createdResponse(null);
+	}
 
-  @Override
-  public Response addQueryByUser(String queryName, String userId, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
-    try {
-      dataSearchBusService.addQuery(decodeString(queryName), userId, compoundMetadataQuery);
+	@Override
+	public Response updateQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+		try {
+			dataSearchBusService.updateQuery(decodeString(queryName), compoundMetadataQuery);
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    return createdResponse(null);
-  }
+		return okResponse(null, false);
+	}
 
+	@Override
+	public Response deleteQuery(String queryName) {
+		try {
+			dataSearchBusService.deleteQuery(decodeString(queryName));
 
-  @Override
-  public Response updateQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
-    try {
-      dataSearchBusService.updateQuery(decodeString(queryName), compoundMetadataQuery);
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		return okResponse(null, false);
+	}
 
-    return okResponse(null, false);
-  }
+	@Override
+	public Response getQuery(String queryName) {
+		HpcNamedCompoundMetadataQueryDTO query = null;
+		try {
+			query = dataSearchBusService.getQuery(decodeString(queryName));
 
-  @Override
-  public Response deleteQuery(String queryName) {
-    try {
-      dataSearchBusService.deleteQuery(decodeString(queryName));
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		return okResponse(query.getNamedCompoundQuery() != null ? query : null, true);
+	}
 
-    return okResponse(null, false);
-  }
+	@Override
+	public Response getQueries() {
+		HpcNamedCompoundMetadataQueryListDTO queries = null;
+		try {
+			queries = dataSearchBusService.getQueries();
 
-  @Override
-  public Response getQuery(String queryName) {
-    HpcNamedCompoundMetadataQueryDTO query = null;
-    try {
-      query = dataSearchBusService.getQuery(decodeString(queryName));
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		return okResponse(!queries.getNamedCompoundQueries().isEmpty() ? queries : null, true);
+	}
 
-    return okResponse(query.getNamedCompoundQuery() != null ? query : null, true);
-  }
+	@Override
+	public Response getMetadataAttributes(String levelLabel) {
+		HpcMetadataAttributesListDTO metadataAttributes = null;
+		try {
+			metadataAttributes = dataSearchBusService.getMetadataAttributes(levelLabel);
 
-  @Override
-  public Response getQueries() {
-    HpcNamedCompoundMetadataQueryListDTO queries = null;
-    try {
-      queries = dataSearchBusService.getQueries();
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		return okResponse(
+				!metadataAttributes.getCollectionMetadataAttributes().isEmpty()
+						|| !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? metadataAttributes : null,
+				true);
+	}
 
-    return okResponse(!queries.getNamedCompoundQueries().isEmpty() ? queries : null, true);
-  }
+	@Override
+	public Response queryCatalog(HpcCatalogRequestDTO catalogRequest) {
+		HpcCatalogsDTO catalogs = null;
+		try {
+			catalogs = dataSearchBusService.getCatalog(catalogRequest);
 
-  @Override
-  public Response getMetadataAttributes(String levelLabel) {
-    HpcMetadataAttributesListDTO metadataAttributes = null;
-    try {
-      metadataAttributes = dataSearchBusService.getMetadataAttributes(levelLabel);
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		return okResponse(!CollectionUtils.isEmpty(catalogs.getCatalogs()) ? catalogs : null, true);
+	}
 
-    return okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty()
-        || !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? metadataAttributes
-            : null,
-        true);
-  }
+	@Override
+	public Response emailExport(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) {
+		try {
+			dataSearchBusService.sendCurrentQueryResults(compoundMetadataQueryDTO);
 
-  @Override
-  public Response queryCatalog(HpcCatalogRequestDTO catalogRequest) {
-    HpcCatalogsDTO catalogs = null;
-    try {
-      catalogs = dataSearchBusService.getCatalog(catalogRequest);
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		return okResponse(null, false);
+	}
 
-    return okResponse(!CollectionUtils.isEmpty(catalogs.getCatalogs()) ? catalogs : null, true);
-  }
+	@Override
+	public Response refreshMetadataViews() {
+		try {
+			systemBusService.refreshHourlyViews();
 
-  @Override
-  public Response emailExport(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) {
-    try {
-      dataSearchBusService.sendCurrentQueryResults(compoundMetadataQueryDTO);
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+		return okResponse(null, false);
+	}
 
-    return okResponse(null, false);
- }
-
-
-  @Override
-  public Response refreshMetadataViews() {
-    try {
-      systemBusService.refreshHourlyViews();
-
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
-
-    return okResponse(null, false);
-  }
-
-  private String decodeString(String encodedValue) throws HpcException {
-    try {
-      return URLDecoder.decode(encodedValue, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new HpcException("Failed to decode name: " + e.getMessage(),
-          HpcErrorType.DATA_MANAGEMENT_ERROR);
-    }
-  }
+	private String decodeString(String encodedValue) throws HpcException {
+		try {
+			return URLDecoder.decode(encodedValue, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new HpcException("Failed to decode name: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR);
+		}
+	}
 }
-
-

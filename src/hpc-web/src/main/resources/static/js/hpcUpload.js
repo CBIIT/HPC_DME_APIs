@@ -53,7 +53,7 @@ function uploadPickerCallback(data) {
  * @param {String} fileId ID of the file/folder.
  */
 function populateSelection(fileId) {
-	gapi.client.load('drive', 'v2', function() {
+	gapi.client.load('drive', 'v3', function() {
 		var request = gapi.client.drive.files.get({
 			'fileId' : fileId
 		});
@@ -61,13 +61,13 @@ function populateSelection(fileId) {
 		$("#folderNamesDiv").html('<br /><label for="folderName"><b>Selected Folders:</b></label>');
 		request.execute(function(resp) {
 			if (resp.mimeType == 'application/vnd.google-apps.folder') {
-				console.log('Folder: ' + resp.title);
+				console.log('Folder: ' + resp.name);
 				var folderHtml = '<div><label id="' + resp.id + '_label"></label><input type="hidden" id="' + resp.id + '" name="folderNames"></div>'
 				+ '<input type="hidden" name="folderIds" value="' + resp.id + '">';
 				$("#folderNamesDiv").append(folderHtml);
 				$("#folderNamesDiv").show();
 			} else {
-				console.log('File: ' + resp.title);
+				console.log('File: ' + resp.name);
 				var fileHtml = '<div><label id="' + resp.id + '_label"></label><input type="hidden" id="' + resp.id + '" name="fileNames"></div>'
 				+ '<input type="hidden" name="fileIds" value="' + resp.id + '">';
 				$("#fileNamesDiv").append(fileHtml);
@@ -85,25 +85,32 @@ function populateSelection(fileId) {
  * @param {String} path Child path to prepend to.
  */
 function constructPath(fileId, path, origFileId) {
-	gapi.client.load('drive', 'v2', function() {
+	gapi.client.load('drive', 'v3', function() {
 		var request = gapi.client.drive.files.get({
 			'fileId' : fileId
 		});
 		request.execute(function(resp) {
-			console.log('Folder: ' + resp.title);
-			if (fileId == origFileId)
-				path = resp.title;
-			else
-				path = resp.title + '/' + path
-			if (resp.parents[0]) {
-				if (resp.parents[0].isRoot) {
+			console.log('Folder: ' + resp.name);
+			var folder = resp.name;
+			request = gapi.client.drive.files.get({
+				'fileId' : fileId,
+				'fields' : 'parents'
+			});
+			request.execute(function(resp) {
+			if (resp) {
+				if (resp.parents) {
+					if (fileId == origFileId)
+						path = folder;
+					else
+						path = folder + '/' + path;
+					constructPath(resp.parents[0], path, origFileId)
+				} else {
 					console.log('The user selected: ' + path);
 					$("#" + origFileId + "_label").html(path);
 					$("#" + origFileId).val(path);
-				} else {
-					constructPath(resp.parents[0].id, path, origFileId)
 				}
 			}
+			});
 		});
 	});
 }
