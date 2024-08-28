@@ -31,6 +31,8 @@ import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.protovalues.UserTypeEnum;
+import org.irods.jargon.core.pub.BulkAVUOperationResponse;
+import org.irods.jargon.core.pub.BulkAVUOperationResponse.ResultStatus;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.domain.AvuData;
@@ -294,13 +296,21 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			}
 
 			if (!avuDatas.isEmpty()) {
-				irodsConnection.getDataObjectAO(authenticatedToken)
-						.addBulkAVUMetadataToDataObject(getAbsolutePath(path), avuDatas);
+				// Add bulk metadata to iRODS, and validate the result.
+				for (BulkAVUOperationResponse addAvuResponse : irodsConnection.getDataObjectAO(authenticatedToken)
+						.addBulkAVUMetadataToDataObject(getAbsolutePath(path), avuDatas)) {
+					if (!addAvuResponse.getResultStatus().equals(ResultStatus.OK)) {
+						// Add metadata failed.
+						String message = "Failed to add metadata to a data object [" + path + "]: "
+								+ addAvuResponse.getResultStatus() + " - " + addAvuResponse.getMessage();
+						throw new HpcException(message, HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS);
+					}
+				}
 			}
 
 		} catch (DuplicateDataException dde) {
 			throw new HpcException("Failed to add metadata to a data object: " + dde.getMessage(),
-					HpcErrorType.DATA_MANAGEMENT_ERROR, dde);
+					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, dde);
 		} catch (JargonException e) {
 			throw new HpcException("Failed to add metadata to a data object: " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);

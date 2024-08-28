@@ -233,6 +233,15 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "WHERE a.meta_id = b.meta_id AND b.object_id = c.data_id "
 			+ "GROUP BY a.meta_attr_name, b.object_id having count(*)> 1";
 	
+	private static final String INSERT_DATA_META_MAIN_SQL = "insert into HPC_DATA_META_MAIN "
+			+ "select data.data_id, ? , "
+			+ "null, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
+			+ "from r_data_main data, r_objt_metamap map, r_meta_main meta, r_coll_main coll "
+			+ "where data.coll_id = coll.coll_id and coll.coll_name = ? and data.data_name = ? "
+			+ "and data.data_id=map.object_id and map.meta_id=meta.meta_id ";
+	
+	private static final String DELETE_DATA_META_MAIN_SQL = "delete from HPC_DATA_META_MAIN where object_path = ?";
+	
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -764,6 +773,38 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			throw new HpcException("Failed to detect data object duplicate metadata: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
 		}
+	}
+	
+	@Override
+	public void upsertDataObjectMetadata(String path) throws HpcException {
+		try {
+			String collName = path.substring(0, path.lastIndexOf('/'));
+			String dataName = path.substring(path.lastIndexOf('/') + 1);
+			
+			// Remove all self metadata for this path
+			jdbcTemplate.update(DELETE_DATA_META_MAIN_SQL, path);
+			
+			// Insert back all self metadata for this path
+			jdbcTemplate.update(INSERT_DATA_META_MAIN_SQL, path, collName,  dataName);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to refresh data object metadata for path: " + path + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+		
+	}
+	
+	@Override
+	public void deleteDataObjectMetadata(String path) throws HpcException {
+		try {
+			// Remove all self metadata for this path
+			jdbcTemplate.update(DELETE_DATA_META_MAIN_SQL, path);
+			
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to delete data object metadata for : " + path + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+		
 	}
 	
 	// ---------------------------------------------------------------------//

@@ -33,6 +33,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -121,7 +123,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size) throws HpcException {
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -150,6 +152,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setAlignArchivePath(alignArchivePath);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(size);
+		migrationTask.setRetryTaskId(retryTaskId);
+		migrationTask.setRetryUserId(retryUserId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -389,11 +393,15 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				HpcDataMigrationStatus.RECEIVED);
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0,
 				HpcDataMigrationStatus.RECEIVED);
+
+		int taskCount = dataMigrationDAO.cleanupDataMigrationTasks();
+		logger.info("Cleaned up {} data migration tasks", taskCount);
+
 	}
 
 	@Override
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId, boolean alignArchivePath) throws HpcException {
+			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.setPath(path);
@@ -406,6 +414,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setAlignArchivePath(alignArchivePath);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(retryTaskId);
+		migrationTask.setRetryUserId(retryUserId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -414,7 +424,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId) throws HpcException {
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.getDataObjectPaths().addAll(dataObjectPaths);
@@ -427,6 +437,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setAlignArchivePath(false);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(retryTaskId);
+		migrationTask.setRetryUserId(retryUserId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -435,7 +447,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId) throws HpcException {
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.getCollectionPaths().addAll(collectionPaths);
@@ -448,6 +460,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setAlignArchivePath(false);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(retryTaskId);
+		migrationTask.setRetryUserId(retryUserId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -503,5 +517,34 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		}
 
 		return updated;
+	}
+
+	@Override
+	public HpcDataMigrationTaskStatus getMigrationTaskStatus(String taskId, HpcDataMigrationType taskType)
+			throws HpcException {
+		if (taskType == null || StringUtils.isEmpty(taskId)) {
+			throw new HpcException("Null migration task ID or type", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcDataMigrationTaskStatus taskStatus = new HpcDataMigrationTaskStatus();
+
+		HpcDataMigrationTaskResult taskResult = dataMigrationDAO.getDataMigrationTaskResult(taskId, taskType);
+		if (taskResult != null) {
+			// Task completed or failed. Return the result.
+			taskStatus.setInProgress(false);
+			taskStatus.setResult(taskResult);
+			return taskStatus;
+		}
+
+		HpcDataMigrationTask task = dataMigrationDAO.getDataMigrationTask(taskId, taskType);
+		if (task != null) {
+			// Task is in progress. Return it.
+			taskStatus.setInProgress(true);
+			taskStatus.setTask(task);
+			return taskStatus;
+		}
+
+		// Task not found.
+		return null;
 	}
 }
