@@ -527,9 +527,10 @@ public interface HpcDataTransferService {
 	 * Continue a data object download task that was queued.
 	 *
 	 * @param downloadTask The download task to continue.
+	 * @return true if the task was processed or false otherwise.
 	 * @throws HpcException on service failure.
 	 */
-	public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+	public boolean continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
 
 	/**
 	 * Stage a data object for download from Hyperfile to Globus. Once staged, set
@@ -906,7 +907,7 @@ public interface HpcDataTransferService {
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset)
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc, int pageSizeOffset, Integer pageSize)
 			throws HpcException;
 
 	/**
@@ -1007,5 +1008,13 @@ public interface HpcDataTransferService {
 	 * @return a List of the 2 metadata.
 	 */
 	public List<HpcMetadataEntry> generateArchiveMetadata(String configurationId, String objectId, String registrarId);
+
+	/**
+	 * Remove active Globus transfer requests when Globus requests are no longer active.
+	 *
+	 * @param dataTransferRequestId The globus data transfer request ID.
+	 * @throws HpcException on service failure.
+	 */
+	public void deleteGlobusTransferTask(String dataTransferRequestId) throws HpcException;
 
 }

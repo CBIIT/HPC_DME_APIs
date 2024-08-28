@@ -843,11 +843,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getDownloadSummary(Integer page, Boolean totalCount) {
+	public Response getDownloadSummary(Integer page, Boolean totalCount, Integer pageSize) {
 		HpcDownloadSummaryDTO downloadSummary = null;
 		try {
 			downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
-					totalCount != null ? totalCount : false, false);
+					totalCount != null ? totalCount : false, false,  pageSize != null ? pageSize : 0);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -860,11 +860,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
-	public Response getAllDownloadSummary(Integer page, Boolean totalCount) {
+	public Response getAllDownloadSummary(Integer page, Boolean totalCount, Integer pageSize) {
 		HpcDownloadSummaryDTO downloadSummary = null;
 		try {
 			downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
-					totalCount != null ? totalCount : false, true);
+					totalCount != null ? totalCount : false, true, pageSize != null ? pageSize : 0);
 
 		} catch (HpcException e) {
 			return errorResponse(e);

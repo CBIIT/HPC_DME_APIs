@@ -613,7 +613,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 		return userDownloadRequest;
 	};
-
+	
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -1485,6 +1485,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 	}
 
+
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

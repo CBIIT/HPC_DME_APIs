@@ -25,6 +25,8 @@
 <link th:href="@{~/css/style-responsive.css}" rel="stylesheet" />
 <link th:href="@{~/css/xcharts.min.css}" rel=" stylesheet" />
 <link th:href="@{~/css/jquery-ui-1.10.4.min.css}" rel="stylesheet" />
+<!-- Search styles -->
+<link rel="stylesheet" href="css/search.css" th:href="@{/css/search.css}"/>
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script th:src="@{~/js/html5shiv.js}"></script>
@@ -65,63 +67,11 @@
     var selectedRowsData = [];
     var totalSize = [[${totalSize}]];
     var deselectedColumns = [[${deselectedColumns}]];
-    var fileExportRowsThreshold = [[${fileExportRowsThreshold}]];    
+    var fileExportRowsThreshold = [[${fileExportRowsThreshold}]];
+    var globalMetadataSearchText = [[${globalMetadataSearchText}]];
 /*]]>*/
 </script>
 
-<style>
-.dropbtn {
-  background-color: transparent;
-  color: #007aff;
-  padding: 12px;
-  font-size: 12px;
-  border: none;
-  cursor: pointer;
-}
-
-.dropbtn:hover, .dropbtn:focus {
-  background-color: #2980B9;
-  color: white
-}
-
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 148px;
-  overflow: auto;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  text-align: left;
-}
-
-.dropdown a:hover {background-color: #97BDD6;}
-
-.isDisabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-.isDisabled > a {
-  color: currentColor;
-  display: inline-block;  /* For IE11/ MS Edge bug */
-  pointer-events: none;
-  text-decoration: none;
-}
-
-.show {display: block;}
-</style>
 <script>
 /* When the user clicks on the button, 
 toggle between hiding and showing the dropdown content */
@@ -173,7 +123,7 @@ window.onclick = function(event) {
 			enablePaginationControls : true,
 			enableRowSelection : true,
 			enableSelectAll : true,
-			paginationPageSizes: [10, 20, 50, 100],
+			paginationPageSizes: [100, 500, 1000, 5000],
 			paginationPageSize: parseInt(currentPageSize),
 			paginationCurrentPage: parseInt(currentPage),
 			columnDefs : [
@@ -572,6 +522,7 @@ window.onclick = function(event) {
 	          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 		      document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
 		      document.getElementById("downloadFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+		      document.getElementById("downloadFilesform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;      
 	          document.getElementById("downloadType").value = "datafiles";
 	          document.getElementById("downloadFilesform").submit();
           } else {
@@ -585,6 +536,7 @@ window.onclick = function(event) {
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("bulkPermissionsform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("bulkPermissionsform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
 	        document.getElementById("downloadType3").value = "datafiles";
 	        document.getElementById("bulkPermissionsform").submit();
           }
@@ -631,6 +583,7 @@ window.onclick = function(event) {
             document.getElementById("linkFilesform").elements.namedItem("queryName").value = queryName;
             document.getElementById("linkFilesform").elements.namedItem("totalSize").value = totalSize.toString();
             document.getElementById("linkFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("linkFilesform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
             document.getElementById("linkFilesform").submit();
           };
           
@@ -723,6 +676,18 @@ window.onclick = function(event) {
 										><i class="fa fa-link" title="Create Links for Selected Data Files"></i></a>
 									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Data Files: <strong id="totalSizeDisplay"></strong></label>
 								</div>
+								<div class="pull-right" id="searchInputDiv">
+									<div class="btn-group">
+										<label
+											title="Type text and press Enter. DME searches all columns except Path in all search result pages.">
+											Search Metadata&nbsp;&nbsp;<input type="search"
+											name="globalMetadataSearchText" id="searchInput"
+											style="height: 30px" th:value="${globalMetadataSearchText}">
+											<span id="searchClear"
+											class="glyphicon glyphicon-remove-circle"></span>
+										</label>
+									</div>
+								</div>
 							  </div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
@@ -780,6 +745,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="totalSize" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText" name="globalMetadataSearchText"/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
@@ -792,6 +758,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="queryName1" name="queryName"/>
 						<input type="hidden" id="totalSize1" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns1" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText1" name="globalMetadataSearchText"/>
 					</form> 
 					<form class="form-horizontal" id="linkFilesform" action="#"
 						role="form" th:action="@{/linkfiles}" 
@@ -803,6 +770,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="queryName2" name="queryName"/>
 						<input type="hidden" id="totalSize2" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns2" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText2" name="globalMetadataSearchText"/>	
 					</form> 
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -815,6 +783,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="queryName3" name="queryName"/>
 						<input type="hidden" id="totalSize3" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText3" name="globalMetadataSearchText"/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -850,8 +819,26 @@ window.onclick = function(event) {
 		} else {
 			$('#showExportLink').hide(); 
 		}
+		if(source == "'search'" || source == 'search'){
+			// If NamedQuery, hide the search box
+			$('#searchInputDiv').hide();
+		}
 	});
-	
+
+	$('#searchInput').keypress(function(event) {
+	    if (event.which === 13) {
+	      event.preventDefault();
+	      globalMetadataSearchText = this.value;
+		  updatePage('first', 100);
+	    }
+	  });
+
+	$("#searchClear").click(function(){
+	    $("#searchInput").val('');
+	    globalMetadataSearchText = '';
+	    updatePage('first', currentPageSize);
+	});
+
     function updatePage(action, newPageSize)
     {
 
@@ -899,7 +886,8 @@ window.onclick = function(event) {
 	    			updatedList.push(selectedRowsData[i]);
 	    	}
     	}
-    	
+
+		document.getElementById("simplesearchform").elements.namedItem("globalMetadataSearchText").value =  globalMetadataSearchText;
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
 		document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;

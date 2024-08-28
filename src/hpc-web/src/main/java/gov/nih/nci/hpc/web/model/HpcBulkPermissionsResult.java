@@ -4,6 +4,15 @@ public class HpcBulkPermissionsResult {
 	private String path;
 	private String status;
 	private String error;
+	protected String globalMetadataSearchText;
+
+	public String getGlobalMetadataSearchText() {
+		return globalMetadataSearchText;
+	}
+
+	public void setGlobalMetadataSearchText(String globalMetadataSearchText) {
+		this.globalMetadataSearchText = globalMetadataSearchText;
+	}
 
 	public String getPath() {
 		return path;
