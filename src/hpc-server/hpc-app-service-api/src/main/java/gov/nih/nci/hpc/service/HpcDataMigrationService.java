@@ -36,6 +36,9 @@ public interface HpcDataMigrationService {
 	 * @param collectionMigrationTaskId    (Optional) The collection migration task
 	 *                                     ID that is associated w/ this data object
 	 *                                     migration task
+	 *                                     @param collectionMigrationRetryTaskId (Optional) A collection migration retry
+	 *                                       task id that this data object migration
+	 *                                       is part of.
 	 * @param alignArchivePath             If true, the file is moved within its
 	 *                                     current archive to align w/ the iRODs
 	 *                                     path.
@@ -49,6 +52,7 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
+			String collectionMigrationRetryTaskId,
 			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException;
 
 	/**

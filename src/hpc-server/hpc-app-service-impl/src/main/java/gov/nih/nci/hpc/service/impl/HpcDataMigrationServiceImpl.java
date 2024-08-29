@@ -123,7 +123,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException {
+			String collectionMigrationRetryTaskId, boolean alignArchivePath, long size, String retryTaskId,
+			String retryUserId) throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -149,6 +150,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT);
 		migrationTask.setParentId(collectionMigrationTaskId);
+		migrationTask.setParentRetryId(collectionMigrationRetryTaskId);
 		migrationTask.setAlignArchivePath(alignArchivePath);
 		migrationTask.setPercentComplete(0);
 		migrationTask.setSize(size);
@@ -337,8 +339,17 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		// Delete the task and insert a result record.
 		dataMigrationDAO.deleteDataMigrationTask(dataObjectMigrationTask.getId());
-		dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMigrationTask, Calendar.getInstance(), result,
-				message);
+
+		if (!(result.equals(HpcDataMigrationResult.IGNORED)
+				&& !StringUtils.isEmpty(dataObjectMigrationTask.getParentRetryId()))) {
+			dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMigrationTask, Calendar.getInstance(), result,
+					message);
+		} else {
+			logger.info(
+					"Data object migration task ignored but excluded from results table: task-id: {}, parent-id: {}, parent-retry-id:{}",
+					dataObjectMigrationTask.getId(), dataObjectMigrationTask.getParentId(),
+					dataObjectMigrationTask.getParentRetryId());
+		}
 
 		// Shutdown the transfer managers.
 		try {
@@ -401,7 +412,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId) throws HpcException {
+			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId)
+			throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.setPath(path);
@@ -424,7 +436,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId) throws HpcException {
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId)
+			throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.getDataObjectPaths().addAll(dataObjectPaths);
@@ -447,7 +460,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId) throws HpcException {
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId)
+			throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.getCollectionPaths().addAll(collectionPaths);
