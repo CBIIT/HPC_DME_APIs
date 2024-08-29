@@ -30,6 +30,7 @@
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="parentId" type="xsd:string" />
+			<xsd:element name="parentRetryId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="dataObjectPaths" type="xsd:string"
