@@ -845,7 +845,6 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				.getDataMigrationResults(collectionMigrationTask.getRetryTaskId(), HpcDataMigrationResult.FAILED)) {
 			// Iterate through the list of failed items for the bulk migration task that
 			// failed, and migrate them.
-			logger.error("ERAN: start");
 			HpcMigrationRequestDTO migrationRequest = null;
 			if (!collectionMigrationTask.getAlignArchivePath()) {
 				migrationRequest = new HpcMigrationRequestDTO();
@@ -854,7 +853,6 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			migrateDataObject(failedTask.getPath(), collectionMigrationTask.getUserId(),
 					collectionMigrationTask.getId(), migrationRequest, collectionMigrationTask.getAlignArchivePath(),
 					null, null);
-			logger.error("ERAN: end");
 		}
 	}
 }
