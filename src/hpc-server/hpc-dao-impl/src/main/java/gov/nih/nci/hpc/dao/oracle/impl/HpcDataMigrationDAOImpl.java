@@ -98,6 +98,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String GET_DATA_MIGRATION_TASK_RESULT_SQL = "select * from HPC_DATA_MIGRATION_TASK_RESULT where ID = ? and TYPE = ?";
 
+	private static final String GET_DATA_MIGRATION_TASK_RESULTS_SQL = "select * from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? and RESULT = ?";
+
 	private static final String GET_COLLECTION_MIGRATION_RESULT_COUNT_SQL = "select RESULT, count(RESULT) as COUNT from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? group by RESULT";
 
 	private static final String SET_MIGRATION_TASK_IN_PROCESS_SQL = "update HPC_DATA_MIGRATION_TASK set IN_PROCESS = ? where ID = ? and IN_PROCESS != ?";
@@ -360,6 +362,19 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 		} catch (IncorrectResultSizeDataAccessException irse) {
 			return null;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get a data object migration task result ID: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String parentId, HpcDataMigrationResult result)
+			throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_DATA_MIGRATION_TASK_RESULTS_SQL, dataMigrationTaskResultRowMapper, parentId,
+					result.value());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get a data object migration task result ID: " + e.getMessage(),
