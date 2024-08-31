@@ -138,7 +138,7 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
 			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId,
-			boolean retryFailedItemsOnly) throws HpcException;
+			Boolean retryFailedItemsOnly) throws HpcException;
 
 	/**
 	 * Create a data object list migration task.
@@ -164,7 +164,7 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
 			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
-			boolean retryFailedItemsOnly) throws HpcException;
+			Boolean retryFailedItemsOnly) throws HpcException;
 
 	/**
 	 * Create a collection list migration task.
@@ -188,7 +188,7 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
 			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
-			boolean retryFailedItemsOnly) throws HpcException;
+			Boolean retryFailedItemsOnly) throws HpcException;
 
 	/**
 	 * Update a migration task.
