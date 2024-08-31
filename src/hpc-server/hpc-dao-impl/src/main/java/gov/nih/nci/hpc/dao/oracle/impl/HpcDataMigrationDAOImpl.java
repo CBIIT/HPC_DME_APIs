@@ -144,7 +144,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		dataMigrationTask.setSize(rs.getLong("DATA_SIZE"));
 		dataMigrationTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		dataMigrationTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
-		dataMigrationTask.setRetryFailedItemsOnly(rs.getBoolean("RETRY_FAILED_ITEMS_ONLY"));
+		if (rs.getObject("RETRY_FAILED_ITEMS_ONLY") != null) {
+			dataMigrationTask.setRetryFailedItemsOnly(rs.getBoolean("RETRY_FAILED_ITEMS_ONLY"));
+		}
 
 		Calendar created = Calendar.getInstance();
 		created.setTime(rs.getTimestamp("CREATED"));
