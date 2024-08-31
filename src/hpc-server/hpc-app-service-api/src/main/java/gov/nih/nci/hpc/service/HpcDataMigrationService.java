@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -26,34 +27,30 @@ public interface HpcDataMigrationService {
 	/**
 	 * Create a data object migration task.
 	 *
-	 * @param path                           The data object path.
-	 * @param userId                         The user Id requested the migration.
-	 * @param configurationId                The The data object configuration ID.
-	 * @param fromS3ArchiveConfigurationId   The migration source S3 archive
-	 *                                       configuration ID.
-	 * @param toS3ArchiveConfigurationId     The migration target S3 archive
-	 *                                       configuration ID.
-	 * @param collectionMigrationTaskId      (Optional) The collection migration
-	 *                                       task ID that is associated w/ this data
-	 *                                       object migration task
-	 * @param collectionMigrationRetryTaskId (Optional) A collection migration retry
-	 *                                       task id that this data object migration
-	 *                                       is part of.
-	 * @param alignArchivePath               If true, the file is moved within its
-	 *                                       current archive to align w/ the iRODs
-	 *                                       path.
-	 * @param size                           The data object size.
-	 * @param retryTaskId                    The previous task ID if this is a retry
-	 *                                       request.
-	 * @param retryUserId                    The user retrying the request if this
-	 *                                       is a retry request.
+	 * @param path                         The data object path.
+	 * @param userId                       The user Id requested the migration.
+	 * @param configurationId              The The data object configuration ID.
+	 * @param fromS3ArchiveConfigurationId The migration source S3 archive
+	 *                                     configuration ID.
+	 * @param toS3ArchiveConfigurationId   The migration target S3 archive
+	 *                                     configuration ID.
+	 * @param collectionMigrationTaskId    (Optional) The collection migration task
+	 *                                     ID that is associated w/ this data object
+	 *                                     migration task
+	 * @param alignArchivePath             If true, the file is moved within its
+	 *                                     current archive to align w/ the iRODs
+	 *                                     path.
+	 * @param size                         The data object size.
+	 * @param retryTaskId                  The previous task ID if this is a retry
+	 *                                     request.
+	 * @param retryUserId                  The user retrying the request if this is
+	 *                                     a retry request.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			String collectionMigrationRetryTaskId, boolean alignArchivePath, long size, String retryTaskId,
-			String retryUserId) throws HpcException;
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException;
 
 	/**
 	 * Get a list of migration tasks in specific status and type.
@@ -234,5 +231,17 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTaskStatus getMigrationTaskStatus(String taskId, HpcDataMigrationType taskType)
 			throws HpcException;
+
+	/**
+	 * Get a list of migration tasks in specific status and type.
+	 *
+	 * @param collectionMigrationTaskId A collection migration task id that this
+	 *                                  data object migration is part of.
+	 * @param result                    The task result to query for.
+	 * @return A List of data migration task results.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String collectionMigrationTaskId,
+			HpcDataMigrationResult result) throws HpcException;
 
 }
