@@ -11,8 +11,8 @@
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
 --
 
-ALTER TABLE HPC_DATA_MIGRATION_TASK add (PARENT_RETRY_ID VARCHAR(250));
-COMMENT ON COLUMN HPC_DATA_MIGRATION_TASK.PARENT_RETRY_ID IS
-                 'The parent (collection) retry task ID';
+ALTER TABLE HPC_DATA_MIGRATION_TASK add (RETRY_FAILED_ITEMS_ONLY CHAR);
+COMMENT ON COLUMN HPC_DATA_MIGRATION_TASK.RETRY_FAILED_ITEMS_ONLYD IS
+                 'Indicator to retry bulk migration task by retrying the failed items only, and skip the collection(s) rescanning';
                  
                  
