@@ -123,8 +123,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			String collectionMigrationRetryTaskId, boolean alignArchivePath, long size, String retryTaskId,
-			String retryUserId) throws HpcException {
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -553,5 +552,11 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		// Task not found.
 		return null;
+	}
+
+	@Override
+	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String collectionMigrationTaskId,
+			HpcDataMigrationResult result) throws HpcException {
+		return dataMigrationDAO.getDataMigrationResults(collectionMigrationTaskId, result);
 	}
 }
