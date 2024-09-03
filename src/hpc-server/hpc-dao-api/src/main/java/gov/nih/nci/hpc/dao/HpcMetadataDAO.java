@@ -301,7 +301,7 @@ public interface HpcMetadataDAO {
 	public List<HpcDupMetadataEntry> getDupDataObjectMetadataEntries() throws HpcException;
 
 	/**
-	 * Upsert data object metadata in the table used for search.
+	 * Upsert data object metadata in the table used for data object search materialized view creation.
 	 *
 	 * @param path
 	 * @throws HpcException on database error.
@@ -309,11 +309,27 @@ public interface HpcMetadataDAO {
 	public void upsertDataObjectMetadata(String path) throws HpcException;
 
 	/**
-	 * Delete data object metadata in the table used for search.
+	 * Delete data object metadata from the table used for data object search materialized view creation.
 	 *
 	 * @param path
 	 * @throws HpcException on database error.
 	 */
 	public void deleteDataObjectMetadata(String path) throws HpcException;
+
+	/**
+	 * Insert data object metadata under a collection in the table used for data object search materialized view creation.
+	 *
+	 * @param path
+	 * @throws HpcException on database error.
+	 */
+	public void insertDataObjectMetadataUnderCollection(String path) throws HpcException;
+
+	/**
+	 * Delete data object metadata under a collection from the table used for data object search materialized view creation.
+	 *
+	 * @param path
+	 * @throws HpcException on database error.
+	 */
+	public void deleteDataObjectMetadataUnderCollection(String path) throws HpcException;
 
 }
