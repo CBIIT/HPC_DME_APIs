@@ -497,6 +497,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			throw (e);
 		}
 
+		// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+		metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
+
 		// Update the links to this data object to point to the new path.
 		getDataObjectLinks(sourcePath).forEach(link -> {
 			try {
@@ -577,6 +580,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		metadataService.updateDataObjectSystemGeneratedMetadata(destinationPath, null, null, null,
 				HpcDataTransferUploadStatus.DELETE_REQUESTED, null, null, null, null, null, null, null, null, null);
+		
+		// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+		metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
+				
 	}
 
 	@Override
