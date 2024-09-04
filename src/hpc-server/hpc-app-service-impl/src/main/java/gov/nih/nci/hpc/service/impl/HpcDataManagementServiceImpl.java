@@ -592,8 +592,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		metadataService.updateDataObjectSystemGeneratedMetadata(destinationPath, null, null, null,
 				HpcDataTransferUploadStatus.DELETE_REQUESTED, null, null, null, null, null, null, null, null, null);
 		
-		// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
-		metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
+		if (sourcePathAttributes.getIsFile()) {
+			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+			metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
+		} else {
+			metadataDAO.deleteDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(sourcePath));
+			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN for the destination path
+			metadataDAO.insertDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(destinationPath));
+		}
 				
 	}
 
