@@ -94,7 +94,7 @@ tfoot input {
 }
 
 .imgDetails {
-	margin-left: auto; margin-right: auto; display: block;
+	font-size: 28px
 }
 
 </style>
@@ -206,8 +206,8 @@ tfoot input {
 								</tr>
 								<tr>
 									<th id='col2heading001'>
-										<div id="expandcollapseId">
-											<img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" />
+										<div id="expandcollapseId"  class="imgDetails">
+											<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-caret-right" aria-hidden="true" style="color:black;"></i></button>
 										</div>
 									</th>
 									<th class="filterhead" id='col2heading001' th:text="'User ID'"></th>
@@ -396,7 +396,7 @@ tfoot input {
 						$(this.node()).removeClass('shown');
 					}
 					expanded = false;
-					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
+					expandCollapseButtonDiv.innerHTML = '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-caret-right" aria-hidden="true" style="color:black;"></i></button>';
 				});
 			} else {
 			    table.rows().every(function(){
@@ -407,7 +407,7 @@ tfoot input {
 			            $(this.node()).addClass('shown');
 			        }
 			        expanded = true;
-					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
+					expandCollapseButtonDiv.innerHTML = '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-caret-down" aria-hidden="true" style="color:black;"></i></button>';
 			  });
 		}}
 	}); // $(document).ready(function(){
