@@ -67,7 +67,7 @@ public interface HpcDataMigrationDAO {
 	public List<HpcDataMigrationTask> getDataObjectMigrationTasks(String collectionMigrationTaskId) throws HpcException;
 
 	/**
-	 *  Get a data object migration task that associated with specific a collection
+	 * Get a data object migration task that associated with specific a collection
 	 * migration task and path.
 	 *
 	 * @param collectionMigrationTaskId The collection migration task id.
@@ -77,7 +77,7 @@ public interface HpcDataMigrationDAO {
 	 */
 	public HpcDataMigrationTask getDataObjectMigrationTask(String collectionMigrationTaskId, String path)
 			throws HpcException;
-	
+
 	/**
 	 * Get a data object migration task.
 	 *
@@ -86,8 +86,7 @@ public interface HpcDataMigrationDAO {
 	 * @return A data object migration task if found, or null otherwise.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataMigrationTask getDataMigrationTask(String id, HpcDataMigrationType type)
-			throws HpcException;
+	public HpcDataMigrationTask getDataMigrationTask(String id, HpcDataMigrationType type) throws HpcException;
 
 	/**
 	 * Get a data object migration task result ID that associated with specific a
@@ -108,7 +107,19 @@ public interface HpcDataMigrationDAO {
 	 * @return The migration task result object, or null if not found.
 	 * @throws HpcException on database error.
 	 */
-	public HpcDataMigrationTaskResult getDataMigrationTaskResult(String id, HpcDataMigrationType type) throws HpcException;
+	public HpcDataMigrationTaskResult getDataMigrationTaskResult(String id, HpcDataMigrationType type)
+			throws HpcException;
+
+	/**
+	 * Get a list of migration tasks in specific status and type.
+	 *
+	 * @param parentId The task parent Id to query for.
+	 * @param result   The task result to query for.
+	 * @return A List of data migration task results.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String parentId, HpcDataMigrationResult result)
+			throws HpcException;
 
 	/**
 	 * Delete a data Migration task.
