@@ -10,6 +10,7 @@
 
 <title>NCI Data Management Environment</title>
 
+
 <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
 <!-- Bootstrap CSS -->
 <link href="css/bootstrap.min.css" rel="stylesheet" />
@@ -28,7 +29,9 @@
 <link href="css/select2-4.0.11.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
-<link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
+<!--  link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" / -->
+<link href="DataTables/DataTables-2.1.4/datatables.min.css" rel="stylesheet">
+<!-- link href="https://cdn.datatables.net/v/dt/dt-1.13.11/b-2.4.2/fc-4.3.0/fh-3.4.0/r-2.5.0/sc-2.4.0/datatables.min.css" rel="stylesheet" -->
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -36,33 +39,6 @@
       <script src="js/respond.min.js"></script>
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
-<script
-	src="js/angular/1.5.0/angular.js"></script>
-<script
-	src="js/angular/1.5.0/angular-touch.js"></script>
-<script
-	src="js/angular/1.5.0/angular-animate.js"></script>
-<script src="js/ui-grid/csv.js"></script>
-<script src="js/ui-grid/pdfmake.js"></script>
-<script src="js/ui-grid/vfs_fonts.js"></script>
-
-<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
-<script src="../bower_components/jquery/dist/jquery.js"></script>
-
-<link rel="stylesheet" href="css/ui-grid.css"
-	type="text/css" />
-<script
-	src="js/jquery/3.1.1/jquery.min.js"></script>
-
-<script
-	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-<script
-	src="js/select2-4.0.11.min.js"></script>
-
-<script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
-<script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
-
 
 <style>
 
@@ -228,6 +204,19 @@ tfoot input {
 									<th class="column-heading" id='colheading009' th:text="'Retry User ID'"></th>
 									<th class="column-heading" id='colheading010' th:text="'Error'"></th>
 								</tr>
+          <tr>
+									<th id='col2heading001'></th>
+									<th class="filterhead" id='col2heading001' th:text="'User ID'"></th>
+									<th class="filterhead" id='col2heading002' th:text="'Task ID'"></th>
+									<th class="filterhead" id='col2heading003' th:text="'Path'"></th>
+									<th class="filterhead" id='col2heading004' th:text="'Type'"></th>
+									<th class="filterhead" id='col2heading005' th:text="'Destination Type'"></th>
+									<th class="filterhead" id='col2heading006' th:text="'Created On'"></th>
+									<th class="filterhead" id='col2heading007' th:text="'Completed On'"></th>
+									<th class="filterhead" id='col2heading008' th:text="'Transfer Result'"></th>
+									<th class="filterhead" id='col2heading009' th:text="'Retry User ID'"></th>
+									<th class="filterhead" id='col2heading010' th:text="'Error'"></th>
+          </tr>
 							</thead>
 							<tbody>
 								<tr id='attrCol0' th:each="result : ${results}">
@@ -300,22 +289,22 @@ tfoot input {
 		</section>
 	</section>
 
-	<!-- javascripts -->
-	<!-- bootstrap -->
-	<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery/jquery-3.7.1.min.js"></script>
+<script src="js/jquery.scrollTo.min.js"></script>
+<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+<script src="js/select2-4.0.11.min.js"></script>
+<script src="https://cdn.datatables.net/2.1.5/js/dataTables.js"></script>
+<!--custom script for all page-->
+<script src="js/scripts.js"></script>
 
-	<script src="js/jquery-ui-1.10.4.min.js"></script>
-	<script src="js/jquery.scrollTo.min.js"></script>
-	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
-	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
-	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
-	<script src="js/jquery.customSelect.min.js"></script>
-
-	<!--custome script for all page-->
-	<script src="js/scripts.js"></script>
 <script>
 /*<![CDATA[*/
 	$(document).ready(function(){
+		if(currentPage ==1){
+			currentPage = 1;
+		}
 		var checkBox = document.getElementById("allcheckbox");
 		var queryAll = true;
 		if (checkBox && checkBox.checked == false){
@@ -327,36 +316,65 @@ tfoot input {
 			queryAll = false;
 		}
 
-		/* This is for sorting to ignore the empty strings.
-			In the column definitions below(when defining the grid),
-			if a value of type is set to 'non-empty-string',
-			the 'Ascending Sort' ignores empty cells and orders the non-empty cells and shows
-			them as the first set of rows.
-		*/
-		jQuery.extend( jQuery.fn.dataTableExt.oSort, {
-		    "non-empty-string-asc": function (str1, str2) {
-		        if(str1 == "")
-		            return 1;
-		        if(str2 == "")
-		            return -1;
-		        return ((str1 < str2) ? -1 : ((str1 > str2) ? 1 : 0));
-		    },
+		var table = $('#' + 'resultsGrid').DataTable( {
+				orderCellsTop: true,
+				"aaSorting": [],
+				dom: 'rt',
+				scrollX : 'TRUE',
+				'responsive': true,
+				columnDefs: [ 
+							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
+							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
+							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
+							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
+							{targets: 4, data: 'type', width:100, visible: true},  // type
+							{targets: 5, data: 'destinationType', width: 115, visible: true, 
+								},  // destination type
+							{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
+							{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
+							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
+							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+							{targets: 10, data: 'error', width:190, type: 'non-empty-string', 
+								}, // error
+							{targets: 11, data: 'displayPath', visible: false},
+							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
+							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
+						],
+				"lengthMenu": [ [-1], ["All"] ],
+				"initComplete": function () {
+			          var api = this.api();
+			          // Setup - add a text input to each header cell
+			          $('.filterhead', api.table().header()).each( function () {
+			            var title = $(this).text();
+			          $(this).html( '<input type="text" placeholder="Search '+title+'" class="column_search" />' );
+			        } );
+			          $("#resultsGrid").show();
+			      },
+		} ); //var table = $
 
-		    "non-empty-string-desc": function (str1, str2) {
-		        if(str1 == "")
-		            return 1;
-		        if(str2 == "")
-		            return -1;
-		        return ((str1 < str2) ? 1 : ((str1 > str2) ? -1 : 0));
+		// Add event listener for opening and closing details
+		table.on('click', 'td.dt-control', function (e) {
+		    let tr = e.target.closest('tr');
+		    let row = table.row(tr);
+		    if (row.child.isShown()) {
+		        // This row is already open - close it
+		        row.child.hide();
 		    }
-		} );
+		    else {
+		        // Open this row
+		        row.child(format(row.data())).show();
+		    }
+		});
 
-		/* Clone the header and add input text boxes for the column searches */
-		$('#resultsGrid thead tr')
-        .clone(true)
-        .appendTo('#resultsGrid thead');
+		// Apply the search
+	    $( 'table thead'  ).on( 'keyup', ".column_search",function () {
+	        table
+	            .column( $(this).parent().index() )
+	            .search( this.value )
+	            .draw();
+	    } );
 
-		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
+		/*$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
 				if(i > 0) {
 			        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
@@ -371,86 +389,36 @@ tfoot input {
 		        } else {
 					$(this).html( '<div id="expandcollapseId"><img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" /></div>');
 		        }
-		    } );
-		
-		/*
-			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
-			hover showing the complete string.
+		    } );*/
+	}); // $(document).ready(function(){
 
-			The Path field, Error field and RetryUserId fields have empty strings in them.
-			Therefore, they are set to type 'non-empty-string' to force the sort to ignore empty strings.
+	$('#expandcollapseId').on('click', expandCollapseAll);
 
-			aaSorting set to empty array, enforces no sorting on any column on the initial load of data of the page.
-		*/
-		var table = $('#' + 'resultsGrid').DataTable( {
-				orderCellsTop: true,
-				"aaSorting": [],
-				dom: 'rt',
-				scrollX : 'TRUE',
-				'responsive': true,
-				columnDefs: [ 
-							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
-							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
-							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
-							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
-							{targets: 4, data: 'type', width:100, visible: true},  // type
-							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
-							{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
-							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
-							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
-							{targets: 11, data: 'displayPath', visible: false},
-							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
-							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
-						],
-				"lengthMenu": [ [-1], ["All"] ],
-				"initComplete": () => {$("#resultsGrid").show();}
-		} );
-
-		// Add event listener for opening and closing details
-		table.on('click', 'td.dt-control', function (e) {
-			let tr = e.target.closest('tr');
-			let row = table.row(tr);
-
-			if (row.child.isShown()) {
-				// This row is already open - close it
-				row.child.hide();
-			}
-			else {
-				// Open this row
-				row.child(format(row.data())).show();
-			}
-		});
-
-		$('#expandcollapseId').on('click', expandCollapseAll);
-
-		function expandCollapseAll() {
-			let expandCollapseButtonDiv = document.getElementById("expandcollapseId");
-			if(expanded) {
-				table.rows().every(function(){
-					// If row has details expanded
-					if(this.child.isShown()){
-						// Collapse row details
-						this.child.hide();
-						$(this.node()).removeClass('shown');
-					}
-					expanded = false;
-					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
-				});
-			} else {
-			    table.rows().every(function(){
-			        // If row has details collapsed
-			        if(!this.child.isShown()){
-			            // Open this row
-			            this.child(format(this.data())).show();
-			            $(this.node()).addClass('shown');
-			        }
-			        expanded = true;
-					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
-			    });
-			}}
-		});
+	function expandCollapseAll() {
+		let expandCollapseButtonDiv = document.getElementById("expandcollapseId");
+		if(expanded) {
+			table.rows().every(function(){
+				// If row has details expanded
+				if(this.child.isShown()){
+					// Collapse row details
+					this.child.hide();
+					$(this.node()).removeClass('shown');
+				}
+				expanded = false;
+				expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
+			});
+		} else {
+		    table.rows().every(function(){
+		        // If row has details collapsed
+		        if(!this.child.isShown()){
+		            // Open this row
+		            this.child(format(this.data())).show();
+		            $(this.node()).addClass('shown');
+		        }
+		        expanded = true;
+				expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
+		  });
+	}}
 
 	function format(d) {
 	    // `d` is the original data object for the row
