@@ -240,7 +240,16 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "where data.coll_id = coll.coll_id and coll.coll_name = ? and data.data_name = ? "
 			+ "and data.data_id=map.object_id and map.meta_id=meta.meta_id ";
 	
+	private static final String INSERT_DATA_META_MAIN_UNDER_COLL_SQL = "insert into HPC_DATA_META_MAIN "
+			+ "select data.data_id, coll_name||'/'||data_name , "
+			+ "null, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
+			+ "from r_data_main data, r_objt_metamap map, r_meta_main meta, r_coll_main coll "
+			+ "where data.coll_id = coll.coll_id and coll.coll_name like ? "
+			+ "and data.data_id=map.object_id and map.meta_id=meta.meta_id ";
+	
 	private static final String DELETE_DATA_META_MAIN_SQL = "delete from HPC_DATA_META_MAIN where object_path = ?";
+	
+	private static final String DELETE_DATA_META_MAIN_UNDER_COLL_SQL = "delete from HPC_DATA_META_MAIN where object_path like ?";
 	
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -795,6 +804,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 	
 	@Override
+	public void insertDataObjectMetadataUnderCollection(String path) throws HpcException {
+		try {
+			// Insert back all self metadata for this path
+			jdbcTemplate.update(INSERT_DATA_META_MAIN_UNDER_COLL_SQL, path + "%");
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to insert data object metadata under coll path: " + path + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+		
+	}
+	
+	@Override
 	public void deleteDataObjectMetadata(String path) throws HpcException {
 		try {
 			// Remove all self metadata for this path
@@ -802,6 +824,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to delete data object metadata for : " + path + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+		
+	}
+	
+	@Override
+	public void deleteDataObjectMetadataUnderCollection(String path) throws HpcException {
+		try {
+			// Remove all self metadata for this path
+			jdbcTemplate.update(DELETE_DATA_META_MAIN_UNDER_COLL_SQL, path + "/%");
+			
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to delete data object metadata under collection path : " + path + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
 		}
 		
