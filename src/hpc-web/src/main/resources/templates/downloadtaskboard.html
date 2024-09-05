@@ -298,8 +298,9 @@ tfoot input {
 <script src="js/jquery.nicescroll.js" type="text/javascript"></script>
 <script src="js/popper.min.js"></script>
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-<script src="js/select2-4.0.11.min.js"></script>
 <script src="https://cdn.datatables.net/2.1.5/js/dataTables.js"></script>
+<script src="js/select2-4.0.11.min.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
 <!--custom script for all page-->
 <script src="js/scripts.js"></script>
 
@@ -337,14 +338,12 @@ tfoot input {
 							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
 							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
 							{targets: 4, data: 'type', width:100, visible: true},  // type
-							{targets: 5, data: 'destinationType', width: 115, visible: true, 
-								},  // destination type
+							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
 							{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
 							{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
 							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
 							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-							{targets: 10, data: 'error', width:190, type: 'non-empty-string', 
-								}, // error
+							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
 							{targets: 11, data: 'displayPath', visible: false},
 							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
 							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
@@ -414,11 +413,12 @@ tfoot input {
 
 	function format(d) {
 	    // `d` is the original data object for the row
-	    var result = (d.result === null) || (d.result === "") ? "" : '<b>Transfer Result:</b> ' + d.result + '<br/>';
+	    var tableFormat = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
+	    var result = (d.result === null) || (d.result === "") ? "" : '<tr><td><b>Transfer Result:</b></td> <td>' + d.result + '</td></tr>';
 	    // The path has been converted to an anchor link. So we will use displayPath to show the path
-	    var path = (d.displayPath === null) || (d.displayPath === "") ? "" : '<b>Path:</b> ' + d.displayPath + '<br/>';
-	    var error = (d.error === null ) || (d.error === "") ? "" : '<b>Error:</b> ' + d.error + '<br/>';
-		return(result + path + error);
+	    var path = (d.displayPath === null) || (d.displayPath === "") ? "" : '<tr><td><b>Path:</b></td><td>' + d.displayPath + '</td></tr>';
+	    var error = (d.error === null ) || (d.error === "") ? "" : '<tr><td><b>Error:</b></td><td>' + d.error + '</td></tr>';
+		return(tableFormat + result + path + error + '</table>');
  	}
 
 	function displayAll()
