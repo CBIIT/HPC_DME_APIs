@@ -204,8 +204,12 @@ tfoot input {
 									<th class="column-heading" id='colheading009' th:text="'Retry User ID'"></th>
 									<th class="column-heading" id='colheading010' th:text="'Error'"></th>
 								</tr>
-          <tr>
-									<th id='col2heading001'></th>
+								<tr>
+									<th id='col2heading001'>
+										<div id="expandcollapseId">
+											<img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" />
+										</div>
+									</th>
 									<th class="filterhead" id='col2heading001' th:text="'User ID'"></th>
 									<th class="filterhead" id='col2heading002' th:text="'Task ID'"></th>
 									<th class="filterhead" id='col2heading003' th:text="'Path'"></th>
@@ -216,7 +220,7 @@ tfoot input {
 									<th class="filterhead" id='col2heading008' th:text="'Transfer Result'"></th>
 									<th class="filterhead" id='col2heading009' th:text="'Retry User ID'"></th>
 									<th class="filterhead" id='col2heading010' th:text="'Error'"></th>
-          </tr>
+								</tr>
 							</thead>
 							<tbody>
 								<tr id='attrCol0' th:each="result : ${results}">
@@ -302,6 +306,8 @@ tfoot input {
 <script>
 /*<![CDATA[*/
 	$(document).ready(function(){
+		var tableId = 'resultsGrid';
+		var table;
 		if(currentPage ==1){
 			currentPage = 1;
 		}
@@ -316,7 +322,10 @@ tfoot input {
 			queryAll = false;
 		}
 
-		var table = $('#' + 'resultsGrid').DataTable( {
+		loadDataTable();
+
+		function loadDataTable() {
+			table = $('#' + 'resultsGrid').DataTable( {
 				orderCellsTop: true,
 				"aaSorting": [],
 				dom: 'rt',
@@ -351,7 +360,7 @@ tfoot input {
 			          $("#resultsGrid").show();
 			      },
 		} ); //var table = $
-
+		} // loadDataTable
 		// Add event listener for opening and closing details
 		table.on('click', 'td.dt-control', function (e) {
 		    let tr = e.target.closest('tr');
@@ -374,51 +383,34 @@ tfoot input {
 	            .draw();
 	    } );
 
-		/*$('#resultsGrid thead tr:eq(1) th').each( function (i) {
-		        var title = $(this).text();
-				if(i > 0) {
-			        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
-			        $( 'input', this ).on( 'keyup change', function () {
-			            if ( table.column(i).search() !== this.value ) {
-			                table
-			                    .column(i)
-			                    .search( this.value )
-			                    .draw();
-			            }
-			        } );
-		        } else {
-					$(this).html( '<div id="expandcollapseId"><img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" /></div>');
-		        }
-		    } );*/
+		$('#expandcollapseId').on('click', expandCollapseAll);
+
+		function expandCollapseAll() {
+			let expandCollapseButtonDiv = document.getElementById("expandcollapseId");
+			if(expanded) {
+				table.rows().every(function(){
+					// If row has details expanded
+					if(this.child.isShown()){
+						// Collapse row details
+						this.child.hide();
+						$(this.node()).removeClass('shown');
+					}
+					expanded = false;
+					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
+				});
+			} else {
+			    table.rows().every(function(){
+			        // If row has details collapsed
+			        if(!this.child.isShown()){
+			            // Open this row
+			            this.child(format(this.data())).show();
+			            $(this.node()).addClass('shown');
+			        }
+			        expanded = true;
+					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
+			  });
+		}}
 	}); // $(document).ready(function(){
-
-	$('#expandcollapseId').on('click', expandCollapseAll);
-
-	function expandCollapseAll() {
-		let expandCollapseButtonDiv = document.getElementById("expandcollapseId");
-		if(expanded) {
-			table.rows().every(function(){
-				// If row has details expanded
-				if(this.child.isShown()){
-					// Collapse row details
-					this.child.hide();
-					$(this.node()).removeClass('shown');
-				}
-				expanded = false;
-				expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
-			});
-		} else {
-		    table.rows().every(function(){
-		        // If row has details collapsed
-		        if(!this.child.isShown()){
-		            // Open this row
-		            this.child(format(this.data())).show();
-		            $(this.node()).addClass('shown');
-		        }
-		        expanded = true;
-				expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
-		  });
-	}}
 
 	function format(d) {
 	    // `d` is the original data object for the row
