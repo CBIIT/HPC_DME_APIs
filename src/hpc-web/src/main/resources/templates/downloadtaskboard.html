@@ -323,6 +323,30 @@ tfoot input {
 			queryAll = false;
 		}
 
+		/*	This is for sorting to ignore the empty strings.
+			In the column definitions below(when defining the grid),
+			if a value of type is set to 'non-empty-string',
+			the 'Ascending Sort' ignores empty cells and orders the non-empty cells and shows
+			them as the first set of rows.
+		*/
+		jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+		    "non-empty-string-asc": function (str1, str2) {
+		        if(str1 == "")
+		            return 1;
+		        if(str2 == "")
+		            return -1;
+		        return ((str1 < str2) ? -1 : ((str1 > str2) ? 1 : 0));
+		    },
+
+		    "non-empty-string-desc": function (str1, str2) {
+		        if(str1 == "")
+		            return 1;
+		        if(str2 == "")
+		            return -1;
+		        return ((str1 < str2) ? 1 : ((str1 > str2) ? -1 : 0));
+		    }
+		} );
+
 		loadDataTable();
 
 		function loadDataTable() {
