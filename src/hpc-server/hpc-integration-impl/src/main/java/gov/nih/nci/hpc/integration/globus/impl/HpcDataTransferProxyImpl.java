@@ -96,6 +96,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private static final String INACTIVE_STATUS = "INACTIVE";
 	private static final String SUCCEEDED_STATUS = "SUCCEEDED";
 	private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
+	private static final String OK_STATUS = "OK";
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = "ExternalError.DirListingFailed.NotDirectory";
 
 	// ---------------------------------------------------------------------//
@@ -397,6 +398,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} else {
 			statusReport.setStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
 		}
+		
+		if (report.niceStatus.equals(OK_STATUS)) {
+			// Clear this task from the recoverable failure list in case it's there.
+			recoverableFailureTasks.remove(dataTransferRequestId);
+		}
 
 		return statusReport;
 	}
@@ -441,6 +447,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} else {
 			// Download still in progress.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+			
+			if (report.niceStatus.equals(OK_STATUS)) {
+				// Clear this task from the recoverable failure list in case it's there.
+				recoverableFailureTasks.remove(dataTransferRequestId);
+			}
 		}
 
 		return statusReport;
