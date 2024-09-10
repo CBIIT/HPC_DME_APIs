@@ -29,9 +29,7 @@
 <link href="css/select2-4.0.11.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
-<!--  link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" / -->
-<link href="DataTables/DataTables-2.1.4/datatables.min.css" rel="stylesheet">
-<!-- link href="https://cdn.datatables.net/v/dt/dt-1.13.11/b-2.4.2/fc-4.3.0/fh-3.4.0/r-2.5.0/sc-2.4.0/datatables.min.css" rel="stylesheet" -->
+<link href="DataTables/DataTables-2.1.5/css/dataTables.dataTables.min.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -338,7 +336,7 @@ tfoot input {
 <script src="js/jquery.nicescroll.js" type="text/javascript"></script>
 <script src="js/popper.min.js"></script>
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-<script src="https://cdn.datatables.net/2.1.5/js/dataTables.js"></script>
+<script src="DataTables/DataTables-2.1.5/js/dataTables.js"></script>
 <script src="js/select2-4.0.11.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
 <script type="https://cdn.datatables.net/responsive/3.0.3/js/dataTables.responsive.js"></script>
@@ -398,13 +396,8 @@ tfoot input {
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX: true,
-				//scrollY: 350,
-				/*fixedHeader: {
-					header: true,
-		            footer: true,
-		        },*/
-		        //paging: false,
-		        responsive: true,
+		        paging: false,
+		        responsive: false,
 				columnDefs: [ 
 							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
 							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
