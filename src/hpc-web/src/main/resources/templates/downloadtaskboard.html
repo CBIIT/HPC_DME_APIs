@@ -83,14 +83,6 @@ tfoot input {
         box-sizing: border-box;
     }
 
-/* Style for horizontal scroll on top */
-.dt-scroll-body {
-    transform: rotateX(180deg);
-}
-.dt-scroll-body table {
-    transform: rotateX(180deg);
-}
-
 .imgDetails {
 	font-size: 28px
 }
@@ -396,6 +388,7 @@ tfoot input {
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX: true,
+				scrollY: '350px',
 		        paging: false,
 		        responsive: false,
 				columnDefs: [ 
@@ -415,13 +408,15 @@ tfoot input {
 							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
 						],
 				"lengthMenu": [ [-1], ["All"] ],
-				"initComplete": function () {
+				"fnInitComplete": function () {
 						var api = this.api();
 						// Setup - add a text input to each header cell
 						$('.filterhead', api.table().header()).each( function () {
 						 	var title = $(this).text();
 							$(this).html( '<input type="text" placeholder="Search '+title+'" class="column_search" />' );
 						} );
+						// Add Horizontal scroll on top
+						$('.dt-scroll-head').css('overflow', 'auto');
 						$("#resultsGrid").show();
 			      },
 		} );
