@@ -408,7 +408,7 @@ tfoot input {
 							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
 						],
 				"lengthMenu": [ [-1], ["All"] ],
-				"fnInitComplete": function () {
+				"initComplete": function () {
 						var api = this.api();
 						// Setup - add a text input to each header cell
 						$('.filterhead', api.table().header()).each( function () {
