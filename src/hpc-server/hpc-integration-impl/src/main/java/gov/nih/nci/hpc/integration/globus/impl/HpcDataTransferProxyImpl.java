@@ -395,13 +395,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} else if (baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
 			// Upload is in progress. Return status based on the archive type.
 			statusReport.setStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
+
+			// Clear tracking of recoverable failure if needed.
+			transferRecovered(dataTransferRequestId, report, loggingPrefix);
+
 		} else {
 			statusReport.setStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
-		}
-		
-		if (report.niceStatus.equals(OK_STATUS)) {
-			// Clear this task from the recoverable failure list in case it's there.
-			recoverableFailureTasks.remove(dataTransferRequestId);
+
+			// Clear tracking of recoverable failure if needed.
+			transferRecovered(dataTransferRequestId, report, loggingPrefix);
 		}
 
 		return statusReport;
@@ -447,11 +449,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} else {
 			// Download still in progress.
 			statusReport.setStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
-			
-			if (report.niceStatus.equals(OK_STATUS)) {
-				// Clear this task from the recoverable failure list in case it's there.
-				recoverableFailureTasks.remove(dataTransferRequestId);
-			}
+
+			// Clear tracking of recoverable failure if needed.
+			transferRecovered(dataTransferRequestId, report, loggingPrefix);
 		}
 
 		return statusReport;
@@ -949,18 +949,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 
 			// The transfer task is deemed failed and needs to be cancelled.
+			String transferErrorMessage = recoverableFailureTasks.remove(dataTransferRequestId) != null ?
+					"Transfer error recovery period expired [" + recoverableFailureTimeout + " minutes]" : "Transfer error";
+			
 			logger.error(loggingPrefix
-					+ "[GLOBUS} transfer recovery period expired [{} minutes]. transferred deemed failed: globus-task-id: {}, status: {}, niceStatus: {}",
-					recoverableFailureTimeout, dataTransferRequestId, report.status, report.niceStatus);
+					+ "[GLOBUS} {}. transferred deemed failed: globus-task-id: {}, status: {}, niceStatus: {}",
+					transferErrorMessage, dataTransferRequestId, report.status, report.niceStatus);
 			try {
 				cancelTransferRequest(authenticatedToken, dataTransferRequestId, "HPC-DME deemed task failed");
 				logger.info(loggingPrefix + "[GLOBUS] transfer successfully canceled: globus-task-id: {}",
 						dataTransferRequestId);
-				report.errorMessage = "Transfer error recovery period expired. Globus task cancelled";
+				report.errorMessage = transferErrorMessage + ". Globus task cancelled";
 
 			} catch (HpcException e) {
 				logger.error(loggingPrefix + "[GLOBUS] Failed to cancel task", e);
-				report.errorMessage = "Transfer error recovery period expired. Globus task failed to cancel";
+				report.errorMessage = transferErrorMessage + ". Globus task failed to cancel";
 			}
 
 			recoverableFailureTasks.remove(dataTransferRequestId);
@@ -968,6 +971,31 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Check if a Globus transfer request recovered, and cleared the failed task
+	 * tracking.
+	 *
+	 * @param dataTransferRequestId The globus task ID.
+	 * @param report                The Globus transfer report.
+	 * @param loggingPrefix         Contextual (download/upload tasks etc) logging
+	 *                              text to prefix in logging.
+	 */
+	private void transferRecovered(String dataTransferRequestId, HpcGlobusDataTransferReport report,
+			String loggingPrefix) {
+		if (StringUtils.isEmpty(report.niceStatus) || report.niceStatus.equals(OK_STATUS)) {
+			HpcGlobusTransferStatusTimestamp transfaerStatusTimestamp = recoverableFailureTasks
+					.remove(dataTransferRequestId);
+			// Clear this task from the recoverable failure list in case it's there.
+			if (transfaerStatusTimestamp != null) {
+				// The transfer task recovered from a failure
+				logger.error(loggingPrefix
+						+ "[GLOBUS} transfer recovered. globus-task-id: {}, status: {}, niceStatus: {}, recoveredNiceStatus: {}",
+						recoverableFailureTimeout, dataTransferRequestId, report.status, report.niceStatus,
+						transfaerStatusTimestamp.niceStatus);
+			}
+		}
 	}
 
 	/**
