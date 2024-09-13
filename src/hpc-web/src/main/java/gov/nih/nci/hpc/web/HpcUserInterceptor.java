@@ -107,6 +107,7 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 			    String action = request.getRequestURI();
 			    try {
 			    	if(StringUtils.isBlank(oidcAccessToken)) {
+			    		// This is to support Site Minder Web agent and no longer used.
 			            String smSession = getCookieValue(request, "NIHSMSESSION");
 	    	            authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession,
 	    	                    authenticateURL);
@@ -120,7 +121,6 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
                            throw new HpcWebException("Invalid User ");
                         }
 
-                        userId = "dinhys";
                         log.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());
     	                //Get DOC Models, go to server only if not available in cache
     	                HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
