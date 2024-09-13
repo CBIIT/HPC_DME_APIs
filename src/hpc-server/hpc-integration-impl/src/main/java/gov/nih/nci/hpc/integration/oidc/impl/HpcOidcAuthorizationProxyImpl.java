@@ -7,6 +7,8 @@ import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -44,6 +46,8 @@ public class HpcOidcAuthorizationProxyImpl implements HpcOidcAuthorizationProxy 
 	// User Info Attribute
 	String userinfoAttribute = null;
 
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -112,6 +116,7 @@ public class HpcOidcAuthorizationProxyImpl implements HpcOidcAuthorizationProxy 
 				userId = resp.get(userinfoAttribute).toString();
 				
 			} else {
+				logger.error("OIDC User info endpoing access not successful, response=" + response.getStatus());
 				throw new HpcException("OIDC User info endpoing access not successful, response=" + response.getStatus(),
 						HpcErrorType.REQUEST_AUTHENTICATION_FAILED);
 			}
@@ -119,6 +124,7 @@ public class HpcOidcAuthorizationProxyImpl implements HpcOidcAuthorizationProxy 
 			return userId;
 
 		} catch (Exception e) {
+			logger.error("OIDC User info endpoing access not successful", e);
 			throw new HpcException("OIDC User info endpoing access not successful", e);
 		}
 	}
