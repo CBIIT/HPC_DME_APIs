@@ -28,6 +28,7 @@
 <link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
 <link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="DataTables/ColResize/jquery.dataTables.colResize.css">
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -35,22 +36,13 @@
       <script src="js/respond.min.js"></script>
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
-<script src="js/angular/1.5.0/angular.js"></script>
-<script src="js/angular/1.5.0/angular-touch.js"></script>
-<script src="js/angular/1.5.0/angular-animate.js"></script>
-<script src="js/ui-grid/csv.js"></script>
-<script src="js/ui-grid/pdfmake.js"></script>
-<script src="js/ui-grid/vfs_fonts.js"></script>
-
-<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
 <script src="js/jquery/3.1.1/jquery.min.js"></script>
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-<link rel="stylesheet" href="css/ui-grid.css" type="text/css" />
-
 
 <script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
+<script src="DataTables/ColResize/jquery.dataTables.colResize.js"></script>
 
 
 <style>
@@ -60,13 +52,28 @@
 	height: 300px
 }
 
-/* Style for horizontal scroll on top */
-.dataTables_scrollBody {
-    transform:rotateX(180deg);
+.userIdWidth{
+	width:100px;
 }
-.dataTables_scrollBody table {
-    transform:rotateX(180deg);
+.taskIdWidth{
+	width:250px;
 }
+.resultWidth{
+	width:100px;
+}
+.sourceTypeWidth{
+	width:110px;
+}
+.createdWidth{
+	width:110px;
+}
+.completedWidth{
+	width:110px;
+}
+.errorWidth{
+	width:200px;
+}
+
 
 </style>
 <script th:inline="javascript">
@@ -78,59 +85,6 @@
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
 
-var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
-
-app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', function ($scope, $http, $interval, uiGridConstants ) {
-
-	$scope.gridOptions1 = {
-    enableSorting: true,
-    enableFiltering: true,
-    paginationPageSize: 100,
-    minRowsToShow: currentPageSize,
-    enablePaginationControls: false,
-    enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
-    columnDefs: [
-		 		 { field: 'userId', width:150, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
-                 { field: 'taskId', minWidth:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="uploadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
-                 { field: 'sourceType', width:200, displayName : 'Source Type'},
-                 { field: 'result', width:150, displayName: 'Transfer Result'},
-                 { field: 'created', width:175, displayName : 'Created On' },
-                 { field: 'completed', width:175, displayName : 'Completed On'}
-                ],
-    onRegisterApi: function( gridApi ) {
-      $scope.grid1Api = gridApi;
-      $scope.totalPages = totalPages;
-      $scope.currentPage = currentPage;
-      $scope.totalRows = totalRows;
-      $scope.currentPageSize = currentPageSize;
-    }
-  };
-  $scope.gridOptions1.totalItems = totalRows;
-  $scope.gridOptions1.data = results;
-  if(queryAll == "false")
-	  $scope.gridOptions1.columnDefs[0].visible = false;
-
-  $scope.expandAll = function(){
-	    $scope.gridApi.treeBase.expandAllRows();
-	  };
-
-  $scope.getId = function(grid,row,col)
-	  {
-	    console.log(row);
-	    if(row.treeNode.children[0].row.treeNode.children[0])
-	    {
-	      var entity = row.treeNode.children[0].row.treeNode.children[0].row.entity;
-	      return entity.id;
-	    }
-	    else if(row.treeNode.children[0])
-	    {
-	      var entity = row.treeNode.children[0].row.entity;
-	      return entity.id;
-	    }
-
-	    return row.entity.id;
-	  }	 
-}]);
 /*]]>*/
 </script>
 
@@ -208,6 +162,15 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 											<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
 											<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
 											<th class="column-heading" id='colheading009' th:text="'Error'"></th>
+										</tr>
+										<tr id='attrRow3'>
+											<th class="column-heading filterhead" id='colheading0012' th:text="'User ID'"></th>
+											<th class="column-heading filterhead" id='colheading0022' th:text="'Task ID'"></th>
+											<th class="column-heading filterhead" id='colheading0042' th:text="'Source Type'"></th>
+											<th class="column-heading filterhead" id='colheading0082' th:text="'Transfer Result'"></th>
+											<th class="column-heading filterhead" id='colheading0062' th:text="'Created On'"></th>
+											<th class="column-heading filterhead" id='colheading0072' th:text="'Completed On'"></th>
+											<th class="column-heading filterhead" id='colheading0092' th:text="'Error'"></th>
 										</tr>
 									</thead>
 									<tbody>
@@ -297,14 +260,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 			// User Role
 			queryAll = false;
 		}
-
-		$('#resultsGrid thead tr')
+		
+		/*$('#resultsGrid thead tr')
         .clone(true)
         .appendTo('#resultsGrid thead');
 
 		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
 		        var title = $(this).text();
-		        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
+		        $(this).html( '<input type="text" placeholder="Filter" />' );
 		        $( 'input', this ).on( 'keyup change', function () {
 		            if ( table.column(i).search() !== this.value ) {
 		                table
@@ -313,7 +276,17 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 		                    .draw();
 		            }
 		        } );
+		    } );*/
+		    
+		    
+			// Apply the search
+		    $( 'table thead'  ).on( 'keyup', ".column_search",function () {
+		        table
+		            .column( $(this).parent().index() )
+		            .search( this.value )
+		            .draw();
 		    } );
+		    
 
 		/*
 			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
@@ -329,18 +302,59 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridConstants', f
 				"aaSorting": [],
 				dom: 'rt',
 				scrollX : 'TRUE',
+				autoWidth: false, 
+				colResize: {
+                    isEnabled: true,
+                    hoverClass: 'dt-colresizable-hover',
+                    hasBoundCheck: true,
+                    minBoundClass: 'dt-colresizable-bound-min',
+                    maxBoundClass: 'dt-colresizable-bound-max',
+                    saveState: false,
+                    isResizable: function (column) {
+                        return true;
+                    },
+                    onResize: function (column) {
+                        //console.log('...resizing...');
+                    },
+                    onResizeEnd: function (column, columns) {
+                        console.log('I have been resized!');
+                    },
+                    stateSaveCallback: function (settings, data) {
+                        let stateStorageName = window.location.pathname + "/colResizeStateData";
+                        localStorage.setItem(stateStorageName, JSON.stringify(data));
+                    },
+                    stateLoadCallback: function (settings) {
+                        let stateStorageName = window.location.pathname + "/colResizeStateData",
+                            data = localStorage.getItem(stateStorageName);
+                        return data != null ? JSON.parse(data) : null;
+                    }},
 				columnDefs: [ {targets: 0,  data: 'userId', width:100, visible: queryAll}, //userId
-							{targets: 1, data: 'taskId', width:250, visible: true},  // taskId
-							{targets: 2, data: 'sourceType', width: 110, visible: true},  // source type
+							{targets: 1, data: 'taskId', width:280, visible: true},  // taskId
+							{targets: 2, data: 'sourceType', width: 130, visible: true},  // source type
 							{targets: 3, data: 'result', width: 100, visible: true},  // transfer result
 							{targets: 4, data: 'created', width: 110, visible: true, orderData:[7]},  // created
 							{targets: 5, data: 'completed', width: 110, visible: true, orderData:[8]},  // completed
-							{targets: 6, data: 'error', width: 200, type: 'non-empty-string', render: DataTable.render.ellipsis( 40, true )}, // error
+							{targets: 6, data: 'error', width: 210, type: 'non-empty-string', render: DataTable.render.ellipsis( 40, true )}, // error
 							{targets: 7, data: 'sortCreated', visible: false, searchable: false},
 							{targets: 8, data: 'sortCompleted', visible: false, searchable: false}
 				],
 				"lengthMenu": [ [-1], ["All"] ],
+				"initComplete": function () {
+					var api = this.api();
+					// Setup - add a text input to each header cell
+					$('.filterhead', api.table().header()).each( function () {
+					 	var title = $(this).text();
+						$(this).html( '<input type="text" placeholder="Search '+title+'" class="column_search" />' );
+					} );
+					// Add Horizontal scroll on top
+					//$('.dt-scroll-head').css('overflow', 'auto');
+					$("#resultsGrid").show();
+		      },
+
 		} );
+		//RESIZE
+		//new $.fn.dataTable.ColResize(table, colResizeOptions);
+		//table.colResize.enable();  // enable plugin (i.e. when options was isEnabled: false)
 	});
 	
 	function displayAll()
