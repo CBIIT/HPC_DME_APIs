@@ -600,6 +600,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 			String[] chunks = authenticationToken.split("\\.");
 			String jwtHeader = new String(decoder.decode(chunks[0]));
 			if(jwtHeader.contains("HS256")) {
+				// This is DME token.
 				JwtParser jwtParser = Jwts.parser().setSigningKey(authenticationTokenSignatureKey).build();
 				Claims jwsClaims = (Claims) jwtParser.parse(authenticationToken).getPayload();
 		
@@ -617,7 +618,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 					// Data management account expired. Remove its properties.
 					tokenClaims.getDataManagementAccount().getProperties().clear();
 				}
-			} else {
+			} else if (jwtHeader.contains("RS256")) {
+				// This is OIDC access token.
 				String webKeys = oidcAuthorizationProxy.getJWKSet();
 				Map<String, ? extends Key> keyMap = Jwks.setParser().build()
 				        .parse(webKeys).getKeys().stream()
@@ -637,6 +639,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 				dataManagementAccount.setPassword("");
 				tokenClaims.setDataManagementAccount(dataManagementAccount);
 				tokenClaims.getDataManagementAccount().getProperties().clear();
+			} else {
+				logger.error("Invalid algorithm for token authentication");
+				return null;
 			}
 
 			return tokenClaims;
