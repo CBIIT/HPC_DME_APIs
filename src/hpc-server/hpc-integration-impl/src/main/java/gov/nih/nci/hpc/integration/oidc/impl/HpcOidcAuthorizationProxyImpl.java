@@ -116,16 +116,16 @@ public class HpcOidcAuthorizationProxyImpl implements HpcOidcAuthorizationProxy 
 				userId = resp.get(userinfoAttribute).toString();
 				
 			} else {
-				logger.error("OIDC User info endpoing access not successful, response=" + response.getStatus());
-				throw new HpcException("OIDC User info endpoing access not successful, response=" + response.getStatus(),
+				logger.error("OIDC User info endpoint access not successful, response=" + response.getStatus());
+				throw new HpcException("OIDC User info endpoint access not successful, response=" + response.getStatus(),
 						HpcErrorType.REQUEST_AUTHENTICATION_FAILED);
 			}
 
 			return userId;
 
 		} catch (Exception e) {
-			logger.error("OIDC User info endpoing access not successful", e);
-			throw new HpcException("OIDC User info endpoing access not successful", e);
+			logger.error("OIDC User info endpoint access not successful", e);
+			throw new HpcException("OIDC User info endpoint access not successful", e);
 		}
 	}
 
