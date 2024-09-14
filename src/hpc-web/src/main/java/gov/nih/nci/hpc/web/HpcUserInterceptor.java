@@ -120,7 +120,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
                         if (user == null) {
                            throw new HpcWebException("Invalid User ");
                         }
-
+                        
+                        userId = user.getUserId();
                         log.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());
     	                //Get DOC Models, go to server only if not available in cache
     	                HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
