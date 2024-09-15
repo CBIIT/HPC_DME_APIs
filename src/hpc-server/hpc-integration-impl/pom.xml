@@ -138,5 +138,13 @@
 		    <groupId>com.box</groupId>
 		    <artifactId>box-java-sdk</artifactId>
 		</dependency>
+		<dependency>
+	       <groupId>com.fasterxml.jackson.jaxrs</groupId>
+	       <artifactId>jackson-jaxrs-json-provider</artifactId>
+	    </dependency>
+	    <dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+		</dependency>
 	</dependencies>
 </project>
