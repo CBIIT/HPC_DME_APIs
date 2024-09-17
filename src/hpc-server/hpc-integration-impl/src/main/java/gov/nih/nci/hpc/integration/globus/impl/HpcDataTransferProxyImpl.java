@@ -966,7 +966,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				report.errorMessage = transferErrorMessage + ". Globus task failed to cancel";
 			}
 
-			recoverableFailureTasks.remove(dataTransferRequestId);
 			return true;
 		}
 
