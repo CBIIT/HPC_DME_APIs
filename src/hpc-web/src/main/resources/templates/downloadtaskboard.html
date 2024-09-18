@@ -218,7 +218,7 @@ tfoot input {
 					</div> <!-- div2 -->
 					<!-- div id="spinner" class="overlay"></div -->
 					<div th:if="${results != null and results.size() > 0}">
-						<table id="resultsGrid" class="display cell-border" style="width:100%">
+						<table id="resultsGrid" class="display cell-border" style="width:100%; table-layout: fixed;">
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 							<thead>
 								<tr id='attrRow2'>
@@ -402,7 +402,7 @@ tfoot input {
 					// Setup - add a text input to each header cell
 					$('.filterhead', api.table().header()).each( function () {
 						var title = $(this).text();
-						$(this).html( '<input type="text" placeholder="Search '+title+'" class="column_search" />' );
+						$(this).html( '<input type="text" placeholder="Filter '+title+'" class="column_search" />' );
 					} );
 					// Add Horizontal scroll on top and bottom - Begin
 					 $('dt-scroll-body').css({
