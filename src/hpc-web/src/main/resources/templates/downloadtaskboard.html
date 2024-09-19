@@ -27,8 +27,6 @@
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
 <link href="css/select2-4.0.11.min.css" rel="stylesheet" />
-<link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
-<link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
 <link href="DataTables/DataTables-2.1.5/css/dataTables.dataTables.min.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
@@ -320,11 +318,6 @@ tfoot input {
 <script src="DataTables/DataTables-2.1.5/js/dataTables.js"></script>
 <script src="js/select2-4.0.11.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
-<script type="https://cdn.datatables.net/responsive/3.0.3/js/dataTables.responsive.js"></script>
-<script type="https://cdn.datatables.net/responsive/3.0.3/js/responsive.dataTables.js"></script>
-<script type="https://cdn.datatables.net/fixedheader/4.0.1/js/dataTables.fixedHeader.js"></script>
-<script type="https://cdn.datatables.net/fixedheader/4.0.1/js/fixedHeader.dataTables.js"></script>
-<script type="https://github.com/dhobi/datatables.colResize/blob/master/jquery.dataTables.colResize.js"></script>
 
 <!--custom script for all page-->
 <script src="js/scripts.js"></script>
@@ -376,9 +369,7 @@ tfoot input {
 			"aaSorting": [],
 			dom: 'rt',
 			scrollX: true,
-			scrollY: '600',
-			scrollCollapse: true,
-			fixedHeader: true,
+			scrollY: '500',
 	        paging: false,
 	        responsive: false,
 			columnDefs: [
@@ -421,8 +412,12 @@ tfoot input {
 	                $('.dt-scroll-head').on('scroll', function () {
 	                    $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
 	                });
-	             // Add Horizontal scroll on top and bottom - End
+					//End of code foradding Horizontal scroll on top and bottom
+
+					// Show grid
 					$("#resultsGrid").show();
+					// Adjust Grid columns
+					$('#resultsGrid').DataTable().columns.adjust();
 		      },
 		} );
 
