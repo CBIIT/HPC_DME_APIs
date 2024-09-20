@@ -27,8 +27,6 @@
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
 <link href="css/select2-4.0.11.min.css" rel="stylesheet" />
-<link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
-<link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
 <link href="DataTables/DataTables-2.1.5/css/dataTables.dataTables.min.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
@@ -218,7 +216,7 @@ tfoot input {
 					</div> <!-- div2 -->
 					<!-- div id="spinner" class="overlay"></div -->
 					<div th:if="${results != null and results.size() > 0}">
-						<table id="resultsGrid" class="display cell-border" style="width:100%">
+						<table id="resultsGrid" class="display cell-border" style="width:100%; table-layout: fixed;">
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 							<thead>
 								<tr id='attrRow2'>
@@ -285,17 +283,6 @@ tfoot input {
 							</tbody>
 							<tfoot>
 								<tr id='attrFooter2'>
-									<th class="expandcollapseId" id='colf1'></th>
-									<th class="column-heading userIdWidth" id='colfoot001' th:text="'User ID'"></th>
-									<th class="column-heading taskIdWidth" id='colfoot002' th:text="'Task ID'"></th>
-									<th class="column-heading pathWidth" id='colfoot003' th:text="'Path'"></th>
-									<th class="column-heading typeWidth" id='colfoot004' th:text="'Type'"></th>
-									<th class="column-heading destinationWidth" id='colfoot005' th:text="'Destination Type'"></th>
-									<th class="column-heading createdWidth" id='colfoot006' th:text="'Created On'"></th>
-									<th class="column-heading completedWidth" id='colfoot007' th:text="'Completed On'"></th>
-									<th class="column-heading resultWidth" id='colfoot008' th:text="'Transfer Result'"></th>
-									<th class="column-heading retryUserIdWidth" id='colfoot009' th:text="'Retry User ID'"></th>
-									<th class="column-heading errorWidth" id='colfoot0010' th:text="'Error'"></th>
 								</tr>
 							</tfoot>
 						</table>
@@ -331,11 +318,6 @@ tfoot input {
 <script src="DataTables/DataTables-2.1.5/js/dataTables.js"></script>
 <script src="js/select2-4.0.11.min.js"></script>
 <script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
-<script type="https://cdn.datatables.net/responsive/3.0.3/js/dataTables.responsive.js"></script>
-<script type="https://cdn.datatables.net/responsive/3.0.3/js/responsive.dataTables.js"></script>
-<script type="https://cdn.datatables.net/fixedheader/4.0.1/js/dataTables.fixedHeader.js"></script>
-<script type="https://cdn.datatables.net/fixedheader/4.0.1/js/fixedHeader.dataTables.js"></script>
-<script type="https://github.com/dhobi/datatables.colResize/blob/master/jquery.dataTables.colResize.js"></script>
 
 <!--custom script for all page-->
 <script src="js/scripts.js"></script>
@@ -382,44 +364,61 @@ tfoot input {
 		    }
 		} );
 
-		//function loadDataTable() {
-			var table = $('#' + 'resultsGrid').DataTable( {
-				orderCellsTop: true,
-				"aaSorting": [],
-				dom: 'rt',
-				scrollX: true,
-				scrollY: '1300px',
-				fixedHeader: true,
-		        paging: false,
-		        responsive: false,
-				columnDefs: [ 
-							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
-							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
-							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
-							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
-							{targets: 4, data: 'type', width:100, visible: true},  // type
-							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
-							{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
-							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
-							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
-							{targets: 11, data: 'displayPath', visible: false},
-							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
-							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
-						],
-				"lengthMenu": [ [-1], ["All"] ],
-				"initComplete": function () {
-						var api = this.api();
-						// Setup - add a text input to each header cell
-						$('.filterhead', api.table().header()).each( function () {
-						 	var title = $(this).text();
-							$(this).html( '<input type="text" placeholder="Search '+title+'" class="column_search" />' );
-						} );
-						// Add Horizontal scroll on top
-						$('.dt-scroll-head').css('overflow', 'auto');
-						$("#resultsGrid").show();
-			      },
+		var table = $('#' + 'resultsGrid').DataTable( {
+			orderCellsTop: true,
+			"aaSorting": [],
+			dom: 'rt',
+			scrollX: true,
+			scrollY: '500',
+	        paging: false,
+	        responsive: false,
+			columnDefs: [
+						{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
+						{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
+						{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
+						{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
+						{targets: 4, data: 'type', width:100, visible: true},  // type
+						{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
+						{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
+						{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
+						{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
+						{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+						{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
+						{targets: 11, data: 'displayPath', visible: false},
+						{targets: 12, data: 'sortCreated', visible: false, searchable: false},
+						{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
+					],
+			"lengthMenu": [ [-1], ["All"] ],
+			"initComplete": function () {
+					var api = this.api();
+					// Setup - add a text input to each header cell
+					$('.filterhead', api.table().header()).each( function () {
+						var title = $(this).text();
+						$(this).html( '<input type="text" placeholder="Filter '+title+'" class="column_search" />' );
+					} );
+					// Add Horizontal scroll on top and bottom - Begin
+					 $('dt-scroll-body').css({
+	                    'overflow': 'hidden',
+	                    'border': '0'
+	                });
+	                // Enable TFOOT scoll bars
+	                $('.dt-scroll-foot').css('overflow', 'auto');
+	                $('.dt-scroll-head').css('overflow', 'auto');
+	                $('.dt-scroll-body').css('overflow', 'auto');
+	                // Sync TFOOT scrolling with TBODY
+	                $('.dt-scroll-foot').on('scroll', function () {
+	                    $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
+	                });
+	                $('.dt-scroll-head').on('scroll', function () {
+	                    $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
+	                });
+					//End of code foradding Horizontal scroll on top and bottom
+
+					// Show grid
+					$("#resultsGrid").show();
+					// Adjust Grid columns
+					$('#resultsGrid').DataTable().columns.adjust();
+		      },
 		} );
 
 		// Add event listener for opening and closing details
