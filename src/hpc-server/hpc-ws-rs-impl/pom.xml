@@ -130,7 +130,7 @@
               <skipIfExist>false</skipIfExist>
             </configuration>
           </execution> -->
-          <execution>
+          <!--execution>
             <id>importIrodsCertificate</id>
             <goals>
               <goal>importCertificate</goal>
@@ -145,7 +145,7 @@
               <noprompt>true</noprompt>
               <skipIfExist>false</skipIfExist>
             </configuration>
-          </execution>
+          </execution-->
           <execution>
             <id>importLdapIntermediateCertificate</id>
             <goals>
