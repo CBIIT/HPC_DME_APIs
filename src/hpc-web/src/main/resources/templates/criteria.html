@@ -289,8 +289,22 @@
 		$('[data-toggle="tooltip"]').tooltip();
 		$('#level1').select2().on("change", function(e) {
 		  populateLevelAttributes($("#level1").val(), "level1")
+		  $("#operator1 option[value='PATH_LIKE']").prop("disabled", true);
+		  $('#operator1').val("").change();
+		  $('#operator1').prop('disabled', false);
         });
-		$('#attrName1').select2();
+		$('#attrName1').select2().on("change", function(e) {
+		  if($('#attrName1').val() == "path") {
+			  $("#operator1 option[value='PATH_LIKE']").prop("disabled", false);
+			  $('#operator1').val("PATH_LIKE").change();
+			  $('#operator1').prop('disabled', true);
+		  } else {
+			  $("#operator1 option[value='PATH_LIKE']").prop("disabled", true);
+			  $('#operator1').val("").change();
+			  $('#operator1').prop('disabled', false);
+		  }
+        });
+		$('#attrName1').change();
 	});
 	
   $('#createdDate').datepicker({
@@ -578,12 +592,26 @@ function addRow() {
     $('#level'+(rowId)).select2().on("change", function(e) {
     	id = $(this).attr('id');
 		populateLevelAttributes($('#'+(id)).val(), id)
+		$("#operator"+(rowId)+" option[value='PATH_LIKE']").prop("disabled", true);
+		$('#operator'+(rowId)).val("").change();
+		$('#operator1'+(rowId)).prop('disabled', false);
     });
     
    	var $attroptions = $('#attrName'+ lastRow + " > option").clone();
     $('#attrName'+(rowId)).empty();
     $('#attrName'+(rowId)).append($attroptions);
-    $('#attrName'+(rowId)).select2();
+    $('#attrName'+(rowId)).select2().on("change", function(e) {
+		  if($('#attrName'+(rowId)).val() == "path") {
+			  $("#operator"+(rowId)+" option[value='PATH_LIKE']").prop("disabled", false);
+			  $('#operator'+(rowId)).val("PATH_LIKE").change();
+			  $('#operator'+(rowId)).prop('disabled', true);
+		  } else {
+			  $("#operator"+(rowId)+" option[value='PATH_LIKE']").prop("disabled", true);
+			  $('#operator'+(rowId)).val("").change();
+			  $('#operator'+(rowId)).prop('disabled', false);
+		  }
+    });
+	$('#attrName'+(rowId)).change();
     $('#level'+(rowId)).val("ANY").change();
     $('#attrName'+(rowId)).val("ANY").change();
 
@@ -635,12 +663,13 @@ function validateAndSubmit()
 		if(attrName.startsWith("attrName"))
 		{
 			var suffix = attrName.substring("attrName".length);
+			$('#operator'+suffix).prop('disabled', false);
 			var attrNameValue = document.getElementById(attrName).value;
 			if(attrNameValue != "-1")
 			{
 				var attrOperValue = document.getElementById("operator"+suffix).value;	
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
-				if(attrOperValue == "LIKE" && attrValueValue.indexOf('%') == -1) {
+				if((attrOperValue == "LIKE" || attrOperValue == "PATH_LIKE") && attrValueValue.indexOf('%') == -1) {
 					document.getElementById("attrValue"+suffix).value = '%' + attrValueValue + '%';
 				}
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
@@ -654,7 +683,7 @@ function validateAndSubmit()
 			{
 				var attrOperValue = document.getElementById("operator"+suffix).value;	
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
-				if(attrOperValue == "LIKE" && attrValueValue.indexOf('%') == -1) {
+				if((attrOperValue == "LIKE" || attrOperValue == "PATH_LIKE") && attrValueValue.indexOf('%') == -1) {
 					document.getElementById("attrValue"+suffix).value = '%' + attrValueValue + '%';
 				}
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
