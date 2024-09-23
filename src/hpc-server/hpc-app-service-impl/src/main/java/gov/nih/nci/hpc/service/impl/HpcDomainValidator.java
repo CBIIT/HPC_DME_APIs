@@ -458,7 +458,7 @@ public class HpcDomainValidator {
 		}
 
 		// Validate the sub simple queries.
-		if (compoundMetadataQuery.getQueries() != null) {
+		if (!isEmpty(compoundMetadataQuery.getQueries())) {
 			for (HpcMetadataQuery metadataQuery : compoundMetadataQuery.getQueries()) {
 				HpcDomainValidationResult subQueryValidationResult = isValidMetadataQuery(metadataQuery,
 						dataManagementProxy);
@@ -469,7 +469,7 @@ public class HpcDomainValidator {
 		}
 
 		// Validate the sub compound queries.
-		if (compoundMetadataQuery.getCompoundQueries() != null) {
+		if (!isEmpty(compoundMetadataQuery.getCompoundQueries())) {
 			for (HpcCompoundMetadataQuery subQuery : compoundMetadataQuery.getCompoundQueries()) {
 				HpcDomainValidationResult subCompoundQueryValidationResult = isValidCompoundMetadataQuery(subQuery,
 						queryDepth + 1, dataManagementProxy);
@@ -495,6 +495,12 @@ public class HpcDomainValidator {
 		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
 		validationResult.setValid(false);
 
+		HpcMetadataQueryOperator operator = metadataQuery.getOperator();
+		if (operator == null) {
+			validationResult.setMessage("Null operator in query [" + metadataQuery + "]. " + "Valid values are ["
+					+ Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
+			return validationResult;
+		}
 		HpcMetadataQueryAttributeMatch attribueMatch = metadataQuery.getAttributeMatch();
 		if ((attribueMatch == null || attribueMatch.equals(HpcMetadataQueryAttributeMatch.EXACT))
 				&& StringUtils.isEmpty(metadataQuery.getAttribute())) {
@@ -502,7 +508,9 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 		if ((attribueMatch != null && attribueMatch.equals(HpcMetadataQueryAttributeMatch.ANY))
-				&& !StringUtils.isEmpty(metadataQuery.getAttribute())) {
+				&& !StringUtils.isEmpty(metadataQuery.getAttribute())
+				&& (!operator.equals(HpcMetadataQueryOperator.PATH_EQUAL)
+						&& !operator.equals(HpcMetadataQueryOperator.PATH_LIKE))) {
 			validationResult.setMessage(
 					"Metadata attribute in not empty w/ match any attribute in query [" + metadataQuery + "]");
 			return validationResult;
@@ -511,11 +519,7 @@ public class HpcDomainValidator {
 			validationResult.setMessage("Null metadata value in query [" + metadataQuery + "]");
 			return validationResult;
 		}
-		if (metadataQuery.getOperator() == null) {
-			validationResult.setMessage("Null operator in query [" + metadataQuery + "]. " + "Valid values are ["
-					+ Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
-			return validationResult;
-		}
+
 		if (metadataQuery.getLevelFilter() != null) {
 			HpcDomainValidationResult levelFilterValidationResult = isValidMetadataQueryLevelFilter(
 					metadataQuery.getLevelFilter());
@@ -541,7 +545,8 @@ public class HpcDomainValidator {
 			if (StringUtils.isEmpty(metadataQuery.getAttribute()) || !metadataQuery.getAttribute().equals("path")) {
 				validationResult.setMessage("No 'path' attribute provided w/ path-operator [" + metadataQuery + "]");
 				return validationResult;
-			} else if (metadataQuery.getAttributeMatch() != null) {
+			} else if (metadataQuery.getAttributeMatch() != null
+					&& !metadataQuery.getAttributeMatch().equals(HpcMetadataQueryAttributeMatch.ANY)) {
 				validationResult.setMessage("attributeMatch provided w/ path-operator [" + metadataQuery + "]");
 				return validationResult;
 			} else {
