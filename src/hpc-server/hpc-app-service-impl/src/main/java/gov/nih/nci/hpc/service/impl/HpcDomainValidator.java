@@ -320,11 +320,10 @@ public class HpcDomainValidator {
 	 * Validate named compound metadata query.
 	 *
 	 * @param namedCompoundMetadataQuery Named compound metadata query.
-	 * @param dataManagementProxy        Data Management Proxy instance.
 	 * @return Domain validation result
 	 */
 	public static HpcDomainValidationResult isValidNamedCompoundMetadataQuery(
-			HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery, HpcDataManagementProxy dataManagementProxy) {
+			HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) {
 		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
 		validationResult.setValid(false);
 
@@ -351,7 +350,7 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 
-		return isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery(), dataManagementProxy);
+		return isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery(), null);
 	}
 
 	// ---------------------------------------------------------------------//
@@ -487,7 +486,9 @@ public class HpcDomainValidator {
 	 * Validate a metadata (simple) query.
 	 *
 	 * @param metadataQuery       The metadata query to validate.
-	 * @param dataManagementProxy Data Management Proxy instance.
+	 * @param dataManagementProxy (Optional) Data Management Proxy instance. If
+	 *                            provided, the path value for p[ath-operators is
+	 *                            set as the absolute path in iRODS.
 	 * @return Domain validation result.
 	 */
 	private static HpcDomainValidationResult isValidMetadataQuery(HpcMetadataQuery metadataQuery,
@@ -547,7 +548,7 @@ public class HpcDomainValidator {
 					&& !metadataQuery.getAttributeMatch().equals(HpcMetadataQueryAttributeMatch.PATH)) {
 				validationResult.setMessage("attributeMatch provided w/ path-operator [" + metadataQuery + "]");
 				return validationResult;
-			} else {
+			} else if (dataManagementProxy != null) {
 				metadataQuery.setValue(dataManagementProxy.getAbsolutePath(toNormalizedPath(metadataQuery.getValue())));
 				metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.PATH);
 			}
