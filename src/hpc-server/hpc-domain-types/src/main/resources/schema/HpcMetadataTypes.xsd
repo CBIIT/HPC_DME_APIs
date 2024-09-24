@@ -149,6 +149,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="EXACT" />
 			<xsd:enumeration value="ANY" />
+			<xsd:enumeration value="PATH" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
