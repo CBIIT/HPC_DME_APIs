@@ -356,8 +356,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
 	public void saveQuery(String nciUserId, HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery)
 			throws HpcException {
 		// Validate the compound query.
-		HpcDomainValidationResult validationResult = isValidNamedCompoundMetadataQuery(namedCompoundMetadataQuery,
-				dataManagementProxy);
+		HpcDomainValidationResult validationResult = isValidNamedCompoundMetadataQuery(namedCompoundMetadataQuery);
 		if (!validationResult.getValid()) {
 			throw new HpcException("Invalid named compound metadata query: " + validationResult.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT);
