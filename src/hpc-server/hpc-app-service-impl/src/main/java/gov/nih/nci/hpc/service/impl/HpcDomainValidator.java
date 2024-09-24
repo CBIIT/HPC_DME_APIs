@@ -508,9 +508,7 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 		if ((attribueMatch != null && attribueMatch.equals(HpcMetadataQueryAttributeMatch.ANY))
-				&& !StringUtils.isEmpty(metadataQuery.getAttribute())
-				&& (!operator.equals(HpcMetadataQueryOperator.PATH_EQUAL)
-						&& !operator.equals(HpcMetadataQueryOperator.PATH_LIKE))) {
+				&& !StringUtils.isEmpty(metadataQuery.getAttribute())) {
 			validationResult.setMessage(
 					"Metadata attribute in not empty w/ match any attribute in query [" + metadataQuery + "]");
 			return validationResult;
@@ -546,12 +544,12 @@ public class HpcDomainValidator {
 				validationResult.setMessage("No 'path' attribute provided w/ path-operator [" + metadataQuery + "]");
 				return validationResult;
 			} else if (metadataQuery.getAttributeMatch() != null
-					&& !metadataQuery.getAttributeMatch().equals(HpcMetadataQueryAttributeMatch.ANY)) {
+					&& !metadataQuery.getAttributeMatch().equals(HpcMetadataQueryAttributeMatch.PATH)) {
 				validationResult.setMessage("attributeMatch provided w/ path-operator [" + metadataQuery + "]");
 				return validationResult;
 			} else {
 				metadataQuery.setValue(dataManagementProxy.getAbsolutePath(toNormalizedPath(metadataQuery.getValue())));
-				metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
+				metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.PATH);
 			}
 		}
 
