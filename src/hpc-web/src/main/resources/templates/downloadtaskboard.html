@@ -123,7 +123,7 @@ tfoot input {
 	width:80px;
 }
 .errorWidth{
-	width:190px;
+	width:325px;
 }
 </style>
 <script th:inline="javascript">
@@ -369,7 +369,8 @@ tfoot input {
 			"aaSorting": [],
 			dom: 'rt',
 			scrollX: true,
-			scrollY: '500',
+			scrollY: '80vh',
+			scrollCollapse: true,
 	        paging: false,
 	        responsive: false,
 			columnDefs: [
@@ -383,7 +384,7 @@ tfoot input {
 						{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
 						{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
 						{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-						{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
+						{targets: 10, data: 'error', width:325, type: 'non-empty-string', render: DataTable.render.ellipsis( 55, true )}, // error
 						{targets: 11, data: 'displayPath', visible: false},
 						{targets: 12, data: 'sortCreated', visible: false, searchable: false},
 						{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
