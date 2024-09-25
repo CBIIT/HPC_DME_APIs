@@ -10,6 +10,8 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +40,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
 /**
  * Helper class to validate domain objects.
@@ -305,11 +308,12 @@ public class HpcDomainValidator {
 	 * Validate compound metadata query.
 	 *
 	 * @param compoundMetadataQuery Compound Metadata query.
+	 * @param dataManagementProxy   Data Management Proxy instance.
 	 * @return Domain validation result
 	 */
-	public static HpcDomainValidationResult isValidCompoundMetadataQuery(
-			HpcCompoundMetadataQuery compoundMetadataQuery) {
-		return isValidCompoundMetadataQuery(compoundMetadataQuery, 1);
+	public static HpcDomainValidationResult isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery,
+			HpcDataManagementProxy dataManagementProxy) {
+		return isValidCompoundMetadataQuery(compoundMetadataQuery, 1, dataManagementProxy);
 	}
 
 	/**
@@ -346,7 +350,7 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 
-		return isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery());
+		return isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery(), null);
 	}
 
 	// ---------------------------------------------------------------------//
@@ -420,10 +424,12 @@ public class HpcDomainValidator {
 	 * @param compoundMetadataQuery Compound Metadata query.
 	 * @param queryDepth            The recursion depth of this method on the stack.
 	 *                              (used to enforce a limit)
+	 * @param dataManagementProxy   Data Management Proxy instance
 	 * @return Domain validation result.
 	 */
 	private static HpcDomainValidationResult isValidCompoundMetadataQuery(
-			HpcCompoundMetadataQuery compoundMetadataQuery, int queryDepth) {
+			HpcCompoundMetadataQuery compoundMetadataQuery, int queryDepth,
+			HpcDataManagementProxy dataManagementProxy) {
 		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
 		validationResult.setValid(false);
 
@@ -451,9 +457,10 @@ public class HpcDomainValidator {
 		}
 
 		// Validate the sub simple queries.
-		if (compoundMetadataQuery.getQueries() != null) {
+		if (!isEmpty(compoundMetadataQuery.getQueries())) {
 			for (HpcMetadataQuery metadataQuery : compoundMetadataQuery.getQueries()) {
-				HpcDomainValidationResult subQueryValidationResult = isValidMetadataQuery(metadataQuery);
+				HpcDomainValidationResult subQueryValidationResult = isValidMetadataQuery(metadataQuery,
+						dataManagementProxy);
 				if (!subQueryValidationResult.getValid()) {
 					return subQueryValidationResult;
 				}
@@ -461,10 +468,10 @@ public class HpcDomainValidator {
 		}
 
 		// Validate the sub compound queries.
-		if (compoundMetadataQuery.getCompoundQueries() != null) {
+		if (!isEmpty(compoundMetadataQuery.getCompoundQueries())) {
 			for (HpcCompoundMetadataQuery subQuery : compoundMetadataQuery.getCompoundQueries()) {
 				HpcDomainValidationResult subCompoundQueryValidationResult = isValidCompoundMetadataQuery(subQuery,
-						queryDepth + 1);
+						queryDepth + 1, dataManagementProxy);
 				if (!subCompoundQueryValidationResult.getValid()) {
 					return subCompoundQueryValidationResult;
 				}
@@ -478,13 +485,23 @@ public class HpcDomainValidator {
 	/**
 	 * Validate a metadata (simple) query.
 	 *
-	 * @param metadataQuery The metadata query to validate.
+	 * @param metadataQuery       The metadata query to validate.
+	 * @param dataManagementProxy (Optional) Data Management Proxy instance. If
+	 *                            provided, the path value for p[ath-operators is
+	 *                            set as the absolute path in iRODS.
 	 * @return Domain validation result.
 	 */
-	private static HpcDomainValidationResult isValidMetadataQuery(HpcMetadataQuery metadataQuery) {
+	private static HpcDomainValidationResult isValidMetadataQuery(HpcMetadataQuery metadataQuery,
+			HpcDataManagementProxy dataManagementProxy) {
 		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
 		validationResult.setValid(false);
 
+		HpcMetadataQueryOperator operator = metadataQuery.getOperator();
+		if (operator == null) {
+			validationResult.setMessage("Null operator in query [" + metadataQuery + "]. " + "Valid values are ["
+					+ Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
+			return validationResult;
+		}
 		HpcMetadataQueryAttributeMatch attribueMatch = metadataQuery.getAttributeMatch();
 		if ((attribueMatch == null || attribueMatch.equals(HpcMetadataQueryAttributeMatch.EXACT))
 				&& StringUtils.isEmpty(metadataQuery.getAttribute())) {
@@ -501,11 +518,7 @@ public class HpcDomainValidator {
 			validationResult.setMessage("Null metadata value in query [" + metadataQuery + "]");
 			return validationResult;
 		}
-		if (metadataQuery.getOperator() == null) {
-			validationResult.setMessage("Null operator in query [" + metadataQuery + "]. " + "Valid values are ["
-					+ Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
-			return validationResult;
-		}
+
 		if (metadataQuery.getLevelFilter() != null) {
 			HpcDomainValidationResult levelFilterValidationResult = isValidMetadataQueryLevelFilter(
 					metadataQuery.getLevelFilter());
@@ -524,6 +537,21 @@ public class HpcDomainValidator {
 		} else if (!StringUtils.isEmpty(metadataQuery.getFormat())) {
 			validationResult.setMessage("Format provided in query with no timestamp operator [" + metadataQuery + "]");
 			return validationResult;
+		}
+
+		if (metadataQuery.getOperator().equals(HpcMetadataQueryOperator.PATH_EQUAL)
+				|| metadataQuery.getOperator().equals(HpcMetadataQueryOperator.PATH_LIKE)) {
+			if (StringUtils.isEmpty(metadataQuery.getAttribute()) || !metadataQuery.getAttribute().equals("path")) {
+				validationResult.setMessage("No 'path' attribute provided w/ path-operator [" + metadataQuery + "]");
+				return validationResult;
+			} else if (metadataQuery.getAttributeMatch() != null
+					&& !metadataQuery.getAttributeMatch().equals(HpcMetadataQueryAttributeMatch.PATH)) {
+				validationResult.setMessage("attributeMatch provided w/ path-operator [" + metadataQuery + "]");
+				return validationResult;
+			} else if (dataManagementProxy != null) {
+				metadataQuery.setValue(dataManagementProxy.getAbsolutePath(toNormalizedPath(metadataQuery.getValue())));
+				metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.PATH);
+			}
 		}
 
 		validationResult.setValid(true);
