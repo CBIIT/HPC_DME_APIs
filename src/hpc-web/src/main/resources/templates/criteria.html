@@ -768,7 +768,15 @@ if(searchCriteria.level) {
 			$('#attrName' + row_id).val("ANY");
 		else
 			$('#attrName' + row_id).val(searchCriteria.attrName[i]);
-		$('#operator' + row_id).val(searchCriteria.operator[i]);
+		if($('#attrName'+(rowId)).val() == "path") {
+			$("#operator"+(rowId)+" option[value='PATH_LIKE']").prop("disabled", false);
+			$('#operator'+(rowId)).val("PATH_LIKE").change();
+			$('#operator'+(rowId)).prop('disabled', true);
+		} else {
+		    $("#operator"+(rowId)+" option[value='PATH_LIKE']").prop("disabled", true);
+		    $('#operator' + row_id).val(searchCriteria.operator[i]);
+		    $('#operator'+(rowId)).prop('disabled', false);
+		}
 		if(searchCriteria.selfAttributeOnly[i])
 			$('#selfAttributeOnly' + row_id).prop('checked', true);
 		if(userInSecGroup && searchCriteria.encrypted[i]) {
