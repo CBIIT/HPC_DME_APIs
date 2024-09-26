@@ -272,6 +272,7 @@
               <dname>${hpc.server.entry.dname}</dname>
               <validity>${validity.days}</validity>
               <skipIfExist>true</skipIfExist>
+              <keyalg>RSA</keyalg>
             </configuration>
           </execution>
           <execution>
@@ -287,6 +288,7 @@
               <alias>${hpc.client.key.alias}</alias>
               <dname>${hpc.client.entry.dname}</dname>
               <validity>${validity.days}</validity>
+              <keyalg>RSA</keyalg>
               <skipIfExist>true</skipIfExist>
             </configuration>
           </execution>
