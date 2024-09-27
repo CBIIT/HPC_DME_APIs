@@ -305,7 +305,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>1.10.19</version>
+				<version>3.12.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.amazonaws</groupId>
@@ -415,11 +415,6 @@
     			<groupId>javax.mail</groupId>
     			<artifactId>mail</artifactId>
     			<version>1.4.7</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>1.10.19</version>
 			</dependency>
 			<dependency>
 				<groupId>org.aspectj</groupId>
