@@ -81,6 +81,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_COLLECTION_IDS_PATH_EQUAL_SQL = " select object_id from r_coll_hierarchy_meta_main where object_path = ?";
 	
 	private static final String GET_COLLECTION_IDS_PATH_LIKE_SQL = " select object_id from r_coll_hierarchy_meta_main where object_path like ?";
+	
+	private static final String GET_COLLECTION_IDS_CONTAINS_SQL = " select object_id from r_coll_hierarchy_meta_main where contains(meta_attr_value, ?) > 0";
 
 	private static final String GET_COLLECTION_EXACT_ATTRIBUTE_MATCH_FILTER = " and meta_attr_name = ?";
 
@@ -109,6 +111,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DATA_OBJECT_IDS_PATH_EQUAL_SQL = " select object_id from r_data_hierarchy_meta_main where object_path = ?";
 	
 	private static final String GET_DATA_OBJECT_IDS_PATH_LIKE_SQL = " select object_id from r_data_hierarchy_meta_main where object_path like ?";
+	
+	private static final String GET_DATA_OBJECT_IDS_CONTAINS_SQL = " select object_id from r_data_hierarchy_meta_main where contains(meta_attr_value, ?) > 0";
 
 	private static final String GET_DATA_OBJECT_EXACT_ATTRIBUTE_MATCH_FILTER = " and meta_attr_name = ?";
 
@@ -479,6 +483,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				GET_DATA_OBJECT_IDS_PATH_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.PATH_LIKE,
 				GET_DATA_OBJECT_IDS_PATH_LIKE_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.CONTAINS, GET_DATA_OBJECT_IDS_CONTAINS_SQL);
 
 		collectionSQL.queries.put(HpcMetadataQueryOperator.EQUAL, GET_COLLECTION_IDS_EQUAL_SQL);
 		collectionSQL.queries.put(HpcMetadataQueryOperator.NOT_EQUAL, GET_COLLECTION_IDS_NOT_EQUAL_SQL);
@@ -500,6 +505,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				GET_COLLECTION_IDS_PATH_EQUAL_SQL);
 		collectionSQL.queries.put(HpcMetadataQueryOperator.PATH_LIKE,
 				GET_COLLECTION_IDS_PATH_LIKE_SQL);
+		collectionSQL.queries.put(HpcMetadataQueryOperator.CONTAINS, GET_COLLECTION_IDS_CONTAINS_SQL);
 
 		dataObjectSQL.levelFilters.put(HpcMetadataQueryOperator.EQUAL, DATA_OBJECT_LEVEL_EQUAL_FILTER);
 		dataObjectSQL.levelFilters.put(HpcMetadataQueryOperator.NOT_EQUAL, DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER);
