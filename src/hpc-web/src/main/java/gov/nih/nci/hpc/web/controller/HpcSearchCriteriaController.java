@@ -487,6 +487,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		entries.put("LIKE", "LIKE");
 		entries.put("TIMESTAMP_LESS_OR_EQUAL", "Date less than or equal to");
 		entries.put("TIMESTAMP_GREATER_OR_EQUAL", "Date greater than or equal to");
+		entries.put("PATH_LIKE", "Path like");
 		Map<String, String> sortedEntries = new TreeMap<String, String>(entries);
 		model.addAttribute("operators", sortedEntries);
 	}
@@ -502,6 +503,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		entries.put("LIKE", "LIKE");
 		entries.put("TIMESTAMP_LESS_OR_EQUAL", "Date less than or equal to");
 		entries.put("TIMESTAMP_GREATER_OR_EQUAL", "Date greater than or equal to");
+		entries.put("PATH_LIKE", "Path like");
 		Map<String, String> sortedEntries = new TreeMap<String, String>(entries);
 		model.addAttribute("leveloperators", sortedEntries);
 	}
@@ -529,8 +531,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				// label = "Data file";
 				collectionLevels.add(label);
 				dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
+				dataHierarchy.getCollectionAttrsSet().add("path");
 				for (String name : levelAttrs.getMetadataAttributes())
 					attrs.add(label + ":collection:" + name);
+				attrs.add(label + ":collection:" + "path");
 			}
 		}
 
@@ -542,8 +546,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 				dataobjectLevels.add(label);
 				dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
+				dataHierarchy.getDataobjectAttrsSet().add("path");
 				for (String name : levelAttrs.getMetadataAttributes())
 					attrs.add(label + ":datafile:" + name);
+				attrs.add(label + ":datafile:" + "path");
 			}
 		}
 
