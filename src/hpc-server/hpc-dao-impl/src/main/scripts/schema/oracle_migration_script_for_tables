@@ -756,3 +756,7 @@ comment on column irods.hpc_data_meta_main.meta_attr_name is 'Metadata attribute
 comment on column irods.hpc_data_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
 
 comment on column irods.hpc_data_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
+
+create index hpc_data_meta_main_path_query
+    on irods.hpc_data_meta_main (object_path);
+    

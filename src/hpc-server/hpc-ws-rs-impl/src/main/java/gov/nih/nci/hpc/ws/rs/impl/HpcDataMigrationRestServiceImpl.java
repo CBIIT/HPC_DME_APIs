@@ -108,10 +108,10 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 	}
 
 	@Override
-	public Response retryCollectionMigrationTask(String taskId) {
+	public Response retryCollectionMigrationTask(String taskId, Boolean failedItemsOnly) {
 		HpcMigrationResponseDTO migrationResponse = null;
 		try {
-			migrationResponse = dataMigrationBusService.retryCollectionMigrationTask(taskId);
+			migrationResponse = dataMigrationBusService.retryCollectionMigrationTask(taskId, failedItemsOnly);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -121,10 +121,11 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 	}
 
 	@Override
-	public Response retryDataObjectsOrCollectionsMigrationTask(String taskId) {
+	public Response retryDataObjectsOrCollectionsMigrationTask(String taskId, Boolean failedItemsOnly) {
 		HpcMigrationResponseDTO migrationResponse = null;
 		try {
-			migrationResponse = dataMigrationBusService.retryDataObjectsOrCollectionsMigrationTask(taskId);
+			migrationResponse = dataMigrationBusService.retryDataObjectsOrCollectionsMigrationTask(taskId,
+					failedItemsOnly);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
