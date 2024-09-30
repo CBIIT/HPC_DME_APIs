@@ -368,6 +368,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		userDTO.setActive(user.getActive());
 		// Check if user is data curator
 		userDTO.setDataCurator(securityService.isUserDataCurator(userId));
+		userDTO.setUserId(userId);
 		return userDTO;
 	}
 
