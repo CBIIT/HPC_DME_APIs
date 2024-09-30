@@ -497,6 +497,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			throw (e);
 		}
 
+		if(sourcePathAttributes.getIsFile()) {
+			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+			metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
+	
+			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+			metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(destinationPath));
+		} else {
+			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+			metadataDAO.deleteDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(sourcePath));
+	
+			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+			metadataDAO.insertDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(destinationPath));
+		}
+
 		// Update the links to this data object to point to the new path.
 		getDataObjectLinks(sourcePath).forEach(link -> {
 			try {
@@ -577,6 +591,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		metadataService.updateDataObjectSystemGeneratedMetadata(destinationPath, null, null, null,
 				HpcDataTransferUploadStatus.DELETE_REQUESTED, null, null, null, null, null, null, null, null, null);
+		
+		if (sourcePathAttributes.getIsFile()) {
+			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+			metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
+		} else {
+			metadataDAO.deleteDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(sourcePath));
+			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN for the destination path
+			metadataDAO.insertDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(destinationPath));
+		}
+				
 	}
 
 	@Override
