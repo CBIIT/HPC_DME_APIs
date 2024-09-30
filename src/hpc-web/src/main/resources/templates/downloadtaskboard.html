@@ -10,6 +10,7 @@
 
 <title>NCI Data Management Environment</title>
 
+
 <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
 <!-- Bootstrap CSS -->
 <link href="css/bootstrap.min.css" rel="stylesheet" />
@@ -26,9 +27,7 @@
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
 <link href="css/select2-4.0.11.min.css" rel="stylesheet" />
-<link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
-<link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
-<link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="DataTables/DataTables-2.1.5/css/dataTables.dataTables.min.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -36,33 +35,6 @@
       <script src="js/respond.min.js"></script>
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
-<script
-	src="js/angular/1.5.0/angular.js"></script>
-<script
-	src="js/angular/1.5.0/angular-touch.js"></script>
-<script
-	src="js/angular/1.5.0/angular-animate.js"></script>
-<script src="js/ui-grid/csv.js"></script>
-<script src="js/ui-grid/pdfmake.js"></script>
-<script src="js/ui-grid/vfs_fonts.js"></script>
-
-<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
-<script src="../bower_components/jquery/dist/jquery.js"></script>
-
-<link rel="stylesheet" href="css/ui-grid.css"
-	type="text/css" />
-<script
-	src="js/jquery/3.1.1/jquery.min.js"></script>
-
-<script
-	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-<script
-	src="js/select2-4.0.11.min.js"></script>
-
-<script src="DataTables/DataTables-1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="DataTables/Sort-1.13.1/js/file-size.js"></script>
-<script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
-
 
 <style>
 
@@ -109,18 +81,51 @@ tfoot input {
         box-sizing: border-box;
     }
 
-/* Style for horizontal scroll on top */
-.dataTables_scrollBody {
-    transform:rotateX(180deg);
-}
-.dataTables_scrollBody table {
-    transform:rotateX(180deg);
-}
-
 .imgDetails {
-	margin-left: auto; margin-right: auto; display: block;
+	font-size: 28px
 }
 
+#float {
+        position: fixed;
+        top: 7em;
+        right: 2em;
+        z-index: 100;
+    }
+
+.expandCollapseWidth{
+	width:20px;
+}
+.userIdWidth{
+	width:80px;
+}
+.taskIdWidth{
+	width:280px;
+}
+.pathIdWidth{
+	width:200px;
+}
+.typeWidth{
+	width:100px;
+}
+.destinationTypeWidth{
+	width:115px;
+}
+.createdWidth{
+	width:110px;
+}
+.completedWidth{
+	width:110px;
+}
+.resultWidth{
+	width:60px;
+}
+.retryUserIdWidth{
+	width:80px;
+}
+.errorWidth{
+	width:360px;
+	white-space: nowrap;
+}
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -212,67 +217,74 @@ tfoot input {
 					</div> <!-- div2 -->
 					<!-- div id="spinner" class="overlay"></div -->
 					<div th:if="${results != null and results.size() > 0}">
-						<table id="resultsGrid" class="display cell-border" style="width:100%;table-layout: fixed;">
+						<table id="resultsGrid" class="display cell-border" style="width:100%; table-layout: fixed;">
 							<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 							<thead>
 								<tr id='attrRow2'>
-									<th id='colheading001'></th>
-									<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
-									<th class="column-heading" id='colheading002' th:text="'Task ID'"></th>
-									<th class="column-heading" id='colheading003' th:text="'Path'"></th>
-									<th class="column-heading" id='colheading004' th:text="'Type'"></th>
-									<th class="column-heading" id='colheading005' th:text="'Destination Type'"></th>
-									<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
-									<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
-									<th class="column-heading" id='colheading008' th:text="'Transfer Result'"></th>
-									<th class="column-heading" id='colheading009' th:text="'Retry User ID'"></th>
-									<th class="column-heading" id='colheading010' th:text="'Error'"></th>
+									<th id='colheading001' style="width:20px"></th>
+									<th class="column-heading userIdWidth" id='colheading001' th:text="'User ID'"></th>
+									<th class="column-heading taskIdWidth" id='colheading002' th:text="'Task ID'"></th>
+									<th class="column-heading pathWidth" id='colheading003' th:text="'Path'"></th>
+									<th class="column-heading typeWidth" id='colheading004' th:text="'Type'"></th>
+									<th class="column-heading destinationTypeWidth" id='colheading005' th:text="'Destination Type'"></th>
+									<th class="column-heading createdWidth" id='colheading006' th:text="'Created On'"></th>
+									<th class="column-heading completedWidth" id='colheading007' th:text="'Completed On'"></th>
+									<th class="column-heading resultWidth" id='colheading008' th:text="'Transfer Result'"></th>
+									<th class="column-heading retryUserIdWidth" id='colheading009' th:text="'Retry User ID'"></th>
+									<th class="column-heading errorWidth" id='colheading010' th:text="'Error'"></th>
+								</tr>
+								<tr>
+									<th class="" id='col2heading001'>
+										<div id="expandcollapseId"  class="imgDetails">
+											<button style="border:none;width:20px" title="Click for Expanding details of all rows"><i class="fa fa-caret-right" aria-hidden="true" style="color:black;"></i></button>
+										</div>
+									</th>
+									<th class="filterhead userIdWidth" id='col2heading001' th:text="'User ID'"></th>
+									<th class="filterhead taskIdWidth" id='col2heading002' th:text="'Task ID'"></th>
+									<th class="filterhead pathWidth" id='col2heading003' th:text="'Path'"></th>
+									<th class="filterhead typeWidth" id='col2heading004' th:text="'Type'"></th>
+									<th class="filterhead destinationTypeWidth" id='col2heading005' th:text="'Destination Type'"></th>
+									<th class="filterhead createdWidth" id='col2heading006'  th:text="'Created On'"></th>
+									<th class="filterhead completedWidth" id='col2heading007'  th:text="'Completed On'"></th>
+									<th class="filterhead resultWidth" id='col2heading008' th:text="'Transfer Result'"></th>
+									<th class="filterhead retryUserIdWidth" id='col2heading009' th:text="'Retry User ID'"></th>
+									<th class="filterhead errorWidth" id='col2heading010' th:text="'Error'"></th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr id='attrCol0' th:each="result : ${results}">
-									<td id='col1'></td>
-									<td id='col1' th:text="${result.userId}"></td>
-									<td id='col2' style="white-space: nowrap;"><a th:href="@{/downloadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
-									<td id='col3' th:if="${result.type} == 'COLLECTION'">
+									<td id='col1' class="expandcollapseId"></td>
+									<td id='col1' class="userIdWidth" th:text="${result.userId}"></td>
+									<td id='col2' class="taskIdWidth" style="white-space: nowrap;"><a th:href="@{/downloadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
+									<td id='col3' class="pathWidth" th:if="${result.type} == 'COLLECTION'">
 										<a id="pathLinkId" th:href="@{/collection(path=${result.path}, action=displayOnly)}" target="_blank">
 											<span id="spanLinkId" style="width: 200px; display:inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${result.path}">
 											</span>
 										</a>
 									</td>
-									<td id='col3' th:if="${result.type} == 'DATA_OBJECT'">
+									<td id='col3' class="pathWidth" th:if="${result.type} == 'DATA_OBJECT'">
 										<a id="pathLinkId" th:href="@{/datafile(path=${result.path}, action=displayOnly)}" target="_blank">
 											<span id="spanLinkId" style="width: 200px; display:inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${result.path}">
 											</span>
 										</a>
 									</td>
-									<td id='col3' th:if="${result.type} == 'COLLECTION_LIST'"></td>
-									<td id='col3' th:if="${result.type} == 'DATA_OBJECT_LIST'"></td>
-									<td id='col4' th:text="${result.type}"></td>
-									<td id='col5' th:text="${result.destinationType}"></td>
-									<td id='col6' th:text="${result.created}"></td>
-									<td id='col7' th:text="${result.completed}"></td>
-									<td id='col8' th:text="${result.result}"></td>
-									<td id='col9' th:text="${result.retryUserId}"></td>
-									<td id='col10' style="word-break:break-all;" th:text="${result.error}"></td>
+									<td id='col3' class="pathWidth" th:if="${result.type} == 'COLLECTION_LIST'"></td>
+									<td id='col3' class="pathWidth" th:if="${result.type} == 'DATA_OBJECT_LIST'"></td>
+									<td id='col4' class="typeWidth" th:text="${result.type}"></td>
+									<td id='col5' class="destinationTypeWidth" th:text="${result.destinationType}"></td>
+									<td id='col6' class="createdWidth"  th:text="${result.created}"></td>
+									<td id='col7' class="completedWidth" th:text="${result.completed}"></td>
+									<td id='col8' class="resultWidth" th:text="${result.result}"></td>
+									<td id='col9' class="retryUserIdWidth" th:text="${result.retryUserId}"></td>
+									<td id='col10' class="errorWidth" style="word-break:break-all;" th:text="${result.error}"></td>
 									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
 									<td id='col12' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
 									<td id='col13' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
 								</tr>
+								<br/>
 							</tbody>
 							<tfoot>
 								<tr id='attrFooter2'>
-									<th id='colf1'></th>
-									<th class="column-heading" id='colfoot001' th:text="'User ID'"></th>
-									<th class="column-heading" id='colfoot002' th:text="'Task ID'"></th>
-									<th class="column-heading" id='colfoot003' th:text="'Path'"></th>
-									<th class="column-heading" id='colfoot004' th:text="'Type'"></th>
-									<th class="column-heading" id='colfoot005' th:text="'Destination Type'"></th>
-									<th class="column-heading" id='colfoot006' th:text="'Created On'"></th>
-									<th class="column-heading" id='colfoot007' th:text="'Completed On'"></th>
-									<th class="column-heading" id='colfoot008' th:text="'Transfer Result'"></th>
-									<th class="column-heading" id='colfoot009' th:text="'Retry User ID'"></th>
-									<th class="column-heading" id='colfoot0010' th:text="'Error'"></th>
 								</tr>
 							</tfoot>
 						</table>
@@ -300,22 +312,25 @@ tfoot input {
 		</section>
 	</section>
 
-	<!-- javascripts -->
-	<!-- bootstrap -->
-	<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery/jquery-3.7.1.min.js"></script>
+<script src="js/jquery.scrollTo.min.js"></script>
+<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+<script src="DataTables/DataTables-2.1.5/js/dataTables.js"></script>
+<script src="js/select2-4.0.11.min.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
 
-	<script src="js/jquery-ui-1.10.4.min.js"></script>
-	<script src="js/jquery.scrollTo.min.js"></script>
-	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
-	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
-	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
-	<script src="js/jquery.customSelect.min.js"></script>
+<!--custom script for all page-->
+<script src="js/scripts.js"></script>
 
-	<!--custome script for all page-->
-	<script src="js/scripts.js"></script>
 <script>
 /*<![CDATA[*/
 	$(document).ready(function(){
+		var tableId = 'resultsGrid';
+		if(currentPage ==1){
+			currentPage = 1;
+		}
 		var checkBox = document.getElementById("allcheckbox");
 		var queryAll = true;
 		if (checkBox && checkBox.checked == false){
@@ -327,7 +342,7 @@ tfoot input {
 			queryAll = false;
 		}
 
-		/* This is for sorting to ignore the empty strings.
+		/*	This is for sorting to ignore the empty strings.
 			In the column definitions below(when defining the grid),
 			if a value of type is set to 'non-empty-string',
 			the 'Ascending Sort' ignores empty cells and orders the non-empty cells and shows
@@ -351,77 +366,85 @@ tfoot input {
 		    }
 		} );
 
-		/* Clone the header and add input text boxes for the column searches */
-		$('#resultsGrid thead tr')
-        .clone(true)
-        .appendTo('#resultsGrid thead');
-
-		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
-		        var title = $(this).text();
-				if(i > 0) {
-			        $(this).html( '<input type="text" placeholder="Filter by '+title+'" />' );
-			        $( 'input', this ).on( 'keyup change', function () {
-			            if ( table.column(i).search() !== this.value ) {
-			                table
-			                    .column(i)
-			                    .search( this.value )
-			                    .draw();
-			            }
-			        } );
-		        } else {
-					$(this).html( '<div id="expandcollapseId"><img width="24" height="24" background-color="white" class="imgDetails" src="img/details_open.png" title="Click to expand details of all rows" /></div>');
-		        }
-		    } );
-		
-		/*
-			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
-			hover showing the complete string.
-
-			The Path field, Error field and RetryUserId fields have empty strings in them.
-			Therefore, they are set to type 'non-empty-string' to force the sort to ignore empty strings.
-
-			aaSorting set to empty array, enforces no sorting on any column on the initial load of data of the page.
-		*/
 		var table = $('#' + 'resultsGrid').DataTable( {
-				orderCellsTop: true,
-				"aaSorting": [],
-				dom: 'rt',
-				scrollX : 'TRUE',
-				'responsive': true,
-				columnDefs: [ 
-							{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
-							{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
-							{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
-							{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
-							{targets: 4, data: 'type', width:100, visible: true},  // type
-							{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
-							{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
-							{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
-							{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
-							{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-							{targets: 10, data: 'error', width:190, type: 'non-empty-string', render: DataTable.render.ellipsis( 35, true )}, // error
-							{targets: 11, data: 'displayPath', visible: false},
-							{targets: 12, data: 'sortCreated', visible: false, searchable: false},
-							{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
-						],
-				"lengthMenu": [ [-1], ["All"] ],
-				"initComplete": () => {$("#resultsGrid").show();}
+			orderCellsTop: true,
+			"aaSorting": [],
+			dom: 'rt',
+			scrollX: true,
+			scrollY: '80vh',
+			scrollCollapse: true,
+	        paging: false,
+	        responsive: false,
+			columnDefs: [
+						{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
+						{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
+						{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
+						{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
+						{targets: 4, data: 'type', width:100, visible: true},  // type
+						{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
+						{targets: 6, data: 'created', width: 110, visible: true, orderData:[12]},  // created
+						{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
+						{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
+						{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
+						{targets: 10, data: 'error', width:360, type: 'non-empty-string', render: DataTable.render.ellipsis( 60, true )}, // error
+						{targets: 11, data: 'displayPath', visible: false},
+						{targets: 12, data: 'sortCreated', visible: false, searchable: false},
+						{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
+					],
+			"lengthMenu": [ [-1], ["All"] ],
+			"initComplete": function () {
+					var api = this.api();
+					// Setup - add a text input to each header cell
+					$('.filterhead', api.table().header()).each( function () {
+						var title = $(this).text();
+						$(this).html( '<input type="text" placeholder="Filter '+title+'" class="column_search" />' );
+					} );
+					// Add Horizontal scroll on top and bottom - Begin
+					 $('dt-scroll-body').css({
+	                    'overflow': 'hidden',
+	                    'border': '0'
+	                });
+	                // Enable TFOOT scoll bars
+	                $('.dt-scroll-foot').css('overflow', 'auto');
+	                $('.dt-scroll-head').css('overflow', 'auto');
+	                $('.dt-scroll-body').css('overflow', 'auto');
+	                // Sync TFOOT scrolling with TBODY
+	                $('.dt-scroll-foot').on('scroll', function () {
+	                    $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
+	                });
+	                $('.dt-scroll-head').on('scroll', function () {
+	                    $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
+	                });
+					//End of code foradding Horizontal scroll on top and bottom
+
+					// Show grid
+					$("#resultsGrid").show();
+					// Adjust Grid columns
+					$('#resultsGrid').DataTable().columns.adjust();
+		      },
 		} );
 
 		// Add event listener for opening and closing details
 		table.on('click', 'td.dt-control', function (e) {
-			let tr = e.target.closest('tr');
-			let row = table.row(tr);
-
-			if (row.child.isShown()) {
-				// This row is already open - close it
-				row.child.hide();
-			}
-			else {
-				// Open this row
-				row.child(format(row.data())).show();
-			}
+		    let tr = e.target.closest('tr');
+		    let row = table.row(tr);
+		    if (row.child.isShown()) {
+		        // This row is already open - close it
+		        row.child.hide();
+		    }
+		    else {
+		        // Open this row
+		        row.child(format(row.data())).show();
+		    }
 		});
+
+		// Apply the search
+	    $( 'table thead'  ).on( 'keyup', ".column_search",function () {
+	        table
+	            .column( $(this).parent().index() )
+	            .search( this.value )
+	            .draw();
+	    } );
 
 		$('#expandcollapseId').on('click', expandCollapseAll);
 
@@ -436,7 +459,7 @@ tfoot input {
 						$(this.node()).removeClass('shown');
 					}
 					expanded = false;
-					expandCollapseButtonDiv.innerHTML =  '<img src="img/details_open.png" title="Click to expand details of all rows" width="24" height="24" class="imgDetails" />';
+					expandCollapseButtonDiv.innerHTML = '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-caret-right" aria-hidden="true" style="color:black;"></i></button>';
 				});
 			} else {
 			    table.rows().every(function(){
@@ -447,10 +470,10 @@ tfoot input {
 			            $(this.node()).addClass('shown');
 			        }
 			        expanded = true;
-					expandCollapseButtonDiv.innerHTML = '<img src="img/details_close.png" title="Click to collapse details of all rows" width="24" height="24" class="imgDetails" />';
-			    });
-			}}
-		});
+					expandCollapseButtonDiv.innerHTML = '<button  style="border:none;" title="Click for Archive Summary"><i class="fa fa-caret-down" aria-hidden="true" style="color:black;"></i></button>';
+			  });
+		}}
+	}); // $(document).ready(function(){
 
 	function format(d) {
 	    // `d` is the original data object for the row
