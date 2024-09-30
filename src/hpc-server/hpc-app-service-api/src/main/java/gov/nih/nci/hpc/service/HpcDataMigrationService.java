@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -124,12 +125,17 @@ public interface HpcDataMigrationService {
 	 *                                   request.
 	 * @param retryUserId                The user retrying the request if this is a
 	 *                                   retry request.
+	 * @param retryFailedItemsOnly       if set to true, only failed items of
+	 *                                   'taskId' will be retried. Otherwise the
+	 *                                   collection will be re-scanned for a new
+	 *                                   migration to include any items added since
+	 *                                   the previous migration attempt.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId)
-			throws HpcException;
+			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId,
+			Boolean retryFailedItemsOnly) throws HpcException;
 
 	/**
 	 * Create a data object list migration task.
@@ -143,12 +149,19 @@ public interface HpcDataMigrationService {
 	 *                                   request.
 	 * @param retryUserId                The user retrying the request if this is a
 	 *                                   retry request.
+	 * @param retryUserId                The user retrying the request if this is a
+	 *                                   retry request.
+	 * @param retryFailedItemsOnly       if set to true, only failed items of
+	 *                                   'taskId' will be retried. Otherwise the
+	 *                                   collection will be re-scanned for a new
+	 *                                   migration to include any items added since
+	 *                                   the previous migration attempt.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId)
-			throws HpcException;
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
+			Boolean retryFailedItemsOnly) throws HpcException;
 
 	/**
 	 * Create a collection list migration task.
@@ -162,12 +175,17 @@ public interface HpcDataMigrationService {
 	 *                                   request.
 	 * @param retryUserId                The user retrying the request if this is a
 	 *                                   retry request.
+	 * @param retryFailedItemsOnly       if set to true, only failed items of
+	 *                                   'taskId' will be retried. Otherwise the
+	 *                                   collection will be re-scanned for a new
+	 *                                   migration to include any items added since
+	 *                                   the previous migration attempt.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId)
-			throws HpcException;
+			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
+			Boolean retryFailedItemsOnly) throws HpcException;
 
 	/**
 	 * Update a migration task.
@@ -213,5 +231,17 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTaskStatus getMigrationTaskStatus(String taskId, HpcDataMigrationType taskType)
 			throws HpcException;
+
+	/**
+	 * Get a list of migration tasks in specific status and type.
+	 *
+	 * @param collectionMigrationTaskId A collection migration task id that this
+	 *                                  data object migration is part of.
+	 * @param result                    The task result to query for.
+	 * @return A List of data migration task results.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String collectionMigrationTaskId,
+			HpcDataMigrationResult result) throws HpcException;
 
 }
