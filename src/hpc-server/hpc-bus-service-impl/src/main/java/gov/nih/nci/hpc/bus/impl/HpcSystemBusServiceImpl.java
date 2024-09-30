@@ -309,9 +309,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							null, null, null, null, null, null, null, null, null);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
 
-					//Remove from HPC_GLOBUS_TRANSFER_TASK
+					// Remove from HPC_GLOBUS_TRANSFER_TASK
 					dataTransferService.deleteGlobusTransferTask(systemGeneratedMetadata.getDataTransferRequestId());
-					
+
 					break;
 
 				case FAILED:
@@ -1422,9 +1422,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					}
 
 					// Run the compound query to get the data object paths to recover storage for.
-					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
-							storageRecoveryQuery, 1, dataSearchService.getDataObjectCount(
-									dataManagementConfiguration.getBasePath(), storageRecoveryQuery));
+					dataObjectPaths = dataSearchService.getDataObjectPaths(storageRecoveryQuery, 1,
+							dataSearchService.getDataObjectCount(storageRecoveryQuery));
 
 					logger.info("Storage recovery [config: {}] - {} data objects to recover storage",
 							dataManagementConfiguration.getId(), dataObjectPaths.size());
@@ -1536,10 +1535,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType());
-								if(!dataTransferService.continueDataObjectDownloadTask(downloadTask)) {
-									//logger.info("GLOBUS transfers are not accepted at this time. Stop iterating through the Globus tasks");
-									//return;
-									// TODO - uncomment. change to return once we have all Globus accounts not associated w/ DOC.
+								if (!dataTransferService.continueDataObjectDownloadTask(downloadTask)) {
+									logger.info(
+											"GLOBUS transfers are not accepted at this time. Stop iterating through the Globus tasks");
+									return;
 								}
 
 							} catch (HpcException e) {

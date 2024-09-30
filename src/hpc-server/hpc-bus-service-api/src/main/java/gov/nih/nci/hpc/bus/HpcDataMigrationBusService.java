@@ -71,20 +71,32 @@ public interface HpcDataMigrationBusService {
 	/**
 	 * Retry migration task of a collection.
 	 *
-	 * @param taskId The migration task ID.
+	 * @param taskId          The migration task ID.
+	 * @param failedItemsOnly (Optional) if set to true, only failed items of
+	 *                        'taskId' will be retried. Otherwise the collection
+	 *                        will be re-scanned for a new migration to include any
+	 *                        items added since the previous migration attempt.
+	 *                        Default to true.
 	 * @return Migration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcMigrationResponseDTO retryCollectionMigrationTask(String taskId) throws HpcException;
+	public HpcMigrationResponseDTO retryCollectionMigrationTask(String taskId, Boolean failedItemsOnly)
+			throws HpcException;
 
 	/**
 	 * Retry migration task of a list of data objects or collections
 	 *
-	 * @param taskId The migration task ID.
+	 * @param taskId          The migration task ID.
+	 * @param failedItemsOnly (Optional) if set to true, only failed items of
+	 *                        'taskId' will be retried. Otherwise the collection
+	 *                        will be re-scanned for a new migration to include any
+	 *                        items added since the previous migration attempt.
+	 *                        Default to true.
 	 * @return Migration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcMigrationResponseDTO retryDataObjectsOrCollectionsMigrationTask(String taskId) throws HpcException;
+	public HpcMigrationResponseDTO retryDataObjectsOrCollectionsMigrationTask(String taskId, Boolean failedItemsOnly)
+			throws HpcException;
 
 	/**
 	 * Process received data object migration tasks.
