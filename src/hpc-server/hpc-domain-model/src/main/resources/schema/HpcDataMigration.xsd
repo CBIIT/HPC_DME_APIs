@@ -59,6 +59,7 @@
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 			<xsd:element name="retryTaskId" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
+			<xsd:element name="retryFailedItemsOnly" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

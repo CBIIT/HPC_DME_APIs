@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.5.0</version>
+		<version>3.6.0</version>
 	</parent>
 	<artifactId>hpc-integration-impl</artifactId>
 	<packaging>jar</packaging>
@@ -137,6 +137,14 @@
 		<dependency>
 		    <groupId>com.box</groupId>
 		    <artifactId>box-java-sdk</artifactId>
+		</dependency>
+		<dependency>
+	       <groupId>com.fasterxml.jackson.jaxrs</groupId>
+	       <artifactId>jackson-jaxrs-json-provider</artifactId>
+	    </dependency>
+	    <dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
 		</dependency>
 	</dependencies>
 </project>

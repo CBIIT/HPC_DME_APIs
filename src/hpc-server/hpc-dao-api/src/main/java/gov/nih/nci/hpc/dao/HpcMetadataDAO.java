@@ -87,7 +87,6 @@ public interface HpcMetadataDAO {
 	 * Get data object Paths by compound metadata query. Only data object Paths
 	 * accessible to the user are returned.
 	 *
-	 * @param searchPath             The path to search in if specified.
 	 * @param compoundMetadataQuery  The compound metadata query.
 	 * @param dataManagementUsername The Data Management user name.
 	 * @param offset                 Skip that many path in the returned results.
@@ -97,7 +96,7 @@ public interface HpcMetadataDAO {
 	 * @return List of data object Paths.
 	 * @throws HpcException on database error.
 	 */
-	public List<String> getDataObjectPaths(String searchPath, HpcCompoundMetadataQuery compoundMetadataQuery,
+	public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
 			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
 			throws HpcException;
 
@@ -105,7 +104,6 @@ public interface HpcMetadataDAO {
 	 * Get detailed data object Paths by compound metadata query. Only data object
 	 * Paths accessible to the user are returned.
 	 *
-	 * @param path                   The path to search in if specified.
 	 * @param compoundMetadataQuery  The compound metadata query.
 	 * @param dataManagementUsername The Data Management user name.
 	 * @param offset                 Skip that many path in the returned results.
@@ -115,9 +113,9 @@ public interface HpcMetadataDAO {
 	 * @return List of HpcSearchMetadataEntry
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path,
-			HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername, int offset, int limit,
-			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException;
+	public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
+			throws HpcException;
 
 	/**
 	 * Get all data object Paths by path. Only data object Paths accessible to the
@@ -137,7 +135,6 @@ public interface HpcMetadataDAO {
 	 * Get parent collection paths of data objects searched by compound metadata
 	 * query. Only data object Paths accessible to the user are returned.
 	 *
-	 * @param path                   The path to search in if specified.
 	 * @param compoundMetadataQuery  The compound metadata query.
 	 * @param dataManagementUsername The Data Management user name.
 	 * @param offset                 Skip that many path in the returned results.
@@ -147,7 +144,7 @@ public interface HpcMetadataDAO {
 	 * @return List of data object Paths.
 	 * @throws HpcException on database error.
 	 */
-	public List<String> getDataObjectParentPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery,
+	public List<String> getDataObjectParentPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
 			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
 			throws HpcException;
 
@@ -156,7 +153,6 @@ public interface HpcMetadataDAO {
 	 * compound metadata query. Only data object Paths accessible to the user are
 	 * returned.
 	 *
-	 * @param path                   The path to search in if specified.
 	 * @param compoundMetadataQuery  The compound metadata query.
 	 * @param dataManagementUsername The Data Management user name.
 	 * @param offset                 Skip that many path in the returned results.
@@ -166,7 +162,7 @@ public interface HpcMetadataDAO {
 	 * @return List of HpcSearchMetadataEntry
 	 * @throws HpcException on database error.
 	 */
-	public List<HpcSearchMetadataEntryForCollection> getDetailedDataObjectParentPaths(String path,
+	public List<HpcSearchMetadataEntryForCollection> getDetailedDataObjectParentPaths(
 			HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername, int offset, int limit,
 			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException;
 
@@ -174,7 +170,6 @@ public interface HpcMetadataDAO {
 	 * Get a count of data objects matching a compound metadata query. Only data
 	 * object accessible to the user are included in the count.
 	 *
-	 * @param path                   The path (Optional)
 	 * @param compoundMetadataQuery  The compound metadata query.
 	 * @param dataManagementUsername The Data Management user name.
 	 * @param defaultLevelFilter     A default level filter to use if not provided
@@ -182,8 +177,8 @@ public interface HpcMetadataDAO {
 	 * @return Count of data objects matching the count.
 	 * @throws HpcException on database error.
 	 */
-	public int getDataObjectCount(String path, HpcCompoundMetadataQuery compoundMetadataQuery,
-			String dataManagementUsername, HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException;
+	public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername,
+			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException;
 
 	/**
 	 * Get a count of data objects matching a path. Only data object accessible to
@@ -250,7 +245,7 @@ public interface HpcMetadataDAO {
 	/**
 	 * Get a list of collection metadata attributes currently registered.
 	 *
-	 * @param levelLabel             Filter the results by level label. (Optional).
+	 * @param levelLabel Filter the results by level label. (Optional).
 	 * @return A list of metadata attributes for each level.
 	 * @throws HpcException on database error.
 	 */
@@ -259,7 +254,7 @@ public interface HpcMetadataDAO {
 	/**
 	 * Get a list of data object metadata attributes currently registered.
 	 *
-	 * @param levelLabel             Filter the results by level label. (Optional).
+	 * @param levelLabel Filter the results by level label. (Optional).
 	 * @return A list of metadata attributes for each level.
 	 * @throws HpcException on database error.
 	 */
@@ -301,7 +296,8 @@ public interface HpcMetadataDAO {
 	public List<HpcDupMetadataEntry> getDupDataObjectMetadataEntries() throws HpcException;
 
 	/**
-	 * Upsert data object metadata in the table used for search.
+	 * Upsert data object metadata in the table used for data object search
+	 * materialized view creation.
 	 *
 	 * @param path
 	 * @throws HpcException on database error.
@@ -309,11 +305,30 @@ public interface HpcMetadataDAO {
 	public void upsertDataObjectMetadata(String path) throws HpcException;
 
 	/**
-	 * Delete data object metadata in the table used for search.
+	 * Delete data object metadata from the table used for data object search
+	 * materialized view creation.
 	 *
 	 * @param path
 	 * @throws HpcException on database error.
 	 */
 	public void deleteDataObjectMetadata(String path) throws HpcException;
+
+	/**
+	 * Insert data object metadata under a collection in the table used for data
+	 * object search materialized view creation.
+	 *
+	 * @param path
+	 * @throws HpcException on database error.
+	 */
+	public void insertDataObjectMetadataUnderCollection(String path) throws HpcException;
+
+	/**
+	 * Delete data object metadata under a collection from the table used for data
+	 * object search materialized view creation.
+	 *
+	 * @param path
+	 * @throws HpcException on database error.
+	 */
+	public void deleteDataObjectMetadataUnderCollection(String path) throws HpcException;
 
 }
