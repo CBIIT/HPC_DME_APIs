@@ -25,6 +25,7 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+
 <link href="DataTables/Responsive-2.2.7/css/responsive.dataTables.min.css" rel="stylesheet" />
 <link href="DataTables/Responsive-2.2.7/css/responsive.bootstrap.min.css" rel="stylesheet" />
 <link href="DataTables/DataTables-1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />
@@ -47,9 +48,39 @@
 
 <style>
 /*style.css*/
-.gridStyle {
-	border: 1px solid rgb(212, 212, 212);
-	height: 300px
+
+thead input {
+        width: 100%;
+    }
+
+tfoot input {
+        width: 100%;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+
+
+.userIdWidth{
+	width:70px;
+}
+.taskIdWidth{
+	width:280px;
+}
+.sourceTypeWidth{
+	width:150px;
+}
+.resultWidth{
+	width:105px;
+}
+.createdWidth{
+	width:110px;
+}
+.completedWidth{
+	width:110px;
+}
+.errorWidth{
+	width:335px;
+	white-space: nowrap;
 }
 
 .userIdWidth{
@@ -84,7 +115,6 @@
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
     var queryAll = "[[${queryAll}]]";
-
 /*]]>*/
 </script>
 
@@ -155,13 +185,13 @@
 									<!--caption style="font-weight:bold" th:text="'Download Tasks'"></caption-->
 									<thead>
 										<tr id='attrRow2'>
-											<th class="column-heading" id='colheading001' th:text="'User ID'"></th>
-											<th class="column-heading" id='colheading002' th:text="'Task ID'"></th>
-											<th class="column-heading" id='colheading004' th:text="'Source Type'"></th>
-											<th class="column-heading" id='colheading008' th:text="'Transfer Result'"></th>
-											<th class="column-heading" id='colheading006' th:text="'Created On'"></th>
-											<th class="column-heading" id='colheading007' th:text="'Completed On'"></th>
-											<th class="column-heading" id='colheading009' th:text="'Error'"></th>
+											<th class="column-heading userIdWidth" id='colheading001' th:text="'User ID'"></th>
+											<th class="column-heading taskIdWidth" id='colheading002' th:text="'Task ID'"></th>
+											<th class="column-heading sourceTypeWidth" id='colheading004' th:text="'Source Type'"></th>
+											<th class="column-heading resultWidth" id='colheading008' th:text="'Transfer Result'"></th>
+											<th class="column-heading createdWidth" id='colheading006' th:text="'Created On'"></th>
+											<th class="column-heading completedWidth" id='colheading007' th:text="'Completed On'"></th>
+											<th class="column-heading errorWidth" id='colheading009' th:text="'Error'"></th>
 										</tr>
 										<tr id='attrRow3'>
 											<th class="column-heading filterhead" id='colheading0012' th:text="'User ID'"></th>
@@ -175,27 +205,21 @@
 									</thead>
 									<tbody>
 										<tr id='attrCol0' th:each="result : ${results}">
-											<td id='col1' th:text="${result.userId}"></td>
-											<td id='col2' style="white-space: nowrap;">
+											<td id='col1' class="userIdWidth" th:text="${result.userId}"></td>
+											<td id='col2' class="taskIdWidth" style="white-space: nowrap;">
 												<a th:href="@{/uploadtask(taskId=${result.taskId}, type=${result.type})}" th:text="${result.taskId}"></a></td>
-											<td id='col3' th:text="${result.sourceType}"></td>
-											<td id='col4' th:text="${result.result}"></td>
-											<td id='col5' th:text="${result.created}"></td>
-											<td id='col6' th:text="${result.completed}"></td>
-											<td id='col7' th:text="${result.error}"></td>
+											<td id='col3' class="sourceTypeWidth" th:text="${result.sourceType}"></td>
+											<td id='col4' class="resultWidth" th:text="${result.result}"></td>
+											<td id='col5' class="createdWidth" th:text="${result.created}"></td>
+											<td id='col6' class="completedWidth" th:text="${result.completed}"></td>
+											<td id='col7' class="errorWidth" th:text="${result.error}"></td>
 											<td id='col8' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
 											<td id='col9' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
 										</tr>
+										<br/>
 									</tbody>
 									<tfoot>
 										<tr id='attrFooter2'>
-											<td class="column-heading" id='colfoot001' th:text="'User ID'"></td>
-											<td class="column-heading" id='colfoot002' th:text="'Task ID'"></td>
-											<td class="column-heading" id='colfoot004' th:text="'Source Type'"></td>
-											<td class="column-heading" id='colfoot008' th:text="'Transfer Result'"></td>
-											<td class="column-heading" id='colfoot006' th:text="'Created On'"></td>
-											<td class="column-heading" id='colfoot007' th:text="'Completed On'"></td>
-											<td class="column-heading" id='colfoot009' th:text="'Error'"></td>
 										</tr>
 									</tfoot>
 								</table>
@@ -232,16 +256,14 @@
 	</section>
 	<!-- container section start -->
 
-	<!-- javascripts -->
-	<!-- bootstrap -->
-	<script src="js/bootstrap.min.js"></script>
-
-	<script src="js/jquery-ui-1.10.4.min.js"></script>
-	<script src="js/jquery.scrollTo.min.js"></script>
-	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
-	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
-	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
-	<script src="js/jquery.customSelect.min.js"></script>
+<script src="js/jquery/jquery-3.7.1.min.js"></script>
+<script src="js/jquery.scrollTo.min.js"></script>
+<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+<script src="DataTables/DataTables-2.1.5/js/dataTables.js"></script>
+<script src="js/select2-4.0.11.min.js"></script>
+<script type="text/javascript" charset="utf8" src="DataTables/Plugins/dataRender/ellipsis.js"></script>
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
@@ -261,23 +283,6 @@
 			queryAll = false;
 		}
 		
-		/*$('#resultsGrid thead tr')
-        .clone(true)
-        .appendTo('#resultsGrid thead');
-
-		$('#resultsGrid thead tr:eq(1) th').each( function (i) {
-		        var title = $(this).text();
-		        $(this).html( '<input type="text" placeholder="Filter" />' );
-		        $( 'input', this ).on( 'keyup change', function () {
-		            if ( table.column(i).search() !== this.value ) {
-		                table
-		                    .column(i)
-		                    .search( this.value )
-		                    .draw();
-		            }
-		        } );
-		    } );*/
-		    
 		    
 			// Apply the search
 		    $( 'table thead'  ).on( 'keyup', ".column_search",function () {
@@ -287,6 +292,7 @@
 		            .draw();
 		    } );
 		    
+		    } );	    
 
 		/*
 			Both the Path field and Error fields use the Ellipsis plugin to render partial string with ellipses and
@@ -328,13 +334,16 @@
                             data = localStorage.getItem(stateStorageName);
                         return data != null ? JSON.parse(data) : null;
                     }},
-				columnDefs: [ {targets: 0,  data: 'userId', width:100, visible: queryAll}, //userId
+		scrollX : true,
+				scrollY: '80vh',
+				scrollCollapse: true,
+				columnDefs: [ {targets: 0,  data: 'userId', width:70, visible: queryAll}, //userId
 							{targets: 1, data: 'taskId', width:280, visible: true},  // taskId
-							{targets: 2, data: 'sourceType', width: 130, visible: true},  // source type
-							{targets: 3, data: 'result', width: 100, visible: true},  // transfer result
+							{targets: 2, data: 'sourceType', width: 150, visible: true},  // source type
+							{targets: 3, data: 'result', width: 105, visible: true},  // transfer result
 							{targets: 4, data: 'created', width: 110, visible: true, orderData:[7]},  // created
 							{targets: 5, data: 'completed', width: 110, visible: true, orderData:[8]},  // completed
-							{targets: 6, data: 'error', width: 210, type: 'non-empty-string', render: DataTable.render.ellipsis( 40, true )}, // error
+							{targets: 6, data: 'error', width: 335, type: 'non-empty-string', render: DataTable.render.ellipsis( 55, true )}, // error
 							{targets: 7, data: 'sortCreated', visible: false, searchable: false},
 							{targets: 8, data: 'sortCompleted', visible: false, searchable: false}
 				],
@@ -355,8 +364,40 @@
 		//RESIZE
 		//new $.fn.dataTable.ColResize(table, colResizeOptions);
 		//table.colResize.enable();  // enable plugin (i.e. when options was isEnabled: false)
+
+					// Add Horizontal scroll on top and bottom - begin
+					 $('dt-scroll-body').css({
+	                    'overflow': 'hidden',
+	                    'border': '0'
+	                });
+	                // Enable TFOOT scoll bars
+	                $('.dt-scroll-foot').css('overflow', 'auto');
+	                $('.dt-scroll-head').css('overflow', 'auto');
+	                $('.dt-scroll-body').css('overflow', 'auto');
+	                // Sync TFOOT scrolling with TBODY
+	                $('.dt-scroll-foot').on('scroll', function () {
+	                    $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
+	                });
+	                $('.dt-scroll-head').on('scroll', function () {
+	                    $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
+	                });
+					//End of code foradding Horizontal scroll on top and bottom
+
+					// Show grid
+					$("#resultsGrid").show();
+					// Adjust Grid columns
+					$('#resultsGrid').DataTable().columns.adjust();
+		      },
+		} );
+		// Apply the search
+	    $( 'table thead'  ).on( 'keyup', ".column_search",function () {
+	        table
+	            .column( $(this).parent().index() )
+	            .search( this.value )
+	            .draw();
+	    } );
 	});
-	
+
 	function displayAll()
 	{
 		var checkBox = document.getElementById("allcheckbox");

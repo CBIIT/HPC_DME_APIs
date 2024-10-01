@@ -11,7 +11,9 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 
+import java.security.Key;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -55,15 +58,20 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
+import gov.nih.nci.hpc.integration.HpcOidcAuthorizationProxy;
 import gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Identifiable;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.security.Jwk;
+import io.jsonwebtoken.security.Jwks;
 
 /**
  * HPC Security Application Service Implementation.
@@ -123,6 +131,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	// The SPS authorization instance.
 	@Autowired
 	private HpcSpsAuthorizationProxy spsAuthorizationProxy = null;
+
+	// The OIDC authorization instance.
+	@Autowired
+	private HpcOidcAuthorizationProxy oidcAuthorizationProxy = null;
 
 	@Autowired
 	private HpcDataManagementProxy dataManagementProxy = null;
@@ -583,21 +595,53 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	@Override
 	public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken) throws HpcException {
 		try {
-			Jws<Claims> jwsClaims = Jwts.parser().setSigningKey(authenticationTokenSignatureKey)
-					.parseClaimsJws(authenticationToken);
+			HpcAuthenticationTokenClaims tokenClaims = null;
+			Base64.Decoder decoder = Base64.getUrlDecoder();
+			String[] chunks = authenticationToken.split("\\.");
+			String jwtHeader = new String(decoder.decode(chunks[0]));
+			if(jwtHeader.contains("HS256")) {
+				// This is DME token.
+				JwtParser jwtParser = Jwts.parser().setSigningKey(authenticationTokenSignatureKey).build();
+				Claims jwsClaims = (Claims) jwtParser.parse(authenticationToken).getPayload();
+		
 
-			// Extract the claims.
-			HpcAuthenticationTokenClaims tokenClaims = new HpcAuthenticationTokenClaims();
-			tokenClaims.setUserId(jwsClaims.getBody().get(USER_ID_TOKEN_CLAIM, String.class));
-			tokenClaims.setDataManagementAccount(
-					fromJSON(jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, String.class)));
+				// Extract the claims.
+				tokenClaims = new HpcAuthenticationTokenClaims();
+				tokenClaims.setUserId(jwsClaims.get(USER_ID_TOKEN_CLAIM, String.class));
+				tokenClaims.setDataManagementAccount(
+						fromJSON(jwsClaims.get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, String.class)));
 
-			// Check if the data management account expired.
-			Date dataManagementAccountExpiration = jwsClaims.getBody()
-					.get(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, Date.class);
-			if (dataManagementAccountExpiration.before(new Date())) {
-				// Data management account expired. Remove its properties.
+				// Check if the data management account expired.
+				Date dataManagementAccountExpiration = jwsClaims
+						.get(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, Date.class);
+				if (dataManagementAccountExpiration.before(new Date())) {
+					// Data management account expired. Remove its properties.
+					tokenClaims.getDataManagementAccount().getProperties().clear();
+				}
+			} else if (jwtHeader.contains("RS256")) {
+				// This is OIDC access token.
+				String webKeys = oidcAuthorizationProxy.getJWKSet();
+				Map<String, ? extends Key> keyMap = Jwks.setParser().build()
+				        .parse(webKeys).getKeys().stream()
+				        .collect(Collectors.toMap(Identifiable::getId, Jwk::toKey));
+				JwtParser jwtParser = Jwts.parser().keyLocator(header -> keyMap.get(header.getOrDefault("kid", "").toString())).build();
+
+				// Verify the token
+				Claims jwsClaims = (Claims) jwtParser.parse(authenticationToken).getPayload();
+				String userId = oidcAuthorizationProxy.getUsername(authenticationToken);
+				// Set the claims
+				tokenClaims = new HpcAuthenticationTokenClaims();
+				tokenClaims.setUserId(userId);
+				// Instantiate a Data Management account.
+				HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
+				dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
+				dataManagementAccount.setUsername(userId);
+				dataManagementAccount.setPassword("");
+				tokenClaims.setDataManagementAccount(dataManagementAccount);
 				tokenClaims.getDataManagementAccount().getProperties().clear();
+			} else {
+				logger.error("Invalid algorithm for token authentication");
+				return null;
 			}
 
 			return tokenClaims;

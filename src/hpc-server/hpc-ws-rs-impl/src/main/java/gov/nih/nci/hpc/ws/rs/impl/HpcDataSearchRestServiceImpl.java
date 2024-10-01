@@ -22,6 +22,10 @@ import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.catalog.HpcCatalogRequestDTO;
 import gov.nih.nci.hpc.dto.catalog.HpcCatalogsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -118,13 +122,13 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl implements 
 			if (returnParent != null && returnParent) {
 				HpcCollectionListDTO collections = null;
 
-				collections = dataSearchBusService.getDataObjectParents(null, compoundMetadataQuery);
+				collections = dataSearchBusService.getDataObjectParents(compoundMetadataQuery);
 
 				return okResponse(!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
 						? collections
 						: null, true);
 			} else {
-				dataObjects = dataSearchBusService.getDataObjects(null, compoundMetadataQuery);
+				dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQuery);
 				return okResponse(!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
 						? dataObjects
 						: null, true);
@@ -165,19 +169,30 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl implements 
 	@Override
 	public Response queryDataObjectsInPath(String path, Boolean returnParent,
 			HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+		HpcMetadataQuery pathQuery = new HpcMetadataQuery();
+		pathQuery.setAttribute("path");
+		pathQuery.setOperator(HpcMetadataQueryOperator.PATH_LIKE);
+		pathQuery.setValue(toNormalizedPath(path) + "%");
+
+		HpcCompoundMetadataQuery compoundPathQuery = new HpcCompoundMetadataQuery();
+		compoundPathQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+		compoundPathQuery.getQueries().add(pathQuery);
+		compoundPathQuery.getCompoundQueries().add(compoundMetadataQuery.getCompoundQuery());
+
+		compoundMetadataQuery.setCompoundQuery(compoundPathQuery);
 
 		try {
 			if (returnParent != null && returnParent) {
 				HpcCollectionListDTO collections = null;
 
-				collections = dataSearchBusService.getDataObjectParents(toNormalizedPath(path), compoundMetadataQuery);
+				collections = dataSearchBusService.getDataObjectParents(compoundMetadataQuery);
 
 				return okResponse(!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
 						? collections
 						: null, true);
 			} else {
 				HpcDataObjectListDTO dataObjects = null;
-				dataObjects = dataSearchBusService.getDataObjects(toNormalizedPath(path), compoundMetadataQuery);
+				dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQuery);
 
 				return okResponse(!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
 						? dataObjects
