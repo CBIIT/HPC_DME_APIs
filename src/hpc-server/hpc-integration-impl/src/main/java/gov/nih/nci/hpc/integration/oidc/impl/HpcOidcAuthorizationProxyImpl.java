@@ -75,12 +75,12 @@ public class HpcOidcAuthorizationProxyImpl implements HpcOidcAuthorizationProxy 
 	        	jwks = IOUtils.toString((InputStream)response.getEntity());
 				
 			} else {
-				throw new HpcException("OIDC JWK Set endpoing access not successful, response=" + response.getStatus(),
+				throw new HpcException("OIDC JWK Set endpoint access not successful, response=" + response.getStatus(),
 						HpcErrorType.UNEXPECTED_ERROR);
 			}
 	        
 		} catch (Exception e) {
-			throw new HpcException("OIDC JWK Set endpoing access not successful", e);
+			throw new HpcException("OIDC JWK Set endpoint access not successful", e);
 		}
 	}
 
