@@ -325,6 +325,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 		entries.put("TIMESTAMP_LESS_OR_EQUAL", "Date less than or equal to");
 		entries.put("TIMESTAMP_GREATER_OR_EQUAL", "Date greater than or equal to");
 		entries.put("PATH_LIKE", "Path like");
+		entries.put("CONTAINS", "Contains");
 		Map<String, String> sortedEntries = new TreeMap<String, String>(entries);
 		model.addAttribute("operators", sortedEntries);
 	}
@@ -341,6 +342,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 		entries.put("TIMESTAMP_LESS_OR_EQUAL", "Date less than or equal to");
 		entries.put("TIMESTAMP_GREATER_OR_EQUAL", "Date greater than or equal to");
 		entries.put("PATH_LIKE", "Path like");
+		entries.put("CONTAINS", "Contains");
 		Map<String, String> sortedEntries = new TreeMap<String, String>(entries);
 		model.addAttribute("leveloperators", sortedEntries);
 	}
