@@ -68,6 +68,7 @@ tfoot input {
 }
 .errorWidth{
 	width:335px;
+	white-space: nowrap;
 }
 
 
@@ -278,7 +279,7 @@ tfoot input {
 							{targets: 3, data: 'result', width: 105, visible: true},  // transfer result
 							{targets: 4, data: 'created', width: 110, visible: true, orderData:[7]},  // created
 							{targets: 5, data: 'completed', width: 110, visible: true, orderData:[8]},  // completed
-							{targets: 6, data: 'error', width: 335, type: 'non-empty-string', render: DataTable.render.ellipsis( 50, true )}, // error
+							{targets: 6, data: 'error', width: 335, type: 'non-empty-string', render: DataTable.render.ellipsis( 55, true )}, // error
 							{targets: 7, data: 'sortCreated', visible: false, searchable: false},
 							{targets: 8, data: 'sortCompleted', visible: false, searchable: false}
 				],

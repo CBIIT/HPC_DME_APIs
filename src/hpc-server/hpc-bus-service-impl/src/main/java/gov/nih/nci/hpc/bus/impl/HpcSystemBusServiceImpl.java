@@ -2464,6 +2464,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcFileLocation calcDestinationLocation = new HpcFileLocation();
 		calcDestinationLocation.setFileContainerId(destinationLocation.getFileContainerId());
 		String fileId = destinationLocation.getFileId();
+		
+		logger.error("ERAN 1 : {}", fileId);
 
 		if (subCollectionDestination) {
 			if (!appendPathToDownloadDestination) {
@@ -2471,10 +2473,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// path. Append just the sub-collection name to the calculated destination.
 				fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
 			}
+			logger.error("ERAN 2 : {}", fileId);
 
 		} else if (appendPathToDownloadDestination) {
 			// Append the absolute file path to the calculated destination
 			fileId = fileId + collectionListingEntryPath;
+			
+			logger.error("ERAN 3 : {}", fileId);
 
 		} else if (appendCollectionNameToDownloadDestination) {
 			// Append the collection name + file name to the to the calculated destination.
@@ -2484,11 +2489,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			String collectionName = collectionPath.substring(collectionPath.lastIndexOf('/'));
 
 			fileId = fileId + collectionName + fileName;
+			
+			logger.error("ERAN 4 : {}", fileId);
 
 		} else if (!appendPathToDownloadDestination && !appendCollectionNameToDownloadDestination) {
 			// For data object destination calculation w/o any 'append indicators' set,
 			// append just the file name.
 			fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
+			
+			logger.error("ERAN 5 : {}", fileId);
 		}
 
 		calcDestinationLocation.setFileId(fileId);
