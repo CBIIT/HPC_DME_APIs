@@ -1867,11 +1867,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 			}
 		}
-		// Appending the collection name to the download destination applies (if asked
-		// for) only to the top level folder, so it's turned off once we start
-		// processing the sub folders
-		appendCollectionNameToDownloadDestination = false;
-
+		
 		// Iterate through the sub-collections and download them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
@@ -2472,13 +2468,25 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.error("ERAN 1 : {} : {}", fileId, subCollectionDestination);
 
 		if (subCollectionDestination) {
-			if (!appendPathToDownloadDestination && !appendCollectionNameToDownloadDestination) {
+			if (!appendPathToDownloadDestination) {
 				// For sub-collection destination calculation w/o appending absolute
 				// path or containing collection. Append just the sub-collection name to the
 				// calculated destination.
 				fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
+				
+				logger.error("ERAN 2.1 : {} : {}", fileId, subCollectionDestination);
+				
+			} else if(appendCollectionNameToDownloadDestination) {
+				// Append the collection name + file name to the to the calculated destination.
+				String collectionName = collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
+				String topCollectionPath = collectionListingEntryPath.substring(0,
+						collectionListingEntryPath.lastIndexOf('/'));
+				String topCollectionName = topCollectionPath.substring(topCollectionPath.lastIndexOf('/'));
+
+				fileId = fileId + topCollectionName + collectionName;
+
+				logger.error("ERAN 2.2 : {} : {}", fileId, subCollectionDestination);
 			}
-			logger.error("ERAN 2 : {} : {}", fileId, subCollectionDestination);
 
 		} else if (appendPathToDownloadDestination) {
 			// Append the absolute file path to the calculated destination
