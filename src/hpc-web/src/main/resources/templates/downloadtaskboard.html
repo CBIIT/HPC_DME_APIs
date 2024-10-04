@@ -123,7 +123,8 @@ tfoot input {
 	width:80px;
 }
 .errorWidth{
-	width:335px;
+	width:360px;
+	white-space: nowrap;
 }
 </style>
 <script th:inline="javascript">
@@ -385,7 +386,7 @@ tfoot input {
 						{targets: 7, data: 'completed', width: 110, visible: true, orderData:[13]},  // completed
 						{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
 						{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-						{targets: 10, data: 'error', width:335, type: 'non-empty-string', render: DataTable.render.ellipsis( 50, true )}, // error
+						{targets: 10, data: 'error', width:360, type: 'non-empty-string', render: DataTable.render.ellipsis( 60, true )}, // error
 						{targets: 11, data: 'displayPath', visible: false},
 						{targets: 12, data: 'sortCreated', visible: false, searchable: false},
 						{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
