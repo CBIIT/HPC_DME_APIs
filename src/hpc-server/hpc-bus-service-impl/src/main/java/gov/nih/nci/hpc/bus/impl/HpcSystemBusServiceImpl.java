@@ -2468,7 +2468,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.error("ERAN 1 : {} : {}", fileId, subCollectionDestination);
 
 		if (subCollectionDestination) {
-			if (!appendPathToDownloadDestination) {
+			if (!appendPathToDownloadDestination && !appendCollectionNameToDownloadDestination) {
 				// For sub-collection destination calculation w/o appending absolute
 				// path or containing collection. Append just the sub-collection name to the
 				// calculated destination.
