@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.12.RELEASE</version>
+        <version>2.7.18</version>
         <relativePath />
         <!-- lookup parent from repository -->
     </parent>
@@ -20,11 +20,11 @@
 		<api.version>3.6.0</api.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <start-class>gov.nih.nci.hpc.web.HpcWebApplication</start-class>
-        <java.version>11</java.version>
+        <java.version>21</java.version>
         <resources.basedir>src/main/resources</resources.basedir>
         <app.configs.dir>${resources.basedir}/appconfigs</app.configs.dir>
         <google-drive-sdk.version>1.25.0</google-drive-sdk.version>
-        <spring-framework.version>5.2.25.RELEASE</spring-framework.version>
+        <spring-framework.version>5.3.39</spring-framework.version>
     </properties>
     <dependencies>
         <dependency>
