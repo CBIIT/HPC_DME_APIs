@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -166,7 +167,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
 			String[] deselectedColumns =  request.getParameterValues("deselectedColumns");
 			if(deselectedColumns != null && StringUtils.isNotEmpty(deselectedColumns[0]))
-				hpcSaveSearch.getDeselectedColumns().addAll(CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
+				hpcSaveSearch.getDeselectedColumns().addAll((Collection<? extends String>) CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 
 			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
