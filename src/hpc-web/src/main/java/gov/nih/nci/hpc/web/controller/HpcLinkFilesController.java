@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.web.controller;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -123,7 +124,7 @@ public class HpcLinkFilesController extends AbstractHpcController {
 			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
 			String[] deselectedColumns =  request.getParameterValues("deselectedColumns");
 			if(deselectedColumns != null && StringUtils.isNotEmpty(deselectedColumns[0]))
-				hpcSaveSearch.getDeselectedColumns().addAll(CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
+				hpcSaveSearch.getDeselectedColumns().addAll((Collection<? extends String>) CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 			model.addAttribute("hpcSearch", hpcSaveSearch);
 		} catch (Exception e) {
