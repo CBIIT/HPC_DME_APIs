@@ -246,16 +246,17 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 					if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
 						entry.setValue(attrValue[0]);
 					} else {
-						throw new HpcWebException("Invalid value for metadata attribute " + attrName[0] + ": Value cannot be empty");
+						entry.setValue("");
 					}
-				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
-					throw new HpcWebException("Invalid metadata attribute name for value " + attrValue[0] + ": Name cannot be empty");
 				} else {
+					if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
+						throw new HpcWebException("Invalid metadata attribute name for value " + attrValue[0] + ": Name cannot be empty");
+					} else {
 					//If both attrName and attrValue are empty, then we just
 					//ignore it and move to the next element
 					continue;
+					}
 				}
-
 				userMetadataList.add(entry);
 			}
 		}
