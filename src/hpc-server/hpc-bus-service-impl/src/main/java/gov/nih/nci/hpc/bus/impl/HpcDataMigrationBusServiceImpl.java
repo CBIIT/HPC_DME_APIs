@@ -242,7 +242,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 							// Get the collection to be migrated.
 							HpcCollection collection = dataManagementService
-									.getCollection(collectionMigrationTask.getPath(), true);
+									.getFullCollection(collectionMigrationTask.getPath());
 							if (collection == null) {
 								throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 							}
@@ -339,7 +339,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 							// Iterate through the collections in the list and migrate them.
 							for (String collectionPath : collectionListMigrationTask.getCollectionPaths()) {
 								// Get the collection to be migrated.
-								HpcCollection collection = dataManagementService.getCollection(collectionPath, true);
+								HpcCollection collection = dataManagementService.getFullCollection(collectionPath);
 								if (collection == null) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
@@ -773,7 +773,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// Iterate through the sub-collections and migrate them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath);
 			if (subCollection != null) {
 				// Migrate this sub-collection.
 				migrateCollection(subCollection, collectionMigrationTask);
