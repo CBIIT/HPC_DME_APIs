@@ -785,8 +785,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								// Get the collection to be downloaded.
-								HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(),
-										true);
+								HpcCollection collection = dataManagementService.getFullCollection(downloadTask.getPath());
 								if (collection == null) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
@@ -819,7 +818,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 								downloadItems = new ArrayList<>();
 								for (String path : downloadTask.getCollectionPaths()) {
-									HpcCollection collection = dataManagementService.getCollection(path, true);
+									HpcCollection collection = dataManagementService.getFullCollection(path);
 									if (collection == null) {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1871,7 +1870,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the sub-collections and download them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath);
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
