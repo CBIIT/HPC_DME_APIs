@@ -813,6 +813,30 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		return null;
 	}
+	
+	@Override
+	public HpcCollection getFullCollection(String path) throws HpcException {
+		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+		if (dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
+			HpcCollection collection = dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, 0);
+			
+			int totalRecordsFetched = (collection.getSubCollections() == null? 0 : collection.getSubCollections().size()) + 
+					(collection.getDataObjects() == null? 0 : collection.getDataObjects().size());
+			int totalRecords = collection.getSubCollectionsTotalRecords() + collection.getDataObjectsTotalRecords();
+			
+			// Check if there are more sub-collections or data objects to be fetched
+			while (totalRecordsFetched < totalRecords) {
+				HpcCollection collectionContinued = dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, totalRecordsFetched);
+				collection.getSubCollections().addAll(collectionContinued.getSubCollections());
+				collection.getDataObjects().addAll(collectionContinued.getDataObjects());
+				totalRecordsFetched = (collection.getSubCollections() == null? 0 : collection.getSubCollections().size()) + 
+						(collection.getDataObjects() == null? 0 : collection.getDataObjects().size());
+			}
+			return collection;
+		}
+
+		return null;
+	}
 
 	@Override
 	public HpcCollection getCollectionChildren(String path) throws HpcException {
