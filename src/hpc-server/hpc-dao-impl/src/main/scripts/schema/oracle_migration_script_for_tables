@@ -319,6 +319,8 @@ comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" is
 comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."IN_PROCESS" is 'An indicator whether this task is in-process, i.e. a thread is working on submitting it';
 comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DOC" is 'DOC of the data object being downloaded';
 
+create index HPC_DATA_OBJECT_DOWNLOAD_TASK_DATA_TRANSFER_STATUS_IDX
+on IRODS.HPC_DATA_OBJECT_DOWNLOAD_TASK (DATA_TRANSFER_STATUS);
 
 CREATE TABLE "IRODS"."HPC_DATA_OBJECT_REGISTRATION_RESULT"
 (
@@ -434,7 +436,8 @@ comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_CONTA
 
 comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_ID" is 'The key or path of the data object';
 
-
+create index HPC_DOWNLOAD_TASK_RESULT_COMPLETED_IDX
+on IRODS.HPC_DOWNLOAD_TASK_RESULT (COMPLETED);
 
 CREATE TABLE "IRODS"."HPC_EVENT"
 (
