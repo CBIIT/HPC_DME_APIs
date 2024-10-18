@@ -87,6 +87,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -3237,6 +3238,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (dataTieringService.deepArchiveDelayed(systemGeneratedMetadata.getDeepArchiveDate())) {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, null, null,
 							null, null, null, null, HpcDeepArchiveStatus.DELAYED, null, null);
+					// Email administrators to send email with the delayed file
+					notificationService.sendNotification(new HpcException(
+							"deep_archive_status toggled to DELAYED, path: " + path,
+							HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.AWS));
 				}
 			}
 
