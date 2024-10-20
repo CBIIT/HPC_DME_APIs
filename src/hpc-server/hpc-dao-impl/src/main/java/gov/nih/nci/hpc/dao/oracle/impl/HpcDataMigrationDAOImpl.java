@@ -104,7 +104,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String SET_MIGRATION_TASK_IN_PROCESS_SQL = "update HPC_DATA_MIGRATION_TASK set IN_PROCESS = ? where ID = ? and IN_PROCESS != ?";
 
-	private static final String SET_MIGRATION_TASK_SERVER_ID_SQL = "update HPC_DATA_MIGRATION_TASK set SERVER_ID = ? where ID = ?";
+	private static final String SET_MIGRATION_TASK_SERVER_ID_SQL = "update HPC_DATA_MIGRATION_TASK set SERVER_ID = ?, IN_PROCESS = ? where ID = ?";
 
 	private static final String CLEANUP_DATA_MIGRATION_TASKS_SQL = "delete from HPC_DATA_MIGRATION_TASK task where exists (select result.id from HPC_DATA_MIGRATION_TASK_RESULT result where task.id = result.id)";
 
@@ -494,7 +494,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	@Override
 	public void setDataMigrationTaskServerId(String id, String serverId) throws HpcException {
 		try {
-			jdbcTemplate.update(SET_MIGRATION_TASK_SERVER_ID_SQL, serverId, id);
+			jdbcTemplate.update(SET_MIGRATION_TASK_SERVER_ID_SQL, serverId, false, id);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to set a data migration task w/ server-id value: " + e.getMessage(),
