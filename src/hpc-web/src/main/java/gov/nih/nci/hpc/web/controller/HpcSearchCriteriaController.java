@@ -355,6 +355,15 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			query = buildSimpleSearch(hierarchy, search);
 
 		if(search.getGlobalMetadataSearchText() != null && !search.getGlobalMetadataSearchText().trim().isEmpty()) {
+			HpcCompoundMetadataQuery consolidatedQuery = new HpcCompoundMetadataQuery();
+			// Consolidated Query = Search Query && (Metadata Search Query || Path Search Query)
+			consolidatedQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+			consolidatedQuery.getCompoundQueries().add(query);
+			// Add compound query to search the metadata fields and non-metadata field Path using the PATH_LIKE op
+			// Filter Query = Metadata Search Query || Path Search Query
+			// Metadata Search Query
+			HpcCompoundMetadataQuery filterQuery = new HpcCompoundMetadataQuery();
+			filterQuery.setOperator(HpcCompoundMetadataQueryOperator.OR);
 			HpcMetadataQuery criteria = new HpcMetadataQuery();
 			criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
 			criteria.setOperator(HpcMetadataQueryOperator.fromValue("LIKE"));
@@ -364,9 +373,20 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			levelFilter.setLevel(1);
 			levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
 			criteria.setLevelFilter(levelFilter);
-			query.getQueries().add(criteria);
+			filterQuery.getQueries().add(criteria);
+			// Path Search Query
+			criteria = new HpcMetadataQuery();
+			criteria.setAttribute("path");
+			criteria.setOperator(HpcMetadataQueryOperator.fromValue("PATH_LIKE"));
+			searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
+			criteria.setValue(searchLikeText);
+			filterQuery.getQueries().add(criteria);
+			consolidatedQuery.getCompoundQueries().add(filterQuery);
+			logger.info("The consolidated Query for Global search is: " + gson.toJson(consolidatedQuery));
+			dto.setCompoundQuery(consolidatedQuery);
+		} else {
+			dto.setCompoundQuery(query);
 		}
-		dto.setCompoundQuery(query);
 		dto.setDetailedResponse(search.isDetailed());
 		if (search.getSearchType().equals("collection"))
 			dto.setCompoundQueryType(HpcCompoundMetadataQueryType.COLLECTION);
