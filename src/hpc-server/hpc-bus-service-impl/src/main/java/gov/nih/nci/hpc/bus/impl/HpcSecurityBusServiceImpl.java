@@ -675,8 +675,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
 	@Override
 	public HpcGroupListDTO getGroups(String groupPattern) throws HpcException {
+
+		String doc = null;
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
+			doc = invoker.getNciAccount().getDoc();
+		}
+
 		// Search for groups.
-		List<String> groupNames = dataManagementSecurityService.getGroups(groupPattern != null ? groupPattern : "%");
+		List<String> groupNames = dataManagementSecurityService.getGroups(doc, groupPattern != null ? groupPattern : "%");
 		if (groupNames == null || groupNames.isEmpty()) {
 			return null;
 		}
