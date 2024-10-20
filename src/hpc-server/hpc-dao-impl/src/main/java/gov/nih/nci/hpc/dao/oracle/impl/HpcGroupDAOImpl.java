@@ -58,15 +58,19 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 
 	private static final String GET_GROUP_SQL = "select * from HPC_GROUP where GROUP_NAME = ?";
 
-	private static final String GET_GROUPS_SQL = "select user_name from r_user_main where "
-			+ "user_type_name = 'rodsgroup' and user_name <> 'rodsadmin'";
+	//private static final String GET_GROUPS_SQL = "select user_name from r_user_main where "
+	//		+ "user_type_name = 'rodsgroup' and user_name <> 'rodsadmin'";
+	private static final String GET_GROUPS_SQL = "select group_name from HPC_GROUP where active = '1'";
 
 	// Get all groups to which the given user belongs
 	private static final String GET_USER_GROUPS_SQL = "select m.user_name from r_user_main m, r_user_group g, r_user_main u "
 			+ "where m.user_type_name = 'rodsgroup' and " + "m.user_id = g.group_user_id and "
 			+ "g.user_id = u.user_id and " + "u.user_name = ?";
 
-	private static final String GET_GROUPS_GROUP_NAME_PATTERN_FILTER = " and lower(user_name) like lower(?) ";
+	private static final String GET_GROUPS_DOC_FILTER = "and DOC = ?";
+
+	//private static final String GET_GROUPS_GROUP_NAME_PATTERN_FILTER = " and lower(user_name) like lower(?) ";
+	private static final String GET_GROUPS_GROUP_NAME_PATTERN_FILTER = " and lower(group_name) like lower(?) ";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -168,13 +172,19 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 		}
 	}
 
+
 	@Override
-	public List<String> getGroups(String groupPattern) throws HpcException {
+	public List<String> getGroups(String doc, String groupPattern) throws HpcException {
 		// Build the query based on provided search criteria.
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
 
 		sqlQueryBuilder.append(GET_GROUPS_SQL);
+
+		if(doc != null) {
+			sqlQueryBuilder.append(GET_GROUPS_DOC_FILTER);
+			args.add(doc);
+		}
 
 		if (groupPattern != null) {
 			sqlQueryBuilder.append(GET_GROUPS_GROUP_NAME_PATTERN_FILTER);
