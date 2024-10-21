@@ -361,7 +361,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			consolidatedQuery.getCompoundQueries().add(query);
 			// Add compound query to search the metadata fields and non-metadata field Path using the PATH_LIKE op
 			// Filter Query = Metadata Search Query || Path Search Query
-			// Metadata Search Query
+			// Build Metadata Search Query
 			HpcCompoundMetadataQuery filterQuery = new HpcCompoundMetadataQuery();
 			filterQuery.setOperator(HpcCompoundMetadataQueryOperator.OR);
 			HpcMetadataQuery criteria = new HpcMetadataQuery();
@@ -374,12 +374,13 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
 			criteria.setLevelFilter(levelFilter);
 			filterQuery.getQueries().add(criteria);
-			// Path Search Query
+			// Build Path Search Query
 			criteria = new HpcMetadataQuery();
 			criteria.setAttribute("path");
 			criteria.setOperator(HpcMetadataQueryOperator.fromValue("PATH_LIKE"));
 			searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
 			criteria.setValue(searchLikeText);
+			criteria.setLevelFilter(levelFilter);
 			filterQuery.getQueries().add(criteria);
 			consolidatedQuery.getCompoundQueries().add(filterQuery);
 			logger.info("The consolidated Query for Global search is: " + gson.toJson(consolidatedQuery));
