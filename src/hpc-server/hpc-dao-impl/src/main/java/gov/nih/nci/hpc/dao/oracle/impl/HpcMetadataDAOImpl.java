@@ -1110,8 +1110,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			List <HpcMetadataQuery> metadataQuerys = new ArrayList <HpcMetadataQuery>();
 			for (HpcMetadataQuery metadataQuery : compoundMetadataQuery.getQueries()) {
 				// Check if the PATH_LIKE query is specified and its an AND condition and its not the only criteria
-				if ((compoundMetadataQuery.getCompoundQueries() != null
-						&& !compoundMetadataQuery.getCompoundQueries().isEmpty()
+				if (((compoundMetadataQuery.getCompoundQueries() != null
+						&& !compoundMetadataQuery.getCompoundQueries().isEmpty())
 						|| compoundMetadataQuery.getQueries().size() > 1)
 						&& metadataQuery.getOperator().equals(HpcMetadataQueryOperator.PATH_LIKE)
 						&& compoundMetadataQuery.getOperator().equals(HpcCompoundMetadataQueryOperator.AND)) {
