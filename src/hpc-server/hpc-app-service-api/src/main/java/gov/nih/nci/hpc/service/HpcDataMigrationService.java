@@ -45,12 +45,15 @@ public interface HpcDataMigrationService {
 	 *                                     request.
 	 * @param retryUserId                  The user retrying the request if this is
 	 *                                     a retry request.
+	 * @param metadataUpdateRequest        True to indicate this is a metadata
+	 *                                     update request.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException;
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest)
+			throws HpcException;
 
 	/**
 	 * Get a list of migration tasks in specific status and type.
@@ -243,5 +246,23 @@ public interface HpcDataMigrationService {
 	 */
 	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String collectionMigrationTaskId,
 			HpcDataMigrationResult result) throws HpcException;
+
+	/**
+	 * Create a metadata migration task.
+	 *
+	 * @param fromS3ArchiveConfigurationId The metadata migration's from S3 config
+	 *                                     ID.
+	 * @param toS3ArchiveConfigurationId   The metadata migration's to S3 config ID.
+	 * @param archiveFileContainerId       The metadata migration's archive
+	 *                                     container ID.
+	 * @param archiveFileIdPattern         The metadata migration's archive file ID
+	 *                                     pattern (% matches any)
+	 * @param userId                       The user Id requested the migration.
+	 * @return A migration task ID.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask createMetadataMigrationTask(String fromS3ArchiveConfigurationId,
+			String toS3ArchiveConfigurationId, String archiveFileContainerId, String archiveFileIdPattern,
+			String userId) throws HpcException;
 
 }
