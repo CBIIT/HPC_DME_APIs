@@ -123,7 +123,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size, String retryTaskId, String retryUserId) throws HpcException {
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest)
+			throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -147,7 +148,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
 		migrationTask.setCreated(Calendar.getInstance());
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
-		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT);
+		migrationTask.setType(metadataUpdateRequest ? HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE
+				: HpcDataMigrationType.DATA_OBJECT);
 		migrationTask.setParentId(collectionMigrationTaskId);
 		migrationTask.setAlignArchivePath(alignArchivePath);
 		migrationTask.setPercentComplete(0);
@@ -558,5 +560,32 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String collectionMigrationTaskId,
 			HpcDataMigrationResult result) throws HpcException {
 		return dataMigrationDAO.getDataMigrationResults(collectionMigrationTaskId, result);
+	}
+
+	@Override
+	public HpcDataMigrationTask createMetadataMigrationTask(String fromS3ArchiveConfigurationId,
+			String toS3ArchiveConfigurationId, String archiveFileContainerId, String archiveFileIdPattern,
+			String userId) throws HpcException {
+		// Create and persist a migration task.
+		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+		migrationTask.setPath(null);
+		migrationTask.setUserId(userId);
+		migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
+		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+		migrationTask.setCreated(Calendar.getInstance());
+		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+		migrationTask.setType(HpcDataMigrationType.BULK_METADATA_UPDATE);
+		migrationTask.setAlignArchivePath(false);
+		migrationTask.setPercentComplete(0);
+		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(null);
+		migrationTask.setRetryUserId(null);
+		migrationTask.setRetryFailedItemsOnly(null);
+		migrationTask.setMetadataArchiveFileContainerId(archiveFileContainerId);
+		migrationTask.setMetadataArchiveFileIdPattern(archiveFileIdPattern);
+
+		// Persist the task.
+		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+		return migrationTask;
 	}
 }
