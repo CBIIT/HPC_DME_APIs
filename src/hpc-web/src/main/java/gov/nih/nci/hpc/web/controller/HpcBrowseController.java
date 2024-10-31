@@ -396,10 +396,10 @@ public class HpcBrowseController extends AbstractHpcController {
               //browserEntry = addPathEntries(path, browserEntry);
               browserEntry = trimPath(browserEntry, browserEntry.getName());
               entries.add(browserEntry);
-              if(basePath.equals(user.getDefaultBasePath())) {
-                  model.addAttribute("browserEntryList", entries);
-                  session.setAttribute("browserEntry", browserEntry);
-              }
+              session.setAttribute("browserEntry", browserEntry);
+          }
+          if(!entries.isEmpty()) {
+        	  model.addAttribute("browserEntryList", entries);        	  
           }
       }
       model.addAttribute("basePath", user.getDefaultBasePath());
