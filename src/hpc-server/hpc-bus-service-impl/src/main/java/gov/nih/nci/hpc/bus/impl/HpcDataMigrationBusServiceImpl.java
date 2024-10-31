@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
+import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -30,13 +31,20 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamigration.HpcMetadataMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationResponseDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataMigrationService;
@@ -73,6 +81,10 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	// The Security Application Service Instance.
 	@Autowired
 	private HpcSecurityService securityService = null;
+
+	// The Data Search Business Service Instance.
+	@Autowired
+	private HpcDataSearchBusService dataSearchBusService = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -199,6 +211,35 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		return migrateDataObjectsOrCollections(migrationRequest, migrationTask.getUserId(), taskId,
 				securityService.getRequestInvoker().getNciAccount().getUserId(),
 				Optional.ofNullable(failedItemsOnly).orElse(true));
+	}
+
+	@Override
+	public HpcMigrationResponseDTO migrateMetadata(HpcMetadataMigrationRequestDTO metadataMigrationRequest)
+			throws HpcException {
+		// Input Validation
+		if (metadataMigrationRequest == null) {
+			throw new HpcException("Metadata migration request is null", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (StringUtils.isEmpty(metadataMigrationRequest.getFromS3ArchiveConfigurationId())) {
+			throw new HpcException("from S3 archive configuration ID is empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		} else {
+			// Exception will be thrown of the S3 config ID can't be found.
+			dataManagementService.getS3ArchiveConfiguration(metadataMigrationRequest.getFromS3ArchiveConfigurationId());
+		}
+
+		if (StringUtils.isEmpty(metadataMigrationRequest.getToS3ArchiveConfigurationId())) {
+			throw new HpcException("To S3 archive configuration ID is empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		} else {
+			// Exception will be thrown of the S3 config ID can't be found.
+			dataManagementService.getS3ArchiveConfiguration(metadataMigrationRequest.getToS3ArchiveConfigurationId());
+		}
+
+		if (StringUtils.isEmpty(metadataMigrationRequest.getArchiveFileContainerId())) {
+			throw new HpcException("Archive File Container ID is empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return null;
 	}
 
 	@Override
@@ -373,6 +414,43 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void processBulkMetadataUpdatetMigrationReceived() throws HpcException {
+		dataMigrationService
+				.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.BULK_METADATA_UPDATE)
+				.forEach(bulkMetadataUpdateTask -> {
+					if (markInProcess(bulkMetadataUpdateTask)) {
+						try {
+							logger.info("Updating bulk metadata: task - {}", bulkMetadataUpdateTask.getId());
+
+							// Create metadata migration tasks for all data objects under this bulk-update
+							// task.
+							for (String dataObjectPath : getBulkMetadataUpdateDataObjectPaths(bulkMetadataUpdateTask)) {
+								updateDataObjectMetadata(dataObjectPath, bulkMetadataUpdateTask);
+							}
+
+							// Mark the collection migration task - in-progress
+							bulkMetadataUpdateTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
+							dataMigrationService.updateDataMigrationTask(bulkMetadataUpdateTask);
+
+						} catch (HpcException e) {
+							logger.error("Failed to process update-bulk-metadata: task - {}",
+									bulkMetadataUpdateTask.getId(), e);
+							try {
+								dataMigrationService.completeBulkMigrationTask(bulkMetadataUpdateTask, e.getMessage());
+
+							} catch (HpcException ex) {
+								logger.error("Failed to complete bulk metadata: task - {}",
+										bulkMetadataUpdateTask.getId(), ex);
+							}
+						} finally {
+							doneProcessingDataMigrationTask(bulkMetadataUpdateTask);
+						}
+					}
+				});
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void completeBulkMigrationInProgress() throws HpcException {
 		List<HpcDataMigrationTask> bulkMigrationTasks = new ArrayList<>();
 		bulkMigrationTasks.addAll(dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.IN_PROGRESS,
@@ -381,6 +459,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				HpcDataMigrationType.DATA_OBJECT_LIST));
 		bulkMigrationTasks.addAll(dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.IN_PROGRESS,
 				HpcDataMigrationType.COLLECTION_LIST));
+		bulkMigrationTasks.addAll(dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.IN_PROGRESS,
+				HpcDataMigrationType.BULK_METADATA_UPDATE));
 
 		bulkMigrationTasks.forEach(bulkMigrationTask -> {
 			try {
@@ -422,15 +502,18 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	/**
 	 * Validate a data object migration request
 	 *
-	 * @param path             The data object path.
-	 * @param migrationRequest The migration request.
-	 * @param alignArchivePath If true, the file is moved within its current archive
-	 *                         to align w/ the iRODs path.
+	 * @param path                  The data object path.
+	 * @param migrationRequest      The migration request.
+	 * @param alignArchivePath      If true, the file is moved within its current
+	 *                              archive to align w/ the iRODs path.
+	 * @param metadataUpdateRequest true if this is a metadata update request, false
+	 *                              if it's data migration request.
 	 * @return The data object system metadata
 	 * @throws HpcException If the request is invalid.
 	 */
 	private HpcSystemGeneratedMetadata validateDataObjectMigrationRequest(String path,
-			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath) throws HpcException {
+			HpcMigrationRequestDTO migrationRequest, boolean alignArchivePath, boolean metadataUpdateRequest)
+			throws HpcException {
 
 		// Validate the following:
 		// 1. Path is not empty.
@@ -441,7 +524,9 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// 6. Data Object is archived (i.e. registration completed).
 		// 7. The source-size system metadata is available.
 
-		validateMigrationRequest(path, migrationRequest, alignArchivePath);
+		if (!metadataUpdateRequest) {
+			validateMigrationRequest(path, migrationRequest, alignArchivePath);
+		}
 
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
@@ -545,7 +630,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		for (String path : bulkMigrationRequest.getDataObjectPaths()) {
 			migrationRequest.setS3ArchiveConfigurationId(bulkMigrationRequest.getS3ArchiveConfigurationId());
-			systemGenerateMetadata = validateDataObjectMigrationRequest(path, migrationRequest, false);
+			systemGenerateMetadata = validateDataObjectMigrationRequest(path, migrationRequest, false, false);
 		}
 
 		for (String path : bulkMigrationRequest.getCollectionPaths()) {
@@ -633,7 +718,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		HpcSystemGeneratedMetadata metadata = null;
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
 		try {
-			metadata = validateDataObjectMigrationRequest(path, migrationRequest, alignArchivePath);
+			metadata = validateDataObjectMigrationRequest(path, migrationRequest, alignArchivePath, false);
 
 		} catch (Exception e) {
 			if (!StringUtils.isEmpty(collectionMigrationTaskId)) {
@@ -642,8 +727,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(path,
 						userId, null, null,
 						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
-						collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize(), retryTaskId,
-						retryUserId);
+						collectionMigrationTaskId, alignArchivePath, metadata != null ? metadata.getSourceSize() : null,
+						retryTaskId, retryUserId, false);
 				dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
 						HpcDataMigrationResult.IGNORED, "Invalid migration request: " + e.getMessage(), null, null);
 				migrationResponse.setTaskId(dataObjectMigrationTask.getId());
@@ -654,11 +739,10 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		}
 
 		// Create a migration task.
-		migrationResponse.setTaskId(dataMigrationService
-				.createDataObjectMigrationTask(path, userId, metadata.getConfigurationId(),
-						metadata.getS3ArchiveConfigurationId(),
-						migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
-						collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize(), retryTaskId, retryUserId)
+		migrationResponse.setTaskId(dataMigrationService.createDataObjectMigrationTask(path, userId,
+				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
+				migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
+				collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize(), retryTaskId, retryUserId, false)
 				.getId());
 
 		return migrationResponse;
@@ -782,6 +866,47 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	}
 
 	/**
+	 * Update data object metadata. Validate the request and create a migration
+	 * task.
+	 *
+	 * @param path                   The data object path.
+	 * @param bulkMetadataUpdateTask The bulk metadata update task that this data
+	 *                               object migration is part of.
+	 * @throws HpcException If failed to process the request.
+	 */
+	private void updateDataObjectMetadata(String path, HpcDataMigrationTask bulkMetadataUpdateTask)
+			throws HpcException {
+		logger.info("Updating Data Object Metadata: path - {}, bulk-metadata-task-id - {}", path,
+				bulkMetadataUpdateTask.getId());
+
+		// Input validation.
+		HpcSystemGeneratedMetadata metadata = null;
+		try {
+			metadata = validateDataObjectMigrationRequest(path, null, false, true);
+
+		} catch (Exception e) {
+			// On error / validation failure - we create a data object metadata update task
+			// and mark it ignored.
+			HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(path,
+					bulkMetadataUpdateTask.getUserId(), null, bulkMetadataUpdateTask.getFromS3ArchiveConfigurationId(),
+					bulkMetadataUpdateTask.getToS3ArchiveConfigurationId(), bulkMetadataUpdateTask.getId(), false,
+					metadata != null ? metadata.getSourceSize() : null, null, null, true);
+			dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
+					HpcDataMigrationResult.IGNORED, "Invalid metadata update request: " + e.getMessage(), null, null);
+
+			logger.error("Failed to create Data Object Metadata update task: path - {}, bulk-metadata-task-id - {}",
+					path, bulkMetadataUpdateTask.getId(), e);
+			return;
+		}
+
+		// Create a migration task.
+		dataMigrationService.createDataObjectMigrationTask(path, bulkMetadataUpdateTask.getUserId(),
+				metadata.getConfigurationId(), bulkMetadataUpdateTask.getFromS3ArchiveConfigurationId(),
+				bulkMetadataUpdateTask.getToS3ArchiveConfigurationId(), bulkMetadataUpdateTask.getId(), false,
+				metadata.getSourceSize(), null, null, true);
+	}
+
+	/**
 	 * Mark a data migration task in-process to be worked on.
 	 *
 	 * @param dataMigrationTask The migration task to mark in-process
@@ -854,5 +979,59 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 					collectionMigrationTask.getId(), migrationRequest, collectionMigrationTask.getAlignArchivePath(),
 					null, null);
 		}
+	}
+
+	/**
+	 * Get a list of data object paths included in this bulk metadata update task.
+	 *
+	 * @param bulkMetadataUpdateTask The migration task.
+	 * @return A list of data object paths
+	 * @throws HpcException If failed to process the request.
+	 */
+	private List<String> getBulkMetadataUpdateDataObjectPaths(HpcDataMigrationTask bulkMetadataUpdateTask)
+			throws HpcException {
+		// Build the compound query to identify all the data object paths to include in
+		// this bulk metadata update task.
+		HpcMetadataQuery fromS3ConfigurationIdQuery = new HpcMetadataQuery();
+		fromS3ConfigurationIdQuery.setAttribute("s3_archive_configuration_id");
+		fromS3ConfigurationIdQuery.setOperator(HpcMetadataQueryOperator.EQUAL);
+		fromS3ConfigurationIdQuery.setValue(bulkMetadataUpdateTask.getFromS3ArchiveConfigurationId());
+
+		HpcMetadataQuery archiveFileContainerIdQuery = new HpcMetadataQuery();
+		archiveFileContainerIdQuery.setAttribute("archive_file_container_id");
+		archiveFileContainerIdQuery.setOperator(HpcMetadataQueryOperator.EQUAL);
+		archiveFileContainerIdQuery.setValue(bulkMetadataUpdateTask.getMetadataArchiveFileContainerId());
+
+		HpcMetadataQuery archiveFileIdPatternQuery = new HpcMetadataQuery();
+		archiveFileIdPatternQuery.setAttribute("archive_file_id");
+		archiveFileIdPatternQuery.setOperator(HpcMetadataQueryOperator.LIKE);
+		archiveFileIdPatternQuery.setValue(bulkMetadataUpdateTask.getMetadataArchiveFileIdPattern());
+
+		HpcCompoundMetadataQuery bulkMetadataUpdateCompoundQuery = new HpcCompoundMetadataQuery();
+		bulkMetadataUpdateCompoundQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+		bulkMetadataUpdateCompoundQuery.getQueries().add(fromS3ConfigurationIdQuery);
+		bulkMetadataUpdateCompoundQuery.getQueries().add(archiveFileContainerIdQuery);
+		bulkMetadataUpdateCompoundQuery.getQueries().add(archiveFileIdPatternQuery);
+
+		HpcCompoundMetadataQueryDTO bulkMetadataUpdateCompoundQueryDTO = new HpcCompoundMetadataQueryDTO();
+		bulkMetadataUpdateCompoundQueryDTO.setTotalCount(true);
+		bulkMetadataUpdateCompoundQueryDTO.setDetailedResponse(false);
+		bulkMetadataUpdateCompoundQueryDTO.setPage(1);
+		bulkMetadataUpdateCompoundQueryDTO.setCompoundQuery(bulkMetadataUpdateCompoundQuery);
+
+		// Perform the search for the data objects to include in this metadata update
+		// and use
+		// pagination to retrieve all the results
+		List<String> dataObjectPaths = new ArrayList<>();
+		int totalCount = -1;
+		while (dataObjectPaths.size() > totalCount) {
+			HpcDataObjectListDTO searchResponseDTO = dataSearchBusService
+					.getDataObjects(bulkMetadataUpdateCompoundQueryDTO);
+			dataObjectPaths.addAll(searchResponseDTO.getDataObjectPaths());
+			bulkMetadataUpdateCompoundQueryDTO.setPage(searchResponseDTO.getPage() + 1);
+			totalCount = searchResponseDTO.getTotalCount();
+		}
+
+		return dataObjectPaths;
 	}
 }
