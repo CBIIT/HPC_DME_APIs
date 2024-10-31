@@ -59,10 +59,11 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	private static final String UPSERT_DATA_MIGRATION_TASK_SQL = "merge into HPC_DATA_MIGRATION_TASK using dual on (ID = ?) "
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, PERCENT_COMPLETE = ?, SERVER_ID = ?, "
-			+ "RETRY_TASK_ID = ?, RETRY_USER_ID = ?, RETRY_FAILED_ITEMS_ONLY = ? "
+			+ "RETRY_TASK_ID = ?, RETRY_USER_ID = ?, RETRY_FAILED_ITEMS_ONLY = ?, METADATA_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
-			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED, ALIGN_ARCHIVE_PATH, DATA_SIZE, PERCENT_COMPLETE, SERVER_ID, RETRY_TASK_ID, RETRY_USER_ID, RETRY_FAILED_ITEMS_ONLY) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED, ALIGN_ARCHIVE_PATH, DATA_SIZE, PERCENT_COMPLETE, SERVER_ID, RETRY_TASK_ID, RETRY_USER_ID, "
+			+ "RETRY_FAILED_ITEMS_ONLY, METADATA_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -146,6 +147,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		dataMigrationTask.setSize(rs.getLong("DATA_SIZE"));
 		dataMigrationTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		dataMigrationTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
+		dataMigrationTask.setMetadataArchiveFileContainerId(rs.getString("METADATA_ARCHIVE_FILE_CONTAINER_ID"));
+		dataMigrationTask.setMetadataArchiveFileIdPattern(rs.getString("METADATA_ARCHIVE_FILE_ID_PATTERN"));
+
 		if (rs.getObject("RETRY_FAILED_ITEMS_ONLY") != null) {
 			dataMigrationTask.setRetryFailedItemsOnly(rs.getBoolean("RETRY_FAILED_ITEMS_ONLY"));
 		}
@@ -250,7 +254,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getSize(),
 					dataMigrationTask.getPercentComplete(), dataMigrationTask.getServerId(),
 					dataMigrationTask.getRetryTaskId(), dataMigrationTask.getRetryUserId(),
-					dataMigrationTask.getRetryFailedItemsOnly(), dataMigrationTask.getId(),
+					dataMigrationTask.getRetryFailedItemsOnly(), dataMigrationTask.getMetadataArchiveFileContainerId(),
+					dataMigrationTask.getMetadataArchiveFileIdPattern(), dataMigrationTask.getId(),
 					dataMigrationTask.getParentId(), dataMigrationTask.getUserId(), dataMigrationTask.getPath(),
 					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
@@ -258,7 +263,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getAlignArchivePath(), dataMigrationTask.getSize(),
 					dataMigrationTask.getPercentComplete(), dataMigrationTask.getServerId(),
 					dataMigrationTask.getRetryTaskId(), dataMigrationTask.getRetryUserId(),
-					dataMigrationTask.getRetryFailedItemsOnly());
+					dataMigrationTask.getRetryFailedItemsOnly(), dataMigrationTask.getMetadataArchiveFileContainerId(),
+					dataMigrationTask.getMetadataArchiveFileIdPattern());
 
 			jdbcTemplate.update(UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL,
 					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler),
