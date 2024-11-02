@@ -239,7 +239,20 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			throw new HpcException("Archive File Container ID is empty", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		return null;
+		// Create a migration task to perform bulk metadata update.
+		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
+		migrationResponse
+				.setTaskId(dataMigrationService
+						.createMetadataMigrationTask(metadataMigrationRequest.getFromS3ArchiveConfigurationId(),
+								metadataMigrationRequest.getToS3ArchiveConfigurationId(),
+								metadataMigrationRequest.getArchiveFileContainerId(),
+								!StringUtils.isEmpty(metadataMigrationRequest.getArchiveFileIdPattern())
+										? metadataMigrationRequest.getArchiveFileIdPattern()
+										: "%",
+								securityService.getRequestInvoker().getNciAccount().getUserId())
+						.getId());
+
+		return migrationResponse;
 	}
 
 	@Override
