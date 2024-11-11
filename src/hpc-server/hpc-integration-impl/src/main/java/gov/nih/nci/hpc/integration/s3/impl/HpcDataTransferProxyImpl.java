@@ -297,6 +297,30 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
+	public boolean validateDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
+			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+		// Check if the metadata was already set on the data-object in the S3 archive.
+		try {
+			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+					.getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
+			for (HpcMetadataEntry metadataEntry : metadataEntries) {
+				if (s3Metadata.getUserMetaDataOf(metadataEntry.getAttribute()) == null) {
+					// metadata not found.
+					return false;
+				}
+			}
+
+		} catch (AmazonClientException ace) {
+			throw new HpcException(
+					"[S3] Failed to validate object metadata: " + fileLocation.getFileContainerId() + ":"
+							+ fileLocation.getFileId() + " - " + ace.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, ace);
+		}
+
+		return true;
+	}
+
+	@Override
 	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
 			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
 		// Create a S3 delete request.
