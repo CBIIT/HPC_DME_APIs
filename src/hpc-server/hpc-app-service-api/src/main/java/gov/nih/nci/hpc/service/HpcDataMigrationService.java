@@ -97,6 +97,18 @@ public interface HpcDataMigrationService {
 			throws HpcException;
 
 	/**
+	 * Complete a data object metadata update task.
+	 *
+	 * @param dataObjectMetadataUpdateTask The data migration task.
+	 * @param result                       The data migration result.
+	 * @param message                      (Optional) An error message in case the
+	 *                                     migration failed.
+	 * @throws HpcException on service failure.
+	 */
+	public void completeDataObjectMetadataUpdateTask(HpcDataMigrationTask dataObjectMetadataUpdateTask,
+			HpcDataMigrationResult result, String message) throws HpcException;
+
+	/**
 	 * Complete a bulk migration task (Collection, Data Object List or Collection
 	 * List).
 	 *
