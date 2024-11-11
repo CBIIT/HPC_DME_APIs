@@ -2139,6 +2139,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public boolean validateDataObjectMetadata(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+			String configurationId, String s3ArchiveConfigurationId, String objectId, String registrarId)
+			throws HpcException {
+		return dataTransferProxies.get(dataTransferType).validateDataObjectMetadata(
+				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation,
+				generateArchiveMetadata(configurationId, objectId, registrarId));
+	}
+
+	@Override
 	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType, String fileId, HpcPathPermissions permissions) throws HpcException {
 		// Input validation.
