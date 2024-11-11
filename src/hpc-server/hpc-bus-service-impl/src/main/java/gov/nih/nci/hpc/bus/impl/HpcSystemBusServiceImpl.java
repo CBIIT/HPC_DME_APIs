@@ -786,7 +786,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								// Get the collection to be downloaded.
-								HpcCollection collection = dataManagementService.getFullCollection(downloadTask.getPath());
+								HpcCollection collection = dataManagementService
+										.getFullCollection(downloadTask.getPath());
 								if (collection == null) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
@@ -3239,9 +3240,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, null, null,
 							null, null, null, null, HpcDeepArchiveStatus.DELAYED, null, null);
 					// Email administrators to send email with the delayed file
-					notificationService.sendNotification(new HpcException(
-							"deep_archive_status toggled to DELAYED, path: " + path,
-							HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.AWS));
+					notificationService
+							.sendNotification(new HpcException("deep_archive_status toggled to DELAYED, path: " + path,
+									HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.AWS));
 				}
 			}
 
