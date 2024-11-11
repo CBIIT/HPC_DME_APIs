@@ -972,6 +972,12 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataMigrationService.updateDataMigrationTask(dataObjectMetadataUpdateTask);
 
 		// TODO - insert thread pool exec here
+		
+		// The archive location in the new archive remains the same as the current one. Set it on the task.
+		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+				.getDataObjectSystemGeneratedMetadata(dataObjectMetadataUpdateTask.getPath());
+		dataObjectMetadataUpdateTask.setFromS3ArchiveLocation(systemGeneratedMetadata.getArchiveLocation());
+		dataObjectMetadataUpdateTask.setToS3ArchiveLocation(systemGeneratedMetadata.getArchiveLocation());
 
 		// Locate the file in the new archive.
 		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.S_3,
@@ -998,8 +1004,6 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		}
 
 		// Validate the metadata is set in the new archive.
-		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-				.getDataObjectSystemGeneratedMetadata(dataObjectMetadataUpdateTask.getPath());
 		if (!dataTransferService.validateDataObjectMetadata(dataObjectMetadataUpdateTask.getToS3ArchiveLocation(),
 				HpcDataTransferType.S_3, dataObjectMetadataUpdateTask.getConfigurationId(),
 				dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
