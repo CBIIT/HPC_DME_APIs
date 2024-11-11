@@ -299,13 +299,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public boolean validateDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
 			List<HpcMetadataEntry> metadataEntries) throws HpcException {
-		// Check if the metadata was already set on the data-object in the S3 archive.
+		// Check if the metadata is set on the data-object in the S3 archive with the correct value.
 		try {
 			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				if (s3Metadata.getUserMetaDataOf(metadataEntry.getAttribute()) == null) {
 					// metadata not found.
+					logger.error(
+							"Invalid metadata for data object in new archive location ({}:{}): metadata not found {}",
+							fileLocation.getFileContainerId(), fileLocation.getFileId(), metadataEntry.getAttribute());
+					return false;
+				} else if (!s3Metadata.getUserMetaDataOf(metadataEntry.getAttribute())
+						.equals(s3Metadata.getUserMetaDataOf(metadataEntry.getAttribute()))) {
+					logger.error(
+							"Invalid metadata for data object in new archive location ({}:{}): unexpected metadata value: {} = {} not {}",
+							fileLocation.getFileContainerId(), fileLocation.getFileId(), metadataEntry.getAttribute(),
+							s3Metadata.getUserMetaDataOf(metadataEntry.getAttribute()),
+							s3Metadata.getUserMetaDataOf(metadataEntry.getAttribute()));
 					return false;
 				}
 			}
