@@ -977,6 +977,28 @@ public interface HpcDataTransferService {
 	public HpcArchiveObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId)
 			throws HpcException;
+	
+	/**
+	 * Validate data object metadata.
+	 * 
+	 * * @param fileLocation             The file location.
+	 * @param dataTransferType         The data transfer type.
+	 * @param configurationId          The configuration ID (needed to determine the
+	 *                                 archive connection config).
+	 * @param s3ArchiveConfigurationId The S3 Archive configuration ID.
+	 *                                 Used to identify the S3 archive the
+	 *                                 data-object is stored in. This is only
+	 *                                 applicable for S3 archives, not POSIX.
+	 * @param objectId                 The data object id from the data management
+	 *                                 system (UUID).
+	 * @param registrarId              The user-id of the data registrar.
+	 * @return True if the data object metadata is valid, or false otherwise
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public boolean validateDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
+			String objectId, String registrarId)
+			throws HpcException;
 
 	/**
 	 * Set archive permissions.

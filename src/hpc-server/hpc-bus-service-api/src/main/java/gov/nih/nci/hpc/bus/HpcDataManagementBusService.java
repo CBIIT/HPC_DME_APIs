@@ -120,13 +120,14 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Get Collection children given a path starting at user specified offset.
 	 *
-	 * @param path The collection's path.
+	 * @param path   The collection's path.
 	 * @param offset The offset to start.
 	 * @param report An indicator to obtain report.
 	 * @return A Collection DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report) throws HpcException;
+	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report)
+			throws HpcException;
 
 	/**
 	 * Download a collection tree.
@@ -230,7 +231,8 @@ public interface HpcDataManagementBusService {
 	 * @return A summary of download tasks for the request invoker.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers, Integer pageSize) throws HpcException;
+	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers, Integer pageSize)
+			throws HpcException;
 
 	/**
 	 * Set collection permissions.
@@ -275,20 +277,18 @@ public interface HpcDataManagementBusService {
 	public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(String[] collectionPaths, String userId)
 			throws HpcException;
 
-
 	/**
-	 * Given a user and the parent collection path, get the permissions of the user on the
-	 * children of the parent collection.
+	 * Given a user and the parent collection path, get the permissions of the user
+	 * on the children of the parent collection.
 	 *
-	 * @param parentPath      The parent collection path.
-	 * @param userId          The user of interest.
+	 * @param parentPath The parent collection path.
+	 * @param userId     The user of interest.
 	 * @return permissions of the user on the children collections as <code>
 	 *     HpcUserPermsOnManyCollectionsDTO</code> instance.
 	 * @throws HpcException on service failure.
 	 */
 	HpcUserPermsForCollectionsDTO getUserPermissionsOnChildCollections(String parentPaths, String userId)
 			throws HpcException;
-
 
 	/**
 	 * Given some collection paths, get all permissions on those collections across
@@ -358,7 +358,8 @@ public interface HpcDataManagementBusService {
 	 *         object upload is still in progress).
 	 * @throws HpcException If failed to check/update upload status.
 	 */
-	public boolean completeS3Upload(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata)
+	public boolean completeS3Upload(String path,
+			HpcSystemGeneratedMetadata systemGeneratedMetadata)
 			throws HpcException;
 
 	/**
@@ -458,10 +459,11 @@ public interface HpcDataManagementBusService {
 	 *
 	 * @param path                     The data object path.
 	 * @param downloadRequest          The download request DTO.
-	 * @param retryTaskId              The previous task ID if this is a retry request
+	 * @param retryTaskId              The previous task ID if this is a retry
+	 *                                 request
 	 * @param userId                   The user submitting the request.
-	 * @param retryUserId              The user retrying the request if this
-	 *                                 is a retry request
+	 * @param retryUserId              The user retrying the request if this is a
+	 *                                 retry request
 	 * @param completionEvent          If true, an event will be added when async
 	 *                                 download is complete.
 	 * @param collectionDownloadTaskId (Optional) The collection download task ID if
@@ -470,8 +472,9 @@ public interface HpcDataManagementBusService {
 	 * @return Download ResponseDTO
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest, String retryTaskId, 
-			String userId, String retryUserId, boolean completionEvent, String collectionDownloadTaskId) throws HpcException;
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
+			String collectionDownloadTaskId) throws HpcException;
 
 	/**
 	 * Get Data object download task status.
