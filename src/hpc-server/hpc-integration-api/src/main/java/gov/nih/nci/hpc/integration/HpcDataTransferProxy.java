@@ -222,6 +222,20 @@ public interface HpcDataTransferProxy {
 	}
 
 	/**
+	 * Validate metadata for object file in the archive.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @param fileLocation       The file location.
+	 * @param metadataEntries    The metadata to validate exists in the archive
+	 * @return True if the metadata exists, or false otherwise
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default boolean validateDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
+			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+		throw new HpcException("validateDataObjectMetadata() is not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	/**
 	 * Delete a data object file.
 	 *
 	 * @param authenticatedToken     An authenticated token.
