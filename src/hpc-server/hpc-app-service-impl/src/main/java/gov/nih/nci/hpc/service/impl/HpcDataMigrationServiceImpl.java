@@ -356,6 +356,36 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	}
 
 	@Override
+	public void completeDataObjectMetadataUpdateTask(HpcDataMigrationTask dataObjectMetadataUpdateTask,
+			HpcDataMigrationResult result, String message) throws HpcException {
+		if (!dataObjectMetadataUpdateTask.getType().equals(HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE)) {
+			throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		if (result.equals(HpcDataMigrationResult.COMPLETED)) {
+			try {
+
+				// Update metadata to the object in the target S3 archive.
+				securityService.executeAsSystemAccount(Optional.empty(),
+						() -> metadataService.updateDataObjectSystemGeneratedMetadata(
+								dataObjectMetadataUpdateTask.getPath(), null, null, null, null, null, null, null, null,
+								null, dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), null, null, null));
+
+			} catch (HpcException e) {
+				message = "Failed to complete metadata update for task: " + dataObjectMetadataUpdateTask.getId() + " ["
+						+ e.getMessage() + " ] - " + dataObjectMetadataUpdateTask.getPath();
+				logger.error(message, e);
+				result = HpcDataMigrationResult.FAILED;
+			}
+		}
+
+		// Delete the task and insert a result record.
+		dataMigrationDAO.deleteDataMigrationTask(dataObjectMetadataUpdateTask.getId());
+		dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMetadataUpdateTask, Calendar.getInstance(), result,
+				message);
+	}
+
+	@Override
 	public void completeBulkMigrationTask(HpcDataMigrationTask bulkMigrationTask, String message) throws HpcException {
 		// Determine the bulk migration result.
 		HpcDataMigrationResult result = HpcDataMigrationResult.COMPLETED;
