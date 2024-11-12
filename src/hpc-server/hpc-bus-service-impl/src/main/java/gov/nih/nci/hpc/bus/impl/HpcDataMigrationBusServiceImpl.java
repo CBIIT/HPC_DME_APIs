@@ -986,6 +986,16 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataObjectMetadataUpdateTask.setFromS3ArchiveLocation(systemGeneratedMetadata.getArchiveLocation());
 		dataObjectMetadataUpdateTask.setToS3ArchiveLocation(systemGeneratedMetadata.getArchiveLocation());
 
+		// Validate if metadata update is needed.
+		if (systemGeneratedMetadata.getS3ArchiveConfigurationId()
+				.equals(dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId())) {
+			// The data object is already in the new archive.
+			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
+					HpcDataMigrationResult.IGNORED, "data object is already in S3 archive ID: "
+							+ systemGeneratedMetadata.getS3ArchiveConfigurationId());
+			return;
+		}
+
 		// Locate the file in the new archive.
 		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.S_3,
 				dataObjectMetadataUpdateTask.getToS3ArchiveLocation(), true,
@@ -1010,7 +1020,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 					HpcErrorType.DATA_TRANSFER_ERROR);
 		}
 
-		// Validate the metadata is set in the new archive.
+		// Validate the metadata is set on the data object in the new archive.
 		if (!dataTransferService.validateDataObjectMetadata(dataObjectMetadataUpdateTask.getToS3ArchiveLocation(),
 				HpcDataTransferType.S_3, dataObjectMetadataUpdateTask.getConfigurationId(),
 				dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
