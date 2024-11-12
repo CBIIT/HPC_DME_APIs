@@ -241,6 +241,12 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			dataManagementService.getS3ArchiveConfiguration(metadataMigrationRequest.getToS3ArchiveConfigurationId());
 		}
 
+		if (metadataMigrationRequest.getFromS3ArchiveConfigurationId()
+				.equals(metadataMigrationRequest.getToS3ArchiveConfigurationId())) {
+			throw new HpcException("From/To S3 archive configuration ID is identical",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		if (StringUtils.isEmpty(metadataMigrationRequest.getArchiveFileContainerId())) {
 			throw new HpcException("Archive File Container ID is empty", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -972,8 +978,9 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataMigrationService.updateDataMigrationTask(dataObjectMetadataUpdateTask);
 
 		// TODO - insert thread pool exec here
-		
-		// The archive location in the new archive remains the same as the current one. Set it on the task.
+
+		// The archive location in the new archive remains the same as the current one.
+		// Set it on the task.
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.getDataObjectSystemGeneratedMetadata(dataObjectMetadataUpdateTask.getPath());
 		dataObjectMetadataUpdateTask.setFromS3ArchiveLocation(systemGeneratedMetadata.getArchiveLocation());
