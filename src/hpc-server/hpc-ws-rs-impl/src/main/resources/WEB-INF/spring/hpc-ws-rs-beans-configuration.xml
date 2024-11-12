@@ -296,6 +296,15 @@
 				<!-- Review Service Authorizations -->
 				<entry key="queryReview" value="${hpc.ws.rs.auth.review.query-review}" />
 				<entry key="sendReminder" value="${hpc.ws.rs.auth.review.send-reminder}" />
+				
+				<!-- Data Migration Service Authorizations -->
+				<entry key="migrateDataObject" value="${hpc.ws.rs.auth.data-migration.migrate-data-object}" />
+				<entry key="migrateCollection" value="${hpc.ws.rs.auth.data-migration.migrate-collection}" />
+				<entry key="migrateDataObjectsOrCollections" value="${hpc.ws.rs.auth.data-migration.migrate-data-objects-or-collections}" />
+				<entry key="retryDataObjectMigrationTask" value="${hpc.ws.rs.auth.data-migration.retry-data-object-migration-task}" />
+				<entry key="retryCollectionMigrationTask" value="${hpc.ws.rs.auth.data-migration.retry-collection-migration-task}" />
+				<entry key="retryDataObjectsOrCollectionsMigrationTask" value="${hpc.ws.rs.auth.data-migration.retry-data-objects-or-collections-migration-task}" />
+				<entry key="migrateMetadata" value="${hpc.ws.rs.auth.data-migration.migrate-metadata}" />
 			</map>
 		</property>
 	</bean>
