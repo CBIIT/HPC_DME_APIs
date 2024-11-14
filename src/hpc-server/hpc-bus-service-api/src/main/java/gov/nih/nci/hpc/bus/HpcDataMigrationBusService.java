@@ -52,11 +52,50 @@ public interface HpcDataMigrationBusService {
 	 * expected to provide a list of data objects or a list of collections, not
 	 * both.
 	 *
-	 * @param migrationRequest The download request DTO.
+	 * @param migrationRequest The migration request DTO.
 	 * @return Migration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcMigrationResponseDTO migrateDataObjectsOrCollections(HpcBulkMigrationRequestDTO migrationRequest)
+			throws HpcException;
+
+	/**
+	 * Retry migration task of a data object.
+	 *
+	 * @param taskId The migration task ID.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO retryDataObjectMigrationTask(String taskId) throws HpcException;
+
+	/**
+	 * Retry migration task of a collection.
+	 *
+	 * @param taskId          The migration task ID.
+	 * @param failedItemsOnly (Optional) if set to true, only failed items of
+	 *                        'taskId' will be retried. Otherwise the collection
+	 *                        will be re-scanned for a new migration to include any
+	 *                        items added since the previous migration attempt.
+	 *                        Default to true.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO retryCollectionMigrationTask(String taskId, Boolean failedItemsOnly)
+			throws HpcException;
+
+	/**
+	 * Retry migration task of a list of data objects or collections
+	 *
+	 * @param taskId          The migration task ID.
+	 * @param failedItemsOnly (Optional) if set to true, only failed items of
+	 *                        'taskId' will be retried. Otherwise the collection
+	 *                        will be re-scanned for a new migration to include any
+	 *                        items added since the previous migration attempt.
+	 *                        Default to true.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO retryDataObjectsOrCollectionsMigrationTask(String taskId, Boolean failedItemsOnly)
 			throws HpcException;
 
 	/**

@@ -51,6 +51,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var selectedPaths = [[${hpcDownloadDatafile.getSelectedPaths()}]];
+    var globalMetadataSearchText = [[${hpcDownloadDatafile.getGlobalMetadataSearchText()}]];
 /*]]>*/
 </script>
 <style>
@@ -270,7 +271,7 @@
 								<!--- DbGap inputs -->
 								<div class="form-group" id="asperaDiv" style="display: none">
 									<div class="col-sm-12 column">
-										<label for="asperaBucketName">Endpoint Path:</label>
+										<label for="asperaBucketName">Aspera Destination Directory:</label>
 										<div th:if="${asperaBucketName == 'test'}" id="oneOption">
 											<select name="asperaBucketName" id="asperaBucketName" class="form-control">
 												<option th:value="test" th:text="test" selected="selected"></option>
@@ -307,7 +308,7 @@
 											placeholder="Enter Aspera Host" size="40" />
 									</div>
 								</div>
-								<div class="modal-footer">
+								<div style="margin-left: 3px; margin-top: 15px">
 									<button class="btn btn-primary" id="submit" th:if="${canDownload == 'true'}"
 										onClick="return validateAndSubmit()">Download</button>
 									<button class="btn btn-primary" id="nosubmit" title="Dataset size exceeds max download limit"
@@ -326,6 +327,8 @@
 						th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
 					<input type="hidden" name="transferType" id="transferType"
 						th:value="${transferType}" />
+					<input type="hidden" name="globalMetadataSearchText" id="globalMetadataSearchText"
+						th:value="${hpcDownloadDatafile.getGlobalMetadataSearchText()}" />
 				</div>
 			</div>
 		</form>
@@ -351,6 +354,8 @@
 				 th:value="${hpcSearch.getTotalSize()}"/>
 			<input type="hidden"
 				class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>
+			<input type="hidden"
+				class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 		</form>
 		<form class="form-horizontal" id="searchForm"
 			th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -365,6 +370,8 @@
 				 th:value="${hpcSearch.getTotalSize()}"/>
 			<input type="hidden"
 				class="form-control" name="deselectedColumns" id="deselectedColumns"/>
+			<input type="hidden"
+				class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 		</form>
 						</div>
 				</div>

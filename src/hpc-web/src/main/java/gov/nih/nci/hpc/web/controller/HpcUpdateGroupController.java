@@ -137,17 +137,23 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 
 				HpcGroupMembersRequestDTO dto = constructRequest(request, session, hpcWebGroup.getGroupId());
 
-				HpcGroupMembersResponseDTO updateResponse = HpcClientUtil.updateGroup(authToken, groupServiceURL, dto,
+				if(!dto.getAddUserIds().isEmpty() || !dto.getDeleteUserIds().isEmpty()) {
+				    HpcGroupMembersResponseDTO updateResponse = HpcClientUtil.updateGroup(authToken, groupServiceURL, dto,
 						hpcWebGroup.getGroupId(), sslCertPath, sslCertPassword);
-				boolean success = constructReponseMessages(updateResponse, model);
-				if (success)
-					session.removeAttribute("selectedUsers");
+				    boolean success = constructReponseMessages(updateResponse, model);
+				    if (success)
+				        session.removeAttribute("selectedUsers");
+				} else {
+					messages.add("The group is already up to date");
+				}
 			}
 		} catch (Exception e) {
 			messages.add(e.getMessage());
-			model.addAttribute("messages", messages);
 		} finally {
 			model.addAttribute("hpcWebGroup", hpcWebGroup);
+			if(!messages.isEmpty()) {
+				model.addAttribute("messages", messages);
+			}
 			initialize(model, authToken, hpcWebGroup.getGroupName(), session);
 		}
 		return "updategroup";

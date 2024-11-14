@@ -200,7 +200,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	}
 
 	@Override
-	public HpcDataObjectListDTO getDataObjects(String path, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+	public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
 			throws HpcException {
 		// Input validation.
 		if (compoundMetadataQueryDTO == null) {
@@ -218,13 +218,13 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		int count = 0;
 		HpcDataObjectListDTO dataObjectsDTO = null;
 		if (!detailedResponse) {
-			List<String> dataObjectPaths = dataSearchService.getDataObjectPaths(path,
-					compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+			List<String> dataObjectPaths = dataSearchService
+					.getDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
 			dataObjectsDTO = toDataObjectListDTO(dataObjectPaths, detailedResponse);
 			count = dataObjectPaths.size();
 		} else {
-			List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService.getDetailedDataObjectPaths(path,
-					compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+			List<HpcSearchMetadataEntry> dataObjectPaths = dataSearchService
+					.getDetailedDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
 			dataObjectsDTO = toDetailedDataObjectListDTO(dataObjectPaths);
 			count = dataObjectsDTO.getDataObjects().size();
 		}
@@ -236,7 +236,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 		if (totalCount) {
 			dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count
-					: dataSearchService.getDataObjectCount(path, compoundMetadataQueryDTO.getCompoundQuery()));
+					: dataSearchService.getDataObjectCount(compoundMetadataQueryDTO.getCompoundQuery()));
 		}
 
 		return dataObjectsDTO;
@@ -330,12 +330,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	@Override
 	public HpcDataObjectListDTO getDataObjects(String queryName, Boolean detailedResponse, Integer page,
 			Integer pageSize, Boolean totalCount) throws HpcException {
-		return getDataObjects(null,
-				toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
+		return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
 	}
 
 	@Override
-	public HpcCollectionListDTO getDataObjectParents(String path, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+	public HpcCollectionListDTO getDataObjectParents(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
 			throws HpcException {
 		// Input validation.
 		if (compoundMetadataQueryDTO == null) {
@@ -353,14 +352,13 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		int count = 0;
 		HpcCollectionListDTO collectionsDTO = null;
 		if (!detailedResponse) {
-			List<String> collectionPaths = dataSearchService.getDataObjectParentPaths(path,
-					compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+			List<String> collectionPaths = dataSearchService
+					.getDataObjectParentPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
 			collectionsDTO = toCollectionListDTO(collectionPaths, detailedResponse);
 			count = collectionPaths.size();
 		} else {
 			List<HpcSearchMetadataEntryForCollection> collectionPaths = dataSearchService
-					.getDetailedDataObjectParentPaths(path, compoundMetadataQueryDTO.getCompoundQuery(), page,
-							pageSize);
+					.getDetailedDataObjectParentPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
 			collectionsDTO = toDetailedCollectionListDTO(collectionPaths);
 			count = collectionsDTO.getCollections().size();
 		}
@@ -381,7 +379,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	@Override
 	public HpcCollectionListDTO getDataObjectParents(String queryName, Boolean detailedResponse, Integer page,
 			Integer pageSize, Boolean totalCount) throws HpcException {
-		return getDataObjectParents(null,
+		return getDataObjectParents(
 				toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
 	}
 
@@ -855,7 +853,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 				do {
 					query.setPage(pageNumber++);
 					query.setPageSize(USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);
-					HpcDataObjectListDTO dataobjectsDTO = getDataObjects(null, query);
+					HpcDataObjectListDTO dataobjectsDTO = getDataObjects(query);
 					dataobjectListDTO.getDataObjectPaths().addAll(dataobjectsDTO.getDataObjectPaths());
 					dataobjectListDTO.getDataObjects().addAll(dataobjectsDTO.getDataObjects());
 					logger.debug("EmailExport: In loop, retrieving rows=" + dataobjectListDTO.getDataObjects().size());
@@ -962,7 +960,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 					compoundMetadataQueryDTO.setPage(pageNumber++);
 					// Switch context to the query user
 					HpcDataObjectListDTO dataobjectsDTO = executeAsUserAccount(
-							() -> getDataObjects(null, compoundMetadataQueryDTO), userId);
+							() -> getDataObjects(compoundMetadataQueryDTO), userId);
 					dataobjectListDTO.getDataObjectPaths().addAll(dataobjectsDTO.getDataObjectPaths());
 					dataobjectListDTO.getDataObjects().addAll(dataobjectsDTO.getDataObjects());
 					totalPages = getTotalPages(dataobjectsDTO.getTotalCount(), USER_QUERY_SEARCH_RESULTS_PAGE_SIZE);

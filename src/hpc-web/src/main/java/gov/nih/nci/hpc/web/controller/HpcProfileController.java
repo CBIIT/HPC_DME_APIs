@@ -4,6 +4,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
@@ -50,6 +52,8 @@ public class HpcProfileController extends AbstractHpcController {
     private String collectionAclURL;
     @Value("${gov.nih.nci.hpc.server.model}")
     private String hpcModelURL;
+    @Value("${gov.nih.nci.hpc.server.user.group}")
+    private String userGroupServiceURL;
     
     @Autowired
     private HpcModelBuilder hpcModelBuilder;
@@ -98,6 +102,14 @@ public class HpcProfileController extends AbstractHpcController {
         collPaths.toArray(), this.sslCertPath, this.sslCertPassword);
       log.info("permissions: " + permissions);
 
+      HpcGroupListDTO groupListDTO = HpcClientUtil.getUserGroup(authToken, userGroupServiceURL,
+          this.sslCertPath, sslCertPassword);
+      if(groupListDTO != null && !groupListDTO.getGroups().isEmpty()) {
+          logger.info("User groups for user " + user.getUserId() + " : " + groupListDTO);
+          model.addAttribute("userGroups", groupListDTO);
+      } else {
+          logger.info("No group present for user: " + user.getUserId());
+      }
       model.addAttribute("profile", user);
       model.addAttribute("userDOCModel", modelDTO);
       model.addAttribute("permissions", permissions);

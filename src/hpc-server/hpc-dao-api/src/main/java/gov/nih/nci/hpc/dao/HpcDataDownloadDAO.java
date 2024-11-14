@@ -475,12 +475,4 @@ public interface HpcDataDownloadDAO {
 	public double getTotalDownloadsSize(String userId, HpcDataTransferDownloadStatus dataTransferDownloadStatus)
 			throws HpcException;
 
-	/**
-	 * Get globus accounts used by download tasks
-	 *
-	 * @return The list of globus accounts used ordered by least used
-	 * @throws HpcException on database error.
-	 */
-	List<String> getGlobusAccountsUsedByDataObjectDownloadRequests() throws HpcException;
-
 }

@@ -286,6 +286,41 @@ public class HpcClientUtil {
 	    }
 	  }
 
+	public static String getAuthenticationTokenOIDC(String oidcAccessToken, String authenticateURL) {
+	    
+		WebClient client = HpcClientUtil.getWebClient(authenticateURL, null, null);
+		client.header("Authorization", "Bearer " + oidcAccessToken);
+	    Response restResponse = client.get();
+	    try {
+
+	      if (restResponse.getStatus() != 200) {
+	        ObjectMapper mapper = new ObjectMapper();
+	        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+	            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+	            new JacksonAnnotationIntrospector());
+	        mapper.setAnnotationIntrospector(intr);
+	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+	        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+	        throw new HpcAuthorizationException("Authentication failed: " + exception.getMessage());
+	      }
+	      MappingJsonFactory factory = new MappingJsonFactory();
+	      JsonParser parser;
+	      parser = factory.createParser((InputStream) restResponse.getEntity());
+	      HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
+	      return dto.getToken();
+	    } catch (IllegalStateException e1) {
+	      e1.printStackTrace();
+	      throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
+	    } catch (IOException e) {
+	      e.printStackTrace();
+	      throw new HpcWebException("Failed to get auth token: " + e.getMessage());
+	    }
+	}
+  
   public static List<HpcDataManagementRulesDTO> getUserDOCManagementRules(
       HpcDataManagementModelDTO docModelDto, String userDoc) {
     if (docModelDto == null || docModelDto.getDocRules() == null)
@@ -2623,6 +2658,9 @@ public class HpcClientUtil {
       throw new HpcWebException("Unable to load application properties!", e);
     }
   }
+
+
+
 
 
 

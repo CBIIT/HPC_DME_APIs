@@ -1,18 +1,23 @@
 {
-  "globusUploadSource": {
+  "dryRun": false,
+    "dataObjectRegistrationItems": [{
+    "path": "destination-file-path-on-archive",
+    "globusUploadSource": {
     "sourceLocation": {
       "fileContainerId": "globus-shared-endpoint-uid",
       "fileId": "file-path-on-shared-globus-endpoint"
     }
   },
-  "metadataEntries": [
-    {
+  "dataObjectMetadataEntries": [
+   {
       "attribute": "description",
       "value": "my-file-description"
-    }, 
-    {
-      "attribute": "my-second-attribute-name",
-      "value": "my-second-attribute-description"
-    }
+   },
+   {
+      "attribute": "object_name",
+      "value": "my-file-name"
+   }
   ]
+ }
+]
 }

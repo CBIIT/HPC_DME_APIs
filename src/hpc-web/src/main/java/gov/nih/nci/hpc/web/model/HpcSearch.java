@@ -21,15 +21,24 @@ public class HpcSearch {
 	private int pageNumber=1;
 	private int pageSize=100;
 	private String queryName;
+	private String globalMetadataSearchText;
 	private long totalSize=0;
 	private List<String> deselectedColumns;
-	
+
 	public String getQueryName() {
 		return queryName;
 	}
 
 	public void setQueryName(String queryName) {
 		this.queryName = queryName;
+	}
+
+	public String getGlobalMetadataSearchText() {
+		return globalMetadataSearchText;
+	}
+
+	public void setGlobalMetadataSearchText(String globalMetadataSearchText) {
+		this.globalMetadataSearchText = globalMetadataSearchText;
 	}
 
 	public String[] getRowId() {

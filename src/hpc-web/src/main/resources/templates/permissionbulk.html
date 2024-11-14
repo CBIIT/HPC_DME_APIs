@@ -74,6 +74,7 @@
     var assignedNames = [[${names}]];
     var searchType = [[${hpcSearch.getSearchType()}]];
     var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
+    var globalMetadataSearchText = [[${globalMetadataSearchText}]];
 /*]]>*/
 </script>
 </head>
@@ -119,6 +120,8 @@
 													th:value="${hpcDownloadDatafile.downloadType}" />
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 													th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
+												 <input type="hidden"
+													class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 												<div class="form-group" th:if="${downloadType == 'datafiles'}">
 												  <p>This page allows you to add or modify the user permissions for the selected data files.</p>
 												</div>
@@ -344,7 +347,9 @@
 												 <input type="hidden" name="totalSize" id="totalSizeId"
 												 	th:value="${hpcSearch.getTotalSize()}"/>
 												 <input type="hidden"
-													class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>		
+													class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>
+												 <input type="hidden"
+													class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 											</form>
 											<form class="form-horizontal" id="searchForm"
 												th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -358,6 +363,8 @@
 													 th:value="${hpcSearch.getTotalSize()}"/>
 												<input type="hidden"
 													class="form-control" name="deselectedColumns" id="deselectedColumns"/>
+												 <input type="hidden"
+													class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 											</form>
 										</div>
 									</div>
