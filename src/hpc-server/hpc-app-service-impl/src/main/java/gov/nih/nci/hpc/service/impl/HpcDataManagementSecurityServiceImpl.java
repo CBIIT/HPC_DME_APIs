@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * HPC Data Management Security Service Implementation.
@@ -199,7 +200,7 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
 	}
 
 	@Override
-	public List<String> getGroups(String groupPattern) throws HpcException {
+	public List<String> getGroups(String doc, String groupPattern) throws HpcException {
 		// Input validation.
 		if (StringUtils.isEmpty(groupPattern)) {
 			throw new HpcException("Null or empty group search criteria", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -209,7 +210,7 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
 		// we query the iRODS DB.
 		// Once the Jargon API is enhanced to support case insensitive search, it needs
 		// to be used and the DAO retired.
-		return groupDAO.getGroups(groupPattern);
+		return groupDAO.getGroups(doc, groupPattern);
 	}
 
 	@Override

@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -137,8 +138,10 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 
 		// Set paths to be displayed on the updatemetadatabulk page
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
 		selectedPathsStr = selectedPathsStr.replaceAll("\\[", "").replaceAll("\\]","");
 		logger.info("selectedPathsStr ="+ gson.toJson(selectedPathsStr));
+		logger.debug("globalMetadataSearchText ="+ globalMetadataSearchText);
 		String updateAll = request.getParameter("updateAll");
 		String totalCount = request.getParameter("totalCount");
 		List<HpcPathGridEntry> pathDetails = new ArrayList<>();
@@ -166,6 +169,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			model.addAttribute("pathDetails", pathDetails);
 			bulkMetadataUpdateRequest.setSelectedFilePaths(selectedPathsStr); //TODO
 		}
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+		bulkMetadataUpdateRequest.setGlobalMetadataSearchText(globalMetadataSearchText);
 		model.addAttribute("bulkMetadataUpdateRequest", bulkMetadataUpdateRequest);
 
 		// Set all session and model attributes to retain data/state of the previous page(collectionsearchresult.html or collectionsearchresultdetail.html)
@@ -185,7 +190,7 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		hpcSaveSearch.setSearchType(request.getParameter("searchType"));
 		String[] deselectedColumns =  request.getParameterValues("deselectedColumns");
 		if(deselectedColumns != null && StringUtils.isNotEmpty(deselectedColumns[0]))
-			hpcSaveSearch.getDeselectedColumns().addAll(org.springframework.util.CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
+			hpcSaveSearch.getDeselectedColumns().addAll((Collection<? extends String>) org.springframework.util.CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 		hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		session.setAttribute("hpcSavedSearch", hpcSaveSearch);
@@ -220,6 +225,8 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		logger.info("Enter /assignbulkmetadata bulkMetadataUpdateRequest= " + gson.toJson(bulkMetadataUpdateRequest));
+		String globalMetadataSearchText = bulkMetadataUpdateRequest.getGlobalMetadataSearchText();
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
 		
 		List<HpcMetadataEntry> userMetadataList = new ArrayList<HpcMetadataEntry>();
 		Enumeration<String> params = request.getParameterNames();
@@ -239,16 +246,17 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 					if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
 						entry.setValue(attrValue[0]);
 					} else {
-						throw new HpcWebException("Invalid value for metadata attribute " + attrName[0] + ": Value cannot be empty");
+						entry.setValue("");
 					}
-				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
-					throw new HpcWebException("Invalid metadata attribute name for value " + attrValue[0] + ": Name cannot be empty");
 				} else {
+					if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
+						throw new HpcWebException("Invalid metadata attribute name for value " + attrValue[0] + ": Name cannot be empty");
+					} else {
 					//If both attrName and attrValue are empty, then we just
 					//ignore it and move to the next element
 					continue;
+					}
 				}
-
 				userMetadataList.add(entry);
 			}
 		}

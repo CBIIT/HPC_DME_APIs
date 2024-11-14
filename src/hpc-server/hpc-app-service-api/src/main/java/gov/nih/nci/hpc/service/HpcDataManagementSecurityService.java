@@ -123,12 +123,13 @@ public interface HpcDataManagementSecurityService {
   /**
    * Get groups by search criteria.
    *
+   * @param doc          The doc to search for
    * @param groupPattern The group pattern to search for (using case insensitive matching). SQL LIKE
    *     wildcards ('%', '_') are supported.
    * @return A list of groups names matching the criteria.
    * @throws HpcException on service failure.
    */
-  public List<String> getGroups(String groupPattern) throws HpcException;
+  public List<String> getGroups(String doc, String groupPattern) throws HpcException;
 
   
   /**
@@ -139,4 +140,5 @@ public interface HpcDataManagementSecurityService {
    * @throws HpcException on service failure.
    */
   List<String> getUserGroups(String userId) throws HpcException;
+
 }

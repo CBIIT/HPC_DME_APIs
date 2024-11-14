@@ -89,6 +89,7 @@
     var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
     var metadataAttributesList = [[${metadataAttributesList}]];
     var dynamicallyAddedMetadataList = [[${userMetadataList}]];
+    var globalMetadataSearchText = [[${globalMetadataSearchText}]];
 /*]]>*/
 </script>
 </head>
@@ -137,6 +138,8 @@
 													th:value="${hpcDownloadDatafile.downloadType}" />
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 													th:value="${bulkMetadataUpdateRequest.getSelectedFilePaths()}" />
+												 <input type="hidden"
+													class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 												<div class="form-group" th:if="${downloadType == 'collections'}">
 												  <p th:if="${updateAll == 'true'}" th:text="'This page allows you to add or modify metadata on all search results. Total records affected: ' + ${totalCount}"></p>
 												  <p th:if="${updateAll != 'true'}">This page allows you to add or modify metadata for the selected collections.</p>
@@ -207,6 +210,8 @@
 													th:value="${hpcSearch.getTotalSize()}"/>
 												 <input type="hidden"
 													class="form-control" name="deselectedColumns" id="deselectedColumnsId"/>
+												 <input type="hidden"
+													class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 											</form>
 											<form class="form-horizontal" id="searchForm"
 												th:object="${hpcSearch}" method="POST" th:action="@{/search}">
@@ -220,8 +225,9 @@
 													 th:value="${hpcSearch.getTotalSize()}"/>
 												<input type="hidden"
 													class="form-control" name="deselectedColumns" id="deselectedColumns"/>
+												 <input type="hidden"
+													class="form-control" name="globalMetadataSearchText" id="globalMetadataSearchText" th:value="${globalMetadataSearchText}"/>
 											</form>
-
 										</div>
 									</div>
 								</div>

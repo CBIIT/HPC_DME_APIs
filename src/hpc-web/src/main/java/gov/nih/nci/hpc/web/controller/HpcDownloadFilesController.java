@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -127,6 +128,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			String downloadType = request.getParameter("downloadType");
 			hpcDownloadDatafile.setDownloadType(downloadType);
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
+			String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+			hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+			model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+
 			// Setting default values for Aspera variables
 			model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
 			model.addAttribute("asperaUser", "asp-dbgap");
@@ -162,7 +167,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
 			String[] deselectedColumns =  request.getParameterValues("deselectedColumns");
 			if(deselectedColumns != null && StringUtils.isNotEmpty(deselectedColumns[0]))
-				hpcSaveSearch.getDeselectedColumns().addAll(CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
+				hpcSaveSearch.getDeselectedColumns().addAll((Collection<? extends String>) CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 
 			model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
@@ -257,6 +262,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				e.printStackTrace();
 			}
 			HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
+			String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+			hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+			model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 			HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
 			model.addAttribute("hpcSearch", hpcSaveSearch);

@@ -67,7 +67,7 @@ function dm_generate_token () {
       case "${option}" in
         *)
           dm_show_generate_token_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -87,7 +87,7 @@ function dm_generate_token () {
       #account_password="$1"
       #curl -k -u $USERNAME:$account_password  ${SERVER}/authenticate >  $LOG_FILE
       dm_show_generate_token_usage >&2
-      exit 1
+      return 1
     fi
 
     local TOKEN=$(get_json_value $LOG_FILE token)
@@ -97,7 +97,7 @@ function dm_generate_token () {
         echo "ERROR: No token found in $LOG_FILE " >&2
         MESSAGE=$(get_json_value $LOG_FILE message)
         echo "ERROR MESSAGE: $MESSAGE"   
-        return
+        return 1
     else  
       local TOKEN_FILE=$(get_value $HPC_DM_UTILS/hpcdme.properties hpc.login.token)
       local FORMATED_PATH=$(echo $TOKEN_FILE | sed 's/\\/\//g')
@@ -118,7 +118,7 @@ function dm_generate_token () {
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <destination-path> <collection|dataObject> [data-object-file]"
+    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <collection|dataObject|dataobject_presigned> <destination-path> [data-object-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -148,12 +148,17 @@ function dm_register () {
         shift
     done
 
-    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
+    if [ -z "$1" ] || [ -z "$2" ]
     then
         echo "$USAGE" >&2
         return 1
     fi
 
+
+    if [ ! -z "$3" ]
+    then
+        local local DESTINATION_PATH="$3"
+    fi
 
     if [ ! -z "$4" ]
     then
@@ -167,8 +172,7 @@ function dm_register () {
 
         
     local DESCRIPTION="$1"
-    local DESTINATION_PATH="$2"
-    local TYPE="$3"
+    local TYPE="$2"
 
     local VALDN_RES=$(validate_archive_path "$DESTINATION_PATH")
     if [ "" != "$VALDN_RES" ]
@@ -185,7 +189,7 @@ function dm_register () {
     if [ "" == "$JSON" ]
     then
       echo "ERROR: Cannot access the \"$DESCRIPTION\" file" >&2
-      exit 1
+      return 1
     fi
     
     if [ -z "$RESPONSE_MSG" ]
@@ -201,23 +205,28 @@ function dm_register () {
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS_COLLECTION="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-    local CURL_FLAGS="-X PUT ${SERVER}/v2/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="-X PUT ${SERVER}/v2/dataObject/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS_ASYNC="-X PUT ${SERVER}/v2/registration  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
         then
-            curl -F "dataObjectRegistration=$JSON;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
+            #Perform async upload
+            curl -H "Content-type: application/json" -d @$DESCRIPTION $CURL_FLAGS_ASYNC -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
         else
-            curl -F "dataObjectRegistration=$JSON;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status 
+            #Perform sync upload
+            curl -F "dataObjectRegistration=$JSON;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
         fi
     elif [ "$TYPE" == "collection" ]
     then
-            
            curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS_COLLECTION  -H "Accept: application/json" 2>$HPC_DM_UTILS/temp/curl-status
+    elif [ $TYPE == "dataObject_presigned" ]
+    then
+      curl -F "dataObjectRegistration=$JSON;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
-        exit 1
+        return 1
     fi
 
     check_connection $RESPONSE_HEADER
@@ -298,9 +307,8 @@ function dm_register_collection {
         RESPONSE_HEADER=collection-registration-response-header.tmp
     fi
 
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" "$DESTINATION_PATH" collection || exit 1
-    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
-
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" collection "$DESTINATION_PATH" || return 1
+    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG"
 }
 
 
@@ -383,7 +391,7 @@ function dm_register_dataobject_presigned {
     local description="$1"
     local destination_path="$2"
     local source_file="$3"
-    
+
     checksum_val=`openssl md5 -binary ${source_file} | base64`
     if [ -z "$checksum_val" ]
     then
@@ -394,13 +402,12 @@ function dm_register_dataobject_presigned {
     local description_json=`get_file_value "$description"`
     description_json=$(echo $description_json | sed "s|{|{ \"checksum\": \""${checksum_val}"\",|")
 
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" "$destination_path" dataObject 
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description_json" dataObject_presigned "$destination_path"
     if [ "$?" -eq  1 ]
     then
       return 1
     fi
 
-    #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
     presigned_url=`get_json_value $RESPONSE_MSG uploadRequestURL`
     if [ -z "$presigned_url" ]
     then
@@ -411,7 +418,7 @@ function dm_register_dataobject_presigned {
     rm -f $response_header $response_msg 2>/dev/null
     response_header=presignedURL-registration-response-header.tmp
     response_msg=presignedURL-registration-response-message.tmp
-    curl -X PUT  -H "Content-Type: application/octet-stream" -H "content-md5: ${checksum_val}" --upload-file ${source_file} "${presigned_url}" -D $response_header -o $response_msg 
+    curl -X PUT  -H "Content-Type: application/octet-stream" -H "content-md5: ${checksum_val}" --upload-file ${source_file} "${presigned_url}" -D $response_header -o $response_msg
     if [ "$?" -ne 0 ]
     then
       echo "Error during presigned URL registration for $destination_path" >&2
@@ -427,14 +434,14 @@ function dm_register_dataobject_presigned {
 #Print Usage of dm_register_dataobject function
 function dm_show_register_dataobject_usage {
   read -d  '' usage <<- EOF
-  usage: dm_register_dataobject [-D REST-response] [-o output-file] <description.json> <archive-path> [source-file]
+  usage: dm_register_dataobject [-D REST-response] [-o output-file] <description.json> [archive-path] [source-file]
 
   Register a dataobject
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
-  [description-json]          Path to the JSON file containing the metadata and source info for the new dataobject 
-  [archive-path]              Destination path in the archive
-  [source-file]               Path to the source file for synchronous uploads. Omit the parameter for asynchronous upload (Globus and S3).
+  [description-json]          Path to the JSON file containing the metadata and path info for the new dataobject
+  [archive-path]              Destination path in the archive. Omit the parameter for asynchronous upload (Globus and S3).
+  [source-file]               Path to the file at source. Omit the parameter for asynchronous upload (Globus and S3).
 
 For sample description.json files for synchronous uploads, refer to templates/dataobject-sync-metadata-template.json and templates/dataobject-sync-metadata-extraction-template.json.
 For sample description.json files for asynchronous uploads, refer to templates/dataobject-globus-metadata-template.json and templates/dataobject-s3-metadata-template.json.
@@ -483,7 +490,7 @@ function dm_register_dataobject {
         shift
     done
 
-    if [ -z "$1" ] || [ -z "$2" ] 
+    if [ -z "$1" ]
     then
         dm_show_register_dataobject_usage >&2
         return
@@ -501,12 +508,12 @@ function dm_register_dataobject {
     local DESCRIPTION="$1"
     local DESTINATION_PATH="$2"
     local SOURCE_FILE=$3
-    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" "$DESTINATION_PATH" dataObject $SOURCE_FILE 
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" dataObject "$DESTINATION_PATH" $SOURCE_FILE
     if [ "$?" -eq  1 ]
     then
       return 1
     fi
-    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
+    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG"
 }
 
 #Print Usage of dm_register_dataobject_multipart function
@@ -551,7 +558,7 @@ function dm_register_dataobject_multipart {
       case "${option}" in
         *)
           dm_register_dataobject_multipart_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -592,7 +599,7 @@ function dm_register_dataobject_multipart {
     
        *)
          echo 'Current OS not supported' 
-         exit 1
+         return 1
          ;;
     esac
 
@@ -640,7 +647,7 @@ function dm_sync_globus_endpoint  {
       local DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
       echo $DESC_JSON >  temp.json
       echo "dm_register_dataobject  temp.json $DST_PATH $SRC_PATH"
-      echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG $DST_PATH"
+      echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG"
 
       rm -f $RESPONSE_HEADER 2>/dev/null
       rm -f $RESPONSE_MSG 2>/dev/null
@@ -804,7 +811,7 @@ function dm_get_dataobject {
       case "${option}" in
         *)
           dm_show_get_dataobject_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -812,11 +819,11 @@ function dm_get_dataobject {
     if [ "$#" -lt 1 ] 
     then
         dm_show_get_dataobject_usage >&2
-        return
+        return 1
     fi
     local ITEM_PATH="$1"
     
-    dm_get_item -o "$RESPONSE_MSG" -D "$RESPONSE_HEADER" dataObject/$ITEM_PATH || exit 1
+    dm_get_item -o "$RESPONSE_MSG" -D "$RESPONSE_HEADER" dataObject/$ITEM_PATH || return 1
 
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
@@ -824,7 +831,7 @@ function dm_get_dataobject {
       echo "Error getting \"$ITEM_PATH\" " >&2
       #echo "ERROR_CODE:\"$RESPONSE_CODE\"" >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
-      exit 1
+      return 1
     else 
      
       if [ ! -z "$ATTRIBUTE" ]
@@ -904,7 +911,7 @@ function dm_get_collection {
       case "${option}" in
         *)
           dm_show_get_collection_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -935,14 +942,14 @@ function dm_get_collection {
       RESPONSE_HEADER=get-item-response-header.tmp
     fi 
 
-    dm_get_item -o "$RESPONSE_MSG"  -D "$RESPONSE_HEADER" collection/$ITEM_PATH || exit 1
+    dm_get_item -o "$RESPONSE_MSG"  -D "$RESPONSE_HEADER" collection/$ITEM_PATH || return 1
 
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
     then
       echo "Error getting \"$ITEM_PATH\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
-      exit 1
+      return 1
     else 
      
 
@@ -1017,7 +1024,7 @@ case $1 in
       case "${option}" in
         *)
           dm_show_query_dataobject_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -1458,7 +1465,7 @@ function dm_delete_datafile {
     if [ -z "$1" ]
     then
         dm_show_delete_datafile_usage >&2
-        exit 1
+        return 1
     fi
     
     local file_path="$1"
@@ -1498,7 +1505,7 @@ function dm_delete_datafile {
     
        *)
          echo 'Current OS not supported' 
-         exit 1
+         return 1
          ;;
     esac
 
@@ -1568,7 +1575,7 @@ function dm_delete_collection {
     if [ -z "$1" ]
     then
         dm_show_delete_collection_usage >&2
-        exit 1
+        return 1
     fi
 
 
@@ -1610,7 +1617,7 @@ function dm_delete_collection {
     
        *)
          echo 'Current OS not supported' 
-         exit 1
+         return 1
          ;;
     esac
 
@@ -1675,7 +1682,7 @@ function dm_register_directory {
           if [ "$archiveType" != "S3" ] && [ "$archiveType" != "POSIX" ]
           then
             echo "ERROR: The archive type can be either \"S3\" or \"POSIX\". Recevied:\"$archiveType\"" >&2
-            exit 1 
+            return 1 
           fi
           ;;
         c)
@@ -1692,7 +1699,7 @@ function dm_register_directory {
           if [ ! -e "$exclude_file" ]
           then
             echo "ERROR: The exclude file $exclude_file does not exist" >&2
-            exit 1
+            return 1
           fi
           ;;
         i)
@@ -1701,7 +1708,7 @@ function dm_register_directory {
           if [ ! -e "$include_file" ]
           then
             echo "ERROR: The include file $include_file does not exist" >&2
-            exit 1
+            return 1
           fi
           ;;
         l)
@@ -1710,7 +1717,7 @@ function dm_register_directory {
           if [ ! -e "$list_of_files" ]
           then
             echo "ERROR: The FILES_LIST $list_of_files does not exist" >&2
-            exit 1
+            return 1
           fi
           ;;
         m)
@@ -1727,23 +1734,23 @@ function dm_register_directory {
           ;;
         h)
           dm_show_register_directory_usage 
-          exit 1
+          return 1
           ;;
         t)
           numthreads="${OPTARG}"
           re='^[0-9]+$'
           if ! [[ "$numthreads" =~ $re ]] ; then
-             echo "ERROR: The number of threads $numthreads is not a positive integer." >&2; exit 1
+             echo "ERROR: The number of threads $numthreads is not a positive integer." >&2; return 1
           fi
 
           if [ "$numthreads" -lt "0" ] || [ "$numthreads" -gt "5" ]
           then
-             echo "ERROR: The number of threads $numthreads should be between [1, 5]" >&2; exit 1
+             echo "ERROR: The number of threads $numthreads should be between [1, 5]" >&2; return 1
           fi
           ;;
         *)
           dm_show_register_directory_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -1758,7 +1765,7 @@ function dm_register_directory {
     if [ -z "$1" ] || [ -z "$2" ] 
     then
         dm_show_register_directory_usage >&2
-        exit 1 
+        return 1 
     fi
 
     local src_path="$1"
@@ -1783,7 +1790,7 @@ function dm_register_directory {
     if [ ! -d "$src_path" ]
     then
       echo "The source directory: $src_path does not exist." >&2
-      exit 1
+      return 1
     fi 
 
     command_args=""
@@ -1872,7 +1879,7 @@ function dm_register_directory {
     
        *)
          echo 'Current OS not supported' 
-         exit 1
+         return 1
          ;;
     esac
 
@@ -1934,7 +1941,7 @@ function dm_register_globus_directory {
           if [ ! -e "$exclude_file" ]
           then
             echo "ERROR: The exclude file $exclude_file does not exist" >&2
-            exit 1
+            return 1
           fi
           ;;
         i)
@@ -1943,7 +1950,7 @@ function dm_register_globus_directory {
           if [ ! -e "$include_file" ]
           then
             echo "ERROR: The include file $include_file does not exist" >&2
-            exit 1
+            return 1
           fi
           ;;
         p)
@@ -1951,16 +1958,16 @@ function dm_register_globus_directory {
           if [ "$patternType" != "Simple" ] && [ "$patternType" != "RegEx" ]
           then
             echo "ERROR: The include/exclude pattern type can be either \"Simple\" or \"RegEx\". Recevied:\"$patternType\"" >&2
-            exit 1 
+            return 1 
           fi
           ;;
         h)
           dm_show_register_globus_directory_usage >&2
-          exit 1
+          return 1
           ;;
         *)
           dm_show_register_globus_directory_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -1975,7 +1982,7 @@ function dm_register_globus_directory {
     if [ -z "$1" ] || [ -z "$2" ] 
     then
         dm_show_register_globus_directory_usage >&2
-        exit 1 
+        return 1 
     fi
 
     local src_path="$1"
@@ -1998,7 +2005,7 @@ function dm_register_globus_directory {
       if [ "$?" -ne 0 ]
       then
         echo  "ERROR: Cannot find the default Globus endpoint in the properties file." >&2
-        exit 1
+        return 1
       fi
     else
       globus_endpoint="$3"
@@ -2086,22 +2093,22 @@ function create_credentials_json {
    	local awsAccessKeyId=$(get_value $credentials_file aws_access_key_id)
    	if [ -z "$awsAccessKeyId" ]
    	then
-       echo "ERROR: Credentials file does not contain aws_access_key_id property"
-       exit 1
+         echo "ERROR: Credentials file does not contain aws_access_key_id property"
+         return 1
    	fi
 
    	local awsSecretAccessKey=$(get_value $credentials_file aws_secret_access_key)
    	if [ -z "$awsSecretAccessKey" ]
    	then
-       echo "ERROR: Credentials file does not contain aws_secret_access_key property"
-       exit 1
+         echo "ERROR: Credentials file does not contain aws_secret_access_key property"
+       return 1
    	fi
 
    	local awsRegion=$(get_value $credentials_file region)
    	if [ -z "$awsRegion" ]
    	then
        echo "ERROR: Credentials file does not contain region property"
-       exit 1
+       return 1
    	fi
 
    	echo $e_option "{\n \"s3Account\": {\n \"accessKey\": \"$awsAccessKeyId\"," > description.json
@@ -2630,7 +2637,7 @@ function dm_download_collection_globus {
                     path_file="$2"
                 else
                     dm_show_download_collection_globus_usage >&2
-                    exit 1
+                    return 1
                 fi
             ;;
             *) break
@@ -2668,7 +2675,7 @@ function dm_download_collection_globus {
 		then
 			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
-			exit 1
+			return 1
 		fi
 		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
 		local src_paths=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
@@ -2712,14 +2719,14 @@ function dm_download_collection_globus {
 		then
 			echo "The template file $template_file changed." >&2
 			echo "Please pull the latest version and try again" >&2
-			exit 1
+			return 1
 		fi
 		local attribute_exists=$(grep $attribute $template_file) 
 		if [ -z "$attribute_exists" ]
 		then
 			echo "The template file $template_file changed." >&2
 			echo "Please pull the latest version and try again" >&2
-			exit 1
+			return 1
 		fi
 	fi
 	
@@ -2859,7 +2866,7 @@ function dm_download_dataobject_globus {
     if [ -z "$3" ]
     then
       #echo "Using the default Globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
-      globus_endpoint=$(get_globus_endpoint) || exit 1
+      globus_endpoint=$(get_globus_endpoint) || return 1
     else
       globus_endpoint="$3"
     fi       
@@ -2869,16 +2876,16 @@ function dm_download_dataobject_globus {
     then
         echo "Cannot file the template file: $template_file" >&2
         echo "Please pull the latest version and try again" >&2
-        exit 1
+        return 1
     fi
 
 	if [ -z "$path_file" ]
 	then 
-		item_type=$(get_type $src_path) || exit 1
+		item_type=$(get_type $src_path) || return 1
 		if [ "$item_type" == "" ]
 		then
 			echo "ERROR: Cannot find the item $src_path in the archive" >&2
-			exit 1
+			return 1
 		fi
 		local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
 	else
@@ -2886,7 +2893,7 @@ function dm_download_dataobject_globus {
 		then
 			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
-			exit 1
+			return 1
 		fi
 		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
 		local src_paths=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
@@ -2898,7 +2905,7 @@ function dm_download_dataobject_globus {
     then
         echo "Cannot find the template file: $template_file" >&2
         echo "Please pull the latest version and try again" >&2
-        exit 1
+        return 1
     fi
 
     #Make sure the template did not change:
@@ -2919,7 +2926,7 @@ function dm_download_dataobject_globus {
     then
         echo "The template file $template_file changed." >&2
         echo "Please pull the latest version and try again" >&2
-        exit 1
+        return 1
     fi 
 
 	if [ ! -z "$path_file" ]
@@ -2929,7 +2936,7 @@ function dm_download_dataobject_globus {
 		then
 			echo "The template file $template_file changed." >&2
 			echo "Please pull the latest version and try again" >&2
-			exit 1
+			return 1
 		fi
 	fi
 	
@@ -2970,7 +2977,7 @@ function dm_download_dataobject_globus {
 	else
 		curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
 	fi
-    check_connection $response_hdr || exit 1
+    check_connection $response_hdr || return 1
 
 
     local code=$(get_http_code "$response_hdr") 
@@ -2978,7 +2985,7 @@ function dm_download_dataobject_globus {
     if [ "$code" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
-      print_error_message "$response_msg" "$code"  || exit 1
+      print_error_message "$response_msg" "$code" || return 1
     fi
 
     #Parse the download receipt:
@@ -2988,7 +2995,7 @@ function dm_download_dataobject_globus {
     then
         echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
-        exit 1
+        return 1
     else
         echo "Download request sent to Globus." 
         task_id=$(get_json_value $response_msg taskId)
@@ -3009,18 +3016,18 @@ function dm_download_s3_deprecated {
     if [ "$#" -lt 2 ]
     then
         echo "$USAGE" >&2
-        exit 1
+        return 1
     fi
 
     local SOURCE_PATH="$1"
     local DESCRIPTION="$2"
 
 
-    item_type=$(get_type $SOURCE_PATH) || exit 1
+    item_type=$(get_type $SOURCE_PATH) || return 1
     if [ "$item_type" == "" ]
     then
         echo "ERROR: Cannot find the item $SOURCE_PATH in the archive" >&2
-        exit 1
+        return 1
     fi
 
     echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
@@ -3031,7 +3038,7 @@ function dm_download_s3_deprecated {
     local CONFIG=$(get_config) || return 1
 
     curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
-    check_connection $response_hdr || exit 1
+    check_connection $response_hdr || return 1
 
 
     local code=$(get_http_code "$response_hdr")
@@ -3039,7 +3046,7 @@ function dm_download_s3_deprecated {
     if [ "$code" -ne 200 ]
     then
       #In this case the destination path file will contain the error code
-      print_error_message "$response_msg" "$code"  || exit 1
+      print_error_message "$response_msg" "$code" || return 1
     else
       rm -f $response_hdr 2> /dev/null
     fi
@@ -3051,7 +3058,7 @@ function dm_download_s3_deprecated {
     then
         echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
-        exit 1
+        return 1
     else
         echo "Download request sent to S3."
         task_id=$(get_json_value $response_msg taskId)
@@ -3130,7 +3137,7 @@ function dm_download_dataobject_s3 {
     if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
     then
         dm_show_download_dataobject_s3_usage >&2
-        exit 1
+        return 1
     fi
 
     if [ "$#" -gt 3 ]
@@ -3144,18 +3151,18 @@ function dm_download_dataobject_s3 {
 
 	if [ -z "$path_file" ]
 	then
-		item_type=$(get_type $SOURCE_PATH) || exit 1
+		item_type=$(get_type $SOURCE_PATH) || return 1
 		if [ "$item_type" == "" ]
 		then
 			echo "ERROR: Cannot find the item $SOURCE_PATH in the archive" >&2
-			exit 1
+			return 1
 		fi
 	else
 		if [ ! -e "$path_file" ]
 		then
 			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
-			exit 1
+			return 1
 		fi
 		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
 		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
@@ -3169,21 +3176,21 @@ function dm_download_dataobject_s3 {
    if [ -z "$awsAccessKeyId" ]
    then
        echo "ERROR: Credentials file does not contain aws_access_key_id property"
-       exit 1
+       return 1
    fi
 
    local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
    if [ -z "$awsSecretAccessKey" ]
    then
        echo "ERROR: Credentials file does not contain aws_secret_access_key property"
-       exit 1
+       return 1
    fi
   
    local awsRegion=$(get_value $CREDENTIALS_FILE region)
    if [ -z "$awsRegion" ]
    then
        echo "ERROR: Credentials file does not contain region property"
-       exit 1
+       return 1
    fi
 
    echo -e "{\n \"s3DownloadDestination\": {\n \"destinationLocation\": {" > description.json
@@ -3221,7 +3228,7 @@ function dm_download_dataobject_s3 {
 	else
 		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 	fi
-    check_connection $response_hdr || exit 1
+    check_connection $response_hdr || return 1
 
 
     local code=$(get_http_code "$response_hdr")
@@ -3229,7 +3236,7 @@ function dm_download_dataobject_s3 {
     if [ "$code" -ne 200 ]
     then
       #In this case the destination path file will contain the error code
-      print_error_message "$response_msg" "$code"  || exit 1
+      print_error_message "$response_msg" "$code"  || return 1
     fi
 
     #Parse the download receipt:
@@ -3239,7 +3246,7 @@ function dm_download_dataobject_s3 {
     then
         echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
-        exit 1
+        return 1
     else
         echo "Download request sent to S3."
         task_id=$(get_json_value $response_msg taskId)
@@ -3314,7 +3321,7 @@ function dm_download_collection_s3 {
     if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
     then
         dm_show_download_collection_s3_usage >&2
-        exit 1
+        return 1
     fi
 
     if [ "$#" -gt 3 ]
@@ -3334,7 +3341,7 @@ function dm_download_collection_s3 {
 		then
 			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
-			exit 1
+			return 1
 		fi
 		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
 		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
@@ -3347,21 +3354,21 @@ function dm_download_collection_s3 {
    if [ -z "$awsAccessKeyId" ]
    then
        echo "ERROR: Credentials file does not contain aws_access_key_id property"
-       exit 1
+       return 1
    fi
 
    local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
    if [ -z "$awsSecretAccessKey" ]
    then
        echo "ERROR: Credentials file does not contain aws_secret_access_key property"
-       exit 1
+       return 1
    fi
   
    local awsRegion=$(get_value $CREDENTIALS_FILE region)
    if [ -z "$awsRegion" ]
    then
        echo "ERROR: Credentials file does not contain region property"
-       exit 1
+       return 1
    fi
 
    echo -e "{\n \"s3DownloadDestination\": {\n \"destinationLocation\": {" > description.json
@@ -3399,7 +3406,7 @@ function dm_download_collection_s3 {
 	else
 		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 	fi
-    check_connection $response_hdr || exit 1
+    check_connection $response_hdr || return 1
 
 
     local code=$(get_http_code "$response_hdr")
@@ -3407,7 +3414,7 @@ function dm_download_collection_s3 {
     if [ "$code" -ne 200 ]
     then
       #In this case the destination path file will contain the error code
-      print_error_message "$response_msg" "$code"  || exit 1
+      print_error_message "$response_msg" "$code"  || return 1
     fi
 
     #Parse the download receipt:
@@ -3417,7 +3424,7 @@ function dm_download_collection_s3 {
     then
         echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
-        exit 1
+        return 1
     else
         echo "Download request sent to S3."
         task_id=$(get_json_value $response_msg taskId)
@@ -3583,7 +3590,7 @@ function dm_download_dataobject_aspera {
 	else
 		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
 	fi
-    check_connection $response_hdr || exit 1
+    check_connection $response_hdr || return 1
 
     local code=$(get_http_code "$response_hdr")
     echo "The response code is $code"
@@ -3877,7 +3884,7 @@ function dm_get_download_status {
     then
       echo "Error getting download status for taskID:\"$task_id\" " >&2
       print_error_message "$RESPONSE_MSG" "$response_code"
-      exit 1
+      return 1
     else 
      
 
@@ -3958,7 +3965,7 @@ function dm_rename() {
     if [ ! -e "$DESCRIPTION" ]
     then
       echo "ERROR: Cannot access the \"$DESCRIPTION\" file" >&2
-      exit 1
+      return 1
     fi
 
 
@@ -3992,7 +3999,7 @@ function dm_rename() {
     then
       echo "Error performing rename operation " >&2
       print_error_message "$RESPONSE_MSG" "$response_code"
-      exit 1
+      return 1
     else
 
       
@@ -4083,7 +4090,7 @@ function dm_add_bookmark () {
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
       echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
-      exit 1
+      return 1
     fi
     
 
@@ -4120,7 +4127,7 @@ function dm_add_bookmark () {
     then
       echo "Error creating bookmark \"$BOOKMARK_NAME\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
-      exit 1
+      return 1
     fi
 
 }
@@ -4201,7 +4208,7 @@ function dm_update_bookmark () {
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
       echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
-      exit 1
+      return 1
     fi
 
     if [ ! -z "$3" ]
@@ -4237,7 +4244,7 @@ function dm_update_bookmark () {
     then
       echo "Error updating bookmark \"$BOOKMARK_NAME\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
-      exit 1
+      return 1
     fi
 
 }
@@ -4318,7 +4325,7 @@ function dm_register_user () {
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
       echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
-      exit 1
+      return 1
     fi
 
 
@@ -4355,7 +4362,7 @@ function dm_register_user () {
     then
       echo "Error enrolling user \"$USER_ID\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
-      exit 1
+      return 1
     fi
 }
 
@@ -4435,7 +4442,7 @@ function dm_update_user () {
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
       echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
-      exit 1
+      return 1
     fi
 
 
@@ -4473,7 +4480,7 @@ function dm_update_user () {
     then
       echo "Error updating user \"$USER_ID\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
-      exit 1
+      return 1
     fi
 }
 
@@ -4577,23 +4584,23 @@ function dm_download_collection {
       case "${option}" in
         h)
           dm_show_register_directory_usage 
-          exit 1
+          return 1
           ;;
         t)
           numthreads="${OPTARG}"
           re='^[0-9]+$'
           if ! [[ "$numthreads" =~ $re ]] ; then
-             echo "ERROR: The number of threads $numthreads is not a positive integer." >&2; exit 1
+             echo "ERROR: The number of threads $numthreads is not a positive integer." >&2; return 1
           fi
 
           if [ "$numthreads" -lt "0" ] || [ "$numthreads" -gt "32" ]
           then
-             echo "ERROR: The number of threads $numthreads should be between [1, 32]" >&2; exit 1
+             echo "ERROR: The number of threads $numthreads should be between [1, 32]" >&2; return 1
           fi
           ;;
         *)
           dm_download_collection_usage >&2
-          exit 1
+          return 1
           ;;
       esac
     done
@@ -4608,7 +4615,7 @@ function dm_download_collection {
     if [ -z "$1" ] || [ -z "$2" ] 
     then
         dm_download_collection_usage >&2
-        exit 1 
+        return 1 
     fi
 
     local src_path="$1"
@@ -4627,13 +4634,13 @@ function dm_download_collection {
     if [ ! -d "$dst_path" ]
     then
       echo "The destination directory: $dst_path does not exist." >&2
-      exit 1
+      return 1
     fi 
 	
 	if [ ! -w "$dst_path" ]
 	then 
 	echo "The destination directory: $dst_path is not writable." >&2
-      exit 1
+      return 1
     fi 
 	
     command_args=""
@@ -4642,7 +4649,7 @@ function dm_download_collection {
 	if [ "$?" -ne 0 ]
 	then
 	echo "The destination directory: $dst_path is not accessible." >&2
-      exit 1
+      return 1
     fi
 	absolute_path=$(pwd)
 	popd > /dev/null
@@ -4675,7 +4682,7 @@ function dm_download_collection {
     
        *)
          echo 'Current OS not supported' 
-         exit 1
+         return 1
          ;;
     esac
 
@@ -4737,12 +4744,12 @@ function dm_get_download_presigned () {
   CODE=$(get_http_code "$RESPONSE_HEADER_OBTAIN_PRESIGNED")
   if [ "$CODE" -ne 200 ]
   then
-    exit 1
+    return 1
   else
     local PRESIGNED_URL=$(get_json_value  $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  downloadRequestURL)
     if [ -z "$PRESIGNED_URL" ]
     then
-      exit 1
+      return 1
     fi
   fi
   
