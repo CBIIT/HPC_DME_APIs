@@ -10,7 +10,7 @@
  */
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
