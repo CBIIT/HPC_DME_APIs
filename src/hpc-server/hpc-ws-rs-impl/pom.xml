@@ -429,6 +429,10 @@
 	  <groupId>org.glassfish.jaxb</groupId>
 	  <artifactId>jaxb-runtime</artifactId>
 	</dependency>
+	<dependency>
+	  <groupId>com.bucket4j</groupId>
+	  <artifactId>bucket4j_jdk17-core</artifactId>
+	</dependency>
   </dependencies>
 
 </project>
