@@ -8,6 +8,15 @@ public class HpcLinkDatafile {
   private String sourcePath;
   private String destinationPath;
   private List<String> selectedPaths;
+  private String globalMetadataSearchText;
+
+  public String getGlobalMetadataSearchText() {
+	return globalMetadataSearchText;
+  }
+
+  public void setGlobalMetadataSearchText(String globalMetadataSearchText) {
+	this.globalMetadataSearchText = globalMetadataSearchText;
+  }
 
   public String getSourcePath() {
     return sourcePath;

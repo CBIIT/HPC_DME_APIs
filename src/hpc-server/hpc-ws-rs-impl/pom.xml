@@ -17,7 +17,7 @@
   <parent>
     <groupId>gov.nih.nci.hpc</groupId>
     <artifactId>hpc-server</artifactId>
-    <version>3.4.0</version>
+    <version>3.8.0</version>
   </parent>
   <artifactId>hpc-ws-rs-impl</artifactId>
   <packaging>war</packaging>
@@ -130,7 +130,7 @@
               <skipIfExist>false</skipIfExist>
             </configuration>
           </execution> -->
-          <execution>
+          <!--execution>
             <id>importIrodsCertificate</id>
             <goals>
               <goal>importCertificate</goal>
@@ -145,7 +145,7 @@
               <noprompt>true</noprompt>
               <skipIfExist>false</skipIfExist>
             </configuration>
-          </execution>
+          </execution-->
           <execution>
             <id>importLdapIntermediateCertificate</id>
             <goals>
@@ -272,6 +272,7 @@
               <dname>${hpc.server.entry.dname}</dname>
               <validity>${validity.days}</validity>
               <skipIfExist>true</skipIfExist>
+              <keyalg>RSA</keyalg>
             </configuration>
           </execution>
           <execution>
@@ -287,6 +288,7 @@
               <alias>${hpc.client.key.alias}</alias>
               <dname>${hpc.client.entry.dname}</dname>
               <validity>${validity.days}</validity>
+              <keyalg>RSA</keyalg>
               <skipIfExist>true</skipIfExist>
             </configuration>
           </execution>
@@ -426,6 +428,10 @@
 	<dependency>
 	  <groupId>org.glassfish.jaxb</groupId>
 	  <artifactId>jaxb-runtime</artifactId>
+	</dependency>
+	<dependency>
+	  <groupId>com.bucket4j</groupId>
+	  <artifactId>bucket4j_jdk17-core</artifactId>
 	</dependency>
   </dependencies>
 

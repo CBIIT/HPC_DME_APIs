@@ -50,9 +50,11 @@
         var profile = [[${profile}]];
         var userDOCModel = [[${userDOCModel}]];
         var permissions = [[${permissions}]];
+        var userGroups = [[${userGroups}]];
         console.log(JSON.stringify(profile));
         console.log(JSON.stringify(userDOCModel));
         console.log(JSON.stringify(permissions));
+        console.log(JSON.stringify(userGroups));
         /*]]>*/
     </script>
 
@@ -87,7 +89,7 @@
                         <div class="panel-body">
                             <table>
                                 <tr>
-                                    <th>Username</th>
+                                    <th style="padding-right:60px;">Username</th>
                                     <td th:text="${profile.lastName} + ', ' + ${profile.firstName}"></td>
                                 </tr>
 
@@ -105,12 +107,19 @@
                                     <th>Role</th>
                                     <td th:text="${#strings.replace(#strings.capitalizeWords(#strings.toLowerCase(profile.userRole),'_'),'_',' ')}"></td>
                                 </tr>
+                                <tr th:if="${userGroups}">
+                                    <th valign="top">Groups</th>
+                                    <td valign="top">
+                                      <span style="padding-right:8px;" th:each="group,iterStat : ${userGroups.groups}"
+                                      th:text="${group.groupName} + ${!iterStat.last ? ',  ' : ''}"></span>
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                         <div class="panel-body">
                             <table>
                                 <tr>
-                                    <th>Path</th>
+                                    <th style="padding-right:140px;">Path</th>
                                     <th>Permissions</th>
                                 </tr>
                                 <th:block th:each="perm: ${permissions.permissionsForCollections}">
