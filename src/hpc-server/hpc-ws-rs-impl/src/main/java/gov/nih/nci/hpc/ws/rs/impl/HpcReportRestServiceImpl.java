@@ -16,7 +16,7 @@ import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcReportRestService;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
