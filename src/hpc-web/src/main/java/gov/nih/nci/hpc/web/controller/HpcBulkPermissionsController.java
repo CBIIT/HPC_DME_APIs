@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.web.controller;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -118,6 +119,9 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		hpcDownloadDatafile.setDownloadType(downloadType);
 		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+		hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
 
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("error", "Data file list is missing!");
@@ -152,7 +156,7 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 		hpcSaveSearch.setSearchType(request.getParameter("searchType"));
 		String[] deselectedColumns =  request.getParameterValues("deselectedColumns");
 		if(deselectedColumns != null && StringUtils.isNotEmpty(deselectedColumns[0]))
-			hpcSaveSearch.getDeselectedColumns().addAll(org.springframework.util.CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
+			hpcSaveSearch.getDeselectedColumns().addAll((Collection<? extends String>) org.springframework.util.CollectionUtils.arrayToList(deselectedColumns[0].split(",")));
 		hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 		session.setAttribute("hpcSavedSearch", hpcSaveSearch);
@@ -191,6 +195,10 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		hpcDownloadDatafile.setDownloadType(downloadType);
 		
+		String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
+		hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
+		model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+
 		if (selectedPathsStr.isEmpty()) {
 			model.addAttribute("updateStatus", "Data file list is missing!");
 		} else {

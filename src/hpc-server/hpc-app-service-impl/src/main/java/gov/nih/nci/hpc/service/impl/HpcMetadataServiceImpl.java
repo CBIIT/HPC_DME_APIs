@@ -529,6 +529,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
+		
+		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 
 		return generateIdMetadata();
 	}
@@ -599,6 +602,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 				toMetadataEntry(EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE, extractedMetadataAttributes.toString()));
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				systemGeneratedMetadataEntries);
+		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 	}
 
 	@Override
@@ -691,10 +696,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Create the S3 Archive Configuration ID.
 		addMetadataEntry(metadataEntries,
 				toMetadataEntry(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE, s3ArchiveConfigurationId));
-
+		
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
+		
+		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 
 		return toSystemGeneratedMetadata(metadataEntries);
 	}
@@ -725,6 +733,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
+		
+		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 	}
 
 	@Override
@@ -843,6 +854,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
 					metadataEntries);
 		}
+		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 	}
 
 	@Override
@@ -878,6 +891,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Update the metadata.
 		dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				updatedMetadataEntries);
+		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 	}
 
 	@Override
