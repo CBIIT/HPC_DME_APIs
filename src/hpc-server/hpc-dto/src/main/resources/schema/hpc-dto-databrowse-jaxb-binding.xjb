@@ -10,100 +10,101 @@
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  -->
-<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
-			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-	<jxb:globalBindings>
-		<jxb:serializable uid="1"/>
+<jaxb:bindings version="3.0" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    jaxb:extensionBindingPrefixes="xjc">
+	<jaxb:globalBindings>
+		<jaxb:serializable uid="1"/>
 		
 		<!-- use Calendar instead of XMLGregorianCalendar -->
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
-            printMethod="javax.xml.bind.DatatypeConverter.printDateTime"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseDateTime"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printDateTime"/>
 
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:date"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseDate"
-            printMethod="javax.xml.bind.DatatypeConverter.printDate"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:date"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseDate"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printDate"/>
 
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:time"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseTime"
-            printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:time"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseTime"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printTime"/>
             
-		<jxb:javaType name="java.lang.String" xmlType="xsd:ID" 
-			parseMethod="javax.xml.bind.DatatypeConverter.parseString"
-            printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+		<jaxb:javaType name="java.lang.String" xmlType="xsd:ID" 
+			parseMethod="jakarta.xml.bind.DatatypeConverter.parseString"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printString"/>
             
-	</jxb:globalBindings>
+	</jaxb:globalBindings>
 	
-	<jxb:bindings schemaLocation="HpcDataBrowseTypes.xsd">
-		<jxb:bindings node="//xsd:complexType[@name='HpcBookmark']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.databrowse.HpcBookmark"/>
-		</jxb:bindings>
-	</jxb:bindings>
+	<jaxb:bindings schemaLocation="HpcDataBrowseTypes.xsd">
+		<jaxb:bindings node="//xsd:complexType[@name='HpcBookmark']">
+        	<jaxb:class ref="gov.nih.nci.hpc.domain.databrowse.HpcBookmark"/>
+		</jaxb:bindings>
+	</jaxb:bindings>
    
-   <jxb:bindings schemaLocation="HpcDataManagementTypes.xsd">
-      <jxb:bindings node="//xsd:complexType[@name='HpcCollection']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCollection" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcCollectionListingEntry']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcDataHierarchy']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcDataObject']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObject" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:simpleType[@name='HpcSubjectType']">
-         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcUserPermission']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcSubjectPermission']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:simpleType[@name='HpcPermission']">
-         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermission" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcGroupPermission']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcPathAttributes']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcPathPermissions']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectRegistrationTaskItem']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcMetadataUpdateItem']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcDirectoryScanPathMap']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:simpleType[@name='HpcBulkDataObjectRegistrationTaskStatus']">
-         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:simpleType[@name='HpcAuditRequestType']">
-         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcPermissionForCollection']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcPermissionsForCollection']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcSubjectPermissionOnCollection']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermissionOnCollection" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcUserPermOnOneCollection']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermOnOneCollection" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcUserPermsOnManyCollections']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermsOnManyCollections" />
-      </jxb:bindings>
-   </jxb:bindings>
+   <jaxb:bindings schemaLocation="HpcDataManagementTypes.xsd">
+      <jaxb:bindings node="//xsd:complexType[@name='HpcCollection']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCollection" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcCollectionListingEntry']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcDataHierarchy']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcDataObject']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObject" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:simpleType[@name='HpcSubjectType']">
+         <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcUserPermission']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcSubjectPermission']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:simpleType[@name='HpcPermission']">
+         <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermission" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcGroupPermission']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcPathAttributes']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcPathPermissions']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcDataObjectRegistrationTaskItem']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcMetadataUpdateItem']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcDirectoryScanPathMap']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:simpleType[@name='HpcBulkDataObjectRegistrationTaskStatus']">
+         <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:simpleType[@name='HpcAuditRequestType']">
+         <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcPermissionForCollection']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcPermissionsForCollection']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcSubjectPermissionOnCollection']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermissionOnCollection" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcUserPermOnOneCollection']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermOnOneCollection" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcUserPermsOnManyCollections']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermsOnManyCollections" />
+      </jaxb:bindings>
+   </jaxb:bindings>
     
-</jxb:bindings>
+</jaxb:bindings>
