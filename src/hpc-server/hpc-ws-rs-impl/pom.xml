@@ -410,8 +410,8 @@
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -422,12 +422,13 @@
        <artifactId>jackson-jaxrs-json-provider</artifactId>
     </dependency>
     <dependency>
-	  <groupId>javax.xml.bind</groupId>
-	  <artifactId>jaxb-api</artifactId>
+	  <groupId>jakarta.xml.bind</groupId>
+	  <artifactId>jakarta.xml.bind-api</artifactId>
 	</dependency>
 	<dependency>
-	  <groupId>org.glassfish.jaxb</groupId>
-	  <artifactId>jaxb-runtime</artifactId>
+	  <groupId>com.sun.xml.bind</groupId>
+	  <artifactId>jaxb-impl</artifactId>
+	  <scope>runtime</scope>
 	</dependency>
 	<dependency>
 	  <groupId>com.bucket4j</groupId>
