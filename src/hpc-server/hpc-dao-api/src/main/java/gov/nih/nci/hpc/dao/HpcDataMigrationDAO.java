@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -67,7 +68,7 @@ public interface HpcDataMigrationDAO {
 
 	/**
 	 * Get a data object migration task that associated with specific a collection
-	 * migration task and path
+	 * migration task and path.
 	 *
 	 * @param collectionMigrationTaskId The collection migration task id.
 	 * @param path                      The data object path.
@@ -76,6 +77,16 @@ public interface HpcDataMigrationDAO {
 	 */
 	public HpcDataMigrationTask getDataObjectMigrationTask(String collectionMigrationTaskId, String path)
 			throws HpcException;
+
+	/**
+	 * Get a data object migration task.
+	 *
+	 * @param id   The migration task ID.
+	 * @param type The migration task type (data-object or collection).
+	 * @return A data object migration task if found, or null otherwise.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask getDataMigrationTask(String id, HpcDataMigrationType type) throws HpcException;
 
 	/**
 	 * Get a data object migration task result ID that associated with specific a
@@ -87,6 +98,28 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on service failure.
 	 */
 	public String getDataObjectMigrationTaskResultId(String collectionMigrationTaskId, String path) throws HpcException;
+
+	/**
+	 * Get a migration task result.
+	 *
+	 * @param id   The migration task ID.
+	 * @param type The migration task type (data-object or collection).
+	 * @return The migration task result object, or null if not found.
+	 * @throws HpcException on database error.
+	 */
+	public HpcDataMigrationTaskResult getDataMigrationTaskResult(String id, HpcDataMigrationType type)
+			throws HpcException;
+
+	/**
+	 * Get a list of migration tasks in specific status and type.
+	 *
+	 * @param parentId The task parent Id to query for.
+	 * @param result   The task result to query for.
+	 * @return A List of data migration task results.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String parentId, HpcDataMigrationResult result)
+			throws HpcException;
 
 	/**
 	 * Delete a data Migration task.

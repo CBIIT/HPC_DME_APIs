@@ -1,0 +1,12 @@
+
+create index r_coll_hierarchy_meta_main_metadata_query_level_lower
+on irods.r_coll_hierarchy_meta_main (meta_attr_name, lower(meta_attr_value), data_level);
+
+create index r_data_hierarchy_meta_main_metadata_search_idx
+on irods.r_data_hierarchy_meta_main (meta_attr_value) indextype is ctxsys.context;
+
+create index r_coll_hierarchy_meta_main_metadata_query_level_lower
+on irods.r_coll_hierarchy_meta_main (meta_attr_name, lower(meta_attr_value), data_level);
+
+create index r_data_hierarchy_user_meta_main_metadata_search_idx
+on irods.r_data_hierarchy_user_meta_main (meta_attr_value) indextype is ctxsys.context;

@@ -68,8 +68,8 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
 	// The max number of days to keep deep archive in progress
-	@Value("${hpc.service.dataTransfer.maxDeepArchiveInProgressDays}")
-	private Integer maxDeepArchiveInProgressDays = null;
+	@Value("${hpc.service.dataTransfer.maxDeepArchiveInProgressHours}")
+	private Integer maxDeepArchiveInProgressHours = null;
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -249,7 +249,7 @@ public class HpcDataTieringServiceImpl implements HpcDataTieringService {
 		}
 
 		// Check if there is a delay in toggling the status
-		deepArchiveDate.add(Calendar.DAY_OF_MONTH, maxDeepArchiveInProgressDays);
+		deepArchiveDate.add(Calendar.HOUR_OF_DAY, maxDeepArchiveInProgressHours);
 		// If delayed, return true
 		return deepArchiveDate.before(Calendar.getInstance());
 	}

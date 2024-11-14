@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
@@ -151,17 +152,17 @@ public class HpcDataTransferServiceImplTest {
 		pathAttributes.setSize(123456789L);
 		when(dataTransferProxyMock.getPathAttributes(anyObject(), same(sourceLocation), eq(true)))
 				.thenReturn(pathAttributes);
-		when(dataManagementConfigurationLocatorMock.getArchiveDataTransferType(anyObject()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getArchiveDataTransferType(anyObject()))
 				.thenReturn(HpcDataTransferType.S_3);
-		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
-		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
-		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
-		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(new HpcDataTransferConfiguration());
 		when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
-		when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId")).thenReturn(dmc);
+		Mockito.lenient().when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId")).thenReturn(dmc);
 		// Run the test.
 		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null, null,
 				"/test/path", "testUserId", "testCallerId", "testConfigId", "testObjectId", null);
@@ -207,19 +208,19 @@ public class HpcDataTransferServiceImplTest {
 	@Test
 	public void testGenerateDownloadRequestURL() throws HpcException {
 		// Mock setup.
-		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
-		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
-		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
 		HpcDataManagementConfiguration testConfiguration = new HpcDataManagementConfiguration();
 		testConfiguration.setDoc("testDoc");
-		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
-		when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId")).thenReturn(testConfiguration);
-		when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId")).thenReturn(testConfiguration);
+		Mockito.lenient().when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("https://downloadURL");
 		HpcFileLocation archiveLocation = new HpcFileLocation();
 		archiveLocation.setFileContainerId("test");
@@ -280,15 +281,15 @@ public class HpcDataTransferServiceImplTest {
 		baseDownloadSource.setFileLocation(baseDownloadSourceFileLocation);
 		HpcDataTransferConfiguration dataTransferConfig = new HpcDataTransferConfiguration();
 		dataTransferConfig.setBaseDownloadSource(baseDownloadSource);
-		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(dataTransferConfig);
-		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(dataTransferConfig);
 
-		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
-		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
-		when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
 
 		// Prepare test data.
@@ -311,7 +312,7 @@ public class HpcDataTransferServiceImplTest {
 
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
 		pathAttributes.setIsAccessible(true);
-		when(dataTransferProxyMock.getPathAttributes(anyObject(), same(destinationLocation), eq(false)))
+		Mockito.lenient().when(dataTransferProxyMock.getPathAttributes(anyObject(), same(destinationLocation), eq(false)))
 				.thenReturn(pathAttributes);
 
 		// Run the test.

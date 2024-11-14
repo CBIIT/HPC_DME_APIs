@@ -618,7 +618,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
-					downloadRequest.getAppendPathToDownloadDestination(), downloadRequest.getAppendCollectionNameToDownloadDestination());
+					downloadRequest.getAppendPathToDownloadDestination(),
+					downloadRequest.getAppendCollectionNameToDownloadDestination());
 		} else {
 			// Submit a request to download a list of collections.
 
@@ -657,8 +658,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
 					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
-					downloadRequest
-							.getAppendPathToDownloadDestination(), downloadRequest.getAppendCollectionNameToDownloadDestination());
+					downloadRequest.getAppendPathToDownloadDestination(),
+					downloadRequest.getAppendCollectionNameToDownloadDestination());
 		}
 
 		// Create and return a DTO with the request receipt.
@@ -1652,8 +1653,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Append path/collection-name is only for collection download request.
-		if (downloadRequest
-				.getAppendPathToDownloadDestination() != null
+		if (downloadRequest.getAppendPathToDownloadDestination() != null
 				|| downloadRequest.getAppendCollectionNameToDownloadDestination() != null) {
 			throw new HpcException("Append path/collection-name is not applicable", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -2403,7 +2403,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		Set<String> dataObjectPaths = new HashSet<>();
 		if (bulkMetadataUpdateRequest.getDataObjectCompoundQuery() != null) {
-			dataObjectPaths.addAll(dataSearchService.getDataObjectPaths(null,
+			dataObjectPaths.addAll(dataSearchService.getDataObjectPaths(
 					bulkMetadataUpdateRequest.getDataObjectCompoundQuery(), 1, bulkMetadataDataUpdateLimit + 1));
 		}
 

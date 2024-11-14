@@ -310,6 +310,15 @@ public interface HpcDataManagementService {
 	public HpcCollection getCollection(String path, boolean list) throws HpcException;
 
 	/**
+	 * Get collection by its path and all sub-collection and data objects list
+	 *
+	 * @param path The collection's path.
+	 * @return A collection.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollection getFullCollection(String path) throws HpcException;
+
+	/**
 	 * Get collection children by its path. No collection metadata is returned.
 	 *
 	 * @param path The collection's path.

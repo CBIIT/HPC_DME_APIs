@@ -319,6 +319,8 @@ comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" is
 comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."IN_PROCESS" is 'An indicator whether this task is in-process, i.e. a thread is working on submitting it';
 comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DOC" is 'DOC of the data object being downloaded';
 
+create index HPC_DATA_OBJECT_DOWNLOAD_TASK_DATA_TRANSFER_STATUS_IDX
+on IRODS.HPC_DATA_OBJECT_DOWNLOAD_TASK (DATA_TRANSFER_STATUS);
 
 CREATE TABLE "IRODS"."HPC_DATA_OBJECT_REGISTRATION_RESULT"
 (
@@ -434,7 +436,8 @@ comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_CONTA
 
 comment on column "IRODS".HPC_DOWNLOAD_TASK_RESULT"."ARCHIVE_LOCATION_FILE_ID" is 'The key or path of the data object';
 
-
+create index HPC_DOWNLOAD_TASK_RESULT_COMPLETED_IDX
+on IRODS.HPC_DOWNLOAD_TASK_RESULT (COMPLETED);
 
 CREATE TABLE "IRODS"."HPC_EVENT"
 (
@@ -721,3 +724,42 @@ comment on column IRODS."HPC_USER_QUERY"."CREATED" is 'The date / time the query
 
 comment on column IRODS."HPC_USER_QUERY"."UPDATED" is 'The date / time the query was updated';
 
+create table hpc_data_meta_main parallel 4 nologging as
+SELECT /*+parallel(r_data_main 4)*/
+    DATA_ID                                     as object_id,
+    (cast(data_coll.coll_name as varchar2(2700)) || cast('/' as varchar2(1))) ||
+    cast(data_base.data_name as varchar2(2700)) as object_path,
+    cast(NULL as number)                        as coll_id,
+    meta.META_ID,
+    1                                           as data_level,
+    'DataObject'                                as level_label,
+    meta.META_ATTR_NAME,
+    meta.META_ATTR_VALUE,
+    meta.META_ATTR_UNIT
+FROM r_data_main data_base,
+     r_coll_main data_coll,
+     R_OBJT_METAMAP map,
+     R_META_MAIN meta
+where data_base.coll_id = data_coll.coll_id
+  and DATA_ID = map.OBJECT_ID
+  and map.META_ID = meta.META_ID;
+  
+comment on column irods.hpc_data_meta_main.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
+
+comment on column irods.hpc_data_meta_main.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
+
+comment on column irods.hpc_data_meta_main.meta_id is 'Metadata ID: r_meta_main.meta_id';
+
+comment on column irods.hpc_data_meta_main.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
+
+comment on column irods.hpc_data_meta_main.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level. "DataObject" if the metadata is associated with the data object itself';
+
+comment on column irods.hpc_data_meta_main.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
+
+comment on column irods.hpc_data_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
+
+comment on column irods.hpc_data_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
+
+create index hpc_data_meta_main_path_query
+    on irods.hpc_data_meta_main (object_path);
+    

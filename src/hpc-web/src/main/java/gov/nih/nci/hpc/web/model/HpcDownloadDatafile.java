@@ -26,8 +26,16 @@ public class HpcDownloadDatafile {
 	private String downloadType;
 	private String downloadDestinationType;
 	private List<String> selectedPaths;
+	private String globalMetadataSearchText;
 
-	
+	public String getGlobalMetadataSearchText() {
+		return globalMetadataSearchText;
+	}
+
+	public void setGlobalMetadataSearchText(String globalMetadataSearchText) {
+		this.globalMetadataSearchText = globalMetadataSearchText;
+	}
+
 	public List<String> getSelectedPaths() {
 		if(selectedPaths == null)
 			selectedPaths = new ArrayList<String>();

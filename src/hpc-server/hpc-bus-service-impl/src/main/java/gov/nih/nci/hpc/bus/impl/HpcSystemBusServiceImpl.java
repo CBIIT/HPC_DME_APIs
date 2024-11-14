@@ -87,6 +87,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -308,6 +309,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
 							null, null, null, null, null, null, null, null, null);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(), 0);
+
+					// Remove from HPC_GLOBUS_TRANSFER_TASK
+					dataTransferService.deleteGlobusTransferTask(systemGeneratedMetadata.getDataTransferRequestId());
 
 					break;
 
@@ -782,8 +786,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								// Get the collection to be downloaded.
-								HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(),
-										true);
+								HpcCollection collection = dataManagementService.getFullCollection(downloadTask.getPath());
 								if (collection == null) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
@@ -816,7 +819,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 								downloadItems = new ArrayList<>();
 								for (String path : downloadTask.getCollectionPaths()) {
-									HpcCollection collection = dataManagementService.getCollection(path, true);
+									HpcCollection collection = dataManagementService.getFullCollection(path);
 									if (collection == null) {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1419,9 +1422,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					}
 
 					// Run the compound query to get the data object paths to recover storage for.
-					dataObjectPaths = dataSearchService.getDataObjectPaths(dataManagementConfiguration.getBasePath(),
-							storageRecoveryQuery, 1, dataSearchService.getDataObjectCount(
-									dataManagementConfiguration.getBasePath(), storageRecoveryQuery));
+					dataObjectPaths = dataSearchService.getDataObjectPaths(storageRecoveryQuery, 1,
+							dataSearchService.getDataObjectCount(storageRecoveryQuery));
 
 					logger.info("Storage recovery [config: {}] - {} data objects to recover storage",
 							dataManagementConfiguration.getId(), dataObjectPaths.size());
@@ -1533,7 +1535,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType());
-								dataTransferService.continueDataObjectDownloadTask(downloadTask);
+								if (!dataTransferService.continueDataObjectDownloadTask(downloadTask)) {
+									logger.info(
+											"GLOBUS transfers are not accepted at this time. Stop iterating through the Globus tasks");
+									return;
+								}
 
 							} catch (HpcException e) {
 								logger.error(
@@ -1865,7 +1871,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the sub-collections and download them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath);
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
@@ -1882,8 +1888,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, true, null),
 						calculateBoxDownloadDestination(boxDownloadDestination, subCollectionPath,
 								appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, true, null),
-						appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, userId,
-						collectionDownloadBreaker, collectionDownloadTaskId, excludedPaths));
+						appendPathToDownloadDestination, false, userId, collectionDownloadBreaker,
+						collectionDownloadTaskId, excludedPaths));
 			}
 		}
 
@@ -2460,10 +2466,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		String fileId = destinationLocation.getFileId();
 
 		if (subCollectionDestination) {
-			if (!appendPathToDownloadDestination) {
+			if (!appendPathToDownloadDestination && !appendCollectionNameToDownloadDestination) {
 				// For sub-collection destination calculation w/o appending absolute
-				// path. Append just the sub-collection name to the calculated destination.
+				// path or containing collection. Append just the sub-collection name to the
+				// calculated destination.
 				fileId = fileId + collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'));
+
+			} else if (appendCollectionNameToDownloadDestination) {
+				// Append the collection name + file name to the to the calculated destination.
+				String collectionName = collectionListingEntryPath
+						.substring(collectionListingEntryPath.lastIndexOf('/'));
+				String topCollectionPath = collectionListingEntryPath.substring(0,
+						collectionListingEntryPath.lastIndexOf('/'));
+				String topCollectionName = topCollectionPath.substring(topCollectionPath.lastIndexOf('/'));
+
+				fileId = fileId + topCollectionName + collectionName;
 			}
 
 		} else if (appendPathToDownloadDestination) {
@@ -3221,6 +3238,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (dataTieringService.deepArchiveDelayed(systemGeneratedMetadata.getDeepArchiveDate())) {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, null, null,
 							null, null, null, null, HpcDeepArchiveStatus.DELAYED, null, null);
+					// Email administrators to send email with the delayed file
+					notificationService.sendNotification(new HpcException(
+							"deep_archive_status toggled to DELAYED, path: " + path,
+							HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.AWS));
 				}
 			}
 

@@ -14,6 +14,7 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-datamigration="http://hpc.nci.nih.gov/domain/datamigration"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-domain-model="http://hpc.nci.nih.gov/domain/model"
 	targetNamespace="http://hpc.nci.nih.gov/domain/model"
 	elementFormDefault="unqualified">
 
@@ -24,42 +25,86 @@
 		namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		schemaLocation="HpcDataTransferTypes.xsd" />
 
-	<xsd:element name="HpcDataMigrationTask">
+	
+	<xsd:complexType name="HpcDataMigrationTask">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:string" />
+			<xsd:element name="parentId" type="xsd:string" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="dataObjectPaths" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="collectionPaths" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="dataObjectId" type="xsd:string" />
+			<xsd:element name="registrarId" type="xsd:string" />
+			<xsd:element name="configurationId" type="xsd:string" />
+			<xsd:element name="fromS3ArchiveConfigurationId"
+				type="xsd:string" />
+			<xsd:element name="toS3ArchiveConfigurationId"
+				type="xsd:string" />
+			<xsd:element name="type"
+				type="hpc-domain-datamigration:HpcDataMigrationType" />
+			<xsd:element name="status"
+				type="hpc-domain-datamigration:HpcDataMigrationStatus" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="fromS3ArchiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="toS3ArchiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="serverId" type="xsd:string" />
+			<xsd:element name="alignArchivePath" type="xsd:boolean" />
+			<xsd:element name="percentComplete" type="xsd:int" />
+			<xsd:element name="size" type="xsd:long" minOccurs="0" />
+			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />
+			<xsd:element name="retryFailedItemsOnly" type="xsd:boolean" minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcDataMigrationTaskResult">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:string" />
+			<xsd:element name="parentId" type="xsd:string" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="configurationId" type="xsd:string" />
+			<xsd:element name="fromS3ArchiveConfigurationId"
+				type="xsd:string" />
+			<xsd:element name="toS3ArchiveConfigurationId"
+				type="xsd:string" />
+			<xsd:element name="fromS3ArchiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="toS3ArchiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="type"
+				type="hpc-domain-datamigration:HpcDataMigrationType" />	
+			<xsd:element name="message" type="xsd:string" />	
+			<xsd:element name="result"
+				type="hpc-domain-datamigration:HpcDataMigrationResult" />	
+			<xsd:element name="created" type="xsd:dateTime" />	
+			<xsd:element name="completed" type="xsd:dateTime" />	
+			<xsd:element name="dataObjectPaths" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="collectionPaths" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />	
+			<xsd:element name="serverId" type="xsd:string" />	
+			<xsd:element name="alignArchivePath" type="xsd:boolean" />
+			<xsd:element name="size" type="xsd:long" minOccurs="0" />	
+			<xsd:element name="retryTaskId" type="xsd:string" />
+			<xsd:element name="retryUserId" type="xsd:string" />		
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcDataMigrationTaskStatus">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="id" type="xsd:string" />
-				<xsd:element name="parentId" type="xsd:string" />
-				<xsd:element name="userId" type="xsd:string" />
-				<xsd:element name="path" type="xsd:string" />
-				<xsd:element name="dataObjectPaths" type="xsd:string"
-					minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="collectionPaths" type="xsd:string"
-					minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="dataObjectId" type="xsd:string" />
-				<xsd:element name="registrarId" type="xsd:string" />
-				<xsd:element name="configurationId" type="xsd:string" />
-				<xsd:element name="fromS3ArchiveConfigurationId"
-					type="xsd:string" />
-				<xsd:element name="toS3ArchiveConfigurationId"
-					type="xsd:string" />
-				<xsd:element name="type"
-					type="hpc-domain-datamigration:HpcDataMigrationType" />
-				<xsd:element name="status"
-					type="hpc-domain-datamigration:HpcDataMigrationStatus" />
-				<xsd:element name="created" type="xsd:dateTime" />
-				<xsd:element name="fromS3ArchiveLocation"
-					type="hpc-domain-datatransfer:HpcFileLocation" />
-				<xsd:element name="toS3ArchiveLocation"
-					type="hpc-domain-datatransfer:HpcFileLocation" />
-				<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
-				<xsd:element name="serverId" type="xsd:string" />
-				<xsd:element name="alignArchivePath" type="xsd:boolean" />
-				<xsd:element name="percentComplete" type="xsd:int" />
-				<xsd:element name="size" type="xsd:long" minOccurs="0" />
+				<xsd:element name="inProgress" type="xsd:boolean" />
+				<xsd:element name="task" type="hpc-domain-model:HpcDataMigrationTask" />
+				<xsd:element name="result" type="hpc-domain-model:HpcDataMigrationTaskResult" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-
-
 
 </xsd:schema>

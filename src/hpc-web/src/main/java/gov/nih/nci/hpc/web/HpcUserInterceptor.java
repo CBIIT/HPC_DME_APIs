@@ -64,6 +64,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     private int tokenExpirationPeriod;
     @Value("${gov.nih.nci.hpc.server.childCollections.acl.user}")
 	private String childCollectionsAclURL;
+    @Value("${gov.nih.nci.hpc.oidc.header}")
+    private String oidcHeader;
     
     @Autowired
     private HpcModelBuilder hpcModelBuilder;
@@ -85,13 +87,14 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 		HttpSession session = request.getSession();
 		String userId = (String) session.getAttribute("hpcUserId");
 		String smUser = request.getHeader("SM_USER");
+		String oidcAccessToken = request.getHeader(oidcHeader);
 		Date tokenExpiration = (Date) session.getAttribute("tokenExpiration");
 
         if (StringUtils.isBlank(userId) || StringUtils.isNotBlank(smUser) && isTokenExpired(tokenExpiration)) {
             //Expired session or token expiration
             userId = smUser;
 
-            if (StringUtils.isBlank(userId)) {
+            if (StringUtils.isBlank(userId) && StringUtils.isBlank(oidcAccessToken)) {
 			    //SM Header not available, redirect to login page
 				log.error(
 						"redirect to login - no authorized user to work with in SM_USER "
@@ -100,18 +103,25 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 				return false;
 			} else {
 			    HpcUserDTO user = null;
+			    String authToken = null;
+			    String action = request.getRequestURI();
 			    try {
-		            String smSession = getCookieValue(request, "NIHSMSESSION");
-		            String action = request.getRequestURI();
-    	            String authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession,
-    	                    authenticateURL);
-    	            session.setAttribute("hpcUserToken", authToken);
+			    	if(StringUtils.isBlank(oidcAccessToken)) {
+			    		// This is to support Site Minder Web agent and no longer used.
+			            String smSession = getCookieValue(request, "NIHSMSESSION");
+	    	            authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession,
+	    	                    authenticateURL);
+			    	} else {
+			    		authToken = HpcClientUtil.getAuthenticationTokenOIDC(oidcAccessToken, authenticateURL);
+			    	}
+			    	session.setAttribute("hpcUserToken", authToken);
     	            try {
                         user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
                         if (user == null) {
                            throw new HpcWebException("Invalid User ");
                         }
-
+                        
+                        userId = user.getUserId();
                         log.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());
     	                //Get DOC Models, go to server only if not available in cache
     	                HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);

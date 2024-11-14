@@ -24,6 +24,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 //import org.springframework.test.util.ReflectionTestUtils;
 
@@ -85,9 +86,9 @@ public class HpcDataManagementConfigurationLocatorTest {
 	    
 	  configurations.add(configuration);
 	    
-	  when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
+	  Mockito.lenient().when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
 	   
-	  when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
+	  Mockito.lenient().when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
 	  
 	  HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
 	  HpcArchive hpcS3Archive = new HpcArchive();
@@ -98,7 +99,7 @@ public class HpcDataManagementConfigurationLocatorTest {
 	  List<HpcDataTransferConfiguration> s3ArchiveConfigurations = new ArrayList<>();
 	  s3ArchiveConfigurations.add(s3Configuration);
 	  
-	  when(dataManagementConfigurationDAO.getS3ArchiveConfigurations()).thenReturn(s3ArchiveConfigurations);
+	  Mockito.lenient().when(dataManagementConfigurationDAO.getS3ArchiveConfigurations()).thenReturn(s3ArchiveConfigurations);
 	    
 	  // This causes the DAO to update the configuratorLocator cache 
 	  dataManagementConfigurationLocator.reload();
@@ -183,8 +184,8 @@ public class HpcDataManagementConfigurationLocatorTest {
       configuration.setBasePath(basepath);
     
       configurations.add(configuration);
-      when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
-      when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
+      Mockito.lenient().when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
+      Mockito.lenient().when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
     
       //Exception is thrown because there is no "/" in the basepath
       expectedException.expect(HpcException.class);
@@ -212,8 +213,8 @@ public class HpcDataManagementConfigurationLocatorTest {
       configuration.setBasePath(basepath);
     
       configurations.add(configuration);
-      when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
-      when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
+      Mockito.lenient().when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
+      Mockito.lenient().when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
     
       //Exception is thrown because there is no "/" in the basepath
       expectedException.expect(HpcException.class);
@@ -241,8 +242,8 @@ public class HpcDataManagementConfigurationLocatorTest {
       configuration.setBasePath(basepath);
     
       configurations.add(configuration);
-      when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
-      when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
+      Mockito.lenient().when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
+      Mockito.lenient().when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
     
       //Exception is thrown because there is no "/" in the basepath
       expectedException.expect(HpcException.class);
@@ -279,9 +280,9 @@ public class HpcDataManagementConfigurationLocatorTest {
       configuration.setGlobusConfiguration(globusConfiguration);
       
       configurations.add(configuration);
-      when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
-      when(dataManagementConfigurationDAO.getS3ArchiveConfigurations()).thenReturn(new ArrayList<HpcDataTransferConfiguration>());
-      when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
+      Mockito.lenient().when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
+      Mockito.lenient().when(dataManagementConfigurationDAO.getS3ArchiveConfigurations()).thenReturn(new ArrayList<HpcDataTransferConfiguration>());
+      Mockito.lenient().when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
     
       // Exception is thrown because no type is set for either hpcS3Archive nor hpcGlobusArchive
       expectedException.expect(HpcException.class);

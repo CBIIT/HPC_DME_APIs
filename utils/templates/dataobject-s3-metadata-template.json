@@ -1,5 +1,8 @@
 {
-  "s3UploadSource": {
+  "dryRun": false,
+   "dataObjectRegistrationItems": [{
+   "path": "destination-file-path-on-archive",
+   "s3UploadSource": {
     "sourceLocation": {
       "fileContainerId": "s3-bucket-name",
       "fileId": "s3-object-key"
@@ -7,17 +10,18 @@
     "account" : {
       "accessKey" : "aws-access-key",
       "secretKey" : "aws-secret-key",
-      "region" :"aws-region"
+      "region" : "aws-regioin"
     }
-  },
-  "metadataEntries": [
-    {
+  }, 
+  "dataObjectMetadataEntries": [
+   {
       "attribute": "description",
       "value": "my-file-description"
-    }, 
-    {
-      "attribute": "my-second-attribute-name",
-      "value": "my-second-attribute-description"
-    }
+   },
+   {
+      "attribute": "object_name",
+      "value": "my-file-name"
+   } 
   ]
+ }]
 }

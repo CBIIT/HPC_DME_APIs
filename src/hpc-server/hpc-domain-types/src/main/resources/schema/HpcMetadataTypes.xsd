@@ -140,6 +140,8 @@
 			<xsd:enumeration value="TIMESTAMP_GREATER_THAN" />
 			<xsd:enumeration value="TIMESTAMP_LESS_OR_EQUAL" />
 			<xsd:enumeration value="TIMESTAMP_GREATER_OR_EQUAL" />
+			<xsd:enumeration value="PATH_EQUAL" />
+			<xsd:enumeration value="PATH_LIKE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -147,6 +149,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="EXACT" />
 			<xsd:enumeration value="ANY" />
+			<xsd:enumeration value="PATH" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
