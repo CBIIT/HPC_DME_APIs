@@ -13,11 +13,13 @@ package gov.nih.nci.hpc.bus.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
@@ -91,6 +93,11 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	// The Data Search Business Service Instance.
 	@Autowired
 	private HpcDataSearchBusService dataSearchBusService = null;
+
+	// The collection download task executor.
+	@Autowired
+	@Qualifier("hpcDataObjectMetadataUpdateTaskExecutor")
+	Executor dataObjectMetadataUpdateTaskExecutor = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -230,14 +237,14 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		if (StringUtils.isEmpty(metadataMigrationRequest.getFromS3ArchiveConfigurationId())) {
 			throw new HpcException("from S3 archive configuration ID is empty", HpcErrorType.INVALID_REQUEST_INPUT);
 		} else {
-			// Exception will be thrown of the S3 config ID can't be found.
+			// Exception will be thrown if the S3 config ID can't be found.
 			dataManagementService.getS3ArchiveConfiguration(metadataMigrationRequest.getFromS3ArchiveConfigurationId());
 		}
 
 		if (StringUtils.isEmpty(metadataMigrationRequest.getToS3ArchiveConfigurationId())) {
 			throw new HpcException("To S3 archive configuration ID is empty", HpcErrorType.INVALID_REQUEST_INPUT);
 		} else {
-			// Exception will be thrown of the S3 config ID can't be found.
+			// Exception will be thrown if the S3 config ID can't be found.
 			dataManagementService.getS3ArchiveConfiguration(metadataMigrationRequest.getToS3ArchiveConfigurationId());
 		}
 
@@ -481,7 +488,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE).forEach(dataObjectMetadataUpdateTask -> {
 					if (markInProcess(dataObjectMetadataUpdateTask)) {
 						try {
-							logger.info("Updatingg Data Object Metadata: task - {}, path - {}",
+							logger.info("Updating Data Object Metadata: task - {}, path - {}",
 									dataObjectMetadataUpdateTask.getId(), dataObjectMetadataUpdateTask.getPath());
 							completeDataObjectMetadataUpdate(dataObjectMetadataUpdateTask);
 
@@ -1147,17 +1154,16 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		bulkMetadataUpdateCompoundQueryDTO.setCompoundQuery(bulkMetadataUpdateCompoundQuery);
 
 		// Perform the search for the data objects to include in this metadata update
-		// and use
-		// pagination to retrieve all the results
+		// and use pagination to retrieve all the results.
 		List<String> dataObjectPaths = new ArrayList<>();
-		int totalCount = -1;
-		while (dataObjectPaths.size() > totalCount) {
+		int totalCount = 0;
+		do {
 			HpcDataObjectListDTO searchResponseDTO = dataSearchBusService
 					.getDataObjects(bulkMetadataUpdateCompoundQueryDTO);
 			dataObjectPaths.addAll(searchResponseDTO.getDataObjectPaths());
 			bulkMetadataUpdateCompoundQueryDTO.setPage(searchResponseDTO.getPage() + 1);
 			totalCount = searchResponseDTO.getTotalCount();
-		}
+		} while (dataObjectPaths.size() < totalCount);
 
 		return dataObjectPaths;
 	}
