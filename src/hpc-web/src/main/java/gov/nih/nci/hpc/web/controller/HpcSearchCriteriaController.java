@@ -192,6 +192,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch.setTotalSize(search.getTotalSize());
 			hpcSearch.setDeselectedColumns(search.getDeselectedColumns());
 			hpcSearch.setGlobalMetadataSearchText(search.getGlobalMetadataSearchText());
+			hpcSearch.setSearchPathOrMetadata(search.getSearchPathOrMetadata());
 			search = hpcSearch;
 		}
 
@@ -202,6 +203,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("deselectedColumns", search.getDeselectedColumns());
 		model.addAttribute("fileExportRowsThreshold", fileExportRowsThreshold);
 		model.addAttribute("globalMetadataSearchText", search.getGlobalMetadataSearchText());
+		model.addAttribute("searchPathOrMetadata", search.getSearchPathOrMetadata());
 		boolean success = false;
 		try {
 
@@ -344,7 +346,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		}
 		return null;
 	}
-	
+
 	private HpcCompoundMetadataQueryDTO constructCriteria(Map<String, String> hierarchy, HpcSearch search) {
 		HpcCompoundMetadataQueryDTO dto = new HpcCompoundMetadataQueryDTO();
 		dto.setTotalCount(true);
@@ -355,17 +357,31 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			query = buildSimpleSearch(hierarchy, search);
 
 		if(search.getGlobalMetadataSearchText() != null && !search.getGlobalMetadataSearchText().trim().isEmpty()) {
-			HpcMetadataQuery criteria = new HpcMetadataQuery();
-			criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
-			criteria.setOperator(HpcMetadataQueryOperator.fromValue("LIKE"));
-			String searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
-			criteria.setValue(searchLikeText);
-			HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-			levelFilter.setLevel(1);
-			levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
-			criteria.setLevelFilter(levelFilter);
-			query.getQueries().add(criteria);
+			if(search.getSearchPathOrMetadata() !=null && search.getSearchPathOrMetadata().equals("path")) {
+				HpcMetadataQuery criteria = new HpcMetadataQuery();
+				criteria.setAttribute("path");
+				criteria.setOperator(HpcMetadataQueryOperator.fromValue("PATH_LIKE"));
+				String searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
+				criteria.setValue(searchLikeText);
+				HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+				levelFilter.setLevel(1);
+				levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
+				criteria.setLevelFilter(levelFilter);
+				query.getQueries().add(criteria);
+			} else {
+				HpcMetadataQuery criteria = new HpcMetadataQuery();
+				criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
+				criteria.setOperator(HpcMetadataQueryOperator.fromValue("LIKE"));
+				String searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
+				criteria.setValue(searchLikeText);
+				HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+				levelFilter.setLevel(1);
+				levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
+				criteria.setLevelFilter(levelFilter);
+				query.getQueries().add(criteria);
+			}
 		}
+		logger.info("The Search Query JSON is: " + gson.toJson(query));
 		dto.setCompoundQuery(query);
 		dto.setDetailedResponse(search.isDetailed());
 		if (search.getSearchType().equals("collection"))
