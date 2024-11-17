@@ -71,6 +71,7 @@
     var deselectedColumns = [[${deselectedColumns}]];
     var fileExportRowsThreshold = [[${fileExportRowsThreshold}]];
     var globalMetadataSearchText = [[${globalMetadataSearchText}]];
+    var searchPathOrMetadata = [[${searchPathOrMetadata}]];
    
 /*]]>*/
 </script>
@@ -679,7 +680,12 @@ window.onclick = function(event) {
 										<div class="btn-group">
 											<label
 												title="Type text and press Enter. DME searches all columns except Path in all search result pages.">
-												Search Metadata&nbsp;&nbsp;<input type="search"
+												Global Search:&nbsp;&nbsp;
+												<input type="radio" name="searchPathOrMetadata" id="searchMetadaId" value="metadata" checked="checked"  onClick="setSearchResultsMetadata()"> Search Metadata
+												&nbsp;&nbsp;
+												<input type="radio" name="searchPathOrMetadata" id="searchPathId" value="path" onClick="setSearchResultsPath()"> Search Path
+												&nbsp;&nbsp;
+												<input type="search"
 												name="globalMetadataSearchText" id="searchInput"
 												style="height: 30px" th:value="${globalMetadataSearchText}">
 												<span id="searchClear"
@@ -728,6 +734,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="totalSize" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns" name="deselectedColumns" value=""/>
 						<input type="hidden" id="globalMetadataSearchText" name="globalMetadataSearchText"/>
+						<input type="hidden" id="searchPathOrMetadata" name="searchPathOrMetadata"/>
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}"
@@ -741,6 +748,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="totalSize1" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns1" name="deselectedColumns" value=""/>
 						<input type="hidden" id="globalMetadataSearchText1" name="globalMetadataSearchText"/>
+						<input type="hidden" id="searchPathOrMetadata1" name="searchPathOrMetadata"/>
 					</form>
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
@@ -754,6 +762,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="totalSize2" name="totalSize"/>
 						<input type="hidden" id="deselectedColumns2" name="deselectedColumns" value=""/>
 						<input type="hidden" id="globalMetadataSearchText2" name="globalMetadataSearchText"/>
+						<input type="hidden" id="searchPathOrMetadata2" name="searchPathOrMetadata"/>
 					</form> 
 					<form class="form-horizontal" id="bulkMetadataform" action="#"
 						role="form" th:action="@{/bulkupdatemetadata}"
@@ -769,6 +778,7 @@ window.onclick = function(event) {
 						<input type="hidden" id="updateAll" name="updateAll"/>
 						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
 						<input type="hidden" id="globalMetadataSearchText3" name="globalMetadataSearchText"/>
+						<input type="hidden" id="searchPathOrMetadata3" name="searchPathOrMetadata"/>
 					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
@@ -793,6 +803,12 @@ window.onclick = function(event) {
 <script>
 /*<![CDATA[*/
 	$(document).ready(function(){
+		// Set value of radio button searchPathOrMetadata
+		if(searchPathOrMetadata == null || searchPathOrMetadata.length === 0){
+			$("input[type='radio'][name='searchPathOrMetadata'][value='" + "metadata" + "']").prop("checked", true);
+		} else {
+			$("input[type='radio'][name='searchPathOrMetadata'][value='" + searchPathOrMetadata + "']").prop("checked", true);
+		}
 		$('[data-toggle="tooltip"]').tooltip();
 		$('#sub-menu-search').addClass("active");
 		$("#totalSize").val(totalSize);
@@ -810,7 +826,7 @@ window.onclick = function(event) {
 			$('#searchInputDiv').hide();
 		}
 	});
-	
+
 	$('#searchInput').keypress(function(event) {
 	    if (event.which === 13) {
 	      event.preventDefault();
@@ -824,6 +840,22 @@ window.onclick = function(event) {
 	    globalMetadataSearchText = '';
 	    updatePage('first', currentPageSize);
 	});
+
+	function setSearchResultsPath() {
+		searchPathOrMetadata = "path";
+		if(globalMetadataSearchText != null && globalMetadataSearchText.length > 0){
+			globalMetadataSearchText = "";
+			updatePage('first', currentPageSize);
+		}
+	}
+
+	function setSearchResultsMetadata() {
+		searchPathOrMetadata = "metadata";
+		if(globalMetadataSearchText != null && globalMetadataSearchText.length > 0){
+			globalMetadataSearchText = "";
+			updatePage('first', currentPageSize);
+		}
+	}
 
     function updatePage(action, newPageSize)
     {
@@ -871,6 +903,7 @@ window.onclick = function(event) {
 	    			updatedList.push(selectedRowsData[i]);
 	    	}
     	}
+		document.getElementById("simplesearchform").elements.namedItem("searchPathOrMetadata").value =  searchPathOrMetadata;
 		document.getElementById("simplesearchform").elements.namedItem("globalMetadataSearchText").value =  globalMetadataSearchText;
 		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
 		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
