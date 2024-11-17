@@ -72,12 +72,12 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, RESULT = ?, CREATED = ?, COMPLETED = ?, MESSAGE = ?, "
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, FROM_S3_ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, TO_S3_ARCHIVE_LOCATION_FILE_ID = ?, SERVER_ID = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, "
-			+ "RETRY_TASK_ID = ?, RETRY_USER_ID = ? "
+			+ "RETRY_TASK_ID = ?, RETRY_USER_ID = ?, METADATA_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, RESULT, CREATED, COMPLETED, MESSAGE, FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, "
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_ID, TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, TO_S3_ARCHIVE_LOCATION_FILE_ID, SERVER_ID, "
-			+ "ALIGN_ARCHIVE_PATH, DATA_SIZE, RETRY_TASK_ID, RETRY_USER_ID) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "ALIGN_ARCHIVE_PATH, DATA_SIZE, RETRY_TASK_ID, RETRY_USER_ID, METADATA_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -424,6 +424,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId(),
 					dataMigrationTask.getServerId(), dataMigrationTask.getAlignArchivePath(),
 					dataMigrationTask.getSize(), dataMigrationTask.getRetryTaskId(), dataMigrationTask.getRetryUserId(),
+					dataMigrationTask.getMetadataArchiveFileContainerId(),
+					dataMigrationTask.getMetadataArchiveFileIdPattern(),
 					dataMigrationTask.getId(), dataMigrationTask.getParentId(), dataMigrationTask.getUserId(),
 					dataMigrationTask.getPath(), dataMigrationTask.getConfigurationId(),
 					dataMigrationTask.getFromS3ArchiveConfigurationId(),
@@ -433,7 +435,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					toS3ArchiveLocation.getFileContainerId(), toS3ArchiveLocation.getFileId(),
 					dataMigrationTask.getServerId(), dataMigrationTask.getAlignArchivePath(),
 					dataMigrationTask.getSize(), dataMigrationTask.getRetryTaskId(),
-					dataMigrationTask.getRetryUserId());
+					dataMigrationTask.getRetryUserId(), dataMigrationTask.getMetadataArchiveFileContainerId(),
+					dataMigrationTask.getMetadataArchiveFileIdPattern());
 
 			logger.info("upserted result[{}]: {} {}-{}", dataMigrationTask.getType(), dataMigrationTask.getId(),
 					result.value(), message);
