@@ -12,10 +12,10 @@ package gov.nih.nci.hpc.web.controller;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
 import gov.nih.nci.hpc.web.util.HpcEncryptionUtil;

@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientResponseContext;
-import javax.ws.rs.client.ClientResponseFilter;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientResponseContext;
+import jakarta.ws.rs.client.ClientResponseFilter;
 
 public class ClientResponseLoggingFilter implements ClientResponseFilter {
 
