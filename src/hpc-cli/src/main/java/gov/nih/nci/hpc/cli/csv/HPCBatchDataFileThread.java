@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.DatatypeConverter;
 
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.StringUtils;
