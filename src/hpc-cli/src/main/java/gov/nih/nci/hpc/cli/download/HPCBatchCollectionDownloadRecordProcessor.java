@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
@@ -154,7 +154,7 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 	private void handleDownloadProblem(Response restResponse) throws IOException, RecordProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-				new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
+				new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
 		mapper.setAnnotationIntrospector(intr);
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
