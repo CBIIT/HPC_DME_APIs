@@ -94,7 +94,7 @@
 					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
-						if (type != "SYSTEM_ADMIN" && type != "GROUP_ADMINs")
+						if (type != "SYSTEM_ADMIN" && type != "GROUP_ADMIN")
 					        $scope.gridOptions1.columnDefs[4].visible = false;
 						$("#spinner").hide();
 			            $("#dimmer").hide();
@@ -104,7 +104,7 @@
 				$scope.gridOptions1.data = results;
 
 				$scope.showMe= function(val) {
-				    return val == doc.replace(/\'/g, "") || type == "SYSTEM_ADMIN" ;
+				    return val == doc.replace(/\'/g, "") || type == "SYSTEM_ADMIN" || (type == "GROUP_ADMIN" && doc == val) ;
 				  };
 				
 			} ]);
