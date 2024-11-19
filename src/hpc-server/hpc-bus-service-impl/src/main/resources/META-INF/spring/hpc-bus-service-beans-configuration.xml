@@ -50,5 +50,6 @@
 	<task:executor id="hpcDataObjectDownloadTaskExecutor" pool-size="${hpc.bus.dataObjectDownloadTaskExecutorThreadPoolSize}"/>
 	<task:executor id="hpcDataObjectFileSystemUploadTaskExecutor" pool-size="${hpc.bus.dataObjectFileSystemTaskExecutorThreadPoolSize}"/>
 	<task:executor id="hpcEmailExporterTaskExecutor" pool-size="1"/>
+	<task:executor id="hpcDataObjectMetadataUpdateTaskExecutor" pool-size="${hpc.bus.dataObjectMetadataUpdateTaskExecutorThreadPoolSize}"/>
 	
 </beans>
