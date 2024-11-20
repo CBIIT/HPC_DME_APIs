@@ -678,19 +678,22 @@ window.onclick = function(event) {
 									</div>
 									<div class="pull-right" id="searchInputDiv">
 										<div class="btn-group">
-											<label
-												title="Type text and press Enter. DME searches all columns except Path in all search result pages.">
-												Global Search:&nbsp;&nbsp;
-												<input type="radio" name="searchPathOrMetadata" id="searchMetadaId" value="metadata" checked="checked"  onClick="setSearchResultsMetadata()"> Search Metadata
-												&nbsp;&nbsp;
-												<input type="radio" name="searchPathOrMetadata" id="searchPathId" value="path" onClick="setSearchResultsPath()"> Search Path
-												&nbsp;&nbsp;
+												<label
+													style="margin-right: 5px"
+													title="Select Path or Metadata, type text, and press Enter. Searches all result pages.">
+													Search:&nbsp;&nbsp;
+												</label>
+												<label style="margin-right: 5px" title="Performs a case-insensitive search. (Test finds test or TEST.) Searches all columns except Path." for="searchMetadataId">
+													<input type="radio" name="searchPathOrMetadata" id="searchMetadataId" value="metadata" checked="checked"  onClick="setSearchResultsMetadata()">&nbsp;Metadata&nbsp;&nbsp;
+												</label>
+												<label style="margin-right: 5px" title="Performs a case-sensitive search. (Test finds only Test.) Searches only the Path column." for="searchPathId" >
+													<input type="radio" name="searchPathOrMetadata" id="searchPathId" value="path" onClick="setSearchResultsPath()">&nbsp;Path&nbsp;&nbsp;
+												</label>
 												<input type="search"
 												name="globalMetadataSearchText" id="searchInput"
 												style="height: 30px" th:value="${globalMetadataSearchText}">
 												<span id="searchClear"
 												class="glyphicon glyphicon-remove-circle"></span>
-											</label>
 										</div>
 									</div>
 								</div>
