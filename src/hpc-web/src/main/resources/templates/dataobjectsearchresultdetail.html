@@ -698,6 +698,11 @@ window.onclick = function(event) {
 										</div>
 									</div>
 								</div>
+								<div id="spinner" class="spinner" style="display: none;">
+									<img id="img-spinner" th:src="@{/img/spinner.gif}" />
+									<br />
+									Refreshing Search
+								</div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
@@ -818,6 +823,7 @@ window.onclick = function(event) {
 <script>
 /*<![CDATA[*/
 	$(document).ready(function(){
+		$("#spinner").hide();
 		// Set value of radio button searchPathOrMetadata
 		if(searchPathOrMetadata == null || searchPathOrMetadata.length === 0){
 			$("input[type='radio'][name='searchPathOrMetadata'][value='" + "metadata" + "']").prop("checked", true);
@@ -860,6 +866,7 @@ window.onclick = function(event) {
 		searchPathOrMetadata = "path";
 		if(globalMetadataSearchText != null && globalMetadataSearchText.length > 0){
 			globalMetadataSearchText = "";
+			$("#spinner").show();
 			updatePage('first', currentPageSize);
 		}
 	}
@@ -868,6 +875,7 @@ window.onclick = function(event) {
 		searchPathOrMetadata = "metadata";
 		if(globalMetadataSearchText != null && globalMetadataSearchText.length > 0){
 			globalMetadataSearchText = "";
+			$("#spinner").show();
 			updatePage('first', currentPageSize);
 		}
 	}
