@@ -58,7 +58,7 @@
 
 	<!-- container section start -->
 	<section id="container" class="">
-		<div th:include="header :: header"></div>
+		<div th:insert="~{header :: header}"></div>
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
@@ -609,7 +609,7 @@
 		<input type="hidden" id="taskType" name="taskType" th:value="${taskType}"/>
 	</form>
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<!--main content end-->
 	</section>
