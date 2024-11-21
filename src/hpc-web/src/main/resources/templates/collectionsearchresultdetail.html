@@ -676,7 +676,7 @@ window.onclick = function(event) {
 											Collections: <strong id="totalSizeDisplay"></strong>
 										</label>
 									</div>
-									<div class="pull-right" id="searchInputDiv">
+									<div class="pull-right" id="searchInputDiv" style="display: none">
 										<div class="btn-group">
 												<label
 													style="margin-right: 5px"
@@ -812,6 +812,12 @@ window.onclick = function(event) {
 /*<![CDATA[*/
 	$(document).ready(function(){
 		$("#spinner").hide();
+		if(source == "'search'" || source == 'search'){
+			// If NamedQuery, hide the search box
+			$('#searchInputDiv').hide();
+		} else {
+			$('#searchInputDiv').show();
+		}
 		// Set value of radio button searchPathOrMetadata
 		if(searchPathOrMetadata == null || searchPathOrMetadata.length === 0){
 			$("input[type='radio'][name='searchPathOrMetadata'][value='" + "metadata" + "']").prop("checked", true);
@@ -829,10 +835,6 @@ window.onclick = function(event) {
 			$('#hideExportLink').hide(); 
 		} else {
 			$('#showExportLink').hide(); 
-		}
-		if(source == "'search'" || source == 'search'){
-			// If NamedQuery, hide the search box
-			$('#searchInputDiv').hide();
 		}
 	});
 
