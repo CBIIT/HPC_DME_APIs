@@ -70,7 +70,7 @@
 
 	<!-- container section start -->
 	<section id="container" class="">
-		<div th:include="headerreadonly :: header"></div>
+		<div th:insert="headerreadonly :: header"></div>
 		<!--main content start-->
 		<section id="main-content-readonly">
 			<section class="wrapper">
@@ -224,7 +224,7 @@
 					</div>
 				</div>
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<!--main content end-->
 	</section>
