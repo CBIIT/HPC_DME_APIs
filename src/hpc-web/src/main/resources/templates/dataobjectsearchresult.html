@@ -422,7 +422,7 @@
 </head>
 <body th:attr="ng-init='searchresults=\'' + ${searchresults} +'\''">
 	<section id="container" class="">
-		<div th:include="header :: header"></div>
+		<div th:insert="~{header :: header}"></div>
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
@@ -561,7 +561,7 @@
 				<!--/col-->
 
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<!--main content end-->
 	</section>
