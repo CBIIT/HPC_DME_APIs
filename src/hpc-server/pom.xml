@@ -27,7 +27,7 @@
 		<commons-lang3.version>3.11</commons-lang3.version>
 		<commons-collections4.version>4.4</commons-collections4.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<commons-io.version>2.7</commons-io.version>
+		<commons-io.version>2.14.0</commons-io.version>
 		<commons-compress.version>1.26.2</commons-compress.version>
 		<commons-pool2.version>2.11.1</commons-pool2.version>
 		<cxf.version>4.0.5</cxf.version>
@@ -42,9 +42,9 @@
 		<jackson.version>2.18.1</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.12.5</jjwt.version>
-		<bouncycastle.version>1.70</bouncycastle.version>
+		<bouncycastle.version>1.79</bouncycastle.version>
 		<globus.version>1.0</globus.version>
-		<tika.version>1.28.3</tika.version>
+		<tika.version>3.0.0</tika.version>
 		<google-json-simple.version>1.1.1</google-json-simple.version>
 		<google-guava.version>32.0.0-jre</google-guava.version>
 		<google-api-drive.version>v3-rev197-1.25.0</google-api-drive.version>
@@ -424,12 +424,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcpkix-jdk15on</artifactId>
+				<artifactId>bcpkix-jdk18on</artifactId>
 				<version>${bouncycastle.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcprov-jdk15on</artifactId>
+				<artifactId>bcprov-jdk18on</artifactId>
 				<version>${bouncycastle.version}</version>
 			</dependency>
 			<dependency>
@@ -444,8 +444,9 @@
 			</dependency>
 			<dependency>
     			<groupId>org.apache.tika</groupId>
-    			<artifactId>tika-bundle</artifactId>
+    			<artifactId>tika-parsers</artifactId>
    				<version>${tika.version}</version>
+   				<type>pom</type>
 			</dependency>
 			<dependency>
 			    <groupId>org.apache.poi</groupId>
