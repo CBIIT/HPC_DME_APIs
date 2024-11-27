@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import com.google.gson.Gson;
 
 import gov.nih.nci.hpc.cli.domain.HPCCollectionRecord;
@@ -248,7 +248,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 				{
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-			            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+			            new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
 			            new JacksonAnnotationIntrospector());
 			        mapper.setAnnotationIntrospector(intr);
 			        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -428,7 +428,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 		
 		ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
             new JacksonAnnotationIntrospector());
         mapper.setAnnotationIntrospector(intr);
         mapper.setSerializationInclusion(Include.NON_NULL);

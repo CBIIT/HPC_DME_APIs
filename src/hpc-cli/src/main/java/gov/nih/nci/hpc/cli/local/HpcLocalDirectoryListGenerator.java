@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
@@ -48,8 +48,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
@@ -585,7 +585,7 @@ public class HpcLocalDirectoryListGenerator {
 		} else {
 			ObjectMapper mapper = new ObjectMapper();
 			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-					new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
+					new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
 			mapper.setAnnotationIntrospector(intr);
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
