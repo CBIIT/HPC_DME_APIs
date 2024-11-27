@@ -19,7 +19,7 @@ import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcNotificationRestService;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

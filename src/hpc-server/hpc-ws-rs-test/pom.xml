@@ -133,9 +133,8 @@
 		</dependency>
 		<dependency>
     		<groupId>com.sun.mail</groupId>
-    		<artifactId>javax.mail</artifactId>
-    		<version>1.6.0-rc2</version>
-		</dependency>
+    		<artifactId>jakarta.mail</artifactId>
+    		</dependency>
 		<dependency> 
 		  <groupId>ch.qos.logback</groupId>
 		  <artifactId>logback-classic</artifactId>

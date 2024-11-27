@@ -17,11 +17,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -41,6 +41,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -251,7 +252,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					model.addAttribute("totalPages", 0);
 				}
 			}
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+		} catch (JsonMappingException e) {
 			log.error(e.getMessage(), e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to project: " + e.getMessage());
 			bindingResult.addError(error);

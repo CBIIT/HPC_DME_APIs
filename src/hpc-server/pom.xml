@@ -30,16 +30,16 @@
 		<commons-io.version>2.7</commons-io.version>
 		<commons-compress.version>1.26.2</commons-compress.version>
 		<commons-pool2.version>2.11.1</commons-pool2.version>
-		<cxf.version>3.1.9</cxf.version>
-		<cxf-xjc.version>3.2.3</cxf-xjc.version>
+		<cxf.version>4.0.5</cxf.version>
+		<cxf-xjc.version>4.0.2</cxf-xjc.version>
 		<oracle.version>19.7.0.0</oracle.version>
 		<slf4j.version>2.0.9</slf4j.version>
 		<logback.version>1.3.14</logback.version>
-		<spring.version>5.3.37</spring.version>
+		<spring.version>6.1.14</spring.version>
 		<spring.retry.version>1.3.0</spring.retry.version>
         <aspectj.version>1.9.6</aspectj.version>
 		<amazon-aws.version>1.12.420</amazon-aws.version>
-		<jackson.version>2.12.7</jackson.version>
+		<jackson.version>2.18.1</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.12.5</jjwt.version>
 		<bouncycastle.version>1.70</bouncycastle.version>
@@ -349,8 +349,8 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
-	            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-	            <artifactId>jackson-jaxrs-json-provider</artifactId>
+	            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+	            <artifactId>jackson-jakarta-rs-json-provider</artifactId>
 	            <version>${jackson.version}</version>
 	        </dependency>
 			<dependency>
@@ -403,14 +403,9 @@
 			    <scope>runtime</scope>
 			</dependency>
 			<dependency>
-				<groupId>javax.mail</groupId>
-				<artifactId>javax.mail-api</artifactId>
-				<version>1.4.7</version>
-			</dependency>
-			<dependency>
-    			<groupId>javax.mail</groupId>
-    			<artifactId>mail</artifactId>
-    			<version>1.4.7</version>
+				<groupId>com.sun.mail</groupId>
+				<artifactId>jakarta.mail</artifactId>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.aspectj</groupId>
@@ -423,9 +418,9 @@
 				<version>${aspectj.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
-				<version>3.1.0</version>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>6.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
@@ -458,14 +453,15 @@
 			    <version>${poi.version}</version>
 		    </dependency> 
 		    <dependency>
-			  <groupId>javax.xml.bind</groupId>
-			  <artifactId>jaxb-api</artifactId>
-			  <version>2.3.1</version>
+			    <groupId>jakarta.xml.bind</groupId>
+			    <artifactId>jakarta.xml.bind-api</artifactId>
+			    <version>4.0.2</version>
 			</dependency>
 			<dependency>
-			  <groupId>org.glassfish.jaxb</groupId>
-			  <artifactId>jaxb-runtime</artifactId>
-			  <version>2.3.1</version>
+			    <groupId>com.sun.xml.bind</groupId>
+			    <artifactId>jaxb-impl</artifactId>
+			    <version>4.0.2</version>
+			    <scope>runtime</scope>
 			</dependency>
 			<dependency>
 			    <groupId>com.box</groupId>

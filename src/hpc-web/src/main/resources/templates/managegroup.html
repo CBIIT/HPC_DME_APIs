@@ -100,7 +100,7 @@ var results = [[${searchresults}]];
 
 	<!-- container section start -->
 	<section id="container" class="">
-		<div th:include="header :: header"></div>
+		<div th:insert="~{header :: header}"></div>
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
@@ -205,7 +205,7 @@ var results = [[${searchresults}]];
 				</div>
 				<div class="row"></div>
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<div id="spinner" class="spinner">
 			<img id="img-spinner" th:src="@{/img/spinner.gif}" alt="Loading" />
