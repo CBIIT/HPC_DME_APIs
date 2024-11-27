@@ -11,45 +11,46 @@
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
  * @version $Id: $
  -->
-<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
-			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-	<jxb:globalBindings>
-		<jxb:serializable uid="1"/>
+<jaxb:bindings version="3.0" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    jaxb:extensionBindingPrefixes="xjc">
+	<jaxb:globalBindings>
+		<jaxb:serializable uid="1"/>
 		
 		<!-- use Calendar instead of XMLGregorianCalendar -->
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
-            printMethod="javax.xml.bind.DatatypeConverter.printDateTime"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseDateTime"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printDateTime"/>
 
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:date"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseDate"
-            printMethod="javax.xml.bind.DatatypeConverter.printDate"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:date"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseDate"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printDate"/>
 
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:time"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseTime"
-            printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:time"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseTime"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printTime"/>
             
-		<jxb:javaType name="java.lang.String" xmlType="xsd:ID" 
-			parseMethod="javax.xml.bind.DatatypeConverter.parseString"
-            printMethod="javax.xml.bind.DatatypeConverter.printString"/>
-	</jxb:globalBindings>
+		<jaxb:javaType name="java.lang.String" xmlType="xsd:ID" 
+			parseMethod="jakarta.xml.bind.DatatypeConverter.parseString"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printString"/>
+	</jaxb:globalBindings>
 	
-	<jxb:bindings schemaLocation="HpcReportTypes.xsd">
-			<jxb:bindings node="//xsd:simpleType[@name='HpcReportType']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.report.HpcReportType"/>
-            </jxb:bindings>
-            <jxb:bindings node="//xsd:complexType[@name='HpcReportCriteria']">
-                <jxb:class ref="gov.nih.nci.hpc.domain.report.HpcReportCriteria"/>
-            </jxb:bindings>
-		    <jxb:bindings node="//xsd:complexType[@name='HpcReport']">
-                <jxb:class ref="gov.nih.nci.hpc.domain.report.HpcReport"/>
-            </jxb:bindings>
-            <jxb:bindings node="//xsd:complexType[@name='HpcReportEntry']">
-                <jxb:class ref="gov.nih.nci.hpc.domain.report.HpcReportEntry"/>
-            </jxb:bindings>
-            <jxb:bindings node="//xsd:simpleType[@name='HpcReportEntryAttribute']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute"/>
-            </jxb:bindings>
-    </jxb:bindings>
+	<jaxb:bindings schemaLocation="HpcReportTypes.xsd">
+			<jaxb:bindings node="//xsd:simpleType[@name='HpcReportType']">
+                <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.report.HpcReportType"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xsd:complexType[@name='HpcReportCriteria']">
+                <jaxb:class ref="gov.nih.nci.hpc.domain.report.HpcReportCriteria"/>
+            </jaxb:bindings>
+		    <jaxb:bindings node="//xsd:complexType[@name='HpcReport']">
+                <jaxb:class ref="gov.nih.nci.hpc.domain.report.HpcReport"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xsd:complexType[@name='HpcReportEntry']">
+                <jaxb:class ref="gov.nih.nci.hpc.domain.report.HpcReportEntry"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xsd:simpleType[@name='HpcReportEntryAttribute']">
+                <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute"/>
+            </jaxb:bindings>
+    </jaxb:bindings>
     
-</jxb:bindings>
+</jaxb:bindings>

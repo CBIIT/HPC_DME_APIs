@@ -16,7 +16,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * <p>
@@ -27,7 +27,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * @version $Id$
  */
 @Configuration
-public class HpcWebConfig extends WebMvcConfigurerAdapter {
+public class HpcWebConfig implements WebMvcConfigurer {
 
 	private static final String[] EXCLUDE_PATTERNS = { "/login", "/css/**", "/fonts/**", "/img/**", "/js/**",
 			"/ng-table/**" };
@@ -41,7 +41,7 @@ public class HpcWebConfig extends WebMvcConfigurerAdapter {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#
+	 * org.springframework.web.servlet.config.annotation.WebMvcConfigurer#
 	 * addInterceptors(org.springframework.web.servlet.config.annotation.
 	 * InterceptorRegistry)
 	 */

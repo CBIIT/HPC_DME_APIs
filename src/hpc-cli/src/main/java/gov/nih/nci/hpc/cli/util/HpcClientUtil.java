@@ -31,8 +31,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.transform.Source;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -64,7 +64,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
@@ -138,11 +139,13 @@ public class HpcClientUtil {
       mapper.setPropertyNamingStrategy(new CustomLowerCamelCase());
       mapper.setSerializationInclusion(Include.NON_NULL);
       
-      client = WebClient.create(url, Collections.singletonList(new com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider(mapper)));
+      client = WebClient.create(url, Collections.singletonList(new JacksonJsonProvider(mapper)));
       WebClient.getConfig(client).getRequestContext().put("support.type.as.multipart", "true");
       WebClient.getConfig(client).getHttpConduit().getClient().setReceiveTimeout(60000000);
       WebClient.getConfig(client).getHttpConduit().getClient().setConnectionTimeout(60000000);
       HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
+      client.type("application/json");
+
       if (proxyURL != null && proxyPort != null) {
         // System.out.println("Setting proxy settings.." +proxyURL+":"+proxyPort);
         HTTPClientPolicy policy = conduit.getClient();
@@ -334,7 +337,7 @@ public class HpcClientUtil {
       if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
             new JacksonAnnotationIntrospector());
         mapper.setAnnotationIntrospector(intr);
         mapper.setSerializationInclusion(Include.NON_NULL);
@@ -407,7 +410,7 @@ public class HpcClientUtil {
       if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
             new JacksonAnnotationIntrospector());
         mapper.setAnnotationIntrospector(intr);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -460,7 +463,7 @@ public class HpcClientUtil {
       throws HpcBatchException {
     ObjectMapper mapper = new ObjectMapper();
     AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-        new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+        new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
         new JacksonAnnotationIntrospector());
     mapper.setAnnotationIntrospector(intr);
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -506,7 +509,7 @@ public class HpcClientUtil {
       } else {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
             new JacksonAnnotationIntrospector());
         mapper.setAnnotationIntrospector(intr);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
