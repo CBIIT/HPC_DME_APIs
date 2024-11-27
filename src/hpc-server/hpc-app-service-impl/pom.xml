@@ -115,7 +115,8 @@
 		</dependency>
 		<dependency>
    			 <groupId>org.apache.tika</groupId>
-    		<artifactId>tika-bundle</artifactId>
+    		<artifactId>tika-parsers</artifactId>
+    		<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
