@@ -11,7 +11,7 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 import java.util.Calendar;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;

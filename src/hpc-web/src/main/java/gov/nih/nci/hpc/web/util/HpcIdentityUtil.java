@@ -1,7 +1,7 @@
 package gov.nih.nci.hpc.web.util;
 
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Utility class for methods supporting User identity related logic.
