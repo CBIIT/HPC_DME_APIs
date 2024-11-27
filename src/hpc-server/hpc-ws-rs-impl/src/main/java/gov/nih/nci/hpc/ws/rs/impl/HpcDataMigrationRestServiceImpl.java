@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
