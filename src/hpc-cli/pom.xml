@@ -25,16 +25,12 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>5.3.39</version>
+			<version>6.1.14</version>
 			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
 					<groupId>commons-logging</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>slf4j-api</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -57,17 +53,17 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>5.3.39</version>
+			<version>6.1.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>5.3.39</version>
+			<version>6.1.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-http</artifactId>
-			<version>5.3.10.RELEASE</version>
+			<version>6.3.5</version>
 		</dependency>
 		<dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -81,9 +77,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.13</version>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<version>5.4.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>org.slf4j</artifactId>
+					<groupId>slf4j-api</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -96,9 +98,9 @@
 			<version>1.1</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-configuration</groupId>
-			<artifactId>commons-configuration</artifactId>
-			<version>1.10</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-configuration2</artifactId>
+			<version>2.11.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -173,13 +175,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.68</version>
+			<artifactId>bcpkix-jdk18on</artifactId>
+			<version>1.79</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.68</version>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.79</version>
 		</dependency>
 		<dependency>
     		<groupId>commons-io</groupId>
@@ -195,12 +197,13 @@
 		<dependency>
    			<groupId>org.apache.tika</groupId>
     		<artifactId>tika-core</artifactId>
-    		<version>1.28.3</version>
+    		<version>3.0.0</version>
 		</dependency>
 		<dependency>
    			<groupId>org.apache.tika</groupId>
     		<artifactId>tika-parsers</artifactId>
-    		<version>1.24.1</version>
+    		<version>3.0.0</version>
+    		<type>pom</type>
     		<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -211,10 +214,13 @@
 		<dependency>
 		    <groupId>ch.qos.logback</groupId>
 		    <artifactId>logback-classic</artifactId>
-		    <version>1.2.13</version>
-		    <scope>runtime</scope>
+		    <version>1.5.12</version>
 		</dependency>
-		
+		<dependency>
+		    <groupId>commons-beanutils</groupId>
+		    <artifactId>commons-beanutils</artifactId>
+		    <version>1.9.4</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
 	</dependencies>
 
