@@ -564,7 +564,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		} finally {
 			if (closeInputStream) {
 				// Close the input stream if asked to.
-				IOUtils.closeQuietly(dataObjectInputStream);
+			  try {
+                dataObjectInputStream.close();
+              } catch (IOException e) {
+                // replaced tika.io.IOUtils.closeQuietly, so swallowing error
+                logger.error("Failed to close input stream for path: {}", path);
+              }
 			}
 		}
 	}
