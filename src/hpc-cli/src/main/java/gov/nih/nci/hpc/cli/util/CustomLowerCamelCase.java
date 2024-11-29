@@ -1,10 +1,9 @@
 package gov.nih.nci.hpc.cli.util;
 
 import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-
-public class CustomLowerCamelCase extends PropertyNamingStrategy.PropertyNamingStrategyBase {
+public class CustomLowerCamelCase extends PropertyNamingStrategies.NamingBase {
     private static final Pattern REGEX = Pattern.compile("[A-Z]");
 
     @Override
