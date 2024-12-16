@@ -91,15 +91,15 @@ public class HpcScheduledTasksImpl {
 	/** Process received bulk metadata migration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.migration.cron.processBulkMetadataUpdatetMigrationReceived.delay}")
 	private void processBulkMetadataUpdatetMigrationReceivedTask() {
-		execute("processBulkMetadataUpdatetMigrationReceived()",
-				dataMigrationBusService::processBulkMetadataUpdatetMigrationReceived, logger);
+		execute("processBulkMetadataUpdateMigrationReceived()",
+				dataMigrationBusService::processBulkMetadataUpdateMigrationReceived, logger);
 	}
 
 	/** Process received data object metadata migration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectMetadataUpdatetMigrationReceived.delay}")
 	private void processDataObjectMetadataUpdatetMigrationReceivedTask() {
-		execute("processDataObjectMetadataUpdatetMigrationReceived()",
-				dataMigrationBusService::processDataObjectMetadataUpdatetMigrationReceived, logger);
+		execute("processDataObjectMetadataUpdateMigrationReceived()",
+				dataMigrationBusService::processDataObjectMetadataUpdateMigrationReceived, logger);
 	}
 
 	/**

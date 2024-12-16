@@ -142,14 +142,14 @@ public interface HpcDataMigrationBusService {
 	 *
 	 * @throws HpcException on service failure.
 	 */
-	public void processBulkMetadataUpdatetMigrationReceived() throws HpcException;
+	public void processBulkMetadataUpdateMigrationReceived() throws HpcException;
 	
 	/**
 	 * Process received data object metadata migration tasks.
 	 *
 	 * @throws HpcException on service failure.
 	 */
-	public void processDataObjectMetadataUpdatetMigrationReceived() throws HpcException;
+	public void processDataObjectMetadataUpdateMigrationReceived() throws HpcException;
 
 	/**
 	 * Complete in-progress bulk migration tasks.
