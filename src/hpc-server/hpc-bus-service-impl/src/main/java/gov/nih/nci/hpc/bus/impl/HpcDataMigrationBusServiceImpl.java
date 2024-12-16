@@ -446,7 +446,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 	@Override
 	@HpcExecuteAsSystemAccount
-	public void processBulkMetadataUpdatetMigrationReceived() throws HpcException {
+	public void processBulkMetadataUpdateMigrationReceived() throws HpcException {
 		dataMigrationService
 				.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.BULK_METADATA_UPDATE)
 				.forEach(bulkMetadataUpdateTask -> {
@@ -483,7 +483,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 	@Override
 	@HpcExecuteAsSystemAccount
-	public void processDataObjectMetadataUpdatetMigrationReceived() throws HpcException {
+	public void processDataObjectMetadataUpdateMigrationReceived() throws HpcException {
 		dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED,
 				HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE).forEach(dataObjectMetadataUpdateTask -> {
 					if (markInProcess(dataObjectMetadataUpdateTask)) {
