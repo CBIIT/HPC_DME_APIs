@@ -518,7 +518,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
 	        document.getElementById("downloadFilesform").elements.namedItem("totalSize").value = totalSize.toString();
 	        document.getElementById("downloadFilesform").elements.namedItem("deselectedColumns").value = deselectedColumns;
 	        document.getElementById("downloadFilesform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
-	        document.getElementById("downloadType").value = "collections";
+	        if(updatedList.length == 1)
+	            document.getElementById("downloadType").value = "collection";
+	        else
+	            document.getElementById("downloadType").value = "collections";
 	        document.getElementById("downloadFilesform").submit();
         } else if (action == 'permission') {
 			document.getElementById("bulkPermissionsform").elements.namedItem("selectedFilePaths").value = updatedList;
