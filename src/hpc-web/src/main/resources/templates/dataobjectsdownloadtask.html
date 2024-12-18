@@ -364,7 +364,7 @@
 							   </div>
 							</div>
 							<div class="panel-body">
-							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary() != null and hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary().size() > 0}">
+							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
 								  <strong>Collections Failed: </strong>
 								  <div th:each="hpcCollectionResultSummary : ${hpcDataObjectsDownloadStatusDTO.getCollectionListResultSummary()}"  style="margin-top:5px;word-break: break-all;">
 									<div th:if="${#strings.equals(hpcCollectionResultSummary.getResult(),'FAILED')}" class="col-md-12 form-group">
