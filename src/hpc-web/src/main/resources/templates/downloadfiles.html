@@ -308,6 +308,16 @@
 											placeholder="Enter Aspera Host" size="40" />
 									</div>
 								</div>
+								<div id="destLocationDiv" th:if="${downloadType == 'collection'}" style="margin-top: 15px; margin-bottom: -1px">
+									<div class="col-sm-12 column" style="margin-left: -15px; margin-top: -3px">
+											<label for="downloadDestinationType">Destination Location:</label>
+											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control" size="1" style="margin-top: 1px; margin-bottom: -16px;">
+												<option th:value="'downloadToDestination'" th:text="'Download to Endpoint Path'"></option>
+												<option th:value="'createCollectionFolder'" th:text="'Create Parent Collection'"></option>
+												<option th:value="'createFullPath'" th:text="'Replicate Full Source Path'"></option>
+											</select>
+									</div>
+								</div>
 								<div style="margin-left: 3px; margin-top: 15px">
 									<button class="btn btn-primary" id="submit" th:if="${canDownload == 'true'}"
 										onClick="return validateAndSubmit()">Download</button>
@@ -645,6 +655,7 @@
 					$("#asperaPath").val(downloadFileName);
 				$("#submit").prop('disabled', false);
 			}
+			destLocationDiv.style.display = "block";
 		}
 	</script>
 <!-- The Google API Loader script. -->
