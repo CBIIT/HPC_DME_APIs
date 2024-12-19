@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
     <configuration>
+    	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
         <property file="${hpc.client.properties}" />
     	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
     		<encoder>
