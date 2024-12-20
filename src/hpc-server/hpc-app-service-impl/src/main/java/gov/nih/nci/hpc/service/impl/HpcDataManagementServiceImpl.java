@@ -127,11 +127,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// Bulk Update Audit DAO.
 	@Autowired
 	private HpcBulkUpdateAuditDAO bulkUpdateAuditDAO = null;
-	
+
 	// Metadata DAO.
 	@Autowired
 	private HpcMetadataDAO metadataDAO = null;
-		
+
 	// Notification Application Service.
 	@Autowired
 	private HpcNotificationService notificationService = null;
@@ -427,7 +427,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 			// Delete the data object metadata.
 			metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
-			
+
 		} catch (HpcException e) {
 			if (quiet) {
 				logger.error("Failed to delete a file: {}", path, e);
@@ -497,16 +497,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			throw (e);
 		}
 
-		if(sourcePathAttributes.getIsFile()) {
-			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+		if (sourcePathAttributes.getIsFile()) {
+			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the
+			// source path
 			metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
-	
+
 			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
 			metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(destinationPath));
 		} else {
-			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the
+			// source path
 			metadataDAO.deleteDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(sourcePath));
-	
+
 			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
 			metadataDAO.insertDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(destinationPath));
 		}
@@ -591,16 +593,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		metadataService.updateDataObjectSystemGeneratedMetadata(destinationPath, null, null, null,
 				HpcDataTransferUploadStatus.DELETE_REQUESTED, null, null, null, null, null, null, null, null, null);
-		
+
 		if (sourcePathAttributes.getIsFile()) {
-			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the source path
+			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the
+			// source path
 			metadataDAO.deleteDataObjectMetadata(dataManagementProxy.getAbsolutePath(sourcePath));
 		} else {
 			metadataDAO.deleteDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(sourcePath));
-			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN for the destination path
+			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN for the
+			// destination path
 			metadataDAO.insertDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(destinationPath));
 		}
-				
+
 	}
 
 	@Override
@@ -702,8 +706,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionsForUser(
-		      String parentPath, String userId) throws HpcException {
+	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionsForUser(String parentPath,
+			String userId) throws HpcException {
 		return dataManagementProxy.acquireChildrenCollectionsPermissionForUser(
 				dataManagementAuthenticator.getAuthenticatedToken(), parentPath, userId);
 	}
@@ -805,32 +809,41 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public HpcCollection getCollection(String path, boolean list) throws HpcException {
+	public boolean collectionExists(String path) throws HpcException {
+		return getCollection(path, false, null) != null;
+	}
+
+	@Override
+	public HpcCollection getCollection(String path, boolean list, String linkSourcePath) throws HpcException {
 		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 		if (dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
-			return dataManagementProxy.getCollection(authenticatedToken, path, list);
+			return dataManagementProxy.getCollection(authenticatedToken, path, list, linkSourcePath);
 		}
 
 		return null;
 	}
-	
+
 	@Override
-	public HpcCollection getFullCollection(String path) throws HpcException {
+	public HpcCollection getFullCollection(String path, String linkSourcePath) throws HpcException {
 		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 		if (dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
-			HpcCollection collection = dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, 0);
-			
-			int totalRecordsFetched = (collection.getSubCollections() == null? 0 : collection.getSubCollections().size()) + 
-					(collection.getDataObjects() == null? 0 : collection.getDataObjects().size());
+			HpcCollection collection = dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, 0,
+					linkSourcePath);
+
+			int totalRecordsFetched = (collection.getSubCollections() == null ? 0
+					: collection.getSubCollections().size())
+					+ (collection.getDataObjects() == null ? 0 : collection.getDataObjects().size());
 			int totalRecords = collection.getSubCollectionsTotalRecords() + collection.getDataObjectsTotalRecords();
-			
+
 			// Check if there are more sub-collections or data objects to be fetched
 			while (totalRecordsFetched < totalRecords) {
-				HpcCollection collectionContinued = dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, totalRecordsFetched);
+				HpcCollection collectionContinued = dataManagementProxy
+						.getCollectionChildrenWithPaging(authenticatedToken, path, totalRecordsFetched, linkSourcePath);
 				collection.getSubCollections().addAll(collectionContinued.getSubCollections());
 				collection.getDataObjects().addAll(collectionContinued.getDataObjects());
-				totalRecordsFetched = (collection.getSubCollections() == null? 0 : collection.getSubCollections().size()) + 
-						(collection.getDataObjects() == null? 0 : collection.getDataObjects().size());
+				totalRecordsFetched = (collection.getSubCollections() == null ? 0
+						: collection.getSubCollections().size())
+						+ (collection.getDataObjects() == null ? 0 : collection.getDataObjects().size());
 			}
 			return collection;
 		}
@@ -839,15 +852,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public HpcCollection getCollectionChildren(String path) throws HpcException {
+	public HpcCollection getCollectionChildren(String path, String linkSourcePath) throws HpcException {
 		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
-		return dataManagementProxy.getCollectionChildren(authenticatedToken, path);
+		return dataManagementProxy.getCollectionChildren(authenticatedToken, path, linkSourcePath);
 	}
-	
+
 	@Override
-	public HpcCollection getCollectionChildrenWithPaging(String path, Integer offset) throws HpcException {
+	public HpcCollection getCollectionChildrenWithPaging(String path, Integer offset, String linkSourcePath)
+			throws HpcException {
 		Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
-		return dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, offset);
+		return dataManagementProxy.getCollectionChildrenWithPaging(authenticatedToken, path, offset, linkSourcePath);
 	}
 
 	@Override
@@ -1105,9 +1119,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId,
 					pagination.getOffset(page), pagination.getPageSize() - activeRequestsOffset);
 		} else if (doc.equals("ALL")) {
-			registrationResults = dataRegistrationDAO
-					.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page),
-							pagination.getPageSize() - activeRequestsOffset);
+			registrationResults = dataRegistrationDAO.getAllBulkDataObjectRegistrationResults(
+					pagination.getOffset(page), pagination.getPageSize() - activeRequestsOffset);
 		} else {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc,
 					pagination.getOffset(page), pagination.getPageSize() - activeRequestsOffset);
@@ -1247,7 +1260,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			return true;
 
 		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
-			HpcCollection childCollection = getCollection(subCollection.getPath(), true);
+			HpcCollection childCollection = getCollection(subCollection.getPath(), true, null);
 			if (hasDataObjects(childCollection))
 				return true;
 		}
@@ -1277,17 +1290,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public void addBulkUpdateAuditRecord(String userId, HpcCompoundMetadataQuery query, 
+	public void addBulkUpdateAuditRecord(String userId, HpcCompoundMetadataQuery query,
 			HpcCompoundMetadataQueryType queryType, List<HpcMetadataEntry> metadataEntries) {
 		// Input validation.
 		if (userId == null || query == null || queryType == null || StringUtils.isBlank(userId)) {
 			return;
 		}
 
-		for (HpcMetadataEntry entry: metadataEntries) {
+		for (HpcMetadataEntry entry : metadataEntries) {
 			try {
-				bulkUpdateAuditDAO.insert(userId, query, queryType, entry.getAttribute(), entry.getValue(), Calendar.getInstance());
-	
+				bulkUpdateAuditDAO.insert(userId, query, queryType, entry.getAttribute(), entry.getValue(),
+						Calendar.getInstance());
+
 			} catch (HpcException e) {
 				logger.error("Failed to add a bulk update audit record", HpcErrorType.DATABASE_ERROR, e);
 			}
