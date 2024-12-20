@@ -269,7 +269,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration, String userId,
 			String userName, String configurationId) throws HpcException {
-
 		// Input validation.
 		validatePath(path);
 
@@ -310,12 +309,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					// OUT. Please do not uncomment this method without reading HPCDATAMGM-1882.
 					// dataManagementService.setCoOwnership(path, userId);
 
-					// Add user provided metadata.
-					metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
-							configurationId);
+					if (!StringUtils.isEmpty(collectionRegistration.getLinkSourcePath())) {
+						// This is a registration request w/ link to an existing collection.
+						linkCollection(path, collectionRegistration, userId, userName, configurationId);
+					} else {
+						// Add user provided metadata.
+						metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
+								configurationId);
 
-					// Generate system metadata and attach to the collection.
-					metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
+						// Generate system metadata and attach to the collection.
+						metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId,
+								null);
+					}
 
 					// Validate the collection hierarchy.
 					securityService.executeAsSystemAccount(Optional.empty(),
@@ -354,14 +359,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null collection path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		HpcCollection collection = dataManagementService.getCollection(path, list != null ? list : false);
+		// Get the metadata.
+		HpcMetadataEntries metadataEntries = metadataService.getCollectionMetadataEntries(path);
+		HpcSystemGeneratedMetadata metadata = metadataService
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+		// Get the collection.
+		HpcCollection collection = dataManagementService.getCollection(path, list != null ? list : false,
+				metadata.getLinkSourcePath());
 		if (collection == null) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Get the metadata.
-		HpcMetadataEntries metadataEntries = metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
-
+		// Build the response DTO.
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
 		if (metadataEntries != null && (!metadataEntries.getParentMetadataEntries().isEmpty()
@@ -395,7 +405,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null collection path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		HpcCollection collection = dataManagementService.getCollectionChildren(path);
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+
+		HpcCollection collection = dataManagementService.getCollectionChildren(path, metadata.getLinkSourcePath());
 		if (collection == null) {
 			return null;
 		}
@@ -447,7 +460,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null collection path or invalid offset", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		HpcCollection collection = dataManagementService.getCollectionChildrenWithPaging(path, offset);
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+
+		HpcCollection collection = dataManagementService.getCollectionChildrenWithPaging(path, offset,
+				metadata.getLinkSourcePath());
 		if (collection == null) {
 			return null;
 		}
@@ -510,8 +527,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null path or download request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+
 		// Validate collection exists.
-		HpcCollection collection = dataManagementService.getCollection(path, true);
+		HpcCollection collection = dataManagementService.getCollection(path, true, metadata.getLinkSourcePath());
 		if (collection == null) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -538,9 +558,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				&& downloadRequest.getAppendCollectionNameToDownloadDestination()) {
 			throw new HpcException("Both append indicators are set: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
-		// Get the System generated metadata.
-		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
 
 		// Submit a collection download task.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
@@ -626,7 +643,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Validate all data object paths requested exist.
 			boolean dataObjectExist = false;
 			for (String path : downloadRequest.getCollectionPaths()) {
-				HpcCollection collection = dataManagementService.getCollection(path, true);
+				// Get the System generated metadata.
+				HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+
+				HpcCollection collection = dataManagementService.getCollection(path, true,
+						metadata.getLinkSourcePath());
 				if (collection == null) {
 					errors.add(path);
 				}
@@ -726,15 +747,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		// Get the metadata.
+		HpcMetadataEntries metadataEntries = metadataService.getCollectionMetadataEntries(path);
+		HpcSystemGeneratedMetadata metadata = metadataService
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
 		// Validate the data object exists.
-		HpcCollection collection = dataManagementService.getCollection(path, true);
+		HpcCollection collection = dataManagementService.getCollection(path, true, metadata.getLinkSourcePath());
 		if (collection == null) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Validate the collection is empty if recursive flag is not set.
+		// Validate the collection is empty if recursive flag is set to false.
 		if (!recursive && (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty())) {
 			throw new HpcException("Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the collection link is empty if recursive flag is set to true.
+		if (!StringUtils.isEmpty(metadata.getLinkSourcePath()) && recursive
+				&& (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty())) {
+			throw new HpcException("Collection link is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate the invoker is the owner of the data object.
@@ -744,9 +776,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					"Collection can only be deleted by its owner. Your permission: " + permission.value(),
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
-
-		// Get the metadata.
-		HpcMetadataEntries metadataEntries = metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
 
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
 		// 1. The collection is less than 90 days old
@@ -924,7 +953,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		validatePermissionsRequest(collectionPermissionsRequest);
 
 		// Validate the collection exists.
-		if (dataManagementService.getCollection(path, false) == null) {
+		if (!dataManagementService.collectionExists(path)) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -949,7 +978,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Validate the collection exists.
-		if (dataManagementService.getCollection(path, false) == null) {
+		if (!dataManagementService.collectionExists(path)) {
 			return null;
 		}
 
@@ -972,7 +1001,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Validate the collection exists.
-		if (dataManagementService.getCollection(path, false) == null) {
+		if (!dataManagementService.collectionExists(path)) {
 			return null;
 		}
 		HpcSubjectPermission permission = dataManagementService.getCollectionPermission(path, userId);
@@ -2366,8 +2395,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Validate the collection exists.
-		HpcCollection collection = dataManagementService.getCollection(path, true);
-		if (collection == null) {
+		if (!dataManagementService.collectionExists(path)) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -3922,13 +3950,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Validate the link source data object exist.
 		String linkSourcePath = toNormalizedPath(dataObjectRegistration.getLinkSourcePath());
-
-		// Validate the link source is not a link itself. Linking to a link is not
-		// allowed.
 		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService
 				.getDataObjectMetadataEntries(linkSourcePath, false).getSelfMetadataEntries();
 		HpcSystemGeneratedMetadata linkSourceSystemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(linkSourceMetadataEntries);
+
+		// Validate the link source is not a link itself. Linking to a link is not
+		// allowed.
 		if (linkSourceSystemGeneratedMetadata.getLinkSourcePath() != null) {
 			throw new HpcException("link source can't be a link: " + linkSourcePath,
 					HpcErrorType.INVALID_REQUEST_INPUT);
@@ -3959,6 +3987,56 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// object.
 		metadataService.addSystemGeneratedMetadataToDataObject(path, dataObjectIdMetadataEntry, userId, userName,
 				configurationId, linkSourcePath);
+	}
+
+	/**
+	 * Link an existing data object to a new path.
+	 *
+	 * @param path                   The collection's path.
+	 * @param collectionRegistration A DTO contains the metadata.
+	 * @param userId                 The registrar user-id.
+	 * @param userName               The registrar name.
+	 * @param configurationId        The data management configuration ID.
+	 * @throws HpcException on service failure.
+	 */
+	private void linkCollection(String path, HpcCollectionRegistrationDTO collectionRegistration, String userId,
+			String userName, String configurationId) throws HpcException {
+		// Input validation
+
+		// Validate the link source data object exist.
+		String linkSourcePath = toNormalizedPath(collectionRegistration.getLinkSourcePath());
+
+		List<HpcMetadataEntry> linkSourceMetadataEntries = metadataService.getCollectionMetadataEntries(linkSourcePath)
+				.getSelfMetadataEntries();
+		HpcSystemGeneratedMetadata linkSourceSystemGeneratedMetadata = metadataService
+				.toSystemGeneratedMetadata(linkSourceMetadataEntries);
+		if (StringUtils.isEmpty(linkSourceSystemGeneratedMetadata.getObjectId())) {
+			throw new HpcException("link source doesn't exist: " + linkSourcePath, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the link source is not a link itself. Linking to a link is not
+		// allowed.
+		if (linkSourceSystemGeneratedMetadata.getLinkSourcePath() != null) {
+			throw new HpcException("link source can't be a link: " + linkSourcePath,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Attach user provided metadata. We combine the user provided metadata from the
+		// link source w/
+		// what
+		// the user provided in the registration request.
+		Map<String, HpcMetadataEntry> metadataEntries = new HashMap<>();
+		metadataService.toUserProvidedMetadataEntries(linkSourceMetadataEntries)
+				.forEach(metadataEntry -> metadataEntries.put(metadataEntry.getAttribute(), metadataEntry));
+		collectionRegistration.getMetadataEntries()
+				.forEach(metadataEntry -> metadataEntries.put(metadataEntry.getAttribute(), metadataEntry));
+
+		// Add user provided metadata.
+		metadataService.addMetadataToCollection(path, new ArrayList<HpcMetadataEntry>(metadataEntries.values()),
+				configurationId);
+
+		// Generate system metadata and attach to the collection.
+		metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId, linkSourcePath);
 	}
 
 	/**
@@ -4258,7 +4336,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		// Validate the collection exists.
-		if (dataManagementService.getCollection(path, false) == null) {
+		if (!dataManagementService.collectionExists(path)) {
 			return null;
 		}
 		HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);

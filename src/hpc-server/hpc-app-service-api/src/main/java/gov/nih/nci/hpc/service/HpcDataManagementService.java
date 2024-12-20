@@ -204,18 +204,18 @@ public interface HpcDataManagementService {
 	 */
 	public HpcSubjectPermission acquireCollectionPermission(String path, String userId) throws HpcException;
 
-
 	/**
-	 * Acquire permissions of the given user on the children of a given parent collection.
+	 * Acquire permissions of the given user on the children of a given parent
+	 * collection.
 	 *
-	 * @param parentPath    Path of the parent collection.
-	 * @param userId        UserId of the user to get permissions for.
-	 * @return <code>HpcPermissionForCollection</code> representing the permissions that
-	 *         the given user has on the children of the given collection.
+	 * @param parentPath Path of the parent collection.
+	 * @param userId     UserId of the user to get permissions for.
+	 * @return <code>HpcPermissionForCollection</code> representing the permissions
+	 *         that the given user has on the children of the given collection.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionsForUser(
-			String parentPath, String userId) throws HpcException;
+	public List<HpcPermissionForCollection> acquireChildrenCollectionsPermissionsForUser(String parentPath,
+			String userId) throws HpcException;
 
 	/**
 	 * Get collection permission (for the request invoker)
@@ -300,43 +300,57 @@ public interface HpcDataManagementService {
 			throws HpcException;
 
 	/**
-	 * Get collection by its path.
+	 * Check if a collection exists in data management.
 	 *
 	 * @param path The collection's path.
-	 * @param list An indicator to list sub-collections and data-objects.
+	 * @return True if the collection exists and false otherwise.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean collectionExists(String path) throws HpcException;
+
+	/**
+	 * Get collection by its path.
+	 *
+	 * @param path           The collection's path.
+	 * @param list           An indicator to list sub-collections and data-objects.
+	 * @param linkSourcePath (Optional) A source path this collection is linked to.
 	 * @return A collection.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCollection getCollection(String path, boolean list) throws HpcException;
+	public HpcCollection getCollection(String path, boolean list, String linkSourcePath) throws HpcException;
 
 	/**
 	 * Get collection by its path and all sub-collection and data objects list
 	 *
-	 * @param path The collection's path.
+	 * @param path           The collection's path.
+	 * @param linkSourcePath (Optional) A source path this collection is linked to.
 	 * @return A collection.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCollection getFullCollection(String path) throws HpcException;
+	public HpcCollection getFullCollection(String path, String linkSourcePath) throws HpcException;
 
 	/**
 	 * Get collection children by its path. No collection metadata is returned.
 	 *
 	 * @param path The collection's path.
+	 * @param linkSourcePath (Optional) A source path this collection is linked to.
 	 * @return A collection.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCollection getCollectionChildren(String path) throws HpcException;
+	public HpcCollection getCollectionChildren(String path, String linkSourcePath) throws HpcException;
 
 	/**
 	 * Get collection children by its path starting at user specified offset.
 	 *
-	 * @param path The collection's path.
-	 * @param offset The offset to start.
+	 * @param path           The collection's path.
+	 * @param offset         The offset to start.
+	 * @param linkSourcePath (Optional) A source path this collection is linked to.
 	 * @return A collection.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCollection getCollectionChildrenWithPaging(String path, Integer offset) throws HpcException;
-	
+	public HpcCollection getCollectionChildrenWithPaging(String path, Integer offset, String linkSourcePath)
+			throws HpcException;
+
 	/**
 	 * Get data object by its path.
 	 *
@@ -509,16 +523,16 @@ public interface HpcDataManagementService {
 	/**
 	 * Get registration results (all completed registration) for a user.
 	 *
-	 * @param userId The user ID to query for.
-	 * @param page   The requested results page.
-	 * @param doc    doc of group admin or all for system administrators
-	 * @param pageSizeOffset  The amount to offset the configured page size by.
+	 * @param userId         The user ID to query for.
+	 * @param page           The requested results page.
+	 * @param doc            doc of group admin or all for system administrators
+	 * @param pageSizeOffset The amount to offset the configured page size by.
 	 *
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId,
-			int page, String doc, int pageSizeOffset) throws HpcException;
+	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc,
+			int pageSizeOffset) throws HpcException;
 
 	/**
 	 * Get registration results (all completed download requests) count for a user.
@@ -661,12 +675,12 @@ public interface HpcDataManagementService {
 	/**
 	 * Add an audit record in the DB for bulk metadata updates using query
 	 *
-	 * @param userId                       The userId of the user performing the updates.
-	 * @param query                        The query being used for bulk metadata update.
-	 * @param queryType                    The query type, data object or collection.
-	 * @param metadataEntries              The list of metadata being updated.
+	 * @param userId          The userId of the user performing the updates.
+	 * @param query           The query being used for bulk metadata update.
+	 * @param queryType       The query type, data object or collection.
+	 * @param metadataEntries The list of metadata being updated.
 	 */
-	public void addBulkUpdateAuditRecord(String userId, HpcCompoundMetadataQuery query, 
+	public void addBulkUpdateAuditRecord(String userId, HpcCompoundMetadataQuery query,
 			HpcCompoundMetadataQueryType queryType, List<HpcMetadataEntry> metadataEntries);
 
 }

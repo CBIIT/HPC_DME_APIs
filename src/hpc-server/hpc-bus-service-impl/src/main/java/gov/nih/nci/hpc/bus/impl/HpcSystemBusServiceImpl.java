@@ -785,9 +785,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+								// Get the System generated metadata.
+								HpcSystemGeneratedMetadata metadata = metadataService
+										.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
+
 								// Get the collection to be downloaded.
 								HpcCollection collection = dataManagementService
-										.getFullCollection(downloadTask.getPath());
+										.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
 								if (collection == null) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
@@ -820,7 +824,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 								downloadItems = new ArrayList<>();
 								for (String path : downloadTask.getCollectionPaths()) {
-									HpcCollection collection = dataManagementService.getFullCollection(path);
+									// Get the System generated metadata.
+									HpcSystemGeneratedMetadata metadata = metadataService
+											.getCollectionSystemGeneratedMetadata(path);
+
+									HpcCollection collection = dataManagementService.getFullCollection(path,
+											metadata.getLinkSourcePath());
 									if (collection == null) {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1872,7 +1881,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the sub-collections and download them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath);
+			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath, null);
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
