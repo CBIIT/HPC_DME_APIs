@@ -313,9 +313,13 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 							logger.info("Migrating Collection: task - {}, path - {}", collectionMigrationTask.getId(),
 									collectionMigrationTask.getPath());
 
+							// Get the System generated metadata.
+							HpcSystemGeneratedMetadata metadata = metadataService
+									.getCollectionSystemGeneratedMetadata(collectionMigrationTask.getPath());
+
 							// Get the collection to be migrated.
 							HpcCollection collection = dataManagementService
-									.getFullCollection(collectionMigrationTask.getPath());
+									.getFullCollection(collectionMigrationTask.getPath(), metadata.getLinkSourcePath());
 							if (collection == null) {
 								throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 							}
@@ -411,8 +415,13 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 							// Iterate through the collections in the list and migrate them.
 							for (String collectionPath : collectionListMigrationTask.getCollectionPaths()) {
+								// Get the System generated metadata.
+								HpcSystemGeneratedMetadata metadata = metadataService
+										.getCollectionSystemGeneratedMetadata(collectionPath);
+
 								// Get the collection to be migrated.
-								HpcCollection collection = dataManagementService.getFullCollection(collectionPath);
+								HpcCollection collection = dataManagementService.getFullCollection(collectionPath,
+										metadata.getLinkSourcePath());
 								if (collection == null) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
@@ -645,11 +654,21 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// 3. Migration is supported only from S3 archive to S3 Archive.
 		// 4. Collection exists.
 		// 5. Collection is not empty
+		// 6. Collection is not linked to another collection
 
 		validateMigrationRequest(path, migrationRequest, alignArchivePath);
 
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+
+		// Validate collection is not linked.
+		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			throw new HpcException("Collection is linked to: " + metadata.getLinkSourcePath(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		// Validate collection exists.
-		HpcCollection collection = dataManagementService.getCollection(path, true);
+		HpcCollection collection = dataManagementService.getCollection(path, true, metadata.getLinkSourcePath());
 		if (collection == null) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -660,8 +679,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Get the System generated metadata.
-		return metadataService.getCollectionSystemGeneratedMetadata(path);
+		return metadata;
 	}
 
 	/**
@@ -919,7 +937,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// Iterate through the sub-collections and migrate them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath);
+			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath, null);
 			if (subCollection != null) {
 				// Migrate this sub-collection.
 				migrateCollection(subCollection, collectionMigrationTask);
