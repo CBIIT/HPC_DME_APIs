@@ -66,7 +66,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -269,7 +268,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 	@Override
 	public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(String path, String userId,
-			String userName, String configurationId) throws HpcException {
+			String userName, String configurationId, String linkSourcePath) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -281,7 +280,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		metadataEntries.add(generateIdMetadata());
 
 		// Generate and add DME ID metadata.
-		metadataEntries.add(generateDmeIdMetadata(dataManagementService.getCollection(path, false).getCollectionId()));
+		metadataEntries
+				.add(generateDmeIdMetadata(dataManagementService.getCollection(path, false, null).getCollectionId()));
 
 		// Create the Metadata-Updated metadata.
 		metadataEntries.add(generateMetadataUpdatedMetadata());
@@ -289,6 +289,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Create and add the registrar ID, name and data management configuration
 		// metadata.
 		metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
+
+		// Create the link source path metadata.
+		if (!StringUtils.isEmpty(linkSourcePath)) {
+			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
+		}
 
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(), path,
@@ -529,7 +534,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
-		
+
 		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
 		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 
@@ -564,12 +569,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		} finally {
 			if (closeInputStream) {
 				// Close the input stream if asked to.
-			  try {
-                dataObjectInputStream.close();
-              } catch (IOException e) {
-                // replaced tika.io.IOUtils.closeQuietly, so swallowing error
-                logger.error("Failed to close input stream for path: {}", path);
-              }
+				try {
+					dataObjectInputStream.close();
+				} catch (IOException e) {
+					// replaced tika.io.IOUtils.closeQuietly, so swallowing error
+					logger.error("Failed to close input stream for path: {}", path);
+				}
 			}
 		}
 	}
@@ -701,11 +706,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Create the S3 Archive Configuration ID.
 		addMetadataEntry(metadataEntries,
 				toMetadataEntry(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE, s3ArchiveConfigurationId));
-		
+
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
-		
+
 		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
 		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 
@@ -732,13 +737,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// metadata.
 		metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
 
-		// Create the link source path metadata..
+		// Create the link source path metadata.
 		addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
 
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
 				metadataEntries);
-		
+
 		// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
 		metadataDAO.upsertDataObjectMetadata(dataManagementProxy.getAbsolutePath(path));
 	}
@@ -982,13 +987,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public List<String> getDataObjectSystemMetadataAttributeNames() throws HpcException {
 		return metadataValidator.getDataObjectSystemGeneratedMetadataAttributeNames();
 	}
-	
+
 	@Override
 	public void detectDupMetadataEntries() throws HpcException {
 		List<HpcDupMetadataEntry> dupMetadataEntries = metadataDAO.getDupDataObjectMetadataEntries();
 		if (!CollectionUtils.isEmpty(dupMetadataEntries)) {
-			throw new HpcException("Duplicate data object metadata detected ["
-					+ StringUtils.join(dupMetadataEntries, ",") + "]",
+			throw new HpcException(
+					"Duplicate data object metadata detected [" + StringUtils.join(dupMetadataEntries, ",") + "]",
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.ORACLE);
 		}
 	}
