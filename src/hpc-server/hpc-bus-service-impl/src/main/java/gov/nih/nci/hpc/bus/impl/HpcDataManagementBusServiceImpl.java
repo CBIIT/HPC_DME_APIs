@@ -752,14 +752,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcSystemGeneratedMetadata metadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 
-		// Validate the data object exists.
+		// Validate the collection exists.
 		HpcCollection collection = dataManagementService.getCollection(path, true, metadata.getLinkSourcePath());
 		if (collection == null) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate the collection is empty if recursive flag is set to false.
-		if (!recursive && (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty())) {
+		if (!recursive && StringUtils.isEmpty(metadata.getLinkSourcePath())
+				&& (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty())) {
 			throw new HpcException("Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
