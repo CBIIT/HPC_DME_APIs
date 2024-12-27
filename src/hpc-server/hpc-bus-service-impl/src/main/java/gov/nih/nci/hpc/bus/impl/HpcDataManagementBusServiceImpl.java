@@ -286,7 +286,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Attach the metadata.
 			if (created) {
-
 				boolean registrationCompleted = false;
 				try {
 					// The below setCoOwnership method adds the system account and the creator of
@@ -345,7 +344,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			}
 		}
+
 		if (!created) {
+			if (!StringUtils.isEmpty(collectionRegistration.getLinkSourcePath())) {
+				throw new HpcException("Link source path provided. Only metadata can be updated.",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
 			updateCollection(path, collectionRegistration.getMetadataEntries(), userId);
 		}
 
