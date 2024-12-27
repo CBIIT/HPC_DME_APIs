@@ -1881,7 +1881,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the sub-collections and download them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath, null);
+			
+			// Get the System generated metadata of the sub-collection.
+			HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(subCollectionPath);
+			
+			// Get the sub-collection.
+			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath, metadata.getLinkSourcePath());
+			
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
