@@ -17,11 +17,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -41,6 +41,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -192,6 +193,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			hpcSearch.setTotalSize(search.getTotalSize());
 			hpcSearch.setDeselectedColumns(search.getDeselectedColumns());
 			hpcSearch.setGlobalMetadataSearchText(search.getGlobalMetadataSearchText());
+			hpcSearch.setSearchPathOrMetadata(search.getSearchPathOrMetadata());
 			search = hpcSearch;
 		}
 
@@ -202,6 +204,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("deselectedColumns", search.getDeselectedColumns());
 		model.addAttribute("fileExportRowsThreshold", fileExportRowsThreshold);
 		model.addAttribute("globalMetadataSearchText", search.getGlobalMetadataSearchText());
+		model.addAttribute("searchPathOrMetadata", search.getSearchPathOrMetadata());
 		boolean success = false;
 		try {
 
@@ -249,7 +252,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					model.addAttribute("totalPages", 0);
 				}
 			}
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+		} catch (JsonMappingException e) {
 			log.error(e.getMessage(), e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to project: " + e.getMessage());
 			bindingResult.addError(error);
@@ -344,7 +347,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		}
 		return null;
 	}
-	
+
 	private HpcCompoundMetadataQueryDTO constructCriteria(Map<String, String> hierarchy, HpcSearch search) {
 		HpcCompoundMetadataQueryDTO dto = new HpcCompoundMetadataQueryDTO();
 		dto.setTotalCount(true);
@@ -355,17 +358,31 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			query = buildSimpleSearch(hierarchy, search);
 
 		if(search.getGlobalMetadataSearchText() != null && !search.getGlobalMetadataSearchText().trim().isEmpty()) {
-			HpcMetadataQuery criteria = new HpcMetadataQuery();
-			criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
-			criteria.setOperator(HpcMetadataQueryOperator.fromValue("LIKE"));
-			String searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
-			criteria.setValue(searchLikeText);
-			HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-			levelFilter.setLevel(1);
-			levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
-			criteria.setLevelFilter(levelFilter);
-			query.getQueries().add(criteria);
+			if(search.getSearchPathOrMetadata() !=null && search.getSearchPathOrMetadata().equals("path")) {
+				HpcMetadataQuery criteria = new HpcMetadataQuery();
+				criteria.setAttribute("path");
+				criteria.setOperator(HpcMetadataQueryOperator.fromValue("PATH_LIKE"));
+				String searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
+				criteria.setValue(searchLikeText);
+				HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+				levelFilter.setLevel(1);
+				levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
+				criteria.setLevelFilter(levelFilter);
+				query.getQueries().add(criteria);
+			} else {
+				HpcMetadataQuery criteria = new HpcMetadataQuery();
+				criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
+				criteria.setOperator(HpcMetadataQueryOperator.fromValue("LIKE"));
+				String searchLikeText = "%" + search.getGlobalMetadataSearchText() + "%";
+				criteria.setValue(searchLikeText);
+				HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+				levelFilter.setLevel(1);
+				levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
+				criteria.setLevelFilter(levelFilter);
+				query.getQueries().add(criteria);
+			}
 		}
+		logger.info("The Search Query JSON is: " + gson.toJson(query));
 		dto.setCompoundQuery(query);
 		dto.setDetailedResponse(search.isDetailed());
 		if (search.getSearchType().equals("collection"))

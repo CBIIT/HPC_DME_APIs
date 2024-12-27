@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.common.util.StringUtils;

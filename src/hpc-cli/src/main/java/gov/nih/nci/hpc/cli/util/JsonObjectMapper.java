@@ -7,7 +7,7 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -13,8 +13,8 @@ package gov.nih.nci.hpc.ws.rs.test;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.Message;
+import jakarta.mail.internet.InternetAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.MailException;

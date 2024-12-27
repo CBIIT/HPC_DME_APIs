@@ -397,7 +397,7 @@ cursor: pointer;
 
 	<!-- container section start -->
 	<section id="container" class="">
-		<div th:include="header :: header"></div>
+		<div th:insert="~{header :: header}"></div>
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper-browse">
@@ -491,7 +491,7 @@ cursor: pointer;
 				</div>
 				<div class="row"></div>
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<!--main content end-->
 	</section>
@@ -545,9 +545,7 @@ $(function() {
                 if(node.parent.id) {
                 	$li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
                 } else {
-                  if(basePath) {
                     $li.find('.jqtree-title').after('<a href="/hierarchy?basePath='+node.name+'" data-target="#validhierarchyModal" data-toggle="modal" data-placement="right"><img style="width: 25px; height: 25px;" src="img/help.png"></img></a><div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
-                  }
                 }
                 if(node.populated) {
                     //Open the node if this onCreateLi method was invoked

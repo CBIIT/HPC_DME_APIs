@@ -82,7 +82,8 @@ do
 	if [ $system_attribute != "extracted_metadata_attributes" ] && 
 		[ $system_attribute != "deep_archive_status" ] && 
 		[ $system_attribute != "deep_archive_date" ] &&
-		[ $system_attribute != "deleted_date" ]
+		[ $system_attribute != "deleted_date" ] &&
+		[ $system_attribute != "dme_data_id" ]
 	then
     	check_attribute "$RESPONSE_MSG" "\"$system_attribute\""
     fi

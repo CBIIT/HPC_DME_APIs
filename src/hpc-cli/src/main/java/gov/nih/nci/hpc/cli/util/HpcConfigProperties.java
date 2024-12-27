@@ -7,21 +7,22 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
 
-import java.io.File;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
-import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.CompositeConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class HpcConfigProperties {
 
 	private CompositeConfiguration configuration;
-	private PropertiesConfiguration pConfig;
+	private FileBasedConfigurationBuilder<PropertiesConfiguration> builder;
 	private static final String COFIG_PROPS = "config.properties";
 	private static final String HPC_PROPS = "hpc.properties";
 
@@ -40,8 +41,12 @@ public class HpcConfigProperties {
 			System.out.println("Reading properties from "+properties);
 			configuration = new CompositeConfiguration();
 			// configuration.addConfiguration(pConfig);
-			configuration.addConfiguration(new PropertiesConfiguration(properties));
-		} catch (ConfigurationException e) {
+			builder = new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
+			    .configure(new Parameters().properties()
+			        .setFileName(properties));
+			
+			configuration.addConfiguration(builder.getConfiguration());
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -51,12 +56,12 @@ public class HpcConfigProperties {
 	}
 
 	public void setProperty(String key, Object value) {
-		pConfig.setProperty(key, value);
+        configuration.setProperty(key, value);
 	}
 
 	public void save() {
 		try {
-			pConfig.save();
+			builder.save();
 		} catch (ConfigurationException e) {
 			System.out.println("Failed to save: "+e.getMessage());
 		}

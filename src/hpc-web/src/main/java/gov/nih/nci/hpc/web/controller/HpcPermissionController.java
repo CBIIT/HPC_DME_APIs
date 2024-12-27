@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
@@ -44,10 +44,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.TreeSet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -192,7 +192,6 @@ public class HpcPermissionController extends AbstractHpcController {
 					|| CollectionUtils.isNotEmpty(subscriptionsRequestDTO.getGroupPermissions())) {
 				WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
 				client.header("Authorization", "Bearer " + authToken);
-
 				Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 				if (restResponse.getStatus() == 200) {
 					redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
@@ -203,7 +202,7 @@ public class HpcPermissionController extends AbstractHpcController {
 				} else {
 					ObjectMapper mapper = new ObjectMapper();
 					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-							new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+							new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
 							new JacksonAnnotationIntrospector());
 					mapper.setAnnotationIntrospector(intr);
 					mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

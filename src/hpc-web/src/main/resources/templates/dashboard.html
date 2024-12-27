@@ -108,7 +108,7 @@
 
 	<!-- container section start -->
 	<section id="container" class="">
-		<div th:include="header :: header"></div>
+		<div th:insert="~{header :: header}"></div>
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
@@ -182,7 +182,7 @@
 				<!-- /.modal-dialog -->
 			</div>
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<!--main content end-->
 	</section>

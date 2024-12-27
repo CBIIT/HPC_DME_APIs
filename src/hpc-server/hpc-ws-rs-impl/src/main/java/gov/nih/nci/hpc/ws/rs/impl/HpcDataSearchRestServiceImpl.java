@@ -14,7 +14,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;

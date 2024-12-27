@@ -12,7 +12,7 @@
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" jxb:version="3.0"
 	xmlns:hpc-dto-datamigration="http://hpc.nci.nih.gov/dto/datamigration"
 	targetNamespace="http://hpc.nci.nih.gov/dto/datamigration"
 	elementFormDefault="unqualified">
@@ -42,6 +42,17 @@
 				<xsd:element name="collectionPaths" type="xsd:string"
 					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcMetadataMigrationRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="fromS3ArchiveConfigurationId" type="xsd:string" />
+				<xsd:element name="toS3ArchiveConfigurationId" type="xsd:string" />
+				<xsd:element name="archiveFileContainerId" type="xsd:string" />
+				<xsd:element name="archiveFileIdPattern" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

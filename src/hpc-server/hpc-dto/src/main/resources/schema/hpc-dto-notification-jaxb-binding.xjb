@@ -10,60 +10,61 @@
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  -->
-<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
-			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-	<jxb:globalBindings>
-		<jxb:serializable uid="1"/>
+<jaxb:bindings version="3.0" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    jaxb:extensionBindingPrefixes="xjc">
+	<jaxb:globalBindings>
+		<jaxb:serializable uid="1"/>
 		
 		<!-- use Calendar instead of XMLGregorianCalendar -->
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
-            printMethod="javax.xml.bind.DatatypeConverter.printDateTime"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseDateTime"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printDateTime"/>
 
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:date"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseDate"
-            printMethod="javax.xml.bind.DatatypeConverter.printDate"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:date"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseDate"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printDate"/>
 
-        <jxb:javaType name="java.util.Calendar" xmlType="xsd:time"
-            parseMethod="javax.xml.bind.DatatypeConverter.parseTime"
-            printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
+        <jaxb:javaType name="java.util.Calendar" xmlType="xsd:time"
+            parseMethod="jakarta.xml.bind.DatatypeConverter.parseTime"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printTime"/>
             
-		<jxb:javaType name="java.lang.String" xmlType="xsd:ID" 
-			parseMethod="javax.xml.bind.DatatypeConverter.parseString"
-            printMethod="javax.xml.bind.DatatypeConverter.printString"/>
-	</jxb:globalBindings>
+		<jaxb:javaType name="java.lang.String" xmlType="xsd:ID" 
+			parseMethod="jakarta.xml.bind.DatatypeConverter.parseString"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printString"/>
+	</jaxb:globalBindings>
 	
-	<jxb:bindings schemaLocation="HpcNotificationTypes.xsd">
-		<jxb:bindings node="//xsd:simpleType[@name='HpcEventType']">
-            <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcEventType"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:simpleType[@name='HpcNotificationDeliveryMethod']">
-            <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:simpleType[@name='HpcSystemAdminNotificationType']">
-            <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcNotificationTrigger']">
-            <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger"/>
-        </jxb:bindings>
-	    <jxb:bindings node="//xsd:complexType[@name='HpcNotificationSubscription']">
-            <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcEventPayloadEntry']">
-            <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcEvent']">
-            <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcEvent"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcNotificationDeliveryReceipt']">
-            <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcNotificationFormatArgument']">
-            <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationFormatArgument"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcNotificationFormat']">
-            <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationFormat"/>
-        </jxb:bindings>
-	</jxb:bindings>
+	<jaxb:bindings schemaLocation="HpcNotificationTypes.xsd">
+		<jaxb:bindings node="//xsd:simpleType[@name='HpcEventType']">
+            <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcEventType"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:simpleType[@name='HpcNotificationDeliveryMethod']">
+            <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:simpleType[@name='HpcSystemAdminNotificationType']">
+            <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='HpcNotificationTrigger']">
+            <jaxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger"/>
+        </jaxb:bindings>
+	    <jaxb:bindings node="//xsd:complexType[@name='HpcNotificationSubscription']">
+            <jaxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='HpcEventPayloadEntry']">
+            <jaxb:class ref="gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='HpcEvent']">
+            <jaxb:class ref="gov.nih.nci.hpc.domain.notification.HpcEvent"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='HpcNotificationDeliveryReceipt']">
+            <jaxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='HpcNotificationFormatArgument']">
+            <jaxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationFormatArgument"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='HpcNotificationFormat']">
+            <jaxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationFormat"/>
+        </jaxb:bindings>
+	</jaxb:bindings>
     
-</jxb:bindings>
+</jaxb:bindings>

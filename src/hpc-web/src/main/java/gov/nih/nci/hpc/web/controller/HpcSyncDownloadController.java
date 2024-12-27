@@ -11,11 +11,11 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -299,7 +299,7 @@ public class HpcSyncDownloadController extends AbstractHpcController {
     throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-        new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+        new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
         new JacksonAnnotationIntrospector());
     mapper.setAnnotationIntrospector(intr);
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

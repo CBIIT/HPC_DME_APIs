@@ -9,9 +9,9 @@
 
 package gov.nih.nci.hpc.ws.rs.provider;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 import org.apache.cxf.io.CacheSizeExceededException;
 import org.apache.cxf.jaxrs.impl.WebApplicationExceptionMapper;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
