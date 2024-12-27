@@ -22,6 +22,7 @@ public class HpcSearch {
 	private int pageSize=100;
 	private String queryName;
 	private String globalMetadataSearchText;
+	private String searchPathOrMetadata;
 	private long totalSize=0;
 	private List<String> deselectedColumns;
 
@@ -39,6 +40,14 @@ public class HpcSearch {
 
 	public void setGlobalMetadataSearchText(String globalMetadataSearchText) {
 		this.globalMetadataSearchText = globalMetadataSearchText;
+	}
+
+	public String getSearchPathOrMetadata() {
+		return searchPathOrMetadata;
+	}
+
+	public void setSearchPathOrMetadata(String searchPathOrMetadata) {
+		this.searchPathOrMetadata = searchPathOrMetadata;
 	}
 
 	public String[] getRowId() {

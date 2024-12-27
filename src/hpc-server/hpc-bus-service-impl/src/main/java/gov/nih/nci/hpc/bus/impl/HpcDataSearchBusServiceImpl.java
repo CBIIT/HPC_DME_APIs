@@ -839,7 +839,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
 
 		// Construct the excel file name
-		String exportFileName = exportDirectory + File.separator + "Email_Export_Search_Results_" + userId + "_"
+		String exportFileName = exportDirectory + File.separator + "export_search_results_" + userId + "_"
 				+ fileSuffix + ".xlsx";
 
 		logger.debug("EmailExport: Export file name before invoking user: " + exportFileName);

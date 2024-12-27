@@ -12,7 +12,7 @@
  * @version $Id$
  -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" jxb:version="3.0"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"

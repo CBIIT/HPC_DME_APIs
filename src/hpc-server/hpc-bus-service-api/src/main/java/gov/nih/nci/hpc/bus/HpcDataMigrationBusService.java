@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamigration.HpcMetadataMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -99,6 +100,16 @@ public interface HpcDataMigrationBusService {
 			throws HpcException;
 
 	/**
+	 * Migrate metadata.
+	 *
+	 * @param metadataMigrationRequest The metadata migration request.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO migrateMetadata(HpcMetadataMigrationRequestDTO metadataMigrationRequest)
+			throws HpcException;
+
+	/**
 	 * Process received data object migration tasks.
 	 *
 	 * @throws HpcException on service failure.
@@ -125,6 +136,20 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void processCollectionListMigrationReceived() throws HpcException;
+	
+	/**
+	 * Process received bulk metadata migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processBulkMetadataUpdateMigrationReceived() throws HpcException;
+	
+	/**
+	 * Process received data object metadata migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processDataObjectMetadataUpdateMigrationReceived() throws HpcException;
 
 	/**
 	 * Complete in-progress bulk migration tasks.
@@ -139,6 +164,7 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void assignMigrationServer() throws HpcException;
+	
 
 	/**
 	 * Restart data object and collection migration tasks that are in progress.
