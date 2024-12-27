@@ -15,10 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-
+import org.springframework.web.servlet.HandlerInterceptor;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -28,10 +26,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * <p>
@@ -42,7 +40,7 @@ import javax.servlet.http.HttpSession;
  * @version $Id$
  */
 @Component
-public class HpcUserInterceptor extends HandlerInterceptorAdapter {
+public class HpcUserInterceptor implements HandlerInterceptor {
   
     @Value("${gov.nih.nci.hpc.ssl.cert}")
     protected String sslCertPath;
@@ -76,9 +74,9 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.springframework.web.servlet.handler.HandlerInterceptorAdapter#preHandle(
-	 * javax.servlet.http.HttpServletRequest,
-	 * javax.servlet.http.HttpServletResponse, java.lang.Object)
+	 * org.springframework.web.servlet.HandlerInterceptor#preHandle(
+	 * jakarta.servlet.http.HttpServletRequest,
+	 * jakarta.servlet.http.HttpServletResponse, java.lang.Object)
 	 */
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -166,7 +164,7 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 			}
 		}
 
-		return super.preHandle(request, response, handler);
+		return true;
 	}
 	
 	private String getCookieValue(HttpServletRequest req, String cookieName) {

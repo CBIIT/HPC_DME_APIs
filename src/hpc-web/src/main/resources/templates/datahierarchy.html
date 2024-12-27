@@ -73,7 +73,7 @@
 				            </li>
 				        </ul>
 					</div>
-					<section th:include="@{datahierarchyfragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
+					<section th:insert="~{@{datahierarchyfragment} :: hierarchy}" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
             </li>
         </ul>
       </div>  

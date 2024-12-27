@@ -88,6 +88,20 @@ public class HpcScheduledTasksImpl {
 		execute("assignMigrationServer()", dataMigrationBusService::assignMigrationServer, logger);
 	}
 
+	/** Process received bulk metadata migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processBulkMetadataUpdatetMigrationReceived.delay}")
+	private void processBulkMetadataUpdatetMigrationReceivedTask() {
+		execute("processBulkMetadataUpdateMigrationReceived()",
+				dataMigrationBusService::processBulkMetadataUpdateMigrationReceived, logger);
+	}
+
+	/** Process received data object metadata migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectMetadataUpdatetMigrationReceived.delay}")
+	private void processDataObjectMetadataUpdatetMigrationReceivedTask() {
+		execute("processDataObjectMetadataUpdateMigrationReceived()",
+				dataMigrationBusService::processDataObjectMetadataUpdateMigrationReceived, logger);
+	}
+
 	/**
 	 * Called by Spring dependency injection. Reset all active S3 upload/download in
 	 * progress tasks, so they are restarted following a server restart.
