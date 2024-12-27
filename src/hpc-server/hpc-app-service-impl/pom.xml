@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.8.0</version>
+		<version>3.9.0</version>
 	</parent>
 	<artifactId>hpc-app-service-impl</artifactId>
 	<packaging>jar</packaging>
@@ -97,12 +97,8 @@
 			<artifactId>spring-test</artifactId>
 		</dependency> 
 		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>javax.mail-api</artifactId>
-		</dependency>
-		<dependency>
-    		<groupId>javax.mail</groupId>
-    		<artifactId>mail</artifactId>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>jakarta.mail</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -119,7 +115,8 @@
 		</dependency>
 		<dependency>
    			 <groupId>org.apache.tika</groupId>
-    		<artifactId>tika-bundle</artifactId>
+    		<artifactId>tika-parsers</artifactId>
+    		<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>

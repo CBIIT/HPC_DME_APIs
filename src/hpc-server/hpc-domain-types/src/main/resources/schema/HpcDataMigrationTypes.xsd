@@ -11,7 +11,7 @@
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" jxb:version="3.0"
 	xmlns:hpc-domain-datamigration="http://hpc.nci.nih.gov/domain/datamigration"
 	targetNamespace="http://hpc.nci.nih.gov/domain/datamigration"
 	elementFormDefault="unqualified">
@@ -29,6 +29,8 @@
 			<xsd:enumeration value="DATA_OBJECT_LIST" />
 			<xsd:enumeration value="COLLECTION" />
 			<xsd:enumeration value="COLLECTION_LIST" />
+			<xsd:enumeration value="BULK_METADATA_UPDATE" />
+			<xsd:enumeration value="DATA_OBJECT_METADATA_UPDATE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 

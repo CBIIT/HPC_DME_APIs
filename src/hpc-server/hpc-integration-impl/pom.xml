@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.8.0</version>
+		<version>3.9.0</version>
 	</parent>
 	<artifactId>hpc-integration-impl</artifactId>
 	<packaging>jar</packaging>
@@ -35,11 +35,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
+			<artifactId>bcpkix-jdk18on</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
+			<artifactId>bcprov-jdk18on</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.globusonline</groupId>
@@ -53,6 +53,10 @@
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
+		        <exclusion>
+		          <groupId>org.bouncycastle</groupId>
+		          <artifactId>bcprov-jdk15on</artifactId>
+		        </exclusion>
             </exclusions>
 		</dependency>
 		<dependency>
@@ -163,8 +167,8 @@
 		    <artifactId>box-java-sdk</artifactId>
 		</dependency>
 		<dependency>
-	       <groupId>com.fasterxml.jackson.jaxrs</groupId>
-	       <artifactId>jackson-jaxrs-json-provider</artifactId>
+	       <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+	       <artifactId>jackson-jakarta-rs-json-provider</artifactId>
 	    </dependency>
 	    <dependency>
 			<groupId>com.googlecode.json-simple</groupId>

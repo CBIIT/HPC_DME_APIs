@@ -390,12 +390,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	}
 
 	@Override
-	public HpcCollection getCollection(Object authenticatedToken, String path, boolean list) throws HpcException {
+	public HpcCollection getCollection(Object authenticatedToken, String path, boolean list, String linkSourcePath)
+			throws HpcException {
+		String collectionListingPath = StringUtils.isEmpty(linkSourcePath) ? path : linkSourcePath;
 		try {
 			return toHpcCollection(
 					irodsConnection.getCollectionAO(authenticatedToken).findByAbsolutePath(getAbsolutePath(path)), list
 							? irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-									.listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path))
+									.listDataObjectsAndCollectionsUnderPath(getAbsolutePath(collectionListingPath))
 							: null);
 
 		} catch (Exception e) {
@@ -405,21 +407,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	}
 
 	@Override
-	public HpcCollection getCollectionChildren(Object authenticatedToken, String path) throws HpcException {
+	public HpcCollection getCollectionChildren(Object authenticatedToken, String path, String linkSourcePath)
+			throws HpcException {
+		String collectionListingPath = StringUtils.isEmpty(linkSourcePath) ? path : linkSourcePath;
 		try {
 
 			return toHpcCollectionChildren(irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-					.listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)));
+					.listDataObjectsAndCollectionsUnderPath(getAbsolutePath(collectionListingPath)));
 
 		} catch (Exception e) {
-			throw new HpcException("Failed to get Collection at path " + path + ": " + e.getMessage(),
+			throw new HpcException("Failed to get Collection at path " + collectionListingPath + ": " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
 		}
 	}
 
 	@Override
-	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset)
-			throws HpcException {
+	public HpcCollection getCollectionChildrenWithPaging(Object authenticatedToken, String path, Integer offset,
+			String linkSourcePath) throws HpcException {
+		String collectionListingPath = StringUtils.isEmpty(linkSourcePath) ? path : linkSourcePath;
 		try {
 			// In case there are no more records from this offset, fetch from offset 0 to
 			// get total records.
@@ -427,14 +432,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			// Get the child collection from the offset specified.
 			List<CollectionAndDataObjectListingEntry> collectionEntries = irodsConnection
 					.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-					.listCollectionsUnderPath(getAbsolutePath(path), offset);
+					.listCollectionsUnderPath(getAbsolutePath(collectionListingPath), offset);
 			int collectionTotalRecords = !collectionEntries.isEmpty() ? collectionEntries.get(0).getTotalRecords() : 0;
 
 			// If requested from an offset and there are no more collection entries, obtain
 			// the total count by fetching from offset 0.
 			if (offset > 0 && collectionEntries.isEmpty()) {
 				firstEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-						.listCollectionsUnderPath(getAbsolutePath(path), 0);
+						.listCollectionsUnderPath(getAbsolutePath(collectionListingPath), 0);
 				collectionTotalRecords = !firstEntries.isEmpty() ? firstEntries.get(0).getTotalRecords() : 0;
 			}
 			int dataObjectOffset = offset - collectionTotalRecords > 0 ? offset - collectionTotalRecords : 0;
@@ -442,14 +447,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			// Get the child dataobject from the offset specified.
 			List<CollectionAndDataObjectListingEntry> dataObjectEntries = irodsConnection
 					.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-					.listDataObjectsUnderPath(getAbsolutePath(path), dataObjectOffset);
+					.listDataObjectsUnderPath(getAbsolutePath(collectionListingPath), dataObjectOffset);
 			int dataObjectTotalRecords = !dataObjectEntries.isEmpty() ? dataObjectEntries.get(0).getTotalRecords() : 0;
 
 			// If requested from an offset and there are no more data object entries, obtain
 			// the total count by fetching from offset 0.
 			if (dataObjectOffset > 0 && dataObjectEntries.isEmpty()) {
 				firstEntries = irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
-						.listDataObjectsUnderPath(getAbsolutePath(path), 0);
+						.listDataObjectsUnderPath(getAbsolutePath(collectionListingPath), 0);
 				dataObjectTotalRecords = !firstEntries.isEmpty() ? firstEntries.get(0).getTotalRecords() : 0;
 			}
 

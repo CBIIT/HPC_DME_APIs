@@ -13,7 +13,7 @@
  -->
 
 	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" jxb:version="3.0"
 	xmlns:hpc-domain-report="http://hpc.nci.nih.gov/domain/report"
 	xmlns:hpc-dto-report="http://hpc.nci.nih.gov/dto/report"
 	targetNamespace="http://hpc.nci.nih.gov/dto/report" 

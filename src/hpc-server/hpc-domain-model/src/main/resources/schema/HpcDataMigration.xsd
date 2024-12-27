@@ -11,7 +11,7 @@
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" jxb:version="3.0"
 	xmlns:hpc-domain-datamigration="http://hpc.nci.nih.gov/domain/datamigration"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-domain-model="http://hpc.nci.nih.gov/domain/model"
@@ -60,6 +60,8 @@
 			<xsd:element name="retryTaskId" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="retryFailedItemsOnly" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="metadataArchiveFileContainerId" type="xsd:string" />
+			<xsd:element name="metadataArchiveFileIdPattern" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -93,7 +95,9 @@
 			<xsd:element name="alignArchivePath" type="xsd:boolean" />
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />	
 			<xsd:element name="retryTaskId" type="xsd:string" />
-			<xsd:element name="retryUserId" type="xsd:string" />		
+			<xsd:element name="retryUserId" type="xsd:string" />	
+			<xsd:element name="metadataArchiveFileContainerId" type="xsd:string" />
+			<xsd:element name="metadataArchiveFileIdPattern" type="xsd:string" />	
 		</xsd:sequence>
 	</xsd:complexType>
 	
