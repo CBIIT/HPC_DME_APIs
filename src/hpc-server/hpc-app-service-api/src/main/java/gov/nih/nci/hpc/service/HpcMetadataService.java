@@ -78,11 +78,12 @@ public interface HpcMetadataService {
 	 * @param userId          The user ID.
 	 * @param userName        The user name.
 	 * @param configurationId The configuration ID.
+	 * @param linkSourcePath  (Optional) linkSourcePath.
 	 * @return The system generated metadata.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(String path, String userId,
-			String userName, String configurationId) throws HpcException;
+			String userName, String configurationId, String linkSourcePath) throws HpcException;
 
 	/**
 	 * Get the system generated metadata of a collection.

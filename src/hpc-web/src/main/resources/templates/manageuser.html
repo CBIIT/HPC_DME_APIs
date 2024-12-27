@@ -94,7 +94,7 @@
 					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
-						if (type != "SYSTEM_ADMIN" && type != "GROUP_ADMINs")
+						if (type != "SYSTEM_ADMIN" && type != "GROUP_ADMIN")
 					        $scope.gridOptions1.columnDefs[4].visible = false;
 						$("#spinner").hide();
 			            $("#dimmer").hide();
@@ -104,7 +104,7 @@
 				$scope.gridOptions1.data = results;
 
 				$scope.showMe= function(val) {
-				    return val == doc.replace(/\'/g, "") || type == "SYSTEM_ADMIN" ;
+				    return val == doc.replace(/\'/g, "") || type == "SYSTEM_ADMIN" || (type == "GROUP_ADMIN" && doc == val) ;
 				  };
 				
 			} ]);
@@ -124,7 +124,7 @@
 
 	<!-- container section start -->
 	<section id="container" class="">
-		<div th:include="header :: header"></div>
+		<div th:insert="~{header :: header}"></div>
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
@@ -132,7 +132,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h4>
-							<i class="fa fa-lock"></i> Manage User
+							<i class="fa fa-user"></i> Manage User
 						</h4>
 					</div>
 				</div>
@@ -257,7 +257,7 @@
 				</div>
 				<div class="row"></div>
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<!--main content end-->
 		<div id="spinner" class="spinner">

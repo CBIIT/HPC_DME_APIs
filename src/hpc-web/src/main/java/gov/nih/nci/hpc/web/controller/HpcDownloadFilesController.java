@@ -12,10 +12,10 @@ package gov.nih.nci.hpc.web.controller;
 import java.util.Collection;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -236,6 +236,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		String endPointName = request.getParameter("endpoint_id");
 		String code = request.getParameter("code");
 		String transferType = request.getParameter("transferType");
+		String downloadType = request.getParameter("downloadType");
 		String googleAction =(String)session.getAttribute("googleAction");
 		if (code != null) {
 			//Return from Google Drive Authorization
@@ -284,6 +285,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			}
 			return "downloadfiles";
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
+			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 			String returnURL = this.webServerName + "/downloadfiles";
 			try {
@@ -293,6 +295,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				e.printStackTrace();
 			}
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
+			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 			String returnURL = this.webServerName + "/downloadfiles";
 			try {
@@ -303,6 +306,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			}
 		}
 		else if(endPointName == null) {
+			//We are going to Globus site, so save the downloadType to use on return
+			//for determining whether to display the hierarchy options dropdown
+			session.setAttribute("downloadType", downloadType);
 			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
 					this.webServerName) + "/downloadfiles";
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
@@ -310,6 +316,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 
 		//This is return from Globus site
+		downloadType = (String)session.getAttribute("downloadType");
+		model.addAttribute("downloadType", downloadType);
 
 		model.addAttribute("endPointName", endPointName);
 		String endPointLocation = request.getParameter("path");
@@ -429,6 +437,29 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
 				logger.info("GoogleCloud file download json: " + gson.toJson(dto));
             }
+			
+			if("collection".equals(downloadFile.getDownloadType())) {
+				if (downloadFile.getDownloadDestinationType() != null
+						&& downloadFile.getDownloadDestinationType().equals("downloadToDestination")) {
+					logger.debug("DownloadDestinationType: downloadToDestination");
+					dto.setAppendPathToDownloadDestination(false);
+					dto.setAppendCollectionNameToDownloadDestination(false);
+				} else if (downloadFile.getDownloadDestinationType() != null
+						&& downloadFile.getDownloadDestinationType().equals("createCollectionFolder")) {
+					logger.debug(" DownloadDestinationType: createCollectionFolder");
+					dto.setAppendPathToDownloadDestination(false);
+					dto.setAppendCollectionNameToDownloadDestination(true);
+				} else if (downloadFile.getDownloadDestinationType() != null
+						&& downloadFile.getDownloadDestinationType().equals("createFullPath")) {
+					logger.debug("DownloadDestinationType: createFullPath");
+					dto.setAppendPathToDownloadDestination(true);
+					dto.setAppendCollectionNameToDownloadDestination(false);
+				} else {
+					dto.setAppendPathToDownloadDestination(false);
+					dto.setAppendCollectionNameToDownloadDestination(false);
+				}
+			}
+			
 			try {
 				HpcBulkDataObjectDownloadResponseDTO downloadDTO = null;
 				downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil

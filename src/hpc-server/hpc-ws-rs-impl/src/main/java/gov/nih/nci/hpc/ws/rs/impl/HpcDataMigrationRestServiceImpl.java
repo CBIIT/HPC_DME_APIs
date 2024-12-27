@@ -12,12 +12,13 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamigration.HpcMetadataMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -133,4 +134,18 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 
 		return okResponse(migrationResponse, false);
 	}
+	
+	@Override
+	public Response migrateMetadata(HpcMetadataMigrationRequestDTO metadataMigrationRequest) {
+		HpcMigrationResponseDTO migrationResponse = null;
+		try {
+			migrationResponse = dataMigrationBusService.migrateMetadata(metadataMigrationRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(migrationResponse, false);
+	}
+	
 }

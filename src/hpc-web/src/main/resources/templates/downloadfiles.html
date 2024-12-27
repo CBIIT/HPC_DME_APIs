@@ -79,7 +79,7 @@
 
 	<!-- container section start -->
 	<section id="container" class="">
-		<div th:include="header :: header"></div>
+		<div th:insert="~{header :: header}"></div>
 		<!--main content start-->
 		<section id="main-content">
 			<section class="wrapper">
@@ -172,61 +172,68 @@
 								    <br/>
 								</div>
                                 
-                                <div class="form-group" id="AsyncDiv" style="display: none">
+                                <div id="AsyncDiv" style="display: none; margin: -15px; margin-bottom: 12px">
                                     <div class="col-sm-12 column">
 										<label for="endPointName">Globus Endpoint UUID:</label> 
 										<a id="downloadlink"
-										    th:href="@{../downloadfiles(transferType=globus)}">
+										    th:href="@{../downloadfiles(transferType=globus,downloadType=${downloadType})}">
                                             Obtain from Globus (Optional)</a>
 										<input type="hidden" name="actionType" id="actionType" />
 										<input
 											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
-											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
+											id="endPointName" placeholder="Enter Globus Endpoint UUID"
+											style="margin-bottom: 12px"/>
 								    </div>								
 									<div class="col-sm-12 column">
 										<label for="endPointLocation">Endpoint Path:</label> <input
 											type="text" class="form-control" name="endPointLocation"
 											th:value="${endPointLocation}" id="endPointLocation"
-											placeholder="Enter Globus Endpoint Path" size="40" />
+											placeholder="Enter Globus Endpoint Path" size="40" 
+											style="margin-bottom: 12px"/>
 									</div>
 								</div>
-								<div class="form-group" id="s3Div" style="display: none">
+								<div id="s3Div" style="display: none; margin: -15px; margin-bottom: 12px">
 									<div class="col-sm-12 column">
 										<label for="bucketName">S3 Bucket:</label>
 										<input
 											type="text" class="form-control" name="bucketName" th:value="${bucketName}"
-											id="bucketName" placeholder="Enter S3 Bucket Name" />
+											id="bucketName" placeholder="Enter S3 Bucket Name" 
+											style="margin-bottom: 12px"/>
 									</div>
 									<div class="col-sm-12 column">
 										<label for="s3Path">Endpoint Path:</label> <input
 											type="text" class="form-control"
 											th:value="${s3Path}"
 											name="s3Path" id="s3Path"
-											placeholder="Enter S3 Endpoint Path" size="40" />
+											placeholder="Enter S3 Endpoint Path" size="40"
+											style="margin-bottom: 12px"/>
 									</div>
 									<div class="col-sm-12 column">
 										<label for="accessKey">Access Key:</label> <input
 											type="text" class="form-control"
 											th:value="${accessKey}"
 											name="accessKey" id="accessKey"
-											placeholder="Enter Access Key" size="40" />
+											placeholder="Enter Access Key" size="40"
+											style="margin-bottom: 12px"/>
 									</div>
 									<div class="col-sm-12 column">
 										<label for="secretKey">Secret Access Key:</label> <input
 											type="password" autocomplete="secret-access-key" class="form-control"
 											th:value="${secretKey}"
 											name="secretKey" id="secretKey"
-											placeholder="Enter Secret Access Key" size="40" />
+											placeholder="Enter Secret Access Key" size="40"
+											style="margin-bottom: 12px"/>
 									</div>
 									<div class="col-sm-12 column">
 										<label for="region">Region:</label> <input
 											type="text" class="form-control"
 											th:value="${region}"
 											name="region" id="region"
-											placeholder="Enter Region (for Example us-east-1)" size="40" />
+											placeholder="Enter Region (for Example us-east-1)" size="40"
+											style="margin-bottom: 12px"/>
 									</div>
 								</div>
-								<div class="form-group" id="driveDiv" style="display: none">
+								<div id="driveDiv" style="display: none; margin: -15px; margin-bottom: 12px">
 									<div class="col-sm-12 column">
 										<a class="btn btn-primary" id="driveAuthlink" 
                                             th:href="@{../downloadfiles(transferType=drive)}">                                  
@@ -242,10 +249,11 @@
 											type="text" class="form-control"
 											th:value="${drivePath}"
 											name="drivePath" id="drivePath"
-											placeholder="Enter Google Drive Endpoint Path" size="40" />
+											placeholder="Enter Google Drive Endpoint Path" size="40"
+											style="margin-bottom: 12px"/> 
 									</div>
 								</div>
-								<div class="form-group" id="googleCloudDiv" style="display: none">
+								<div id="googleCloudDiv" style="display: none; margin: -15px; margin-bottom: 12px">
 									<div class="col-sm-12 column">
 										<a class="btn btn-primary" id="googleCloudAuthlink"
                                             th:href="@{../downloadfiles(transferType=googleCloud)}">
@@ -257,7 +265,8 @@
 										<label for="googleCloudBucketName">Google Cloud Bucket</label>
 										<input
 											type="text" class="form-control" name="googleCloudBucketName" th:value="${googleCloudBucketName}"
-											id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name" />
+											id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name" 
+											style="margin-bottom: 12px"/>
 									</div>
 									<div class="col-sm-12 column">
 										<label for="googleCloudPath">Endpoint Path:</label>
@@ -265,19 +274,20 @@
 											type="text" class="form-control"
 											th:value="${googleCloudPath}"
 											name="googleCloudPath" id="googleCloudPath"
-											placeholder="Enter Google Cloud Endpoint Path" size="40" />
+											placeholder="Enter Google Cloud Endpoint Path" size="40"
+											style="margin-bottom: 12px"/> 
 									</div>
 								</div>
 								<!--- DbGap inputs -->
-								<div class="form-group" id="asperaDiv" style="display: none">
+								<div id="asperaDiv" style="display: none; margin: -15px; margin-bottom: 12px">
 									<div class="col-sm-12 column">
 										<label for="asperaBucketName">Aspera Destination Directory:</label>
-										<div th:if="${asperaBucketName == 'test'}" id="oneOption">
+										<div th:if="${asperaBucketName == 'test'}" id="oneOption" style="margin-bottom: 12px">
 											<select name="asperaBucketName" id="asperaBucketName" class="form-control">
 												<option th:value="test" th:text="test" selected="selected"></option>
 											</select>
 										</div>
-										<div th:if="${asperaBucketName != 'test'}"  id="multipleOption">
+										<div th:if="${asperaBucketName != 'test'}"  id="multipleOption" style="margin-bottom: 12px">
 											<select name="asperaBucketName" id="asperaBucketName" class="form-control">
 												<option th:value="${asperaBucketName}" th:text="${asperaBucketName}" selected="selected"></option>
 												<option th:value="test" th:text="test" ></option>
@@ -289,7 +299,8 @@
 											type="text" class="form-control"
 											th:value="${asperaUser}"
 											name="asperaUser" id="asperaUser"
-											placeholder="Enter User" size="40" />
+											placeholder="Enter User" size="40" 
+											style="margin-bottom: 12px"/>
 									</div>
 									<input type="hidden" name="asperaPath" id="asperaPath"
 											th:value="${asperaPath}" />
@@ -298,15 +309,28 @@
 											type="password" autocomplete="secret-access-key" class="form-control"
 											th:value="${asperaPassword}"
 											name="asperaPassword" id="asperaPassword"
-											placeholder="Enter Aspera Password" size="40" />
+											placeholder="Enter Aspera Password" size="40" 
+											style="margin-bottom: 12px"/>
 									</div>
 									<div class="col-sm-12 column">
 										<label for="region">Aspera Host:</label> <input
 											type="text" class="form-control"
 											th:value="${asperaHost}"
 											name="asperaHost" id="asperaHost"
-											placeholder="Enter Aspera Host" size="40" />
+											placeholder="Enter Aspera Host" size="40"
+											style="margin-bottom: 12px"/>
 									</div>
+								</div>
+								<div id="destLocationDiv" th:if="${downloadType == 'collection'}" style="margin-top: 15px; margin-bottom: -1px">
+									<div class="col-sm-12 column" style="margin-left: -15px; margin-top: -3px">
+											<label for="downloadDestinationType">Destination Location:</label>
+											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control" size="1" style="margin-top: 1px; margin-bottom: -16px;">
+												<option th:value="'downloadToDestination'" th:text="'Download to Endpoint Path'"></option>
+												<option th:value="'createCollectionFolder'" th:text="'Create Parent Collection'"></option>
+												<option th:value="'createFullPath'" th:text="'Replicate Full Source Path'"></option>
+											</select>
+									</div>
+								  <br/>
 								</div>
 								<div style="margin-left: 3px; margin-top: 15px">
 									<button class="btn btn-primary" id="submit" th:if="${canDownload == 'true'}"
@@ -378,7 +402,7 @@
 				</div>
 				<div class="row"></div>
 			</section>
-			<div th:include="footer :: footer"></div>
+			<div th:insert="~{footer :: footer}"></div>
 		</section>
 		<!--main content end-->
 	</section>
@@ -645,6 +669,7 @@
 					$("#asperaPath").val(downloadFileName);
 				$("#submit").prop('disabled', false);
 			}
+			destLocationDiv.style.display = "block";
 		}
 	</script>
 <!-- The Google API Loader script. -->
