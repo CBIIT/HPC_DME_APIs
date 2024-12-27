@@ -10,15 +10,16 @@
  */
 package gov.nih.nci.hpc.ws.rs;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
 
 import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamigration.HpcMetadataMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
 
 /**
@@ -113,4 +114,16 @@ public interface HpcDataMigrationRestService {
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response retryDataObjectsOrCollectionsMigrationTask(@PathParam("taskId") String taskId,
 			@QueryParam("failedItemsOnly") Boolean failedItemsOnly);
+
+	/**
+	 * Migrate metadata.
+	 *
+	 * @param metadataMigrationRequest The metadata migration request.
+	 * @return The REST service response w/ HpcMigrationResponseDTO entity.
+	 */
+	@POST
+	@Path("/migrateMetadata")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response migrateMetadata(HpcMetadataMigrationRequestDTO metadataMigrationRequest);
 }

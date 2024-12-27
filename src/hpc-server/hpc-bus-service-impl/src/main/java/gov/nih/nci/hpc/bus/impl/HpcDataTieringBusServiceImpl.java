@@ -146,8 +146,17 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		}
 		path = toNormalizedPath(path);
 
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+
+		// Validate collection is not linked.
+		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			throw new HpcException("Collection is linked to: " + metadata.getLinkSourcePath(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		// Validate collection exists.
-		HpcCollection collection = dataManagementService.getCollection(path, true);
+		HpcCollection collection = dataManagementService.getCollection(path, true, metadata.getLinkSourcePath());
 		if (collection == null) {
 			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -163,9 +172,6 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		verifyArchiveOnlyContainsDataObjectsUnderPath(path);
 
 		List<String> paths = getDataObjectsUnderPathForTiering(collection);
-
-		// Get the System generated metadata.
-		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
 
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		// Submit a tier transfer request.
@@ -267,10 +273,17 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			boolean dataObjectExist = false;
 			for (String collectionPath : tierRequest.getCollectionPaths()) {
 				String path = toNormalizedPath(collectionPath);
-				HpcCollection collection = dataManagementService.getCollection(path, true);
+
+				// Get the System generated metadata.
+				HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+
+				// Verify collection exists
+				HpcCollection collection = dataManagementService.getCollection(path, true,
+						metadata.getLinkSourcePath());
 				if (collection == null) {
 					throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 				}
+
 				// Verify at least one data object found under these collection.
 				if (!dataObjectExist && hasDataObjectsUnderPath(collection)) {
 					dataObjectExist = true;
@@ -361,7 +374,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		// Iterate through the sub-collections and add them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true, null);
 			if (subCollection != null) {
 				// add this sub-collection.
 				dataObjectPaths.addAll(getDataObjectsUnderPathForTiering(subCollection));
@@ -377,7 +390,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			return true;
 
 		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
-			HpcCollection childCollection = dataManagementService.getCollection(subCollection.getPath(), true);
+			HpcCollection childCollection = dataManagementService.getCollection(subCollection.getPath(), true, null);
 			if (hasDataObjectsUnderPath(childCollection))
 				return true;
 		}
