@@ -191,7 +191,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Globus Transfer DAO
 	@Autowired
 	HpcGlobusTransferTaskDAO globusTransferDAO = null;
-		
+
 	// Data management configuration locator.
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
@@ -1246,11 +1246,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
-		//Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
-		if(downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
+		// Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
+		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
 				&& !StringUtils.isEmpty(downloadTask.getDataTransferRequestId()))
 			deleteGlobusTransferTask(downloadTask.getDataTransferRequestId());
-			
+
 		return taskResult;
 	}
 
@@ -1395,11 +1395,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 				HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
 				globusRequest.setDataTransferRequestId(dataTransferRequestId);
-				globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
+				globusRequest
+						.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 				globusRequest.setPath(downloadTask.getPath());
 				globusRequest.setDownload(true);
 				globusTransferDAO.insertRequest(globusRequest);
-				
+
 			}
 		} catch (HpcException e) {
 			// Failed to submit a transfer request. Cleanup the download task.
@@ -1421,7 +1422,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info("download task: {} - continued  - archive file-id = {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), downloadRequest.getArchiveLocation().getFileId(),
 				downloadTask.getDataTransferType(), downloadTask.getDestinationType());
-		
+
 		return true;
 	}
 
@@ -1716,16 +1717,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, HpcDataTransferType.S_3);
 
 		// Submit the transfer request to Globus.
-		Object authenticatedToken = getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId, s3ArchiveConfigurationId);
+		Object authenticatedToken = getAuthenticatedToken(HpcDataTransferType.GLOBUS, configurationId,
+				s3ArchiveConfigurationId);
 		String dataTransferRequestId = dataTransferProxies.get(HpcDataTransferType.GLOBUS).transferData(
-				authenticatedToken,
-				globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer());
-		collectionDownloadTask
-				.setDataTransferRequestId(dataTransferRequestId);
+				authenticatedToken, globusTransferRequest, dataTransferConfiguration.getEncryptedTransfer());
+		collectionDownloadTask.setDataTransferRequestId(dataTransferRequestId);
 		collectionDownloadTask.setStatus(HpcCollectionDownloadTaskStatus.GLOBUS_BUNCHING);
 		collectionDownloadTask.setConfigurationId(configurationId);
 		collectionDownloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
-		
+
 		// Add to HPC_GLOBUS_TRANSFER_TASK
 		HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
 		globusRequest.setDataTransferRequestId(dataTransferRequestId);
@@ -1957,9 +1957,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteCollectionDownloadTask(downloadTask.getId());
-		
-		//Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
-		if(downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
+
+		// Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
+		if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
 				&& !StringUtils.isEmpty(downloadTask.getDataTransferRequestId()))
 			deleteGlobusTransferTask(downloadTask.getDataTransferRequestId());
 
@@ -2140,6 +2140,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public boolean validateDataObjectMetadata(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+			String configurationId, String s3ArchiveConfigurationId, String objectId, String registrarId)
+			throws HpcException {
+		return dataTransferProxies.get(dataTransferType).validateDataObjectMetadata(
+				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation,
+				generateArchiveMetadata(configurationId, objectId, registrarId));
+	}
+
+	@Override
 	public void setArchivePermissions(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType, String fileId, HpcPathPermissions permissions) throws HpcException {
 		// Input validation.
@@ -2194,7 +2203,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return metadataEntries;
 	}
-	
+
 	@Override
 	public void deleteGlobusTransferTask(String dataTransferRequestId) throws HpcException {
 		globusTransferDAO.deleteRequest(dataTransferRequestId);
@@ -2310,7 +2319,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	/**
 	 * Get the data transfer authenticated token from cache.
 	 *
-	 * @param token         The data transfer authenticated token.
+	 * @param token The data transfer authenticated token.
 	 * @return A data transfer authenticated token.
 	 * @throws HpcException If it failed to find an authentication token.
 	 */
@@ -2318,7 +2327,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Get the DataTransferAuthenticatedToken for this token
 		HpcDataTransferAuthenticatedToken dataTransferAuthenticatedToken = null;
-		
+
 		// Search for stored system account for this token.
 		Iterator<HpcDataTransferAuthenticatedToken> tokenItr = dataTransferAuthenticatedTokens.iterator();
 		while (tokenItr.hasNext()) {
@@ -2337,7 +2346,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return dataTransferAuthenticatedToken;
 	}
-	
+
 	/**
 	 * Create an empty file.
 	 *
@@ -2466,16 +2475,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Upload the data object using the appropriate data transfer system proxy and
 		// archive
 		// configuration.
-		
-		Object authenticatedToken = !globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
+
+		Object authenticatedToken = !globusSyncUpload
+				? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
 				: null;
-		HpcDataObjectUploadResponse dataObjectUploadResponse = dataTransferProxies.get(dataTransferType).uploadDataObject(
-				authenticatedToken,
-				uploadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
-				dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
-				generateArchiveMetadata(configurationId, uploadRequest.getDataObjectId(), uploadRequest.getUserId()),
-				dataTransferConfiguration.getEncryptedTransfer(), dataTransferConfiguration.getStorageClass());
-		
+		HpcDataObjectUploadResponse dataObjectUploadResponse = dataTransferProxies.get(dataTransferType)
+				.uploadDataObject(authenticatedToken, uploadRequest,
+						dataTransferConfiguration.getBaseArchiveDestination(),
+						dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
+						generateArchiveMetadata(configurationId, uploadRequest.getDataObjectId(),
+								uploadRequest.getUserId()),
+						dataTransferConfiguration.getEncryptedTransfer(), dataTransferConfiguration.getStorageClass());
+
 		// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
 		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
 			HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
@@ -2484,9 +2495,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			globusRequest.setPath(uploadRequest.getPath());
 			globusRequest.setDownload(false);
 			globusTransferDAO.insertRequest(globusRequest);
-			
+
 		}
-		
+
 		return dataObjectUploadResponse;
 	}
 
