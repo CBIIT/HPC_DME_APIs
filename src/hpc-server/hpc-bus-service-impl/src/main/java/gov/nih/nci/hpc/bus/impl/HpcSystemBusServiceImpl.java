@@ -380,6 +380,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				HpcDataTransferUploadMethod dataTransferMathod = systemGeneratedMetadata.getDataTransferMethod();
 				if (HpcDataTransferUploadMethod.URL_SINGLE_PART.equals(dataTransferMathod)) {
 					uploadCompleted = dataManagementBusService.completeS3Upload(path, systemGeneratedMetadata);
+
+					if (!uploadCompleted) {
+						logger.info(
+								"Data object upload via URL still in progress or not started: {}. {}:(} not found in S3 archive config ID: {}",
+								path, systemGeneratedMetadata.getArchiveLocation().getFileContainerId(),
+								systemGeneratedMetadata.getArchiveLocation().getFileId(),
+								systemGeneratedMetadata.getS3ArchiveConfigurationId());
+					} else {
+						logger.info("Data object upload via URL completed by the user: {}. DME Registration completed",
+								path);
+					}
 				}
 
 				if (!uploadCompleted && dataTransferService.uploadURLExpired(
@@ -1881,13 +1892,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through the sub-collections and download them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			
+
 			// Get the System generated metadata of the sub-collection.
-			HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(subCollectionPath);
-			
+			HpcSystemGeneratedMetadata metadata = metadataService
+					.getCollectionSystemGeneratedMetadata(subCollectionPath);
+
 			// Get the sub-collection.
-			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath, metadata.getLinkSourcePath());
-			
+			HpcCollection subCollection = dataManagementService.getFullCollection(subCollectionPath,
+					metadata.getLinkSourcePath());
+
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
