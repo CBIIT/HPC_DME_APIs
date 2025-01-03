@@ -51,7 +51,8 @@
 			<xsd:sequence>
 				<xsd:element name="fromS3ArchiveConfigurationId" type="xsd:string" />
 				<xsd:element name="toS3ArchiveConfigurationId" type="xsd:string" />
-				<xsd:element name="archiveFileContainerId" type="xsd:string" />
+				<xsd:element name="fromArchiveFileContainerId" type="xsd:string" />
+				<xsd:element name="toArchiveFileContainerId" type="xsd:string" />
 				<xsd:element name="archiveFileIdPattern" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
