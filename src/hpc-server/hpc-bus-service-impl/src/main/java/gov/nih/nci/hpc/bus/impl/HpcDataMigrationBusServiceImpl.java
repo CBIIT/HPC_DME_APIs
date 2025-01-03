@@ -264,13 +264,20 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		}
 
 		// Create a migration task to perform bulk metadata update.
+		// Notes:
+		// 1. toArchiveFileContainerId is optional and defaulted to
+		// fromArchiveFileContainerId if not provided by the caller.
+		// 2. archiveFileIdPattern is optional and defaulted to '%' (match-all) if not
+		// provided by the caller
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
 		migrationResponse
 				.setTaskId(dataMigrationService
 						.createMetadataMigrationTask(metadataMigrationRequest.getFromS3ArchiveConfigurationId(),
 								metadataMigrationRequest.getToS3ArchiveConfigurationId(),
 								metadataMigrationRequest.getFromArchiveFileContainerId(),
-								metadataMigrationRequest.getToArchiveFileContainerId(),
+								!StringUtils.isEmpty(metadataMigrationRequest.getToArchiveFileContainerId())
+										? metadataMigrationRequest.getToArchiveFileContainerId()
+										: metadataMigrationRequest.getFromArchiveFileContainerId(),
 								!StringUtils.isEmpty(metadataMigrationRequest.getArchiveFileIdPattern())
 										? metadataMigrationRequest.getArchiveFileIdPattern()
 										: "%",
