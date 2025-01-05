@@ -383,7 +383,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					if (!uploadCompleted) {
 						logger.info(
-								"Data object upload via URL still in progress or not started: {}. {}:(} not found in S3 archive config ID: {}",
+								"Data object upload via URL still in progress or not started: {}. {}:{} not found in S3 archive config ID: {}",
 								path, systemGeneratedMetadata.getArchiveLocation().getFileContainerId(),
 								systemGeneratedMetadata.getArchiveLocation().getFileId(),
 								systemGeneratedMetadata.getS3ArchiveConfigurationId());
