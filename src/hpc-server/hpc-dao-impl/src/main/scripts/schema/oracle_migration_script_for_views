@@ -17,6 +17,6 @@ UNION
 SELECT r_coll_main.coll_id                                            AS id,
        r_coll_main.coll_name                                          AS path,
        cast(NULL as number(19))                                                   AS data_size,
-       to_timestamp('1970-01-01','YYYY-MM-DD') + numtodsinterval(modify_ts,'SECOND') AS uploaded
+       NEW_TIME(to_timestamp('1970-01-01', 'YYYY-MM-DD') + numtodsinterval(modify_ts, 'SECOND'), 'GMT', 'EST') AS uploaded
 FROM r_coll_main;
 
