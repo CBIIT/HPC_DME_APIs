@@ -317,6 +317,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				case FAILED:
 					// Data transfer failed.
+					
+					// Remove from HPC_GLOBUS_TRANSFER_TASK
+					if (systemGeneratedMetadata.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
+							&& !StringUtils.isEmpty(systemGeneratedMetadata.getDataTransferRequestId()))
+						dataTransferService.deleteGlobusTransferTask(systemGeneratedMetadata.getDataTransferRequestId());
+					
 					throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
 							HpcErrorType.DATA_TRANSFER_ERROR);
 
