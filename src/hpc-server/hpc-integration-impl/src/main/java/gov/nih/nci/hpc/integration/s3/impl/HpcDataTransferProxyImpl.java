@@ -299,7 +299,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public boolean validateDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
 			List<HpcMetadataEntry> metadataEntries) throws HpcException {
-		// Check if the metadata is set on the data-object in the S3 archive with the correct value.
+		// Check if the metadata is set on the data-object in the S3 archive with the
+		// correct value.
 		try {
 			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
@@ -995,7 +996,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			multipartUpload.setId(s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.initiateMultipartUpload(initiateMultipartUploadRequest).getUploadId());
 		} catch (AmazonClientException e) {
-			throw new HpcException("[S3] Failed to initiate a multipart upload: " + initiateMultipartUploadRequest,
+			throw new HpcException(
+					"[S3] Failed to initiate a multipart upload to: " + s3Connection.getS3Provider(authenticatedToken)
+							+ ". Archive destination location: " + archiveDestinationLocation.getFileContainerId() + ":"
+							+ archiveDestinationLocation.getFileId(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 		}
 
