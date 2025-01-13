@@ -494,6 +494,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
                 partSize);
          } else {
           System.out.println("Failed to get signed URL for: " + basePath + objectPath);
+          throw new HpcBatchException("Failed to get signed URL for: " + basePath + objectPath);       
         }
       }
     } catch (Exception e) {
