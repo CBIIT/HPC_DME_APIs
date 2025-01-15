@@ -236,6 +236,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		String endPointName = request.getParameter("endpoint_id");
 		String code = request.getParameter("code");
 		String transferType = request.getParameter("transferType");
+		String downloadType = request.getParameter("downloadType");
 		String googleAction =(String)session.getAttribute("googleAction");
 		if (code != null) {
 			//Return from Google Drive Authorization
@@ -284,6 +285,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			}
 			return "downloadfiles";
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
+			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 			String returnURL = this.webServerName + "/downloadfiles";
 			try {
@@ -293,6 +295,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				e.printStackTrace();
 			}
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
+			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 			String returnURL = this.webServerName + "/downloadfiles";
 			try {
@@ -303,6 +306,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			}
 		}
 		else if(endPointName == null) {
+			//We are going to Globus site, so save the downloadType to use on return
+			//for determining whether to display the hierarchy options dropdown
+			session.setAttribute("downloadType", downloadType);
 			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
 					this.webServerName) + "/downloadfiles";
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
@@ -310,6 +316,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 
 		//This is return from Globus site
+		downloadType = (String)session.getAttribute("downloadType");
+		model.addAttribute("downloadType", downloadType);
 
 		model.addAttribute("endPointName", endPointName);
 		String endPointLocation = request.getParameter("path");

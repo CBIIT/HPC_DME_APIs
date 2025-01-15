@@ -123,8 +123,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest)
-			throws HpcException {
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
+			String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId) throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -156,6 +156,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setSize(size);
 		migrationTask.setRetryTaskId(retryTaskId);
 		migrationTask.setRetryUserId(retryUserId);
+		migrationTask.setMetadataFromArchiveFileContainerId(metadataFromArchiveFileContainerId);
+		migrationTask.setMetadataToArchiveFileContainerId(metadataToArchiveFileContainerId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -368,8 +370,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				// Update metadata to the object in the target S3 archive.
 				securityService.executeAsSystemAccount(Optional.empty(),
 						() -> metadataService.updateDataObjectSystemGeneratedMetadata(
-								dataObjectMetadataUpdateTask.getPath(), null, null, null, null, null, null, null, null,
-								null, dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), null, null, null));
+								dataObjectMetadataUpdateTask.getPath(),
+								dataObjectMetadataUpdateTask.getToS3ArchiveLocation(), null, null, null, null, null,
+								null, null, null, dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), null,
+								null, null));
 
 			} catch (HpcException e) {
 				message = "Failed to complete metadata update for task: " + dataObjectMetadataUpdateTask.getId() + " ["
@@ -594,8 +598,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createMetadataMigrationTask(String fromS3ArchiveConfigurationId,
-			String toS3ArchiveConfigurationId, String archiveFileContainerId, String archiveFileIdPattern,
-			String userId) throws HpcException {
+			String toS3ArchiveConfigurationId, String fromArchiveFileContainerId, String toArchiveFileContainerId,
+			String archiveFileIdPattern, String userId) throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.setPath(null);
@@ -611,7 +615,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setRetryTaskId(null);
 		migrationTask.setRetryUserId(null);
 		migrationTask.setRetryFailedItemsOnly(null);
-		migrationTask.setMetadataArchiveFileContainerId(archiveFileContainerId);
+		migrationTask.setMetadataFromArchiveFileContainerId(fromArchiveFileContainerId);
+		migrationTask.setMetadataToArchiveFileContainerId(toArchiveFileContainerId);
 		migrationTask.setMetadataArchiveFileIdPattern(archiveFileIdPattern);
 
 		// Persist the task.
