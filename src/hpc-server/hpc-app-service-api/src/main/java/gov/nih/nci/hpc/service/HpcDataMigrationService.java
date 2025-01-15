@@ -27,33 +27,40 @@ public interface HpcDataMigrationService {
 	/**
 	 * Create a data object migration task.
 	 *
-	 * @param path                         The data object path.
-	 * @param userId                       The user Id requested the migration.
-	 * @param configurationId              The The data object configuration ID.
-	 * @param fromS3ArchiveConfigurationId The migration source S3 archive
-	 *                                     configuration ID.
-	 * @param toS3ArchiveConfigurationId   The migration target S3 archive
-	 *                                     configuration ID.
-	 * @param collectionMigrationTaskId    (Optional) The collection migration task
-	 *                                     ID that is associated w/ this data object
-	 *                                     migration task
-	 * @param alignArchivePath             If true, the file is moved within its
-	 *                                     current archive to align w/ the iRODs
-	 *                                     path.
-	 * @param size                         The data object size.
-	 * @param retryTaskId                  The previous task ID if this is a retry
-	 *                                     request.
-	 * @param retryUserId                  The user retrying the request if this is
-	 *                                     a retry request.
-	 * @param metadataUpdateRequest        True to indicate this is a metadata
-	 *                                     update request.
+	 * @param path                               The data object path.
+	 * @param userId                             The user Id requested the
+	 *                                           migration.
+	 * @param configurationId                    The The data object configuration
+	 *                                           ID.
+	 * @param fromS3ArchiveConfigurationId       The migration source S3 archive
+	 *                                           configuration ID.
+	 * @param toS3ArchiveConfigurationId         The migration target S3 archive
+	 *                                           configuration ID.
+	 * @param collectionMigrationTaskId          (Optional) The collection migration
+	 *                                           task ID that is associated w/ this
+	 *                                           data object migration task
+	 * @param alignArchivePath                   If true, the file is moved within
+	 *                                           its current archive to align w/ the
+	 *                                           iRODs path.
+	 * @param size                               The data object size.
+	 * @param retryTaskId                        The previous task ID if this is a
+	 *                                           retry request.
+	 * @param retryUserId                        The user retrying the request if
+	 *                                           this is a retry request.
+	 * @param metadataUpdateRequest              True to indicate this is a metadata
+	 *                                           update request.
+	 * @param metadataFromArchiveFileContainerId (Optional) The metadata migration
+	 *                                           from archive file container ID.
+	 * @param metadataToArchiveFileContainerId   (Optional) The metadata migration
+	 *                                           to archive file container ID.
+	 * 
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest)
-			throws HpcException;
+			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
+			String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId) throws HpcException;
 
 	/**
 	 * Get a list of migration tasks in specific status and type.
@@ -267,14 +274,16 @@ public interface HpcDataMigrationService {
 	 * @param toS3ArchiveConfigurationId   The metadata migration's to S3 config ID.
 	 * @param archiveFileContainerId       The metadata migration's archive
 	 *                                     container ID.
-	 * @param archiveFileIdPattern         The metadata migration's archive file ID
-	 *                                     pattern (% matches any)
+	 * @param fromArchiveFileContainerId   The metadata migration's from archive
+	 *                                     container ID.
+	 * @param toArchiveFileIdPattern       The metadata migration's to archive file
+	 *                                     ID pattern (% matches any)
 	 * @param userId                       The user Id requested the migration.
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createMetadataMigrationTask(String fromS3ArchiveConfigurationId,
-			String toS3ArchiveConfigurationId, String archiveFileContainerId, String archiveFileIdPattern,
-			String userId) throws HpcException;
+			String toS3ArchiveConfigurationId, String fromArchiveFileContainerId, String toArchiveFileContainerId,
+			String archiveFileIdPattern, String userId) throws HpcException;
 
 }
