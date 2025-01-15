@@ -1606,6 +1606,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
+									logger.debug("download task: {} - finally block called: to markProcessedDataObjectDownloadTask in-process=false [transfer-type={}]", downloadTask.getId(),
+											downloadTask.getDataTransferType());
 									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 											dataTransferType, false);
 
