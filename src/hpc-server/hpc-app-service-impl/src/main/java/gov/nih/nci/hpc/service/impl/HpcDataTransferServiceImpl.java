@@ -1471,6 +1471,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		
+		logger.debug("download task: {} - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]", downloadTask.getId(),
+				downloadTask.getDataTransferType(), HpcDataTransferType.S_3.equals(downloadTask.getDataTransferType()) ? s3DownloadTaskServerId : null);
+		
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
@@ -1499,16 +1503,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// in-process not already true.
 		boolean updated = true;
 
+		logger.debug("download task: {} - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}]", downloadTask.getId(),
+				downloadTask.getDataTransferType(), inProcess, HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
 			String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
 			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
+			if(updated)
+				logger.debug("download task: {} - markProcessedDataObjectDownloadTask updated to in-process={} - [transfer-type={}, server-id={}]", downloadTask.getId(),
+						downloadTask.getDataTransferType(), inProcess, HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 			downloadTask.setS3DownloadTaskServerId(serverId);
 		}
 
 		if (updated) {
 			Calendar processed = Calendar.getInstance();
 			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
+			logger.debug("download task: {} - markProcessedDataObjectDownloadTask processed timestamp update only - [transfer-type={}, server-id={}]", downloadTask.getId(),
+					downloadTask.getDataTransferType(), HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 			downloadTask.setProcessed(processed);
 			downloadTask.setInProcess(inProcess);
 		}
