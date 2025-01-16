@@ -983,7 +983,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			HpcDataMigrationTask dataObjectMetadataUpdateTask = dataMigrationService.createDataObjectMigrationTask(path,
 					bulkMetadataUpdateTask.getUserId(), null, bulkMetadataUpdateTask.getFromS3ArchiveConfigurationId(),
 					bulkMetadataUpdateTask.getToS3ArchiveConfigurationId(), bulkMetadataUpdateTask.getId(), false,
-					metadata != null ? metadata.getSourceSize() : null, null, null, true,
+					metadata != null ? Optional.ofNullable(metadata.getSourceSize()).orElse(0L) : 0, null, null, true,
 					bulkMetadataUpdateTask.getMetadataFromArchiveFileContainerId(),
 					bulkMetadataUpdateTask.getMetadataToArchiveFileContainerId());
 			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
