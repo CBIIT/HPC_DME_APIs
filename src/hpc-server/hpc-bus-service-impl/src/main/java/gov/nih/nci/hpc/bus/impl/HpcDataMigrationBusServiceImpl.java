@@ -1052,11 +1052,11 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// Validate the data object exists and accessible.
 		if (!archivePathAttributes.getExists() || !archivePathAttributes.getIsAccessible()
 				|| !archivePathAttributes.getIsFile()) {
-			throw new HpcException(
-					"Data object not found in new archive location - "
-							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileContainerId() + ":"
-							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileId(),
-					HpcErrorType.DATA_TRANSFER_ERROR);
+			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
+					HpcDataMigrationResult.IGNORED, ": Data object not found in new archive location - "
+							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileContainerId() + " : "
+							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileId());
+			return;
 		}
 
 		// Validate the file size in the new archive identical to what is in the old
