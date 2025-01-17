@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
@@ -1053,7 +1054,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		if (!archivePathAttributes.getExists() || !archivePathAttributes.getIsAccessible()
 				|| !archivePathAttributes.getIsFile()) {
 			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
-					HpcDataMigrationResult.IGNORED, ": Data object not found in new archive location - "
+					HpcDataMigrationResult.IGNORED,
+					": Data object not found in new archive location - "
 							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileContainerId() + " : "
 							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileId());
 			return;
@@ -1166,26 +1168,35 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			throws HpcException {
 		// Build the compound query to identify all the data object paths to include in
 		// this bulk metadata update task.
+		HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+		levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
+		levelFilter.setLevel(1);
+		
 		HpcMetadataQuery fromS3ConfigurationIdQuery = new HpcMetadataQuery();
 		fromS3ConfigurationIdQuery.setAttribute("s3_archive_configuration_id");
 		fromS3ConfigurationIdQuery.setOperator(HpcMetadataQueryOperator.EQUAL);
 		fromS3ConfigurationIdQuery.setValue(bulkMetadataUpdateTask.getFromS3ArchiveConfigurationId());
+		fromS3ConfigurationIdQuery.setLevelFilter(levelFilter);
 
 		HpcMetadataQuery archiveFileContainerIdQuery = new HpcMetadataQuery();
 		archiveFileContainerIdQuery.setAttribute("archive_file_container_id");
 		archiveFileContainerIdQuery.setOperator(HpcMetadataQueryOperator.EQUAL);
 		archiveFileContainerIdQuery.setValue(bulkMetadataUpdateTask.getMetadataFromArchiveFileContainerId());
+		archiveFileContainerIdQuery.setLevelFilter(levelFilter);
 
 		HpcMetadataQuery archiveFileIdPatternQuery = new HpcMetadataQuery();
 		archiveFileIdPatternQuery.setAttribute("archive_file_id");
 		archiveFileIdPatternQuery.setOperator(HpcMetadataQueryOperator.LIKE);
 		archiveFileIdPatternQuery.setValue(bulkMetadataUpdateTask.getMetadataArchiveFileIdPattern());
+		archiveFileIdPatternQuery.setLevelFilter(levelFilter);
 
 		HpcCompoundMetadataQuery bulkMetadataUpdateCompoundQuery = new HpcCompoundMetadataQuery();
 		bulkMetadataUpdateCompoundQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
 		bulkMetadataUpdateCompoundQuery.getQueries().add(fromS3ConfigurationIdQuery);
 		bulkMetadataUpdateCompoundQuery.getQueries().add(archiveFileContainerIdQuery);
-		bulkMetadataUpdateCompoundQuery.getQueries().add(archiveFileIdPatternQuery);
+		if (!archiveFileIdPatternQuery.getValue().equals("%")) {
+			bulkMetadataUpdateCompoundQuery.getQueries().add(archiveFileIdPatternQuery);
+		}
 
 		HpcCompoundMetadataQueryDTO bulkMetadataUpdateCompoundQueryDTO = new HpcCompoundMetadataQueryDTO();
 		bulkMetadataUpdateCompoundQueryDTO.setTotalCount(true);
