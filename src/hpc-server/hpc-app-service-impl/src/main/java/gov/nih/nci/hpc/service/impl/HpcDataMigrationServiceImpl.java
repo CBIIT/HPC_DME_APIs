@@ -411,7 +411,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				// All data object migration tasks under this bulk migration task
 				// completed, but at least one failed.
 				result = HpcDataMigrationResult.FAILED;
-			} else if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED)).orElse(0) > 0) {
+			} else if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED)).orElse(0) + Optional
+					.ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE))
+					.orElse(0) > 0) {
 				// All data object migration tasks under this bulk migration task
 				// completed, but at least one ignored.
 				result = HpcDataMigrationResult.COMPLETED_IGNORED_ITEMS;
