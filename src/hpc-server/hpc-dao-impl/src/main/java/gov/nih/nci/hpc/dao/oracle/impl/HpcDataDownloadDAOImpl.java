@@ -29,6 +29,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -96,7 +98,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (DATA_TRANSFER_STATUS = ? and DESTINATION_TYPE = ?)";
 
-	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? for update";
+	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? for update nowait";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set IN_PROCESS = ?, S3_DOWNLOAD_TASK_SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
@@ -237,6 +239,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// The Spring JDBC Template instance.
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// Lob handler
 	private LobHandler lobHandler = new DefaultLobHandler();
@@ -945,8 +950,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					id, inProcess) > 0;
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to set a data object download task w/ in-process value: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+			logger.error("Failed to set a data object download task w/ in-process value: " + e.getMessage());
+			return false;
 		}
 	}
 
