@@ -950,7 +950,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					id, inProcess) > 0;
 
 		} catch (DataAccessException e) {
-			logger.error("Failed to set a data object download task w/ in-process value: " + e.getMessage());
+			logger.debug("download task: {} - DB row locked by another process: {}", id, e.getMessage());
 			return false;
 		}
 	}
