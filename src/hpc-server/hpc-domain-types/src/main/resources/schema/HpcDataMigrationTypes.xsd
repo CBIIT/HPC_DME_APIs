@@ -40,6 +40,7 @@
 			<xsd:enumeration value="COMPLETED_IGNORED_ITEMS" />
 			<xsd:enumeration value="FAILED" /> 
 			<xsd:enumeration value="IGNORED" />
+			<xsd:enumeration value="IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
