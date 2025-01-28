@@ -1,4 +1,4 @@
-#Author: your.email@your.domain.com
+#Author: sarada.chintala@nih.gov
 #Keywords Summary :
 #Feature: List of scenarios.
 #Scenario: Business rule through list of steps with arguments.
@@ -45,6 +45,16 @@ Feature: Group Management Feature
 		Then I verify the status of success of updating a group
 
   @group @group3
+  Scenario: Search a Group
+    Given I want to search a group named "test_group1"
+    Then I verify the status of success in searching the group
+
+  @group @group4
+  Scenario: Get a Group
+    Given I want to get a group named "test_group1"
+    Then I verify the status of success in getting the group and its users
+
+  @group @group5
   Scenario: Delete a Group
     Given I want to delete a group named "test_group1"
     Then I verify the status of success in group deletion
