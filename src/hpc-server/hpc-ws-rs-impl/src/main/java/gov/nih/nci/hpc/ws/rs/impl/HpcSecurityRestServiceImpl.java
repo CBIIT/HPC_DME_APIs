@@ -291,6 +291,21 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl implements Hp
 		return okResponse(null, false);
 	}
 
+
+	@Override
+	public Response deleteGroups(String groupPattern) {
+
+		try {
+			securityBusService.deleteGroups(groupPattern);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(null, false);
+	}
+
+
 	@Override
 	public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration) {
 		try {
