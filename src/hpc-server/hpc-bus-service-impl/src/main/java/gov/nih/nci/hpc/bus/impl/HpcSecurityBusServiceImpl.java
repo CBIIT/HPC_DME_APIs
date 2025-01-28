@@ -733,6 +733,52 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		securityService.updateGroup(groupName, false);
 	}
 
+
+	@Override
+	public void deleteGroups(String groupPattern) throws HpcException {
+		String doc = null;
+
+		if(groupPattern == "%") {
+			throw new HpcException("Wildcard query is not supported", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (groupPattern == null) {
+			throw new HpcException("No group pattern specified", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
+			doc = invoker.getNciAccount().getDoc();
+		}
+
+		// Search for groups.
+		List<String> groupNames = dataManagementSecurityService.getGroups(doc, groupPattern);
+		if (groupNames != null && !groupNames.isEmpty()) {
+			for(String groupName: groupNames) {
+		     // Do not allow if the this user is a group admin but his doc does not match the
+				// group's DOC
+				if (invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+					String groupDoc = securityService.getGroup(groupName).getDoc();
+					if (groupDoc == null || !groupDoc.contentEquals(doc)) {
+						String msg = "No privileges to delete " + groupName + " group";
+						logger.error(invoker.getNciAccount().getUserId() + ":" + msg);
+						throw new HpcException(msg, HpcRequestRejectReason.NOT_AUTHORIZED);
+					}
+				}
+
+				// Delete the group from iRODS.
+				executeGroupAdminAsSystemAccount(() -> dataManagementSecurityService.deleteGroup(groupName));
+
+				// Delete the group from HPC table
+				securityService.deleteGroup(groupName);
+				logger.info("Deleted group " + groupName);
+
+			}
+		}
+	}
+
+
+
 	@Override
 	public void updateQueryConfig(HpcQueryConfigDTO queryConfig) throws HpcException {
 		// Input validation.
