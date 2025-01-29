@@ -1192,7 +1192,7 @@ function register_dataobject_sync_presignurl {
     fileName="test-object.tmp"
     RESPONSE_HEADER=presignedURL-registration-response-header.tmp
     RESPONSE_MSG=presignedURL-registration-response-message.tmp
-    curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${fileName}" "${PRESIGNED_URL}" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+    curl -i -X PUT -H 'Content-Type=application/octet-stream' --upload-file "${fileName}" "${PRESIGNED_URL}" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
     verify_registration presignedURL-registration-response-header.tmp
 }
 
