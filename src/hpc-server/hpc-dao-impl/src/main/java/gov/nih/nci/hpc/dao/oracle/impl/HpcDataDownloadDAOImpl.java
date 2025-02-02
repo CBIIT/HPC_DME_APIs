@@ -1504,8 +1504,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			throws HpcException {
 		try {
 			jdbcTemplate.update(SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, collectionDownloadTaskId);
-			int rowsUpdated = jdbcTemplate.update(UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, collectionDownloadTaskId,
-					bytesTransferred);
+			int rowsUpdated = jdbcTemplate.update(UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, bytesTransferred, collectionDownloadTaskId);
 			if (rowsUpdated == 1) {
 				logger.info("download task: {} - total bytes transferred incremented by {} while in RECEIVED state",
 						collectionDownloadTaskId, bytesTransferred);
