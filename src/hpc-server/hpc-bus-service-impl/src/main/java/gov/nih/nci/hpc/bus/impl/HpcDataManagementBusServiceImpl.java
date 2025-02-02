@@ -3782,6 +3782,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					? ((double) item.getPercentComplete() / 100) * item.getSize()
 					: 0;
 		}
+		
+		// Create a logging prefix.
+		StringBuffer logPrefix = new StringBuffer("Bulk download task: {} - Bytes transferred for ");
+		String logPrefixValue = null;
+		switch (downloadTask.getType()) {
+		case COLLECTION:
+			logPrefix.append("collection {}");
+			logPrefixValue = downloadTask.getPath();
+			break;
+
+		case COLLECTION_LIST:
+			logPrefix.append("collections {}");
+			logPrefixValue = StringUtils.join(downloadTask.getCollectionPaths(), ',');
+			break;
+			
+		case DATA_OBJECT_LIST:
+			logPrefix.append("data-objects {}");
+			logPrefixValue = StringUtils.join(downloadTask.getDataObjectPaths(), ',');
+			break;
+
+		default:
+			break;
+		}
 
 		// Get the estimated total download size for the collection from the reports.
 		if (!downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
@@ -3807,13 +3830,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add the the bytes transferred of completed files.
 			totalBytesTransferred += Optional.ofNullable(downloadTask.getTotalBytesTransferred()).orElse(0L);
 
-			logger.info(
-					"Bytes transferred for collection {} is {}, total size = {}, total estimated size = {}, bytes transferred of completed files = {}",
-					downloadTask.getPath(), totalBytesTransferred, totalDownloadSize, totalEstimatedDownloadSize,
+			logger.info(logPrefix + " is {}, total size = {}, total estimated size = {}, bytes transferred of completed files = {}",
+					downloadTask.getId(), logPrefixValue, totalBytesTransferred, totalDownloadSize, totalEstimatedDownloadSize,
 					downloadTask.getTotalBytesTransferred());
 		} else {
-			logger.info("Bytes transferred for collection {} is {}, total size = {}", downloadTask.getPath(),
-					totalBytesTransferred, totalDownloadSize);
+			logger.info(logPrefix + " is {}, total size = {}", downloadTask.getId(), logPrefixValue, totalBytesTransferred, totalDownloadSize);
 		}
 
 		// Use the estimated download size while the collection is being broken down.
