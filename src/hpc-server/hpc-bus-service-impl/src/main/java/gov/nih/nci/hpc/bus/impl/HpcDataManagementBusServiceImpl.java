@@ -3127,6 +3127,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataTransferService.deleteDataObject(systemGeneratedMetadata.getArchiveLocation(),
 					systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
 					systemGeneratedMetadata.getS3ArchiveConfigurationId());
+			
+			dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+			updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETED);
 
 		} catch (HpcException e) {
 			logger.error("Failed to delete file from archive", e);
@@ -3134,9 +3137,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 			dataObjectDeleteResponse.setMessage(e.getMessage());
 		}
-
-		dataObjectDeleteResponse.setArchiveDeleteStatus(true);
-		updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETED);
 	}
 
 	/**
@@ -3782,7 +3782,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					? ((double) item.getPercentComplete() / 100) * item.getSize()
 					: 0;
 		}
-		
+
 		// Create a logging prefix.
 		StringBuffer logPrefix = new StringBuffer("Bulk download task: {} - Bytes transferred for ");
 		String logPrefixValue = null;
@@ -3796,7 +3796,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logPrefix.append("collections {}");
 			logPrefixValue = StringUtils.join(downloadTask.getCollectionPaths(), ',');
 			break;
-			
+
 		case DATA_OBJECT_LIST:
 			logPrefix.append("data-objects {}");
 			logPrefixValue = StringUtils.join(downloadTask.getDataObjectPaths(), ',');
@@ -3830,11 +3830,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add the the bytes transferred of completed files.
 			totalBytesTransferred += Optional.ofNullable(downloadTask.getTotalBytesTransferred()).orElse(0L);
 
-			logger.info(logPrefix + " is {}, total size = {}, total estimated size = {}, bytes transferred of completed files = {}",
-					downloadTask.getId(), logPrefixValue, totalBytesTransferred, totalDownloadSize, totalEstimatedDownloadSize,
-					downloadTask.getTotalBytesTransferred());
+			logger.info(logPrefix
+					+ " is {}, total size = {}, total estimated size = {}, bytes transferred of completed files = {}",
+					downloadTask.getId(), logPrefixValue, totalBytesTransferred, totalDownloadSize,
+					totalEstimatedDownloadSize, downloadTask.getTotalBytesTransferred());
 		} else {
-			logger.info(logPrefix + " is {}, total size = {}", downloadTask.getId(), logPrefixValue, totalBytesTransferred, totalDownloadSize);
+			logger.info(logPrefix + " is {}, total size = {}", downloadTask.getId(), logPrefixValue,
+					totalBytesTransferred, totalDownloadSize);
 		}
 
 		// Use the estimated download size while the collection is being broken down.
