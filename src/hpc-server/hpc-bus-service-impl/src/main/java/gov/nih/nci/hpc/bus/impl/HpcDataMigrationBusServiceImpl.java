@@ -1065,7 +1065,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// archive
 		if (!dataObjectMetadataUpdateTask.getSize().equals(archivePathAttributes.getSize())) {
 			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
-					HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE,
+					HpcDataMigrationResult.FAILED,
 					": Data object size in new archive location (" + archivePathAttributes.getSize() + ") is different than old ("
 							+ dataObjectMetadataUpdateTask.getSize() + ")"
 							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileContainerId() + " : "
