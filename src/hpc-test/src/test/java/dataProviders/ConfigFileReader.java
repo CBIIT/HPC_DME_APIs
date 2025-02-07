@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.Properties;
 import com.google.gson.Gson;
 
+import gov.nih.nci.hpc.test.common.UserRole;
+
 public class ConfigFileReader {
 
 	private Properties properties;
@@ -59,6 +61,32 @@ public class ConfigFileReader {
 			return token;
 		else
 			throw new RuntimeException("token not specified in the Configuration.properties file.");
+	}
+
+	public String getTokenByRole(String role) {
+		if (role == null || role.isEmpty()) {
+			throw new RuntimeException("User Role is Empty. The Feature should define a User Role");
+		}
+		String token="";
+		if(role.equals(UserRole.USER_ROLE)) {
+			token = properties.getProperty("userToken");
+		} else if (role.equals(UserRole.GROUP_ADMIN_ROLE)) {
+			token = properties.getProperty("groupAdminToken");
+		} else if (role.equals(UserRole.SYSTEM_ADMIN_ROLE)){
+			token = properties.getProperty("systemAdminToken");
+		} else {
+			throw new RuntimeException("Unknown Role");
+		}
+		if (token != null)
+			return token;
+		if(role.equals(UserRole.USER_ROLE)) {
+			throw new RuntimeException("userToken for Role USER not specified in the Configuration.properties file.");
+		} else if (role.equals(UserRole.GROUP_ADMIN_ROLE)) {
+			throw new RuntimeException("groupAdminToken for Role GROUP_ADMIN not specified in the Configuration.properties file.");
+		} else if (role.equals(UserRole.SYSTEM_ADMIN_ROLE)){
+			throw new RuntimeException("SystemAdminToken for Role SYSTEM_ADMIN not specified in the Configuration.properties file.");
+		}
+		return token;
 	}
 
 	public String getGoogleCloudToken() {
