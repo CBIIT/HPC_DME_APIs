@@ -138,7 +138,7 @@ public class TaskHelper {
 		return true;
 	}
 
-	public boolean submitRequest(String requestType, String requestBody, String requestUrl) {
+	public boolean submitRequestBoolean(String requestType, String requestBody, String requestUrl) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
 		String token = configFileReader.getToken();
@@ -158,6 +158,28 @@ public class TaskHelper {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	public String submitRequest(String requestType, String requestBody, String requestUrl, String role) {
+		Gson gson = new Gson();
+		ConfigFileReader configFileReader = new ConfigFileReader();
+		String token = configFileReader.getTokenByRole(role);
+		RestAssured.baseURI = configFileReader.getApplicationUrl();
+		RestAssured.port = 7738;
+		RequestSpecification request = RestAssured.given().log().all().relaxedHTTPSValidation()
+				.header("Accept", "application/json").header("Authorization", "Bearer " + token)
+				.header("Content-Type", "application/json").body(requestBody);
+		Response response = executeRequest(requestType, request, requestUrl);
+		int statusCode = response.getStatusCode();
+		System.out.println("The response status code is: " + statusCode);
+		JsonPath jsonPath = response.jsonPath();
+		System.out.println("JSONPath =" + gson.toJson(jsonPath));
+		System.out.println("The response is: " + response.getBody().asString());
+		if (statusCode == 200 || statusCode == 201) {
+			return "success";
+		} else {
+			return response.getBody().asString();
 		}
 	}
 
