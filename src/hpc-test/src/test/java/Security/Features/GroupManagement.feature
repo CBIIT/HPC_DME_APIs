@@ -21,7 +21,8 @@ Feature: Group Management Feature
 
   @group @group1
   Scenario: Create a Group
-    Given I want to create a group named "test_group1"
+		Given I login as a System Admin
+    And I want to create a group named "test_group1"
     And I add users to the group
       | users 		|
       | schintal 	|
@@ -33,7 +34,8 @@ Feature: Group Management Feature
 
   @group @group2
   Scenario: Update a Group
-    Given I want to update a group named "test_group1"
+		Given I login as a System Admin
+    And I want to update a group named "test_group1"
     And I delete users from the group
       | users 		|
       | sehgalu2	|
@@ -46,15 +48,18 @@ Feature: Group Management Feature
 
   @group @group3
   Scenario: Search a Group
-    Given I want to search a group named "test_group1"
+		Given I login as a System Admin
+    And I want to search a group named "%test%"
     Then I verify the status of success in searching the group
 
   @group @group4
   Scenario: Get a Group
-    Given I want to get a group named "test_group1"
+		Given I login as a System Admin
+    And I want to get a group named "test_group1"
     Then I verify the status of success in getting the group and its users
 
   @group @group5
   Scenario: Delete a Group
-    Given I want to delete a group named "test_group1"
+		Given I login as a System Admin
+    And I want to delete a group named "test_group1"
     Then I verify the status of success in group deletion
