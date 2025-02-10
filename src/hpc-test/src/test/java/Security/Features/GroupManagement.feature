@@ -16,13 +16,13 @@
 #""
 ## (Comments)
 #Sample Feature Definition Template
-@tag
+#
+@group
 Feature: Group Management Feature
 
-  @group @group1
-  Scenario: Create a Group
-		Given I login as a System Admin
-    And I want to create a group named "test_group1"
+  @createGroup
+  Scenario Outline: Create a Group
+    Given I want to create a group named "test_group1" in a <role> role
     And I add users to the group
       | users 		|
       | schintal 	|
@@ -30,12 +30,16 @@ Feature: Group Management Feature
       | menons2		|
       | frostr		|
     And I click create group
-		Then I verify the status of success in group creation
+		Then I verify the status of <response> in group creation
+		Examples:
+			|	role					| response |
+			| System Admin	| success  |
+			| Group Admin		|	success  |
+			#| User					|	failure unauthorized access|
 
-  @group @group2
+  @group2
   Scenario: Update a Group
-		Given I login as a System Admin
-    And I want to update a group named "test_group1"
+    Given I want to update a group named "test_group1"
     And I delete users from the group
       | users 		|
       | sehgalu2	|
@@ -46,20 +50,31 @@ Feature: Group Management Feature
     And I click update group
 		Then I verify the status of success of updating a group
 
-  @group @group3
+  @group3
   Scenario: Search a Group
 		Given I login as a System Admin
     And I want to search a group named "%test%"
     Then I verify the status of success in searching the group
 
-  @group @group4
+  @group4
   Scenario: Get a Group
 		Given I login as a System Admin
     And I want to get a group named "test_group1"
     Then I verify the status of success in getting the group and its users
 
-  @group @group5
+  @group5
   Scenario: Delete a Group
-		Given I login as a System Admin
-    And I want to delete a group named "test_group1"
-    Then I verify the status of success in group deletion
+    Given I want to delete a group named "test_group1" in a <role> role
+    Then I verify the status of <response> in group deletion
+		Examples:
+			|	role					| response |
+			| System Admin	| success  |
+			| Group Admin	| success  |
+
+  #@group6
+  #Scenario: User Role should not be able to Create/Update/Delete groups
+  #  Given I want to <action> a group named "test_group1" in a User role
+  #  Then I verify the status of failure of actions in a User role
+	#	Examples:
+	#		|	action	|
+	#		| create	|

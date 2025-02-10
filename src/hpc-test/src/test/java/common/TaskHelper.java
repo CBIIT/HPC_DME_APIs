@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.test.common.ErrorMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,7 +162,8 @@ public class TaskHelper {
 		}
 	}
 
-	public String submitRequest(String requestType, String requestBody, String requestUrl, String role) {
+	// TODO Remove
+	public String submitRequestOld(String requestType, String requestBody, String requestUrl, String role) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
 		String token = configFileReader.getTokenByRole(role);
@@ -173,14 +175,43 @@ public class TaskHelper {
 		Response response = executeRequest(requestType, request, requestUrl);
 		int statusCode = response.getStatusCode();
 		System.out.println("The response status code is: " + statusCode);
-		JsonPath jsonPath = response.jsonPath();
-		System.out.println("JSONPath =" + gson.toJson(jsonPath));
-		System.out.println("The response is: " + response.getBody().asString());
+		JsonPath jsonPath = response.getBody().jsonPath();
 		if (statusCode == 200 || statusCode == 201) {
 			return "success";
 		} else {
-			return response.getBody().asString();
+			String errorType = jsonPath.get("errorType");
+			System.out.println("JSONPath =" + gson.toJson(jsonPath));
+			System.out.println("The response is: " + response.getBody().asString());
+			System.out.println("The errorType is: " + errorType);
+			return errorType;
 		}
+	}
+
+	public ErrorMessage submitRequest(String requestType, String requestBody, String requestUrl, String role) {
+		Gson gson = new Gson();
+		ConfigFileReader configFileReader = new ConfigFileReader();
+		String token = configFileReader.getTokenByRole(role);
+		RestAssured.baseURI = configFileReader.getApplicationUrl();
+		RestAssured.port = 7738;
+		RequestSpecification request = RestAssured.given().log().all().relaxedHTTPSValidation()
+				.header("Accept", "application/json").header("Authorization", "Bearer " + token)
+				.header("Content-Type", "application/json").body(requestBody);
+		Response response = executeRequest(requestType, request, requestUrl);
+		int statusCode = response.getStatusCode();
+		System.out.println("The response status code is: " + statusCode);
+		JsonPath jsonPath = response.getBody().jsonPath();
+		ErrorMessage errorMessage = new ErrorMessage();
+		if (statusCode == 200 || statusCode == 201) {
+			errorMessage.errorType = "success";
+		} else {
+			errorMessage.errorType = jsonPath.get("errorType");
+			errorMessage.message = jsonPath.get("message");
+			errorMessage.stackTrace = jsonPath.get("stackTrace");
+			System.out.println("JSONPath =" + gson.toJson(jsonPath));
+			System.out.println("The response is: " + response.getBody().asString());
+			System.out.println("The errorType is: " + jsonPath.get("errorType"));
+		}
+		return errorMessage;
 	}
 
 	private Response executeRequest(String requestType, RequestSpecification request, String requestUrl) {
