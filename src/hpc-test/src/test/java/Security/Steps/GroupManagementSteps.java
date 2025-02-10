@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMemberResponse;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.test.common.UserRole;
+import gov.nih.nci.hpc.test.common.ErrorMessage;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -33,25 +34,33 @@ public class GroupManagementSteps {
 	boolean firstRegistration = true;
 	boolean testSuccess = false;
 	String testSuccessString = "success";
+	String testFailedString = "failure";
 	String createGroupUrl;
 	int statusCode;
-	String result;
+	ErrorMessage result;
 	String role;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	HpcGroupMembersRequestDTO dto = new HpcGroupMembersRequestDTO();
-	
-	@Given("I login as a System Admin")
-	public void i_login_as_a_system_admin() {
+
+	@Given("I want to create a group named {string} in a System Admin role")
+	public void i_want_to_create_a_group_named_in_a_system_admin_role(String groupNameString) {
+		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
 		role = UserRole.SYSTEM_ADMIN_ROLE;
 	}
 
-	// Create Group Steps
-	@Given("I want to create a group named {string}")
-	public void i_want_to_create_a_group_named(String groupNameString) {
+	@Given("I want to create a group named {string} in a Group Admin role")
+	public void i_want_to_create_a_group_named_in_a_group_admin_role(String groupNameString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		role = UserRole.GROUP_ADMIN_ROLE;
+	}
+
+	@Given("I want to create a group named {string} in a User role")
+	public void i_want_to_create_a_group_named_in_a_user_role(String groupNameString) {
+		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		role = UserRole.USER_ROLE;
 	}
 
 	@Given("I add users to the group")
@@ -63,15 +72,28 @@ public class GroupManagementSteps {
 		try {
 			result = taskHelper.submitRequest("PUT", gson.toJson(dto), createGroupUrl, role);
 		} catch (Exception e) {
-			String errMsg = "Failed to retrieve bookmarks. Reason: " + e.getMessage();
+			String errMsg = "Failed to Create Group. Reason: " + e.getMessage();
 			System.out.println(errMsg);
 		}
 	}	
-	
+
 	@Then("I verify the status of success in group creation")
 	public void i_verify_the_status_of_success_in_group_creation() {
 		if(!result.equals(testSuccessString)) {
-			Assert.assertEquals((Object) testSuccessString, (Object) result);
+			String error = result.stackTrace;
+			Assert.assertEquals((Object) testSuccessString, (Object) error);
+		}
+	}
+
+	@Then("I verify the status of failure unauthorized access in group creation")
+	public void i_verify_the_status_of_failure_unauthorized_access_in_group_creation() {
+		String errorType = "REQUEST_AUTHENTICATION_FAILED";
+		String responseErrorType = result.errorType;
+		if(responseErrorType.equals("REQUEST_AUTHENTICATION_FAILED")) {
+			Assert.assertEquals((Object) responseErrorType, (Object)errorType);
+		} else {
+			String error = result.stackTrace;
+			Assert.assertEquals((Object) error, (Object)errorType);
 		}
 	}
 	
@@ -122,18 +144,31 @@ public class GroupManagementSteps {
 	}
 
 	// Delete Group Steps
-	@Given("I want to delete a group named {string}")
+	@Given("I want to delete a group named {string} in a System Admin role")
+	public void i_want_to_delete_a_group_named_in_a_system_admin_role(String groupNameString) {
+		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		role = UserRole.SYSTEM_ADMIN_ROLE;
+		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
+	}
+
+	/*@Given("I want to delete a group named {string}")
 	public void i_want_to_delete_a_group_named(String groupNameString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
 		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
-	}
+	}*/
 
 	@Then("I verify the status of success in group deletion")
 	public void i_verify_the_status_of_success_in_group_deletion() {
 		if(!result.equals(testSuccessString)) {
-			Assert.assertEquals((Object) testSuccessString, (Object) result);
+			String error = result.stackTrace;
+			Assert.assertEquals((Object) testSuccessString, (Object) error );
 		}
 	}
 	
+	@Then("I verify the status of failure of actions in a User role")
+	public void i_verify_the_status_of_failure_of_actions_in_a_user_role() {
+	    // Write code here that turns the phrase above into concrete actions
+	    throw new io.cucumber.java.PendingException();
+	}
 }
 
