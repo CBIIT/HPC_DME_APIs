@@ -62,7 +62,13 @@
         <version>6.10.4</version>
         <scope>test</scope>
     </dependency>
-      <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-chrome-driver -->
+	<!-- https://mvnrepository.com/artifact/tech.grasshopper/extentreports-cucumber7-adapter -->
+	<dependency>
+	    <groupId>tech.grasshopper</groupId>
+	    <artifactId>extentreports-cucumber7-adapter</artifactId>
+	    <version>1.14.0</version>
+	</dependency>
+    <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-chrome-driver -->
     <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-chrome-driver</artifactId>
