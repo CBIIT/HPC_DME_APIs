@@ -749,6 +749,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} else {
 			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
 		}
+		
+		// TODO - Remove when done testing
+		logger.error("ERAN: upload done. size = {}", sourceFile.length());
+		
+		// TODO - End
 
 		return uploadResponse;
 	}
