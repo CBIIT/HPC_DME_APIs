@@ -496,6 +496,7 @@
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="totalBytesTransferred " type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
