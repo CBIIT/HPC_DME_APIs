@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 
 import gov.nih.nci.hpc.test.common.TaskHelper;
+import gov.nih.nci.hpc.test.common.FileHelper;
 import gov.nih.nci.hpc.test.dataProviders.ConfigFileReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -106,7 +107,7 @@ public class DownloadBulkSteps {
 	@When("I click Download")
 	public void i_click_download() {
 		System.out.println("----------------------------------------------------------");
-		System.out.println("Test Download");
+		System.out.println("Submit Download");
 
 		HpcBulkDataObjectDownloadRequestDTO downloadRequestBody = new HpcBulkDataObjectDownloadRequestDTO();
 		String totalPath = this.path + "/" + sourceLocation.getFileId();
@@ -155,23 +156,27 @@ public class DownloadBulkSteps {
 		}
 		//downloadRequestBody.setAppendPathToDownloadDestination(true);
 		System.out.println(gson.toJson(downloadRequestBody));
-		testSuccess = taskHelper.submitRequest("POST", gson.toJson(downloadRequestBody), downloadUrl);
-		System.out.println("----------------------------------------------------------");
-		System.out.println("");
+		testSuccess = taskHelper.submitRequestBoolean("POST", gson.toJson(downloadRequestBody), downloadUrl);
 	}
 
 	@Then("I get a response of success for the Download")
 	public void i_get_a_response_of_success_for_the_download() {
+		System.out.println("Print testSuccess  1");
+		System.out.println(testSuccess);
 		org.junit.Assert.assertEquals(testSuccess, true);
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
 	}
 
 	@Then("I get a response of {string} for the Download")
 	public void i_get_a_response_of_for_the_download(String result) {
-		if (result == "success") {
+		if (result.equals("success")) {
 			org.junit.Assert.assertEquals(testSuccess, true);
 		} else {
 			org.junit.Assert.assertEquals(testSuccess, false);
 		}
+		System.out.println("----------------------------------------------------------");
+		System.out.println("");
 	}
 
 	class AccountAsperaRenameStrategy implements FieldNamingStrategy {
