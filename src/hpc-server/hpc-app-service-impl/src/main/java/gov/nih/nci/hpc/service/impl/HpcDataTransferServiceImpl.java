@@ -3441,13 +3441,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						? secondHopDownload.getDownloadTask().getGlobusDownloadDestination().getDestinationLocation()
 						: secondHopDownload.getDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
 
-		// Perform the first hop download (From S3 Archive to DME Server local file
-		// system).
 		try {
+			// Reset the download task, so the 1st-hop is picked up by a scheduled-task.
+			resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+
 			if (!StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
-				// The download task created from a collection task breakdown, is queued to be
-				// picked up by the schedulers.
-				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
 						"download task: {} - 2 Hop download task created from a collection download request [transfer-type={}, destination-type={},"
 								+ " path = {}, collection download task = {}]",
@@ -3455,35 +3453,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath(),
 						downloadRequest.getCollectionDownloadTaskId());
 			} else {
-				// Single data object download task.
-				HpcCanPerform2HopDownloadResponse canPerfom2HopDownloadResponse = canPerfom2HopDownload(
-						secondHopDownload);
-				if (canPerfom2HopDownloadResponse.value) {
-					// We start the 1st hop here for a single file download request. For collection
-					// download task, the 1st hop will get kicked off by a scheduled task.
-					dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
-							getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-									downloadRequest.getS3ArchiveConfigurationId()),
-							downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
-							dataTransferConfiguration.getEncryptedTransfer());
-
-					logger.info(
-							"download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
-							secondHopDownload.downloadTask.getId(),
-							secondHopDownload.downloadTask.getDataTransferType(),
-							secondHopDownload.downloadTask.getDestinationType(),
-							secondHopDownload.downloadTask.getPath());
-				} else {
-					// Can't perform the 2-hop download at this time.
-					resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
-					logger.info(
-							"download task: {} - 2 Hop download can't be initiated [transfer-type={}, destination-type={},"
-									+ " path = {}] - {} ",
-							secondHopDownload.downloadTask.getId(),
-							secondHopDownload.downloadTask.getDataTransferType(),
-							secondHopDownload.downloadTask.getDestinationType(),
-							secondHopDownload.downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
-				}
+				logger.info(
+						"download task: {} - 2 Hop download task created from a single-file download request [transfer-type={}, destination-type={},"
+								+ " path = {}]",
+						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
 		} catch (HpcException e) {
