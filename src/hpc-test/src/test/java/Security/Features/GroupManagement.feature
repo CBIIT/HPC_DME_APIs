@@ -22,7 +22,7 @@ Feature: Group Management Feature
 
   @createGroup
   Scenario Outline: Create a Group
-    Given I want to create a group named "test_group1" in a <role> role
+    Given I want to create a group named "<group>" in a "<role>" role
     And I add users to the group
       | users 		|
       | schintal 	|
@@ -30,16 +30,16 @@ Feature: Group Management Feature
       | menons2		|
       | frostr		|
     And I click create group
-		Then I verify the status of <response> in group creation
+		Then I verify the status of "<response>" in group creation
 		Examples:
-			|	role					| response |
-			| System Admin	| success  |
-			| Group Admin		|	success  |
-			#| User					|	failure unauthorized access|
+			|group						|	role					| response |
+			|test_group_sa		| System Admin	| success  |
+			|test_group_ga		| Group Admin		|	success  |
+			|test_group_user	| User					|	failure unauthorized access|
 
   @group2
-  Scenario: Update a Group
-    Given I want to update a group named "test_group1"
+  Scenario Outline: Update a Group
+    Given I want to update a group named "<group>" in a "<role>" role
     And I delete users from the group
       | users 		|
       | sehgalu2	|
@@ -48,7 +48,12 @@ Feature: Group Management Feature
       | users 		|
       | frostr	|   
     And I click update group
-		Then I verify the status of success of updating a group
+		Then I verify the status of "<response>" of updating a group
+		Examples:
+			|group						|	role					| response |
+			|test_group_sa		| System Admin	| success  |
+			|test_group_ga		| Group Admin		|	success  |
+			|test_group_user	| User					|	failure unauthorized access|
 
   @group3
   Scenario: Search a Group
@@ -64,12 +69,13 @@ Feature: Group Management Feature
 
   @group5
   Scenario: Delete a Group
-    Given I want to delete a group named "test_group1" in a <role> role
+    Given I want to delete a group named "<group>" in a "<role>" role
     Then I verify the status of <response> in group deletion
 		Examples:
-			|	role					| response |
-			| System Admin	| success  |
-			| Group Admin	| success  |
+			|group						|	role					| response |
+			|test_group_sa		| System Admin	| success  |
+			|test_group_ga		| Group Admin		|	success  |
+			|test_group_user	| User					|	failure unauthorized access|
 
   #@group6
   #Scenario: User Role should not be able to Create/Update/Delete groups
