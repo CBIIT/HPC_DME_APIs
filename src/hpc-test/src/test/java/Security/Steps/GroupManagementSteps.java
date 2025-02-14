@@ -45,7 +45,14 @@ public class GroupManagementSteps {
 
 	HpcGroupMembersRequestDTO dto = new HpcGroupMembersRequestDTO();
 
-	@Given("I want to create a group named {string} in a System Admin role")
+	@Given("I want to create a group named {string} in a {string} role")
+	public void i_want_to_create_a_group_named_in_a_role(String groupNameString, String roleString) {
+		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		System.out.println("roleString=" + roleString);
+		role = getRole(roleString);
+	}
+
+	/* @Given("I want to create a group named {string} in a System Admin role")
 	public void i_want_to_create_a_group_named_in_a_system_admin_role(String groupNameString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
 		role = UserRole.SYSTEM_ADMIN_ROLE;
@@ -61,7 +68,7 @@ public class GroupManagementSteps {
 	public void i_want_to_create_a_group_named_in_a_user_role(String groupNameString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
 		role = UserRole.USER_ROLE;
-	}
+	}*/
 
 	@Given("I add users to the group")
 	public void i_add_users_to_the_group(io.cucumber.datatable.DataTable dataTable) {
@@ -77,26 +84,24 @@ public class GroupManagementSteps {
 		}
 	}	
 
-	@Then("I verify the status of success in group creation")
-	public void i_verify_the_status_of_success_in_group_creation() {
-		if(!result.equals(testSuccessString)) {
-			String error = result.stackTrace;
-			Assert.assertEquals((Object) testSuccessString, (Object) error);
+	@Then("I verify the status of {string} in group creation")
+	public void i_verify_the_status_of_in_group_creation(String expectedResponseString) {
+		if(expectedResponseString.equals("success")) {
+			String responseType = result.errorType;
+			if(!responseType.equals(testSuccessString)) {
+				Assert.assertEquals((Object) testSuccessString, (Object) result.stackTrace);
+			}
+		} else {
+			String errorType = "REQUEST_AUTHENTICATION_FAILED";
+			String responseErrorType = result.errorType;
+			if(responseErrorType.equals("REQUEST_AUTHENTICATION_FAILED")) {
+				Assert.assertEquals((Object) responseErrorType, (Object)errorType);
+			} else {
+				Assert.assertEquals((Object) responseErrorType, (Object)result.stackTrace);
+			}
 		}
 	}
 
-	@Then("I verify the status of failure unauthorized access in group creation")
-	public void i_verify_the_status_of_failure_unauthorized_access_in_group_creation() {
-		String errorType = "REQUEST_AUTHENTICATION_FAILED";
-		String responseErrorType = result.errorType;
-		if(responseErrorType.equals("REQUEST_AUTHENTICATION_FAILED")) {
-			Assert.assertEquals((Object) responseErrorType, (Object)errorType);
-		} else {
-			String error = result.stackTrace;
-			Assert.assertEquals((Object) error, (Object)errorType);
-		}
-	}
-	
 	// Update Group Steps
 	@Given("I want to update a group named {string}")
 	public void i_want_to_update_a_group_named(String groupNameString) {
@@ -151,6 +156,15 @@ public class GroupManagementSteps {
 		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
 	}
 
+	@Given("I want to delete a group named {string} in a Group Admin role")
+	public void i_want_to_delete_a_group_named_in_a_group_admin_role(String groupNameString) {
+	    // Write code here that turns the phrase above into concrete actions
+		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		role = UserRole.GROUP_ADMIN_ROLE;
+		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
+	}
+
+
 	/*@Given("I want to delete a group named {string}")
 	public void i_want_to_delete_a_group_named(String groupNameString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
@@ -159,16 +173,37 @@ public class GroupManagementSteps {
 
 	@Then("I verify the status of success in group deletion")
 	public void i_verify_the_status_of_success_in_group_deletion() {
-		if(!result.equals(testSuccessString)) {
+		String responseStr = result.errorType;
+		if(!responseStr.equals(testSuccessString)) {
 			String error = result.stackTrace;
 			Assert.assertEquals((Object) testSuccessString, (Object) error );
 		}
 	}
-	
+
 	@Then("I verify the status of failure of actions in a User role")
 	public void i_verify_the_status_of_failure_of_actions_in_a_user_role() {
 	    // Write code here that turns the phrase above into concrete actions
 	    throw new io.cucumber.java.PendingException();
 	}
-}
 
+	@Given("I want to delete a group named {string} in a {string} role")
+	public void i_want_to_delete_a_group_named_in_a_role(String groupNameString, String roleString) {
+		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		System.out.println("roleString=" + roleString);
+		role = getRole(roleString);
+		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
+	}
+
+	private String getRole(String roleString) {
+		if(roleString.equals("System Admin")) {
+			role = UserRole.SYSTEM_ADMIN_ROLE;
+		} else if(roleString.equals("Group Admin")) {
+			role = UserRole.GROUP_ADMIN_ROLE;
+		} else if(roleString.equals("User")) {
+			role = UserRole.USER_ROLE;
+		} else {
+			role = "Unknown";
+		}
+		return role;
+	}
+}
