@@ -267,24 +267,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				logger.info("System metadata in S3 archive already set for [{}]. No need to copy-object in archive",
 						fileLocation.getFileId());
 				
-				// TODO - Remove when done testing
-				List<HpcMetadataEntry> mdl = new ArrayList<>();
-				HpcMetadataEntry md = new HpcMetadataEntry();
-				md.setAttribute("eran-test");
-				md.setValue("eran-value");
-				mdl.add(md);
-
-				CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
-						fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
-						.withNewObjectMetadata(toS3Metadata(mdl)).withStorageClass(storageClass);
-
-				logger.error("ERAN: set archive metadata: start: {}:{}", fileLocation.getFileContainerId(), fileLocation.getFileId());
-				CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-						.copyObject(copyRequest);
-				logger.error("ERAN: set archive metadata: end: {} == {}", copyResult.getETag(), s3Metadata.getETag());
-				// TODO - End
-
-
 				return s3Metadata.getETag();
 			}
 
