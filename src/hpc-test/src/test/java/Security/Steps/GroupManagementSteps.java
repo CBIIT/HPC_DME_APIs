@@ -31,6 +31,7 @@ public class GroupManagementSteps {
 	ConfigFileReader configFileReader = new ConfigFileReader();
 	TaskHelper taskHelper = new TaskHelper();
 	static final String CREATE_GROUP_URL = "/hpc-server/group";
+	static final String REQUEST_AUTHENTICATION_FAILED = "REQUEST_AUTHENTICATION_FAILED";
 	boolean firstRegistration = true;
 	boolean testSuccess = false;
 	String testSuccessString = "success";
@@ -86,20 +87,7 @@ public class GroupManagementSteps {
 
 	@Then("I verify the status of {string} in group creation")
 	public void i_verify_the_status_of_in_group_creation(String expectedResponseString) {
-		if(expectedResponseString.equals("success")) {
-			String responseType = result.errorType;
-			if(!responseType.equals(testSuccessString)) {
-				Assert.assertEquals((Object) testSuccessString, (Object) result.stackTrace);
-			}
-		} else {
-			String errorType = "REQUEST_AUTHENTICATION_FAILED";
-			String responseErrorType = result.errorType;
-			if(responseErrorType.equals("REQUEST_AUTHENTICATION_FAILED")) {
-				Assert.assertEquals((Object) responseErrorType, (Object)errorType);
-			} else {
-				Assert.assertEquals((Object) responseErrorType, (Object)result.stackTrace);
-			}
-		}
+		verifyResponse(expectedResponseString);
 	}
 
 	// Update Group Steps
@@ -192,6 +180,34 @@ public class GroupManagementSteps {
 		System.out.println("roleString=" + roleString);
 		role = getRole(roleString);
 		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
+	}
+
+	@Then("I verify the status of {string} in group deletion")
+	public void i_verify_the_status_of_in_group_deletion(String expectedResponseString) {
+		verifyResponse(expectedResponseString);
+	}
+
+	private void verifyResponse(String expectedResponseString) {
+		String responseType = result.errorType;
+		if (expectedResponseString.equals(testSuccessString)) {
+			if (!responseType.equals(testSuccessString)) {
+				if (responseType.equals("REQUEST_REJECTED")) {
+					String msg = responseType + "; " + result.message;
+					Assert.assertEquals((Object) testSuccessString, (Object) msg);
+				} else {
+					Assert.assertEquals((Object) testSuccessString, (Object) result.stackTrace);
+				}
+			} else {
+				Assert.assertEquals((Object) testSuccessString, (Object) responseType);
+			}
+		} else {
+			String errorType = "REQUEST_AUTHENTICATION_FAILED";
+			if (responseType.equals("REQUEST_AUTHENTICATION_FAILED")) {
+				Assert.assertEquals((Object) responseType, (Object) "REQUEST_AUTHENTICATION_FAILED");
+			} else {
+				Assert.assertEquals((Object) responseType, (Object) result.stackTrace);
+			}
+		}
 	}
 
 	private String getRole(String roleString) {

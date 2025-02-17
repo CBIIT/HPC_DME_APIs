@@ -162,31 +162,6 @@ public class TaskHelper {
 		}
 	}
 
-	// TODO Remove
-	public String submitRequestOld(String requestType, String requestBody, String requestUrl, String role) {
-		Gson gson = new Gson();
-		ConfigFileReader configFileReader = new ConfigFileReader();
-		String token = configFileReader.getTokenByRole(role);
-		RestAssured.baseURI = configFileReader.getApplicationUrl();
-		RestAssured.port = 7738;
-		RequestSpecification request = RestAssured.given().log().all().relaxedHTTPSValidation()
-				.header("Accept", "application/json").header("Authorization", "Bearer " + token)
-				.header("Content-Type", "application/json").body(requestBody);
-		Response response = executeRequest(requestType, request, requestUrl);
-		int statusCode = response.getStatusCode();
-		System.out.println("The response status code is: " + statusCode);
-		JsonPath jsonPath = response.getBody().jsonPath();
-		if (statusCode == 200 || statusCode == 201) {
-			return "success";
-		} else {
-			String errorType = jsonPath.get("errorType");
-			System.out.println("JSONPath =" + gson.toJson(jsonPath));
-			System.out.println("The response is: " + response.getBody().asString());
-			System.out.println("The errorType is: " + errorType);
-			return errorType;
-		}
-	}
-
 	public ErrorMessage submitRequest(String requestType, String requestBody, String requestUrl, String role) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
@@ -207,9 +182,17 @@ public class TaskHelper {
 			errorMessage.errorType = jsonPath.get("errorType");
 			errorMessage.message = jsonPath.get("message");
 			errorMessage.stackTrace = jsonPath.get("stackTrace");
-			System.out.println("JSONPath =" + gson.toJson(jsonPath));
-			System.out.println("The response is: " + response.getBody().asString());
-			System.out.println("The errorType is: " + jsonPath.get("errorType"));
+			String errorType = jsonPath.get("errorType");
+			if (errorType.equals("REQUEST_REJECTED")) {
+				String msg = errorType + "; " + jsonPath.get("requestRejectReason") + errorMessage.message;
+				System.out.println("The response is: " + msg);
+			} else if (errorType.equals("REQUEST_AUTHENTICATION_FAILED")){
+				System.out.println("The response is: REQUEST_AUTHENTICATION_FAILED; " +  errorMessage.message);
+				System.out.println("The errorType is: " + errorType);
+			} else {
+				System.out.println("The response is: " + response.getBody().asString());
+				System.out.println("The errorType is: " + errorType);
+			}
 		}
 		return errorMessage;
 	}
