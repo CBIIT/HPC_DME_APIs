@@ -53,28 +53,11 @@ public class GroupManagementSteps {
 		role = getRole(roleString);
 	}
 
-	/* @Given("I want to create a group named {string} in a System Admin role")
-	public void i_want_to_create_a_group_named_in_a_system_admin_role(String groupNameString) {
-		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
-		role = UserRole.SYSTEM_ADMIN_ROLE;
-	}
-
-	@Given("I want to create a group named {string} in a Group Admin role")
-	public void i_want_to_create_a_group_named_in_a_group_admin_role(String groupNameString) {
-		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
-		role = UserRole.GROUP_ADMIN_ROLE;
-	}
-
-	@Given("I want to create a group named {string} in a User role")
-	public void i_want_to_create_a_group_named_in_a_user_role(String groupNameString) {
-		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
-		role = UserRole.USER_ROLE;
-	}*/
-
 	@Given("I add users to the group")
 	public void i_add_users_to_the_group(io.cucumber.datatable.DataTable dataTable) {
 		dto.getAddUserIds().addAll(dataTable.rows(1).asList()); // ignore the head of column
 	}
+
 	@Given("I click create group")
 	public void i_click_create_group() {
 		try {
@@ -83,7 +66,7 @@ public class GroupManagementSteps {
 			String errMsg = "Failed to Create Group. Reason: " + e.getMessage();
 			System.out.println(errMsg);
 		}
-	}	
+	}
 
 	@Then("I verify the status of {string} in group creation")
 	public void i_verify_the_status_of_in_group_creation(String expectedResponseString) {
@@ -91,10 +74,13 @@ public class GroupManagementSteps {
 	}
 
 	// Update Group Steps
-	@Given("I want to update a group named {string}")
-	public void i_want_to_update_a_group_named(String groupNameString) {
+	@Given("I want to update a group named {string} in a {string} role")
+	public void i_want_to_update_a_group_named_in_a_role(String groupNameString, String roleString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		System.out.println("roleString=" + roleString);
+		role = getRole(roleString);
 	}
+
 	@Given("I delete users from the group")
 	public void i_delete_users_from_the_group(io.cucumber.datatable.DataTable dataTable) {
 		dto.getDeleteUserIds().addAll(dataTable.rows(1).asList()); // ignore the head of column
@@ -105,26 +91,38 @@ public class GroupManagementSteps {
 	    // Write code here that turns the phrase above into concrete actions
 		result = taskHelper.submitRequest("POST", gson.toJson(dto), createGroupUrl, role);
 	}
-	@Then("I verify the status of success of updating a group")
-	public void i_verify_the_status_of_success_of_updating_a_group() {
-		if(!result.equals(testSuccessString)) {
-			Assert.assertEquals((Object) testSuccessString, (Object) result);
-		}
-	}
-	
-	// Search Group Steps
-	@Given("I want to search a group named {string}")
-	public void i_want_to_search_a_group_named(String groupSearchString) {
+
+	@Then("I verify the status of {string} of updating a group")
+	public void i_verify_the_status_of_of_updating_a_group(String expectedResponseString) {
+		verifyResponse(expectedResponseString);	}
+
+
+	// Search Group(s)
+	@Given("I want to search a group named {string} in a {string} role")
+	public void i_want_to_search_a_group_named_in_a_role(String groupSearchString, String roleString) {
 		createGroupUrl = CREATE_GROUP_URL + "?groupPattern=" + groupSearchString;
-		System.out.println(createGroupUrl);
-	}
+		role = getRole(roleString);
+	}	
+
 	@Then("I verify the status of success in searching the group")
 	public void i_verify_the_status_of_success_in_searching_the_group() {
 		testSuccess = taskHelper.submitRequestBoolean("GET", gson.toJson(dto), createGroupUrl);
 		System.out.println(testSuccess);
 	}
 
+	@Then("I verify the status of {string} in searching the group")
+	public void i_verify_the_status_of_in_searching_the_group(String string) {
+		testSuccess = taskHelper.submitRequestBoolean("GET", gson.toJson(dto), createGroupUrl);
+		System.out.println(testSuccess);
+	}
+
 	// Get Group Steps
+	@Given("I want to get a group named {string} in a {string} role")
+	public void i_want_to_get_a_group_named_in_a_role(String groupNameString,  String roleString) {
+		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+		role = getRole(roleString);
+	}
+
 	@Given("I want to get a group named {string}")
 	public void i_want_to_get_a_group_named(String groupNameString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
@@ -137,43 +135,6 @@ public class GroupManagementSteps {
 	}
 
 	// Delete Group Steps
-	@Given("I want to delete a group named {string} in a System Admin role")
-	public void i_want_to_delete_a_group_named_in_a_system_admin_role(String groupNameString) {
-		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
-		role = UserRole.SYSTEM_ADMIN_ROLE;
-		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
-	}
-
-	@Given("I want to delete a group named {string} in a Group Admin role")
-	public void i_want_to_delete_a_group_named_in_a_group_admin_role(String groupNameString) {
-	    // Write code here that turns the phrase above into concrete actions
-		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
-		role = UserRole.GROUP_ADMIN_ROLE;
-		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
-	}
-
-
-	/*@Given("I want to delete a group named {string}")
-	public void i_want_to_delete_a_group_named(String groupNameString) {
-		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
-		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
-	}*/
-
-	@Then("I verify the status of success in group deletion")
-	public void i_verify_the_status_of_success_in_group_deletion() {
-		String responseStr = result.errorType;
-		if(!responseStr.equals(testSuccessString)) {
-			String error = result.stackTrace;
-			Assert.assertEquals((Object) testSuccessString, (Object) error );
-		}
-	}
-
-	@Then("I verify the status of failure of actions in a User role")
-	public void i_verify_the_status_of_failure_of_actions_in_a_user_role() {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new io.cucumber.java.PendingException();
-	}
-
 	@Given("I want to delete a group named {string} in a {string} role")
 	public void i_want_to_delete_a_group_named_in_a_role(String groupNameString, String roleString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
