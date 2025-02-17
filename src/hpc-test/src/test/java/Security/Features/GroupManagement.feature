@@ -21,7 +21,7 @@
 Feature: Group Management Feature
 
   @createGroup
-  Scenario Outline: Create a Group
+  Scenario Outline: Create a Group test using different roles(System Admin, Group Admin and User)
     Given I want to create a group named "<group>" in a "<role>" role
     And I add users to the group
       | users 		|
@@ -37,8 +37,8 @@ Feature: Group Management Feature
 			|test_group_ga		| Group Admin		|	success  |
 			|test_group_user	| User					|	failure unauthorized access|
 
-  @group2
-  Scenario Outline: Update a Group
+  @updateGroup
+  Scenario Outline: Update a Group using different roles(System Admin, Group Admin and User)
     Given I want to update a group named "<group>" in a "<role>" role
     And I delete users from the group
       | users 		|
@@ -55,20 +55,28 @@ Feature: Group Management Feature
 			|test_group_ga		| Group Admin		|	success  |
 			|test_group_user	| User					|	failure unauthorized access|
 
-  @group3
-  Scenario: Search a Group
-		Given I login as a System Admin
-    And I want to search a group named "%test%"
-    Then I verify the status of success in searching the group
+  @searchGroup
+  Scenario: Search a Group using different roles(System Admin,Group Admin and User)
+    Given I want to search a group named "<group>" in a "<role>" role
+    Then I verify the status of "<response>" in searching the group
+		Examples:
+			|group		|	role					| response |
+			|%test%		| System Admin	| success  |
+			|test		| Group Admin		|	success  |
+			|test		| User					|	success	 |
 
-  @group4
-  Scenario: Get a Group
-		Given I login as a System Admin
-    And I want to get a group named "test_group1"
+  @getGroup
+  Scenario: Get a Group  using different roles(System Admin,Group Admin and User)
+    Given I want to get a group named "<group>" in a "<role>" role
     Then I verify the status of success in getting the group and its users
+		Examples:
+			|group						|	role					| response |
+			|test_group_sa		| System Admin	| success  |
+			|test_group_ga		| Group Admin		|	success  |
+			|test_group_ga		| User					|	success  |
 
   @group5
-  Scenario: Delete a Group
+  Scenario: Delete a Group using different roles(System Admin,Group Admin and User)
     Given I want to delete a group named "<group>" in a "<role>" role
     Then I verify the status of "<response>" in group deletion
 		Examples:
