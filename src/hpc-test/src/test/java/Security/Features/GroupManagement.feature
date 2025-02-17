@@ -70,7 +70,7 @@ Feature: Group Management Feature
   @group5
   Scenario: Delete a Group
     Given I want to delete a group named "<group>" in a "<role>" role
-    Then I verify the status of <response> in group deletion
+    Then I verify the status of "<response>" in group deletion
 		Examples:
 			|group						|	role					| response |
 			|test_group_sa		| System Admin	| success  |
