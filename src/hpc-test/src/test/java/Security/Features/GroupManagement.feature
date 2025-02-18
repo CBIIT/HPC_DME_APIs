@@ -29,13 +29,14 @@ Feature: Group Management Feature
       | sehgalu2	|
       | menons2		|
       | frostr		|
-    And I click create group
+    When I click create group
 		Then I verify the status of "<response>" in group creation
 		Examples:
-			|group						|	role					| response |
-			|test_group_sa		| System Admin	| success  |
-			|test_group_ga		| Group Admin		|	success  |
-			|test_group_user	| User					|	failure unauthorized access|
+			|group								|	role					| response |
+			|test_group_sa				| System Admin	| success  |
+			|test_group_ga				| Group Admin		|	success  |
+			|test_group_user			| User					|	failure unauthorized access|
+			|test_group_delete_me	| System Admin	|	success|
 
   @updateGroup
   Scenario Outline: Update a Group using different roles(System Admin, Group Admin and User)
@@ -47,7 +48,7 @@ Feature: Group Management Feature
     And I add users to the group
       | users 		|
       | frostr	|   
-    And I click update group
+    When I click update group
 		Then I verify the status of "<response>" of updating a group
 		Examples:
 			|group						|	role					| response |
@@ -58,6 +59,7 @@ Feature: Group Management Feature
   @searchGroup
   Scenario: Search a Group using different roles(System Admin,Group Admin and User)
     Given I want to search a group named "<group>" in a "<role>" role
+    When I click search group
     Then I verify the status of "<response>" in searching the group
 		Examples:
 			|group		|	role					| response |
@@ -68,27 +70,23 @@ Feature: Group Management Feature
   @getGroup
   Scenario: Get a Group  using different roles(System Admin,Group Admin and User)
     Given I want to get a group named "<group>" in a "<role>" role
-    Then I verify the status of success in getting the group and its users
+    When I click get group
+    Then I verify the status of "<response>" in getting the group and its users
 		Examples:
 			|group						|	role					| response |
 			|test_group_sa		| System Admin	| success  |
 			|test_group_ga		| Group Admin		|	success  |
-			|test_group_ga		| User					|	success  |
+			|test_group_ga		| User					|	failure unauthorized access  |
 
-  @group5
+  @deleteGroup
   Scenario: Delete a Group using different roles(System Admin,Group Admin and User)
     Given I want to delete a group named "<group>" in a "<role>" role
+		When I click delete group
     Then I verify the status of "<response>" in group deletion
 		Examples:
-			|group						|	role					| response |
-			|test_group_sa		| System Admin	| success  |
-			|test_group_ga		| Group Admin		|	success  |
-			|test_group_user	| User					|	failure unauthorized access|
+			|group									|	role					| response |
+			|test_group_sa					| System Admin	| success  |
+			|test_group_ga					| Group Admin		|	success  |
+			|test_group_delete_me		| User					|	failure unauthorized access  |
+			!test_group_delete_me		| System Admin	|	success  |
 
-  #@group6
-  #Scenario: User Role should not be able to Create/Update/Delete groups
-  #  Given I want to <action> a group named "test_group1" in a User role
-  #  Then I verify the status of failure of actions in a User role
-	#	Examples:
-	#		|	action	|
-	#		| create	|
