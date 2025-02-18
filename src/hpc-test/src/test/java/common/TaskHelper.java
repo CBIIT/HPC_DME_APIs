@@ -40,6 +40,8 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
+import org.junit.Assert;
+
 public class TaskHelper {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -189,6 +191,9 @@ public class TaskHelper {
 			} else if (errorType.equals("REQUEST_AUTHENTICATION_FAILED")){
 				System.out.println("The response is: REQUEST_AUTHENTICATION_FAILED; " +  errorMessage.message);
 				System.out.println("The errorType is: " + errorType);
+			} else if (errorType.equals("INVALID_REQUEST_INPUT")){
+				System.out.println("The response is: INVALID_REQUEST_INPUT; " +  errorMessage.message);
+				System.out.println("The errorType is: " + errorType);
 			} else {
 				System.out.println("The response is: " + response.getBody().asString());
 				System.out.println("The errorType is: " + errorType);
@@ -213,4 +218,27 @@ public class TaskHelper {
 		}
 		return response;
 	}
+	
+	public void verifyResponse(String expectedResponseString, ErrorMessage result) {
+		if (expectedResponseString.equals("success")) {
+			if (!result.getErrorType().equals("success")) {
+				if (result.getErrorType().equals("REQUEST_REJECTED")) {
+					String msg = result.getErrorType() + "; " + result.getMessage();
+					Assert.assertEquals((Object) "success", (Object) msg);
+				} else {
+					Assert.assertEquals((Object) "success", (Object) result.getStackTrace());
+				}
+			} else {
+				Assert.assertEquals((Object) "success", (Object) result.getErrorType());
+			}
+		} else {
+			String errorType = "REQUEST_AUTHENTICATION_FAILED";
+			if (result.getErrorType().equals("REQUEST_AUTHENTICATION_FAILED")) {
+				Assert.assertEquals((Object) result.getErrorType(), (Object) "REQUEST_AUTHENTICATION_FAILED");
+			} else {
+				Assert.assertEquals((Object) result.getErrorType(), (Object) result.getStackTrace());
+			}
+		}
+	}
+
 }

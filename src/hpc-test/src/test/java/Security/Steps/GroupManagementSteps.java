@@ -58,7 +58,7 @@ public class GroupManagementSteps {
 		dto.getAddUserIds().addAll(dataTable.rows(1).asList()); // ignore the head of column
 	}
 
-	@Given("I click create group")
+	@When("I click create group")
 	public void i_click_create_group() {
 		try {
 			result = taskHelper.submitRequest("PUT", gson.toJson(dto), createGroupUrl, role);
@@ -70,14 +70,13 @@ public class GroupManagementSteps {
 
 	@Then("I verify the status of {string} in group creation")
 	public void i_verify_the_status_of_in_group_creation(String expectedResponseString) {
-		verifyResponse(expectedResponseString);
+		taskHelper.verifyResponse(expectedResponseString, result);
 	}
 
 	// Update Group Steps
 	@Given("I want to update a group named {string} in a {string} role")
 	public void i_want_to_update_a_group_named_in_a_role(String groupNameString, String roleString) {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
-		System.out.println("roleString=" + roleString);
 		role = getRole(roleString);
 	}
 
@@ -86,34 +85,31 @@ public class GroupManagementSteps {
 		dto.getDeleteUserIds().addAll(dataTable.rows(1).asList()); // ignore the head of column
 	}
 
-	@Given("I click update group")
+	@When("I click update group")
 	public void i_click_update_group() {
-	    // Write code here that turns the phrase above into concrete actions
 		result = taskHelper.submitRequest("POST", gson.toJson(dto), createGroupUrl, role);
 	}
 
 	@Then("I verify the status of {string} of updating a group")
 	public void i_verify_the_status_of_of_updating_a_group(String expectedResponseString) {
-		verifyResponse(expectedResponseString);	}
-
+		taskHelper.verifyResponse(expectedResponseString, result);
+	}
 
 	// Search Group(s)
 	@Given("I want to search a group named {string} in a {string} role")
 	public void i_want_to_search_a_group_named_in_a_role(String groupSearchString, String roleString) {
 		createGroupUrl = CREATE_GROUP_URL + "?groupPattern=" + groupSearchString;
 		role = getRole(roleString);
-	}	
+	}
 
-	@Then("I verify the status of success in searching the group")
-	public void i_verify_the_status_of_success_in_searching_the_group() {
-		testSuccess = taskHelper.submitRequestBoolean("GET", gson.toJson(dto), createGroupUrl);
-		System.out.println(testSuccess);
+	@When("I click search group")
+	public void i_click_search_group() {
+		result = taskHelper.submitRequest("GET", gson.toJson(dto), createGroupUrl, role);
 	}
 
 	@Then("I verify the status of {string} in searching the group")
-	public void i_verify_the_status_of_in_searching_the_group(String string) {
-		testSuccess = taskHelper.submitRequestBoolean("GET", gson.toJson(dto), createGroupUrl);
-		System.out.println(testSuccess);
+	public void i_verify_the_status_of_in_searching_the_group(String expectedResponseString) {
+		taskHelper.verifyResponse(expectedResponseString, result);
 	}
 
 	// Get Group Steps
@@ -123,15 +119,14 @@ public class GroupManagementSteps {
 		role = getRole(roleString);
 	}
 
-	@Given("I want to get a group named {string}")
-	public void i_want_to_get_a_group_named(String groupNameString) {
-		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
+	@When("I click get group")
+	public void i_click_get_group() {
+		result = taskHelper.submitRequest("GET", gson.toJson(dto), createGroupUrl, role);
 	}
 
-	@Then("I verify the status of success in getting the group and its users")
-	public void i_verify_the_status_of_success_in_getting_the_group_and_its_users() {
-		testSuccess = taskHelper.submitRequestBoolean("GET", gson.toJson(dto), createGroupUrl);
-		System.out.println(testSuccess);
+	@Then("I verify the status of {string} in getting the group and its users")
+	public void i_verify_the_status_of_in_getting_the_group_and_its_users(String expectedResponseString) {
+		taskHelper.verifyResponse(expectedResponseString, result);
 	}
 
 	// Delete Group Steps
@@ -140,35 +135,21 @@ public class GroupManagementSteps {
 		createGroupUrl = CREATE_GROUP_URL + "/" + groupNameString;
 		System.out.println("roleString=" + roleString);
 		role = getRole(roleString);
-		result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
+	}
+
+	@When("I click delete group")
+	public void i_click_delete_group() {
+		try {
+			result = taskHelper.submitRequest("DELETE", gson.toJson(dto), createGroupUrl, role);
+		} catch (Exception e) {
+			String errMsg = "Failed to Delete Group. Reason: " + e.getMessage();
+			System.out.println(errMsg);
+		}
 	}
 
 	@Then("I verify the status of {string} in group deletion")
 	public void i_verify_the_status_of_in_group_deletion(String expectedResponseString) {
-		verifyResponse(expectedResponseString);
-	}
-
-	private void verifyResponse(String expectedResponseString) {
-		String responseType = result.errorType;
-		if (expectedResponseString.equals(testSuccessString)) {
-			if (!responseType.equals(testSuccessString)) {
-				if (responseType.equals("REQUEST_REJECTED")) {
-					String msg = responseType + "; " + result.message;
-					Assert.assertEquals((Object) testSuccessString, (Object) msg);
-				} else {
-					Assert.assertEquals((Object) testSuccessString, (Object) result.stackTrace);
-				}
-			} else {
-				Assert.assertEquals((Object) testSuccessString, (Object) responseType);
-			}
-		} else {
-			String errorType = "REQUEST_AUTHENTICATION_FAILED";
-			if (responseType.equals("REQUEST_AUTHENTICATION_FAILED")) {
-				Assert.assertEquals((Object) responseType, (Object) "REQUEST_AUTHENTICATION_FAILED");
-			} else {
-				Assert.assertEquals((Object) responseType, (Object) result.stackTrace);
-			}
-		}
+		taskHelper.verifyResponse(expectedResponseString, result);
 	}
 
 	private String getRole(String roleString) {
