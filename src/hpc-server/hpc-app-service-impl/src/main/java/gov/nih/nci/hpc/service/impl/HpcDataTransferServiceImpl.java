@@ -1250,6 +1250,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				&& !StringUtils.isEmpty(downloadTask.getDataTransferRequestId()))
 			deleteGlobusTransferTask(downloadTask.getDataTransferRequestId());
 
+		// Update the total bytes transferred if this task is part of a bulk download.
+		if (result.equals(HpcDownloadResult.COMPLETED)
+				&& !StringUtils.isEmpty(downloadTask.getCollectionDownloadTaskId())) {
+			dataDownloadDAO.updateTotalBytesTransferred(downloadTask.getCollectionDownloadTaskId(), bytesTransferred);
+		}
+
 		return taskResult;
 	}
 
@@ -1471,10 +1477,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		
-		logger.debug("download task: {} - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]", downloadTask.getId(),
-				downloadTask.getDataTransferType(), HpcDataTransferType.S_3.equals(downloadTask.getDataTransferType()) ? s3DownloadTaskServerId : null);
-		
+
+		logger.debug(
+				"download task: {} - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]",
+				downloadTask.getId(), downloadTask.getDataTransferType(),
+				HpcDataTransferType.S_3.equals(downloadTask.getDataTransferType()) ? s3DownloadTaskServerId : null);
+
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
@@ -1503,23 +1511,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// in-process not already true.
 		boolean updated = true;
 
-		logger.debug("download task: {} - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}]", downloadTask.getId(),
-				inProcess, downloadTask.getDataTransferType(), HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
+		logger.debug(
+				"download task: {} - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}]",
+				downloadTask.getId(), inProcess, downloadTask.getDataTransferType(),
+				HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
 			String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
 			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
-			if(updated)
-				logger.debug("download task: {} - markProcessedDataObjectDownloadTask updated to in-process={} - [transfer-type={}, server-id={}]", downloadTask.getId(),
-						inProcess, downloadTask.getDataTransferType(), HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
+			if (updated)
+				logger.debug(
+						"download task: {} - markProcessedDataObjectDownloadTask updated to in-process={} - [transfer-type={}, server-id={}]",
+						downloadTask.getId(), inProcess, downloadTask.getDataTransferType(),
+						HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 			downloadTask.setS3DownloadTaskServerId(serverId);
 		}
 
 		if (updated) {
 			Calendar processed = Calendar.getInstance();
 			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
-			logger.debug("download task: {} - markProcessedDataObjectDownloadTask processed timestamp update only - [transfer-type={}, server-id={}]", downloadTask.getId(),
-					downloadTask.getDataTransferType(), HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
+			logger.debug(
+					"download task: {} - markProcessedDataObjectDownloadTask processed timestamp update only - [transfer-type={}, server-id={}]",
+					downloadTask.getId(), downloadTask.getDataTransferType(),
+					HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 			downloadTask.setProcessed(processed);
 			downloadTask.setInProcess(inProcess);
 		}
@@ -3427,13 +3441,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						? secondHopDownload.getDownloadTask().getGlobusDownloadDestination().getDestinationLocation()
 						: secondHopDownload.getDownloadTask().getAsperaDownloadDestination().getDestinationLocation());
 
-		// Perform the first hop download (From S3 Archive to DME Server local file
-		// system).
 		try {
+			// Reset the download task, so the 1st-hop is picked up by a scheduled-task.
+			resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+
 			if (!StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
-				// The download task created from a collection task breakdown, is queued to be
-				// picked up by the schedulers.
-				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
 						"download task: {} - 2 Hop download task created from a collection download request [transfer-type={}, destination-type={},"
 								+ " path = {}, collection download task = {}]",
@@ -3441,35 +3453,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath(),
 						downloadRequest.getCollectionDownloadTaskId());
 			} else {
-				// Single data object download task.
-				HpcCanPerform2HopDownloadResponse canPerfom2HopDownloadResponse = canPerfom2HopDownload(
-						secondHopDownload);
-				if (canPerfom2HopDownloadResponse.value) {
-					// We start the 1st hop here for a single file download request. For collection
-					// download task, the 1st hop will get kicked off by a scheduled task.
-					dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
-							getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-									downloadRequest.getS3ArchiveConfigurationId()),
-							downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(), secondHopDownload,
-							dataTransferConfiguration.getEncryptedTransfer());
-
-					logger.info(
-							"download task: {} - 1st hop started. [transfer-type={}, destination-type={}, path = {}]",
-							secondHopDownload.downloadTask.getId(),
-							secondHopDownload.downloadTask.getDataTransferType(),
-							secondHopDownload.downloadTask.getDestinationType(),
-							secondHopDownload.downloadTask.getPath());
-				} else {
-					// Can't perform the 2-hop download at this time.
-					resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
-					logger.info(
-							"download task: {} - 2 Hop download can't be initiated [transfer-type={}, destination-type={},"
-									+ " path = {}] - {} ",
-							secondHopDownload.downloadTask.getId(),
-							secondHopDownload.downloadTask.getDataTransferType(),
-							secondHopDownload.downloadTask.getDestinationType(),
-							secondHopDownload.downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
-				}
+				logger.info(
+						"download task: {} - 2 Hop download task created from a single-file download request [transfer-type={}, destination-type={},"
+								+ " path = {}]",
+						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
+						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
 		} catch (HpcException e) {
