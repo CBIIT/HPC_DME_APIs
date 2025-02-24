@@ -88,5 +88,5 @@ Feature: Group Management Feature
 			|test_group_sa					| System Admin	| success  |
 			|test_group_ga					| Group Admin		|	success  |
 			|test_group_delete_me		| User					|	failure unauthorized access  |
-			!test_group_delete_me		| System Admin	|	success  |
+			|test_group_delete_me		| System Admin	|	success  |
 
