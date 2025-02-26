@@ -102,7 +102,6 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	@Qualifier("hpcDataObjectMetadataUpdateTaskExecutor")
 	Executor dataObjectMetadataUpdateTaskExecutor = null;
 
-	@Autowired
 	@Value("${hpc.bus.getMetadataUpdateObjectsDefaultPageSize}")
 	private int getMetadataUpdateObjectsDefaultPageSize = 0;
 
