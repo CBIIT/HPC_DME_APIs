@@ -16,24 +16,31 @@
 #""
 ## (Comments)
 #Sample Feature Definition Template
-@tag
+#
+@group
 Feature: Group Management Feature
 
-  @group @group1
-  Scenario: Create a Group
-    Given I want to create a group named "test_group1"
+  @createGroup
+  Scenario Outline: Create a Group test using different roles(System Admin, Group Admin and User)
+    Given I want to create a group named "<group>" in a "<role>" role
     And I add users to the group
       | users 		|
       | schintal 	|
       | sehgalu2	|
       | menons2		|
       | frostr		|
-    And I click create group
-		Then I verify the status of success in group creation
+    When I click create group
+		Then I verify the status of "<response>" in group creation
+		Examples:
+			|group								|	role					| response |
+			|test_group_sa				| System Admin	| success  |
+			|test_group_ga				| Group Admin		|	success  |
+			|test_group_user			| User					|	failure unauthorized access|
+			|test_group_delete_me	| System Admin	|	success|
 
-  @group @group2
-  Scenario: Update a Group
-    Given I want to update a group named "test_group1"
+  @updateGroup
+  Scenario Outline: Update a Group using different roles(System Admin, Group Admin and User)
+    Given I want to update a group named "<group>" in a "<role>" role
     And I delete users from the group
       | users 		|
       | sehgalu2	|
@@ -41,20 +48,45 @@ Feature: Group Management Feature
     And I add users to the group
       | users 		|
       | frostr	|   
-    And I click update group
-		Then I verify the status of success of updating a group
+    When I click update group
+		Then I verify the status of "<response>" of updating a group
+		Examples:
+			|group						|	role					| response |
+			|test_group_sa		| System Admin	| success  |
+			|test_group_ga		| Group Admin		|	success  |
+			|test_group_user	| User					|	failure unauthorized access|
 
-  @group @group3
-  Scenario: Search a Group
-    Given I want to search a group named "test_group1"
-    Then I verify the status of success in searching the group
+  @searchGroup
+  Scenario: Search a Group using different roles(System Admin,Group Admin and User)
+    Given I want to search a group named "<group>" in a "<role>" role
+    When I click search group
+    Then I verify the status of "<response>" in searching the group
+		Examples:
+			|group		|	role					| response |
+			|%test%		| System Admin	| success  |
+			|test		| Group Admin		|	success  |
+			|test		| User					|	success	 |
 
-  @group @group4
-  Scenario: Get a Group
-    Given I want to get a group named "test_group1"
-    Then I verify the status of success in getting the group and its users
+  @getGroup
+  Scenario: Get a Group  using different roles(System Admin,Group Admin and User)
+    Given I want to get a group named "<group>" in a "<role>" role
+    When I click get group
+    Then I verify the status of "<response>" in getting the group and its users
+		Examples:
+			|group						|	role					| response |
+			|test_group_sa		| System Admin	| success  |
+			|test_group_ga		| Group Admin		|	success  |
+			|test_group_ga		| User					|	failure unauthorized access  |
 
-  @group @group5
-  Scenario: Delete a Group
-    Given I want to delete a group named "test_group1"
-    Then I verify the status of success in group deletion
+  @deleteGroup
+  Scenario: Delete a Group using different roles(System Admin,Group Admin and User)
+    Given I want to delete a group named "<group>" in a "<role>" role
+		When I click delete group
+    Then I verify the status of "<response>" in group deletion
+		Examples:
+			|group									|	role					| response |
+			|test_group_sa					| System Admin	| success  |
+			|test_group_ga					| Group Admin		|	success  |
+			|test_group_delete_me		| User					|	failure unauthorized access  |
+			|test_group_delete_me		| System Admin	|	success  |
+

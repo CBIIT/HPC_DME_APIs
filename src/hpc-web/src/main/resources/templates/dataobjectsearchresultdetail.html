@@ -378,10 +378,18 @@ window.onclick = function(event) {
 	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries.length; j++){
 		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].attribute;
 		    	  if(attribute != null && !metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "checksum") {
-		    	  	$scope.gridOptions1.columnDefs.push({
+		            if(attribute == "source_file_size") {
+		              $scope.gridOptions1.columnDefs.push({
+				        field: attribute,
+				        width : 200,
+			            type: 'number'
+				      });
+			        } else {
+		              $scope.gridOptions1.columnDefs.push({
 		    			field: attribute,
 		    			width : 200
-		    	  	});
+		              });
+			        }
 		    	  	metaSet.add(attribute)
 		    	  }
 		    	  if(attribute != null) {
