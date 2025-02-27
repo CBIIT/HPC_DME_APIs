@@ -1884,7 +1884,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcDataObject dataObject = dataManagementService.getDataObject(path);
 
-		// Validate the data object exists.
+		// Validate the data object exists in iRODs.
 		if (dataObject == null) {
 			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -1896,6 +1896,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
 		if (!registeredLink && systemGeneratedMetadata.getDataTransferStatus() == null) {
 			throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		// Validate the data object exists in the Archive.
+		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
+				systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
+				systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+		if (!archivePathAttributes.getExists() || !archivePathAttributes.getIsFile()) {
+			throw new HpcException("The data object was not found in the archive. S3 Archive ID: "
+					+ systemGeneratedMetadata.getS3ArchiveConfigurationId() + ". Archive location: "
+					+ systemGeneratedMetadata.getArchiveLocation().getFileContainerId() + ":"
+					+ systemGeneratedMetadata.getArchiveLocation().getFileId(), HpcErrorType.UNEXPECTED_ERROR);
 		}
 
 		// Validate the invoker is the owner of the data object.
@@ -3128,15 +3139,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
 					systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
+			dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+			updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETED);
+
 		} catch (HpcException e) {
 			logger.error("Failed to delete file from archive", e);
 			updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETE_FAILED);
 			dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 			dataObjectDeleteResponse.setMessage(e.getMessage());
 		}
-
-		dataObjectDeleteResponse.setArchiveDeleteStatus(true);
-		updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETED);
 	}
 
 	/**
@@ -3772,8 +3783,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 */
 	private int calculateCollectionDownloadPercentComplete(HpcCollectionDownloadTask downloadTask) {
 		long totalDownloadSize = 0;
+		long totalEstimatedDownloadSize = 0;
 		long totalBytesTransferred = 0;
 
+		// Sum the total download size and bytes transferred from the task's items.
 		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
 			totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
 			totalBytesTransferred += item.getPercentComplete() != null && item.getSize() != null
@@ -3781,8 +3794,67 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					: 0;
 		}
 
-		logger.info("Bytes transferred for collection {} is {}, total size = {}", downloadTask.getPath(),
-				totalBytesTransferred, totalDownloadSize);
+		// Create a logging prefix.
+		StringBuffer logPrefix = new StringBuffer("Bulk download task: {} - Bytes transferred for ");
+		String logPrefixValue = null;
+		switch (downloadTask.getType()) {
+		case COLLECTION:
+			logPrefix.append("collection {}");
+			logPrefixValue = downloadTask.getPath();
+			break;
+
+		case COLLECTION_LIST:
+			logPrefix.append("collections {}");
+			logPrefixValue = StringUtils.join(downloadTask.getCollectionPaths(), ',');
+			break;
+
+		case DATA_OBJECT_LIST:
+			logPrefix.append("data-objects {}");
+			logPrefixValue = StringUtils.join(downloadTask.getDataObjectPaths(), ',');
+			break;
+
+		default:
+			break;
+		}
+
+		// Get the estimated total download size for the collection from the reports.
+		if (!downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+			// The bulk download task is not active yet, i.e. still broken down to file
+			// download tasks.
+
+			// // Get estimated total size of the download to calculate percent completion
+			switch (downloadTask.getType()) {
+			case COLLECTION:
+				totalEstimatedDownloadSize = getEstimatedCollectionSize(downloadTask.getPath());
+				break;
+
+			case COLLECTION_LIST:
+				for (String path : downloadTask.getCollectionPaths()) {
+					totalEstimatedDownloadSize += getEstimatedCollectionSize(path);
+				}
+				break;
+
+			default:
+				break;
+			}
+
+			// Add the the bytes transferred of completed files.
+			totalBytesTransferred += Optional.ofNullable(downloadTask.getTotalBytesTransferred()).orElse(0L);
+
+			logger.info(logPrefix
+					+ " is {}, total size = {}, total estimated size = {}, bytes transferred of completed files = {}",
+					downloadTask.getId(), logPrefixValue, totalBytesTransferred, totalDownloadSize,
+					totalEstimatedDownloadSize, downloadTask.getTotalBytesTransferred());
+		} else {
+			logger.info(logPrefix + " is {}, total size = {}", downloadTask.getId(), logPrefixValue,
+					totalBytesTransferred, totalDownloadSize);
+		}
+
+		// Use the estimated download size while the collection is being broken down.
+		if (totalDownloadSize < totalEstimatedDownloadSize) {
+			totalDownloadSize = totalEstimatedDownloadSize;
+		}
+
 		if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
 			float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
 			int percent = Math.round(percentComplete);
@@ -3791,6 +3863,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Get an estimated collection size from the report. This is estimated because
+	 * links (sub-collection or data-objects) are not included.
+	 *
+	 * @param path the collection path.
+	 * @return The estimated size if the report was available, or 0 otherwise.
+	 */
+	private long getEstimatedCollectionSize(String path) {
+		long estimatedSize = 0;
+		try {
+			HpcReport report = getTotalSizeReport(path, true);
+			if (report != null && report.getReportEntries().size() == 1) {
+				estimatedSize = Long.valueOf(report.getReportEntries().get(0).getValue());
+			}
+
+		} catch (HpcException e) {
+			logger.error("Failed to get size report for collection {}", path, e);
+		}
+
+		return estimatedSize;
 	}
 
 	/**
