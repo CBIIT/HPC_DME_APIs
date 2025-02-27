@@ -232,6 +232,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_TOTAL_DOWNLOADS_SIZE_SQL = "select sum(DATA_SIZE) from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and DATA_TRANSFER_STATUS = ?";
 
+	private static final String SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ? and STATUS = 'RECEIVED' for update nowait";
+	private static final String UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set TOTAL_BYTES_TRANSFERRED = nvl(TOTAL_BYTES_TRANSFERRED, 0) + ? where ID = ? and STATUS = 'RECEIVED'";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -455,6 +458,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		collectionDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		collectionDownloadTask.setDoc(rs.getString("DOC"));
+
+		long totalBytesTransferred = rs.getLong("TOTAL_BYTES_TRANSFERRED");
+		collectionDownloadTask.setTotalBytesTransferred(totalBytesTransferred > 0 ? totalBytesTransferred : null);
 
 		String destinationType = rs.getString("DESTINATION_TYPE");
 		if (destinationType != null)
@@ -1490,6 +1496,23 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to sum total downloads per user: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void updateTotalBytesTransferred(String collectionDownloadTaskId, long bytesTransferred)
+			throws HpcException {
+		try {
+			jdbcTemplate.update(SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, collectionDownloadTaskId);
+			int rowsUpdated = jdbcTemplate.update(UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, bytesTransferred, collectionDownloadTaskId);
+			if (rowsUpdated == 1) {
+				logger.info("download task: {} - total bytes transferred incremented by {} while in RECEIVED state",
+						collectionDownloadTaskId, bytesTransferred);
+			}
+
+		} catch (DataAccessException e) {
+			logger.error("download task: {} - failed to increment total bytes transferred", collectionDownloadTaskId,
+					e);
 		}
 	}
 
