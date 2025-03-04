@@ -48,11 +48,25 @@ public class ConfigFileReader {
 	}
 
 	public String getApplicationUrl() {
-		String url = properties.getProperty("url");
+		String env = getTestingEnvironment();
+		String url = "";
+		if(env.equals("DEV")) {
+			url = properties.getProperty("urlDEV");
+		} else if(env.equals("UAT")) {
+			url = properties.getProperty("urlUAT");
+		}
 		if (url != null)
 			return url;
 		else
 			throw new RuntimeException("url not specified in the Configuration.properties file.");
+	}
+
+	public String getTestingEnvironment() {
+		String testingEnvironment = properties.getProperty("testingEnvironment");
+		if (testingEnvironment != null)
+			return testingEnvironment;
+		else
+			throw new RuntimeException("Testing Environment not specified in the Configuration.properties file.");
 	}
 
 	public String getToken() {
@@ -67,15 +81,30 @@ public class ConfigFileReader {
 		if (role == null || role.isEmpty()) {
 			throw new RuntimeException("User Role is Empty. The Feature should define a User Role");
 		}
+		String env = getTestingEnvironment();
 		String token="";
-		if(role.equals(UserRole.USER_ROLE)) {
-			token = properties.getProperty("userToken");
-		} else if (role.equals(UserRole.GROUP_ADMIN_ROLE)) {
-			token = properties.getProperty("groupAdminToken");
-		} else if (role.equals(UserRole.SYSTEM_ADMIN_ROLE)){
-			token = properties.getProperty("systemAdminToken");
+		if(env.equals("DEV")) {
+			if(role.equals(UserRole.USER_ROLE)) {
+				token = properties.getProperty("userTokenDEV");
+			} else if (role.equals(UserRole.GROUP_ADMIN_ROLE)) {
+				token = properties.getProperty("groupAdminTokenDEV");
+			} else if (role.equals(UserRole.SYSTEM_ADMIN_ROLE)){
+				token = properties.getProperty("systemAdminTokenDEV");
+			} else {
+				throw new RuntimeException("Unknown Role");
+			}
+		} else if(env.equals("UAT")) {
+			if(role.equals(UserRole.USER_ROLE)) {
+				token = properties.getProperty("userTokenUAT");
+			} else if (role.equals(UserRole.GROUP_ADMIN_ROLE)) {
+				token = properties.getProperty("groupAdminTokenUAT");
+			} else if (role.equals(UserRole.SYSTEM_ADMIN_ROLE)){
+				token = properties.getProperty("systemAdminTokenUAT");
+			} else {
+				throw new RuntimeException("Unknown Role");
+			}
 		} else {
-			throw new RuntimeException("Unknown Role");
+			throw new RuntimeException("Testing Environment not specified in the Configuration.properties file.");
 		}
 		if (token != null)
 			return token;
