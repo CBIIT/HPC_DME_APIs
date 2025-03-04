@@ -1785,7 +1785,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcDataObject dataObject = dataManagementService.getDataObject(path);
 
-		// Validate the data object exists.
+		// Validate the data object exists in iRODs.
 		if (dataObject == null) {
 			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -1797,6 +1797,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
 		if (!registeredLink && systemGeneratedMetadata.getDataTransferStatus() == null) {
 			throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		// Validate the data object exists in the Archive.
+		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
+				systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
+				systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+		if (!archivePathAttributes.getExists() || !archivePathAttributes.getIsFile()) {
+			throw new HpcException("The data object was not found in the archive. S3 Archive ID: "
+					+ systemGeneratedMetadata.getS3ArchiveConfigurationId() + ". Archive location: "
+					+ systemGeneratedMetadata.getArchiveLocation().getFileContainerId() + ":"
+					+ systemGeneratedMetadata.getArchiveLocation().getFileId(), HpcErrorType.UNEXPECTED_ERROR);
 		}
 
 		// Validate the invoker is the owner of the data object.
