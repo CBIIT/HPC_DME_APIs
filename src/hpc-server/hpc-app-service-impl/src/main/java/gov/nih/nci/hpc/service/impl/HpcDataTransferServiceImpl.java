@@ -55,6 +55,7 @@ import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
@@ -87,6 +88,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
@@ -734,7 +736,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcArchiveObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+	public HpcAddArchiveObjectMetadataResponse addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
 			String objectId, String registrarId) throws HpcException {
 		// Add metadata is done by copying the object to itself w/ attached metadata.
@@ -745,17 +747,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
+		HpcAddArchiveObjectMetadataResponse response = new HpcAddArchiveObjectMetadataResponse();
+
 		// Set the metadata of the data-object in the archive
-		String checksum = dataTransferProxies.get(dataTransferType).setDataObjectMetadata(
-				!globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
-						: null,
-				fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
-				generateArchiveMetadata(configurationId, objectId, registrarId),
-				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
-				dataTransferConfiguration.getStorageClass());
+		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
+				.setDataObjectMetadata(
+						!globusSyncUpload
+								? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
+								: null,
+						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
+						generateArchiveMetadata(configurationId, objectId, registrarId),
+						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
+						dataTransferConfiguration.getStorageClass());
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
-		objectMetadata.setChecksum(checksum);
+		objectMetadata.setChecksum(setMetadataResponse.getChecksum());
 
 		if (dataTransferType.equals(HpcDataTransferType.S_3)) {
 			if (dataTransferProxies.get(dataTransferType).existsTieringPolicy(
@@ -771,7 +777,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		}
-		return objectMetadata;
+
+		response.setArchiveObjectMetadata(objectMetadata);
+		response.setMetadataAdded(setMetadataResponse.getMetadataAdded());
+		return response;
 	}
 
 	@Override

@@ -280,7 +280,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									systemGeneratedMetadata.getDataTransferType(),
 									systemGeneratedMetadata.getConfigurationId(),
 									systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-									systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+									systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId())
+							.getArchiveObjectMetadata();
 
 					// Update data management w/ data transfer status, checksum and completion time.
 					dataTransferCompleted = Calendar.getInstance();
@@ -1606,8 +1607,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									logger.debug("download task: {} - finally block called: to markProcessedDataObjectDownloadTask in-process=false [transfer-type={}]", downloadTask.getId(),
-											downloadTask.getDataTransferType());
+									logger.debug(
+											"download task: {} - finally block called: to markProcessedDataObjectDownloadTask in-process=false [transfer-type={}]",
+											downloadTask.getId(), downloadTask.getDataTransferType());
 									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 											dataTransferType, false);
 
@@ -2828,6 +2830,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		registrationDTO.setGoogleDriveUploadSource(registrationRequest.getGoogleDriveUploadSource());
 		registrationDTO.setGoogleCloudStorageUploadSource(registrationRequest.getGoogleCloudStorageUploadSource());
 		registrationDTO.setFileSystemUploadSource(registrationRequest.getFileSystemUploadSource());
+		registrationDTO.setArchiveLinkSource(registrationRequest.getArchiveLinkSource());
 		registrationDTO.setLinkSourcePath(registrationRequest.getLinkSourcePath());
 		registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
 		registrationDTO
@@ -3113,10 +3116,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
 			// Generate archive system generated metadata.
-			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
-					uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
-					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-					systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+			HpcArchiveObjectMetadata objectMetadata = dataTransferService
+					.addSystemGeneratedMetadataToDataObject(uploadResponse.getArchiveLocation(),
+							uploadResponse.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
+							systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+							systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId())
+					.getArchiveObjectMetadata();
 
 			// Delete the file.
 			if (deleteFileAfterUpload && !FileUtils.deleteQuietly(file)) {
