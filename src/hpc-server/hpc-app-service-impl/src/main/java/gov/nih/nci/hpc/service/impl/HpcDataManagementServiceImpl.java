@@ -1381,6 +1381,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		if (registrationRequest.getLinkSourcePath() != null) {
 			uploadSourceCount++;
 		}
+		if (registrationRequest.getArchiveLinkSource() != null) {
+			uploadSourceCount++;
+		}
 		if (uploadSourceCount > 1) {
 			throw new HpcException(
 					"Multiple (Globus/S3/Google Drive/Google Storage/File System/Link) upload source provided for: "
@@ -1389,7 +1392,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 		if (uploadSourceCount == 0) {
 			throw new HpcException(
-					"No Globus/S3/Google Drive/Google Storage/File System/Link upload source provided for: " + path,
+					"No Globus/S3/Google Drive/Google Storage/File System/Link/Archive Link upload source provided for: "
+							+ path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -1440,6 +1444,28 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			throw new HpcException("Invalid File System upload source in registration request for: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+
+		if (registrationRequest.getArchiveLinkSource() != null) {
+			if (!isValidFileLocation(registrationRequest.getArchiveLinkSource().getSourceLocation())) {
+				throw new HpcException("Invalid archive link location in registration request for: " + path,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (StringUtils.isEmpty(registrationRequest.getS3ArchiveConfigurationId())) {
+				throw new HpcException("Empty s3ArchiveConfigurationId in registration request for: " + path,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			String s3ArchiveConfigurationFileContainerId = getS3ArchiveConfiguration(
+					registrationRequest.getS3ArchiveConfigurationId()).getBaseArchiveDestination().getFileLocation()
+					.getFileContainerId();
+			if (!registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId()
+					.equals(s3ArchiveConfigurationFileContainerId)) {
+				throw new HpcException("The archive link source bucket ["
+						+ registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId()
+						+ "] doesn't match the s3ArchiveConfiguration bucket [" + s3ArchiveConfigurationFileContainerId
+						+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
 	}
 
 	/**
@@ -1468,6 +1494,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		if (registrationRequest.getS3UploadSource() != null) {
 			return HpcDataTransferUploadMethod.S_3;
+		}
+
+		if (registrationRequest.getArchiveLinkSource() != null) {
+			return HpcDataTransferUploadMethod.ARCHIVE_LINK;
 		}
 
 		return null;

@@ -493,6 +493,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 				? createdResponse(registrationResponse.getTaskId(), registrationResponse)
 				: okResponse(registrationResponse, false);
 	}
+	
+	@Override
+	public Response linkArchive(
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) {
+		gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO registrationResponse = null;
+		try {
+			registrationResponse = dataManagementBusService.registerDataObjects(bulkDataObjectRegistrationRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return !StringUtils.isEmpty(registrationResponse.getTaskId())
+				? createdResponse(registrationResponse.getTaskId(), registrationResponse)
+				: okResponse(registrationResponse, false);
+	}
 
 	@Deprecated
 	@Override
@@ -847,7 +863,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		HpcDownloadSummaryDTO downloadSummary = null;
 		try {
 			downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
-					totalCount != null ? totalCount : false, false,  pageSize != null ? pageSize : 0);
+					totalCount != null ? totalCount : false, false, pageSize != null ? pageSize : 0);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
