@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
@@ -100,6 +101,10 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	@Autowired
 	@Qualifier("hpcDataObjectMetadataUpdateTaskExecutor")
 	Executor dataObjectMetadataUpdateTaskExecutor = null;
+
+	@Value("${hpc.bus.getMetadataUpdateObjectsDefaultPageSize}")
+	private int getMetadataUpdateObjectsDefaultPageSize = 0;
+
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -1212,6 +1217,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		bulkMetadataUpdateCompoundQueryDTO.setTotalCount(true);
 		bulkMetadataUpdateCompoundQueryDTO.setDetailedResponse(false);
 		bulkMetadataUpdateCompoundQueryDTO.setPage(1);
+		bulkMetadataUpdateCompoundQueryDTO.setPageSize(getMetadataUpdateObjectsDefaultPageSize);
 		bulkMetadataUpdateCompoundQueryDTO.setCompoundQuery(bulkMetadataUpdateCompoundQuery);
 
 		// Perform the search for the data objects to include in this metadata update
