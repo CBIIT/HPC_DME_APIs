@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.test.common.ErrorMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,8 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+
+import org.junit.Assert;
 
 public class TaskHelper {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -138,7 +141,7 @@ public class TaskHelper {
 		return true;
 	}
 
-	public boolean submitRequest(String requestType, String requestBody, String requestUrl) {
+	public boolean submitRequestBoolean(String requestType, String requestBody, String requestUrl) {
 		Gson gson = new Gson();
 		ConfigFileReader configFileReader = new ConfigFileReader();
 		String token = configFileReader.getToken();
@@ -161,6 +164,44 @@ public class TaskHelper {
 		}
 	}
 
+	public ErrorMessage submitRequest(String requestType, String requestBody, String requestUrl, String role) {
+		Gson gson = new Gson();
+		ConfigFileReader configFileReader = new ConfigFileReader();
+		String token = configFileReader.getTokenByRole(role);
+		RestAssured.baseURI = configFileReader.getApplicationUrl();
+		RestAssured.port = 7738;
+		RequestSpecification request = RestAssured.given().log().all().relaxedHTTPSValidation()
+				.header("Accept", "application/json").header("Authorization", "Bearer " + token)
+				.header("Content-Type", "application/json").body(requestBody);
+		Response response = executeRequest(requestType, request, requestUrl);
+		int statusCode = response.getStatusCode();
+		System.out.println("The response status code is: " + statusCode);
+		JsonPath jsonPath = response.getBody().jsonPath();
+		ErrorMessage errorMessage = new ErrorMessage();
+		if (statusCode == 200 || statusCode == 201) {
+			errorMessage.errorType = "success";
+		} else {
+			errorMessage.errorType = jsonPath.get("errorType");
+			errorMessage.message = jsonPath.get("message");
+			errorMessage.stackTrace = jsonPath.get("stackTrace");
+			String errorType = jsonPath.get("errorType");
+			if (errorType.equals("REQUEST_REJECTED")) {
+				String msg = errorType + "; " + jsonPath.get("requestRejectReason") + errorMessage.message;
+				System.out.println("The response is: " + msg);
+			} else if (errorType.equals("REQUEST_AUTHENTICATION_FAILED")){
+				System.out.println("The response is: REQUEST_AUTHENTICATION_FAILED; " +  errorMessage.message);
+				System.out.println("The errorType is: " + errorType);
+			} else if (errorType.equals("INVALID_REQUEST_INPUT")){
+				System.out.println("The response is: INVALID_REQUEST_INPUT; " +  errorMessage.message);
+				System.out.println("The errorType is: " + errorType);
+			} else {
+				System.out.println("The response is: " + response.getBody().asString());
+				System.out.println("The errorType is: " + errorType);
+			}
+		}
+		return errorMessage;
+	}
+
 	private Response executeRequest(String requestType, RequestSpecification request, String requestUrl) {
 		Response response;
 		if (requestType.equals("POST")) {
@@ -177,4 +218,27 @@ public class TaskHelper {
 		}
 		return response;
 	}
+	
+	public void verifyResponse(String expectedResponseString, ErrorMessage result) {
+		if (expectedResponseString.equals("success")) {
+			if (!result.getErrorType().equals("success")) {
+				if (result.getErrorType().equals("REQUEST_REJECTED")) {
+					String msg = result.getErrorType() + "; " + result.getMessage();
+					Assert.assertEquals((Object) "success", (Object) msg);
+				} else {
+					Assert.assertEquals((Object) "success", (Object) result.getStackTrace());
+				}
+			} else {
+				Assert.assertEquals((Object) "success", (Object) result.getErrorType());
+			}
+		} else {
+			String errorType = "REQUEST_AUTHENTICATION_FAILED";
+			if (result.getErrorType().equals("REQUEST_AUTHENTICATION_FAILED")) {
+				Assert.assertEquals((Object) result.getErrorType(), (Object) "REQUEST_AUTHENTICATION_FAILED");
+			} else {
+				Assert.assertEquals((Object) result.getErrorType(), (Object) result.getStackTrace());
+			}
+		}
+	}
+
 }
