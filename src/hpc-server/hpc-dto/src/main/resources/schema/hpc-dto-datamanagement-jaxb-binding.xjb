@@ -221,6 +221,15 @@
       <jaxb:bindings node="//xsd:complexType[@name='HpcGlobusTransferRequest']">
          <jaxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest" />
       </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcArchiveObjectMetadata']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcAddArchiveObjectMetadataResponse']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcSetArchiveObjectMetadataResponse']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse" />
+      </jaxb:bindings>
    </jaxb:bindings>
    
    <jaxb:bindings schemaLocation="HpcMetadataTypes.xsd">

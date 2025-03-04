@@ -98,11 +98,12 @@ public interface HpcDataManagementRestService {
 	@Path("/collection/{path:.*}/children")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response getCollectionChildren(@PathParam("path") String path);
-	
+
 	/**
-	 * Get a collection children by its path starting at user specified offset. Collection metadata will not be returned
+	 * Get a collection children by its path starting at user specified offset.
+	 * Collection metadata will not be returned
 	 *
-	 * @param path The collection path.
+	 * @param path   The collection path.
 	 * @param offset The offset to start.
 	 * @param report Flag to include report.
 	 * @return The REST service response w/ HpcCollectionListDTO entity.
@@ -111,7 +112,7 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/collection/{path:.*}/childrenWithPaging")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getCollectionChildrenWithPaging(@PathParam("path") String path, 
+	public Response getCollectionChildrenWithPaging(@PathParam("path") String path,
 			@QueryParam("offset") Integer offset, @QueryParam("report") Boolean report);
 
 	/**
@@ -287,21 +288,20 @@ public interface HpcDataManagementRestService {
 	public Response getPermissionsOnCollectionsForUser(@QueryParam("collectionPath") String[] collectionsPaths,
 			@PathParam("userId") String userId);
 
-
 	/**
-	 * Get the permissions that a given user has on the child collections
-	 * of the given parent path.
+	 * Get the permissions that a given user has on the child collections of the
+	 * given parent path.
 	 *
-	 * @param parentPath	The collections' parent path.
-	 * @param userId     	The user id to get permissions for.
-	 * @return The REST service response with HpcUserPermissionsOnMultipleCollectionsDTO instance.
+	 * @param parentPath The collections' parent path.
+	 * @param userId     The user id to get permissions for.
+	 * @return The REST service response with
+	 *         HpcUserPermissionsOnMultipleCollectionsDTO instance.
 	 */
 	@GET
 	@Path("/childCollections/acl/user/{userId:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	Response getPermissionsOnChildCollectionsFromUser(@QueryParam("parentPath") String parentPath,
 			@PathParam("userId") String userId);
-
 
 	/**
 	 * Get all permissions that are assigned for a given set of collections.
@@ -393,6 +393,20 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response registerDataObjects(
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
+
+	/**
+	 * Archive link registration.
+	 *
+	 * @param bulkDataObjectRegistrationRequest The bulk registration request.
+	 * @return The REST service response w/ HpcBulkDataObjectRegistrationResponseDTO
+	 *         entity.
+	 */
+	@PUT
+	@Path("/linkArchive")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response linkArchive(
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
 
 	/**
@@ -750,7 +764,8 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/download")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDownloadSummary(@QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount, @QueryParam("pageSize") Integer pageSize);
+	public Response getDownloadSummary(@QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount,
+			@QueryParam("pageSize") Integer pageSize);
 
 	/**
 	 * Get download summary (for the request invoker's DOC or all for system
@@ -802,7 +817,7 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
-	
+
 	/**
 	 * Data objects registration.
 	 *
