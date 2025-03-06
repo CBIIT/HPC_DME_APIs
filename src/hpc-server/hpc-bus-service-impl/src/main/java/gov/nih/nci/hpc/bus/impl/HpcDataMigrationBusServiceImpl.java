@@ -975,7 +975,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 */
 	private void updateDataObjectMetadata(String path, HpcDataMigrationTask bulkMetadataUpdateTask)
 			throws HpcException {
-		logger.info("Updating Data Object Metadata: path - {}, bulk-metadata-task-id - {}", path,
+		logger.info("Processing data object in a bulk metadata migration task: path - {}, bulk-metadata-task-id - {}", path,
 				bulkMetadataUpdateTask.getId());
 
 		// Input validation.
