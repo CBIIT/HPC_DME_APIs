@@ -1278,7 +1278,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			try {
 				// Check if this is a directory. Use V2 listObjects API.
 				ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
-						.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId() + "/");
+						.withBucketName(fileLocation.getFileContainerId());
+				if (!StringUtils.isEmpty(fileLocation.getFileId()) && !fileLocation.getFileId().equals("/")) {
+					listObjectsRequest.setPrefix(fileLocation.getFileId());
+				}
 				ListObjectsV2Result objectsList = s3Connection.getTransferManager(authenticatedToken)
 						.getAmazonS3Client().listObjectsV2(listObjectsRequest);
 
@@ -1288,7 +1291,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				if (ase.getStatusCode() == 400) {
 					// V2 not supported. Use V1 listObjects API.
 					ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-							.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId());
+							.withBucketName(fileLocation.getFileContainerId());
+					if (!StringUtils.isEmpty(fileLocation.getFileId()) && !fileLocation.getFileId().equals("/")) {
+						listObjectsRequest.setPrefix(fileLocation.getFileId());
+					}
 					return !s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 							.listObjects(listObjectsRequest).getObjectSummaries().isEmpty();
 
