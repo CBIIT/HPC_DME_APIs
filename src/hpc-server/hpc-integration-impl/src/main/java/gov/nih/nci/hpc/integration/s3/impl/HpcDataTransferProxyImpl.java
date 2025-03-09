@@ -418,7 +418,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		try {
 			// List all the files and directories (including nested) under this directory.
 			ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
-					.withBucketName(directoryLocation.getFileContainerId()).withPrefix(directoryLocation.getFileId());
+					.withBucketName(directoryLocation.getFileContainerId());
+			if (!StringUtils.isEmpty(directoryLocation.getFileId()) && !directoryLocation.getFileId().equals("/")) {
+				listObjectsRequest.setPrefix(directoryLocation.getFileId());
+			}
 
 			ListObjectsV2Result listObjectsResult = s3Connection.getTransferManager(authenticatedToken)
 					.getAmazonS3Client().listObjectsV2(listObjectsRequest);
