@@ -192,10 +192,10 @@ tfoot input {
 									<label for="pageSizeId1" style="float:right;"><b>&nbsp;Entries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></label>
 									<select name="pageSizeName1" id="pageSizeId1"
 										class="form-control" style="width: 85px; float:right;">
-										<option value="100" class="bold-option" th:selected="${pageSize} == '100'">100</option>
 										<option value="200" class="bold-option" th:selected="${pageSize} == '200'">200</option>
 										<option value="500" class="bold-option" th:selected="${pageSize} == '500'">500</option>
 										<option value="1000" class="bold-option" th:selected="${pageSize} == '1000'">1000</option>
+										<option value="2000" class="bold-option" th:selected="${pageSize} == '2000'">2000</option>
 									</select>
 								</div>
 								<div>
@@ -371,7 +371,7 @@ tfoot input {
 			"aaSorting": [],
 			dom: 'rt',
 			scrollX: true,
-			scrollY: '80vh',
+			scrollY: '90vh',
 			scrollCollapse: true,
 	        paging: false,
 	        responsive: false,
