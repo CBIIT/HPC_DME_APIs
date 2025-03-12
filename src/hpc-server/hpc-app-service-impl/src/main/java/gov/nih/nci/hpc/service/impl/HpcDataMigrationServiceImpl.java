@@ -129,6 +129,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
 		if (migrationTask != null) {
+			logger.info(
+					"Data object migration task exists for in a bulk metadata migration task. : path - {}, bulk-metadata-task-id - {}, data-object-metadata-task-id - {}",
+					path, collectionMigrationTaskId, migrationTask.getId());
 			return migrationTask;
 		}
 
@@ -136,6 +139,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask = new HpcDataMigrationTask();
 		String taskId = dataMigrationDAO.getDataObjectMigrationTaskResultId(collectionMigrationTaskId, path);
 		if (!StringUtils.isEmpty(taskId)) {
+			logger.info(
+					"Data object migration task completed for in a bulk metadata migration task: path - {}, bulk-metadata-task-id - {}, data-object-metadata-task-id - {}",
+					path, collectionMigrationTaskId, taskId);
 			migrationTask.setId(taskId);
 			return migrationTask;
 		}
