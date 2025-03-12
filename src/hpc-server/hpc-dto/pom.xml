@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.11.0</version>
+		<version>3.11.1</version>
 	</parent>
 	<artifactId>hpc-dto</artifactId>
 	<packaging>jar</packaging>
