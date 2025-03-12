@@ -102,12 +102,11 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 		try {
 			int page = 1;
 			String pageStr = request.getParameter("page");
-			if(pageStr != null && !pageStr.isEmpty())
-			{
+			if(pageStr != null && !pageStr.isEmpty()){
 				page = Integer.parseInt(pageStr);
 			}
 			if(pageSize == null) {
-				pageSize="100";
+				pageSize="200";
 			}
 			int ipageSize =  Integer.valueOf(pageSize);
 			String serviceURL = (queryAllOption == false ? queryServiceURL : queryAllServiceURL) + "?page=" + page + "&totalCount=true" + "&pageSize=" + ipageSize;
