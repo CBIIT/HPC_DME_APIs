@@ -105,7 +105,6 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	@Value("${hpc.bus.getMetadataUpdateObjectsDefaultPageSize}")
 	private int getMetadataUpdateObjectsDefaultPageSize = 0;
 
-
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -480,7 +479,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				.forEach(bulkMetadataUpdateTask -> {
 					if (markInProcess(bulkMetadataUpdateTask)) {
 						try {
-							logger.info("Updating bulk metadata: task - {}", bulkMetadataUpdateTask.getId());
+							logger.info("Processing bulk metadata update migration task - {}",
+									bulkMetadataUpdateTask.getId());
 
 							// Create metadata migration tasks for all data objects under this bulk-update
 							// task.
@@ -975,8 +975,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	 */
 	private void updateDataObjectMetadata(String path, HpcDataMigrationTask bulkMetadataUpdateTask)
 			throws HpcException {
-		logger.info("Processing data object in a bulk metadata migration task: path - {}, bulk-metadata-task-id - {}", path,
-				bulkMetadataUpdateTask.getId());
+		logger.info("Processing data object in a bulk metadata migration task: path - {}, bulk-metadata-task-id - {}",
+				path, bulkMetadataUpdateTask.getId());
 
 		// Input validation.
 		HpcSystemGeneratedMetadata metadata = null;
@@ -993,7 +993,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 					bulkMetadataUpdateTask.getMetadataFromArchiveFileContainerId(),
 					bulkMetadataUpdateTask.getMetadataToArchiveFileContainerId());
 			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
-					HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE, "Invalid metadata update request: " + e.getMessage());
+					HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE,
+					"Invalid metadata update request: " + e.getMessage());
 
 			logger.error("Failed to create Data Object Metadata update task: path - {}, bulk-metadata-task-id - {}",
 					path, bulkMetadataUpdateTask.getId(), e);
@@ -1044,7 +1045,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 						.equals(dataObjectMetadataUpdateTask.getMetadataToArchiveFileContainerId())) {
 			// The data object is already in the new archive.
 			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
-					HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE, "data object is already in S3 archive ID: "
+					HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE,
+					"data object is already in S3 archive ID: "
 							+ systemGeneratedMetadata.getS3ArchiveConfigurationId());
 			return;
 		}
@@ -1071,8 +1073,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		if (!dataObjectMetadataUpdateTask.getSize().equals(archivePathAttributes.getSize())) {
 			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
 					HpcDataMigrationResult.FAILED,
-					": Data object size in new archive location (" + archivePathAttributes.getSize() + ") is different than old ("
-							+ dataObjectMetadataUpdateTask.getSize() + ")"
+					": Data object size in new archive location (" + archivePathAttributes.getSize()
+							+ ") is different than old (" + dataObjectMetadataUpdateTask.getSize() + ")"
 							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileContainerId() + " : "
 							+ dataObjectMetadataUpdateTask.getToS3ArchiveLocation().getFileId());
 			return;
@@ -1083,7 +1085,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 				HpcDataTransferType.S_3, dataObjectMetadataUpdateTask.getConfigurationId(),
 				dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
 				systemGeneratedMetadata.getRegistrarId())) {
-			
+
 			dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
 					HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE,
 					": Data object metadata is not set in new archive location -"
@@ -1231,6 +1233,13 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			bulkMetadataUpdateCompoundQueryDTO.setPage(searchResponseDTO.getPage() + 1);
 			totalCount = searchResponseDTO.getTotalCount();
 		} while (dataObjectPaths.size() < totalCount);
+
+		if (dataObjectPaths.size() == 0) {
+			logger.info(
+					"Bulk metadata update migration task - {} : No data objects found. s3_archive_configuration_id - {}, archive_file_container_id - {}",
+					bulkMetadataUpdateTask.getId(), bulkMetadataUpdateTask.getFromS3ArchiveConfigurationId(),
+					bulkMetadataUpdateTask.getMetadataFromArchiveFileContainerId());
+		}
 
 		return dataObjectPaths;
 	}
