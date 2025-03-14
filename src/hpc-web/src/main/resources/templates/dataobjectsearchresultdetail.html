@@ -384,6 +384,12 @@ window.onclick = function(event) {
 				        width : 200,
 			            type: 'number'
 				      });
+		            } else if(attribute == "createdOn" || attribute == "data_transfer_started" || attribute == "data_transfer_completed")  {
+				      $scope.gridOptions1.columnDefs.push({
+					    field: attribute,
+						width : 200,
+					    type: 'date'
+					  });
 			        } else {
 		              $scope.gridOptions1.columnDefs.push({
 		    			field: attribute,
