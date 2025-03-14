@@ -1038,3 +1038,8 @@ src/hpc-server/hpc-scheduler/target/hpc-scheduler-3.8.0/WEB-INF/spring/hpc-sched
 src/hpc-server/.idea/jarRepositories.xml
 src/hpc-server/.idea/misc.xml
 src/hpc-server/.idea/vcs.xml
+src/hpc-server/.idea/modules.xml
+src/hpc-server/hpc-dto/hpc-dto.iml
+src/hpc-server/hpc-scheduler/hpc-scheduler.iml
+src/hpc-server/hpc-scheduler-migration/hpc-scheduler-migration.iml
+src/hpc-server/hpc-ws-rs-impl/hpc-ws-rs-impl.iml
