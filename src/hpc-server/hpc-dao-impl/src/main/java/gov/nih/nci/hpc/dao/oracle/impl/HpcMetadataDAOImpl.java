@@ -110,6 +110,32 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	
 	private static final String GET_DATA_OBJECT_IDS_PATH_LIKE_SQL = " select object_id from r_data_hierarchy_meta_main where object_path like ?";
 
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_EQUAL_SQL = " select object_id from hpc_data_meta_main where object_path like ? and meta_attr_value = ?";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_NOT_EQUAL_SQL = " select object_id from hpc_data_meta_main where object_path like ? and meta_attr_value <> ?";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_LIKE_SQL = " select object_id from hpc_data_meta_main where object_path like ? and lower(meta_attr_value) like lower(?)";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_LESS_THAN_SQL = " select object_id from r_data_hierarchy_meta_main where object_path like ? and num_less_than(meta_attr_value, ?) = '1'";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_LESS_OR_EQUAL_SQL = " select object_id from hpc_data_meta_main where object_path like ? and num_less_or_equal(meta_attr_value, ?) = '1'";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_GREATER_THAN_SQL = " select object_id from hpc_data_meta_main where object_path like ? and num_greater_than(meta_attr_value, ?) = '1'";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_GREATER_OR_EQUAL_SQL = " select object_id from hpc_data_meta_main where object_path like ? and num_greater_or_equal(meta_attr_value, ?) = '1'";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_LESS_THAN_SQL = " select object_id from hpc_data_meta_main where object_path like ? and timestamp_less_than(meta_attr_value, ?, ?) = '1'";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_GREATER_THAN_SQL = " select object_id from hpc_data_meta_main where object_path like ? and timestamp_greater_than(meta_attr_value, ?, ?) = '1'";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_LESS_OR_EQUAL_SQL = " select object_id from hpc_data_meta_main where object_path like ? and timestamp_less_or_equal(meta_attr_value, ?, ?) = '1'";
+
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_GREATER_OR_EQUAL_SQL = " select object_id from hpc_data_meta_main where object_path like ? and timestamp_greater_or_equal(meta_attr_value, ?, ?) = '1'";
+	
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_PATH_EQUAL_SQL = " select object_id from hpc_data_meta_main where object_path = ?";
+	
+	private static final String GET_DATA_OBJECT_IDS_SELF_METADATA_PATH_LIKE_SQL = " select object_id from hpc_data_meta_main where object_path like ?";
+	
 	private static final String GET_DATA_OBJECT_EXACT_ATTRIBUTE_MATCH_FILTER = " and meta_attr_name = ?";
 
 	private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and data_level = ?";
@@ -479,6 +505,28 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				GET_DATA_OBJECT_IDS_PATH_EQUAL_SQL);
 		dataObjectSQL.queries.put(HpcMetadataQueryOperator.PATH_LIKE,
 				GET_DATA_OBJECT_IDS_PATH_LIKE_SQL);
+		
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_EQUAL, GET_DATA_OBJECT_IDS_SELF_METADATA_EQUAL_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_NOT_EQUAL, GET_DATA_OBJECT_IDS_SELF_METADATA_NOT_EQUAL_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_LIKE, GET_DATA_OBJECT_IDS_SELF_METADATA_LIKE_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_NUM_LESS_THAN, GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_LESS_THAN_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_NUM_LESS_OR_EQUAL,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_LESS_OR_EQUAL_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_NUM_GREATER_THAN, GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_GREATER_THAN_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_NUM_GREATER_OR_EQUAL,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_NUM_GREATER_OR_EQUAL_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_TIMESTAMP_LESS_THAN,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_LESS_THAN_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_TIMESTAMP_GREATER_THAN,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_GREATER_THAN_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_TIMESTAMP_LESS_OR_EQUAL,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_LESS_OR_EQUAL_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_TIMESTAMP_GREATER_OR_EQUAL,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_TIMESTAMP_GREATER_OR_EQUAL_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_PATH_EQUAL,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_PATH_EQUAL_SQL);
+		dataObjectSQL.queries.put(HpcMetadataQueryOperator.SELF_PATH_LIKE,
+				GET_DATA_OBJECT_IDS_SELF_METADATA_PATH_LIKE_SQL);
 
 		collectionSQL.queries.put(HpcMetadataQueryOperator.EQUAL, GET_COLLECTION_IDS_EQUAL_SQL);
 		collectionSQL.queries.put(HpcMetadataQueryOperator.NOT_EQUAL, GET_COLLECTION_IDS_NOT_EQUAL_SQL);
@@ -999,9 +1047,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			throws HpcException {
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
+		String sqlQuery = null;
 
 		for (HpcMetadataQuery metadataQuery : metadataQueries) {
-			String sqlQuery = sql.queries.get(metadataQuery.getOperator());
+			// If level or label is DataObject, search through self metadata
+			if(sql.queries.get(HpcMetadataQueryOperator.EQUAL).equals(GET_DATA_OBJECT_IDS_EQUAL_SQL)
+				&& (metadataQuery.getLevelFilter() != null
+						&& metadataQuery.getLevelFilter().getOperator().equals(HpcMetadataQueryOperator.EQUAL) 
+						&& (metadataQuery.getLevelFilter().getLevel() != null && metadataQuery.getLevelFilter().getLevel() == 1
+						|| metadataQuery.getLevelFilter().getLabel() != null && metadataQuery.getLevelFilter().getLabel().equals("DataObject")))) {
+				sqlQuery = sql.queries.get(HpcMetadataQueryOperator.fromValue("SELF_"+ metadataQuery.getOperator().toString()));
+			}  else {
+				sqlQuery = sql.queries.get(metadataQuery.getOperator());
+			}
 			if (sqlQuery == null) {
 				throw new HpcException("Invalid metadata query operator: " + metadataQuery.getOperator(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
