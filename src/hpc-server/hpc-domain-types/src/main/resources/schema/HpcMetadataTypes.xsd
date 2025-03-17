@@ -142,6 +142,19 @@
 			<xsd:enumeration value="TIMESTAMP_GREATER_OR_EQUAL" />
 			<xsd:enumeration value="PATH_EQUAL" />
 			<xsd:enumeration value="PATH_LIKE" />
+			<xsd:enumeration value="SELF_EQUAL" />
+			<xsd:enumeration value="SELF_NOT_EQUAL" />
+			<xsd:enumeration value="SELF_LIKE" />
+			<xsd:enumeration value="SELF_NUM_LESS_THAN" />
+			<xsd:enumeration value="SELF_NUM_GREATER_THAN" />
+			<xsd:enumeration value="SELF_NUM_LESS_OR_EQUAL" />
+			<xsd:enumeration value="SELF_NUM_GREATER_OR_EQUAL" />
+			<xsd:enumeration value="SELF_TIMESTAMP_LESS_THAN" />
+			<xsd:enumeration value="SELF_TIMESTAMP_GREATER_THAN" />
+			<xsd:enumeration value="SELF_TIMESTAMP_LESS_OR_EQUAL" />
+			<xsd:enumeration value="SELF_TIMESTAMP_GREATER_OR_EQUAL" />
+			<xsd:enumeration value="SELF_PATH_EQUAL" />
+			<xsd:enumeration value="SELF_PATH_LIKE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
