@@ -474,5 +474,14 @@ public interface HpcDataDownloadDAO {
 	 */
 	public double getTotalDownloadsSize(String userId, HpcDataTransferDownloadStatus dataTransferDownloadStatus)
 			throws HpcException;
+	
+	/**
+	 * Update total bytes transferred of a collection download. Add to the total
+	 *
+	 * @param collectionDownloadTaskId The collection task ID.
+	 * @param bytesTransferred The bytes to add to the total.
+	 * @throws HpcException on database error.
+	 */
+	public void updateTotalBytesTransferred(String collectionDownloadTaskId, long bytesTransferred) throws HpcException;
 
 }
