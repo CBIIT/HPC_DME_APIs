@@ -19,7 +19,7 @@ public class HpcSearch {
 	private String advancedCriteria;
 	private String actionType;
 	private int pageNumber=1;
-	private int pageSize=100;
+	private int pageSize=500;
 	private String queryName;
 	private String globalMetadataSearchText;
 	private String searchPathOrMetadata;
