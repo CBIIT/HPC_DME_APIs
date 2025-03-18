@@ -266,6 +266,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "GROUP BY a.meta_attr_name, b.object_id having count(*)> 1";
 
 	private static final String INSERT_DATA_META_MAIN_SQL = "insert into HPC_DATA_META_MAIN "
+			+ "(OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT) "
 			+ "select data.data_id, ? , "
 			+ "null, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
 			+ "from r_data_main data, r_objt_metamap map, r_meta_main meta, r_coll_main coll "
@@ -273,6 +274,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "and data.data_id=map.object_id and map.meta_id=meta.meta_id ";
 
 	private static final String INSERT_DATA_META_MAIN_UNDER_COLL_SQL = "insert into HPC_DATA_META_MAIN "
+			+ "(OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT) "
 			+ "select data.data_id, coll_name||'/'||data_name , "
 			+ "null, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
 			+ "from r_data_main data, r_objt_metamap map, r_meta_main meta, r_coll_main coll "
@@ -859,7 +861,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			jdbcTemplate.update(INSERT_DATA_META_MAIN_SQL, path, collName, dataName);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to refresh data object metadata for path: " + path + e.getMessage(),
+			throw new HpcException("Failed to upsert data object metadata for path: " + path + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 
