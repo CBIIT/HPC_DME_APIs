@@ -189,6 +189,7 @@
 				<entry key="getGroup" value="${hpc.ws.rs.auth.security.get-group}" />
 				<entry key="getGroups" value="${hpc.ws.rs.auth.security.get-groups}" />
 				<entry key="deleteGroup" value="${hpc.ws.rs.auth.security.delete-group}" />
+				<entry key="deleteGroups" value="${hpc.ws.rs.auth.security.delete-groups}" />
 				<entry key="registerSystemAccount"
 					value="${hpc.ws.rs.auth.security.register-system-account}" />
 				<entry key="refreshDataManagementConfigurations"
