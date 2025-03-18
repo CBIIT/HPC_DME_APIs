@@ -204,6 +204,20 @@ public interface HpcSecurityBusService {
 	 */
 	public void deleteGroup(String groupName) throws HpcException;
 
+
+	/**
+	 * Delete groups based on search criteria.
+	 *
+	 * @param groupPattern (Optional) The group pattern to search for (using case
+	 *                      insensitive matching). Cannot be empty. SQL LIKE wildcards
+	 *                      ('%', '_') are supported but global delete using just '%'
+	 *                      is not supported.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void deleteGroups(String groupPattern) throws HpcException;
+
+
 	/**
 	 * Register a System Account.
 	 *
