@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.11.0</version>
+		<version>3.12.0</version>
 	</parent>
 	<artifactId>hpc-dao-impl</artifactId>
 	<packaging>jar</packaging>
@@ -60,5 +60,11 @@
 		    <artifactId>commons-dbcp</artifactId>
 		    <version>1.4</version>
 		</dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>		
 	</dependencies>
 </project>
