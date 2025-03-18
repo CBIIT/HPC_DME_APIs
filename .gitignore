@@ -1035,3 +1035,11 @@ src/hpc-server/hpc-scheduler/target/hpc-scheduler-3.8.0/WEB-INF/lib/xmlbeans-3.1
 src/hpc-server/hpc-scheduler/target/hpc-scheduler-3.8.0/WEB-INF/lib/xmlschema-core-2.2.1.jar
 src/hpc-server/hpc-scheduler/target/hpc-scheduler-3.8.0/WEB-INF/spring/hpc-scheduler-beans-configuration.xml
 src/hpc-server/hpc-scheduler/target/hpc-scheduler-3.8.0/WEB-INF/spring/hpc-scheduler.properties
+src/hpc-server/.idea/jarRepositories.xml
+src/hpc-server/.idea/misc.xml
+src/hpc-server/.idea/vcs.xml
+src/hpc-server/.idea/modules.xml
+src/hpc-server/hpc-dto/hpc-dto.iml
+src/hpc-server/hpc-scheduler/hpc-scheduler.iml
+src/hpc-server/hpc-scheduler-migration/hpc-scheduler-migration.iml
+src/hpc-server/hpc-ws-rs-impl/hpc-ws-rs-impl.iml

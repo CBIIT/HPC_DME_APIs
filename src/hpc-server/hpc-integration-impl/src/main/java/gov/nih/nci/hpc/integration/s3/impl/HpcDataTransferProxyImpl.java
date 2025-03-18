@@ -266,6 +266,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (metadataAlreadySet) {
 				logger.info("System metadata in S3 archive already set for [{}]. No need to copy-object in archive",
 						fileLocation.getFileId());
+
 				return s3Metadata.getETag();
 			}
 
@@ -299,7 +300,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public boolean validateDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
 			List<HpcMetadataEntry> metadataEntries) throws HpcException {
-		// Check if the metadata is set on the data-object in the S3 archive with the correct value.
+		// Check if the metadata is set on the data-object in the S3 archive with the
+		// correct value.
 		try {
 			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
@@ -416,7 +418,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		try {
 			// List all the files and directories (including nested) under this directory.
 			ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
-					.withBucketName(directoryLocation.getFileContainerId()).withPrefix(directoryLocation.getFileId());
+					.withBucketName(directoryLocation.getFileContainerId());
+			if (!StringUtils.isEmpty(directoryLocation.getFileId()) && !directoryLocation.getFileId().equals("/")) {
+				listObjectsRequest.setPrefix(directoryLocation.getFileId());
+			}
 
 			ListObjectsV2Result listObjectsResult = s3Connection.getTransferManager(authenticatedToken)
 					.getAmazonS3Client().listObjectsV2(listObjectsRequest);
@@ -995,7 +1000,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			multipartUpload.setId(s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.initiateMultipartUpload(initiateMultipartUploadRequest).getUploadId());
 		} catch (AmazonClientException e) {
-			throw new HpcException("[S3] Failed to initiate a multipart upload: " + initiateMultipartUploadRequest,
+			throw new HpcException(
+					"[S3] Failed to initiate a multipart upload to: " + s3Connection.getS3Provider(authenticatedToken)
+							+ ". Archive destination location: " + archiveDestinationLocation.getFileContainerId() + ":"
+							+ archiveDestinationLocation.getFileId(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 		}
 
@@ -1264,7 +1272,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			try {
 				// Check if this is a directory. Use V2 listObjects API.
 				ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
-						.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId() + "/");
+						.withBucketName(fileLocation.getFileContainerId());
+				if (!StringUtils.isEmpty(fileLocation.getFileId()) && !fileLocation.getFileId().equals("/")) {
+					listObjectsRequest.setPrefix(fileLocation.getFileId());
+				}
 				ListObjectsV2Result objectsList = s3Connection.getTransferManager(authenticatedToken)
 						.getAmazonS3Client().listObjectsV2(listObjectsRequest);
 
@@ -1274,7 +1285,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				if (ase.getStatusCode() == 400) {
 					// V2 not supported. Use V1 listObjects API.
 					ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-							.withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId());
+							.withBucketName(fileLocation.getFileContainerId());
+					if (!StringUtils.isEmpty(fileLocation.getFileId()) && !fileLocation.getFileId().equals("/")) {
+						listObjectsRequest.setPrefix(fileLocation.getFileId());
+					}
 					return !s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 							.listObjects(listObjectsRequest).getObjectSummaries().isEmpty();
 
