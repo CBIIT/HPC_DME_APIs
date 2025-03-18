@@ -29,6 +29,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -95,6 +97,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_STATUS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set DATA_TRANSFER_STATUS = ? where COLLECTION_DOWNLOAD_TASK_ID = ?";
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (DATA_TRANSFER_STATUS = ? and DESTINATION_TYPE = ?)";
+
+	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? for update nowait";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set IN_PROCESS = ?, S3_DOWNLOAD_TASK_SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
@@ -228,6 +232,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_TOTAL_DOWNLOADS_SIZE_SQL = "select sum(DATA_SIZE) from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and DATA_TRANSFER_STATUS = ?";
 
+	private static final String SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ? and STATUS = 'RECEIVED' for update nowait";
+	private static final String UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set TOTAL_BYTES_TRANSFERRED = nvl(TOTAL_BYTES_TRANSFERRED, 0) + ? where ID = ? and STATUS = 'RECEIVED'";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -235,6 +242,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// The Spring JDBC Template instance.
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// Lob handler
 	private LobHandler lobHandler = new DefaultLobHandler();
@@ -448,6 +458,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		collectionDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		collectionDownloadTask.setDoc(rs.getString("DOC"));
+
+		long totalBytesTransferred = rs.getLong("TOTAL_BYTES_TRANSFERRED");
+		collectionDownloadTask.setTotalBytesTransferred(totalBytesTransferred > 0 ? totalBytesTransferred : null);
 
 		String destinationType = rs.getString("DESTINATION_TYPE");
 		if (destinationType != null)
@@ -938,12 +951,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId)
 			throws HpcException {
 		try {
+			jdbcTemplate.update(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, id);
 			return jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess, s3DownloadTaskServerId,
 					id, inProcess) > 0;
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to set a data object download task w/ in-process value: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+			logger.debug("download task: {} - DB row locked by another process: {}", id, e.getMessage());
+			return false;
 		}
 	}
 
@@ -1482,6 +1496,23 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to sum total downloads per user: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void updateTotalBytesTransferred(String collectionDownloadTaskId, long bytesTransferred)
+			throws HpcException {
+		try {
+			jdbcTemplate.update(SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, collectionDownloadTaskId);
+			int rowsUpdated = jdbcTemplate.update(UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, bytesTransferred, collectionDownloadTaskId);
+			if (rowsUpdated == 1) {
+				logger.info("download task: {} - total bytes transferred incremented by {} while in RECEIVED state",
+						collectionDownloadTaskId, bytesTransferred);
+			}
+
+		} catch (DataAccessException e) {
+			logger.error("download task: {} - failed to increment total bytes transferred", collectionDownloadTaskId,
+					e);
 		}
 	}
 

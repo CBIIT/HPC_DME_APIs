@@ -493,7 +493,11 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
             uploadToUrls(HpcClientUtil.constructPathString(basePath, objectPath), responseDTO.getMultipartUpload(), new File(entity.getAbsolutePath()),
                 partSize);
          } else {
-          System.out.println("Failed to get signed URL for: " + basePath + objectPath);
+			logger.error("Failed to get signed URL for: {}, restReponse: {}, responseDTO: {}, URL returned: {}",
+				basePath + objectPath, restResponse.getStatus(), responseDTO,
+				responseDTO != null ? responseDTO.getUploadRequestURL() : "");
+		    System.out.println("Failed to get signed URL for: " + basePath + objectPath);
+          throw new HpcBatchException("Failed to get signed URL for: " + basePath + objectPath);       
         }
       }
     } catch (Exception e) {
