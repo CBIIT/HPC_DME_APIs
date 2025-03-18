@@ -269,6 +269,21 @@ public interface HpcSecurityRestService {
   @Path("/group/{groupName}")
   public Response deleteGroup(@PathParam("groupName") String groupName);
 
+
+  /**
+   * Delete groups by search criteria.
+   *
+   * @param groupPattern The group pattern to search for (using case insensitive
+   *     matching). SQL LIKE wildcards ('%', '_') are supported but global delete
+   *     using just '%' is not supported.
+   *     returned.
+   * @return The REST service response.
+   */
+  @DELETE
+  @Path("/group")
+  public Response deleteGroups(@QueryParam("groupPattern") String groupPattern);
+
+
   /**
    * Register system account.
    *

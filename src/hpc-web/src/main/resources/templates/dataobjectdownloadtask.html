@@ -94,6 +94,9 @@
 									<i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></button></strong>
 								</h2>
 								</div>
+								<div th:if="${hpcDataObjectDownloadStatusDTO.getInProgress() == true}">
+								  <input type="hidden" id="inProgressItems" name="inProgressItems" value="true"/>
+								</div>
 							</div>
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
@@ -456,7 +459,7 @@ var pollPercentComplete = setInterval(
 				}
 			});
 			
-		}, 10000);	
+		}, 5000);
 
 
            

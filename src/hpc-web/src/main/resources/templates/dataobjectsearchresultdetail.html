@@ -124,7 +124,7 @@ window.onclick = function(event) {
 			enablePaginationControls : true,
 			enableRowSelection : true,
 			enableSelectAll : true,
-			paginationPageSizes: [100, 500, 1000, 5000],
+			paginationPageSizes: [500, 1000, 2000, 5000],
 			paginationPageSize: parseInt(currentPageSize),
 			paginationCurrentPage: parseInt(currentPage),
 			columnDefs : [
@@ -378,10 +378,24 @@ window.onclick = function(event) {
 	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries.length; j++){
 		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].attribute;
 		    	  if(attribute != null && !metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "checksum") {
-		    	  	$scope.gridOptions1.columnDefs.push({
+		            if(attribute == "source_file_size") {
+		              $scope.gridOptions1.columnDefs.push({
+				        field: attribute,
+				        width : 200,
+			            type: 'number'
+				      });
+		            } else if(attribute == "createdOn" || attribute == "data_transfer_started" || attribute == "data_transfer_completed")  {
+				      $scope.gridOptions1.columnDefs.push({
+					    field: attribute,
+						width : 200,
+					    type: 'date'
+					  });
+			        } else {
+		              $scope.gridOptions1.columnDefs.push({
 		    			field: attribute,
 		    			width : 200
-		    	  	});
+		              });
+			        }
 		    	  	metaSet.add(attribute)
 		    	  }
 		    	  if(attribute != null) {
