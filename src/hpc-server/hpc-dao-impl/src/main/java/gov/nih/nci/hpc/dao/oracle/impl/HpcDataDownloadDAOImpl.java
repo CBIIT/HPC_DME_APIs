@@ -13,6 +13,9 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 import static gov.nih.nci.hpc.util.HpcUtil.fromPathsString;
 import static gov.nih.nci.hpc.util.HpcUtil.toPathsString;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -599,7 +602,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		userDownloadRequest.setPath(rs.getString("PATH"));
 		userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 
-		if(rs.getString(("STATUS")) != null) {
+		if(hasColumn(rs, "STATUS")) {
 		    userDownloadRequest.setStatus(HpcDataTransferDownloadStatus.fromValue(rs.getString(("STATUS"))));
 		}
 
@@ -1685,4 +1688,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		return downloadItems;
 	}
+
+
+	/**
+	 * Check if the given resultset has the column with the specified table
+	 *
+	 * @param rs The resultset to check
+	 * @param columnName The label of the specified column
+	 * @return True if the column exists
+	 * @throws SQLException
+	 */
+	public boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columns = metaData.getColumnCount();
+        for (int i = 1; i <= columns; i++) {
+            if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
