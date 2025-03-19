@@ -140,9 +140,10 @@ public class HpcDownloadController extends AbstractHpcController {
             final String returnURL = this.webServerName + "/download";
             String accessToken="";
             try {
-				logger.debug("BOX CODE=" + code);
-				accessToken = hpcAuthorizationService.getBoxToken(code);
-				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
+            	if(googleAction == null || googleAction.trim().isEmpty()){
+            		logger.debug("BOX CODE=" + code);
+            		accessToken = hpcAuthorizationService.getBoxToken(code);
+            	} else if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
