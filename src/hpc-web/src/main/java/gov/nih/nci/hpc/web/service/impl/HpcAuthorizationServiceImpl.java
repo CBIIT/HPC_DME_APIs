@@ -170,8 +170,8 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 	      BoxAPIConnection api = new BoxAPIConnection(boxClientId, boxClientSecret, code);
 	      // The api object now has the initial access token.
 	      // You can use api.getAccessToken() to get the token string.
-	      logger.debug("Access Token: " + api.getAccessToken());
-	      logger.debug("Refresh Token: " + api.getRefreshToken());
+	      logger.debug("BOX Access Token: " + api.getAccessToken());
+	      logger.debug("BOX Refresh Token: " + api.getRefreshToken());
 	      token = api.getAccessToken();
 	      // Store or use the access token for subsequent API calls
 	      // Refresh token can be used to obtain a new access token when it expires
