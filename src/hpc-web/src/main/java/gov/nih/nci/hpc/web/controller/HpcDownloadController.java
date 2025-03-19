@@ -147,12 +147,14 @@ public class HpcDownloadController extends AbstractHpcController {
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("authorized", "true");
 				} else if(googleAction.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
-					String refreshTokenDetailsGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+					/*String refreshTokenDetailsGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
 					session.setAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
 					model.addAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
-		            model.addAttribute("authorizedGC", "true");
+		            model.addAttribute("authorizedGC", "true");*/
+					logger.debug("BOX CODE=" + code);
+					String accessToken = hpcAuthorizationService.getBoxToken(code);
 				}
             } catch (Exception e) {
               model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
@@ -228,21 +230,46 @@ public class HpcDownloadController extends AbstractHpcController {
 				e.printStackTrace();
 			}
 	   }
+		
+		/*if (action != null && action.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
+			session.setAttribute("downloadType", downloadType);
+			session.setAttribute("downloadSource", source);
+			downloadFilePath = request.getParameter("downloadFilePath");
+			session.setAttribute("downloadFilePath", downloadFilePath);
+			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
+			downloadFilePath = request.getParameter("downloadFilePath");
+			String returnURL = this.webServerName + "/download";
+			try {
+			  return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+			} catch (Exception e) {
+			  model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
+			  e.printStackTrace();
+			}
+        }*/
 
 		if (action != null && action.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
-  		    session.setAttribute("downloadType", downloadType);
-            session.setAttribute("downloadSource", source);
-            downloadFilePath = request.getParameter("downloadFilePath");
-            session.setAttribute("downloadFilePath", downloadFilePath);
-			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
-  	        downloadFilePath = request.getParameter("downloadFilePath");
-  	        String returnURL = this.webServerName + "/download";
-  	        try {
-              return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
-            } catch (Exception e) {
-              model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
-              e.printStackTrace();
-            }
+			session.setAttribute("downloadType", downloadType);
+			session.setAttribute("downloadSource", source);
+			downloadFilePath = request.getParameter("downloadFilePath");
+			session.setAttribute("downloadFilePath", downloadFilePath);
+			/*session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
+			downloadFilePath = request.getParameter("downloadFilePath");
+			String returnURL = this.webServerName + "/download";
+			try {
+			  return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+			} catch (Exception e) {
+			  model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
+			  e.printStackTrace();
+			}*/
+			String redirectUrl =  this.webServerName + "/download";;
+			try {
+				redirectUrl = "redirect:" + hpcAuthorizationService.authorizeBox(redirectUrl);
+				//redirectUrl="redirect:" + "https://account.box.com/api/oauth2/authorize?response_type=code&client_id=lndmwti9i2vdrh4x1rljm8z1zjyap5v0&redirect_uri=" +  redirectUrl;
+				return redirectUrl;
+			} catch (Exception e) {
+				model.addAttribute("error", "Failed to redirect to Bix for authorization: " + e.getMessage());
+				e.printStackTrace();
+			}
         }
 
 		if(endPointName != null) {

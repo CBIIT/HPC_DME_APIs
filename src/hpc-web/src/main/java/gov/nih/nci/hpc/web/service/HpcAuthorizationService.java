@@ -42,13 +42,24 @@ public interface HpcAuthorizationService {
    */
   public String getRefreshToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType, String userId) throws Exception;
 
+  /**
+   * Authorize user for Box
+   *
+   * @param redirectUri The redirectUri.
+   * @throws Exception on service failure.
+   */
+  public String authorizeBox(String redirectUri) throws Exception;
 
+  public String getBoxToken(String code) throws Exception;
+ 
   public enum ResourceType {
     GOOGLEDRIVE,
-    GOOGLECLOUD
+    GOOGLECLOUD,
+    BOX
   }
   
   public static final String GOOGLE_CLOUD_TYPE = "googleCloud";
-	public static final String GOOGLE_DRIVE_TYPE = "drive";
+  public static final String GOOGLE_DRIVE_TYPE = "drive";
+  public static final String BOX_TYPE = "box";
 
 }
