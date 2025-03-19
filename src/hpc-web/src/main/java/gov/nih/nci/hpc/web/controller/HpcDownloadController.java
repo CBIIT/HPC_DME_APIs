@@ -141,7 +141,7 @@ public class HpcDownloadController extends AbstractHpcController {
             String accessToken="";
             try {
             	if(googleAction == null || googleAction.trim().isEmpty()){
-            		logger.debug("BOX CODE=" + code);
+            		logger.info("BOX CODE=" + code);
             		accessToken = hpcAuthorizationService.getBoxToken(code);
             	} else if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
