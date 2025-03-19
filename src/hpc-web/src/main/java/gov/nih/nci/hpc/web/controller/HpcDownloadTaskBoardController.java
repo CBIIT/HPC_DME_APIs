@@ -135,6 +135,9 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setResult(getResultDisplayText(download.getResult()));
 					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					task.setDisplayPath(download.getPath()); // For display purpose only. The above path gets modified to a link
+					if(download.getStatus() != null) {
+					    task.setStatus(download.getStatus().value());
+					}
 					result.add(task);
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
@@ -153,6 +156,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 						task.setError(download.getMessage() != null ? download.getMessage().replaceAll("'", "\\\\'") : "");
 					}
 				}
+	
 				task.setUserId(download.getUserId());
 				task.setTaskId(download.getTaskId());
 				task.setPath(download.getPath());
@@ -167,8 +171,15 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 						download.getCompleted() != null ? sortFormat.format(download.getCompleted().getTime()) : "");task.setResult(getResultDisplayText(download.getResult()));
 				task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 				task.setDisplayPath(download.getPath());// For display purpose only. The above path gets modified to a link in the display
+				
+				if(download.getResult() != null) {
+					task.setStatus(download.getResult().value());
+				}
+				
 				result.add(task);
 			}
+			
+			
 			model.addAttribute("currentPage", Integer.toString(page));
 			model.addAttribute("totalCount", downloads.getTotalCount());
 			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(downloads.getTotalCount(), downloads.getLimit()));

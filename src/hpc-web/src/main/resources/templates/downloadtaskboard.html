@@ -229,7 +229,7 @@ tfoot input {
 									<th class="column-heading destinationTypeWidth" id='colheading005' th:text="'Destination Type'"></th>
 									<th class="column-heading createdWidth" id='colheading006' th:text="'Created On'"></th>
 									<th class="column-heading completedWidth" id='colheading007' th:text="'Completed On'"></th>
-									<th class="column-heading resultWidth" id='colheading008' th:text="'Transfer Result'"></th>
+									<th class="column-heading resultWidth" id='colheading008' th:text="'Task Status'"></th>
 									<th class="column-heading retryUserIdWidth" id='colheading009' th:text="'Retry User ID'"></th>
 									<th class="column-heading errorWidth" id='colheading010' th:text="'Error'"></th>
 								</tr>
@@ -246,7 +246,7 @@ tfoot input {
 									<th class="filterhead destinationTypeWidth" id='col2heading005' th:text="'Destination Type'"></th>
 									<th class="filterhead createdWidth" id='col2heading006'  th:text="'Created On'"></th>
 									<th class="filterhead completedWidth" id='col2heading007'  th:text="'Completed On'"></th>
-									<th class="filterhead resultWidth" id='col2heading008' th:text="'Transfer Result'"></th>
+									<th class="filterhead resultWidth" id='col2heading008' th:text="'Task Status'"></th>
 									<th class="filterhead retryUserIdWidth" id='col2heading009' th:text="'Retry User ID'"></th>
 									<th class="filterhead errorWidth" id='col2heading010' th:text="'Error'"></th>
 								</tr>
@@ -274,7 +274,7 @@ tfoot input {
 									<td id='col5' class="destinationTypeWidth" th:text="${result.destinationType}"></td>
 									<td id='col6' class="createdWidth"  th:text="${result.created}"></td>
 									<td id='col7' class="completedWidth" th:text="${result.completed}"></td>
-									<td id='col8' class="resultWidth" th:text="${result.result}"></td>
+									<td id='col8' class="resultWidth" th:text="${result.status}"></td>
 									<td id='col9' class="retryUserIdWidth" th:text="${result.retryUserId}"></td>
 									<td id='col10' class="errorWidth" style="word-break:break-all;" th:text="${result.error}"></td>
 									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
