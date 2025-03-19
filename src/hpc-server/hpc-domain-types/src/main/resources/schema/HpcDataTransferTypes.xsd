@@ -546,6 +546,8 @@
 				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="status" 
+			    type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result"
