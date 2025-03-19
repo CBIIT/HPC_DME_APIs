@@ -185,12 +185,12 @@
 											th:text="${hpcDataObjectsDownloadStatusDTO.getDestinationLocation().getFileId()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() != null}">
-										<label for="Name">Transfer Completed:</label> <label id="regComplete"
+										<label for="Name">Transfer Status:</label> <label id="regComplete"
 											for="${hpcDataObjectsDownloadStatusDTO.getResult()}"
 											th:text="${hpcDataObjectsDownloadStatusDTO.getResult()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() == null}">
-										<label for="Name">Transfer Completed:</label> <label id="regComplete">In Progress</label>
+										<label for="Name">Transfer Status:</label> <label id="regComplete">In Progress</label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadBytesTransferred != null and !#strings.startsWith(hpcDataObjectsDownloadBytesTransferred,'0')}">
 										<label for="BytesTransferred">Bytes Transferred:</label> <label
