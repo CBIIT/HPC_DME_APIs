@@ -136,7 +136,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					task.setDisplayPath(download.getPath()); // For display purpose only. The above path gets modified to a link
 					if(download.getStatus() != null) {
-					    task.setStatus(download.getStatus().value());
+					    task.setStatus(download.getStatus());
 					}
 					result.add(task);
 				}
