@@ -603,7 +603,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 
 		if(hasColumn(rs, "STATUS")) {
-		    userDownloadRequest.setStatus(HpcDataTransferDownloadStatus.fromValue(rs.getString(("STATUS"))));
+			if(rs.getObject("STATUS") != null) {
+				userDownloadRequest.setStatus(rs.getString(("STATUS")));
+			}
 		}
 
 		if (rs.getObject("RESULT") != null) {
