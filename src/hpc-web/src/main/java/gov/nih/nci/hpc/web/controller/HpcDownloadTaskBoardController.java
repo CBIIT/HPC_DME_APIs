@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -135,9 +136,13 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setResult(getResultDisplayText(download.getResult()));
 					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					task.setDisplayPath(download.getPath()); // For display purpose only. The above path gets modified to a link
-					if(download.getStatus() != null) {
-					    task.setStatus(download.getStatus());
+				
+					if(download.getType().equals(HpcDownloadTaskType.DATA_OBJECT)) {
+						task.setStatus(getResultDisplayText(download.getResult()));
+					} else {
+						task.setStatus(download.getStatus());
 					}
+					
 					result.add(task);
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
@@ -172,9 +177,8 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 				task.setDisplayPath(download.getPath());// For display purpose only. The above path gets modified to a link in the display
 				
-				if(download.getResult() != null) {
-					task.setStatus(download.getResult().value());
-				}
+				task.setStatus(getResultDisplayText(download.getResult()));
+				
 				
 				result.add(task);
 			}
@@ -195,18 +199,10 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 	
 	private String getResultDisplayText(HpcDownloadResult result) {
 	  if(result == null) {
-	    return "In Process";
+	    return "IN_PROGRESS";
 	  }
 	  
-      switch(result) {
-        case COMPLETED:
-          return "Completed";
-        
-        case CANCELED:
-          return "Canceled";
-          
-        default:
-          return "Failed";
-      }
+      return result.value();
+      
 	}
 }
