@@ -3732,7 +3732,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Create a logging prefix.
-		StringBuffer logPrefix = new StringBuffer("Bulk download task: {} - Bytes transferred for ");
+		StringBuffer logPrefix = new StringBuffer("Bulk download task: [taskId={}] - Bytes transferred for ");
 		String logPrefixValue = null;
 		switch (downloadTask.getType()) {
 		case COLLECTION:
