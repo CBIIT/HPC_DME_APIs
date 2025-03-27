@@ -280,7 +280,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									systemGeneratedMetadata.getDataTransferType(),
 									systemGeneratedMetadata.getConfigurationId(),
 									systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-									systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+									systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId())
+							.getArchiveObjectMetadata();
 
 					// Update data management w/ data transfer status, checksum and completion time.
 					dataTransferCompleted = Calendar.getInstance();
@@ -692,7 +693,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA)
 								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.BOX))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-					logger.info("Resetting download task: {}", downloadTask.getId());
+					logger.info("Resetting download task: [taskId={}]", downloadTask.getId());
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);
 				}
 
@@ -732,7 +733,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
-			logger.info("collection download task: {} - started processing [{}]", downloadTask.getId(),
+			logger.info("collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
 					downloadTask.getType());
 
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
@@ -751,7 +752,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Another collection breakdown or processing task is in-process (other thread)
 				// for this same collection for this user.
 				logger.info(
-						"collection download task: {} - Not processing at this time. A download task is already in-process for user {} for collection {}",
+						"collection download task: [taskId={}] - Not processing at this time. A download task is already in-process for user {} for collection {}",
 						downloadTask.getId(), downloadTask.getUserId(), downloadTask.getPath());
 				continue;
 			}
@@ -767,7 +768,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							|| HpcUserRole.SYSTEM_ADMIN.equals(currentUserRole))) {
 				// We have reached the max collection breakdown tasks in-process for this user.
 				logger.info(
-						"collection download task: {} - Not processing at this time. {} download tasks already in-process for user {}",
+						"collection download task: [taskId={}] - Not processing at this time. {} download tasks already in-process for user {}",
 						downloadTask.getId(), totalTasksInProcessCount, downloadTask.getUserId());
 				continue;
 			}
@@ -887,8 +888,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							// Persist the collection download task.
 							dataTransferService.updateCollectionDownloadTask(downloadTask);
 
-							logger.info("collection download task: {} - finished processing [{}]", downloadTask.getId(),
-									downloadTask.getType());
+							logger.info("collection download task: [taskId={}] - finished processing [{}]",
+									downloadTask.getId(), downloadTask.getType());
 
 						} catch (HpcException e) {
 							logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
@@ -958,7 +959,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								// This item failed because of permission denied.
 								// Cancel any pending download items (i.e. items in RECEIVED state).
 								dataTransferService.cancelCollectionDownloadTask(downloadTask);
-								logger.info("collection download task: {} - detected permission denied [{}]",
+								logger.info("collection download task: [taskId={}] - detected permission denied [{}]",
 										downloadTask.getId(), downloadTask.getType().value());
 							}
 
@@ -966,7 +967,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								// This item failed because of credentials are needed.
 								// Cancel any pending download items (i.e. items in RECEIVED state).
 								dataTransferService.cancelCollectionDownloadTask(downloadTask);
-								logger.info("collection download task: {} - detected credentials are needed [{}]",
+								logger.info(
+										"collection download task: [taskId={}] - detected credentials are needed [{}]",
 										downloadTask.getId(), downloadTask.getType().value());
 							}
 
@@ -1522,13 +1524,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					case RECEIVED:
 						if (updated) {
 							logger.info(
-									"download task: {} - marked for in-process [transfer-type={}, destination-type={}]",
+									"download task: [taskId={}] - marked for in-process [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
 									downloadTask.getDestinationType());
 						} else {
 							// This task is in-process by another server. Skip it.
 							logger.info(
-									"download task: {} - in-process by another server [transfer-type={}, destination-type={}]",
+									"download task: [taskId={}] - in-process by another server [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
 									downloadTask.getDestinationType());
 							break;
@@ -1536,7 +1538,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						if (inProcess) {
 							// This task is in-process by another thread. Skip it.
 							logger.info(
-									"download task: {} - in-process by another thread [transfer-type={}, destination-type={}]",
+									"download task: [taskId={}] - in-process by another thread [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
 									downloadTask.getDestinationType());
 							break;
@@ -1549,7 +1551,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							// containing this request.
 							// We don't pick it up as it will get cancelled soon.
 							logger.info(
-									"download task: {} - A cancelleation request submitted for the collection download task {} [transfer-type={}, destination-type={}]",
+									"download task: [taskId={}] - A cancelleation request submitted for the collection download task {} [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getCollectionDownloadTaskId(),
 									downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 							dataTransferService
@@ -1560,7 +1562,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 						if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 							try {
-								logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
+								logger.info(
+										"download task: [taskId={}] - continuing [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType());
 								if (!dataTransferService.continueDataObjectDownloadTask(downloadTask)) {
@@ -1571,7 +1574,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							} catch (HpcException e) {
 								logger.error(
-										"download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+										"download task: [taskId={}] - Failed to process [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType(), e);
 							} finally {
@@ -1587,33 +1590,34 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								securityService.executeAsSystemAccount(Optional.empty(), () -> {
 									try {
 										logger.info(
-												"download task: {} - continuing [transfer-type={}, destination-type={}]",
+												"download task: [taskId={}] - continuing [transfer-type={}, destination-type={}]",
 												downloadTask.getId(), downloadTask.getDataTransferType(),
 												downloadTask.getDestinationType());
 										dataTransferService.continueDataObjectDownloadTask(downloadTask);
 
 									} catch (HpcException e) {
 										logger.error(
-												"download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+												"download task: [taskId={}] - Failed to process [transfer-type={}, destination-type={}]",
 												downloadTask.getId(), downloadTask.getDataTransferType(),
 												downloadTask.getDestinationType(), e);
 									}
 								});
 							} catch (HpcException e) {
 								logger.error(
-										"download task: {} - Failed to execute as system account [transfer-type={}, destination-type={}]",
+										"download task: [taskId={}] - Failed to execute as system account [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType(), e);
 							} finally {
 								try {
-									logger.debug("download task: {} - finally block called: to markProcessedDataObjectDownloadTask in-process=false [transfer-type={}]", downloadTask.getId(),
-											downloadTask.getDataTransferType());
+									logger.debug(
+											"download task: [taskId={}] - finally block called: to markProcessedDataObjectDownloadTask in-process=false [transfer-type={}]",
+											downloadTask.getId(), downloadTask.getDataTransferType());
 									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 											dataTransferType, false);
 
 								} catch (HpcException e) {
 									logger.error(
-											"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
+											"download task: [taskId={}] - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
 											downloadTask.getId(), downloadTask.getDataTransferType(),
 											downloadTask.getDestinationType(), e);
 								}
@@ -1624,7 +1628,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					case IN_PROGRESS:
 						logger.info(
-								"download task: {} - completing in-progress [transfer-type={}, destination-type={}]",
+								"download task: [taskId={}] - completing in-progress [transfer-type={}, destination-type={}]",
 								downloadTask.getId(), downloadTask.getDataTransferType(),
 								downloadTask.getDestinationType());
 						completeInProgressDataObjectDownloadTask(downloadTask);
@@ -1632,14 +1636,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					case CANCELED:
 						logger.info(
-								"download task: {} - completing cancelation [transfer-type={}, destination-type={}]",
+								"download task: [taskId={}] - completing cancelation [transfer-type={}, destination-type={}]",
 								downloadTask.getId(), downloadTask.getDataTransferType(),
 								downloadTask.getDestinationType());
 						completeCanceledDataObjectDownloadTask(downloadTask);
 						break;
 
 					case HYPERFILE_STAGING:
-						logger.info("download task: {} - hyperfile staging [transfer-type={}, destination-type={}]",
+						logger.info(
+								"download task: [taskId={}] - hyperfile staging [transfer-type={}, destination-type={}]",
 								downloadTask.getId(), downloadTask.getDataTransferType(),
 								downloadTask.getDestinationType());
 						dataTransferService.stageHyperfileDataObjectDownloadTask(downloadTask);
@@ -1652,7 +1657,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					}
 
 				} catch (HpcException e) {
-					logger.error("download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+					logger.error(
+							"download task: [taskId={}] - Failed to process [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
 							e);
 				}
@@ -1892,7 +1898,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// processed so
 					// far.
 					dataTransferService.cancelCollectionDownloadTaskItems(collectionDownloadTaskId);
-					logger.info("Processing collection download task [{}] aborted", collection.getAbsolutePath());
+					logger.info("Processing collection download task [taskId={}] aborted", collectionDownloadTaskId);
 					return downloadItems;
 				}
 			}
@@ -2639,8 +2645,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				dataTransferType, downloadTask.getConfigurationId(), result, message, destinationLocation, completed,
 				dataTransferType);
 
-		logger.info("collection download task: {} - completed as {} [{}]", downloadTask.getId(), result.value(),
-				downloadTask.getType().value());
+		logger.info("collection download task: [taskId={}] - completed as {} [{}]", downloadTask.getId(),
+				result.value(), downloadTask.getType().value());
 
 	}
 
@@ -2655,7 +2661,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	private void completeInProgressDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		if (!downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
 			// Checking transfer status is done for active Globus downloads only.
-			logger.info("download task: {} - still in-progress [transfer-type={}, destination-type={}]",
+			logger.info("download task: [taskId={}] - still in-progress [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 			return;
 		}
@@ -2703,7 +2709,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			dataTransferService.updateDataObjectDownloadTask(downloadTask,
 					dataTransferDownloadReport.getBytesTransferred());
 
-			logger.info("download task: {} - still in-progress [transfer-type={}, destination-type={}]",
+			logger.info("download task: [taskId={}] - still in-progress [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 		}
 	}
@@ -2828,6 +2834,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		registrationDTO.setGoogleDriveUploadSource(registrationRequest.getGoogleDriveUploadSource());
 		registrationDTO.setGoogleCloudStorageUploadSource(registrationRequest.getGoogleCloudStorageUploadSource());
 		registrationDTO.setFileSystemUploadSource(registrationRequest.getFileSystemUploadSource());
+		registrationDTO.setArchiveLinkSource(registrationRequest.getArchiveLinkSource());
 		registrationDTO.setLinkSourcePath(registrationRequest.getLinkSourcePath());
 		registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
 		registrationDTO
@@ -3113,10 +3120,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
 			// Generate archive system generated metadata.
-			HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
-					uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
-					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-					systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+			HpcArchiveObjectMetadata objectMetadata = dataTransferService
+					.addSystemGeneratedMetadataToDataObject(uploadResponse.getArchiveLocation(),
+							uploadResponse.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
+							systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+							systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId())
+					.getArchiveObjectMetadata();
 
 			// Delete the file.
 			if (deleteFileAfterUpload && !FileUtils.deleteQuietly(file)) {
@@ -3303,7 +3312,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		} catch (HpcException e) {
 			logger.error(
-					"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
+					"download task: [taskId={}] - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(), e);
 		}
 	}
@@ -3378,6 +3387,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					&& dataTransferService.getCollectionDownloadTaskCancellationRequested(taskId)) {
 				// A user request to cancel the collection download was received.
 				abortCollection = true;
+				logger.info("Abort collection download task [taskId={}]. User requested cancellation", taskId);
 			}
 
 			if (abortCollection != null) {
@@ -3404,6 +3414,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							.equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)
 							|| downloadItemStatus.getResult().getResult()
 									.equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED);
+					if (abortCollection) {
+						logger.info("Abort collection download task [taskId={}]. First item failed [{}]", taskId,
+								downloadItemStatus.getResult().getResult());
+					}
 					return abortCollection;
 				}
 			}
