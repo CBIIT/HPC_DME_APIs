@@ -80,6 +80,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
@@ -247,9 +248,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
-			String storageClass) throws HpcException {
+	public HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken,
+			HpcFileLocation fileLocation, HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
+			String sudoPassword, String storageClass) throws HpcException {
+
+		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
 
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {
@@ -266,8 +269,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (metadataAlreadySet) {
 				logger.info("System metadata in S3 archive already set for [{}]. No need to copy-object in archive",
 						fileLocation.getFileId());
-
-				return s3Metadata.getETag();
+				response.setChecksum(s3Metadata.getETag());
+				response.setMetadataAdded(false);
+				return response;
 			}
 
 		} catch (AmazonClientException ace) {
@@ -285,7 +289,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		try {
 			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.copyObject(copyRequest);
-			return copyResult != null ? copyResult.getETag() : null;
+			response.setChecksum(copyResult != null ? copyResult.getETag() : null);
+			response.setMetadataAdded(true);
+			return response;
 
 		} catch (AmazonServiceException ase) {
 			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,

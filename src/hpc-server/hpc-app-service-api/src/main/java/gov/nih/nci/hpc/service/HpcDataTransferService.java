@@ -18,6 +18,7 @@ import java.util.Map;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
@@ -242,7 +243,7 @@ public interface HpcDataTransferService {
 	 *         HpcArchiveObjectMetadata
 	 * @throws HpcException on service failure.
 	 */
-	public HpcArchiveObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+	public HpcAddArchiveObjectMetadataResponse addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
 			String objectId, String registrarId) throws HpcException;
 

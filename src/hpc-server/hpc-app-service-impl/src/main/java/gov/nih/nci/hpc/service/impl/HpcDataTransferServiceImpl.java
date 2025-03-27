@@ -55,6 +55,7 @@ import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
+import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
@@ -87,6 +88,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
@@ -734,7 +736,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcArchiveObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+	public HpcAddArchiveObjectMetadataResponse addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
 			String objectId, String registrarId) throws HpcException {
 		// Add metadata is done by copying the object to itself w/ attached metadata.
@@ -745,17 +747,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
+		HpcAddArchiveObjectMetadataResponse response = new HpcAddArchiveObjectMetadataResponse();
+
 		// Set the metadata of the data-object in the archive
-		String checksum = dataTransferProxies.get(dataTransferType).setDataObjectMetadata(
-				!globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
-						: null,
-				fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
-				generateArchiveMetadata(configurationId, objectId, registrarId),
-				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
-				dataTransferConfiguration.getStorageClass());
+		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
+				.setDataObjectMetadata(
+						!globusSyncUpload
+								? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
+								: null,
+						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
+						generateArchiveMetadata(configurationId, objectId, registrarId),
+						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
+						dataTransferConfiguration.getStorageClass());
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
-		objectMetadata.setChecksum(checksum);
+		objectMetadata.setChecksum(setMetadataResponse.getChecksum());
 
 		if (dataTransferType.equals(HpcDataTransferType.S_3)) {
 			if (dataTransferProxies.get(dataTransferType).existsTieringPolicy(
@@ -771,7 +777,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		}
-		return objectMetadata;
+
+		response.setArchiveObjectMetadata(objectMetadata);
+		response.setMetadataAdded(setMetadataResponse.getMetadataAdded());
+		return response;
 	}
 
 	@Override
@@ -1131,7 +1140,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]. Message: {}",
+		logger.info("download task: [taskId={}] - completed - {} [transfer-type={}, destination-type={}]. Message: {}",
 				downloadTask.getId(), result.value(), downloadTask.getDataTransferType(),
 				downloadTask.getDestinationType(), message);
 
@@ -1146,7 +1155,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						getAuthenticatedToken(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(),
 								downloadTask.getS3ArchiveConfigurationId()),
 						downloadTask.getDataTransferRequestId(), "HPC-DME user requested cancellation");
-				logger.info("download task: {} - cancelled Globus task [transfer-type={}, destination-type={}]",
+				logger.info(
+						"download task: [taskId={}] - cancelled Globus task [transfer-type={}, destination-type={}]",
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 
 			} catch (HpcException e) {
@@ -1167,7 +1177,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Delete the staged download file.
 		if (downloadTask.getDownloadFilePath() != null) {
-			logger.info("download task: {} - Delete file at scratch space: {}", downloadTask.getId(),
+			logger.info("download task: [taskId={}] - Delete file at scratch space: {}", downloadTask.getId(),
 					downloadTask.getDownloadFilePath());
 			File downloadFile = new File(downloadTask.getDownloadFilePath());
 			if (downloadFile.exists() && !FileUtils.deleteQuietly(downloadFile)) {
@@ -1341,7 +1351,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				if (!acceptsTransferRequests(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(),
 						authenticatedToken)) {
 					logger.info(
-							"download task: {} - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
+							"download task: [taskId={}] - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
 					return false;
@@ -1366,7 +1376,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				// Can’t perform the 2-hop download at this time. Reset the task
 				resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
 				logger.info(
-						"download task: {} - 2 Hop download can't be restarted [transfer-type={}, destination-type={},"
+						"download task: [taskId={}] - 2 Hop download can't be restarted [transfer-type={}, destination-type={},"
 								+ " path={}] - {}",
 						downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
 						downloadTask.getPath(), canPerfom2HopDownloadResponse.message);
@@ -1424,7 +1434,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 		}
 
-		logger.info("download task: {} - continued  - archive file-id = {} [transfer-type={}, destination-type={}]",
+		logger.info(
+				"download task: [taskId={}] - continued  - archive file-id = {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), downloadRequest.getArchiveLocation().getFileId(),
 				downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 
@@ -1479,7 +1490,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 
 		logger.debug(
-				"download task: {} - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]",
+				"download task: [taskId={}] - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]",
 				downloadTask.getId(), downloadTask.getDataTransferType(),
 				HpcDataTransferType.S_3.equals(downloadTask.getDataTransferType()) ? s3DownloadTaskServerId : null);
 
@@ -1512,7 +1523,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		boolean updated = true;
 
 		logger.debug(
-				"download task: {} - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}]",
+				"download task: [taskId={}] - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}]",
 				downloadTask.getId(), inProcess, downloadTask.getDataTransferType(),
 				HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 		if (!inProcess || (!downloadTask.getInProcess()
@@ -1521,7 +1532,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
 			if (updated)
 				logger.debug(
-						"download task: {} - markProcessedDataObjectDownloadTask updated to in-process={} - [transfer-type={}, server-id={}]",
+						"download task: [taskId={}] - markProcessedDataObjectDownloadTask updated to in-process={} - [transfer-type={}, server-id={}]",
 						downloadTask.getId(), inProcess, downloadTask.getDataTransferType(),
 						HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 			downloadTask.setS3DownloadTaskServerId(serverId);
@@ -1531,7 +1542,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			Calendar processed = Calendar.getInstance();
 			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
 			logger.debug(
-					"download task: {} - markProcessedDataObjectDownloadTask processed timestamp update only - [transfer-type={}, server-id={}]",
+					"download task: [taskId={}] - markProcessedDataObjectDownloadTask processed timestamp update only - [transfer-type={}, server-id={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(),
 					HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 			downloadTask.setProcessed(processed);
@@ -1553,8 +1564,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Check if the task got cancelled.
 		HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(downloadTask.getId());
 		if (task != null && HpcDataTransferDownloadStatus.CANCELED.equals(task.getDataTransferStatus())) {
-			logger.info("download task: {} - cancelled - [transfer-type={}, destination-type={}]", downloadTask.getId(),
-					downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+			logger.info("download task: [taskId={}] - cancelled - [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 			return false;
 		}
 
@@ -1575,8 +1586,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setStagingPercentComplete(null);
 		}
 
-		logger.info("download task: {} - % complete - {} [transfer-type={}, destination-type={}]", downloadTask.getId(),
-				percentComplete, downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+		logger.info("download task: [taskId={}] - % complete - {} [transfer-type={}, destination-type={}]",
+				downloadTask.getId(), percentComplete, downloadTask.getDataTransferType(),
+				downloadTask.getDestinationType());
 
 		return dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 	}
@@ -3447,14 +3459,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			if (!StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
 				logger.info(
-						"download task: {} - 2 Hop download task created from a collection download request [transfer-type={}, destination-type={},"
+						"download task: [taskId={}] - 2 Hop download task created from a collection download request [transfer-type={}, destination-type={},"
 								+ " path = {}, collection download task = {}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath(),
 						downloadRequest.getCollectionDownloadTaskId());
 			} else {
 				logger.info(
-						"download task: {} - 2 Hop download task created from a single-file download request [transfer-type={}, destination-type={},"
+						"download task: [taskId={}] - 2 Hop download task created from a single-file download request [transfer-type={}, destination-type={},"
 								+ " path = {}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
@@ -4039,7 +4051,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			createDownloadTask(firstHopDownloadRequest, secondHopArchiveLocation, secondHopGlobusDestination,
 					dataTransferDownloadStatus, destinationType);
 
-			logger.info("download task: {} - 2 Hop download to {} destination created. Path at scratch space: {}",
+			logger.info(
+					"download task: [taskId={}] - 2 Hop download to {} destination created. Path at scratch space: {}",
 					downloadTask.getId(), downloadTask.getDestinationType(), sourceFile.getAbsolutePath());
 		}
 
@@ -4069,8 +4082,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// through the 2-hop async download requests.
 			updateDownloadTask(downloadTask, secondHopArchiveLocation);
 
-			logger.info("download task: {} - 2 Hop download created. Path at scratch space: {}", downloadTask.getId(),
-					sourceFile.getAbsolutePath());
+			logger.info("download task: [taskId={}] - 2 Hop download created. Path at scratch space: {}",
+					downloadTask.getId(), sourceFile.getAbsolutePath());
 		}
 
 		// ---------------------------------------------------------------------//
@@ -4112,7 +4125,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 
 					logger.info(
-							"download task: {} - 1st Hop completed but task was cancelled [transfer-type={}, destination-type={}]",
+							"download task: [taskId={}] - 1st Hop completed but task was cancelled [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
 
@@ -4144,8 +4157,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 				}
 
-				logger.info("download task: {} - 1st hop completed. Path at scratch space: {}", downloadTask.getId(),
-						sourceFile.getAbsolutePath());
+				logger.info("download task: [taskId={}] - 1st hop completed. Path at scratch space: {}",
+						downloadTask.getId(), sourceFile.getAbsolutePath());
 
 			} catch (HpcException e) {
 				logger.error("Failed to update download task", e);
@@ -4160,7 +4173,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				// The task was cancelled / removed from the DB. Do some cleanup.
 				FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 
-				logger.info("download task: {} - cancelled/removed - {} [transfer-type={}, destination-type={}]",
+				logger.info(
+						"download task: [taskId={}] - cancelled/removed - {} [transfer-type={}, destination-type={}]",
 						downloadTask.getId(), downloadTask.getPercentComplete(), downloadTask.getDataTransferType(),
 						downloadTask.getDestinationType());
 				return;
@@ -4168,7 +4182,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			if (!downloadTask.getFirstHopRetried()) {
 				// First hop failed, but was not retried yet. Give it a second chance.
-				logger.info("download task: {} - 1 Hop download failed and will be retried. Path at scratch space: {}",
+				logger.info(
+						"download task: [taskId={}] - 1 Hop download failed and will be retried. Path at scratch space: {}",
 						downloadTask.getId(), sourceFile.getAbsolutePath());
 				downloadTask.setFirstHopRetried(true);
 				try {
@@ -4176,12 +4191,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					return;
 				} catch (HpcException e) {
 					downloadTask.setFirstHopRetried(false);
-					logger.error("download task: {} - failed to reset", downloadTask.getId(), e);
+					logger.error("download task: [taskId={}] - failed to reset", downloadTask.getId(), e);
 
 				}
 			}
 
-			logger.info("download task: {} - 1 Hop download retry failed. Path at scratch space: {}",
+			logger.info("download task: [taskId={}] - 1 Hop download retry failed. Path at scratch space: {}",
 					downloadTask.getId(), sourceFile.getAbsolutePath());
 
 			String errorMessage = "Failed to get data from archive via S3: " + message;
