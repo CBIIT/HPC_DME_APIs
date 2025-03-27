@@ -318,6 +318,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 								dataObjectMigrationTask.getConfigurationId(),
 								dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
 								dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId())
+								.getArchiveObjectMetadata()
 						: new HpcArchiveObjectMetadata();
 
 				// Update the system metadata w/ the new S3 archive id, location and

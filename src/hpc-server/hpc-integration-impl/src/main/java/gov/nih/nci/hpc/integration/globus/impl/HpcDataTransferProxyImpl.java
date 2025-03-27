@@ -44,6 +44,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
@@ -320,9 +321,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
-			String storageClass) throws HpcException {
+	public HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken,
+			HpcFileLocation fileLocation, HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
+			String sudoPassword, String storageClass) throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
@@ -335,8 +336,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
 			}
 
+			HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
+			response.setChecksum(exec("md5sum " + archiveFilePath, sudoPassword, null, null).split("\\s+")[0]);
+			response.setMetadataAdded(true);
+
 			// Returning a calculated checksum.
-			return exec("md5sum " + archiveFilePath, sudoPassword, null, null).split("\\s+")[0];
+			return response;
 
 		} catch (IOException e) {
 			throw new HpcException("Failed to calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
@@ -949,11 +954,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 
 			// The transfer task is deemed failed and needs to be cancelled.
-			String transferErrorMessage = recoverableFailureTasks.remove(dataTransferRequestId) != null ?
-					"Transfer error recovery period expired [" + recoverableFailureTimeout + " minutes]" : "Transfer error";
-			
-			logger.error(loggingPrefix
-					+ "[GLOBUS} {}. transferred deemed failed: globus-task-id: {}, status: {}, niceStatus: {}",
+			String transferErrorMessage = recoverableFailureTasks.remove(dataTransferRequestId) != null
+					? "Transfer error recovery period expired [" + recoverableFailureTimeout + " minutes]"
+					: "Transfer error";
+
+			logger.error(
+					loggingPrefix
+							+ "[GLOBUS} {}. transferred deemed failed: globus-task-id: {}, status: {}, niceStatus: {}",
 					transferErrorMessage, dataTransferRequestId, report.status, report.niceStatus);
 			try {
 				cancelTransferRequest(authenticatedToken, dataTransferRequestId, "HPC-DME deemed task failed");
