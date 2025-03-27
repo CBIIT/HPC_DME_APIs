@@ -135,7 +135,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 			// The task was cancelled / removed from the DB. Do some cleanup.
 			FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 
-			logger.info("download task: {} - cancelled/removed - {} [transfer-type={}, destination-type={}]",
+			logger.info("download task: [taskId={}] - cancelled/removed - {} [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getPercentComplete(), downloadTask.getDataTransferType(),
 					downloadTask.getDestinationType());
 			return;
