@@ -36,6 +36,11 @@
 					name="searchType" id="searchTypeAspera" value="aspera"
 					onChange="display('aspera')" />dbGaP</label>
 			</div>
+			<div class="pull-left">
+				<label class="radio-inline radioMargin"><input type="radio"
+					name="searchType" id="searchTypeBox" value="box"
+					onChange="display('box')" />Box</label>
+			</div>
 		</div>
 		<br/><br/><br/>
 	</div>
@@ -160,6 +165,15 @@
 	</div>
 </th:block>
 
+<th:block th:fragment="boxBlock">
+	<div id="boxDiv" style="display: none">
+		<div class="col-sm-12 column leftMargin">
+			<a class="btn btn-primary" id="boxlink"
+                                     th:href="@{../download(type=${downloadType},source=${source},actionType=box,downloadFilePath=${downloadFilePath})}">
+                                     Authorize DME to Access your Box</a>
+		</div>
+	</div>
+</th:block>
 
 <th:block th:fragment="asperaBlock">
 	<div id="asperaDiv" style="display: none; margin: -15px">

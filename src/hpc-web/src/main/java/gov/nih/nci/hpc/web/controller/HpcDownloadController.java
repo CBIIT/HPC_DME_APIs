@@ -14,6 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -137,9 +140,20 @@ public class HpcDownloadController extends AbstractHpcController {
             downloadType = (String)session.getAttribute("downloadType");
             source = (String)session.getAttribute("downloadSource");
 			String googleAction =(String)session.getAttribute("googleAction");
+			String boxAction =(String)session.getAttribute("boxAction");
             final String returnURL = this.webServerName + "/download";
             try {
-				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
+				if(boxAction != null || !boxAction.trim().isEmpty()){
+					logger.info("BOX CODE=" + code);
+					List<String> tokens = hpcAuthorizationService.getBoxToken(code);
+					String accessToken = tokens.get(0);
+					String refreshToken = tokens.get(1);
+					session.setAttribute("accessToken", accessToken);
+					model.addAttribute("accessToken", accessToken);
+					model.addAttribute("searchType", HpcAuthorizationService.BOX_TYPE);
+					model.addAttribute("transferType", HpcAuthorizationService.BOX_TYPE);
+					model.addAttribute("authorizedBox", "true");
+				} else if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
@@ -243,6 +257,22 @@ public class HpcDownloadController extends AbstractHpcController {
               model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
               e.printStackTrace();
             }
+        }
+
+		if (action != null && action.equals(HpcAuthorizationService.BOX_TYPE)) {
+			session.setAttribute("downloadType", downloadType);
+			session.setAttribute("downloadSource", source);
+			downloadFilePath = request.getParameter("downloadFilePath");
+			session.setAttribute("downloadFilePath", downloadFilePath);
+			session.setAttribute("boxAction", HpcAuthorizationService.BOX_TYPE);
+			String redirectUrl =  this.webServerName + "/download";;
+			try {
+				 redirectUrl = "redirect:" + hpcAuthorizationService.authorizeBox(redirectUrl);
+				return redirectUrl;
+			} catch (Exception e) {
+				model.addAttribute("error", "Failed to redirect to Bix for authorization: " + e.getMessage());
+				e.printStackTrace();
+			}
         }
 
 		if(endPointName != null) {
