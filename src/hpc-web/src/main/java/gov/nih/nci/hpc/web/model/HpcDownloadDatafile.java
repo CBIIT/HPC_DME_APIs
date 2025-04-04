@@ -22,6 +22,8 @@ public class HpcDownloadDatafile {
 	private String asperaUser;
 	private String asperaPassword;
 	private String asperaHost;
+	private String boxBucketName;
+	private String boxPath;	
 	private String searchType;
 	private String downloadType;
 	private String downloadDestinationType;
@@ -196,6 +198,22 @@ public class HpcDownloadDatafile {
 
 	public void setAsperaPath(String asperaPath) {
 		this.asperaPath = asperaPath;
+	}
+
+	public String getBoxBucketName() {
+		return boxBucketName;
+	}
+
+	public void setBoxBucketName(String boxBucketName) {
+		this.boxBucketName = boxBucketName;
+	}
+
+	public String getBoxPath() {
+		return boxPath;
+	}
+
+	public void setBoxPath(String boxPath) {
+		this.boxPath = boxPath;
 	}
 
 	public String getDownloadDestinationType() {

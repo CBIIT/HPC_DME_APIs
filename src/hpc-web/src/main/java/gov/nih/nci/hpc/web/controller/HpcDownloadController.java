@@ -43,6 +43,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
@@ -148,8 +149,10 @@ public class HpcDownloadController extends AbstractHpcController {
 					List<String> tokens = hpcAuthorizationService.getBoxToken(code);
 					String accessToken = tokens.get(0);
 					String refreshToken = tokens.get(1);
-					session.setAttribute("accessToken", accessToken);
-					model.addAttribute("accessToken", accessToken);
+					session.setAttribute("accessBoxToken", tokens.get(0));
+					model.addAttribute("accessBoxToken", tokens.get(0));
+					session.setAttribute("refreshBoxToken", tokens.get(1));
+					model.addAttribute("refreshBoxToken", tokens.get(1));
 					model.addAttribute("searchType", HpcAuthorizationService.BOX_TYPE);
 					model.addAttribute("transferType", HpcAuthorizationService.BOX_TYPE);
 					model.addAttribute("authorizedBox", "true");
@@ -405,6 +408,18 @@ public class HpcDownloadController extends AbstractHpcController {
 				googleCloudDestination.setAccessToken(refreshTokenDetailsGoogleCloud);
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
 				logger.info("GoogleCloud file download json: " + gson.toJson(dto));
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.BOX_TYPE)) {
+				String accessBoxToken = (String)session.getAttribute("accessBoxToken");
+				String refreshBoxToken = (String)session.getAttribute("refreshBoxToken");
+				HpcBoxDownloadDestination boxDestination = new HpcBoxDownloadDestination();
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getBoxBucketName());
+				location.setFileId(downloadFile.getBoxPath().trim());
+				boxDestination.setDestinationLocation(location);
+				boxDestination.setAccessToken(accessBoxToken);
+				boxDestination.setRefreshToken(refreshBoxToken);
+				dto.setBoxDownloadDestination(boxDestination);
+				logger.info("boxDestination download json: " + gson.toJson(dto));
 			}
 			if("collection".equals(downloadFile.getDownloadType())) {
 				if (downloadFile.getDownloadDestinationType() != null

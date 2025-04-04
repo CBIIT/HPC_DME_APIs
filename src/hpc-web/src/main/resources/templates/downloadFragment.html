@@ -172,6 +172,22 @@
                                      th:href="@{../download(type=${downloadType},source=${source},actionType=box,downloadFilePath=${downloadFilePath})}">
                                      Authorize DME to Access your Box</a>
 		</div>
+		<div th:if="${authorizedBox != null}" class="alert-success" style="margin-top: 10px"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+		<br/>
+		<div class="col-sm-12 column leftMargin">
+			<label for="boxBucketName">Box Bucket</label>
+			<input
+				type="text" class="form-control fieldWidth" name="boxBucketName" th:value="${boxBucketName}"
+				id="boxBucketName" placeholder="Enter Box Bucket Name" />
+		</div>
+		<div class="col-sm-12 column leftMargin">
+			<label for="boxPath">Endpoint Path:</label>
+			<input
+				type="text" class="form-control fieldWidth"
+				th:value="${boxPath}"
+				name="boxPath" id="boxPath"
+				placeholder="Enter Box Endpoint Path" />
+		</div>
 	</div>
 </th:block>
 
