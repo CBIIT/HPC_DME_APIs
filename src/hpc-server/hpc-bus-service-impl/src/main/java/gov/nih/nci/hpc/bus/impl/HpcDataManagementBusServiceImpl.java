@@ -1115,6 +1115,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// multipart upload)
 		boolean generateUploadRequestURL = Optional.ofNullable(dataObjectRegistration.getGenerateUploadRequestURL())
 				.orElse(false);
+		// Edit Metadata flag is defaulted to true.
+		boolean editMetadata = Optional.ofNullable(dataObjectRegistration.getEditMetadata())
+						.orElse(true);
 
 		if (responseDTO.getRegistered()) {
 			HpcDataObjectUploadResponse uploadResponse = null;
@@ -1179,7 +1182,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else {
 			// The data object is already registered. Validate that data or data endpoint
 			// is not attached to the request.
-			if (dataObjectFile != null || dataObjectRegistration.getGlobusUploadSource() != null
+			if (!editMetadata || dataObjectFile != null || dataObjectRegistration.getGlobusUploadSource() != null
 					|| dataObjectRegistration.getS3UploadSource() != null
 					|| dataObjectRegistration.getGoogleDriveUploadSource() != null
 					|| dataObjectRegistration.getGoogleCloudStorageUploadSource() != null
@@ -1189,7 +1192,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						HpcErrorType.REQUEST_REJECTED);
 			}
 
-			// Update metadata and optionally re-generate upload URL (if data was not
+			// If editMetadata flag is true, update metadata and optionally re-generate upload URL (if data was not
 			// uploaded yet).
 			HpcDataObjectUploadResponse uploadResponse = Optional.ofNullable(updateDataObject(path,
 					dataObjectRegistration.getMetadataEntries(), collectionType, generateUploadRequestURL,
@@ -3732,7 +3735,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Create a logging prefix.
-		StringBuffer logPrefix = new StringBuffer("Bulk download task: {} - Bytes transferred for ");
+		StringBuffer logPrefix = new StringBuffer("Bulk download task: [taskId={}] - Bytes transferred for ");
 		String logPrefixValue = null;
 		switch (downloadTask.getType()) {
 		case COLLECTION:
