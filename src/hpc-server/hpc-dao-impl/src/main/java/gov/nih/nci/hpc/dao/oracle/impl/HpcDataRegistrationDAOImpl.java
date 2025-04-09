@@ -16,6 +16,7 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -701,8 +702,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		jsonMetadataEntries.forEach((entry -> {
 			JSONObject jsonMetadataEntry = (JSONObject) entry;
 			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
-			metadataEntry.setAttribute(jsonMetadataEntry.get("attribute").toString());
-			metadataEntry.setValue(jsonMetadataEntry.get("value").toString());
+			metadataEntry.setAttribute(Optional.ofNullable(jsonMetadataEntry.get("attribute")).orElse("").toString());
+			metadataEntry.setValue(Optional.ofNullable(jsonMetadataEntry.get("value")).orElse("").toString());
 			Object unit = jsonMetadataEntry.get("unit");
 			if (unit != null) {
 				metadataEntry.setUnit(unit.toString());

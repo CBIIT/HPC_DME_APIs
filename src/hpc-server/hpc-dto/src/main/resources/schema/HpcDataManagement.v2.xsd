@@ -53,6 +53,8 @@
 					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="extractMetadata"
 					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="editMetadata"
+					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="uploadParts" type="xsd:int" minOccurs="0" />
 				<xsd:element name="uploadCompletion" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="linkSourcePath" type="xsd:string" />

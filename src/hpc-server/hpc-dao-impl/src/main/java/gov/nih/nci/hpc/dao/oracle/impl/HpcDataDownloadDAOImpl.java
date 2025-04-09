@@ -602,8 +602,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		userDownloadRequest.setPath(rs.getString("PATH"));
 		userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 
-		if(hasColumn(rs, "STATUS")) {
-			if(rs.getObject("STATUS") != null) {
+		if (hasColumn(rs, "STATUS")) {
+			if (rs.getObject("STATUS") != null) {
 				userDownloadRequest.setStatus(rs.getString(("STATUS")));
 			}
 		}
@@ -965,7 +965,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					id, inProcess) > 0;
 
 		} catch (DataAccessException e) {
-			logger.debug("download task: {} - DB row locked by another process: {}", id, e.getMessage());
+			logger.debug("download task: [taskId={}] - DB row locked by another process: {}", id, e.getMessage());
 			return false;
 		}
 	}
@@ -1513,15 +1513,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			throws HpcException {
 		try {
 			jdbcTemplate.update(SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, collectionDownloadTaskId);
-			int rowsUpdated = jdbcTemplate.update(UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, bytesTransferred, collectionDownloadTaskId);
+			int rowsUpdated = jdbcTemplate.update(UPDATE_TOTAL_BYTES_TRANSFERRED_SQL, bytesTransferred,
+					collectionDownloadTaskId);
 			if (rowsUpdated == 1) {
-				logger.info("download task: {} - total bytes transferred incremented by {} while in RECEIVED state",
+				logger.info(
+						"download task: [taskId={}] - total bytes transferred incremented by {} while in RECEIVED state",
 						collectionDownloadTaskId, bytesTransferred);
 			}
 
 		} catch (DataAccessException e) {
-			logger.error("download task: {} - failed to increment total bytes transferred", collectionDownloadTaskId,
-					e);
+			logger.error("download task: [taskId={}] - failed to increment total bytes transferred",
+					collectionDownloadTaskId, e);
 		}
 	}
 
@@ -1691,23 +1693,22 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		return downloadItems;
 	}
 
-
 	/**
 	 * Check if the given resultset has the column with the specified table
 	 *
-	 * @param rs The resultset to check
+	 * @param rs         The resultset to check
 	 * @param columnName The label of the specified column
 	 * @return True if the column exists
 	 * @throws SQLException
 	 */
 	public boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
-        ResultSetMetaData metaData = rs.getMetaData();
-        int columns = metaData.getColumnCount();
-        for (int i = 1; i <= columns; i++) {
-            if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
+		ResultSetMetaData metaData = rs.getMetaData();
+		int columns = metaData.getColumnCount();
+		for (int i = 1; i <= columns; i++) {
+			if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
