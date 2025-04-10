@@ -55,6 +55,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
+import gov.nih.nci.hpc.util.HpcUtil;
 
 /**
  * HPC Data Transfer Proxy Globus Implementation.
@@ -465,9 +466,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public HpcPathAttributes getPathAttributes(Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize)
 			throws HpcException {
-		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
-		autoActivate(fileLocation.getFileContainerId(), client);
-		return getPathAttributes(fileLocation, client, getSize);
+		if (authenticatedToken != null) {
+			// Use Globus to get path attributes.
+			JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+			autoActivate(fileLocation.getFileContainerId(), client);
+			return getPathAttributes(fileLocation, client, getSize);
+		} else {
+			// Get POSIX path attributes
+			return HpcUtil.getPathAttributes(fileLocation);
+		}
 	}
 
 	@Override
