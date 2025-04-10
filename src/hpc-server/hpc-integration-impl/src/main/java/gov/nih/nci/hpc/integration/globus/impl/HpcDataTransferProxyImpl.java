@@ -1041,7 +1041,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (HpcException e) {
 			throw new HpcException(
-					"Failed to copy file to POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
+					"Failed to copy file to POSIX archive: " + archiveFilePath + " - [" + e.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 
