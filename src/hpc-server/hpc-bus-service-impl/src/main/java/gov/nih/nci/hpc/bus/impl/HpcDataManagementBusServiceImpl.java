@@ -1116,8 +1116,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean generateUploadRequestURL = Optional.ofNullable(dataObjectRegistration.getGenerateUploadRequestURL())
 				.orElse(false);
 		// Edit Metadata flag is defaulted to true.
-		boolean editMetadata = Optional.ofNullable(dataObjectRegistration.getEditMetadata())
-						.orElse(true);
+		boolean editMetadata = Optional.ofNullable(dataObjectRegistration.getEditMetadata()).orElse(true);
 
 		if (responseDTO.getRegistered()) {
 			HpcDataObjectUploadResponse uploadResponse = null;
@@ -1192,7 +1191,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						HpcErrorType.REQUEST_REJECTED);
 			}
 
-			// If editMetadata flag is true, update metadata and optionally re-generate upload URL (if data was not
+			// If editMetadata flag is true, update metadata and optionally re-generate
+			// upload URL (if data was not
 			// uploaded yet).
 			HpcDataObjectUploadResponse uploadResponse = Optional.ofNullable(updateDataObject(path,
 					dataObjectRegistration.getMetadataEntries(), collectionType, generateUploadRequestURL,
@@ -4483,26 +4483,37 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Invalid archive link location in registration request for: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		if (StringUtils.isEmpty(dataObjectRegistration.getS3ArchiveConfigurationId())) {
-			throw new HpcException("Empty s3ArchiveConfigurationId in registration request for: " + path,
-					HpcErrorType.INVALID_REQUEST_INPUT);
-		}
 
-		String s3ArchiveConfigurationFileContainerId = dataManagementService
-				.getS3ArchiveConfiguration(dataObjectRegistration.getS3ArchiveConfigurationId())
-				.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-		if (!dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileContainerId()
-				.equals(s3ArchiveConfigurationFileContainerId)) {
-			throw new HpcException("The archive link source bucket ["
-					+ dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileContainerId()
-					+ "] doesn't match the s3ArchiveConfiguration bucket [" + s3ArchiveConfigurationFileContainerId
-					+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
+		HpcPathAttributes archivePathAttributes = null;
+		HpcDataTransferType archiveDataTransferType = dataManagementService.getDataManagementConfiguration(configurationId).getArchiveDataTransferType();
+		if (archiveDataTransferType.equals(HpcDataTransferType.S_3)) {
+			// This is a S3 archive.
+			if (StringUtils.isEmpty(dataObjectRegistration.getS3ArchiveConfigurationId())) {
+				throw new HpcException("Empty s3ArchiveConfigurationId in registration request for: " + path,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 
-		// Lookup the archive for this data object.
-		HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.S_3,
-				dataObjectRegistration.getArchiveLinkSource().getSourceLocation(), true, configurationId,
-				dataObjectRegistration.getS3ArchiveConfigurationId());
+			String s3ArchiveConfigurationFileContainerId = dataManagementService
+					.getS3ArchiveConfiguration(dataObjectRegistration.getS3ArchiveConfigurationId())
+					.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+			if (!dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileContainerId()
+					.equals(s3ArchiveConfigurationFileContainerId)) {
+				throw new HpcException("The archive link source bucket ["
+						+ dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileContainerId()
+						+ "] doesn't match the s3ArchiveConfiguration bucket [" + s3ArchiveConfigurationFileContainerId
+						+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			// Lookup the archive for this data object.
+			archivePathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.S_3,
+					dataObjectRegistration.getArchiveLinkSource().getSourceLocation(), true, configurationId,
+					dataObjectRegistration.getS3ArchiveConfigurationId());
+		} else {
+			// This is a POSIX archive.
+			archivePathAttributes = dataTransferService
+					.getPathAttributes(dataObjectRegistration.getArchiveLinkSource().getSourceLocation());
+
+		}
 
 		// Validate the file exists in the archive.
 		String archiveSource = dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileContainerId()
@@ -4518,7 +4529,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService.addSystemGeneratedMetadataToDataObject(
 				path, dataObjectIdMetadataEntry, dataObjectRegistration.getArchiveLinkSource().getSourceLocation(),
 				dataObjectRegistration.getArchiveLinkSource().getSourceLocation(), null,
-				HpcDataTransferUploadStatus.ARCHIVED, HpcDataTransferUploadMethod.ARCHIVE_LINK, HpcDataTransferType.S_3,
+				HpcDataTransferUploadStatus.ARCHIVED, HpcDataTransferUploadMethod.ARCHIVE_LINK, archiveDataTransferType,
 				dataTransferCompleted, dataTransferCompleted, archivePathAttributes.getSize(), null, null,
 				dataObjectRegistration.getCallerObjectId(), userId, userName, configurationId,
 				dataObjectRegistration.getS3ArchiveConfigurationId(), registrationEventRequired);
