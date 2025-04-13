@@ -1033,9 +1033,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
 		
-		// TODO: Remove after test w/o sudo
-		sudoPassword = null;
-		
 		try {
 			exec("install -d -o " + systemAccount + " " + archiveDirectory, sudoPassword, null, null);
 			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), sudoPassword, null, null);
