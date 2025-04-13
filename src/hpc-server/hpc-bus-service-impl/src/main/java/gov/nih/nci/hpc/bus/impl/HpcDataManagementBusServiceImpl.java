@@ -1181,7 +1181,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else {
 			// The data object is already registered. Validate that data or data endpoint
 			// is not attached to the request.
-			if (!editMetadata || dataObjectFile != null || dataObjectRegistration.getGlobusUploadSource() != null
+			if (dataObjectFile != null || dataObjectRegistration.getGlobusUploadSource() != null
 					|| dataObjectRegistration.getS3UploadSource() != null
 					|| dataObjectRegistration.getGoogleDriveUploadSource() != null
 					|| dataObjectRegistration.getGoogleCloudStorageUploadSource() != null
@@ -1197,7 +1197,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataObjectUploadResponse uploadResponse = Optional.ofNullable(updateDataObject(path,
 					dataObjectRegistration.getMetadataEntries(), collectionType, generateUploadRequestURL,
 					dataObjectRegistration.getUploadParts(), dataObjectRegistration.getUploadCompletion(),
-					dataObjectRegistration.getChecksum(), userId, dataObjectRegistration.getCallerObjectId()))
+					dataObjectRegistration.getChecksum(), userId, dataObjectRegistration.getCallerObjectId(),
+					editMetadata))
 					.orElse(new HpcDataObjectUploadResponse());
 			responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 			responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
@@ -2391,7 +2392,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			try {
 				updateDataObject(path, bulkMetadataUpdateRequest.getMetadataEntries(),
 						dataManagementService.getCollectionType(path.substring(0, path.lastIndexOf('/'))), false, null,
-						null, null, userId, null);
+						null, null, userId, null, true);
 			} catch (HpcException e) {
 				logger.error("Failed to update data object metadata in a bulk request: {}", path, e);
 				item.setResult(false);
@@ -3524,12 +3525,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 */
 	private HpcDataObjectUploadResponse updateDataObject(String path, List<HpcMetadataEntry> metadataEntries,
 			String collectionType, boolean generateUploadRequestURL, Integer uploadParts, Boolean uploadCompletion,
-			String checksum, String userId, String callerObjectId) throws HpcException {
+			String checksum, String userId, String callerObjectId, boolean editMetadata) throws HpcException {
 		// Get the metadata for this data object.
 		HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
 
+		if (systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) && !editMetadata) {
+			throw new HpcException(
+					"Data object at " + path + " already archived and edit metadata is set to false.",
+					HpcErrorType.REQUEST_REJECTED).withSuppressStackTraceLogging(true);
+		}
+		
 		// Update the metadata.
 		boolean updated = true;
 		String message = null;
