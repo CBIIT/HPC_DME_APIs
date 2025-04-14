@@ -82,6 +82,7 @@
     var searchType = [[${hpcSearch.getSearchType()}]];
     var authorized = [[${authorized}]];
 	var authorizedGC = [[${authorizedGC}]];
+	var authorizedBox = [[${authorizedBox}]];
     var oauthToken = [[${accessToken}]];
     var deselectedColumns = [[${hpcSearch.getDeselectedColumns()}]];
 /*]]>*/
@@ -517,23 +518,10 @@
 					return false;
 				}
 			} else if (value == 'box'){
-				if(syncDiv)
-					syncDiv.style.display = "none";
-				asyncDiv.style.display = "none";
-				s3Div.style.display = "none";
-				asperaDiv.style.display = "none";
-				boxDiv.style.display = "block";
-				if(driveDiv)
-					driveDiv.style.display = "none";
-				if(googleCloudDiv)
-					googleCloudDiv.style.display = "none";
-				if(downloadType == "datafile")
-					$("#asperaPath").val(downloadFileName);
-				if(authorizedBox != null) {
-					$("#submit").prop('disabled', false);
-					$("#boxAuthlink").addClass('disabled');
-				} else {
-					$("#submit").prop('disabled', true);
+				var boxBucketName = document.getElementById("boxBucketName").value;
+				if (boxBucketName == null || boxBucketName.trim().length == 0) {
+					alert("Enter Box bucket name");
+					return false;
 				}
 			}
 		}
@@ -710,8 +698,6 @@
 					driveDiv.style.display = "none";
 				if(googleCloudDiv)
 					googleCloudDiv.style.display = "none";
-				if(downloadType == "datafile")
-					$("#asperaPath").val(downloadFileName);
 				if(authorizedBox != null) {
 					$("#submit").prop('disabled', false);
 					$("#boxAuthlink").addClass('disabled');
