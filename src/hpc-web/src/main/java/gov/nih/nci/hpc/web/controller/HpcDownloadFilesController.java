@@ -320,9 +320,11 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.BOX_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("authorizedActionFrom", HpcAuthorizationService.BOX_TYPE);
-			String returnURL = this.webServerName + "/downloadfiles";
+			String redirectUrl = this.webServerName + "/downloadfiles";
 			try {
-				return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+				redirectUrl = "redirect:" + hpcAuthorizationService.authorizeBox(redirectUrl);
+				logger.info("Box redirectUrl"+redirectUrl);
+				return redirectUrl;
 			} catch (Exception e) {
 				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
 				e.printStackTrace();
