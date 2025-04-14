@@ -63,19 +63,6 @@
 .btn[disabled] {
     pointer-events: auto;
 }
-.fieldWidth {
-	width: 600px;
-}
-.fieldMargin {
-	margin-top: 1px;
-	margin-bottom: 10px;
-}
-.radioMargin {
-	margin-right: 50px;
-}
-.leftMargin{
-	margin-left: -15px;
-}
 </style>
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -147,16 +134,48 @@
 								</div>
 							</td>
 						</tr>
+						<tr><td>Transfer Type:</td></tr>
 						<tr>
 							<td>
-								<!--  Radio buttons for selecting the download destination source -->
-								<div th:replace = "~{downloadFragment.html :: downloadSelectFragment}"></div>
-								
+								<div class="form-group">
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeAsync" value="async"
+											onChange="display('async')"/>Globus</label>
+										</div>
+										
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeS3" value="s3"
+											onChange="display('s3')"/>AWS S3</label>
+										</div>
+										
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeDrive" value="drive"
+											onChange="display('drive')"/>Google Drive</label>
+										</div>
+
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeGoogleCloud" value="googleCloud"
+											onChange="display('googleCloud')"/>Google Cloud</label>
+										</div>
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeAspera" value="aspera"
+											onChange="display('aspera')"/>dbGaP</label>
+										</div>
+										<div class="pull-left" style="margin-left: 15px">
+											<label class="radio-inline"><input type="radio"
+											name="searchType" id="searchTypeBox" value="box"
+											onChange="display('box')"/>Box</label>
+										</div>
+								</div>
 								<div class="pull-center" id="AsyncTextDiv" style="display: none">
 								    <p>To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.</p>
 								    <br/>
 								</div>
-                                
                                 <div id="AsyncDiv" style="display: none; margin: -15px; margin-bottom: 12px">
                                     <div class="col-sm-12 column">
 										<label for="endPointName">Globus Endpoint UUID:</label> 
@@ -306,7 +325,6 @@
 											style="margin-bottom: 12px"/>
 									</div>
 								</div>
-								<!-- Box block -->
 								<div id="boxDiv" style="display: none">
 									<div class="col-sm-12 column leftMargin">
 										<a class="btn btn-primary" id="boxAuthlink"
@@ -517,7 +535,7 @@
 					alert("Enter Google Cloud destination path");
 					return false;
 				}
-			} else if (value == 'box'){
+			} else if (radioValue == 'box'){
 				var boxBucketName = document.getElementById("boxBucketName").value;
 				if (boxBucketName == null || boxBucketName.trim().length == 0) {
 					alert("Enter Box bucket name");
@@ -626,34 +644,34 @@
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "block";
 				asperaDiv.style.display = "none";
-				boxDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv)
 					googleCloudDiv.style.display = "none";
+				boxDiv.style.display = "none";
 				$("#submit").prop('disabled', false);
 			} else if (value == 's3') {
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "block";
 				asyncTextDiv.style.display = "none";
 				asperaDiv.style.display = "none";
-				boxDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv)
 					googleCloudDiv.style.display = "none";
+				boxDiv.style.display = "none";
 				$("#submit").prop('disabled', false);
 			} else if (value == 'drive') {
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "none";
 				asperaDiv.style.display = "none";
-				boxDiv.style.display = "none";
 				if(driveDiv) {
 					driveDiv.style.display = "block";
 				}
 				if(googleCloudDiv)
 					googleCloudDiv.style.display = "none";
+				boxDiv.style.display = "none";
 				if(authorized != null) {
 					$("#submit").prop('disabled', false);
 					$("#driveAuthlink").addClass('disabled');
@@ -665,12 +683,12 @@
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "none";
 				asperaDiv.style.display = "none";
-				boxDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv) {
 					googleCloudDiv.style.display = "block";
 				}
+				boxDiv.style.display = "none";
 				if(authorizedGC != null) {
 					$("#submit").prop('disabled', false);
 					$("#googleCloudAuthlink").addClass('disabled');
@@ -681,30 +699,32 @@
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "none";
 				asperaDiv.style.display = "block";
-				boxDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				if(googleCloudDiv)
 					googleCloudDiv.style.display = "none";
 				if(downloadType == "datafile")
 					$("#asperaPath").val(downloadFileName);
+				 boxDiv.style.display = "none";
 				$("#submit").prop('disabled', false);
-			}  else if (value == 'box'){
+			} else if (value == 'box') {
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "none";
+				asyncTextDiv.style.display = "none";
 				asperaDiv.style.display = "none";
-				boxDiv.style.display = "block";
 				if(driveDiv)
 					driveDiv.style.display = "none";
-				if(googleCloudDiv)
+				if(googleCloudDiv) {
 					googleCloudDiv.style.display = "none";
+				}
+				boxDiv.style.display = "block";
 				if(authorizedBox != null) {
 					$("#submit").prop('disabled', false);
 					$("#boxAuthlink").addClass('disabled');
 				} else {
 					$("#submit").prop('disabled', true);
 				}
-			}
+			} 
 			destLocationDiv.style.display = "block";
 		}
 	</script>
