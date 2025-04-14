@@ -1,15 +1,50 @@
---
--- hpc_data_meta_main.sql
---
--- Copyright SVG, Inc.
--- Copyright Leidos Biomedical Research, Inc
--- 
--- Distributed under the OSI-approved BSD 3-Clause License.
--- See http://ncip.github.com/HPC/LICENSE.txt for details.
---
---
--- @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
---
+--Pre deployment
+--1. Create new materialized view, R_DATA_HIERARCHY_META_MAIN with the new definition but with a different name and create all indexes.
+
+create materialized view irods.r_data_hierarchy_meta_main_mv as
+select OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT
+from hpc_data_meta_main
+union
+select data.data_id                           as object_id,
+       (cast(coll.OBJECT_PATH as varchar2(2700)) || cast('/' as varchar2(1))) ||
+       cast(data.data_name as varchar2(2700)) as object_path,
+       coll.coll_id                           as coll_id,
+       coll.META_ID                           as coll_meta_id,
+       coll.DATA_LEVEL + 1                    as coll_data_level,
+       coll.LEVEL_LABEL                       as coll_level_label,
+       coll.META_ATTR_NAME                    as coll_meta_attr_name,
+       coll.META_ATTR_VALUE                   as coll_meta_attr_value,
+       coll.META_ATTR_UNIT                    as coll_meta_attr_unit
+from r_data_main data,
+     r_coll_hierarchy_meta_main coll
+where coll.object_id = data.COLL_ID;
+
+comment on column irods.r_data_hierarchy_meta_main_mv.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
+comment on column irods.r_data_hierarchy_meta_main_mv.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
+comment on column irods.r_data_hierarchy_meta_main_mv.meta_id is 'Metadata ID: r_meta_main.meta_id';
+comment on column irods.r_data_hierarchy_meta_main_mv.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
+comment on column irods.r_data_hierarchy_meta_main_mv.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level. "DataObject" if the metadata is associated with the data object itself';
+comment on column irods.r_data_hierarchy_meta_main_mv.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
+comment on column irods.r_data_hierarchy_meta_main_mv.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
+comment on column irods.r_data_hierarchy_meta_main_mv.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
+
+create unique index r_data_hierarchy_meta_main_mv_unique
+    on irods.r_data_hierarchy_meta_main_mv (object_id, meta_id, data_level);
+create index r_data_hierarchy_meta_main_mv_id_query
+    on irods.r_data_hierarchy_meta_main_mv (object_id);
+create index r_data_hierarchy_meta_main_mv_metadata_query_level
+    on irods.r_data_hierarchy_meta_main_mv (meta_attr_name, meta_attr_value, data_level);
+create index r_data_hierarchy_meta_main_mv_metadata_query_level_label
+    on irods.r_data_hierarchy_meta_main_mv (meta_attr_name, level_label);
+create index r_data_hierarchy_meta_main_mv_metadata_query_level_lower
+    on irods.r_data_hierarchy_meta_main_mv (meta_attr_name, lower(meta_attr_value), data_level);
+create index r_data_hierarchy_meta_main_mv_path_query
+    on irods.r_data_hierarchy_meta_main_mv (object_path);
+   
+
+--Deployment (Downtime required)
+--2. DME Application shutdown.
+--3. Drop and create HPC_DATA_META_MAIN with new columns and partition/sub-partition.
 
 drop table hpc_data_meta_main purge
 
@@ -25,165 +60,26 @@ CREATE TABLE hpc_data_meta_main
  META_ATTR_VALUE                           VARCHAR2(2700) not null,
  META_ATTR_UNIT                            VARCHAR2(250),
 CREATE_TS                                  DATE DEFAULT SYSDATE NOT NULL,
-CREATION_YEAR AS (EXTRACT(YEAR FROM CREATE_TS)),  -- Virtual column
-CREATION_MONTH AS (EXTRACT(MONTH FROM CREATE_TS)), -- Virtual column
 PRIMARY KEY (ID)
 )
-PARTITION BY RANGE (CREATION_YEAR)
-SUBPARTITION BY RANGE (CREATION_MONTH)
+PARTITION BY RANGE (CREATE_TS) interval(numtoyminterval(1,'YEAR')) 
 (
-PARTITION p_2017 VALUES LESS THAN (2018)
-(
-   SUBPARTITION sp_jan_17 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_17 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_17 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_17 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_17 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_17 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_17 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_17 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_17 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_17 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_17 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_17 VALUES LESS THAN (13)
-) 
+partition p_2017 values less than (DATE '2018-01-01'),
+partition p_2018 values less than (DATE '2019-01-01'),
+partition p_2019 values less than (DATE '2020-01-01'),
+partition p_2020 values less than (DATE '2021-01-01'),
+partition p_2021 values less than (DATE '2022-01-01'),
+partition p_2022 values less than (DATE '2023-01-01'),
+partition p_2023 values less than (DATE '2024-01-01'),
+partition p_2024 values less than (DATE '2025-01-01'),
+partition p_2025 values less than (DATE '2026-01-01'),
+partition p_2026 values less than (DATE '2027-01-01'),
+partition p_2027 values less than (DATE '2028-01-01'),
+partition p_2028 values less than (DATE '2029-01-01'),
+partition p_2029 values less than (DATE '2030-01-01')
 );
 
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2018 VALUES LESS THAN (2019)
-(
-   SUBPARTITION sp_jan_18 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_18 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_18 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_18 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_18 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_18 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_18 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_18 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_18 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_18 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_18 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_18 VALUES LESS THAN (13)
-);
-
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2019 VALUES LESS THAN (2020)
-(
-   SUBPARTITION sp_jan_19 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_19 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_19 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_19 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_19 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_19 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_19 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_19 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_19 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_19 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_19 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_19 VALUES LESS THAN (13)
-);
-
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2020 VALUES LESS THAN (2021)
-(
-   SUBPARTITION sp_jan_20 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_20 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_20 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_20 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_20 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_20 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_20 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_20 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_20 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_20 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_20 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_20 VALUES LESS THAN (13)
-);
-
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2021 VALUES LESS THAN (2022)
-(
-   SUBPARTITION sp_jan_21 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_21 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_21 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_21 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_21 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_21 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_21 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_21 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_21 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_21 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_21 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_21 VALUES LESS THAN (13)
-);
-
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2022 VALUES LESS THAN (2023)
-(
-   SUBPARTITION sp_jan_22 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_22 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_22 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_22 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_22 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_22 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_22 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_22 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_22 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_22 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_22 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_22 VALUES LESS THAN (13)
-);
-
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2023 VALUES LESS THAN (2024)
-(
-   SUBPARTITION sp_jan_23 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_23 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_23 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_23 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_23 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_23 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_23 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_23 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_23 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_23 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_23 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_23 VALUES LESS THAN (13)
-);
-
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2024 VALUES LESS THAN (2025)
-(
-   SUBPARTITION sp_jan_24 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_24 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_24 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_24 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_24 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_24 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_24 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_24 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_24 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_24 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_24 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_24 VALUES LESS THAN (13)
-);
-
-ALTER TABLE hpc_data_meta_main
-ADD PARTITION p_2025 VALUES LESS THAN (2026)
-(
-   SUBPARTITION sp_jan_25 VALUES LESS THAN (2),
-   SUBPARTITION sp_feb_25 VALUES LESS THAN (3),
-   SUBPARTITION sp_mar_25 VALUES LESS THAN (4),
-   SUBPARTITION sp_apr_25 VALUES LESS THAN (5),
-   SUBPARTITION sp_may_25 VALUES LESS THAN (6),
-   SUBPARTITION sp_jun_25 VALUES LESS THAN (7),
-   SUBPARTITION sp_jul_25 VALUES LESS THAN (8),
-   SUBPARTITION sp_aug_25 VALUES LESS THAN (9),
-   SUBPARTITION sp_sep_25 VALUES LESS THAN (10),
-   SUBPARTITION sp_oct_25 VALUES LESS THAN (11),
-   SUBPARTITION sp_nov_25 VALUES LESS THAN (12),
-   SUBPARTITION sp_dec_25 VALUES LESS THAN (13)
-);
+--4. Populate HPC_DATA_META_MAIN from iRODS tables.
 
 alter session enable parallel dml;
 
@@ -209,34 +105,40 @@ where data_base.coll_id = data_coll.coll_id
   and DATA_ID = map.OBJECT_ID
   and map.META_ID = meta.META_ID;
 
-
 comment on column irods.hpc_data_meta_main.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
-
 comment on column irods.hpc_data_meta_main.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
-
 comment on column irods.hpc_data_meta_main.meta_id is 'Metadata ID: r_meta_main.meta_id';
-
 comment on column irods.hpc_data_meta_main.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
-
 comment on column irods.hpc_data_meta_main.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level. "DataObject" if the metadata is associated with the data object itself';
-
 comment on column irods.hpc_data_meta_main.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
-
 comment on column irods.hpc_data_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
-
 comment on column irods.hpc_data_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
 
--- Create indexes on hpc_data_meta_main
-  
+
+--5. Create indexes on HPC_DATA_META_MAIN.
+
 create index hpc_data_meta_main_path_idx
     on irods.hpc_data_meta_main (object_path);
 
--- Create materialized view logs
+--6. Drop R_DATA_HIERARCHY_META_MAIN 
+drop materialized view irods.r_data_hierarchy_meta_main;
+
+--7. Create public synonym R_DATA_HIERARCHY_META_MAIN and grant select to public pointing synonym to the new MV created in step 1.
+CREATE SYNONYM r_data_hierarchy_meta_main FOR irods.r_data_hierarchy_meta_main_mv;
+
+--8. Start DME Application.
+
+
+
+--Post deployment
+
+--9. Create materialized view log on HPC_DATA_META_MAIN.
+
 CREATE MATERIALIZED VIEW LOG ON hpc_data_meta_main WITH PRIMARY KEY
 INCLUDING NEW VALUES;
 
--- Create new materialized view with hpc_data_meta_main with fast refresh
---drop materialized view irods.r_data_meta_main;
+--10. Create FAST REFRESH materialized view R_DATA_META_MAIN on HPC_DATA_META_MAIN.
+
 create materialized view irods.r_data_meta_main
 BUILD IMMEDIATE
 REFRESH FAST
@@ -246,96 +148,60 @@ select *
 from hpc_data_meta_main;
 
 comment on column irods.r_data_meta_main.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
-
 comment on column irods.r_data_meta_main.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
-
 comment on column irods.r_data_meta_main.meta_id is 'Metadata ID: r_meta_main.meta_id';
-
 comment on column irods.r_data_meta_main.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
-
 comment on column irods.r_data_meta_main.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level. "DataObject" if the metadata is associated with the data object itself';
-
 comment on column irods.r_data_meta_main.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
-
 comment on column irods.r_data_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
-
 comment on column irods.r_data_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
 
 
--- Create indexes on r_data_meta_main
-  
+--11. Create indexes on R_DATA_META_MAIN.
+ 
 create unique index r_data_meta_main_unique
     on irods.r_data_meta_main (object_id, meta_id, data_level);
-
 create index r_data_meta_main_id_query
     on irods.r_data_meta_main (object_id);
-
 create index r_data_meta_main_metadata_query_level
-    on irods.r_data_meta_main (meta_attr_name, meta_attr_value, data_level);
-   
+    on irods.r_data_meta_main (meta_attr_name, meta_attr_value, data_level);   
 create index r_data_meta_main_metadata_query_level_label
     on irods.r_data_meta_main (meta_attr_name, level_label);
-
 create index r_data_meta_main_metadata_query_level_lower
     on irods.r_data_meta_main (meta_attr_name, lower(meta_attr_value), data_level);
-
 create index r_data_meta_main_path_query
     on irods.r_data_meta_main (object_path);
 
--- Replace current materialized view with new definition without hpc_data_meta_main and r_coll_hierarchy_meta_main
-drop materialized view irods.r_data_hierarchy_meta_main;
-create materialized view irods.r_data_hierarchy_meta_main as
-select OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT
-from hpc_data_meta_main
-union
-select data.data_id                           as object_id,
-       (cast(coll.OBJECT_PATH as varchar2(2700)) || cast('/' as varchar2(1))) ||
-       cast(data.data_name as varchar2(2700)) as object_path,
-       coll.coll_id                           as coll_id,
-       coll.META_ID                           as coll_meta_id,
-       coll.DATA_LEVEL + 1                    as coll_data_level,
-       coll.LEVEL_LABEL                       as coll_level_label,
-       coll.META_ATTR_NAME                    as coll_meta_attr_name,
-       coll.META_ATTR_VALUE                   as coll_meta_attr_value,
-       coll.META_ATTR_UNIT                    as coll_meta_attr_unit
-from r_data_main data,
-     r_coll_hierarchy_meta_main coll
-where coll.object_id = data.COLL_ID;
+--12. Replace procedure refresh_daily_materialized_view to include fast refresh of R_DATA_META_MAIN.
 
-comment on column irods.r_data_hierarchy_meta_main.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
+create or replace PROCEDURE refresh_daily_materialized_view AS
 
-comment on column irods.r_data_hierarchy_meta_main.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
+BEGIN
 
-comment on column irods.r_data_hierarchy_meta_main.meta_id is 'Metadata ID: r_meta_main.meta_id';
-
-comment on column irods.r_data_hierarchy_meta_main.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
-
-comment on column irods.r_data_hierarchy_meta_main.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level. "DataObject" if the metadata is associated with the data object itself';
-
-comment on column irods.r_data_hierarchy_meta_main.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
-
-comment on column irods.r_data_hierarchy_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
-
-comment on column irods.r_data_hierarchy_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
-
-
--- Recreate indexes on r_data_hierarchy_meta_main
-  
-create unique index r_data_hierarchy_meta_main_unique
-    on irods.r_data_hierarchy_meta_main (object_id, meta_id, data_level);
-
-create index r_data_hierarchy_meta_main_id_query
-    on irods.r_data_hierarchy_meta_main (object_id);
-
-create index r_data_hierarchy_meta_main_metadata_query_level
-    on irods.r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, data_level);
-
-create index r_data_hierarchy_meta_main_metadata_query_level_label
-    on irods.r_data_hierarchy_meta_main (meta_attr_name, level_label);
-
-create index r_data_hierarchy_meta_main_metadata_query_level_lower
-    on irods.r_data_hierarchy_meta_main (meta_attr_name, lower(meta_attr_value), data_level);
-
-create index r_data_hierarchy_meta_main_path_query
-    on irods.r_data_hierarchy_meta_main (object_path);
+    EXECUTE IMMEDIATE 'alter materialized view irods.r_data_hierarchy_meta_main_mv compile';
     
+    DBMS_MVIEW.REFRESH('R_DATA_META_MAIN',
+                        METHOD => 'F', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
+
+	DBMS_MVIEW.REFRESH('R_DATA_META_MAIN,
+	                    R_DATA_HIERARCHY_META_MAIN',
+                        METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE, PARALLELISM => 4);
+
+	DBMS_MVIEW.REFRESH('R_DATA_HIERARCHY_USER_META_MAIN,
+                        R_COLL_HIERARCHY_DATA_OWNER,
+                        R_REPORT_COLL_REGISTERED_BY,
+                        R_REPORT_COLL_REGISTERED_BY_BASEPATH,
+                        R_REPORT_COLL_REGISTERED_BY_DOC,
+                        R_REPORT_COLL_REGISTERED_BY_PATH,
+                        R_REPORT_COLLECTION_TYPE,
+                        R_REPORT_DATA_OBJECTS,
+                        R_REPORT_REGISTERED_BY,
+                        R_REPORT_REGISTERED_BY_BASEPATH,
+                        R_REPORT_REGISTERED_BY_DOC,
+                        R_REPORT_REGISTERED_BY_S3_ARCHIVE_CONFIGURATION,
+                        R_DATA_META_ATTRIBUTES,
+                        R_COLL_META_ATTRIBUTES',
+                        METHOD => 'C', ATOMIC_REFRESH => FALSE, PARALLELISM => 4);
+
+END;
+/
