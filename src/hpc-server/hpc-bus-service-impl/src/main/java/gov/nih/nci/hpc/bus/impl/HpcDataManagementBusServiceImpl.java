@@ -1194,11 +1194,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// If editMetadata flag is true, update metadata and optionally re-generate
 			// upload URL (if data was not
 			// uploaded yet).
-			HpcDataObjectUploadResponse uploadResponse = Optional.ofNullable(updateDataObject(path,
-					dataObjectRegistration.getMetadataEntries(), collectionType, generateUploadRequestURL,
-					dataObjectRegistration.getUploadParts(), dataObjectRegistration.getUploadCompletion(),
-					dataObjectRegistration.getChecksum(), userId, dataObjectRegistration.getCallerObjectId(),
-					editMetadata))
+			HpcDataObjectUploadResponse uploadResponse = Optional
+					.ofNullable(updateDataObject(path, dataObjectRegistration.getMetadataEntries(), collectionType,
+							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
+							dataObjectRegistration.getUploadCompletion(), dataObjectRegistration.getChecksum(), userId,
+							dataObjectRegistration.getCallerObjectId(), editMetadata))
 					.orElse(new HpcDataObjectUploadResponse());
 			responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 			responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
@@ -3134,7 +3134,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (directoryScanRegistrationItem.getFileSystemScanDirectory() != null) {
 				scanDirectoryCount++;
 			}
-			if (directoryScanRegistrationItem.getArchiveScanDirectory() != null) {
+			if (directoryScanRegistrationItem.getS3ArchiveScanDirectory() != null) {
+				scanDirectoryCount++;
+			}
+			if (directoryScanRegistrationItem.getPosixArchiveScanDirectory() != null) {
 				scanDirectoryCount++;
 			}
 			if (scanDirectoryCount == 0) {
@@ -3161,7 +3164,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
 					if (directoryScanRegistrationItem.getS3ScanDirectory() != null
 							|| directoryScanRegistrationItem.getGoogleCloudStorageScanDirectory() != null
-							|| directoryScanRegistrationItem.getArchiveScanDirectory() != null) {
+							|| directoryScanRegistrationItem.getS3ArchiveScanDirectory() != null) {
 						// The 'path' in S3 and Google Cloud Storage(which is really object key) don't
 						// start with a '/', so need to remove it after normalization.
 						pathMap.setFromPath(pathMap.getFromPath().substring(1));
@@ -3183,6 +3186,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataTransferType dataTransferType = null;
 			HpcS3Account s3Account = null;
 			String googleAccessToken = null;
+			boolean archiveScan = false;
 
 			if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
 				// It is a request to scan a Globus endpoint.
@@ -3217,16 +3221,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				scanDirectoryLocation = directoryScanRegistrationItem.getFileSystemScanDirectory()
 						.getDirectoryLocation();
 				pathAttributes = dataTransferService.getPathAttributes(scanDirectoryLocation);
-			} else if (directoryScanRegistrationItem.getArchiveScanDirectory() != null) {
-				// It is a request to scan an S3 Archive directory. Validate the S3 archive
+			} else if (directoryScanRegistrationItem.getS3ArchiveScanDirectory() != null) {
+				// It is a request to scan a S3 Archive directory. Validate the S3 archive
 				// configuration ID is provided.
+				archiveScan = true;
 				if (StringUtils.isEmpty(directoryScanRegistrationItem.getS3ArchiveConfigurationId())) {
 					throw new HpcException("S3 Archive configuration ID not provided in scan archive request",
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 
 				dataTransferType = HpcDataTransferType.S_3;
-				scanDirectoryLocation = directoryScanRegistrationItem.getArchiveScanDirectory().getDirectoryLocation();
+				scanDirectoryLocation = directoryScanRegistrationItem.getS3ArchiveScanDirectory()
+						.getDirectoryLocation();
 				try {
 					pathAttributes = dataTransferService.getPathAttributes(dataTransferType, scanDirectoryLocation,
 							false, configurationId, directoryScanRegistrationItem.getS3ArchiveConfigurationId());
@@ -3235,6 +3241,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							+ scanDirectoryLocation.getFileContainerId() + " [" + e.getMessage() + "] ",
 							HpcErrorType.INVALID_REQUEST_INPUT, e);
 				}
+			} else if (directoryScanRegistrationItem.getPosixArchiveScanDirectory() != null) {
+				// It is a request to scan a POSIX Archive directory.
+				archiveScan = true;
+				scanDirectoryLocation = directoryScanRegistrationItem.getPosixArchiveScanDirectory()
+						.getDirectoryLocation();
+				pathAttributes = dataTransferService.getPathAttributes(scanDirectoryLocation);
 			}
 
 			if (pathAttributes == null) {
@@ -3265,6 +3277,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			final HpcS3Account fs3Account = s3Account;
 			final String fgoogleAccessToken = googleAccessToken;
 			final HpcDataTransferType fdataTransferType = dataTransferType;
+			final boolean fArchiveScan = archiveScan;
+
 			dataTransferService
 					.scanDirectory(dataTransferType, s3Account, googleAccessToken, scanDirectoryLocation,
 							configurationId, directoryScanRegistrationItem.getS3ArchiveConfigurationId(),
@@ -3273,8 +3287,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.forEach(scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
 							basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
 							directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fdataTransferType,
-							fs3Account, fgoogleAccessToken,
-							directoryScanRegistrationItem.getS3ArchiveConfigurationId())));
+							fs3Account, fgoogleAccessToken, directoryScanRegistrationItem.getS3ArchiveConfigurationId(),
+							fArchiveScan)));
 		}
 
 		return dataObjectRegistrationItems;
@@ -3369,13 +3383,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                                 item from Google Drive or Google Cloud
 	 *                                 Storage source, otherwise null.
 	 * @param s3ArchiveConfigurationId (Optional) S3 archive configuration ID.
+	 * @param archiveScan              true, if this item came from an archive (S3
+	 *                                 or POSIX) scan.
 	 * @return data object registration DTO.
 	 */
 	private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem,
 			String basePath, String sourceFileContainerId, String callerObjectId,
 			HpcBulkMetadataEntries bulkMetadataEntries, HpcDirectoryScanPathMap pathMap,
 			HpcDataTransferType dataTransferType, HpcS3Account s3Account, String googleAccessToken,
-			String s3ArchiveConfigurationId) {
+			String s3ArchiveConfigurationId, boolean archiveScan) {
 		// If pathMap provided - use the map to replace scanned path with user provided
 		// path (or part of
 		// path).
@@ -3418,23 +3434,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcFileLocation source = new HpcFileLocation();
 		source.setFileContainerId(sourceFileContainerId);
 		source.setFileId(scanItem.getFilePath());
-		if (dataTransferType == null) {
+		if (archiveScan) {
+			// It's a registration item w/ link to data already in the archive (S3 or POSIX)
+			HpcUploadSource archiveLinkSource = new HpcUploadSource();
+			archiveLinkSource.setSourceLocation(source);
+			dataObjectRegistration.setArchiveLinkSource(archiveLinkSource);
+		} else if (dataTransferType == null) {
 			HpcUploadSource fileSystemUploadSource = new HpcUploadSource();
 			fileSystemUploadSource.setSourceLocation(source);
 			dataObjectRegistration.setFileSystemUploadSource(fileSystemUploadSource);
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3)) {
-			if (s3Account != null) {
-				// It's a registration item w/ upload from S3 source.
-				HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
-				s3UploadSource.setSourceLocation(source);
-				s3UploadSource.setAccount(s3Account);
-				dataObjectRegistration.setS3UploadSource(s3UploadSource);
-			} else {
-				// It's a registration item w/ link to data already in the S3 archive.
-				HpcUploadSource archiveLinkSource = new HpcUploadSource();
-				archiveLinkSource.setSourceLocation(source);
-				dataObjectRegistration.setArchiveLinkSource(archiveLinkSource);
-			}
+			HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
+			s3UploadSource.setSourceLocation(source);
+			s3UploadSource.setAccount(s3Account);
+			dataObjectRegistration.setS3UploadSource(s3UploadSource);
 		} else if (dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)) {
 			HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
 			googleDriveUploadSource.setSourceLocation(source);
@@ -3531,12 +3544,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
 
-		if (systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED) && !editMetadata) {
-			throw new HpcException(
-					"Data object at " + path + " already archived and edit metadata is set to false.",
+		if (systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)
+				&& !editMetadata) {
+			throw new HpcException("Data object at " + path + " already archived and edit metadata is set to false.",
 					HpcErrorType.REQUEST_REJECTED).withSuppressStackTraceLogging(true);
 		}
-		
+
 		// Update the metadata.
 		boolean updated = true;
 		String message = null;
@@ -4492,7 +4505,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		HpcPathAttributes archivePathAttributes = null;
-		HpcDataTransferType archiveDataTransferType = dataManagementService.getDataManagementConfiguration(configurationId).getArchiveDataTransferType();
+		HpcDataTransferType archiveDataTransferType = dataManagementService
+				.getDataManagementConfiguration(configurationId).getArchiveDataTransferType();
 		if (archiveDataTransferType.equals(HpcDataTransferType.S_3)) {
 			// This is a S3 archive.
 			if (StringUtils.isEmpty(dataObjectRegistration.getS3ArchiveConfigurationId())) {
