@@ -259,7 +259,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 					model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 					model.addAttribute("authorizedGC", "true");
 				} else if(authorizedActionFrom.equals(HpcAuthorizationService.BOX_TYPE)){
-					logger.info("Box code received from Box=" + code);
+					logger.info("HpcDownloadFilesController: Box code received from Box=" + code);
 					List<String> tokens = hpcAuthorizationService.getBoxToken(code);
 					String accessToken = tokens.get(0);
 					String refreshToken = tokens.get(1);
@@ -320,10 +320,11 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.BOX_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("authorizedActionFrom", HpcAuthorizationService.BOX_TYPE);
-			String redirectUrl = this.webServerName + "/downloadfiles";
+			String returnURL = this.webServerName + "/downloadfiles";
 			try {
-				redirectUrl = "redirect:" + hpcAuthorizationService.authorizeBox(redirectUrl);
-				logger.info("Box redirectUrl"+redirectUrl);
+				logger.info("HpcDownloadFilesController: returnURL before Auth"+returnURL);
+				String redirectUrl = "redirect:" + hpcAuthorizationService.authorizeBox(returnURL);
+				logger.info("HpcDownloadFilesController: Box redirectUrl"+redirectUrl);
 				return redirectUrl;
 			} catch (Exception e) {
 				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
@@ -472,7 +473,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				boxDestination.setAccessToken(accessBoxToken);
 				boxDestination.setRefreshToken(refreshBoxToken);
 				dto.setBoxDownloadDestination(boxDestination);
-				logger.info("boxDestination download json: " + gson.toJson(dto));
+				logger.info("HpcDownloadFilesController: boxDestination download json: " + gson.toJson(dto));
             }
 
 			if("collection".equals(downloadFile.getDownloadType())) {

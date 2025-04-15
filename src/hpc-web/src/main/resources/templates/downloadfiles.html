@@ -328,8 +328,8 @@
 								<div id="boxDiv" style="display: none">
 									<div class="col-sm-12 column leftMargin">
 										<a class="btn btn-primary" id="boxAuthlink"
-							                                     th:href="@{../download(type=${downloadType},source=${source},actionType=box,downloadFilePath=${downloadFilePath})}">
-							                                     Authorize DME to Access your Box</a>
+                                            th:href="@{../downloadfiles(transferType=box)}">
+                                            Authorize DME to Access Your Box</a>
 									</div>
 									<div th:if="${authorizedBox != null}" class="alert-success" style="margin-top: 10px"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
@@ -538,7 +538,7 @@
 			} else if (radioValue == 'box'){
 				var boxBucketName = document.getElementById("boxBucketName").value;
 				if (boxBucketName == null || boxBucketName.trim().length == 0) {
-					alert("Enter Box bucket name");
+					alert("Enter Box bucket name for multiple file download");
 					return false;
 				}
 			}
@@ -548,12 +548,18 @@
 	        if($('#transferType').val() == 'globus') {
 	            $("#searchTypeAsync").prop("checked", true);
 	            display('async');
-		    } if($('#transferType').val() == 'drive') {
+		    }
+	        if($('#transferType').val() == 'drive') {
             	$("#searchTypeDrive").prop("checked", true); 
                 display('drive');
-	        } if($('#transferType').val() == 'googleCloud') {
+	        }
+	        if($('#transferType').val() == 'googleCloud') {
 				$("#searchTypeGoogleCloud").prop("checked", true);
                 display('googleCloud');
+	        }
+	        if($('#transferType').val() == 'box') {
+				$("#searchTypeBox").prop("checked", true);
+                display('box');
 	        }
 		});
 

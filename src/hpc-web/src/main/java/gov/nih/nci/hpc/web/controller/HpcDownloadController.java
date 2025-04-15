@@ -158,7 +158,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 		            model.addAttribute("authorizedGC", "true");
 				} else 	if(authorizedActionFrom.equals(HpcAuthorizationService.BOX_TYPE)){
-					logger.info("Box code received from Box=" + code);
+					logger.info("HpcDownloadController: Box code received from Box=" + code);
 					List<String> tokens = hpcAuthorizationService.getBoxToken(code);
 					String accessToken = tokens.get(0);
 					String refreshToken = tokens.get(1);

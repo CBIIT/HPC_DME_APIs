@@ -328,7 +328,11 @@
 					return false;
 				}
 			} else if (radioValue == 'box') {
-				// TODO: do nothing for now, change later
+				var boxBucketName = document.getElementById("boxBucketName").value;
+				if (boxBucketName == null || boxBucketName.trim().length == 0) {
+					alert("Enter Box bucket name for single file download");
+					return false;
+				}
 			} else {
 				var downloadFileName = document
 						.getElementById("downloadFileName").value;
