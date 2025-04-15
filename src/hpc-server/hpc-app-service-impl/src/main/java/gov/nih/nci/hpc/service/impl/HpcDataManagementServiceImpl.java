@@ -1452,8 +1452,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
-			if (getDataManagementConfiguration(
-					findDataManagementConfigurationId(path)).getArchiveDataTransferType().equals(HpcDataTransferType.S_3)) {
+			if (getDataManagementConfiguration(findDataManagementConfigurationId(path)).getArchiveDataTransferType()
+					.equals(HpcDataTransferType.S_3)) {
 				if (StringUtils.isEmpty(registrationRequest.getS3ArchiveConfigurationId())) {
 					throw new HpcException("Empty s3ArchiveConfigurationId in registration request for: " + path,
 							HpcErrorType.INVALID_REQUEST_INPUT);
