@@ -99,7 +99,7 @@ tfoot input {
 	width:80px;
 }
 .taskIdWidth{
-	width:280px;
+	width:240px;
 }
 .pathIdWidth{
 	width:200px;
@@ -117,7 +117,7 @@ tfoot input {
 	width:110px;
 }
 .resultWidth{
-	width:60px;
+	width:100px;
 }
 .retryUserIdWidth{
 	width:80px;
@@ -229,7 +229,7 @@ tfoot input {
 									<th class="column-heading destinationTypeWidth" id='colheading005' th:text="'Destination Type'"></th>
 									<th class="column-heading createdWidth" id='colheading006' th:text="'Created On'"></th>
 									<th class="column-heading completedWidth" id='colheading007' th:text="'Completed On'"></th>
-									<th class="column-heading resultWidth" id='colheading008' th:text="'Transfer Result'"></th>
+									<th class="column-heading resultWidth" id='colheading008' th:text="'Task Status'"></th>
 									<th class="column-heading retryUserIdWidth" id='colheading009' th:text="'Retry User ID'"></th>
 									<th class="column-heading errorWidth" id='colheading010' th:text="'Error'"></th>
 								</tr>
@@ -246,7 +246,7 @@ tfoot input {
 									<th class="filterhead destinationTypeWidth" id='col2heading005' th:text="'Destination Type'"></th>
 									<th class="filterhead createdWidth" id='col2heading006'  th:text="'Created On'"></th>
 									<th class="filterhead completedWidth" id='col2heading007'  th:text="'Completed On'"></th>
-									<th class="filterhead resultWidth" id='col2heading008' th:text="'Transfer Result'"></th>
+									<th class="filterhead resultWidth" id='col2heading008' th:text="'Task Status'"></th>
 									<th class="filterhead retryUserIdWidth" id='col2heading009' th:text="'Retry User ID'"></th>
 									<th class="filterhead errorWidth" id='col2heading010' th:text="'Error'"></th>
 								</tr>
@@ -274,7 +274,7 @@ tfoot input {
 									<td id='col5' class="destinationTypeWidth" th:text="${result.destinationType}"></td>
 									<td id='col6' class="createdWidth"  th:text="${result.created}"></td>
 									<td id='col7' class="completedWidth" th:text="${result.completed}"></td>
-									<td id='col8' class="resultWidth" th:text="${result.result}"></td>
+									<td id='col8' class="resultWidth" th:text="${result.status}"></td>
 									<td id='col9' class="retryUserIdWidth" th:text="${result.retryUserId}"></td>
 									<td id='col10' class="errorWidth" style="word-break:break-all;" th:text="${result.error}"></td>
 									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
@@ -378,13 +378,13 @@ tfoot input {
 			columnDefs: [
 						{targets: 0, data: null, width:20, className: 'dt-control', orderable: false, defaultContent: ''}, // expand row icon
 						{targets: 1, data: 'userId',width:80, visible: queryAll}, //userId
-						{targets: 2, data: 'taskId', width:280, visible: true},  // taskId
+						{targets: 2, data: 'taskId', width:250, visible: true},  // taskId
 						{targets: 3, data: 'path', width:200,  visible: true, type: 'non-empty-string'}, // path
 						{targets: 4, data: 'type', width:100, visible: true},  // type
 						{targets: 5, data: 'destinationType', width: 115, visible: true, render: DataTable.render.ellipsis( 15, true )},  // destination type
 						{targets: 6, data: 'created', width: 110, visible: true, orderData:[6,12]},  // created
 						{targets: 7, data: 'completed', width: 110, visible: true, orderData:[7,13]},  // completed
-						{targets: 8, data: 'result', width: 60, visible: true},  // transfer result
+						{targets: 8, data: 'result', width: 90, visible: true},  // transfer result
 						{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
 						{targets: 10, data: 'error', width:360, type: 'non-empty-string', render: DataTable.render.ellipsis( 60, true )}, // error
 						{targets: 11, data: 'displayPath', visible: false},

@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusTransferRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -213,10 +214,10 @@ public interface HpcDataTransferProxy {
 	 * @param storageClass           (Optional) The storage class to use when
 	 *                               setting the data object metadata. Applicable
 	 *                               for S3 archives only.
-	 * @return The copied object checksum.
+	 * @return A response w/ the object checksum, and an indicator whether metadata got added or already existed.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public default String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
+	public default HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
 			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
 			String storageClass) throws HpcException {
 		throw new HpcException("setDataObjectMetadata() is not supported", HpcErrorType.UNEXPECTED_ERROR);

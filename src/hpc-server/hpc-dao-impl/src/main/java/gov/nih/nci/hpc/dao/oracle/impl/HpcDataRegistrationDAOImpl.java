@@ -16,6 +16,7 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -600,6 +601,14 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			if (request.getLinkSourcePath() != null) {
 				jsonRequest.put("linkSourcePath", request.getLinkSourcePath());
 			}
+			if (request.getArchiveLinkSource() != null) {
+				JSONObject jsonArchiveLinkSource = new JSONObject();
+				HpcUploadSource archiveLinkSource = request.getArchiveLinkSource();
+				jsonArchiveLinkSource.put("sourceFileContainerId",
+						archiveLinkSource.getSourceLocation().getFileContainerId());
+				jsonArchiveLinkSource.put("sourceFileId", archiveLinkSource.getSourceLocation().getFileId());
+				jsonRequest.put("archiveLinkSource", jsonArchiveLinkSource);
+			}
 
 			jsonRequest.put("metadataEntries", toJSONArray(request.getMetadataEntries()));
 			if (request.getParentCollectionsBulkMetadataEntries() != null) {
@@ -693,8 +702,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		jsonMetadataEntries.forEach((entry -> {
 			JSONObject jsonMetadataEntry = (JSONObject) entry;
 			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
-			metadataEntry.setAttribute(jsonMetadataEntry.get("attribute").toString());
-			metadataEntry.setValue(jsonMetadataEntry.get("value").toString());
+			metadataEntry.setAttribute(Optional.ofNullable(jsonMetadataEntry.get("attribute")).orElse("").toString());
+			metadataEntry.setValue(Optional.ofNullable(jsonMetadataEntry.get("value")).orElse("").toString());
 			Object unit = jsonMetadataEntry.get("unit");
 			if (unit != null) {
 				metadataEntry.setUnit(unit.toString());
@@ -843,7 +852,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		if (callerObjectId != null) {
 			request.setCallerObjectId(callerObjectId.toString());
 		}
-		
+
 		Object s3ArchiveConfigurationId = jsonRequest.get("s3ArchiveConfigurationId");
 		if (s3ArchiveConfigurationId != null) {
 			request.setS3ArchiveConfigurationId(s3ArchiveConfigurationId.toString());
@@ -948,6 +957,16 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Object linkSourcePath = jsonRequest.get("linkSourcePath");
 		if (linkSourcePath != null) {
 			request.setLinkSourcePath(linkSourcePath.toString());
+		}
+
+		if (jsonRequest.get("archiveLinkSource") != null) {
+			JSONObject jsonArchiveLinkUploadSource = (JSONObject) jsonRequest.get("archiveLinkSource");
+			HpcUploadSource archiveLinkSource = new HpcUploadSource();
+			HpcFileLocation source = new HpcFileLocation();
+			source.setFileContainerId(jsonArchiveLinkUploadSource.get("sourceFileContainerId").toString());
+			source.setFileId(jsonArchiveLinkUploadSource.get("sourceFileId").toString());
+			archiveLinkSource.setSourceLocation(source);
+			request.setArchiveLinkSource(archiveLinkSource);
 		}
 
 		Object metadataEntries = jsonRequest.get("metadataEntries");
