@@ -1060,14 +1060,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskStatus.setInProgress(true);
 
 		if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT)) {
-			//Do not mark as in-progress for data object if task has not actually begun
 			HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(taskId);
-			if(task.getStagingPercentComplete() == null && task.getPercentComplete() <= 0)  {
-				 taskStatus.setInProgress(false);
+			if (task != null) {
+				taskStatus.setDataObjectDownloadTask(task);
+				return taskStatus;
 			}
-			taskStatus.setDataObjectDownloadTask(task);
-
-			return taskStatus;
 		}
 
 		if (taskType.equals(HpcDownloadTaskType.COLLECTION) || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)
