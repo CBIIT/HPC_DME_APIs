@@ -49,6 +49,7 @@
 			<xsd:enumeration value="URL_SINGLE_PART_WITH_COMPLETION" />
 			<xsd:enumeration value="URL_MULTI_PART" />
 			<xsd:enumeration value="FILE_SYSTEM" />
+			<xsd:enumeration value="ARCHIVE_LINK" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -545,6 +546,7 @@
 				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="status" type="xsd:string" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result"
@@ -584,6 +586,20 @@
 			<xsd:element name="checksum" type="xsd:string" />
 			<xsd:element name="restorationStatus" type="xsd:string" />
 			<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcAddArchiveObjectMetadataResponse">
+		<xsd:sequence>
+			<xsd:element name="metadataAdded" type="xsd:boolean" />
+			<xsd:element name="archiveObjectMetadata" type="hpc-domain-datatransfer:HpcArchiveObjectMetadata" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcSetArchiveObjectMetadataResponse">
+		<xsd:sequence>
+			<xsd:element name="checksum" type="xsd:string" />
+			<xsd:element name="metadataAdded" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
