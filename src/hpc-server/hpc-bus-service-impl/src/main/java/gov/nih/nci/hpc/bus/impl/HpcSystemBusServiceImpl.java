@@ -2670,7 +2670,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcDataTransferDownloadReport dataTransferDownloadReport = dataTransferService.getDataTransferDownloadStatus(
 				downloadTask.getDataTransferType(), downloadTask.getDataTransferRequestId(),
 				downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId(), false,
-				"download task: " + downloadTask.getId() + " - ");
+				"download task: [taskId=" + downloadTask.getId() + "] - ");
 
 		// Check the status of the data transfer.
 		HpcDataTransferDownloadStatus dataTransferDownloadStatus = dataTransferDownloadReport.getStatus();
@@ -2709,8 +2709,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			dataTransferService.updateDataObjectDownloadTask(downloadTask,
 					dataTransferDownloadReport.getBytesTransferred());
 
-			logger.info("download task: [taskId={}] - still in-progress [transfer-type={}, destination-type={}]",
-					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
+			logger.info(
+					"download task: [taskId={}] - still in-progress. bytesTransferred: {} [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), dataTransferDownloadReport.getBytesTransferred(),
+					downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 		}
 	}
 
