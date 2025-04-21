@@ -1558,6 +1558,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Input validation.
 		if (downloadTask == null || downloadTask.getSize() <= 0 || bytesTransferred <= 0
 				|| bytesTransferred > downloadTask.getSize()) {
+			logger.info(
+					"download task: [taskId={}] - % complete unchanged. bytesTransferred: {}, fileSize: {} [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), bytesTransferred, downloadTask.getSize(), downloadTask.getDataTransferType(),
+					downloadTask.getDestinationType());
 			return true;
 		}
 
