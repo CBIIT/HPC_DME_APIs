@@ -763,7 +763,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
 			// Get the current user role.
 			HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(downloadTask.getUserId());
-			if (totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser
+			if (maxPermittedInProcessDownloadTasksPerUser > 0
+					&& totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser
 					&& !(HpcUserRole.GROUP_ADMIN.equals(currentUserRole)
 							|| HpcUserRole.SYSTEM_ADMIN.equals(currentUserRole))) {
 				// We have reached the max collection breakdown tasks in-process for this user.
