@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.util.Collection;
 import java.util.StringTokenizer;
+import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -44,6 +45,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
@@ -237,26 +239,37 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		String code = request.getParameter("code");
 		String transferType = request.getParameter("transferType");
 		String downloadType = request.getParameter("downloadType");
-		String googleAction =(String)session.getAttribute("googleAction");
+		String authorizedActionFrom =(String)session.getAttribute("authorizedActionFrom");
 		if (code != null) {
 			//Return from Google Drive Authorization
 			final String returnURL = this.webServerName + "/downloadfiles";
 			try {
-				if(googleAction.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
+				if(authorizedActionFrom.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 					model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 					model.addAttribute("authorized", "true");
-				}
-				else if(googleAction.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)){
+				} else if(authorizedActionFrom.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)){
 					String refreshTokenDetailsGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
 					session.setAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
 					model.addAttribute("refreshTokenDetailsGoogleCloud", refreshTokenDetailsGoogleCloud);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 					model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 					model.addAttribute("authorizedGC", "true");
+				} else if(authorizedActionFrom.equals(HpcAuthorizationService.BOX_TYPE)){
+					logger.info("HpcDownloadFilesController: Box code received from Box=" + code);
+					List<String> tokens = hpcAuthorizationService.getBoxToken(code);
+					String accessToken = tokens.get(0);
+					String refreshToken = tokens.get(1);
+					session.setAttribute("accessBoxToken", tokens.get(0));
+					model.addAttribute("accessBoxToken", tokens.get(0));
+					session.setAttribute("refreshBoxToken", tokens.get(1));
+					model.addAttribute("refreshBoxToken", tokens.get(1));
+					model.addAttribute("searchType", HpcAuthorizationService.BOX_TYPE);
+					model.addAttribute("transferType", HpcAuthorizationService.BOX_TYPE);
+					model.addAttribute("authorizedBox", "true");
 				}
 			} catch (Exception e) {
 				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
@@ -286,7 +299,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			return "downloadfiles";
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
-			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
+			session.setAttribute("authorizedActionFrom", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 			String returnURL = this.webServerName + "/downloadfiles";
 			try {
 				return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
@@ -296,10 +309,23 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			}
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
-			session.setAttribute("googleAction", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
+			session.setAttribute("authorizedActionFrom", HpcAuthorizationService.GOOGLE_CLOUD_TYPE);
 			String returnURL = this.webServerName + "/downloadfiles";
 			try {
 				return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
+			} catch (Exception e) {
+				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+				e.printStackTrace();
+			}
+		} else if (transferType != null && transferType.equals(HpcAuthorizationService.BOX_TYPE)) {
+			session.setAttribute("downloadType", downloadType);
+			session.setAttribute("authorizedActionFrom", HpcAuthorizationService.BOX_TYPE);
+			String returnURL = this.webServerName + "/downloadfiles";
+			try {
+				logger.info("HpcDownloadFilesController: returnURL before Auth"+returnURL);
+				String redirectUrl = "redirect:" + hpcAuthorizationService.authorizeBox(returnURL);
+				logger.info("HpcDownloadFilesController: Box redirectUrl"+redirectUrl);
+				return redirectUrl;
 			} catch (Exception e) {
 				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
 				e.printStackTrace();
@@ -436,8 +462,20 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				googleCloudDestination.setAccessToken(refreshTokenDetailsGoogleCloud);
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
 				logger.info("GoogleCloud file download json: " + gson.toJson(dto));
+            } else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.BOX_TYPE)) {
+				String accessBoxToken = (String)session.getAttribute("accessBoxToken");
+				String refreshBoxToken = (String)session.getAttribute("refreshBoxToken");
+				HpcBoxDownloadDestination boxDestination = new HpcBoxDownloadDestination();
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getBoxBucketName());
+				location.setFileId(downloadFile.getBoxPath().trim());
+				boxDestination.setDestinationLocation(location);
+				boxDestination.setAccessToken(accessBoxToken);
+				boxDestination.setRefreshToken(refreshBoxToken);
+				dto.setBoxDownloadDestination(boxDestination);
+				logger.info("HpcDownloadFilesController: boxDestination download json: " + gson.toJson(dto));
             }
-			
+
 			if("collection".equals(downloadFile.getDownloadType())) {
 				if (downloadFile.getDownloadDestinationType() != null
 						&& downloadFile.getDownloadDestinationType().equals("downloadToDestination")) {
