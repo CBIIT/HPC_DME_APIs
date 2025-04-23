@@ -27,7 +27,7 @@ public class HpcDownloadDatafile {
 	private String downloadDestinationType;
 	private List<String> selectedPaths;
 	private String globalMetadataSearchText;
-	private String boxBucketName;
+	private String boxContainerName;
 	private String boxPath;	
 
 	public String getGlobalMetadataSearchText() {
@@ -208,12 +208,12 @@ public class HpcDownloadDatafile {
 		this.downloadDestinationType = downloadDestinationType;
 	}
 
-	public String getBoxBucketName() {
-		return boxBucketName;
+	public String getBoxContainerName() {
+		return boxContainerName;
 	}
 
-	public void setBoxBucketName(String boxBucketName) {
-		this.boxBucketName = boxBucketName;
+	public void setBoxContainerName(String boxContainerName) {
+		this.boxContainerName = boxContainerName;
 	}
 
 	public String getBoxPath() {
