@@ -467,7 +467,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				String refreshBoxToken = (String)session.getAttribute("refreshBoxToken");
 				HpcBoxDownloadDestination boxDestination = new HpcBoxDownloadDestination();
 				HpcFileLocation location = new HpcFileLocation();
-				location.setFileContainerId(downloadFile.getBoxBucketName());
+				location.setFileContainerId(downloadFile.getBoxContainerName());
 				location.setFileId(downloadFile.getBoxPath().trim());
 				boxDestination.setDestinationLocation(location);
 				boxDestination.setAccessToken(accessBoxToken);
