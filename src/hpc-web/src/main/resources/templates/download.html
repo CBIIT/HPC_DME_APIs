@@ -354,12 +354,7 @@
 					return false;
 				}
 			} else if (radioValue == 'box') {
-				var boxBucketName = document.getElementById("boxBucketName").value;
 				var boxPath = document.getElementById("boxPath").value;
-				if (boxBucketName == null || boxBucketName.trim().length == 0) {
-					alert("Enter Box bucket name for single file download");
-					return false;
-				}
 				if (boxPath == null || boxPath.trim().length == 0) {
 					alert("Enter Box destination path");
 					return false;
