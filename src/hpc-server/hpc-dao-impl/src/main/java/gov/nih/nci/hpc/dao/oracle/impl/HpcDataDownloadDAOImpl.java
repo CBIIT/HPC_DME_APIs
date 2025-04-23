@@ -1131,6 +1131,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				boxAccessToken = encryptor.encrypt(collectionDownloadTask.getBoxDownloadDestination().getAccessToken());
 				boxRefreshToken = encryptor
 						.encrypt(collectionDownloadTask.getBoxDownloadDestination().getRefreshToken());
+				destinationType = HpcDataTransferType.BOX.name();
 
 			} else {
 				throw new HpcException("No download destination in a collection download task",
