@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.service.impl;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringEscapeUtils;
+import com.box.sdk.*;
 
 @Service
 public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
@@ -48,6 +50,11 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private String clientId;
   @Value("${gov.nih.nci.hpc.drive.clientsecret}")
   private String clientSecret;
+
+  @Value("${gov.nih.nci.hpc.box.clientid}")
+  private String boxClientId;
+  @Value("${gov.nih.nci.hpc.box.clientsecret}")
+  private String boxClientSecret;
 
   private Logger logger = LoggerFactory.getLogger(HpcAuthorizationServiceImpl.class);
   private GoogleAuthorizationCodeFlow flowGoogleDrive;
@@ -75,7 +82,6 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
           .build(); 
   }
 
-
   @Override
   public String authorize(String redirectUri, ResourceType resourceType, String userId ) throws Exception {
     String redirectUrl="";
@@ -85,7 +91,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     logger.info("HpcAuthorizationServiceImpl::authorize:redirectUrl=" + redirectUrl);
     return redirectUrl;
   }
-    
+
   public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
@@ -147,4 +153,30 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     }
   }
 
+
+  public String authorizeBox(String redirectUri) throws Exception {
+	logger.info("redirectUri="+redirectUri);
+	String redirectUrl = "https://account.box.com/api/oauth2/authorize?response_type=code&client_id=" + boxClientId +
+			"&redirect_uri=" + redirectUri;
+	logger.info("redirectUrl="+redirectUrl);
+    return redirectUrl;
+  }
+
+	public List<String> getBoxToken(String code) throws Exception {
+		List<String> resultTokenList = new ArrayList<>();
+		try {
+			BoxAPIConnection api = new BoxAPIConnection(boxClientId, boxClientSecret, code);
+			// The api object now has the initial access token.
+			// You can use api.getAccessToken() to get the token string.
+			logger.info("Box Access Token: " + api.getAccessToken());
+			logger.info("Box Refresh Token: " + api.getRefreshToken());
+			resultTokenList.add(api.getAccessToken());
+			resultTokenList.add(api.getRefreshToken());
+			// Store or use the access token for subsequent API calls
+			// Refresh token can be used to obtain a new access token when it expires
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return resultTokenList;
+	}
 }
