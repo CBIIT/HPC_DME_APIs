@@ -1523,6 +1523,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Input validation.
 		if (downloadTask == null || downloadTask.getSize() <= 0 || bytesTransferred <= 0
 				|| bytesTransferred > downloadTask.getSize()) {
+			logger.info(
+					"download task: [taskId={}] - % complete unchanged. bytesTransferred: {}, fileSize: {} [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), bytesTransferred, downloadTask.getSize(), downloadTask.getDataTransferType(),
+					downloadTask.getDestinationType());
 			return true;
 		}
 
@@ -4117,6 +4121,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadTask.setInProcess(false);
 					downloadTask.setProcessed(Calendar.getInstance());
 					downloadTask.setPercentComplete(0);
+					downloadTask.setStagingPercentComplete(100);
 
 					// Persist the download task.
 					dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);

@@ -9,6 +9,9 @@
  */
 package gov.nih.nci.hpc.web.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * HPC Authorization Service Interface.
  *
@@ -42,13 +45,31 @@ public interface HpcAuthorizationService {
    */
   public String getRefreshToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType, String userId) throws Exception;
 
+  /**
+   * Authorize Box user.
+   *
+   * @param redirectUri The redirectUri.
+   * @throws Exception on service failure.
+   */
+  public String authorizeBox(String redirectUri) throws Exception;
+
+  /**
+   * Obtain access token using the code.
+   *
+   * @param code The code.
+   * @param redirectUri The redirectUri.
+   * @throws Exception on service failure.
+   */
+  public List<String> getBoxToken(String code) throws Exception;
 
   public enum ResourceType {
     GOOGLEDRIVE,
-    GOOGLECLOUD
+    GOOGLECLOUD,
+    BOX
   }
   
   public static final String GOOGLE_CLOUD_TYPE = "googleCloud";
-	public static final String GOOGLE_DRIVE_TYPE = "drive";
+  public static final String GOOGLE_DRIVE_TYPE = "drive";
+  public static final String BOX_TYPE = "box";
 
 }
