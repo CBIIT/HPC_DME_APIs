@@ -154,13 +154,9 @@
 <th:block th:fragment="boxCommonBlock">
 	<div th:if="${authorizedBox != null}" class="alert-success" style="margin-top: 10px"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 	<br/>
-	<div class="col-sm-12 column leftMargin">
-		<label for="boxBucketName">Box Bucket</label>
-		<input
-			type="text" class="form-control fieldWidth" name="boxBucketName" th:value="${boxBucketName}"
-			id="boxBucketName" placeholder="Enter Box Bucket Name" />
-	</div>
-	<br/>
+	<!-- The name of Box container is MyBox -->
+	<input type="hidden" name="boxContainerName" id="boxContainerName"
+		th:value="MyBox" />
 	<div class="col-sm-12 column leftMargin">
 		<label for="boxPath">Endpoint Path:</label>
 		<input
