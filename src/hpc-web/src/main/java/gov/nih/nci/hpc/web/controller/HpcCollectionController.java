@@ -167,7 +167,8 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
                 }
 				
                 String basePath = path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2) < 0 ? path.length() : StringUtils.ordinalIndexOf(path, "/", 2));
-		        HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
+		        logger.debug("Computed basepath for path " + path + " is: " + basePath);
+                HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		        
 		        String doc = HpcClientUtil.getDocByBasePath(modelDTO, basePath);
 		        boolean userInSecGroup = false;
@@ -735,6 +736,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
             final HpcDataManagementModelDTO modelDTO =
               (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
             String basePath = collectionPath.substring(0, StringUtils.ordinalIndexOf(collectionPath, "/", 2) < 0 ? collectionPath.length() : StringUtils.ordinalIndexOf(collectionPath, "/", 2));
+            logger.debug("Computed basepath for collection path " + collectionPath + " is: " + basePath);
             HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
             retHpcCollObj = buildHpcCollection(theCollectionDto,
               modelDTO.getCollectionSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules(), false);

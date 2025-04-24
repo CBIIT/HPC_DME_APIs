@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import org.neo4j.cypher.internal.compiler.v2_1.functions.E;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,8 +111,7 @@ public abstract class AbstractHpcController {
 	@ExceptionHandler({ Exception.class, java.net.ConnectException.class })
 	public @ResponseBody HpcResponse handleUncaughtException(Exception ex, WebRequest request,
 			HttpServletResponse response) {
-		log.info("Converting Uncaught exception to RestResponse : {}", ex.getMessage());
-
+		log.error("Converting Uncaught exception to RestResponse : ", ex);
 		response.setHeader("Content-Type", "application/json");
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		return new HpcResponse("Error occurred", ex.toString());
@@ -120,7 +120,7 @@ public abstract class AbstractHpcController {
 	@ExceptionHandler(IllegalArgumentException.class)
 	public @ResponseBody HpcResponse handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request,
 			HttpServletResponse response) {
-		log.info("Converting IllegalArgumentException to RestResponse : {}", ex.getMessage());
+		log.error("Converting IllegalArgumentException to RestResponse : ", ex);
 
 		response.setHeader("Content-Type", "application/json");
 		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
