@@ -36,7 +36,8 @@
 					name="searchType" id="searchTypeAspera" value="aspera"
 					onChange="display('aspera')" />dbGaP</label>
 			</div>
-			<div class="pull-left">
+			<!-- Only Admins can use Box -->
+			<div th:if="${isAdmin == true}" class="pull-left">
 				<label class="radio-inline radioMargin"><input type="radio"
 					name="searchType" id="searchTypeBox" value="box"
 					onChange="display('box')" />Box</label>

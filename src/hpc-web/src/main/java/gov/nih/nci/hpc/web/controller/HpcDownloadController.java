@@ -57,6 +57,7 @@ import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,6 +135,9 @@ public class HpcDownloadController extends AbstractHpcController {
 		} else {
 			model.addAttribute("asperaBucketName", asperaBucket);
 		}
+		// Determine if System Admin or Group Admin
+		boolean isAdmin =  HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session);
+		model.addAttribute("isAdmin", isAdmin);
 		String code = request.getParameter("code");
         if (code != null) {
             //Return from Google Drive Authorization
