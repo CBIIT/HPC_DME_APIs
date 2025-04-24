@@ -34,6 +34,7 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -450,6 +451,15 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
+	}
+
+	//If status is RECEIVED but staging has begun, or status is RECEIVED in between the time when
+	//staging completed and  2nd hop has not begun, then display it as ACTIVE
+	if(downloadTask.getTaskStatus() == HpcCollectionDownloadTaskStatus.RECEIVED) {
+		if(!downloadTask.getStagingInProgressItems().isEmpty()
+				|| !downloadTask.getInProgressItems().isEmpty()) {
+			downloadTask.setTaskStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
+		}
 	}
 
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
