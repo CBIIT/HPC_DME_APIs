@@ -57,6 +57,7 @@ import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 
@@ -133,6 +134,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
 			hpcDownloadDatafile.setGlobalMetadataSearchText(globalMetadataSearchText);
 			model.addAttribute("globalMetadataSearchText", globalMetadataSearchText);
+
+			// Determine if System Admin or Group Admin
+			boolean isAdmin =  HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session);
+			model.addAttribute("isAdmin", isAdmin);
 
 			// Setting default values for Aspera variables
 			model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
@@ -236,6 +241,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 
 		String endPointName = request.getParameter("endpoint_id");
+		// Determine if System Admin or Group Admin
+		boolean isAdmin =  HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session);
+		model.addAttribute("isAdmin", isAdmin);
 		String code = request.getParameter("code");
 		String transferType = request.getParameter("transferType");
 		String downloadType = request.getParameter("downloadType");
