@@ -87,7 +87,8 @@
 								<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
 								</h2>
 								</div>
-								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED') 
+								<!--  Retry button should not show up for box -->
+								<div class="col-md-3 col-md-offset-6" th:if="${!#strings.equals(hpcDataObjectsDownloadStatusDTO.getDestinationType(),'BOX') and hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED') 
 									and (hpcDataObjectsDownloadStatusDTO.getFailedItems() == null or hpcDataObjectsDownloadStatusDTO.getFailedItems().size() == 0) 
 									and (hpcDataObjectsDownloadStatusDTO.getCanceledItems() == null or hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() == 0)}">
 								  <h2>
