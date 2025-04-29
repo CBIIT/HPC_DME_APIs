@@ -1938,6 +1938,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 		}
 
+		logger.info("Processing collection download task [{}] completed", collectionDownloadTaskId);
 		return downloadItems;
 	}
 
