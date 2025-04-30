@@ -800,10 +800,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					pathAttributes.setIsFile(true);
 					pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
 				} else {
-					throw new HpcException(
-							"Error at Globus endpoint " + fileLocation.getFileContainerId() + ", file location: "
-									+ fileLocation.getFileId() + ": " + error.statusMessage,
+					throw new HpcException("Error at Globus endpoint " + fileLocation.getFileContainerId()
+							+ ", file location: " + fileLocation.getFileId() + ": [category=" + error.category
+							+ ", resoutce=" + error.resource + ", code=" + error.code + ", requestId=" + error.requestId
+							+ ", status=" + error.statusCode + " " + error.statusMessage + "] - " + error.message,
 							HpcErrorType.DATA_TRANSFER_ERROR, error);
+
 				}
 			} else if (error.statusCode == 403) {
 				// Permission denied.
