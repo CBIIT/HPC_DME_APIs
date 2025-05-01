@@ -94,7 +94,7 @@ public class HpcNotificationsListController extends AbstractHpcController {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unable to get user notifications: ", e);
 		}
 		// result.sort(Comparator.comparing(HpcNotificationReceipt::getEventCreated));
 

@@ -252,26 +252,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					model.addAttribute("totalPages", 0);
 				}
 			}
-		} catch (JsonMappingException e) {
-			log.error(e.getMessage(), e);
-			ObjectError error = new ObjectError("hpcLogin", "Failed to project: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "criteria";
-		} catch (HttpStatusCodeException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "criteria";
-		} catch (RestClientException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "criteria";
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to search: ", e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
@@ -342,7 +324,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response, exportSearch.getDeselectedColumns());
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unable to export search results: ", e);
 			return "forward:/criteria";
 		}
 		return null;
@@ -583,7 +565,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				session.setAttribute("hierarchies", getHierarchy(authToken, user, session));
 			model.addAttribute("doc", user.getDoc());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unable to get data hierarchy: ", e);
 		}
 	}
 
@@ -609,7 +591,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			for (String name : hierarchies)
 				hierarchiesMap.put(name, ("" + count++));
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unable to get data hierarchy: ", e);
 		}
 		return hierarchiesMap;
 	}
@@ -629,7 +611,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			}
 			return hierarchies;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unable to get data hierarchy: ", e);
 		}
 		return null;
 	}
