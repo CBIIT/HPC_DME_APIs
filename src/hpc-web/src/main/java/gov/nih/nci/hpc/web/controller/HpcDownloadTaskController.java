@@ -137,7 +137,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       }
     } catch (Exception e) {
       model.addAttribute("error", "Failed to get data file: " + e.getMessage());
-      e.printStackTrace();
+      log.error("Failed to get data file for taskId  " + taskId, e);
       return "redirect:/downloadtasks";
     }
   }
