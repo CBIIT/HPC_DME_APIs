@@ -105,29 +105,11 @@ public class HpcEventController extends AbstractHpcController {
 				model.addAttribute("error", message);
 				return "dashboard";
 			}
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
-			return "dashboard";
-		} catch (HttpStatusCodeException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
-			return "dashboard";
-		} catch (RestClientException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
-			return "dashboard";
 		} catch (Exception e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			log.error("Failed to display notification receipts: ", e);
+			ObjectError error = new ObjectError("hpcLogin", "Failed to display notification receipts: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to display notification receipts due to: " + e.getMessage());
 			return "dashboard";
 		}
 
