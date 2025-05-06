@@ -266,8 +266,6 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 
 	private boolean setPermissionForPath(String serviceAPIUrl, HpcEntityPermissionsDTO permissionDTO, String authToken) throws Exception {
 
-		try {
-
 			if (CollectionUtils.isNotEmpty(permissionDTO.getUserPermissions())
 					|| CollectionUtils.isNotEmpty(permissionDTO.getGroupPermissions())) {
 				WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
@@ -306,13 +304,7 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 					throw new Exception(exception.getMessage());
 				}
 			}
-		} catch (HttpStatusCodeException e) {
-			throw e;
-		} catch (RestClientException e) {
-			throw e;
-		} catch (Exception e) {
-			throw e;
-		}
+			
 		return false;
 	}
 	

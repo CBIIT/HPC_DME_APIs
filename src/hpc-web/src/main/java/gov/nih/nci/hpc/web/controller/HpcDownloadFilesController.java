@@ -204,7 +204,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			session.setAttribute("hpcSavedSearch", hpcSaveSearch);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get selected data file: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Failed to get selected data file: ", e);
 			return "downloadfiles";
 		}
 		return "downloadfiles";
@@ -280,8 +280,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 					model.addAttribute("authorizedBox", "true");
 				}
 			} catch (Exception e) {
-				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-				e.printStackTrace();
+				model.addAttribute("error", "Failed to redirect to destination endpoint for authorization: " + e.getMessage());
+				logger.error("Failed to redirect to destination endpoint for authorization ", e);
 			}
 			HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
 			String globalMetadataSearchText = request.getParameter("globalMetadataSearchText");
@@ -312,8 +312,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			try {
 				return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
 			} catch (Exception e) {
-				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-				e.printStackTrace();
+				model.addAttribute("error", "Failed to redirect to Google Drive for authorization: " + e.getMessage());
+				logger.error("Failed to redirect to Google Drive for authorization: ", e);
 			}
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
@@ -322,8 +322,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			try {
 				return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
 			} catch (Exception e) {
-				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-				e.printStackTrace();
+				model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
+				logger.error("Failed to redirect to Google Cloud for authorization: ", e);
 			}
 		} else if (transferType != null && transferType.equals(HpcAuthorizationService.BOX_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
@@ -335,8 +335,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				logger.info("HpcDownloadFilesController: Box redirectUrl"+redirectUrl);
 				return redirectUrl;
 			} catch (Exception e) {
-				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-				e.printStackTrace();
+				model.addAttribute("error", "Failed to redirect to Box for authorization: " + e.getMessage());
+				logger.error("Failed to redirect to Box for authorization: ", e);
 			}
 		}
 		else if(endPointName == null) {
