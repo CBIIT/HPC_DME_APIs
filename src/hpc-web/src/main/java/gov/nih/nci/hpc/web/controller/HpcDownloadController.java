@@ -175,8 +175,8 @@ public class HpcDownloadController extends AbstractHpcController {
 					model.addAttribute("authorizedBox", "true");
 				}
             } catch (Exception e) {
-              model.addAttribute("error", "Failed to redirect to Google/Box for authorization: " + e.getMessage());
-              e.printStackTrace();
+              model.addAttribute("error", "Failed to redirect to destination endpoint for authorization: " + e.getMessage());
+              logger.error("Failed to redirect to destination endpoint for authorization: ", e);
             }
         }
         else if(action == null && endPointName == null) {
@@ -244,8 +244,8 @@ public class HpcDownloadController extends AbstractHpcController {
 			try {
 			return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
 			} catch (Exception e) {
-				model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-				e.printStackTrace();
+				model.addAttribute("error", "Failed to redirect to Google Drive for authorization: " + e.getMessage());
+				logger.error("Failed to redirect to Google Drive for authorization: ", e);
 			}
 	   }
 
@@ -261,7 +261,7 @@ public class HpcDownloadController extends AbstractHpcController {
               return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
             } catch (Exception e) {
               model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
-              e.printStackTrace();
+              logger.error("Failed to redirect to Google Cloud for authorization: ", e);
             }
         }
 
@@ -276,8 +276,8 @@ public class HpcDownloadController extends AbstractHpcController {
 				 redirectUrl = "redirect:" + hpcAuthorizationService.authorizeBox(redirectUrl);
 				return redirectUrl;
 			} catch (Exception e) {
-				model.addAttribute("error", "Failed to redirect to Bix for authorization: " + e.getMessage());
-				e.printStackTrace();
+				model.addAttribute("error", "Failed to redirect to Box for authorization: " + e.getMessage());
+				logger.error("Failed to redirect to Box for authorization: ", e);
 			}
         }
 
