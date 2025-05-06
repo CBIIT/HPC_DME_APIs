@@ -92,26 +92,8 @@ public class HpcSearchController extends AbstractHpcController {
 			if(StringUtils.isNotEmpty(pageSize))
 			  search.setPageSize(Integer.parseInt(pageSize));
 			query = processSearch(search, session, request, model, bindingResult);
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (HttpStatusCodeException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (RestClientException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to search: ", e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
@@ -170,26 +152,8 @@ public class HpcSearchController extends AbstractHpcController {
 
 		try {
 			query = processSearch(search, session, request, model, bindingResult);
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (HttpStatusCodeException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (RestClientException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to search: ", e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
@@ -248,7 +212,7 @@ public class HpcSearchController extends AbstractHpcController {
 			HpcSearchUtil.exportResponseResults(searchType, session, request, response, exportSearch.getDeselectedColumns());
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to export search results: ", e);
 			return "forward:/search";
 		}
 		return null;
