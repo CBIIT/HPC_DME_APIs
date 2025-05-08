@@ -1802,6 +1802,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
+		// If it is a softlink, always perform a hard delete
+		force = registeredLink ? true: force;
+		
 		// Validate the data object exists in the Archive. If it is not a softlink.
 		if (!registeredLink) {
 			HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
