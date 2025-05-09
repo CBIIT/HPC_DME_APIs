@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.amazonaws.util.CollectionUtils;
@@ -93,6 +95,8 @@ public class HpcMetadataValidator {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// Data managfement configuration locator.
 	@Autowired
@@ -415,6 +419,10 @@ public class HpcMetadataValidator {
 				// matter.
 				if (!StringUtils.isEmpty(value) && metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())
 						&& !metadataValidationRule.getValidValues().contains(value)) {
+
+					logger.error("Invalid metadata value for attribute {}: {}. Valid values: {}. Input metadata: {}",
+							metadataValidationRule.getAttribute(), value, metadataValidationRule.getValidValues(), addUpdateMetadataEntries);
+
 					throw new HpcException(
 							"Invalid metadata value for attribute " + metadataValidationRule.getAttribute() + ": "
 									+ value + ". Valid values: " + metadataValidationRule.getValidValues(),
