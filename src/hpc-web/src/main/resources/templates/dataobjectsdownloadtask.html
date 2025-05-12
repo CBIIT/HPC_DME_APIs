@@ -87,8 +87,11 @@
 								<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
 								</h2>
 								</div>
-								<!--  Retry button should not show up for box -->
-								<div class="col-md-3 col-md-offset-6" th:if="${!#strings.equals(hpcDataObjectsDownloadStatusDTO.getDestinationType(),'BOX') and hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED') 
+								<!--  Retry button should not show up for box or google drive or google cloud after canceling task -->
+								<div class="col-md-3 col-md-offset-6" th:if="${!#strings.equals(hpcDataObjectsDownloadStatusDTO.getDestinationType(),'BOX')
+								    and !#strings.equals(hpcDataObjectsDownloadStatusDTO.getDestinationType(),'GOOGLE_DRIVE')
+								    and !#strings.equals(hpcDataObjectsDownloadStatusDTO.getDestinationType(),'GOOGLE_CLOUD_STORAGE')
+									and hpcDataObjectsDownloadStatusDTO.getResult() != null and #strings.equals(hpcDataObjectsDownloadStatusDTO.getResult(), 'CANCELED') 
 									and (hpcDataObjectsDownloadStatusDTO.getFailedItems() == null or hpcDataObjectsDownloadStatusDTO.getFailedItems().size() == 0) 
 									and (hpcDataObjectsDownloadStatusDTO.getCanceledItems() == null or hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() == 0)}">
 								  <h2>
