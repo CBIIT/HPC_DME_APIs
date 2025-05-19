@@ -36,7 +36,8 @@
 					name="searchType" id="searchTypeAspera" value="aspera"
 					onChange="display('aspera')" />dbGaP</label>
 			</div>
-			<div class="pull-left">
+			<!-- Only Admins can use Box -->
+			<div th:if="${isAdmin == true}" class="pull-left">
 				<label class="radio-inline radioMargin"><input type="radio"
 					name="searchType" id="searchTypeBox" value="box"
 					onChange="display('box')" />Box</label>
@@ -61,6 +62,29 @@
 			<a id="downloadlink" 
 	                                    th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">                                  
 	                                    Obtain from Globus (Optional)</a>
+			<input type="hidden" name="actionType" id="actionType" />
+			<input
+				type="text" style="margin-top: 2px; margin-bottom: 10px;" class="form-control fieldWidth" name="endPointName" th:value="${endPointName}"
+				id="endPointName" placeholder="Enter Globus Endpoint UUID" />
+		</div>
+		<div class="col-sm-12 column leftMargin">
+			<label for="endPointLocation">Endpoint Path:</label> 
+			<input
+				type="text" class="form-control fieldWidth"
+				th:value="${endPointLocation}"
+				name="endPointLocation" id="endPointLocation" style="margin-top: 1px; margin-bottom: 1px;" 
+				placeholder="Enter Globus Endpoint Path" />
+		</div>
+	</div>
+</th:block>
+
+<th:block th:fragment="globusDivMultiFragment">
+	<div id="AsyncDiv" style="display: none">
+	    <div class="col-sm-12 column leftMargin">
+			<label for="endPointName">Globus Endpoint UUID:</label>
+			<a id="downloadlink"
+				th:href="@{../downloadfiles(transferType=globus,downloadType=${downloadType})}">
+                Obtain from Globus (Optional)</a>
 			<input type="hidden" name="actionType" id="actionType" />
 			<input
 				type="text" style="margin-top: 2px; margin-bottom: 10px;" class="form-control fieldWidth" name="endPointName" th:value="${endPointName}"

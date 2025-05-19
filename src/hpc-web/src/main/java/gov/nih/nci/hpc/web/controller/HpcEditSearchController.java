@@ -143,26 +143,8 @@ public class HpcEditSearchController extends AbstractHpcController {
 			checkSecGroup(userId, session, model, authToken);
 			return "criteria";
 
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (HttpStatusCodeException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (RestClientException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to search: ", e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
@@ -233,26 +215,8 @@ public class HpcEditSearchController extends AbstractHpcController {
 			checkSecGroup(userId, session, model, authToken);
 			return "criteria";
 
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (HttpStatusCodeException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
-		} catch (RestClientException e) {
-			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
-			return "dashboard";
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to search: ", e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
@@ -403,7 +367,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 				session.setAttribute("hierarchies", getHierarchy(authToken, user, session));
 			model.addAttribute("doc", user.getDoc());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Could not populate hierarchy ", e);
 		}
 	}
 
@@ -429,7 +393,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 			for (String name : hierarchies)
 				hierarchiesMap.put(name, ("" + count++));
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Could not get hierarchy ", e);
 		}
 		return hierarchiesMap;
 	}
@@ -449,7 +413,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 			}
 			return hierarchies;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Could not get hierarchy ", e);
 		}
 		return null;
 	}
