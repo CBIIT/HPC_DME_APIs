@@ -94,6 +94,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.bind.DatatypeConverter;
+
 import javax.xml.transform.Source;
 
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
@@ -238,10 +239,10 @@ public class HpcClientUtil {
       HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
       return dto.getToken();
     } catch (IllegalStateException e1) {
-      e1.printStackTrace();
+      logger.error("Error getting authentication token:" + e1);
       throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Error getting authentication token:" + e);
       throw new HpcWebException("Failed to get auth token: " + e.getMessage());
     }
   }
@@ -273,10 +274,10 @@ public class HpcClientUtil {
 	      HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
 	      return dto.getToken();
 	    } catch (IllegalStateException e1) {
-	      e1.printStackTrace();
+	      logger.error("Error getting authentication token:" + e1);
 	      throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
 	    } catch (IOException e) {
-	      e.printStackTrace();
+	      logger.error("Error getting authentication token:" + e);
 	      throw new HpcWebException("Failed to get auth token: " + e.getMessage());
 	    }
 	  }
@@ -308,10 +309,11 @@ public class HpcClientUtil {
 	      HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
 	      return dto.getToken();
 	    } catch (IllegalStateException e1) {
-	      e1.printStackTrace();
+	      logger.error("Error getting authentication token:" + e1);
 	      throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
+	    
 	    } catch (IOException e) {
-	      e.printStackTrace();
+	      logger.error("Error getting authentication token:" + e);
 	      throw new HpcWebException("Failed to get auth token: " + e.getMessage());
 	    }
 	}
@@ -372,19 +374,19 @@ public class HpcClientUtil {
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+    	logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     }
     try {
       return parser.readValueAs(HpcDataManagementModelDTO.class);
     } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+    	logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+    	logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     }
   }
@@ -477,11 +479,11 @@ public class HpcClientUtil {
 
         return parser.readValueAs(HpcCollectionListDTO.class);
       } else {
-    	logger.error("Failed to get collection " + path);
-        throw new HpcWebException("Failed to get collection " + path);
+    	logger.error("Failed to get collection " + path, restResponse.getStatus());
+    	throw new HpcWebException("Failed to get collection, error: " + restResponse.getStatus());
       }
     } catch (Exception e) {
-      logger.error("Failed to get collection " + path + ": ", e);
+      logger.error("Failed to get collection " + path, e);
       throw new HpcWebException("Failed to get collection " + path + ": " + e.getMessage());
     }
   }
@@ -643,7 +645,7 @@ public class HpcClientUtil {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to get Users: ", e);
       throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
     }
     return null;
@@ -683,10 +685,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to get user: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to get user: ", e);
       throw new HpcWebException("Failed to get User due to: " + e.getMessage());
     }
   }
@@ -726,10 +726,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to get user: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to get user ", e);
       throw new HpcWebException("Failed to get User due to: " + e.getMessage());
     }
   }
@@ -760,8 +758,8 @@ public class HpcClientUtil {
         throw new HpcWebException(exception.getMessage());
       }
     } catch (Exception e) {
-      logger.error("Exception creating user " + userId + ";", e.getStackTrace());
-      throw e;
+      logger.error("Exception creating user: " + userId, e);
+      throw new HpcWebException("Error creating user: " + e.getMessage());
     }
   }
 
@@ -790,11 +788,11 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        logger.error("Failed to create bookmark " + hpcBookmarkName, exception);
+        logger.error("Failed to create bookmark: " + hpcBookmarkName, exception);
         throw new HpcWebException(exception.getMessage());
       }
     } catch (Exception e) {
-      logger.error("Failed to create bookmark " + hpcBookmarkName, e);
+      logger.error("Failed to create bookmark: " + hpcBookmarkName, e);
       throw new HpcWebException(e.getMessage());
     }
   }
@@ -823,7 +821,7 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        logger.error("Failed to delete bookmark " + hpcBookmarkName, exception);
+        logger.error("Failed to delete bookmark: " + hpcBookmarkName, exception);
         throw new HpcWebException(exception.getMessage());
       }
     } catch (Exception e) {
@@ -857,10 +855,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to delete saved search: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to delete saved search: " + searchName, e);
       throw new HpcWebException("Failed to delete saved search due to: " + e.getMessage());
     }
   }
@@ -879,7 +875,7 @@ public class HpcClientUtil {
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get Bookmarks: ", e);
       throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
     }
     try {
@@ -928,10 +924,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to create group: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to create group: " + groupName, e);
       throw new HpcWebException("Failed to create group due to: " + e.getMessage());
     }
     return response;
@@ -974,10 +968,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to update group: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to update group: " + groupName, e);
       throw new HpcWebException("Failed to update group due to: " + e.getMessage());
     }
     return response;
@@ -1008,10 +1000,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to delete group: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to delete group: " + groupName, e);
       throw new HpcWebException("Failed to delete group due to: " + e.getMessage());
     }
   }
@@ -1049,11 +1039,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      logger.error("Error creating collection: ", e.getStackTrace());
-      throw e;
     } catch (Exception e) {
-    	logger.error("Exception creating collection: ", e.getStackTrace());
+      logger.error("Exception creating collection: ", e);
       throw new HpcWebException(e.getMessage());
     }
   }
@@ -1085,12 +1072,9 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      logger.error("Error creating collection: ", e.getStackTrace());
-      throw e;
     } catch (Exception e) {
-      logger.error("Exception creating collection: ", e.getStackTrace());
-      throw new HpcWebException(e.getMessage());
+      logger.error("Exception creating collection: " + path, e);
+      throw new HpcWebException("Error creating collection: " + e.getMessage());
     }
   }
 
@@ -1118,12 +1102,11 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+        logger.error("Failed to delete collection: " + collectionPath);
         throw new HpcWebException("Failed to delete collection: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to delete collection: ", e);
       throw new HpcWebException("Failed to delete collection due to: " + e.getMessage());
     }
   }
@@ -1150,10 +1133,10 @@ public class HpcClientUtil {
 			  JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 			  HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-			  logger.error("Failed to refresh models: " + exception.getMessage(), exception);
+			  logger.error("Failed to refresh models: ", exception);
 			  throw new HpcWebException("Failed to refresh models: " + exception.getMessage());
 		  } catch (IOException e) {
-			  logger.error("Failed to refresh models: " + e.getMessage(), e);
+			  logger.error("Failed to refresh models: ", e);
 			  throw new HpcWebException("Failed to refresh models: " + e.getMessage());
 		  }
 	  }
@@ -1209,11 +1192,9 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(e.getMessage());
+      logger.error("Error registering datafile: ", e);
+      throw new HpcWebException("Error registering data file: " + e.getMessage());
     }
   }
 
@@ -1242,10 +1223,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to bulk register data files: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to bulk register data: ", e);
       throw new HpcWebException("Failed to bulk register data files due to: " + e.getMessage());
     }
   }
@@ -1275,10 +1254,8 @@ public class HpcClientUtil {
 	        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 	        throw new HpcWebException("Failed to bulk register data files: " + exception.getMessage());
 	      }
-	    } catch (HpcWebException e) {
-	      throw e;
 	    } catch (Exception e) {
-	      e.printStackTrace();
+	      logger.error("Failed to bulk register data files: ", e);
 	      throw new HpcWebException("Failed to bulk register data files due to: " + e.getMessage());
 	    }
 	  }
@@ -1315,10 +1292,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to update data file: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
-    } catch (Exception e) {
-      e.printStackTrace();
+    }  catch (Exception e) {
+      logger.error("Failed to update data file due to ", e);
       throw new HpcWebException("Failed to update data file due to: " + e.getMessage());
     }
   }
@@ -1348,11 +1323,9 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(e.getMessage());
+      logger.error("Error deleting data file: ", e);     
+      throw new HpcWebException("Error deleting data file:  " + e.getMessage());
     }
   }
 
@@ -1403,12 +1376,9 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      result.setMessage(e.getMessage());
-      return result;
     } catch (Exception e) {
-      e.printStackTrace();
-      result.setMessage("Link creation failed.");
+      logger.error("Link creation failed: ", e);
+      result.setMessage("Link creation failed: " + e.getMessage());
       return result;
     }
   }
@@ -1438,10 +1408,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to link data files: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to link data files: ", e);
       throw new HpcWebException("Failed to link data files due to: " + e.getMessage());
     }
   }
@@ -1471,10 +1439,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to update user: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to update user: ", e);
       throw new HpcWebException("Failed to update user due to: " + e.getMessage());
     }
   }
@@ -1508,7 +1474,7 @@ public class HpcClientUtil {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to get Users: ", e);
       throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
     }
     return null;
@@ -1570,7 +1536,7 @@ public class HpcClientUtil {
       }
       return retVal;
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get Query for " + queryName, e);
       throw new HpcWebException("Failed to get Query for: " + queryName +
         " due to: " + e.getMessage());
     }
@@ -1599,19 +1565,19 @@ public class HpcClientUtil {
       parser = factory.createParser((InputStream) restResponse.getEntity());
 
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get saved queries: ", e);
       throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
     }
     try {
       return parser.readValueAs(HpcNamedCompoundMetadataQueryListDTO.class);
     } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get saved queries: ", e);
       throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+    	logger.error("Failed to get saved queries: ", e);
       throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+    	logger.error("Failed to get saved queries: ", e);
       throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
     }
   }
@@ -1630,19 +1596,19 @@ public class HpcClientUtil {
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts ", e);
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     }
     try {
       return parser.readValueAs(HpcNotificationDeliveryReceiptListDTO.class);
     } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts: ", e);
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts: ", e);
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts: ", e);
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     }
   }
@@ -1661,19 +1627,19 @@ public class HpcClientUtil {
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts: ", e);      
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     }
     try {
       return parser.readValueAs(HpcEntityPermissionsDTO.class);
     } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts: ", e); 
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts: ", e); 
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get notification receipts: ", e); 
       throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
     }
   }
@@ -1698,7 +1664,7 @@ public class HpcClientUtil {
       }
       return retVal;
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get permissions: ", e);
       throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
     }
   }
@@ -1832,7 +1798,7 @@ public class HpcClientUtil {
 
       return parser.readValueAs(HpcDownloadSummaryDTO.class);
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get download tasks list: ", e);
       throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
     }
   }
@@ -1863,7 +1829,7 @@ public class HpcClientUtil {
         .getEntity());
       return parser.readValueAs(HpcRegistrationSummaryDTO.class);
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get registration tasks list: ", e);
       throw new HpcWebException("Failed to get registration tasks list due to: " + e.getMessage());
     }
   }
@@ -1900,10 +1866,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to submit download request: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
-    } catch (Exception e) {
-      e.printStackTrace();
+    }  catch (Exception e) {
+      logger.error("Failed to submit download request: ", e);
       throw new HpcWebException("Failed to submit download request: " + e.getMessage());
     }
     return response;
@@ -1982,7 +1946,7 @@ public class HpcClientUtil {
 //        restResponse.getEntity());
 //      return parser.readValueAs(HpcBulkDataObjectRegistrationStatusDTO.class);
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get data object registration tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data object registration tasks details due to: " + e.getMessage());
     }
@@ -2012,22 +1976,22 @@ public class HpcClientUtil {
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get data object download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data object download tasks details due to: " + e.getMessage());
     }
     try {
       return parser.readValueAs(HpcDataObjectDownloadStatusDTO.class);
     } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get data object download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data object download tasks details due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get data object download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data object download tasks details due to: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get data object download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data object download tasks details due to: " + e.getMessage());
     }
@@ -2058,22 +2022,22 @@ public class HpcClientUtil {
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get data objects download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data objects download tasks details due to: " + e.getMessage());
     }
     try {
       return parser.readValueAs(HpcCollectionDownloadStatusDTO.class);
     } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get data object download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data objects download tasks details due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+    	logger.error("Failed to get data object download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data objects download tasks details due to: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+    	logger.error("Failed to get data object download tasks details: ", e);
       throw new HpcWebException(
           "Failed to get data objects download tasks details due to: " + e.getMessage());
     }
@@ -2104,10 +2068,8 @@ public class HpcClientUtil {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
         throw new HpcWebException("Failed to cancel download task: " + exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to cancel download task ", e);
       throw new HpcWebException("Failed to cancel download task due to: " + e.getMessage());
     }
   }
@@ -2152,10 +2114,8 @@ public class HpcClientUtil {
         throw new HpcWebException("Failed to retry download task: " + exception.getMessage());
       }
       return response;
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to retry download task ", e);      
       throw new HpcWebException("Failed to retry download task due to: " + e.getMessage());
     }
   }
@@ -2200,10 +2160,8 @@ public class HpcClientUtil {
         throw new HpcWebException("Failed to retry bulk download task: " + exception.getMessage());
       }
       return response;
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to retry bulk download task: ", e);
       throw new HpcWebException("Failed to retry bulk download task due to: " + e.getMessage());
     }
   }
@@ -2248,10 +2206,8 @@ public class HpcClientUtil {
         throw new HpcWebException("Failed to retry data object download task: " + exception.getMessage());
       }
       return response;
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to retry data object download task: ", e);
       throw new HpcWebException("Failed to retry data object download task due to: " + e.getMessage());
     }
   }
@@ -2273,19 +2229,19 @@ public class HpcClientUtil {
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get Metadata attributes ", e);
       throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
     }
     try {
       return parser.readValueAs(HpcMetadataAttributesListDTO.class);
     } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get Metadata attributes ", e);
       throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      logger.error("Failed to get Metadata attributes ", e);
       throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Failed to get Metadata attributes ", e);
       throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
     }
   }
@@ -2364,31 +2320,16 @@ public class HpcClientUtil {
       restTemplate.setMessageConverters(messageConverters);
 
       restTemplate.setErrorHandler(new HpcResponseErrorHandler());
-    } catch (IOException e) {
+    } catch (Exception e) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (CertificateException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (KeyStoreException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchAlgorithmException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (UnrecoverableKeyException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (KeyManagementException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      logger.error("Error during REST conversion: ", e);
     } finally {
       if (fis != null) {
         try {
           fis.close();
         } catch (IOException e) {
           // TODO Auto-generated catch block
-          e.printStackTrace();
+          logger.error("Error during REST conversion: ", e);
         }
       }
     }
