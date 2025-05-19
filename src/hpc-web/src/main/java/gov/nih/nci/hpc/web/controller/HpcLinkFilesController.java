@@ -128,8 +128,8 @@ public class HpcLinkFilesController extends AbstractHpcController {
 			hpcSaveSearch.setTotalSize(StringUtils.isNotBlank(request.getParameter("totalSize")) ? Long.parseLong(request.getParameter("totalSize")) : 0);
 			model.addAttribute("hpcSearch", hpcSaveSearch);
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to get selected data file: " + e.getMessage());
-			e.printStackTrace();
+			model.addAttribute("error", "Failed to get selected data files: " + e.getMessage());
+			log.error("Failed to get selected data files ", e);
 			return "linkfiles";
 		}
 		return "linkfiles";
