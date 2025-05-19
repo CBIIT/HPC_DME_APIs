@@ -175,7 +175,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 			// Store or use the access token for subsequent API calls
 			// Refresh token can be used to obtain a new access token when it expires
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to get Box token: ", e);
 		}
 		return resultTokenList;
 	}

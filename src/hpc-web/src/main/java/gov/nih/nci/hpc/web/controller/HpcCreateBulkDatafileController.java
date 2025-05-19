@@ -159,7 +159,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				  }
 	            } catch (Exception e) {
 	              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-	              e.printStackTrace();
+	              logger.error("Failed to redirect to Google for authorization ", e);
 	            } 
 	        }
 			String parent = request.getParameter("parent");
@@ -373,8 +373,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
           try {
             return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
           } catch (Exception e) {
-            model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-            e.printStackTrace();
+            model.addAttribute("error", "Failed to redirect to Google Drive for authorization: " + e.getMessage());
+            logger.error("Failed to redirect to Google Drive for authorization: ", e);
           }
           
         } else if (action != null && action.length > 0 && action[0].equals(GOOGLE_CLOUD_BULK_TYPE)) {
@@ -390,8 +390,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			try {
 			  return "redirect:" + hpcAuthorizationService.authorize(returnURL, HpcAuthorizationService.ResourceType.GOOGLECLOUD, userId);
 			} catch (Exception e) {
-			  model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
-			  e.printStackTrace();
+			  model.addAttribute("error", "Failed to redirect to Google Cloud for authorization: " + e.getMessage());
+			  logger.error("Failed to redirect to Google Cloud for authorization: ", e);
 			}
 		  }
 
