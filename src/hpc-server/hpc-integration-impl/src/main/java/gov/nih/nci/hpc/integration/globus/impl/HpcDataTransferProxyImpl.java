@@ -224,6 +224,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// This is a synchronous upload request. Simply store the data to the
 			// file-system.
 			// No Globus action is required here.
+            logger.error("ERAN: Before save-file");
 			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination,
 					uploadRequest.getSudoPassword(), uploadRequest.getSystemAccountName());
 		}
