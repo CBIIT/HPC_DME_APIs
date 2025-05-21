@@ -2495,7 +2495,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.error("ERAN: after save-file {}",
 				dataObjectUploadResponse != null ? dataObjectUploadResponse.getDataTransferMethod() : "null");
 		// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
-		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+		if (dataTransferType.equals(HpcDataTransferType.GLOBUS) && !globusSyncUpload) {
 			HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
 			globusRequest.setDataTransferRequestId(dataObjectUploadResponse.getDataTransferRequestId());
 			globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
