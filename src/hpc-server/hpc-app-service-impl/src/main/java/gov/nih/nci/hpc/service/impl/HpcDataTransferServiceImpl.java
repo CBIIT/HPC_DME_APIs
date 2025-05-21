@@ -2492,7 +2492,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 								uploadRequest.getUserId()),
 						dataTransferConfiguration.getEncryptedTransfer(), dataTransferConfiguration.getStorageClass());
 
-		logger.error("ERAN: after save-file {}", dataObjectUploadResponse.getDataTransferMethod());
+		logger.error("ERAN: after save-file {}",
+				dataObjectUploadResponse != null ? dataObjectUploadResponse.getDataTransferMethod() : "null");
 		// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
 		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
 			HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
@@ -2502,7 +2503,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			globusRequest.setDownload(false);
 			globusTransferDAO.insertRequest(globusRequest);
 		}
-		logger.error("ERAN: after bug? {}", dataObjectUploadResponse.getDataTransferMethod());
+		logger.error("ERAN: after bug? {}",
+				dataObjectUploadResponse != null ? dataObjectUploadResponse.getDataTransferMethod() : "null");
 		return dataObjectUploadResponse;
 	}
 
