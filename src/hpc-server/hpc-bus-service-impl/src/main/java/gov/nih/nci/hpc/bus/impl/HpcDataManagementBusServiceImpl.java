@@ -3709,6 +3709,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					generateDownloadURL);
 		}
 
+		// Validate S3 archive config ID is present for data objects in S3 archives.
 		if ((metadata.getDataTransferType() != null && metadata.getDataTransferType().equals(HpcDataTransferType.S_3))
 				&& metadata.getS3ArchiveConfigurationId() == null) {
 			logger.error("Could not locate data object: {}", path);
