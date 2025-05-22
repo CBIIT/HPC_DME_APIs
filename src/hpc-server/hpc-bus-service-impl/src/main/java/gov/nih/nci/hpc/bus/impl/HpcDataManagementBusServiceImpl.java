@@ -1682,8 +1682,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					&& HpcDataTransferType.S_3.equals(taskStatus.getDataObjectDownloadTask().getDataTransferType())
 							? true
 							: null);
-				downloadStatus
-						.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
+			downloadStatus
+					.setStagingPercentComplete(taskStatus.getDataObjectDownloadTask().getStagingPercentComplete());
 
 			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getDataObjectDownloadTask().getRetryTaskId());
@@ -1803,18 +1803,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// If it is a softlink, always perform a hard delete
-		force = registeredLink ? true: force;
-		
+		force = registeredLink ? true : force;
+
 		// Validate the data object exists in the Archive. If it is not a softlink.
 		if (!registeredLink) {
 			HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
 					systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
-					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+					systemGeneratedMetadata.getConfigurationId(),
+					systemGeneratedMetadata.getS3ArchiveConfigurationId());
 			if (!archivePathAttributes.getExists() || !archivePathAttributes.getIsFile()) {
-				throw new HpcException("The data object was not found in the archive. S3 Archive ID: "
-						+ systemGeneratedMetadata.getS3ArchiveConfigurationId() + ". Archive location: "
-						+ systemGeneratedMetadata.getArchiveLocation().getFileContainerId() + ":"
-						+ systemGeneratedMetadata.getArchiveLocation().getFileId(), HpcErrorType.UNEXPECTED_ERROR);
+				throw new HpcException(
+						"The data object was not found in the archive. S3 Archive ID: "
+								+ systemGeneratedMetadata.getS3ArchiveConfigurationId() + ". Archive location: "
+								+ systemGeneratedMetadata.getArchiveLocation().getFileContainerId() + ":"
+								+ systemGeneratedMetadata.getArchiveLocation().getFileId(),
+						HpcErrorType.UNEXPECTED_ERROR);
 			}
 		}
 
@@ -3706,7 +3709,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					generateDownloadURL);
 		}
 
-		if (metadata.getS3ArchiveConfigurationId() == null) {
+		if ((metadata.getDataTransferType() != null && metadata.getDataTransferType().equals(HpcDataTransferType.S_3))
+				&& metadata.getS3ArchiveConfigurationId() == null) {
 			logger.error("Could not locate data object: {}", path);
 			throw new HpcException("Could not locate data object path " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
