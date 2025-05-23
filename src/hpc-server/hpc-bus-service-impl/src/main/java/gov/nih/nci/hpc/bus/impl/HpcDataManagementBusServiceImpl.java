@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
@@ -1574,6 +1576,32 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return dataObjectDTO;
+	}
+
+	@Override
+	public String getDataType(String path) throws HpcException {
+		// Get data object metadata attributes for this path
+		HpcGroupedMetadataEntries dataObjectMetadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path,
+				true);
+		if (dataObjectMetadataEntries != null) {
+			return HpcDataType.DATAOBJECT.toString();
+		} else {
+			HpcMetadataEntries collectionMetadataEntries = metadataService.getCollectionMetadataEntries(path);
+			if (collectionMetadataEntries == null || (collectionMetadataEntries.getParentMetadataEntries().isEmpty()
+					|| collectionMetadataEntries.getSelfMetadataEntries().isEmpty())) {
+				return HpcDataType.UNKNOWN.toString();
+			} else {
+				// Check if there exists a metadata attribute named COLLECTION_TYPE
+				Iterator<HpcMetadataEntry> iterator = collectionMetadataEntries.getParentMetadataEntries().iterator();
+				while (iterator.hasNext()) {
+					HpcMetadataEntry metadata = iterator.next();
+					if (metadata.getAttribute().equals("collection_type")) {
+						return HpcDataType.COLLECTION.toString();
+					}
+				}
+				return HpcDataType.UNKNOWN.toString();
+			}
+		}
 	}
 
 	@Override
