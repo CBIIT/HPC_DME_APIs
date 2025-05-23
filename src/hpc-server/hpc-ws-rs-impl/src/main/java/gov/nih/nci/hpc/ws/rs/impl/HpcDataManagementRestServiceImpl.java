@@ -623,6 +623,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return okResponse(dataObject, true);
 	}
 
+	@Override
+	public Response getDataType(String path) {
+		String dataType = null;
+		try {
+			dataType = dataManagementBusService.getDataType(toNormalizedPath(path));
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+		return okResponse(dataType, false);
+	}
+
 	@Deprecated
 	@Override
 	public Response downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
