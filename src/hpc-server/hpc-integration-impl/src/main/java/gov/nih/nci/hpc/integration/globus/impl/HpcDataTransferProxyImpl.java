@@ -329,24 +329,31 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
+		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
+		response.setChecksum(exec("md5sum " + archiveFilePath, sudoPassword, null, null).split("\\s+")[0]);
+
+		File metadataFile = getMetadataFile(archiveFilePath);
+		if (metadataFile.exists()) {
+			logger.info("System metadata in POSIX archive already set for [{}]. No need to re-create in archive",
+					fileLocation.getFileId());
+			response.setMetadataAdded(false);
+			return response;
+		}
+
 		try {
 			// Creating the metadata file.
 			if (!metadataEntries.isEmpty()) {
 				List<String> metadata = new ArrayList<>();
 				metadataEntries.forEach(
 						metadataEntry -> metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
-				FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+				FileUtils.writeLines(metadataFile, metadata);
 			}
 
-			HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
-			response.setChecksum(exec("md5sum " + archiveFilePath, sudoPassword, null, null).split("\\s+")[0]);
 			response.setMetadataAdded(true);
-
-			// Returning a calculated checksum.
 			return response;
 
 		} catch (IOException e) {
-			throw new HpcException("Failed to calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
+			throw new HpcException("Failed to set POSIX archive metadata", HpcErrorType.UNEXPECTED_ERROR, e);
 		}
 	}
 
