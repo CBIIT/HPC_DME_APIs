@@ -3083,7 +3083,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Set sudo Password (This is needed in the case of POSIX sync download).
 		downloadRequest.setSudoPassword(systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
-
+		
+		logger.error("ERAN: sync download desk - {}", downloadRequest.getFileDestination().getAbsolutePath());
+		
 		// Perform the synchronous download.
 		dataTransferProxies.get(downloadRequest.getDataTransferType()).downloadDataObject(
 				getAuthenticatedToken(downloadRequest.getDataTransferType(), downloadRequest.getConfigurationId(),
