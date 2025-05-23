@@ -224,7 +224,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// This is a synchronous upload request. Simply store the data to the
 			// file-system.
 			// No Globus action is required here.
-			logger.error("ERAN: Before save-file");
 			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination,
 					uploadRequest.getSudoPassword(), uploadRequest.getSystemAccountName());
 		}
@@ -1045,11 +1044,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
 
-		logger.error("ERAN: archiveDest={}:{}, baseArchive:{}:{}, {}, {}, archivePath={}",
-				archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId(),
-				baseArchiveDestination.getFileLocation().getFileContainerId(),
-				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory(),
-				baseArchiveDestination.getType(), archiveFilePath);
 		try {
 			exec("install -d -o " + systemAccount + " " + archiveDirectory, sudoPassword, null, null);
 			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), sudoPassword, null, null);
