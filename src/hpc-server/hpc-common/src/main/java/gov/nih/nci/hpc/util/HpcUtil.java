@@ -120,8 +120,6 @@ public class HpcUtil {
 					}
 
 					logger.error("command [" + command + "] exec error: " + message);
-					logger.error("ERAN: " + execCommand.toString());
-					logger.error("ERAN: " + "echo '" + sudoPassword + "'|sudo -S " + command);
 					throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
 				}
 
