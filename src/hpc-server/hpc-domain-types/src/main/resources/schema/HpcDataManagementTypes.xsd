@@ -226,7 +226,6 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="DATAOBJECT" />
 			<xsd:enumeration value="COLLECTION" />
-			<xsd:enumeration value="UNKNOWN" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
