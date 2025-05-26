@@ -1580,26 +1580,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public String getDataType(String path) throws HpcException {
-		// Get data object metadata attributes for this path
-		HpcGroupedMetadataEntries dataObjectMetadataEntries = metadataService.getDataObjectGroupedMetadataEntries(path,
-				true);
-		if (dataObjectMetadataEntries != null) {
-			return HpcDataType.DATAOBJECT.toString();
+		// Check if path associated with Collection
+		if (dataManagementService.isPathCollection(path)) {
+			return HpcDataType.COLLECTION.toString();
 		} else {
-			HpcMetadataEntries collectionMetadataEntries = metadataService.getCollectionMetadataEntries(path);
-			if (collectionMetadataEntries == null || (collectionMetadataEntries.getParentMetadataEntries().isEmpty()
-					|| collectionMetadataEntries.getSelfMetadataEntries().isEmpty())) {
-				return HpcDataType.UNKNOWN.toString();
+			// Check if path is a DataObject path
+			// Get DataObject metadata attributes for this path
+			boolean excludeParentMetadata = true;
+			HpcGroupedMetadataEntries dataObjectMetadataEntries = metadataService
+					.getDataObjectGroupedMetadataEntries(path, excludeParentMetadata);
+			if (dataObjectMetadataEntries != null) {
+				return HpcDataType.DATAOBJECT.toString();
 			} else {
-				// Check if there exists a metadata attribute named COLLECTION_TYPE
-				Iterator<HpcMetadataEntry> iterator = collectionMetadataEntries.getParentMetadataEntries().iterator();
-				while (iterator.hasNext()) {
-					HpcMetadataEntry metadata = iterator.next();
-					if (metadata.getAttribute().equals("collection_type")) {
-						return HpcDataType.COLLECTION.toString();
-					}
-				}
-				return HpcDataType.UNKNOWN.toString();
+				// Return null if path does not associated with a Collection or DataObject
+				return null;
 			}
 		}
 	}
