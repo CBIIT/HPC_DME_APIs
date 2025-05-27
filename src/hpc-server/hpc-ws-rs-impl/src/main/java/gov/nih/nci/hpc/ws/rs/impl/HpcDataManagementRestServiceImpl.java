@@ -628,10 +628,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		String dataType = null;
 		try {
 			dataType = dataManagementBusService.getDataType(toNormalizedPath(path));
-			if(dataType == null) {
-				return errorResponse(new HpcException(
-					"Failed to find DataObject or Collection at the following path: " + path, HpcErrorType.INVALID_REQUEST_INPUT));
-			}
 		} catch (HpcException e) {
 			return errorResponse(e);
 		}
