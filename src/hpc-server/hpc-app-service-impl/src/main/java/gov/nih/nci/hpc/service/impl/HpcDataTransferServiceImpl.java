@@ -756,7 +756,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 								: null,
 						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
 						generateArchiveMetadata(configurationId, objectId, registrarId),
-						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
 						dataTransferConfiguration.getStorageClass());
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
@@ -794,8 +793,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.deleteDataObject(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 						fileLocation,
 						dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
-								s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination(),
-						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+								s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination());
 	}
 
 	@Override
