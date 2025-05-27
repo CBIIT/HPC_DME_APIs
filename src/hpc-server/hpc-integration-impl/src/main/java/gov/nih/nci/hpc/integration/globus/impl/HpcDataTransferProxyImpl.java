@@ -1030,7 +1030,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param baseArchiveDestination     The base archive destination.
 	 * @param sudoPassword               (Optional) a sudo password to perform the
 	 *                                   copy to the POSIX archive.
-	 * @param systemAccount              (Optional) system account to perform the
+	 * @param systemAccount              system account to perform the
 	 *                                   copy to the POSIX archive and keep system
 	 *                                   account as owner
 	 * 
@@ -1045,10 +1045,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
 
 		try {
-			exec("install -d -o " + systemAccount + " " + archiveDirectory, sudoPassword, null, null);
-			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), sudoPassword, null, null);
-			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword, null, null);
-			exec("chown " + systemAccount + " " + archiveFilePath, sudoPassword, null, null);
+			exec("install -d -o " + systemAccount + " " + archiveDirectory, null, null, null);
+			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), null, null, null);
+			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, null, null, null);
+			exec("chown " + systemAccount + " " + archiveFilePath, null, null, null);
 
 		} catch (HpcException e) {
 			throw new HpcException(
