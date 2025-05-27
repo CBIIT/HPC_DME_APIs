@@ -1545,7 +1545,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
 		// Get the data object.
 		HpcDataObject dataObject = null;
 		if (!excludeAttributes) {
@@ -1583,17 +1582,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (dataManagementService.isPathCollection(path)) {
 			return HpcDataType.COLLECTION.toString();
 		} else {
-			// Check if path is a DataObject path
-			// Get DataObject metadata attributes for this path
-			boolean excludeParentMetadata = true;
-			HpcGroupedMetadataEntries dataObjectMetadataEntries = metadataService
-					.getDataObjectGroupedMetadataEntries(path, excludeParentMetadata);
-			if (dataObjectMetadataEntries != null) {
-				return HpcDataType.DATAOBJECT.toString();
-			} else {
-				// Return null if path does not associated with a Collection or DataObject
-				return null;
-			}
+			return HpcDataType.DATAOBJECT.toString();
 		}
 	}
 
