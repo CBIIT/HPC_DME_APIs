@@ -520,6 +520,17 @@ public interface HpcDataManagementRestService {
 			@QueryParam("excludeParentMetadata") Boolean excludeParentMetadata);
 
 	/**
+	 * Get a data type.
+	 *
+	 * @param path              The data object path.
+	 * @return The REST service response with entity indicating whether DATAOBJECT/COLLECTION/UNKNOWN data type
+	 */
+	@GET
+	@Path("/v2/dataType/{path:.*}")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response getDataType(@PathParam("path") String path);
+
+	/**
 	 * Download a data object.
 	 *
 	 * @deprecated
