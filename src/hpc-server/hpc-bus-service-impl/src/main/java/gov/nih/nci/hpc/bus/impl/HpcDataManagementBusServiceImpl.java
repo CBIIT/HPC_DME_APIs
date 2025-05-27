@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
@@ -1544,7 +1545,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
 		// Get the data object.
 		HpcDataObject dataObject = null;
 		if (!excludeAttributes) {
@@ -1574,6 +1574,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return dataObjectDTO;
+	}
+
+	@Override
+	public String getDataType(String path) throws HpcException {
+		// Check if path associated with Collection
+		if (dataManagementService.isPathCollection(path)) {
+			return HpcDataType.COLLECTION.toString();
+		} else {
+			return HpcDataType.DATAOBJECT.toString();
+		}
 	}
 
 	@Override
