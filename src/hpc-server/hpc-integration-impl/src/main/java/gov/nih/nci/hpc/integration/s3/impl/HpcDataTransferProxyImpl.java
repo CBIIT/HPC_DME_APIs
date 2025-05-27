@@ -250,7 +250,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken,
 			HpcFileLocation fileLocation, HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
-			String sudoPassword, String storageClass) throws HpcException {
+			String storageClass) throws HpcException {
 
 		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
 
@@ -340,8 +340,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
+	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation, HpcArchive baseArchiveDestination) throws HpcException {
 		// Create a S3 delete request.
 		DeleteObjectRequest deleteRequest = new DeleteObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId());
