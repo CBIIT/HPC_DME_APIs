@@ -4579,7 +4579,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// The data object is found in archive. Set system metadata in iRODs.
 		Calendar dataTransferCompleted = Calendar.getInstance();
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService.addSystemGeneratedMetadataToDataObject(
-				path, dataObjectIdMetadataEntry, dataObjectRegistration.getArchiveLinkSource().getSourceLocation(),
+				path, dataObjectIdMetadataEntry, archiveLocation,
 				dataObjectRegistration.getArchiveLinkSource().getSourceLocation(), null,
 				HpcDataTransferUploadStatus.ARCHIVED, HpcDataTransferUploadMethod.ARCHIVE_LINK,
 				dataManagementConfiguration.getArchiveDataTransferType(), dataTransferCompleted, dataTransferCompleted,
