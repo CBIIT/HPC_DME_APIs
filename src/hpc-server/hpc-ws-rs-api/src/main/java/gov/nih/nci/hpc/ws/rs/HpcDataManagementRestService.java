@@ -53,7 +53,7 @@ public interface HpcDataManagementRestService {
 	 * @return The REST service response.
 	 */
 	@GET
-	@Path("/pathRefType/{path:.*}")
+	@Path("/pathType/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response interrogatePathRef(@PathParam("path") String path);
 
@@ -518,17 +518,6 @@ public interface HpcDataManagementRestService {
 	public Response getDataObject(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl,
 			@QueryParam("excludeNonMetadataAttributes") Boolean excludeAttributes,
 			@QueryParam("excludeParentMetadata") Boolean excludeParentMetadata);
-
-	/**
-	 * Get a data type.
-	 *
-	 * @param path              The data object path.
-	 * @return The REST service response with entity indicating whether DATAOBJECT/COLLECTION/UNKNOWN data type
-	 */
-	@GET
-	@Path("/v2/dataType/{path:.*}")
-	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataType(@PathParam("path") String path);
 
 	/**
 	 * Download a data object.
