@@ -4557,20 +4557,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			archivePathAttributes = dataTransferService
 					.getPathAttributes(dataObjectRegistration.getArchiveLinkSource().getSourceLocation());
 
-			// Set the archive location to be the link source location.
-			archiveLocation = dataObjectRegistration.getArchiveLinkSource().getSourceLocation();
-
-			HpcFileLocation fl = new HpcFileLocation();
-			fl.setFileContainerId(dataManagementConfiguration.getGlobusConfiguration().getBaseArchiveDestination()
+			// Set the archive location to the Globus endpoint pointing to this POSIX archive.
+			archiveLocation = new HpcFileLocation();
+			archiveLocation.setFileContainerId(dataManagementConfiguration.getGlobusConfiguration().getBaseArchiveDestination()
 					.getFileLocation().getFileContainerId());
-			fl.setFileId(dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileId().replaceFirst(
+			archiveLocation.setFileId(dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileId().replaceFirst(
 					dataManagementConfiguration.getGlobusConfiguration().getBaseArchiveDestination().getDirectory(),
 					dataManagementConfiguration.getGlobusConfiguration().getBaseArchiveDestination().getFileLocation()
 							.getFileId()));
-
-			logger.error("ERAN: source - {}:{}", archiveLocation.getFileContainerId(), archiveLocation.getFileId());
-			logger.error("ERAN: archive - {}:{}", fl.getFileContainerId(), fl.getFileId());
-
 		}
 
 		// Validate the file exists in the archive.
