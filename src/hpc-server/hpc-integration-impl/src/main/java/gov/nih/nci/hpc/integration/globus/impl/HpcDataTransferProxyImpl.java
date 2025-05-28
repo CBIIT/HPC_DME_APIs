@@ -55,6 +55,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
+import gov.nih.nci.hpc.util.HpcUtil;
 
 /**
  * HPC Data Transfer Proxy Globus Implementation.
@@ -224,7 +225,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// file-system.
 			// No Globus action is required here.
 			return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination,
-					uploadRequest.getSudoPassword(), uploadRequest.getSystemAccountName());
+					uploadRequest.getSystemAccountName());
 		}
 
 		// Build a Globus transfer request.
@@ -275,8 +276,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
 			try {
-				exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(),
-						downloadRequest.getSudoPassword(), null, null);
+				exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(), null, null, null);
 
 			} catch (HpcException e) {
 				throw new HpcException(
@@ -323,9 +323,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken,
 			HpcFileLocation fileLocation, HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
-			String sudoPassword, String storageClass) throws HpcException {
+			String storageClass) throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
+
+		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
+		response.setChecksum(exec("md5sum " + archiveFilePath, null, null, null).split("\\s+")[0]);
+
+		File metadataFile = getMetadataFile(archiveFilePath);
+		if (metadataFile.exists()) {
+			logger.info("System metadata in POSIX archive already set for [{}]. No need to re-create in archive",
+					fileLocation.getFileId());
+			response.setMetadataAdded(false);
+			return response;
+		}
 
 		try {
 			// Creating the metadata file.
@@ -333,36 +344,32 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				List<String> metadata = new ArrayList<>();
 				metadataEntries.forEach(
 						metadataEntry -> metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
-				FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+				FileUtils.writeLines(metadataFile, metadata);
 			}
 
-			HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
-			response.setChecksum(exec("md5sum " + archiveFilePath, sudoPassword, null, null).split("\\s+")[0]);
 			response.setMetadataAdded(true);
-
-			// Returning a calculated checksum.
 			return response;
 
 		} catch (IOException e) {
-			throw new HpcException("Failed to calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
+			throw new HpcException("Failed to set POSIX archive metadata", HpcErrorType.UNEXPECTED_ERROR, e);
 		}
 	}
 
 	@Override
 	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
+			HpcArchive baseArchiveDestination) throws HpcException {
 		String archiveFilePath = fileLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		// Delete the archive file.
 		try {
-			exec("rm " + archiveFilePath, sudoPassword, null, null);
+			exec("rm " + archiveFilePath, null, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to delete file: {}", archiveFilePath, e);
 		}
 		// Delete the metadata file.
 		try {
-			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), sudoPassword, null, null);
+			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), null, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to delete metadata for file: {}", archiveFilePath, e);
@@ -465,9 +472,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public HpcPathAttributes getPathAttributes(Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize)
 			throws HpcException {
-		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
-		autoActivate(fileLocation.getFileContainerId(), client);
-		return getPathAttributes(fileLocation, client, getSize);
+		if (authenticatedToken != null) {
+			// Use Globus to get path attributes.
+			JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+			autoActivate(fileLocation.getFileContainerId(), client);
+			return getPathAttributes(fileLocation, client, getSize);
+		} else {
+			// Get POSIX path attributes
+			return HpcUtil.getPathAttributes(fileLocation);
+		}
 	}
 
 	@Override
@@ -1014,31 +1027,29 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * @param sourceFile                 The source file to store.
 	 * @param archiveDestinationLocation The archive destination location.
 	 * @param baseArchiveDestination     The base archive destination.
-	 * @param sudoPassword               (Optional) a sudo password to perform the
-	 *                                   copy to the POSIX archive.
-	 * @param systemAccount              (Optional) system account to perform the
-	 *                                   copy to the POSIX archive and keep system
-	 *                                   account as owner
+	 * @param systemAccount              system account to perform the copy to the
+	 *                                   POSIX archive and keep system account as
+	 *                                   owner
 	 * 
 	 * @return A data object upload response object.
 	 * @throws HpcException on IO exception.
 	 */
 	private HpcDataObjectUploadResponse saveFile(File sourceFile, HpcFileLocation archiveDestinationLocation,
-			HpcArchive baseArchiveDestination, String sudoPassword, String systemAccount) throws HpcException {
+			HpcArchive baseArchiveDestination, String systemAccount) throws HpcException {
 		Calendar transferStarted = Calendar.getInstance();
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
 
 		try {
-			exec("install -d -o " + systemAccount + " " + archiveDirectory, sudoPassword, null, null);
-			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), sudoPassword, null, null);
-			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, sudoPassword, null, null);
-			exec("chown " + systemAccount + " " + archiveFilePath, sudoPassword, null, null);
+			exec("install -d -o " + systemAccount + " " + archiveDirectory, null, null, null);
+			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), null, null, null);
+			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, null, null, null);
+			exec("chown " + systemAccount + " " + archiveFilePath, null, null, null);
 
 		} catch (HpcException e) {
 			throw new HpcException(
-					"Failed to copy file to POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
+					"Failed to copy file to POSIX archive: " + archiveFilePath + " - [" + e.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 
