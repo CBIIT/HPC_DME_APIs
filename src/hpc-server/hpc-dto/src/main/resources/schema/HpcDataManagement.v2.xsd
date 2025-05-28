@@ -168,7 +168,9 @@
 				type="hpc-domain-datatransfer:HpcGoogleScanDirectory" />
 			<xsd:element name="fileSystemScanDirectory"
 				type="hpc-domain-datatransfer:HpcScanDirectory" />
-			<xsd:element name="archiveScanDirectory"
+			<xsd:element name="s3ArchiveScanDirectory"
+				type="hpc-domain-datatransfer:HpcScanDirectory" />
+			<xsd:element name="posixArchiveScanDirectory"
 				type="hpc-domain-datatransfer:HpcScanDirectory" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="includePatterns" type="xsd:string"
