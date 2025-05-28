@@ -441,15 +441,6 @@ public interface HpcDataManagementBusService {
 	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, boolean includeAcl,
 			boolean excludeAttributes, boolean excludeParentMetadata) throws HpcException;
 
-
-	/**
-	 * Get Data Type
-	 *
-	 * @param path                  The data object's path.
-	 * @return HpcDataType
-	 */
-	public String getDataType(String path) throws HpcException;
-
 	/**
 	 * Download Data Object. In this overloaded method, the request invoker will be
 	 * notified (if subscribed) when the download is complete. To specify a
