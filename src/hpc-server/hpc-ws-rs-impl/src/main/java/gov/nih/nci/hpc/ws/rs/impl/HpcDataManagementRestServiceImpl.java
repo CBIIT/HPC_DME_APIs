@@ -36,6 +36,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcArchivePermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
@@ -125,7 +126,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	@Override
 	public Response interrogatePathRef(String path) {
 		try {
-			final String pathElemType = dataManagementBusService.interrogatePathRef(path) ? "collection" : "data file";
+			final String pathElemType = dataManagementBusService.interrogatePathRef(path) ? HpcPathType.COLLECTION.toString() : HpcPathType.DATAOBJECT.toString();
 			final Map<String, String> responseMap = new HashMap<>();
 			responseMap.put("path", path);
 			responseMap.put("elementType", pathElemType);
@@ -621,17 +622,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		}
 
 		return okResponse(dataObject, true);
-	}
-
-	@Override
-	public Response getDataType(String path) {
-		String dataType = null;
-		try {
-			dataType = dataManagementBusService.getDataType(toNormalizedPath(path));
-		} catch (HpcException e) {
-			return errorResponse(e);
-		}
-		return okResponse(dataType, false);
 	}
 
 	@Deprecated
