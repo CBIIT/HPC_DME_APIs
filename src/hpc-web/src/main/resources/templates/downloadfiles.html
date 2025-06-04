@@ -161,7 +161,7 @@
 						<!-- Google Drive block -->
 						<div id="driveDiv" style="display: none">
 							<div class="col-sm-12 column leftMargin">
-								<a class="btn btn-primary" id="driveAuthlink"
+								<a class="btn btn-primary" id="driveAuthlink" onclick="return saveTransferType('drive')"
 									th:href="@{../downloadfiles(transferType=drive)}">
                                     Authorize DME to Access Your Google Drive</a>
 							</div>
@@ -171,7 +171,7 @@
 						<!-- Google Cloud block -->
 						<div id="googleCloudDiv" style="display: none">
 							<div class="col-sm-12 column leftMargin">
-										<a class="btn btn-primary" id="googleCloudAuthlink"
+										<a class="btn btn-primary" id="googleCloudAuthlink"  onclick="return saveTransferType('googleCloud')"
                                             th:href="@{../downloadfiles(transferType=googleCloud)}">
                                             Authorize DME to Access Your Google Cloud</a>
 							</div>
@@ -184,7 +184,7 @@
 						<!-- Box block -->
 						<div id="boxDiv" style="display: none">
 							<div class="col-sm-12 column leftMargin">
-								<a class="btn btn-primary" id="boxAuthlink"
+								<a class="btn btn-primary" id="boxAuthlink" onclick="return saveTransferType('box')"
                                             th:href="@{../downloadfiles(transferType=box)}">
                                             Authorize DME to Access Your Box</a>
 							</div>
@@ -387,7 +387,12 @@
 		}
 
 		 $(document).ready(function(){
-	        if($('#transferType').val() == 'globus') {
+			if(sessionStorage.getItem("transferType") != null){
+				$('#transferType').val(sessionStorage.getItem("transferType"));
+				sessionStorage.removeItem("transferType")
+			}
+
+	    	if($('#transferType').val() == 'globus') {
 	            $("#searchTypeAsync").prop("checked", true);
 	            display('async');
 		    }
@@ -425,6 +430,11 @@
 			}
 		}
 		
+		function saveTransferType(value){
+			sessionStorage.setItem("transferType", value);
+			return true;
+		}
+
 		$(function() {
 			//twitter bootstrap script
 			var $form = $('#downloadFilesForm');
