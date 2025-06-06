@@ -9,11 +9,14 @@
  */
 package gov.nih.nci.hpc.web;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -29,6 +32,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class HpcWebConfig implements WebMvcConfigurer {
 
+	@Value("${gov.nih.nci.hpc.web.frontend.server:}")
+	private String frontendServer;
+	
 	private static final String[] EXCLUDE_PATTERNS = { "/login", "/css/**", "/fonts/**", "/img/**", "/js/**",
 			"/ng-table/**" };
 	/**
@@ -63,6 +69,15 @@ public class HpcWebConfig implements WebMvcConfigurer {
   		addResourceLocations("classpath:/config");
      }
 	 
+	  @Override
+	  public void addCorsMappings(CorsRegistry registry) {
+
+		if(StringUtils.isNotEmpty(frontendServer))
+			registry.addMapping("/api/**").allowedOrigins(frontendServer).allowedMethods("*")
+				.allowedHeaders("*")
+				.allowCredentials(true);
+	  }
+
 	 @Bean
      public Converter<String, String[]> noCommaSplitStringToArrayConverter() {
         return new Converter<String, String[]>() {
