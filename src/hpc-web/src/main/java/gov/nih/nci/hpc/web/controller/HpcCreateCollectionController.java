@@ -124,7 +124,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			model.addAttribute("create", false);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to add Collection: " + e.getMessage());
-			e.printStackTrace();
+			log.error("Failed to add Collection: ", e);
 		}
 
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
