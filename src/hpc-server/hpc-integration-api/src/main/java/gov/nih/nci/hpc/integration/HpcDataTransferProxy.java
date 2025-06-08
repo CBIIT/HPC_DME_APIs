@@ -209,16 +209,15 @@ public interface HpcDataTransferProxy {
 	 * @param fileLocation           The file location.
 	 * @param baseArchiveDestination The archive's base destination location.
 	 * @param metadataEntries        The metadata to set.
-	 * @param sudoPassword           Sudo password to perform the checksum. This
-	 *                               needed on POSIX archive only.
 	 * @param storageClass           (Optional) The storage class to use when
 	 *                               setting the data object metadata. Applicable
 	 *                               for S3 archives only.
-	 * @return A response w/ the object checksum, and an indicator whether metadata got added or already existed.
+	 * @return A response w/ the object checksum, and an indicator whether metadata
+	 *         got added or already existed.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public default HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
+	public default HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken,
+			HpcFileLocation fileLocation, HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
 			String storageClass) throws HpcException {
 		throw new HpcException("setDataObjectMetadata() is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
@@ -243,12 +242,10 @@ public interface HpcDataTransferProxy {
 	 * @param authenticatedToken     An authenticated token.
 	 * @param fileLocation           The file location.
 	 * @param baseArchiveDestination The archive's base destination location.
-	 * @param sudoPassword           Sudo password to perform the delete. This
-	 *                               needed on POSIX archive only.
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public default void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
+			HpcArchive baseArchiveDestination) throws HpcException {
 		throw new HpcException("deleteDataObject is not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 

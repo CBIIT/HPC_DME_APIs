@@ -11,6 +11,11 @@ package gov.nih.nci.hpc.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -114,7 +122,7 @@ public class HpcUtil {
 					logger.error("command [" + command + "] exec error: " + message);
 					throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
 				}
-				
+
 			} else if (process.getInputStream() != null) {
 				return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
 			}
@@ -236,6 +244,51 @@ public class HpcUtil {
 		final int exponent = (int) (Math.log(bytes) / Math.log(base));
 		final String unit = units[exponent];
 		return String.format("%.1f %s", bytes / Math.pow(base, exponent), unit);
+	}
+
+	/**
+	 * Get path attributes of local file (on the DME server file system)
+	 *
+	 * @param fileLocation The local file location.
+	 * @return The path attributes.
+	 * @throws HpcException on service failure.
+	 */
+	public static HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) throws HpcException {
+		try {
+			HpcPathAttributes pathAttributes = new HpcPathAttributes();
+			pathAttributes.setIsDirectory(false);
+			pathAttributes.setIsFile(false);
+			pathAttributes.setSize(0);
+			pathAttributes.setIsAccessible(true);
+
+			Path path = FileSystems.getDefault().getPath(fileLocation.getFileId());
+			pathAttributes.setExists(Files.exists(path));
+			if (pathAttributes.getExists()) {
+				pathAttributes.setIsAccessible(Files.isReadable(path));
+				pathAttributes.setIsDirectory(Files.isDirectory(path));
+				pathAttributes.setIsFile(Files.isRegularFile(path));
+
+				HpcPathPermissions pathPermissions = new HpcPathPermissions();
+				pathPermissions.setUserId((Integer) Files.getAttribute(path, "unix:uid"));
+				pathPermissions.setGroupId((Integer) Files.getAttribute(path, "unix:gid"));
+				pathPermissions.setPermissions(PosixFilePermissions.toString(Files.getPosixFilePermissions(path)));
+
+				PosixFileAttributes posixAttributes = Files.readAttributes(path, PosixFileAttributes.class);
+				pathPermissions.setOwner(posixAttributes.owner().getName());
+				pathPermissions.setGroup(posixAttributes.group().getName());
+
+				pathAttributes.setPermissions(pathPermissions);
+			}
+			if (pathAttributes.getIsFile()) {
+				pathAttributes.setSize(Files.size(path));
+			}
+
+			return pathAttributes;
+
+		} catch (IOException e) {
+			throw new HpcException("Failed to get local file attributes: [" + e.getMessage() + "] " + fileLocation,
+					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
 	}
 
 }

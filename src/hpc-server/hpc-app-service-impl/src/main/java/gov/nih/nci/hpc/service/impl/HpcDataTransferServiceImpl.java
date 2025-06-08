@@ -24,8 +24,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFileAttributes;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -119,6 +117,7 @@ import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.util.HpcUtil;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -758,7 +757,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 								: null,
 						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
 						generateArchiveMetadata(configurationId, objectId, registrarId),
-						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword(),
 						dataTransferConfiguration.getStorageClass());
 
 		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
@@ -796,8 +794,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.deleteDataObject(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 						fileLocation,
 						dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
-								s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination(),
-						systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+								s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination());
 	}
 
 	@Override
@@ -907,41 +904,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		try {
-			HpcPathAttributes pathAttributes = new HpcPathAttributes();
-			pathAttributes.setIsDirectory(false);
-			pathAttributes.setIsFile(false);
-			pathAttributes.setSize(0);
-			pathAttributes.setIsAccessible(true);
-
-			Path path = FileSystems.getDefault().getPath(fileLocation.getFileId());
-			pathAttributes.setExists(Files.exists(path));
-			if (pathAttributes.getExists()) {
-				pathAttributes.setIsAccessible(Files.isReadable(path));
-				pathAttributes.setIsDirectory(Files.isDirectory(path));
-				pathAttributes.setIsFile(Files.isRegularFile(path));
-
-				HpcPathPermissions pathPermissions = new HpcPathPermissions();
-				pathPermissions.setUserId((Integer) Files.getAttribute(path, "unix:uid"));
-				pathPermissions.setGroupId((Integer) Files.getAttribute(path, "unix:gid"));
-				pathPermissions.setPermissions(PosixFilePermissions.toString(Files.getPosixFilePermissions(path)));
-
-				PosixFileAttributes posixAttributes = Files.readAttributes(path, PosixFileAttributes.class);
-				pathPermissions.setOwner(posixAttributes.owner().getName());
-				pathPermissions.setGroup(posixAttributes.group().getName());
-
-				pathAttributes.setPermissions(pathPermissions);
-			}
-			if (pathAttributes.getIsFile()) {
-				pathAttributes.setSize(Files.size(path));
-			}
-
-			return pathAttributes;
-
-		} catch (IOException e) {
-			throw new HpcException("Failed to get local file attributes: [" + e.getMessage() + "] " + fileLocation,
-					HpcErrorType.INVALID_REQUEST_INPUT, e);
-		}
+		return HpcUtil.getPathAttributes(fileLocation);
 	}
 
 	@Override
@@ -1559,6 +1522,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Input validation.
 		if (downloadTask == null || downloadTask.getSize() <= 0 || bytesTransferred <= 0
 				|| bytesTransferred > downloadTask.getSize()) {
+			logger.info(
+					"download task: [taskId={}] - % complete unchanged. bytesTransferred: {}, fileSize: {} [transfer-type={}, destination-type={}]",
+					downloadTask.getId(), bytesTransferred, downloadTask.getSize(), downloadTask.getDataTransferType(),
+					downloadTask.getDestinationType());
 			return true;
 		}
 
@@ -2525,14 +2492,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						dataTransferConfiguration.getEncryptedTransfer(), dataTransferConfiguration.getStorageClass());
 
 		// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
-		if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+		if (dataTransferType.equals(HpcDataTransferType.GLOBUS) && !globusSyncUpload) {
 			HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
 			globusRequest.setDataTransferRequestId(dataObjectUploadResponse.getDataTransferRequestId());
 			globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 			globusRequest.setPath(uploadRequest.getPath());
 			globusRequest.setDownload(false);
 			globusTransferDAO.insertRequest(globusRequest);
-
 		}
 
 		return dataObjectUploadResponse;
@@ -4157,6 +4123,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadTask.setInProcess(false);
 					downloadTask.setProcessed(Calendar.getInstance());
 					downloadTask.setPercentComplete(0);
+					downloadTask.setStagingPercentComplete(100);
 
 					// Persist the download task.
 					dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);

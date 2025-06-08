@@ -185,10 +185,14 @@
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getResult() == null}">
 											<label for="Name">Transfer Status:</label>
-											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() == null and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() == null and !hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">RECEIVED</label>
-											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() == null and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() != null and !hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">DOWNLOAD IN PROGRESS</label>
 											<label th:if="${hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">RESTORE IN PROGRESS</label>
-											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() != null}" id="regComplete">STAGING IN PROGRESS</label>
+											<label th:if="${!hpcDataObjectDownloadStatusDTO.getRestoreInProgress() 
+														and (hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() == null or hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() == 0) 
+														and (hpcDataObjectDownloadStatusDTO.getPercentComplete() == null or hpcDataObjectDownloadStatusDTO.getPercentComplete() == 0)}" id="regComplete">RECEIVED</label>
+											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() != null and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() != null and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() > 0}" id="regComplete">STAGING IN PROGRESS</label>
+											<label th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() == null 
+														and ((hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() != null and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() > 0)
+														or (hpcDataObjectDownloadStatusDTO.getPercentComplete() != null and hpcDataObjectDownloadStatusDTO.getPercentComplete() > 0))}" id="regComplete">DOWNLOAD IN PROGRESS</label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getStagingInProgress() != null
 										    and hpcDataObjectDownloadStatusDTO.getStagingPercentComplete() != null

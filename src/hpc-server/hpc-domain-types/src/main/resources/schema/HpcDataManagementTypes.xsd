@@ -221,5 +221,12 @@
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
+
+	<xsd:simpleType name="HpcPathType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DATAOBJECT" />
+			<xsd:enumeration value="COLLECTION" />
+		</xsd:restriction>
+	</xsd:simpleType>
 	
 </xsd:schema>
