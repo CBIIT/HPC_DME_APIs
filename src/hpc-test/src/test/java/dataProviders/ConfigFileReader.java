@@ -48,8 +48,17 @@ public class ConfigFileReader {
 	}
 
 	public String getApplicationUrl() {
-		String url = properties.getProperty("url");
-		if (url != null)
+		String url = "";
+		String testingEnvironment = properties.getProperty("testingEnvironment");
+		
+		if(testingEnvironment.equals("DEV")){
+			url = properties.getProperty("urlDEV");
+		} else if(testingEnvironment.equals("UAT")){
+			url = properties.getProperty("urlUAT");
+		} else {
+			throw new RuntimeException("Please specify testingEnvironment in the Configuration.properties file.");
+		}
+		if (url != null && !url.isEmpty())
 			return url;
 		else
 			throw new RuntimeException("url not specified in the Configuration.properties file.");
@@ -69,11 +78,11 @@ public class ConfigFileReader {
 		}
 		String token="";
 		if(role.equals(UserRole.USER_ROLE)) {
-			token = properties.getProperty("userToken");
+			token = properties.getProperty("userTokenUAT");
 		} else if (role.equals(UserRole.GROUP_ADMIN_ROLE)) {
-			token = properties.getProperty("groupAdminToken");
+			token = properties.getProperty("groupAdminTokenUAT");
 		} else if (role.equals(UserRole.SYSTEM_ADMIN_ROLE)){
-			token = properties.getProperty("systemAdminToken");
+			token = properties.getProperty("systemAdminTokenUAT");
 		} else {
 			throw new RuntimeException("Unknown Role");
 		}
