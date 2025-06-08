@@ -48,6 +48,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
@@ -261,9 +262,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries, String sudoPassword,
+	public HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken,
+			HpcFileLocation fileLocation, HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
 			String storageClass) throws HpcException {
+		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
+
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {
 			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(fileLocation.getFileContainerId())
@@ -283,7 +286,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (metadataAlreadySet) {
 				logger.info("System metadata in S3 archive already set for [{}]. No need to copy-object in archive",
 						fileLocation.getFileId());
-				return headObjectResponse.eTag();
+				response.setChecksum(headObjectResponse.eTag());
+				response.setMetadataAdded(false);
+				return response;
 			}
 
 		} catch (CompletionException e) {
@@ -305,7 +310,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			Copy copy = s3Connection.getTransferManager(authenticatedToken).copy(copyRequest);
 
 			CompletedCopy completedCopy = copy.completionFuture().join();
-			return completedCopy.response().copyObjectResult().eTag();
+			response.setChecksum(completedCopy.response().copyObjectResult().eTag());
+			response.setMetadataAdded(true);
+			return response;
 
 		} catch (CompletionException e) {
 			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
@@ -316,7 +323,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-			HpcArchive baseArchiveDestination, String sudoPassword) throws HpcException {
+			HpcArchive baseArchiveDestination) throws HpcException {
 
 		// Create a S3 delete request.
 		DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder().bucket(fileLocation.getFileContainerId())
