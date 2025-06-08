@@ -34,6 +34,7 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -136,7 +137,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       }
     } catch (Exception e) {
       model.addAttribute("error", "Failed to get data file: " + e.getMessage());
-      e.printStackTrace();
+      log.error("Failed to get data file for taskId  " + taskId, e);
       return "redirect:/downloadtasks";
     }
   }
@@ -403,7 +404,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
           if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE))
+              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+              || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX))
             retry = false;
 		}
 	}
@@ -428,7 +430,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
         if (downloadTask.getDestinationType() != null
             && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-                || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
+                || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+                || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
            retry = false;
 	} else {
 		//No retry button if download is in progress or has no failed or cancelled items
@@ -449,6 +452,15 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
+	}
+
+	//If status is RECEIVED but staging has begun, or status is RECEIVED in between the time when
+	//staging completed and  2nd hop has not begun, then display it as ACTIVE
+	if(downloadTask.getTaskStatus() == HpcCollectionDownloadTaskStatus.RECEIVED) {
+		if(!downloadTask.getStagingInProgressItems().isEmpty()
+				|| !downloadTask.getInProgressItems().isEmpty()) {
+			downloadTask.setTaskStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
+		}
 	}
 
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
@@ -485,7 +497,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
       if (downloadTask.getDestinationType() != null
           && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
+              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+              || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
         retry = false;
 	} else {
 		//No retry button if download is in progress or has no failed or cancelled items
@@ -526,7 +539,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		{
             if (downloadTask.getDestinationType() != null
                 && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-                    || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)))
+                    || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+                    || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
                retry = false;
 		} else {
 			//No retry button if download is in progress or has no failed or cancelled items
