@@ -49,6 +49,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
@@ -1450,20 +1451,24 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				throw new HpcException("Invalid archive link location in registration request for: " + path,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			if (StringUtils.isEmpty(registrationRequest.getS3ArchiveConfigurationId())) {
-				throw new HpcException("Empty s3ArchiveConfigurationId in registration request for: " + path,
-						HpcErrorType.INVALID_REQUEST_INPUT);
-			}
 
-			String s3ArchiveConfigurationFileContainerId = getS3ArchiveConfiguration(
-					registrationRequest.getS3ArchiveConfigurationId()).getBaseArchiveDestination().getFileLocation()
-					.getFileContainerId();
-			if (!registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId()
-					.equals(s3ArchiveConfigurationFileContainerId)) {
-				throw new HpcException("The archive link source bucket ["
-						+ registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId()
-						+ "] doesn't match the s3ArchiveConfiguration bucket [" + s3ArchiveConfigurationFileContainerId
-						+ "]", HpcErrorType.INVALID_REQUEST_INPUT);
+			if (getDataManagementConfiguration(findDataManagementConfigurationId(path)).getArchiveDataTransferType()
+					.equals(HpcDataTransferType.S_3)) {
+				if (StringUtils.isEmpty(registrationRequest.getS3ArchiveConfigurationId())) {
+					throw new HpcException("Empty s3ArchiveConfigurationId in registration request for: " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+
+				String s3ArchiveConfigurationFileContainerId = getS3ArchiveConfiguration(
+						registrationRequest.getS3ArchiveConfigurationId()).getBaseArchiveDestination().getFileLocation()
+						.getFileContainerId();
+				if (!registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId()
+						.equals(s3ArchiveConfigurationFileContainerId)) {
+					throw new HpcException("The archive link source bucket ["
+							+ registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId()
+							+ "] doesn't match the s3ArchiveConfiguration bucket ["
+							+ s3ArchiveConfigurationFileContainerId + "]", HpcErrorType.INVALID_REQUEST_INPUT);
+				}
 			}
 		}
 	}

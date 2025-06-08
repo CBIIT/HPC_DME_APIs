@@ -53,7 +53,7 @@ public interface HpcDataManagementRestService {
 	 * @return The REST service response.
 	 */
 	@GET
-	@Path("/pathRefType/{path:.*}")
+	@Path("/pathType/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response interrogatePathRef(@PathParam("path") String path);
 
