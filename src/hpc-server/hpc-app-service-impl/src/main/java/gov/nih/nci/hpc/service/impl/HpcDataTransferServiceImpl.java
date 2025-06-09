@@ -790,11 +790,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		dataTransferProxies.get(dataTransferType)
-				.deleteDataObject(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-						fileLocation,
-						dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
-								s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination());
+		dataTransferProxies.get(dataTransferType).deleteDataObject(
+				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation,
+				dataManagementConfigurationLocator
+						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
+						.getBaseArchiveDestination());
 	}
 
 	@Override
@@ -4211,7 +4211,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					// Stopping the transfer thread.
 					if (completableFuture != null) {
 						boolean cancelStatus = completableFuture.cancel(true);
-						logger.info("download task: {} - transfer cancellation result: ", downloadTask.getId(),
+						logger.info("download task: {} - transfer cancellation result: {}", downloadTask.getId(),
 								cancelStatus);
 					}
 				}
