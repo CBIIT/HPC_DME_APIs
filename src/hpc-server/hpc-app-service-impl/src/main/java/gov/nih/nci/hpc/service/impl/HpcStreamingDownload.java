@@ -168,7 +168,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 				// Stopping the transfer thread.
 				if (completableFuture != null) {
 					boolean cancelStatus = completableFuture.cancel(true);
-					logger.info("download task: {} - transfer cancellation result: ", downloadTask.getId(),
+					logger.info("download task: {} - transfer cancellation result: {}", downloadTask.getId(),
 							cancelStatus);
 				}
 			}
