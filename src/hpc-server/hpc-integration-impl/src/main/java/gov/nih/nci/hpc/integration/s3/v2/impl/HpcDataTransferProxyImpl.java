@@ -75,6 +75,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ExpirationStatus;
 import software.amazon.awssdk.services.s3.model.GetBucketLifecycleConfigurationResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GlacierJobParameters;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.LifecycleRule;
@@ -84,7 +85,9 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreObjectRequest;
+import software.amazon.awssdk.services.s3.model.RestoreRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.Tier;
 import software.amazon.awssdk.services.s3.model.Transition;
 import software.amazon.awssdk.services.s3.model.TransitionStorageClass;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
@@ -123,10 +126,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Value("${hpc.integration.s3.tieringEndpoint}")
 	private String tieringEndpoint = null;
 
-	// TODO: clean up from config. Can't set this value in V2 SDK
 	// Number of days the restored data object will be available.
-	// @Value("${hpc.integration.s3.restoreNumDays}")
-	// private int restoreNumDays = 2;
+	@Value("${hpc.integration.s3.restoreNumDays}")
+	private int restoreNumDays = 2;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -478,14 +480,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	public void restoreDataObject(Object authenticatedToken, HpcFileLocation archiveLocation) throws HpcException {
 		try {
 			// Create and submit a request to restore an object from Glacier.
-			RestoreObjectRequest restoreRequest = RestoreObjectRequest.builder()
-					.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId()).build();
-			s3Connection.getClient(authenticatedToken).restoreObject(restoreRequest).join();
+			RestoreRequest restoreRequest = RestoreRequest.builder().days(restoreNumDays)
+					.glacierJobParameters(GlacierJobParameters.builder().tier(Tier.STANDARD).build()).build();
 
-			// Eran: code review notes
-			// There is no option to set the 'expirationInDays' in V2, like V1 supported.
-			// Unclear what the value is
-			// need to clean up restoreNumDays property
+			RestoreObjectRequest restoreObjectRequest = RestoreObjectRequest.builder()
+					.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId())
+					.restoreRequest(restoreRequest).build();
+			s3Connection.getClient(authenticatedToken).restoreObject(restoreObjectRequest).join();
 
 		} catch (CompletionException e) {
 			throw new HpcException(
