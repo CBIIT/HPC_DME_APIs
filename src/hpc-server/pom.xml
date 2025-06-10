@@ -306,7 +306,7 @@
 				<version>3.12.4</version>
 			</dependency>
 			
-			<!-- TODO remove AWS V1 -->
+			<!-- TODO remove AWS V1 dependencies: aws-java-sdk-s3 and aws-java-sdk-secretsmanager -->
 			<dependency>
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-s3</artifactId>
