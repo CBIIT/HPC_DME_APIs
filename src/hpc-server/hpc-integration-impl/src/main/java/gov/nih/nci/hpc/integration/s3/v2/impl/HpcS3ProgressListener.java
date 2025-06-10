@@ -114,7 +114,7 @@ public class HpcS3ProgressListener implements TransferListener {
 	public void transferComplete(TransferListener.Context.TransferComplete context) {
 		bytesTransferred.getAndSet(context.progressSnapshot().transferredBytes());
 
-		logger.info("S3 transfer [{}] completed. {} bytes transferred", transferSourceDestination, bytesTransferred);
+		logger.info("S3 transfer [{}] completed. {} bytes transferred", transferSourceDestination, bytesTransferred.get());
 		progressListener.transferCompleted(bytesTransferred.get());
 	}
 
