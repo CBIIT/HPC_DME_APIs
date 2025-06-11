@@ -58,6 +58,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
+import gov.nih.nci.hpc.web.model.HpcPath;
 import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -533,6 +534,40 @@ public class HpcClientUtil {
       throw new HpcWebException("Failed to get data file for path " + path + ": " + e.getMessage());
     }
   }
+
+	public static HpcPath getPathType(String token, String hpcPathTypeURL, String pathName, String hpcCertPath,
+			String hpcCertPassword) {
+		try {
+			final String url2Apply = UriComponentsBuilder.fromHttpUrl(hpcPathTypeURL)
+					.path(pathName).build().encode().toUri().toURL().toExternalForm();
+			WebClient client = HpcClientUtil.getWebClient(url2Apply, hpcCertPath,
+					hpcCertPassword);
+
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.get();
+
+			if (restResponse == null || restResponse.getStatus() != 200)
+				return null;
+			MappingJsonFactory factory = new MappingJsonFactory();
+			JsonParser parser;
+			try {
+				parser = factory.createParser((InputStream) restResponse.getEntity());
+			} catch (IllegalStateException | IOException e) {
+				logger.error("Failed to get Path Type: ", e);
+				throw new HpcWebException("Failed to get Path Type: " + e.getMessage());
+			}
+			try {
+				return parser.readValueAs(HpcPath.class);
+			} catch (Exception e) {
+				logger.error("Failed to get bookmarks: ", e);
+				throw new HpcWebException(e.getMessage());
+			}
+		} catch (Exception e) {
+			logger.error("Failed to get Path Type for path " + pathName + ": ", e);
+			throw new HpcWebException("Failed to get Path Type for path " + pathName + ": " + e.getMessage());
+		}
+	}
 
   public static HpcDataObjectDTO getDatafilesWithoutAttributes(String token, String hpcDatafileURL, String path,
 		    boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
