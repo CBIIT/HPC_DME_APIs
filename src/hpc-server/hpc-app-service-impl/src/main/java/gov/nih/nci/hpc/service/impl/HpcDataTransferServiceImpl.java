@@ -37,6 +37,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -789,11 +790,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		dataTransferProxies.get(dataTransferType)
-				.deleteDataObject(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-						fileLocation,
-						dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
-								s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination());
+		dataTransferProxies.get(dataTransferType).deleteDataObject(
+				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId), fileLocation,
+				dataManagementConfigurationLocator
+						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
+						.getBaseArchiveDestination());
 	}
 
 	@Override
@@ -2052,7 +2053,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// If pageSize is specified, replace the default defined
 		int finalPageSize = pagination.getPageSize();
 		if (pageSize != null && pageSize != 0) {
-			finalPageSize = pageSize.intValue();
+			finalPageSize = pageSize;
 		}
 		List<HpcUserDownloadRequest> downloadResults = null;
 		if (doc == null) {
@@ -3969,6 +3970,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Indicator whether task has removed / cancelled
 		private boolean taskCancelled = false;
 
+		// The CompletableFuture instance that is executing the transfer. Used to cancel
+		// if needed.
+		private CompletableFuture<?> completableFuture = null;
+
 		// ---------------------------------------------------------------------//
 		// Constructors
 		// ---------------------------------------------------------------------//
@@ -4200,14 +4205,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			try {
 				if (!updateDataObjectDownloadTask(downloadTask, bytesTransferred)) {
 					// The task was cancelled / removed from the DB. Stop 1st hop download thread.
+					logger.info("download task: {} - Task cancelled", downloadTask.getId());
 					taskCancelled = true;
-					logger.info("Interrupting thread due to task cancellation");
-					Thread.currentThread().interrupt();
+
+					// Stopping the transfer thread.
+					if (completableFuture != null) {
+						boolean cancelStatus = completableFuture.cancel(true);
+						logger.info("download task: {} - transfer cancellation result: {}", downloadTask.getId(),
+								cancelStatus);
+					}
 				}
 
 			} catch (HpcException e) {
 				logger.error("Failed to update 1st hop download task progress", e);
 			}
+		}
+
+		@Override
+		public void setCompletableFuture(CompletableFuture<?> completableFuture) {
+			this.completableFuture = completableFuture;
 		}
 
 		// ---------------------------------------------------------------------//

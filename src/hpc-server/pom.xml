@@ -39,6 +39,8 @@
 		<spring.retry.version>1.3.0</spring.retry.version>
         <aspectj.version>1.9.6</aspectj.version>
 		<amazon-aws.version>1.12.420</amazon-aws.version>
+		<amazon-aws-v2.version>2.31.59</amazon-aws-v2.version>
+		<amazon-aws-crt.version>0.38.4</amazon-aws-crt.version>
 		<jackson.version>2.18.1</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.12.5</jjwt.version>
@@ -303,6 +305,8 @@
 				<artifactId>mockito-core</artifactId>
 				<version>3.12.4</version>
 			</dependency>
+			
+			<!-- TODO remove AWS V1 dependencies: aws-java-sdk-s3 and aws-java-sdk-secretsmanager -->
 			<dependency>
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-s3</artifactId>
@@ -312,6 +316,20 @@
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-secretsmanager</artifactId>
 				<version>${amazon-aws.version}</version>
+			</dependency>
+			<!-- TODO remove AWS V1 -->
+			
+			<dependency>
+          		<groupId>software.amazon.awssdk</groupId>
+          		<artifactId>bom</artifactId>
+          		<version>${amazon-aws-v2.version}</version>
+          		<type>pom</type>
+          		<scope>import</scope>
+        	</dependency>
+        	<dependency>
+    			<groupId>software.amazon.awssdk.crt</groupId>
+    			<artifactId>aws-crt</artifactId>
+   				<version>${amazon-aws-crt.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
