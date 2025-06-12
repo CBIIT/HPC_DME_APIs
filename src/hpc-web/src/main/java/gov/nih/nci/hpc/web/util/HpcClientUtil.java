@@ -560,7 +560,7 @@ public class HpcClientUtil {
 			try {
 				return parser.readValueAs(HpcPath.class);
 			} catch (Exception e) {
-				logger.error("Failed to get bookmarks: ", e);
+				logger.error("Failed to get Path Type: ", e);
 				throw new HpcWebException(e.getMessage());
 			}
 		} catch (Exception e) {
