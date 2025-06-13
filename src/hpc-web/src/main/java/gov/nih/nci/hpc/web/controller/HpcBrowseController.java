@@ -49,12 +49,14 @@ import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathType;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.HpcPath;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -81,8 +83,8 @@ public class HpcBrowseController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
 
-	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
-	private String dataObjectURL;
+	@Value("${gov.nih.nci.hpc.server.pathType}")
+	private String pathTypeURL;
 	
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
@@ -701,22 +703,26 @@ public class HpcBrowseController extends AbstractHpcController {
    */
 	private boolean isPathForDataFile(String argPath, String argAuthToken) {
 
-    String theItemPath = argPath.trim();
-    try {
-      //Try getting the data object
-    	HpcDataObjectDTO datafile = HpcClientUtil.getDatafilesWithoutAttributes(argAuthToken, this.dataObjectURL, theItemPath, false, false, 
-		  sslCertPath, sslCertPassword);
-	  if (datafile != null && datafile.getMetadataEntries() != null) {
-		  return true;
-	  }
-      
-    } catch (HpcWebException e) {
-    	//This could be collection or path doesn't exist
-    	return false;
-    }
-    return false;
-  }
-
+		String theItemPath = argPath.trim();
+		try {
+			HpcPath pathType = HpcClientUtil.getPathType(argAuthToken, this.pathTypeURL, theItemPath, sslCertPath,
+					sslCertPassword);
+			if (pathType != null && pathType.getElementType() != null) {
+				if (pathType.getElementType().equals(HpcPathType.DATAOBJECT.toString())) {
+					return true;
+				} else if (pathType.getElementType().equals(HpcPathType.COLLECTION.toString())) {
+					return false;
+				} else {
+					logger.warn("Path " + theItemPath + " is neither a collection nor a data file.");
+					return false;
+				}
+			}
+		} catch (HpcWebException e) {
+			// The path does not exist
+			return false;
+		}
+		return false;
+	}
 
 	private HpcBrowserEntry trimPath(HpcBrowserEntry entry, String parentPath) {
 		for (HpcBrowserEntry child : entry.getChildren()) {
