@@ -558,30 +558,32 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (headObjectResponse.storageClass() != null) {
 				objectMetadata.setDeepArchiveStatus(
 						HpcDeepArchiveStatus.fromValue(headObjectResponse.storageClassAsString()));
+				logger.info("[S3] Deep Archive Status [{}] - {}", s3ObjectName, objectMetadata.getDeepArchiveStatus());
 			}
+
 			// Check the restoration status of the object.
 			String restoreHeader = headObjectResponse.restore();
-			logger.info("[S3] Restore header [{}] - {}", s3ObjectName, restoreHeader);
+			logger.info("[S3] Restore Header [{}] - {}", s3ObjectName, restoreHeader);
 
-			if (StringUtils.isEmpty(restoreHeader) || !restoreHeader.contains("x-amz-restore")) {
-				// the x-amz-restore header is not present on the response from the service (eg.
-				// no restore request has been received).
-				// Failed.
+			if (StringUtils.isEmpty(restoreHeader)) {
+				// the x-amz-restore header is not present on the response from the service
+				// (e.g. no restore request has been received).
 				objectMetadata.setRestorationStatus("not in progress");
+
 			} else if (restoreHeader.contains("ongoing-request=\"true\"")) {
-				// the x-amz-restore header is present and has a value of true (eg. a restore
-				// operation was received and is currently ongoing).
-				// Ongoing
+				// the x-amz-restore header is present and has a value of true (e.g. a restore
+				// request was received and is currently ongoing).
 				objectMetadata.setRestorationStatus("in progress");
+
 			} else if (restoreHeader.contains("ongoing-request=\"false\"")) {
-				// the x-amz-restore header is present and has a value of false (eg the object
+				// the x-amz-restore header is present and has a value of false (e.g the object
 				// has been restored and can currently be read from S3).
-				// Completed. Success.
 				objectMetadata.setRestorationStatus("success");
 			}
+			logger.info("[S3] Restoration Status [{}] - {}", s3ObjectName, objectMetadata.getRestorationStatus());
 
-			logger.info("[S3] eTag [{}] - {}", s3ObjectName, headObjectResponse.eTag());
 			objectMetadata.setChecksum(headObjectResponse.eTag());
+			logger.info("[S3] Checksum [{}] - {}", s3ObjectName, objectMetadata.getChecksum());
 
 		} catch (CompletionException e) {
 			throw new HpcException(
