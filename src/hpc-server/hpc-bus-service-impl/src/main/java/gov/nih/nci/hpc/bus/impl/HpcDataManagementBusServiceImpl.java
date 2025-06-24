@@ -785,6 +785,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
 
+
+		//Hard delete is permitted only for system administrators
+		if( !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+			if(force) {
+				String message = "Hard delete is permitted for system administrators only";
+				logger.error(message);
+				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
+			}
+		}
+
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
 		// 1. The collection is less than 90 days old
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
@@ -1828,6 +1838,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw new HpcException(
 						"Data object can only be deleted by its owner. Your permission: " + permission.value(),
 						HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+			}
+		}
+
+
+		//Hard delete is permitted only for system administrators
+		if( !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+			if(!registeredLink && force) {
+				String message = "Hard delete is permitted for system administrators only";
+				logger.error(message);
+				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
 			}
 		}
 
