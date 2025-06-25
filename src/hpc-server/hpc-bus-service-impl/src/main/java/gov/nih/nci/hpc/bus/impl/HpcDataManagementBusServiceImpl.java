@@ -785,6 +785,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
 
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 
 		//Hard delete is permitted only for system administrators
 		if( !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
@@ -797,7 +798,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
 		// 1. The collection is less than 90 days old
-		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
