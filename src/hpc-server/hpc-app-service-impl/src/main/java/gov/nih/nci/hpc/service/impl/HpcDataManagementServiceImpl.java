@@ -1291,6 +1291,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
+	public String getOriginalPathForDeletedDataObject(String path) {
+	  
+	    return StringUtils.substringAfter(path, deletedBasePath);
+    	    
+	}
+	
+	@Override
 	public void addBulkUpdateAuditRecord(String userId, HpcCompoundMetadataQuery query,
 			HpcCompoundMetadataQueryType queryType, List<HpcMetadataEntry> metadataEntries) {
 		// Input validation.
