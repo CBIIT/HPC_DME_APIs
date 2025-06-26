@@ -647,11 +647,16 @@
 				cell6.align="center";
 				
 				if (shareWithName.checked == true) {
-					cell0.innerHTML = '<label id="permissionName' + (rows)
-							+ '">' + (userNames[i]) + '</label>'
-							+ '<input type="hidden" name="permissionName'
-							+ (rows) + '" id="permissionName'
-							+ (rows) + '" value="' + (userNames[i]) + '" />';
+					var label = document.createElement("label");
+					label.id = "permissionName" + rows;
+					label.appendChild(document.createTextNode(userNames[i]));
+					var hiddenInput = document.createElement("input");
+					hiddenInput.type = "hidden";
+					hiddenInput.name = "permissionName" + rows;
+					hiddenInput.id = "permissionName" + rows;
+					hiddenInput.value = userNames[i];
+					cell0.appendChild(label);
+					cell0.appendChild(hiddenInput);
 					cell1.innerHTML = '<label id="permissionType' + (rows)
 							+ '">USER</label>'
 							+ '<input type="hidden" name="permissionType'
