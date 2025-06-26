@@ -411,14 +411,10 @@ cursor: pointer;
 								</h2>
 								
 							</div>
-							<div th:if="${error != null}">
-								<div class="alert alert-error">
-									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
-								</div>
-							</div>
+
 								<!--panel-body start-->
 								<div class="panel-body" id="panel-body">
+
 									<div class="modal fade" id="bookmarksTarget" tabindex="-1" role="dialog"
 										aria-labelledby="bookmarksLabel" aria-hidden="true">
 										<div class="modal-dialog">
@@ -436,6 +432,14 @@ cursor: pointer;
 										<!-- /.modal-dialog -->
 									</div>
 									<div class="row"><div id="left" class="grid">
+
+									  <div th:if="${error != null}">
+									    <div class="alert alert-danger">
+										  <a class="close" data-dismiss="alert">×</a> <label
+										  for="${error}" th:text="${error}"></label>
+									    </div>
+									  </div>
+
 									<div class="form-group">
 										<div id="tree1"></div>
                     <div id="bookmarksContent">
