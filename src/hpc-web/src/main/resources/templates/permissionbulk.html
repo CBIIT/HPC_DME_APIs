@@ -740,11 +740,16 @@
 				cell6.align="center";
 				
 				if (shareWithGroup.checked == true) {
-					cell0.innerHTML = '<label id="permissionName' + (rows)
-							+ '">' + (groupNames[i]) + '</label>'
-							+ '<input type="hidden" name="permissionName'
-							+ (rows) + '" id="permissionName'
-							+ (rows) + '" value="' + (groupNames[i]) + '" />';
+					var label = document.createElement("label");
+					label.id = "permissionName" + rows;
+					label.textContent = groupNames[i];
+					cell0.appendChild(label);
+					var hiddenInput = document.createElement("input");
+					hiddenInput.type = "hidden";
+					hiddenInput.name = "permissionName" + rows;
+					hiddenInput.id = "permissionName" + rows;
+					hiddenInput.value = groupNames[i];
+					cell0.appendChild(hiddenInput);
 					cell1.innerHTML = '<label id="permissionType' + (rows)
 							+ '">GROUP</label>'
 							+ '<input type="hidden" name="permissionType'
