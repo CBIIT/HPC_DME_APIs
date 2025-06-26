@@ -562,6 +562,14 @@
 		function addPermission() {
 			var groupNames = [];
 			var userNames = [];
+			function escapeHtml(unsafe) {
+				return unsafe
+					.replace(/&/g, "&amp;")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
+					.replace(/"/g, "&quot;")
+					.replace(/'/g, "&#039;");
+			}
 			var table = document.getElementById("permissionsTable");
 			var rows = table.getElementsByTagName("tbody")[0]
 					.getElementsByTagName("tr").length;
@@ -647,11 +655,16 @@
 				cell6.align="center";
 				
 				if (shareWithName.checked == true) {
-					cell0.innerHTML = '<label id="permissionName' + (rows)
-							+ '">' + (userNames[i]) + '</label>'
-							+ '<input type="hidden" name="permissionName'
-							+ (rows) + '" id="permissionName'
-							+ (rows) + '" value="' + (userNames[i]) + '" />';
+					var label = document.createElement("label");
+					label.id = "permissionName" + rows;
+					label.appendChild(document.createTextNode(userNames[i]));
+					var hiddenInput = document.createElement("input");
+					hiddenInput.type = "hidden";
+					hiddenInput.name = "permissionName" + rows;
+					hiddenInput.id = "permissionName" + rows;
+					hiddenInput.value = userNames[i];
+					cell0.appendChild(label);
+					cell0.appendChild(hiddenInput);
 					cell1.innerHTML = '<label id="permissionType' + (rows)
 							+ '">USER</label>'
 							+ '<input type="hidden" name="permissionType'
@@ -673,7 +686,7 @@
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + userNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(userNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionWrite.checked == true)
 				{
@@ -686,7 +699,7 @@
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + userNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(userNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionRead.checked == true)
 				{
@@ -699,7 +712,7 @@
 						+ '" value="read" checked="checked" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + userNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(userNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionNone.checked == true)
 				{
@@ -712,7 +725,7 @@
 						+ '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" checked="checked" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + userNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(userNames[i]) + '\')"></i>';
 				}
 	
 			}
@@ -740,11 +753,16 @@
 				cell6.align="center";
 				
 				if (shareWithGroup.checked == true) {
-					cell0.innerHTML = '<label id="permissionName' + (rows)
-							+ '">' + (groupNames[i]) + '</label>'
-							+ '<input type="hidden" name="permissionName'
-							+ (rows) + '" id="permissionName'
-							+ (rows) + '" value="' + (groupNames[i]) + '" />';
+					var label = document.createElement("label");
+					label.id = "permissionName" + rows;
+					label.textContent = groupNames[i];
+					cell0.appendChild(label);
+					var hiddenInput = document.createElement("input");
+					hiddenInput.type = "hidden";
+					hiddenInput.name = "permissionName" + rows;
+					hiddenInput.id = "permissionName" + rows;
+					hiddenInput.value = groupNames[i];
+					cell0.appendChild(hiddenInput);
 					cell1.innerHTML = '<label id="permissionType' + (rows)
 							+ '">GROUP</label>'
 							+ '<input type="hidden" name="permissionType'
@@ -767,7 +785,7 @@
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionWrite.checked == true)
 				{
@@ -780,7 +798,7 @@
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionRead.checked == true)
 				{
@@ -793,7 +811,7 @@
 						+ '" value="read" checked="checked" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionNone.checked == true)
 				{
@@ -806,7 +824,7 @@
 						+ '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" checked="checked" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 	
 			}			
