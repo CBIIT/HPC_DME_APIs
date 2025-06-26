@@ -485,7 +485,7 @@ public class HpcClientUtil {
       }
     } catch (Exception e) {
       logger.error("Failed to get collection " + path, e);
-      throw new HpcWebException("Failed to get collection " + path + ": " + e.getMessage());
+      throw new HpcWebException("Failed to get collection " + path);
     }
   }
   
