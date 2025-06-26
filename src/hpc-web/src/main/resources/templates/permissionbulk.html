@@ -785,7 +785,7 @@
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionWrite.checked == true)
 				{
@@ -798,7 +798,7 @@
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionRead.checked == true)
 				{
@@ -811,7 +811,7 @@
 						+ '" value="read" checked="checked" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 				else if (addpermissionNone.checked == true)
 				{
@@ -824,7 +824,7 @@
 						+ '" value="read" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" checked="checked" />';
-					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + groupNames[i] + '\')"></i>';
+					cell6.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true" onClick="deleteUser(\'' + escapeHtml(groupNames[i]) + '\')"></i>';
 				}
 	
 			}			
