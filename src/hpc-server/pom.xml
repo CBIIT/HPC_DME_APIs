@@ -55,6 +55,7 @@
 		<poi.version>4.1.2</poi.version>
 		<box.version>4.8.0</box.version>
 		<bucket4j.version>8.14.0</bucket4j.version>
+		<trino.version>476</trino.version>
 	</properties>
 
 	<modules>
@@ -491,6 +492,11 @@
 			  <groupId>com.bucket4j</groupId>
 			  <artifactId>bucket4j_jdk17-core</artifactId>
 			  <version>${bucket4j.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>io.trino</groupId>
+			    <artifactId>trino-jdbc</artifactId>
+			    <version>${trino.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
