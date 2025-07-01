@@ -437,6 +437,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			cal.setTime(rs.getTimestamp("uploaded"));
 			metadataEntry.setCreatedAt(cal);
 		}
+		Boolean softlink = rs.getBoolean("softlink");
+		if(softlink != null) {
+		    metadataEntry.setIsSoftlink(softlink);
+		}
 		return metadataEntry;
 	};
 	private RowMapper<HpcDataObject> dataObjectRowMapper = (rs, rowNum) -> {
