@@ -638,6 +638,8 @@ public class HpcBrowseController extends AbstractHpcController {
 				selectedEntry.setPartial(false);
 				
 				selectedEntry.setCollection(true);
+				selectedEntry.setSoftlink(collection.getIsSoftlink());
+				
 				for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
 					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
 					listChildEntry.setCollection(true);
@@ -659,6 +661,7 @@ public class HpcBrowseController extends AbstractHpcController {
 						emptyEntry.setName("");
 						listChildEntry.getChildren().add(emptyEntry);
 					}
+					listChildEntry.setSoftlink(listEntry.getIsSoftlink());
 					selectedEntry.getChildren().add(listChildEntry);
 				}
 				for (HpcCollectionListingEntry listEntry : collection.getDataObjects()) {
@@ -673,6 +676,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					if(listEntry.getCreatedAt() != null)
 					  listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
 					listChildEntry.setPopulated(true);
+					listChildEntry.setSoftlink(listEntry.getIsSoftlink());
 					selectedEntry.getChildren().add(listChildEntry);
 				}
 				if (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty()) {
