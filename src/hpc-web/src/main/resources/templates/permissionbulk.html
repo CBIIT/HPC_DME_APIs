@@ -244,7 +244,7 @@
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
-																		<i class="fa fa-trash-o" aria-hidden="true" th:onclick="'deleteUser(\''+${permission.getName()}+'\')'"></i>
+																		<i class="fa fa-trash-o" aria-hidden="true" th:data-user="${permission.getName()}" th:onclick="deleteUser(this.getAttribute('data-user'))"></i>
 																</td>
 															</tr>
 														</tbody>
