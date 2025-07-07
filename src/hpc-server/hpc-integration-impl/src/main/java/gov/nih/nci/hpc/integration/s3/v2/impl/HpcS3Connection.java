@@ -29,13 +29,12 @@ import gov.nih.nci.hpc.exception.HpcException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.crt.Log;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
-import software.amazon.awssdk.services.s3.crt.S3CrtHttpConfiguration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
-import software.amazon.awssdk.crt.Log;
 
 /**
  * HPC S3 Connection.
@@ -260,7 +259,7 @@ public class HpcS3Connection {
 
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
-					.httpConfiguration(S3CrtHttpConfiguration.builder().trustAllCertificatesEnabled(true).build())
+					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true))
 					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
 					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(false)
 					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
@@ -378,7 +377,7 @@ public class HpcS3Connection {
 
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
-					.httpConfiguration(S3CrtHttpConfiguration.builder().trustAllCertificatesEnabled(true).build())
+					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true))
 					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(true)
 					.thresholdInBytes(multipartUploadThreshold).build();
 
