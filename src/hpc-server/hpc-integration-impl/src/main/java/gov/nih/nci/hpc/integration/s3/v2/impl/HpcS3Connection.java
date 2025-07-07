@@ -69,7 +69,7 @@ public class HpcS3Connection {
 	private Long multipartUploadThreshold = null;
 
 	// The CRT log file (Optional).
-	@Value("${hpc.integration.s3.crtLogFile:#{null}")
+	@Value("${hpc.integration.s3.crtLogFile:#{null}}")
 	private String crtLogFile = null;
 
 	// The executor service to be used by AWSTransferManager
