@@ -10,10 +10,8 @@
  */
 package gov.nih.nci.hpc.integration.s3.v2.impl;
 
-import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyStore;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -32,9 +30,6 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.crt.Log;
-import software.amazon.awssdk.crt.io.TlsConnectionOptions;
-import software.amazon.awssdk.crt.io.TlsContext;
-import software.amazon.awssdk.crt.io.TlsContextOptions;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -77,19 +72,12 @@ public class HpcS3Connection {
 	@Value("${hpc.integration.s3.crtLogFile:#{null}}")
 	private String crtLogFile = null;
 
+	// AWS CRT to trust all certs config.
+	@Value("${hpc.integration.s3.trustAllCerts:false}")
+	private Boolean trustAllCerts = null;
+
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
-
-	// The TLS connection options to use DME Keystore.
-	TlsConnectionOptions tlsConnectionOptions = null;
-
-	// The DME keystore path.
-	@Value("${hpc.integration.s3.keysorePath}")
-	private String keystorePath = null;
-
-	// The DME keystore password.
-	@Value("${hpc.integration.s3.keysorePassword}")
-	private String keystorePassword = null;
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -275,7 +263,7 @@ public class HpcS3Connection {
 
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
-					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true))
+					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(trustAllCerts))
 					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
 					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(false)
 					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
@@ -393,7 +381,6 @@ public class HpcS3Connection {
 
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
-					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true))
 					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(true)
 					.thresholdInBytes(multipartUploadThreshold).build();
 
@@ -410,40 +397,5 @@ public class HpcS3Connection {
 			throw new HpcException("[S3] Failed to authenticate S3 in region " + region + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
-	}
-
-	/**
-	 * Get TLS connection options - to use the DME Keystore.
-	 *
-	 * @param accessKey The AWS account access key.
-	 * @param secretKey The AWS account secret key.
-	 * @param region    The AWS account region.
-	 * @return TransferManager
-	 * @throws HpcException if authentication failed
-	 */
-	private TlsConnectionOptions getTlsConnectionOptions() throws HpcException {
-		if (tlsConnectionOptions == null) {
-			// Load your JKS keystore.
-			KeyStore keystore = null;
-			try {
-				keystore = KeyStore.getInstance("JKS");
-				keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
-
-			} catch (Exception e) {
-				throw new HpcException("[S3] Failed to load DME keystore: " + e.getMessage(),
-						HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
-			}
-
-			// Create TlsContextOptions with your JKS keystore details
-			TlsContextOptions tlsContextOptions = TlsContextOptions.createWithMtlsJavaKeystore(keystore, "",
-					keystorePassword);
-
-			// Create a TlsContext from the options
-			TlsContext tlsContext = new TlsContext(tlsContextOptions);
-
-			// Create TlsConnectionOptions
-			tlsConnectionOptions = new TlsConnectionOptions(tlsContext);
-		}
-		return tlsConnectionOptions;
 	}
 }
