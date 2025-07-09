@@ -129,7 +129,6 @@
   			<groupId>software.amazon.awssdk.crt</groupId>
   			<artifactId>aws-crt</artifactId>
 		</dependency>
-		
 		<dependency>
     		<groupId>com.google.apis</groupId>
     		<artifactId>google-api-services-drive</artifactId>
