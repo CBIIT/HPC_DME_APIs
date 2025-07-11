@@ -21,6 +21,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1291,7 +1292,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public String getOriginalPathForDeletedDataObject(String path) {
+	public String getOriginalPathForDeletedDataObject(String path, HpcFileLocation archiveLocation) throws HpcException {
+	  
+	    // Check if it is a deleted archive record
+	    if (path == null || !path.startsWith(deletedBasePath)) {
+	        throw new HpcException("The deleted path is not from DME_Deleted_Archive: " + path, HpcErrorType.DATA_MANAGEMENT_ERROR);
+	    }
+	    
+	    // Get original file name from the archive file id
+	    String originalFileName = StringUtils.substringAfterLast(archiveLocation.getFileId(), "/");
+	    
+	    // Check if the record has a timestamp appended to the end by comparing with the original file name
+	    if (!path.endsWith(originalFileName)) {
+	      
+	        // Make sure the timestamp is what we are removing
+	        String timestampString = StringUtils.substringAfterLast(path, "_");
+	        
+	        try {
+	          String dateFormat = "yyyyMMddHHmmss";
+	          DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+	          LocalDateTime.parse(timestampString, formatter);
+	          path = StringUtils.substringBeforeLast(path, "_");
+	          
+	        } catch (DateTimeParseException e) {
+	          throw new HpcException("The original path can't be determined for deleted file: " + path, HpcErrorType.DATA_MANAGEMENT_ERROR);
+            }
+	    }
 	  
 	    return StringUtils.substringAfter(path, deletedBasePath);
     	    
