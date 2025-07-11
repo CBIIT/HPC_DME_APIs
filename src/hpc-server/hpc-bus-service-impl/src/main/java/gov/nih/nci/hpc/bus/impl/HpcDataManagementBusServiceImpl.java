@@ -1848,7 +1848,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 
-		//Hard delete is permitted only for system administrators
+		// Hard delete is permitted for system administrators and system accounts
 		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
 		    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
 			if(!registeredLink && force) {
