@@ -1849,7 +1849,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 
 		//Hard delete is permitted only for system administrators
-		if( !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
+		    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
 			if(!registeredLink && force) {
 				String message = "Hard delete is permitted for system administrators only";
 				logger.error(message);
@@ -1955,6 +1956,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				? HpcAuditRequestType.DELETE_DATA_OBJECT
 				: HpcAuditRequestType.STORAGE_RECOVERY;
 		String userId = storageRecoveryConfiguration == null ? null : "storage-recovery-task";
+		userId = userId == null && invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) ? "remove-deleted-dataobjects-task" : userId;
 		dataManagementService.addAuditRecord(path, auditRequestType, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
 				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), userId,
