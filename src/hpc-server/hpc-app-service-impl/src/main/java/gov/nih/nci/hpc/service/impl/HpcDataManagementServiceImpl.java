@@ -1293,6 +1293,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public String getOriginalPathForDeletedDataObject(String path, HpcFileLocation archiveLocation) throws HpcException {
+	    // Validate archiveLocation is not null
+	    if (archiveLocation == null) {
+	        throw new HpcException("archiveLocation is null. Cannot determine the original path for the deleted data object.", HpcErrorType.DATA_MANAGEMENT_ERROR);
+	    }
 	  
 	    // Check if it is a deleted archive record
 	    if (path == null || !path.startsWith(deletedBasePath)) {
