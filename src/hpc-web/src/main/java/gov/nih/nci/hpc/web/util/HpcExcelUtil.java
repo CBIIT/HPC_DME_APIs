@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.format.CellDateFormatter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -136,8 +136,8 @@ public class HpcExcelUtil {
 				if(currentCell.getCellType().equals(CellType.NUMERIC))
 				{
 					double dv = currentCell.getNumericCellValue();
-					if (HSSFDateUtil.isCellDateFormatted(currentCell)) {
-					    Date date = HSSFDateUtil.getJavaDate(dv);
+					if (DateUtil.isCellDateFormatted(currentCell)) {
+					    Date date = DateUtil.getJavaDate(dv);
 					    String df = currentCell.getCellStyle().getDataFormatString();
 					    String strValue = new CellDateFormatter(df).format(date);
 					    rowMetadata.put(attrName, strValue);
