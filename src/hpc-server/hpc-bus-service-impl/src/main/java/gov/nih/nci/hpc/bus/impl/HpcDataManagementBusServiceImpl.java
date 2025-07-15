@@ -419,6 +419,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (collection == null) {
 			return null;
 		}
+		collection.setIsSoftlink(!StringUtils.isEmpty(metadata.getLinkSourcePath()));
 
 		List<Integer> ids = new ArrayList<>();
 		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
@@ -441,6 +442,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					 * subCollection.setDataSize(Long.parseLong(collectionSize)); }
 					 */
 					subCollection.setCreatedAt(entry.getCreatedAt());
+					subCollection.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 			for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
@@ -448,6 +450,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				if (entry != null) {
 					dataObject.setDataSize(entry.getDataSize());
 					dataObject.setCreatedAt(entry.getCreatedAt());
+					dataObject.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 		}
@@ -475,6 +478,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (collection == null) {
 			return null;
 		}
+		collection.setIsSoftlink(!StringUtils.isEmpty(metadata.getLinkSourcePath()));
 
 		List<Integer> ids = new ArrayList<>();
 		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
@@ -490,6 +494,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				if (entry != null) {
 					subCollection.setDataSize(entry.getDataSize());
 					subCollection.setCreatedAt(entry.getCreatedAt());
+					subCollection.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 			for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
@@ -497,6 +502,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				if (entry != null) {
 					dataObject.setDataSize(entry.getDataSize());
 					dataObject.setCreatedAt(entry.getCreatedAt());
+					dataObject.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 		}
@@ -1842,8 +1848,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 
-		//Hard delete is permitted only for system administrators
-		if( !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+		// Hard delete is permitted for system administrators and system accounts
+		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
+		    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
 			if(!registeredLink && force) {
 				String message = "Hard delete is permitted for system administrators only";
 				logger.error(message);
@@ -1948,7 +1955,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcAuditRequestType auditRequestType = storageRecoveryConfiguration == null
 				? HpcAuditRequestType.DELETE_DATA_OBJECT
 				: HpcAuditRequestType.STORAGE_RECOVERY;
+		// If this is a system task, pass in the userId string to record in the audit table.
 		String userId = storageRecoveryConfiguration == null ? null : "storage-recovery-task";
+		userId = userId == null && invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) ? "remove-deleted-dataobjects-task" : userId;
 		dataManagementService.addAuditRecord(path, auditRequestType, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
 				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), userId,

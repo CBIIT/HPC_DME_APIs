@@ -48,6 +48,9 @@ public class HpcBrowserEntry {
 	@JsonView(Views.Public.class)
 	private String totalRecords;
 	
+	@JsonView(Views.Public.class)
+    private boolean isSoftlink;
+	
 	public String getId() {
 		return id;
 	}
@@ -162,6 +165,14 @@ public class HpcBrowserEntry {
 		this.totalRecords = totalRecords;
 	}
 
+	public boolean isSoftlink() {
+      return isSoftlink;
+    }
+  
+    public void setSoftlink(boolean isSoftlink) {
+        this.isSoftlink = isSoftlink;
+    }
+  
 	@Override
 	public String toString() {
 		return "HpcBrowserEntry{" +
