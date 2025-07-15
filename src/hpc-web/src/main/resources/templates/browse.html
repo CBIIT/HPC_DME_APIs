@@ -92,7 +92,7 @@ app
 	      { field : 'name',
 	    	width: '50%',
 	        displayName : 'File Name',
-	        cellTemplate: '<div class="ui-grid-cell-contents folder" ng-if="row.entity.collection" ng-click="grid.appScope.openFolder(row.entity);" ><i class="fa fa-folder"></i>{{COL_FIELD CUSTOM_FILTERS}}<img class="softlink" ng-if="row.entity.softlink" src="img/link-hyperlink-icon.svg" width="13" title="A link in DME is a pointer to a file, similar to a UNIX soft link."/><div id="processingIcon{{row.entity.id}}" style="display:inline-block; visibility:hidden" class="loader"></div></div><div class="ui-grid-cell-contents file" ng-if="!row.entity.collection" >{{COL_FIELD CUSTOM_FILTERS}}<img class="softlink" ng-if="row.entity.softlink" src="img/link-hyperlink-icon.svg" width="13" title="A link in DME is a pointer to a file, similar to a UNIX soft link."/></div>'
+	        cellTemplate: '<div class="ui-grid-cell-contents folder" ng-if="row.entity.collection" ng-click="grid.appScope.openFolder(row.entity);" ><i class="fa fa-folder"></i>{{COL_FIELD CUSTOM_FILTERS}}<img class="softlink" ng-if="row.entity.softlink" src="img/link-hyperlink-icon.svg" width="13" title="Soft Link"/><div id="processingIcon{{row.entity.id}}" style="display:inline-block; visibility:hidden" class="loader"></div></div><div class="ui-grid-cell-contents file" ng-if="!row.entity.collection" >{{COL_FIELD CUSTOM_FILTERS}}<img class="softlink" ng-if="row.entity.softlink" src="img/link-hyperlink-icon.svg" width="13" title="Soft Link"/></div>'
 	      },
 	      {
 	        field : 'fileSize',
@@ -548,7 +548,7 @@ $(function() {
                     $li.find('.jqtree-title').after('<a href="/hierarchy?basePath='+node.name+'" data-target="#validhierarchyModal" data-toggle="modal" data-placement="right"><img style="width: 25px; height: 25px;" src="img/help.png"></img></a><div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
                 }
                 if(node.softlink) {
-                	$li.find('.jqtree-title').after('<img class="softlink" src="img/link-hyperlink-icon.svg" width="13" title="A link in DME is a pointer to a file, similar to a UNIX soft link."/>');
+                	$li.find('.jqtree-title').after('<img class="softlink" src="img/link-hyperlink-icon.svg" width="13" title="Soft Link"/>');
                 }
                 if(node.populated) {
                     //Open the node if this onCreateLi method was invoked
@@ -567,7 +567,7 @@ $(function() {
             	else {
             		menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode','loadMore']);
             		if(node.softlink) {
-                    	$li.find('.jqtree-title').after('<img class="softlink" src="img/link-hyperlink-icon.svg" width="13" title="A link in DME is a pointer to a file, similar to a UNIX soft link."/>');
+                    	$li.find('.jqtree-title').after('<img class="softlink" src="img/link-hyperlink-icon.svg" width="13" title="Soft Link"/>');
                     }
             	}
             }
