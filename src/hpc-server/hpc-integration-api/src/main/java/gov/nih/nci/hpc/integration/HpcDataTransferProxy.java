@@ -57,6 +57,7 @@ public interface HpcDataTransferProxy {
 	 * 
 	 * @throws HpcException on data transfer system failure.
 	 */
+	// TODO: clean up encryption as no longer supported w/ V2
 	public default Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String urlOrRegion,
 			String encryptionAlgorithm, String encryptionKey) throws HpcException {
 		throw new HpcException("authenticate(dataTransferAccount, String url) not supported",

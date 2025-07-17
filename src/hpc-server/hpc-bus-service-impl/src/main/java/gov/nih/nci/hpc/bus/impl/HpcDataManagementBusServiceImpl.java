@@ -419,6 +419,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (collection == null) {
 			return null;
 		}
+		collection.setIsSoftlink(!StringUtils.isEmpty(metadata.getLinkSourcePath()));
 
 		List<Integer> ids = new ArrayList<>();
 		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
@@ -441,6 +442,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					 * subCollection.setDataSize(Long.parseLong(collectionSize)); }
 					 */
 					subCollection.setCreatedAt(entry.getCreatedAt());
+					subCollection.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 			for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
@@ -448,6 +450,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				if (entry != null) {
 					dataObject.setDataSize(entry.getDataSize());
 					dataObject.setCreatedAt(entry.getCreatedAt());
+					dataObject.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 		}
@@ -475,6 +478,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (collection == null) {
 			return null;
 		}
+		collection.setIsSoftlink(!StringUtils.isEmpty(metadata.getLinkSourcePath()));
 
 		List<Integer> ids = new ArrayList<>();
 		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
@@ -490,6 +494,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				if (entry != null) {
 					subCollection.setDataSize(entry.getDataSize());
 					subCollection.setCreatedAt(entry.getCreatedAt());
+					subCollection.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 			for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
@@ -497,6 +502,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				if (entry != null) {
 					dataObject.setDataSize(entry.getDataSize());
 					dataObject.setCreatedAt(entry.getCreatedAt());
+					dataObject.setIsSoftlink(entry.getIsSoftlink());
 				}
 			}
 		}
@@ -785,9 +791,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
 
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+
+		//Hard delete is permitted only for system administrators
+		if( !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+			if(force) {
+				String message = "Hard delete is permitted for system administrators only";
+				logger.error(message);
+				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
+			}
+		}
+
 		// If the invoker is a GroupAdmin, then ensure that for recursive delete:
 		// 1. The collection is less than 90 days old
-		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if (recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
@@ -1831,6 +1847,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
+
+		// Hard delete is permitted for system administrators and system accounts
+		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
+		    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+			if(!registeredLink && force) {
+				String message = "Hard delete is permitted for system administrators only";
+				logger.error(message);
+				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
+			}
+		}
+
 		// If this is a GroupAdmin, then ensure that:
 		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc
 		// config allows deletion after 90 days.)
@@ -1928,7 +1955,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcAuditRequestType auditRequestType = storageRecoveryConfiguration == null
 				? HpcAuditRequestType.DELETE_DATA_OBJECT
 				: HpcAuditRequestType.STORAGE_RECOVERY;
+		// If this is a system task, pass in the userId string to record in the audit table.
 		String userId = storageRecoveryConfiguration == null ? null : "storage-recovery-task";
+		userId = userId == null && invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) ? "remove-deleted-dataobjects-task" : userId;
 		dataManagementService.addAuditRecord(path, auditRequestType, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
 				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), userId,
