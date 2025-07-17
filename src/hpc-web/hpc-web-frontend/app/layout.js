@@ -27,9 +27,15 @@ export default async function RootLayout({children}) {
         <body>
         <BootstrapClient/>
         <SessionProvider>
-            <Header/>
-            {children}
-            <Footer/>
+            <section id="container">
+                <Header/>
+                <section id="main-content">
+                    <section className="wrapper">
+                        {children}
+                    </section>
+                    <Footer/>
+                </section>
+            </section>
         </SessionProvider>
         </body>
         </html>

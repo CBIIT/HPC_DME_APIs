@@ -3,17 +3,34 @@
 import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState } from "react";
 import { useMemo } from 'react';
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 
+function folderNameRenderer(props) {
+  return (
+      <span>
+      <i className="icon_folder me-2"></i>
+      {props.data.name}
+      </span>
+  );
+}
 
 const GridComponent = () => {
   const [rowData, setRowData] = useState([]);
 
+  const myTheme = themeQuartz.withParams({
+    backgroundColor: '#ffffff',
+    foregroundColor: '#797979',
+    headerTextColor: '#ffffff',
+    headerBackgroundColor: '#4c89cb',
+  });
+
   const [columnDefs, setColumnDefs] = useState([
-    { field: "name" },
+    { field: "name",
+      cellRenderer: folderNameRenderer
+    },
     { field: "size" },
     { field: "dateCreated" },
     { field: "dateModified" },
@@ -43,13 +60,14 @@ const GridComponent = () => {
   }, []);
 
   return (
-    <div style={{ width: "90%", height: "500px" }}>
+    <div style={{ width: "98%", height: "520px" }}>
       <AgGridReact rowData={rowData}
                    columnDefs={columnDefs}
                    rowSelection={rowSelection}
                    pagination={pagination}
                    paginationPageSize={paginationPageSize}
-                   paginationPageSizeSelector={paginationPageSizeSelector}/>
+                   paginationPageSizeSelector={paginationPageSizeSelector}
+                   theme={myTheme}/>
     </div>
   );
 };
