@@ -36,10 +36,6 @@ export default function SessionProvider({children}) {
         return <p>Loading...</p>;
     }
 
-    /*if (error) {
-        return <p>Error: {error.message}</p>;
-    }*/
-
     return (
         <SessionContext.Provider value={{session}}>
             {children}
