@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcBoxDownloadDestination;
@@ -3335,8 +3336,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					.getDataObjectSystemGeneratedMetadata(path);
 
 			if (dataManagementService.deletedDataObjectExpired(systemGeneratedMetadata.getDeletedDate())) {
-				// Permanently remove the data object
-				dataManagementBusService.deleteDataObject(path, true, null);
+			    
+			    // Check if there is a record for the original path
+			    // Get the original path by removing the deleted archive base path,
+			    // and remove the timestamp appended to the original path if it was soft deleted more than once
+			    String originalPath = dataManagementService.getOriginalPathForDeletedDataObject(path,
+			        systemGeneratedMetadata.getArchiveLocation());
+			    HpcDataObject originalDataObject = dataManagementService.getDataObject(originalPath);
+			    
+			    // Check if the deleted data object can be permanently removed
+			    if(originalDataObject == null || canRemoveDeletedDataObject(path, originalPath)) {
+			      dataManagementBusService.deleteDataObject(path, true, null);
+			    }
 			}
 
 		} catch (HpcException e) {
@@ -3344,6 +3355,62 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 	}
 
+	boolean canRemoveDeletedDataObject(String path, String originalPath) throws HpcException {
+      
+	    if(originalPath == null || originalPath.isEmpty()) {
+	        return true;
+	    }
+        // Obtain system metadata for the deleted file and the original file
+        HpcSystemGeneratedMetadata deletedPathMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+        HpcSystemGeneratedMetadata originalPathMetadata = metadataService.getDataObjectSystemGeneratedMetadata(originalPath);
+        
+        //Check if the physical file exist on the original path
+        HpcPathAttributes originalPathAttributes = dataTransferService.getPathAttributes(
+            originalPathMetadata.getDataTransferType(), originalPathMetadata.getArchiveLocation(), true,
+            originalPathMetadata.getConfigurationId(),
+            originalPathMetadata.getS3ArchiveConfigurationId());
+        
+        if (!originalPathAttributes.getExists() || !originalPathAttributes.getIsFile()) {
+          
+            // This is an orphaned record, notify and do not delete
+            logger.error(
+                    "The data object was not found in the archive. S3 Archive ID: "
+                            + originalPathMetadata.getS3ArchiveConfigurationId() + ". Archive location: "
+                            + originalPathMetadata.getArchiveLocation().getFileContainerId() + ":"
+                            + originalPathMetadata.getArchiveLocation().getFileId() + " Path: " + originalPath);
+
+            // Email administrators to notify the orphaned file.
+            notificationService
+                    .sendNotification(new HpcException("Orphaned data object identified, path: " + originalPath,
+                            HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+            return false;
+        }
+      
+        // Check if the physical file and the file we are able to delete is different
+        if (deletedPathMetadata.getArchiveLocation().getFileId()
+            .equals(originalPathMetadata.getArchiveLocation().getFileId())) {
+          
+          // The archive path for the deleted file and the original file are the same,
+          // notify and do not delete
+          logger.error(
+              "The deleted data object is used by another data object in the archive. S3 Archive ID: "
+                  + originalPathMetadata.getS3ArchiveConfigurationId() + ". Archive location: "
+                  + originalPathMetadata.getArchiveLocation().getFileContainerId() + ":"
+                  + originalPathMetadata.getArchiveLocation().getFileId() + " Paths: [" + path
+                  + " ," + originalPath + "]");
+          
+          // Email administrators to notify that the deleted data object is still used. 
+          notificationService
+              .sendNotification(new HpcException(
+                  "Permanent delete requested for path: " + path + " still used by path: "
+                      + originalPath,
+                  HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+          return false;
+        }
+        
+        return true;
+    }
+    
 	// Collection download breaker. This class is used to determine if processing
 	// of collection download should be aborted because the first item in the
 	// collection had

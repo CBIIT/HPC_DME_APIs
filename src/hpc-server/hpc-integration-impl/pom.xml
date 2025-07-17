@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.15.0</version>
+		<version>3.16.0</version>
 	</parent>
 	<artifactId>hpc-integration-impl</artifactId>
 	<packaging>jar</packaging>
@@ -97,6 +97,8 @@
 			<groupId>org.springframework.retry</groupId>
 			<artifactId>spring-retry</artifactId>
 		</dependency>
+		
+		<!-- TODO: Remove V1 jars -->
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
@@ -105,7 +107,28 @@
 		    <groupId>org.apache.cxf</groupId>
 		    <artifactId>cxf-rt-rs-client</artifactId>
 		</dependency>
+		<!-- TODO: Remove V1 jars -->
 		
+		<dependency>
+      		<groupId>software.amazon.awssdk</groupId>
+      		<artifactId>s3-transfer-manager</artifactId>
+   		</dependency>
+   		<dependency>
+    		<groupId>software.amazon.awssdk</groupId>
+    		<artifactId>auth</artifactId>
+		</dependency>
+		<dependency>
+  			<groupId>software.amazon.awssdk</groupId>
+  			<artifactId>s3</artifactId>
+		</dependency>
+		<dependency>
+  			<groupId>software.amazon.awssdk</groupId>
+  			<artifactId>aws-core</artifactId>
+		</dependency>
+		<dependency>
+  			<groupId>software.amazon.awssdk.crt</groupId>
+  			<artifactId>aws-crt</artifactId>
+		</dependency>
 		<dependency>
     		<groupId>com.google.apis</groupId>
     		<artifactId>google-api-services-drive</artifactId>

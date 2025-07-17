@@ -15,6 +15,6 @@
 select object_path from r_data_hierarchy_meta_main where level = 1 and meta_attr_name = 'data_transfer_status' and meta_attr_value = 'ARCHIVED' and object_id not in (select object_id from r_data_hierarchy_meta_main where meta_attr_name = 'source_file_size' and level = 1)
 
 -- After obtaining a list - construct a curl command to update the file-size metadata:
--- curl -k -H "Content-Type: application/json" -H "Authorization: Basic cm9zZW5iZXJnZWE6TWFnaWNib290czEwNyE=-X POST -d '{ "paths" : ["/path-1", "/path-2", "/path3]] }' https://<hpcdme-server>:7738/hpc-server/fileSize
+-- curl -k -H "Content-Type: application/json" -H "Authorization: Basic <secret placeholder for token - do not checkin the actual value> -X POST -d '{ "paths" : ["/path-1", "/path-2", "/path3]] }' https://<hpcdme-server>:7738/hpc-server/fileSize
 
 -- Let the materialized views to refresh, and run the SQL query again to confirm file-size metadata was updated.
