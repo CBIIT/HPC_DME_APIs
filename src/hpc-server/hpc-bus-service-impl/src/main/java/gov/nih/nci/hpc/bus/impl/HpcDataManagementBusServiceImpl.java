@@ -1806,16 +1806,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+		// For a Registered Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
 		if (!registeredLink && systemGeneratedMetadata.getDataTransferStatus() == null) {
 			throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		// If it is a softlink, always perform a hard delete
-		force = registeredLink ? true : force;
+		// For an Archive Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
+		boolean archiveLink = ((systemGeneratedMetadata.getDataTransferMethod() != null
+				&& systemGeneratedMetadata.getDataTransferMethod().equals(HpcDataTransferUploadMethod.ARCHIVE_LINK))
+				&& (systemGeneratedMetadata.getDataTransferStatus() != null && systemGeneratedMetadata
+						.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED))) ? true : false;
+
+		// Physical file can be deleted if it is a regular file(not a Link) when the Delete API param force is set to True
+		boolean deletePhysicalFile = !registeredLink && !archiveLink && force;
+		// Soft Delete can be done for a regular file(not a Link) when the  Delete API param force is set to false
+		boolean moveToDeletedArchive = (registeredLink || archiveLink) ? false : !force;
+		// The IRODS record can be deleted for Links. It can also be deleted for regular files when the Delete API param force is set to true
+		boolean deleteDataObjectRecord = (registeredLink || archiveLink) ? true : force;
 
 		// Validate the data object exists in the Archive. If it is not a softlink.
-		if (!registeredLink) {
+		if (!registeredLink && !archiveLink) {
 			HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
 					systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
 					systemGeneratedMetadata.getConfigurationId(),
@@ -1844,7 +1856,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		//Hard delete is permitted only for system administrators
 		if( !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
-			if(!registeredLink && force) {
+			if(deletePhysicalFile) {
 				String message = "Hard delete is permitted for system administrators only";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
@@ -1855,7 +1867,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc
 		// config allows deletion after 90 days.)
 
-		if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
+		if (!registeredLink && !archiveLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
 			boolean deletionAllowed = dataManagementService
@@ -1892,9 +1904,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// Delete the file from the archive (if it's archived and not a link and it is a
+		// Delete the physical file from the archive (if it's archived and not a link and it is a
 		// hard delete).
-		if (!registeredLink && force) {
+		if (deletePhysicalFile) {
 			if (!abort) {
 				switch (systemGeneratedMetadata.getDataTransferStatus()) {
 				case ARCHIVED:
@@ -1916,8 +1928,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// Remove the file from data management.
-		if (!abort && force) {
+		// Remove the file record from data management(IRODS)
+		if (!abort && deleteDataObjectRecord) {
 			try {
 				dataManagementService.delete(path, false);
 				dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
@@ -1927,8 +1939,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 				dataObjectDeleteResponse.setMessage(e.getMessage());
 			}
-		} else {
-			if (!abort) {
+		} else if (!abort && moveToDeletedArchive) {
+				// Soft delete
 				try {
 					securityService.executeAsSystemAccount(Optional.empty(),
 							() -> dataManagementService.softDelete(path, Optional.of(false)));
@@ -1940,7 +1952,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 					dataObjectDeleteResponse.setMessage(e.getMessage());
 				}
-			} else
+		} else {
+				// Abort is true
 				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 		}
 
