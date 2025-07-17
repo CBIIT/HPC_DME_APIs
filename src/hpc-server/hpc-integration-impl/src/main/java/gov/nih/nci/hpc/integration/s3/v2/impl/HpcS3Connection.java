@@ -268,17 +268,6 @@ public class HpcS3Connection {
 			}
 
 			// Instantiate a S3 async client.
-			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
-					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
-					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
-					.checksumValidationEnabled(false)
-					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
-
-			if (trustAllCerts) {
-				crtAsyncClientBuilder.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true));
-				logger.warn("hpc.integration.s3.trustAllCerts property is set to true. CRT cert vslidation is off");
-			}
-
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
 					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(trustAllCerts))
 					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
