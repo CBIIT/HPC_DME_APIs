@@ -279,12 +279,7 @@ public class HpcS3Connection {
 				logger.warn("hpc.integration.s3.trustAllCerts property is set to true. CRT cert vslidation is off");
 			}
 
-			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
-					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(trustAllCerts))
-					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
-					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(false)
-					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
-					.build();
+			s3.client = crtAsyncClientBuilder.build();
 
 			// ERAN - Code review notes
 			// 1. checksumValidation if set to true - signature failure for Cloudian
