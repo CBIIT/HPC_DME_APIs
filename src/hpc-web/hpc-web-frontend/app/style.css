@@ -283,6 +283,19 @@ ul.top-menu > li > a:hover, ul.top-menu > li > a:focus {
     padding-right: 10px
 }
 
+a.dropdown-item {
+    font-size: 14px;
+}
+
+.action-row {
+    width: 100%;
+}
+
+.form-control {
+    font-size: 14px;
+}
+
+
 .top-nav > li > a > i {
     display: inline-block;
     padding-right: 10px;
