@@ -1,7 +1,11 @@
 //Sidebar.js
 "use client";
-import {faDownload, faCaretDown} from '@fortawesome/free-solid-svg-icons';
+
+import ActionsButton from "./ActionsButton";
+import DownloadButton from "./DownloadButton";
+import {faSearch, faFilter} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {useCallback} from "react";
 
 const Sidebar = ({isOpen, toggleSidebar}) => {
 
@@ -9,9 +13,9 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
         <div className="flex">
             <div className="row mb-3">
                 {/* Button to toggle sidebar */}
-                <div className={`${isOpen ? '' : 'col-md-2 d-flex flex-row '}`}>
-                    <div className={`${isOpen ? 'col-md-2' : ''}`}>
-                        <button type="button" className="btn btn-primary"
+                <div className="col-md-5 d-flex flex-row align-items-center">
+                    <div className={`${isOpen ? 'col-md-5' : ''}`}>
+                        <button type="button" className="btn btn-lg btn-primary"
                                 onClick={() => toggleSidebar()}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                  className="bi bi-list" viewBox="0 0 16 16">
@@ -20,25 +24,44 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                             </svg>
                         </button>
                     </div>
-                    <div className={`${isOpen ? '' : 'col-md-2'}`}>
-                        <a href="#"
+                    <div className={`${isOpen ? 'col' : 'col-md-5'}`}>
+                        Path: <a href="#"
                            className="text-blue-600
                               hover:text-blue-600 ">
                             /data/CMM
                         </a>
                     </div>
                 </div>
-                <div className="col">
-                    <div className="pull-right">
-                        <button type="button" className="btn btn-primary me-2">
-                            <span className="me-2">Actions</span>
-                            <FontAwesomeIcon icon={faCaretDown} />
-                        </button>
-
-                        <button type="button" className="btn btn-primary">
-                            <FontAwesomeIcon icon={faDownload} />
-                            <span className="ms-2">Download</span>
-                        </button>
+                <div className="col-md-7 d-flex">
+                    <div className="row action-row">
+                        <div className="col-sm-5 browse-text">
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <FontAwesomeIcon icon={faSearch} style={{ position: 'absolute', left: '10px', color: '#ccc' }}/>
+                                <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder="Browse to Path"
+                                    style={{ paddingLeft: '35px', width: '100%' }}
+                                    name="browse-text-box"
+                                    //onInput={onBrowseTextBoxChanged}
+                                />
+                            </div>
+                        </div>
+                        <div className="col-sm-3 filter-text">
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <FontAwesomeIcon icon={faFilter} style={{ position: 'absolute', left: '10px', color: '#ccc' }}/>
+                                <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder="Filter"
+                                    style={{ paddingLeft: '35px', width: '100%' }}
+                                    name="filter-text-box"
+                                    //onInput={onFilterTextBoxChanged}
+                                />
+                            </div>
+                        </div>
+                        <ActionsButton/>
+                        <DownloadButton/>
                     </div>
                 </div>
             </div>
