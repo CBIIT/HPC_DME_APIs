@@ -3338,7 +3338,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			if (dataManagementService.deletedDataObjectExpired(systemGeneratedMetadata.getDeletedDate())) {
 			    
 			    // Check if there is a record for the original path
-			    String originalPath = dataManagementService.getOriginalPathForDeletedDataObject(path);
+			    // Get the original path by removing the deleted archive base path,
+			    // and remove the timestamp appended to the original path if it was soft deleted more than once
+			    String originalPath = dataManagementService.getOriginalPathForDeletedDataObject(path,
+			        systemGeneratedMetadata.getArchiveLocation());
 			    HpcDataObject originalDataObject = dataManagementService.getDataObject(originalPath);
 			    
 			    // Check if the deleted data object can be permanently removed
