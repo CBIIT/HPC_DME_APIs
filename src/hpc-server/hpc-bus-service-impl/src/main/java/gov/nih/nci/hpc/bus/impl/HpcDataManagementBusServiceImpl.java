@@ -101,6 +101,7 @@ import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
@@ -1826,15 +1827,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						? dataManagementService
 								.getS3ArchiveConfiguration(systemGeneratedMetadata.getS3ArchiveConfigurationId())
 						: null;
-		// TODO: Check if s3Configuration is null, get value of Globus Archive Type. Make sure it is ARCHIVED.
-		//
-		//systemGeneratedMetadata. ErrorType Unexpected, Msg: S3 Configuration is null
+		// Check if s3Configuration is null, check the value of Globus Archive Type, it has to have a value of ARCHIVE.
+		//  if Null it has to be a POSIX PATH
+		if(!registeredLink && s3Configuration == null) {
+			String globusArchiveType = dataManagementService.getDataManagementConfiguration(
+					systemGeneratedMetadata.getConfigurationId()).getGlobusConfiguration().getBaseArchiveDestination().getType().toString();
+			if(!globusArchiveType.equals("ARCHIVE")){
+				throw new HpcException("S3 Configuration is null", HpcErrorType.UNEXPECTED_ERROR);
+			}
+		}
 		boolean externalStorage = (s3Configuration != null) ? s3Configuration.getExternalStorage() : false;
 		boolean archiveLink = externalStorage ? true : false;
 
 		// Physical file can be deleted if it is a regular file(not a Link) when the Delete API param force is set to True
-		// deletePhysicalFile -> deleteDataFile
-		boolean deletePhysicalFile = !registeredLink && !archiveLink && force;
+		boolean deleteDataFile = !registeredLink && !archiveLink && force;
 		// Soft Delete can be done for a regular file(not a Link) when the  Delete API param force is set to false
 		boolean moveToDeletedArchive = (registeredLink || archiveLink) ? false : !force;
 		// The Metadata record can be deleted for Links. It can also be deleted for regular files when the Delete API param force is set to true
@@ -1871,7 +1877,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		//Hard delete is permitted only for system administrators and system accounts
 		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
 			    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
-			if(deletePhysicalFile) {
+			if(deleteDataFile) {
 				String message = "Hard delete is permitted for system administrators only";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
@@ -1881,7 +1887,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// If this is a GroupAdmin, then ensure that:
 		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc
 		// config allows deletion after 90 days.)
-		// TODO: If Group Admin and ArchiveLink
 		if (!registeredLink && !archiveLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
@@ -1921,7 +1926,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Delete the physical file from the archive (if it's archived and not a link and it is a
 		// hard delete).
-		if (deletePhysicalFile) {
+		if (deleteDataFile) {
 			if (!abort) {
 				switch (systemGeneratedMetadata.getDataTransferStatus()) {
 				case ARCHIVED:
