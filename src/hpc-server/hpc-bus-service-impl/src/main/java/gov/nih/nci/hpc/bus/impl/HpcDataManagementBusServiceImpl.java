@@ -1820,20 +1820,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// For an Archive Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
-		boolean archiveLink = ((systemGeneratedMetadata.getDataTransferMethod() != null
-				&& systemGeneratedMetadata.getDataTransferMethod().equals(HpcDataTransferUploadMethod.ARCHIVE_LINK))
-				&& (systemGeneratedMetadata.getDataTransferStatus() != null && systemGeneratedMetadata
-						.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED))) ? true : false;
+		// Find if the storage is external using the S3ArchiveConfiguration structure
+		HpcDataTransferConfiguration s3Configuration = (systemGeneratedMetadata.getS3ArchiveConfigurationId() != null
+				&& !systemGeneratedMetadata.getS3ArchiveConfigurationId().trim().isEmpty())
+						? dataManagementService
+								.getS3ArchiveConfiguration(systemGeneratedMetadata.getS3ArchiveConfigurationId())
+						: null;
+		// TODO: Check if s3Configuration is null, get value of Globus Archive Type. Make sure it is ARCHIVED.
+		//
+		//systemGeneratedMetadata. ErrorType Unexpected, Msg: S3 Configuration is null
+		boolean externalStorage = (s3Configuration != null) ? s3Configuration.getExternalStorage() : false;
+		boolean archiveLink = externalStorage ? true : false;
 
 		// Physical file can be deleted if it is a regular file(not a Link) when the Delete API param force is set to True
+		// deletePhysicalFile -> deleteDataFile
 		boolean deletePhysicalFile = !registeredLink && !archiveLink && force;
 		// Soft Delete can be done for a regular file(not a Link) when the  Delete API param force is set to false
 		boolean moveToDeletedArchive = (registeredLink || archiveLink) ? false : !force;
-		// The IRODS record can be deleted for Links. It can also be deleted for regular files when the Delete API param force is set to true
+		// The Metadata record can be deleted for Links. It can also be deleted for regular files when the Delete API param force is set to true
 		boolean deleteDataObjectRecord = (registeredLink || archiveLink) ? true : force;
 
 		// Validate the data object exists in the Archive. If it is not a softlink.
-		if (!registeredLink && !archiveLink) {
+		if (!registeredLink) {
 			HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
 					systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(), true,
 					systemGeneratedMetadata.getConfigurationId(),
@@ -1859,6 +1867,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
+
 		//Hard delete is permitted only for system administrators and system accounts
 		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
 			    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
@@ -1872,7 +1881,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// If this is a GroupAdmin, then ensure that:
 		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc
 		// config allows deletion after 90 days.)
-
+		// TODO: If Group Admin and ArchiveLink
 		if (!registeredLink && !archiveLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
@@ -1934,42 +1943,42 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// Remove the file record from data management(IRODS)
-		if (!abort && deleteDataObjectRecord) {
-			try {
-				dataManagementService.delete(path, false);
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-
-			} catch (HpcException e) {
-				logger.error("Failed to delete file from datamanagement", e);
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-				dataObjectDeleteResponse.setMessage(e.getMessage());
-			}
-		} else if (!abort && moveToDeletedArchive) {
-				// Soft delete
+		if(!abort) {
+			if (deleteDataObjectRecord) {
+				// Remove the file record from data management(IRODS)
 				try {
-					securityService.executeAsSystemAccount(Optional.empty(),
-							() -> dataManagementService.softDelete(path, Optional.of(false)));
+					dataManagementService.delete(path, false);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+
 				} catch (HpcException e) {
-					logger.error("Failed to soft delete file from datamanagement", e);
+					logger.error("Failed to delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 					dataObjectDeleteResponse.setMessage(e.getMessage());
 				}
+			} else if (moveToDeletedArchive) {
+					// Soft delete
+					try {
+						securityService.executeAsSystemAccount(Optional.empty(),
+								() -> dataManagementService.softDelete(path, Optional.of(false)));
+						dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+						dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+					} catch (HpcException e) {
+						logger.error("Failed to soft delete file from datamanagement", e);
+						dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+						dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+						dataObjectDeleteResponse.setMessage(e.getMessage());
+					}
+			}
 		} else {
-				// Abort is true
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+			// Abort is true
+			dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 		}
 
 		// Add an audit record of this deletion attempt.
 		HpcAuditRequestType auditRequestType = storageRecoveryConfiguration == null
 				? HpcAuditRequestType.DELETE_DATA_OBJECT
 				: HpcAuditRequestType.STORAGE_RECOVERY;
-		// If this is a system task, pass in the userId string to record in the audit table.
 		String userId = storageRecoveryConfiguration == null ? null : "storage-recovery-task";
-		userId = userId == null && invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) ? "remove-deleted-dataobjects-task" : userId;
 		dataManagementService.addAuditRecord(path, auditRequestType, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
 				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), userId,
