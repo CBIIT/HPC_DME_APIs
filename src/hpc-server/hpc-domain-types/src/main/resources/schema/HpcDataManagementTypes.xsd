@@ -32,6 +32,7 @@
 			<xsd:element name="info2" type="xsd:string" />
 			<xsd:element name="createdAt" type="xsd:dateTime" />
 			<xsd:element name="specColType" type="xsd:string" />
+			<xsd:element name="isSoftlink" type="xsd:boolean" />
 			<xsd:element name="subCollections" type="hpc-domain-datamanagement:HpcCollectionListingEntry" 
 			             minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element name="dataObjects" type="hpc-domain-datamanagement:HpcCollectionListingEntry" 
@@ -47,6 +48,7 @@
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="dataSize" type="xsd:long" />
 			<xsd:element name="createdAt" type="xsd:dateTime" />
+			<xsd:element name="isSoftlink" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
