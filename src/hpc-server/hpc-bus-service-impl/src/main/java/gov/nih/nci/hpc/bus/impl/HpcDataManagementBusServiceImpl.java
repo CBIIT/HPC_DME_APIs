@@ -80,6 +80,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -1830,9 +1831,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Check if s3Configuration is null, check the value of Globus Archive Type, it has to have a value of ARCHIVE.
 		//  if Null it has to be a POSIX PATH
 		if(!registeredLink && s3Configuration == null) {
-			String globusArchiveType = dataManagementService.getDataManagementConfiguration(
-					systemGeneratedMetadata.getConfigurationId()).getGlobusConfiguration().getBaseArchiveDestination().getType().toString();
-			if(!globusArchiveType.equals("ARCHIVE")){
+			HpcArchiveType globusArchiveType = dataManagementService.getDataManagementConfiguration(
+					systemGeneratedMetadata.getConfigurationId()).getGlobusConfiguration().getBaseArchiveDestination().getType();
+			if(!globusArchiveType.equals(HpcArchiveType.ARCHIVE)){
 				throw new HpcException("S3 Configuration is null", HpcErrorType.UNEXPECTED_ERROR);
 			}
 		}
