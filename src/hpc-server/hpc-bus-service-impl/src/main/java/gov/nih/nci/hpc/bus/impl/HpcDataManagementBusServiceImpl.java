@@ -80,6 +80,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -101,6 +102,7 @@ import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
@@ -1812,13 +1814,38 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+		// For a Registered Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
 		if (!registeredLink && systemGeneratedMetadata.getDataTransferStatus() == null) {
 			throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		// If it is a softlink, always perform a hard delete
-		force = registeredLink ? true : force;
+		// For an Archive Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
+		// Find if the storage is external using the S3ArchiveConfiguration structure
+		HpcDataTransferConfiguration s3Configuration = (systemGeneratedMetadata.getS3ArchiveConfigurationId() != null
+				&& !systemGeneratedMetadata.getS3ArchiveConfigurationId().trim().isEmpty())
+						? dataManagementService
+								.getS3ArchiveConfiguration(systemGeneratedMetadata.getS3ArchiveConfigurationId())
+						: null;
+		// Check if s3Configuration is null, check the value of Globus Archive Type, it has to have a value of ARCHIVE.
+		//  if Null it has to be a POSIX PATH
+		if(!registeredLink && s3Configuration == null) {
+			HpcArchiveType globusArchiveType = dataManagementService.getDataManagementConfiguration(
+					systemGeneratedMetadata.getConfigurationId()).getGlobusConfiguration().getBaseArchiveDestination().getType();
+			if(!globusArchiveType.equals(HpcArchiveType.ARCHIVE)){
+				throw new HpcException("S3 Configuration is null", HpcErrorType.UNEXPECTED_ERROR);
+			}
+		}
+		boolean externalStorage = (s3Configuration != null) ? s3Configuration.getExternalStorage() : false;
+		boolean archiveLink = externalStorage ? true : false;
+
+		// Physical file can be deleted if it is a regular file(not a Link) when the Delete API param force is set to True
+		boolean deleteDataFile = !registeredLink && !archiveLink && force;
+		// Soft Delete can be done for a regular file(not a Link) when the  Delete API param force is set to false
+		boolean moveToDeletedArchive = (registeredLink || archiveLink) ? false : !force;
+		// The Metadata record can be deleted for Links. It can also be deleted for regular files when the Delete API param force is set to true
+		boolean deleteDataObjectRecord = (registeredLink || archiveLink) ? true : force;
 
 		// Validate the data object exists in the Archive. If it is not a softlink.
 		if (!registeredLink) {
@@ -1848,10 +1875,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 
-		// Hard delete is permitted for system administrators and system accounts
+		//Hard delete is permitted only for system administrators and system accounts
 		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
-		    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
-			if(!registeredLink && force) {
+			    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+			if(deleteDataFile) {
 				String message = "Hard delete is permitted for system administrators only";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
@@ -1861,8 +1888,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// If this is a GroupAdmin, then ensure that:
 		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc
 		// config allows deletion after 90 days.)
-
-		if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
+		if (!registeredLink && !archiveLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
 			boolean deletionAllowed = dataManagementService
@@ -1899,9 +1925,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// Delete the file from the archive (if it's archived and not a link and it is a
+		// Delete the physical file from the archive (if it's archived and not a link and it is a
 		// hard delete).
-		if (!registeredLink && force) {
+		if (deleteDataFile) {
 			if (!abort) {
 				switch (systemGeneratedMetadata.getDataTransferStatus()) {
 				case ARCHIVED:
@@ -1923,32 +1949,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// Remove the file from data management.
-		if (!abort && force) {
-			try {
-				dataManagementService.delete(path, false);
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-
-			} catch (HpcException e) {
-				logger.error("Failed to delete file from datamanagement", e);
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-				dataObjectDeleteResponse.setMessage(e.getMessage());
-			}
-		} else {
-			if (!abort) {
+		if(!abort) {
+			if (deleteDataObjectRecord) {
+				// Remove the file record from data management(IRODS)
 				try {
-					securityService.executeAsSystemAccount(Optional.empty(),
-							() -> dataManagementService.softDelete(path, Optional.of(false)));
+					dataManagementService.delete(path, false);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+
 				} catch (HpcException e) {
-					logger.error("Failed to soft delete file from datamanagement", e);
+					logger.error("Failed to delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 					dataObjectDeleteResponse.setMessage(e.getMessage());
 				}
-			} else
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+			} else if (moveToDeletedArchive) {
+					// Soft delete
+					try {
+						securityService.executeAsSystemAccount(Optional.empty(),
+								() -> dataManagementService.softDelete(path, Optional.of(false)));
+						dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+						dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+					} catch (HpcException e) {
+						logger.error("Failed to soft delete file from datamanagement", e);
+						dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+						dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+						dataObjectDeleteResponse.setMessage(e.getMessage());
+					}
+			}
+		} else {
+			// Abort is true
+			dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 		}
 
 		// Add an audit record of this deletion attempt.
@@ -1965,6 +1994,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return dataObjectDeleteResponse;
 	}
+
 
 	@Override
 	public HpcEntityPermissionsResponseDTO setDataObjectPermissions(String path,
