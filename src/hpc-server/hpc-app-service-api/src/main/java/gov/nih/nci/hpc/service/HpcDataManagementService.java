@@ -676,10 +676,11 @@ public interface HpcDataManagementService {
      * Get the original path of a deleted data object.
      *
      * @param path  The path of an deleted data object.
+     * @param archiveLocation The archive location of the deleted data object
      * @return The original path of the deleted data object
      * @throws HpcException on service failure.
      */
-    public String getOriginalPathForDeletedDataObject(String path);
+    public String getOriginalPathForDeletedDataObject(String path, HpcFileLocation archiveLocation) throws HpcException;
 
 	/**
 	 * Add an audit record in the DB for bulk metadata updates using query
