@@ -53,6 +53,7 @@
 			<xsd:element name="encryptedTransfer" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="hyperfileArchive" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="dataManagementConfigurationId" type="xsd:string" />
+			<xsd:element name="posixPath" type="xsd:string" />
 			<xsd:element name="externalStorage" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
@@ -67,6 +68,7 @@
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="s3UploadConfigurationId" type="xsd:string" />
 				<xsd:element name="s3DefaultDownloadConfigurationId" type="xsd:string" />
+				<xsd:element name="s3ExternalConfigurationId" type="xsd:string" />
 				<xsd:element name="globusConfiguration"
 					type="hpc-domain-model:HpcDataTransferConfiguration" />
 				<xsd:element name="collectionMetadataValidationRules"

@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
@@ -1039,5 +1040,15 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void deleteGlobusTransferTask(String dataTransferRequestId) throws HpcException;
+
+	/**
+	 * List directory (non-recursive) and return a list of all folder and files
+	 *
+	 * @param fileLocation The path to get the listing for.
+	 * @return The list of HpcListObjectsEntry.
+	 * @throws HpcException on service failure.
+	 * @throws  
+	 */
+	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException;
 
 }
