@@ -301,10 +301,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
-		CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
-				.sourceBucket(fileLocation.getFileContainerId()).sourceKey(fileLocation.getFileId())
-				.destinationBucket(fileLocation.getFileContainerId()).destinationKey(fileLocation.getFileId())
-				.storageClass(storageClass).metadata(toS3Metadata(metadataEntries)).build();
+		CopyObjectRequest copyObjectRequest = null;
+		try {
+			copyObjectRequest = CopyObjectRequest.builder().sourceBucket(fileLocation.getFileContainerId())
+					.sourceKey(URLEncoder.encode(fileLocation.getFileId(), StandardCharsets.UTF_8.toString()))
+					.destinationBucket(fileLocation.getFileContainerId())
+					.destinationKey(URLEncoder.encode(fileLocation.getFileId(), StandardCharsets.UTF_8.toString()))
+					.storageClass(storageClass).metadata(toS3Metadata(metadataEntries)).build();
+
+		} catch (UnsupportedEncodingException e) {
+			throw new HpcException("[S3] Failed to encode object key for copy operation: " + fileLocation.getFileId(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
+		}
 
 		CopyRequest copyRequest = CopyRequest.builder().copyObjectRequest(copyObjectRequest).build();
 
