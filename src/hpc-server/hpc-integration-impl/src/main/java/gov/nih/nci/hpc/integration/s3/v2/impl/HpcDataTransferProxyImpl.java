@@ -34,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
+import jakarta.enterprise.inject.Instance;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
@@ -301,18 +303,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		// We set S3 metadata by copying the data-object to itself w/ attached metadata.
-		CopyObjectRequest copyObjectRequest = null;
-		try {
-			copyObjectRequest = CopyObjectRequest.builder().sourceBucket(fileLocation.getFileContainerId())
-					.sourceKey(URLEncoder.encode(fileLocation.getFileId(), StandardCharsets.UTF_8.toString()))
-					.destinationBucket(fileLocation.getFileContainerId())
-					.destinationKey(URLEncoder.encode(fileLocation.getFileId(), StandardCharsets.UTF_8.toString()))
-					.storageClass(storageClass).metadata(toS3Metadata(metadataEntries)).build();
-
-		} catch (UnsupportedEncodingException e) {
-			throw new HpcException("[S3] Failed to encode object key for copy operation: " + fileLocation.getFileId(),
-					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
-		}
+		String encodedKey = URLEncoder.encode(fileLocation.getFileId(), StandardCharsets.UTF_8);
+		CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
+				.sourceBucket(fileLocation.getFileContainerId()).sourceKey(encodedKey)
+				.destinationBucket(fileLocation.getFileContainerId()).destinationKey(encodedKey)
+				.storageClass(storageClass).metadata(toS3Metadata(metadataEntries)).build();
 
 		CopyRequest copyRequest = CopyRequest.builder().copyObjectRequest(copyObjectRequest).build();
 
