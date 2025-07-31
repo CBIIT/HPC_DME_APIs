@@ -101,7 +101,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (DATA_TRANSFER_STATUS = ? and DESTINATION_TYPE = ?)";
 
-	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? for update nowait";
+	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? for update skip locked";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set IN_PROCESS = ?, S3_DOWNLOAD_TASK_SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
@@ -602,16 +602,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		userDownloadRequest.setPath(rs.getString("PATH"));
 		userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 
-		if(hasColumnWithValue(rs, "STATUS")) {
-		    userDownloadRequest.setStatus(rs.getString(("STATUS")));
+		if (hasColumnWithValue(rs, "STATUS")) {
+			userDownloadRequest.setStatus(rs.getString(("STATUS")));
 
-		    if(userDownloadRequest.getStatus().equals("RECEIVED")) {
-		        //If this is a two hop data object download where the 1st hop (staging) is done and 2nd hop
-		        //has not started, then show the status as IN_PROGRESS since the transaction has already begun
-		        if (hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE") && rs.getInt("STAGING_PERCENT_COMPLETE") == 100)  {
-		            userDownloadRequest.setStatus("IN_PROGRESS");
-		        }
-		    }
+			if (userDownloadRequest.getStatus().equals("RECEIVED")) {
+				// If this is a two hop data object download where the 1st hop (staging) is done
+				// and 2nd hop
+				// has not started, then show the status as IN_PROGRESS since the transaction
+				// has already begun
+				if (hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE")
+						&& rs.getInt("STAGING_PERCENT_COMPLETE") == 100) {
+					userDownloadRequest.setStatus("IN_PROGRESS");
+				}
+			}
 		}
 
 		if (rs.getObject("RESULT") != null) {
@@ -966,9 +969,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId)
 			throws HpcException {
 		try {
-			jdbcTemplate.update(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, id);
-			return jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess, s3DownloadTaskServerId,
-					id, inProcess) > 0;
+			if (jdbcTemplate.update(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, id) == 0) {
+				logger.info("download task: [taskId={}] - DB row locked by another process: {}", id);
+				return false;
+			}
+
+			boolean updated = jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess,
+					s3DownloadTaskServerId, id, inProcess) > 0;
+			if (!updated) {
+				logger.error("download task: [taskId={}] - DB not updated after locking: {}", id);
+			}
+			return updated;
 
 		} catch (DataAccessException e) {
 			logger.debug("download task: [taskId={}] - DB row locked by another process: {}", id, e.getMessage());
@@ -1700,25 +1711,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		return downloadItems;
 	}
 
-
 	/**
 	 * Check if the given resultset has the column with the specified table
 	 *
-	 * @param rs The resultset to check
+	 * @param rs         The resultset to check
 	 * @param columnName The label of the specified column
 	 * @return True if the column exists
 	 * @throws SQLException
 	 */
 	public boolean hasColumnWithValue(ResultSet rs, String columnName) throws SQLException {
-        ResultSetMetaData metaData = rs.getMetaData();
-        int columns = metaData.getColumnCount();
-        for (int i = 1; i <= columns; i++) {
-            if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
-                if(rs.getObject(columnName) != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+		ResultSetMetaData metaData = rs.getMetaData();
+		int columns = metaData.getColumnCount();
+		for (int i = 1; i <= columns; i++) {
+			if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
+				if (rs.getObject(columnName) != null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
