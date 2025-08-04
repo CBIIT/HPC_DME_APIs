@@ -3,80 +3,80 @@
         "name": "PI_0002",
         "path": "/data/CMM/PI_0002",
         "size": "-",
-        "dateCreated": "2021-05-21 15:18:46",
-        "dateModified": "2022-04-29 13:28:49",
-        "storage": "-"
+        "created": "2021-05-21 15:18:46",
+        "lastModified": "2022-04-29 13:28:49",
+        "archived": "No"
     },
     {
         "name": "PI_0003",
         "path": "/data/CMM/PI_0003",
         "size": "-",
-        "dateCreated": "2021-06-17 12:26:56",
-        "dateModified": "2024-12-16 13:40:16",
-        "storage": "Source"
+        "created": "2021-06-17 12:26:56",
+        "lastModified": "2024-12-16 13:40:16",
+        "archived": "Yes"
     },
     {
         "name": "PI_0004",
         "path": "/data/CMM/PI_0004",
         "size": "-",
-        "dateCreated": "2021-06-14 15:08:04",
-        "dateModified": "2021-06-23 15:36:11",
-        "storage": "-"
+        "created": "2021-06-14 15:08:04",
+        "lastModified": "2021-06-23 15:36:11",
+        "archived": "No"
     },
     {
         "name": "PI_0005",
         "path": "/data/CMM/PI_0005",
         "size": "-",
-        "dateCreated": "2021-06-23 15:36:11",
-        "dateModified": "2024-12-16 13:40:16",
-        "storage": "-"
+        "created": "2021-06-23 15:36:11",
+        "lastModified": "2024-12-16 13:40:16",
+        "archived": "No"
     },
     {
         "name": "PI_0006",
         "path": "/data/CMM/PI_0006",
         "size": "-",
-        "dateCreated": "2021-06-14 15:39:21",
-        "dateModified": "2022-04-29 13:28:49",
-        "storage": "-"
+        "created": "2021-06-14 15:39:21",
+        "lastModified": "2022-04-29 13:28:49",
+        "archived": "No"
     },
     {
         "name": "PI_0007",
         "path": "/data/CMM/PI_0007",
         "size": "-",
-        "dateCreated": "2021-02-11 13:28:57",
-        "dateModified": "2022-04-29 13:28:49",
-        "storage": "-"
+        "created": "2021-02-11 13:28:57",
+        "lastModified": "2022-04-29 13:28:49",
+        "archived": "No"
     },
     {
         "name": "PI_0008",
         "path": "/data/CMM/PI_0008",
         "size": "-",
-        "dateCreated": "2021-06-16 08:40:03",
-        "dateModified": "2022-04-29 13:28:49",
-        "storage": "-"
+        "created": "2021-06-16 08:40:03",
+        "lastModified": "2022-04-29 13:28:49",
+        "archived": "No"
     },
     {
         "name": "PI_0010",
         "path": "/data/CMM/PI_0010",
         "size": "-",
-        "dateCreated": "2019-05-02 13:49:50",
-        "dateModified": "2025-02-03 14:05:28",
-        "storage": "Source"
+        "created": "2019-05-02 13:49:50",
+        "lastModified": "2025-02-03 14:05:28",
+        "archived": "Yes"
     },
     {
         "name": "PI_0011",
         "path": "/data/CMM/PI_0011",
         "size": "-",
-        "dateCreated": "2019-10-16 10:59:07",
-        "dateModified": "2021-02-11 13:28:57",
-        "storage": "-"
+        "created": "2019-10-16 10:59:07",
+        "lastModified": "2021-02-11 13:28:57",
+        "archived": "No"
     },
     {
         "name": "PI_0012",
         "path": "/data/CMM/PI_0012",
         "size": "-",
-        "dateCreated": "2021-06-24 03:43:43",
-        "dateModified": "2021-06-16 08:40:03",
-        "storage": "-"
+        "created": "2021-06-24 03:43:43",
+        "lastModified": "2021-06-16 08:40:03",
+        "archived": "No"
     }
 ]
