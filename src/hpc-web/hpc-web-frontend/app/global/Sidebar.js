@@ -5,9 +5,25 @@ import ActionsButton from "./ActionsButton";
 import DownloadButton from "./DownloadButton";
 import {faSearch, faFilter} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {useCallback} from "react";
+import {useCallback, useContext} from "react";
+import {GridContext} from "@/app/global/GridContext";
+
 
 const Sidebar = ({isOpen, toggleSidebar}) => {
+
+    const { gridApi } = useContext(GridContext);
+
+    const onFilterTextBoxChanged = useCallback(() => {
+        gridApi.setGridOption(
+            "quickFilterText",
+            (document.getElementById("filter-text-box")).value,
+        );
+    }, [gridApi]);
+
+    const onBrowseTextBoxChanged= async () => {
+        const path = document.getElementById("browse-text-box").value;
+        console.log("Browse to path: ", path);
+    };
 
     return (
         <div className="flex">
@@ -42,8 +58,8 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                                     type="text"
                                     placeholder="Browse to Path"
                                     style={{ paddingLeft: '35px', width: '100%' }}
-                                    name="browse-text-box"
-                                    //onInput={onBrowseTextBoxChanged}
+                                    id="browse-text-box"
+                                    onInput={onBrowseTextBoxChanged}
                                 />
                             </div>
                         </div>
@@ -55,8 +71,8 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                                     type="text"
                                     placeholder="Filter"
                                     style={{ paddingLeft: '35px', width: '100%' }}
-                                    name="filter-text-box"
-                                    //onInput={onFilterTextBoxChanged}
+                                    id="filter-text-box"
+                                    onInput={onFilterTextBoxChanged}
                                 />
                             </div>
                         </div>
