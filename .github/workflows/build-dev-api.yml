@@ -35,7 +35,7 @@ jobs:
       - name: check git installation
         run: git --version
       - name: print select branch
-        run: echo "Branch: $CODE_BRANCH"
+        run: echo "Branch: ${{ env.CODE_BRANCH }}"
 
       - name: Checkout Code Repository
         uses: actions/checkout@v4
