@@ -1,10 +1,9 @@
 "use client";
-import Link from "next/link";
 import { useSession } from "../SessionContext";
-import { SelectedRowsProvider } from './SelectedRowsContext';
+import {GridProvider} from './GridContext';
 import GridComponent from "./GridComponent";
 import Sidebar from "./Sidebar";
-import { useState } from 'react';
+import {useState} from 'react';
 
 export default function Global() {
     const session = useSession();
@@ -17,7 +16,7 @@ export default function Global() {
 
     return (
         <div>
-            <SelectedRowsProvider>
+            <GridProvider>
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar}/>
                 <div
                     className={`${isSidebarOpen ? 'offset-md-2' : ''}`}
@@ -28,10 +27,10 @@ export default function Global() {
                 >
                     <section className="bg-white">
                         <h3>CMM/</h3>
-                        <GridComponent/>
+                        <GridComponent />
                     </section>
                 </div>
-            </SelectedRowsProvider>
+            </GridProvider>
         </div>
 );
 }

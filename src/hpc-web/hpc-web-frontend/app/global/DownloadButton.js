@@ -3,10 +3,10 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDownload} from "@fortawesome/free-solid-svg-icons";
 import React, { useContext } from 'react';
-import { SelectedRowsContext } from './SelectedRowsContext';
+import { GridContext } from './GridContext';
 
 export default function DownloadButton() {
-    const { selectedRows } = useContext(SelectedRowsContext);
+    const { selectedRows } = useContext(GridContext);
 
     const handleDownload = async () => {
         if (selectedRows.length > 0) {
