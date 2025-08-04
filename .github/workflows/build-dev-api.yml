@@ -1,0 +1,51 @@
+name: Build  Dev API war file
+permissions:
+  contents: write
+  id-token: write
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: env to build war file
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prod
+      environment_target:
+        description: target environment
+        type: choice
+        default: Ddev
+        options:
+          - dev
+          - prod
+      code_branch:
+        description: branch to build
+        required: true
+        default: main
+jobs:
+  build:
+    name: Build war file
+    runs-on: cbiit-self-hosted
+    environment: ${{ inputs.environment }}
+    env:
+      CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.code_branch }}
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: set up maven
+        uses: s4u/setup-maven-action@v1
+        with:
+          maven-version: '3.9.4'
+      - name: build the war
+        run: |
+          #cd HPC_DME_APIs/src
+          cd $GITHUB_WORKSPACE/src
+          mvn clean install -D${{ github.event.inputs.environment_target }}
