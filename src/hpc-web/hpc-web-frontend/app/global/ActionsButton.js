@@ -3,10 +3,10 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCaretDown} from "@fortawesome/free-solid-svg-icons";
 import {useContext} from "react";
-import {SelectedRowsContext} from "./SelectedRowsContext";
+import {GridContext} from "./GridContext";
 
 export default function ActionsButton() {
-    const { selectedRows } = useContext(SelectedRowsContext);
+    const { selectedRows } = useContext(GridContext);
     const handleCopyPath = async () => {
         if (selectedRows.length > 0) {
             const selectedRowData = selectedRows[0];

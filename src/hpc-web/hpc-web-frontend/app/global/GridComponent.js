@@ -4,7 +4,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState, useCallback, useContext } from "react";
 import { useMemo } from 'react';
 import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-import { SelectedRowsContext } from './SelectedRowsContext';
+import { GridContext } from './GridContext';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -20,8 +20,7 @@ function folderNameRenderer(props) {
 
 const GridComponent = () => {
   const [rowData, setRowData] = useState([]);
-  const [gridApi, setGridApi] = useState(null);
-  const { setSelectedRows } = useContext(SelectedRowsContext);
+  const {gridApi, setGridApi, setSelectedRows} = useContext(GridContext);
 
   const myTheme = themeQuartz.withParams({
     backgroundColor: '#ffffff',
@@ -56,8 +55,8 @@ const GridComponent = () => {
   const paginationPageSizeSelector = [10, 20, 50, 100];
 
   const onGridReady = useCallback((params) => {
-    setGridApi(params.api);
-  }, []);
+    setGridApi(params.api); // Store the AG Grid API in global context
+  }, [setGridApi]);
 
   const onSelectionChanged = useCallback(() => {
     if (gridApi) {
@@ -67,12 +66,6 @@ const GridComponent = () => {
     }
   }, [gridApi, setSelectedRows]);
 
-  const onFilterTextBoxChanged = useCallback(() => {
-    gridApi.setGridOption(
-        "quickFilterText",
-        (document.getElementById("filter-text-box")).value,
-  );
-  }, [gridApi]);
 
   useEffect(() => {
     fetch("/folders.json") // Fetch data from server
@@ -90,7 +83,7 @@ const GridComponent = () => {
                    paginationPageSizeSelector={paginationPageSizeSelector}
                    theme={myTheme}
                    onGridReady={onGridReady}
-                   onSelectionChanged={onSelectionChanged}/>
+                   onSelectionChanged={onSelectionChanged} />
     </div>
   );
 };
