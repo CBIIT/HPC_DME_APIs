@@ -30,13 +30,13 @@ const GridComponent = () => {
   });
 
   const [columnDefs, setColumnDefs] = useState([
-    { field: "name",
+    { headerName: 'Name', field: "name",
       cellRenderer: folderNameRenderer
     },
-    { field: "size" },
-    { field: "dateCreated" },
-    { field: "dateModified" },
-    { field: "storage" },
+    { headerName: 'Size', field: "size" },
+    { headerName: 'Date Created', field: "created" },
+    { headerName: 'Date Modified', field: "lastModified" },
+    { headerName: 'Archived', field: "archived" },
   ]);
 
   const rowSelection = useMemo(() => {
