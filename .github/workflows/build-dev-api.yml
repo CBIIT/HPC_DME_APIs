@@ -32,10 +32,16 @@ jobs:
     env:
       CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
     steps:
+      - name: check git installation
+        run: git --version
+      - name: print select branch
+        run: echo "Branch: $CODE_BRANCH"
+
       - name: Checkout Code Repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.code_branch }}
+          #ref: ${{ github.event.inputs.code_branch }}
+          ref: ${{ env.CODE_BRANCH }}
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
