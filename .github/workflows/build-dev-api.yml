@@ -23,7 +23,7 @@ on:
         description: branch to build
         required: true
         default: main
-run-name: Build WARs for ${{ github.event.inputs.environment }} (branch: ${{ github.event.inputs.code_branch }}, target: ${{ github.event.inputs.environment_target }})
+run-name: "Build WARs for ${{ github.event.inputs.environment }} (branch: ${{ github.event.inputs.code_branch }}, target: ${{ github.event.inputs.environment_target }})"
 jobs:
   build:
     name: Build war file
