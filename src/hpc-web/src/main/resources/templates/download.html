@@ -25,6 +25,9 @@
 .fieldWidth {
 	width: 600px;
 }
+.fieldWidth2 {
+	width: 450px;
+}
 .fieldMargin {
 	margin-top: 1px;
 	margin-bottom: 10px;
@@ -34,6 +37,9 @@
 }
 .leftMargin{
 	margin-left: -15px;
+}
+.leftMargin2{
+	margin-left: 75px;
 }
 </style>
 <script th:inline="javascript">
@@ -171,8 +177,8 @@
 
 								<div th:if="${downloadType == 'collection'}" style="margin-top: 15px; margin-bottom: -1px">
 									<div class="col-sm-12 column" id="radioset2" style="margin-left: -15px; margin-top: -3px">
-											<label for="downloadDestinationType">Destination Location:</label>
-											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control fieldWidth" size="1" style="margin-top: 1px; margin-bottom: -16px;">
+											<label for="downloadDestinationType" class="control-label col-sm-3">Destination Location:</label>
+											<select name="downloadDestinationType" id="downloadDestinationType" class="form-control" size="1" style="margin-top: 1px; margin-bottom: -16px; width:250px;">
 												<option th:value="'downloadToDestination'" th:text="'Download to Endpoint Path'"></option>
 												<option th:value="'createCollectionFolder'" th:text="'Create Parent Collection'"></option>
 												<option th:value="'createFullPath'" th:text="'Replicate Full Source Path'"></option>
