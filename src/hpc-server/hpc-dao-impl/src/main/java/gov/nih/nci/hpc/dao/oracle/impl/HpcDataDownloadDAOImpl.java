@@ -42,6 +42,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.transaction.annotation.Transactional;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
@@ -966,11 +967,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
+	@Transactional
 	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId)
 			throws HpcException {
 		try {
-			if (jdbcTemplate.update(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, id) == 0) {
-				logger.info("download task: [taskId={}] - No rows updated (possibly locked or not found)", id);
+			if (jdbcTemplate.queryForObject(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL,
+					dataObjectDownloadTaskRowMapper, id) == null) {
+				logger.info("download task: [taskId={}] - No rows updated (null returned)", id);
 				return false;
 			}
 
@@ -980,6 +983,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				logger.info("download task: [taskId={}] - DB not updated after locking", id);
 			}
 			return updated;
+
+		} catch (IncorrectResultSizeDataAccessException irse) {
+			logger.info("download task: [taskId={}] - No rows updated (locked or not found): {}", id,
+					irse.getMessage());
+			return false;
 
 		} catch (DataAccessException e) {
 			logger.error("download task: [taskId={}] - Failed to update DB row locked by another process: {}", id, e);
