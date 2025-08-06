@@ -117,6 +117,19 @@ public interface HpcDataDownloadDAO {
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByCollectionDownloadTaskId(
 			String collectionDownloadTaskId) throws HpcException;
 
+
+	/**
+	 * Get all data object task results that are part of a given collection
+	 * download task ID
+	 *
+	 * @param collectionDownloadTaskId The collection download task Id to look for.
+	 * @return Data object task results.
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcDownloadTaskResult> getDataObjectDownloadTaskResultByCollectionDownloadTaskId(String collectionDownloadTaskId)
+			throws HpcException;
+
+
 	/**
 	 * Get next data object download task by data transfer status and data transfer
 	 * type.
