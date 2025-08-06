@@ -86,9 +86,9 @@ jobs:
           ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit1} ]; then rm -f ${unit1}; else echo "No symlink found"; fi ;  "          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit2} ]; then rm -f ${unit2}; else echo "No symlink found"; fi ; ls -la ; "
           ssh -qt ${remote_user}@${remote} " cd ${dist}; find -type f -name ${app}-*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \; && find -type f -name ${app1}-[0-9]*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \; && find -type f -name ${app2}-*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \;" || exit $?
           echo "upoading wars to remote server"
-          scp -pq artifacts/${app}-*.war ${remote_user}@${remote}:${dist}
-          scp -pq artifacts/${app1}-*.war ${remote_user}@${remote}:${dist}
-          scp -pq artifacts/${app2}-*.war ${remote_user}@${remote}:${dist}
+          scp -pq artifacts/hpc-ws-rs-impl/target/${app}-*.war ${remote_user}@${remote}:${dist}
+          scp -pq artifacts/hpc-scheduler/target/${app1}-*.war ${remote_user}@${remote}:${dist}
+          scp -pq artifacts/hpc-scheduler-migration/target/${app2}-*.war ${remote_user}@${remote}:${dist}
           echo "creating symlink"
           ssh -qt ${remote_user}@${remote} " cd ${dist} && ln -s $app-*.war ${unit};  cd ${dist} && ln -s $app1-[0-9]*.war ${unit1}; cd ${dist} && ln -s $app2-*.war ${unit2}"
           echo "restart tomcat"
