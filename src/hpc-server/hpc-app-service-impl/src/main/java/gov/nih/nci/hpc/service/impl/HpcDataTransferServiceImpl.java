@@ -1485,14 +1485,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
 		boolean updated = true;
+		String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
 
 		logger.debug(
-				"download task: [taskId={}] - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}]",
-				downloadTask.getId(), inProcess, downloadTask.getDataTransferType(),
-				HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
+				"download task: [taskId={}] - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}, transfer-status={}]",
+				downloadTask.getId(), inProcess, downloadTask.getDataTransferType(), serverId, downloadTask.getDataTransferStatus());
 		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
+			
 			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
 			if (updated)
 				logger.debug(
