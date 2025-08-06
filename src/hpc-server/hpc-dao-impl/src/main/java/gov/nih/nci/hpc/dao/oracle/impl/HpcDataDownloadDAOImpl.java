@@ -973,24 +973,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		try {
 			if (jdbcTemplate.queryForList(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL,
 					dataObjectDownloadTaskRowMapper, id).isEmpty()) {
-				logger.info("download task: [taskId={}] - No rows updated (null returned)", id);
+				logger.info("download task: [taskId={}] - Row not updated (locked or not found)", id);
 				return false;
 			}
 
 			boolean updated = jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess,
 					s3DownloadTaskServerId, id, inProcess) > 0;
 			if (!updated) {
-				logger.info("download task: [taskId={}] - DB not updated after locking", id);
+				logger.info("download task: [taskId={}] - Row not updated after locking", id);
 			}
 			return updated;
 
 		} catch (IncorrectResultSizeDataAccessException irse) {
-			logger.info("download task: [taskId={}] - No rows updated (locked or not found): {}", id,
+			logger.info("download task: [taskId={}] - Row not updated (locked or not found): {}", id,
 					irse.getMessage());
 			return false;
 
 		} catch (DataAccessException e) {
-			logger.error("download task: [taskId={}] - Failed to update DB row locked by another process: {}", id, e);
+			logger.error("download task: [taskId={}] - Failed to update row: {}", id, e);
 			return false;
 		}
 	}
