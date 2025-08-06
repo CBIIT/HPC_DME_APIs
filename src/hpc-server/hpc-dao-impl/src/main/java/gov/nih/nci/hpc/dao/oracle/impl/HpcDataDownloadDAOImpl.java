@@ -971,11 +971,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId)
 			throws HpcException {
 		try {
-			if (jdbcTemplate.queryForList(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL,
-					dataObjectDownloadTaskRowMapper, id).isEmpty()) {
-				logger.info("download task: [taskId={}] - Row not updated (locked or not found)", id);
-				return false;
-			}
+			jdbcTemplate.queryForObject(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL,
+					dataObjectDownloadTaskRowMapper, id);
 
 			boolean updated = jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess,
 					s3DownloadTaskServerId, id, inProcess) > 0;
