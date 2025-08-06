@@ -956,7 +956,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					downloadTaskResultRowMapper, collectionDownloadTaskId);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get data object download tasks: " + e.getMessage(),
+			throw new HpcException("Failed to get data object download task results: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
