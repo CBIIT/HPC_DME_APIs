@@ -83,7 +83,8 @@ jobs:
           ssh -qt ${remote_user}@${remote} " umask 022; cd ${dist} && if [ -d ${app2} ]; then rm -rf ${app2}; fi ;  "
           ssh -qt ${remote_user}@${remote} " cd ${dist}; rm -f hpc-server-[0-9]*.war_backup* hpc-server-[0-9]*.war.backup*; rm -f hpc-scheduler-[0-9]*.war_backup* hpc-scheduler-[0-9]*.war.backup*; rm -f hpc-scheduler-migration-[0-9]*.war_backup* hpc-scheduler-migration-[0-9]*.war.backup* "
           ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit} ]; then rm -f ${unit}; else echo "No symlink found"; fi ; "
-          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit1} ]; then rm -f ${unit1}; else echo "No symlink found"; fi ;  "          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit2} ]; then rm -f ${unit2}; else echo "No symlink found"; fi ; ls -la ; "
+          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit1} ]; then rm -f ${unit1}; else echo "No symlink found"; fi ;  "    
+          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit2} ]; then rm -f ${unit2}; else echo "No symlink found"; fi ;  "
           ssh -qt ${remote_user}@${remote} " cd ${dist}; find -type f -name ${app}-*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \; && find -type f -name ${app1}-[0-9]*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \; && find -type f -name ${app2}-*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \;" || exit $?
           echo "upoading wars to remote server"
           scp -pq artifacts/hpc-ws-rs-impl/target/${app}-*.war ${remote_user}@${remote}:${dist}
