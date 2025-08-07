@@ -4977,8 +4977,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementService
-				.getS3ArchiveConfiguration(dataManagementConfiguration.getS3ExternalConfigurationId());
-		
+				.getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId());
 		// Derive the archive path for the input path from the configuration
 		String archivePath = dataManagementConfiguration.getBasePath() + StringUtils.substringAfter(path, dataTransferConfiguration.getPosixPath());
 		

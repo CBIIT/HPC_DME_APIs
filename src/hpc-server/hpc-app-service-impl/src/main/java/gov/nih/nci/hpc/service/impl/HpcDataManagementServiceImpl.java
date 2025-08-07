@@ -1187,9 +1187,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
-			if(StringUtils.isNotEmpty(dataManagementConfiguration.getS3ExternalConfigurationId())) {
+			if(StringUtils.isNotEmpty(dataManagementConfiguration.getS3UploadConfigurationId())){
 				try {
-					HpcDataTransferConfiguration dataTransferConfiguration = getS3ArchiveConfiguration(dataManagementConfiguration.getS3ExternalConfigurationId());
+					HpcDataTransferConfiguration dataTransferConfiguration = getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId());
 					if (StringUtils.isNotEmpty(dataTransferConfiguration.getPosixPath()) && path.startsWith(dataTransferConfiguration.getPosixPath())) {
 						return dataManagementConfiguration;
 					}
