@@ -68,7 +68,6 @@
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="s3UploadConfigurationId" type="xsd:string" />
 				<xsd:element name="s3DefaultDownloadConfigurationId" type="xsd:string" />
-				<xsd:element name="s3ExternalConfigurationId" type="xsd:string" />
 				<xsd:element name="globusConfiguration"
 					type="hpc-domain-model:HpcDataTransferConfiguration" />
 				<xsd:element name="collectionMetadataValidationRules"
