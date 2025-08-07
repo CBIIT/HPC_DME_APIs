@@ -19,6 +19,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -33,6 +35,7 @@ import software.amazon.awssdk.crt.Log;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.S3CrtAsyncClientBuilder;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
@@ -78,6 +81,9 @@ public class HpcS3Connection {
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -262,12 +268,18 @@ public class HpcS3Connection {
 			}
 
 			// Instantiate a S3 async client.
-			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(s3ProviderCredentialsProvider)
-					.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(trustAllCerts))
-					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(uri)
-					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(false)
-					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold)
-					.build();
+			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
+					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
+					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
+					.checksumValidationEnabled(false)
+					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
+
+			if (trustAllCerts) {
+				crtAsyncClientBuilder.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true));
+				logger.warn("hpc.integration.s3.trustAllCerts property is set to true. CRT cert vslidation is off");
+			}
+
+			s3.client = crtAsyncClientBuilder.build();
 
 			// ERAN - Code review notes
 			// 1. checksumValidation if set to true - signature failure for Cloudian

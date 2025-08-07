@@ -15,6 +15,8 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -38,11 +40,13 @@ import com.google.common.io.Files;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCalculateTotalSizeEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcMetadataUpdateItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
@@ -80,6 +84,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -101,8 +106,10 @@ import gov.nih.nci.hpc.domain.model.HpcDistinguishedNameSearchResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
+import gov.nih.nci.hpc.domain.report.HpcReportEntry;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
@@ -152,10 +159,13 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationReques
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
@@ -530,6 +540,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return totalSizeReport;
+	}
+	
+	private HpcReport getTotalSizeAndDataObjectCountReport(String path) throws HpcException {
+
+		HpcReport totalSizeAndDataObjectCountReport = null;
+		// Get the total size of the collection
+		HpcReportCriteria criteria = new HpcReportCriteria();
+		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_PATH);
+		criteria.setPath(path);
+		criteria.setIsMachineReadable(true);
+		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
+		criteria.getAttributes().add(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
+		List<HpcReport> reports = reportService.generateReport(criteria);
+		if (!CollectionUtils.isEmpty(reports)) {
+			totalSizeAndDataObjectCountReport = reports.get(0);
+		}
+
+		return totalSizeAndDataObjectCountReport;
 	}
 
 	@Override
@@ -1812,13 +1840,38 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+		// For a Registered Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
 		if (!registeredLink && systemGeneratedMetadata.getDataTransferStatus() == null) {
 			throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		// If it is a softlink, always perform a hard delete
-		force = registeredLink ? true : force;
+		// For an Archive Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
+		// Find if the storage is external using the S3ArchiveConfiguration structure
+		HpcDataTransferConfiguration s3Configuration = (systemGeneratedMetadata.getS3ArchiveConfigurationId() != null
+				&& !systemGeneratedMetadata.getS3ArchiveConfigurationId().trim().isEmpty())
+						? dataManagementService
+								.getS3ArchiveConfiguration(systemGeneratedMetadata.getS3ArchiveConfigurationId())
+						: null;
+		// Check if s3Configuration is null, check the value of Globus Archive Type, it has to have a value of ARCHIVE.
+		//  if Null it has to be a POSIX PATH
+		if(!registeredLink && s3Configuration == null) {
+			HpcArchiveType globusArchiveType = dataManagementService.getDataManagementConfiguration(
+					systemGeneratedMetadata.getConfigurationId()).getGlobusConfiguration().getBaseArchiveDestination().getType();
+			if(!globusArchiveType.equals(HpcArchiveType.ARCHIVE)){
+				throw new HpcException("S3 Configuration is null", HpcErrorType.UNEXPECTED_ERROR);
+			}
+		}
+		boolean externalStorage = (s3Configuration != null) ? s3Configuration.getExternalStorage() : false;
+		boolean archiveLink = externalStorage ? true : false;
+
+		// Physical file can be deleted if it is a regular file(not a Link) when the Delete API param force is set to True
+		boolean deleteDataFile = !registeredLink && !archiveLink && force;
+		// Soft Delete can be done for a regular file(not a Link) when the  Delete API param force is set to false
+		boolean moveToDeletedArchive = (registeredLink || archiveLink) ? false : !force;
+		// The Metadata record can be deleted for Links. It can also be deleted for regular files when the Delete API param force is set to true
+		boolean deleteDataObjectRecord = (registeredLink || archiveLink) ? true : force;
 
 		// Validate the data object exists in the Archive. If it is not a softlink.
 		if (!registeredLink) {
@@ -1848,10 +1901,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 
-		// Hard delete is permitted for system administrators and system accounts
+		//Hard delete is permitted only for system administrators and system accounts
 		if(!invoker.getAuthenticationType().equals(HpcAuthenticationType.SYSTEM_ACCOUNT) && 
-		    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
-			if(!registeredLink && force) {
+			    !HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) ) {
+			if(deleteDataFile) {
 				String message = "Hard delete is permitted for system administrators only";
 				logger.error(message);
 				throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
@@ -1861,8 +1914,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// If this is a GroupAdmin, then ensure that:
 		// 1. The file is less than 90 days old (Only soft delete is allowed if the doc
 		// config allows deletion after 90 days.)
-
-		if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
+		if (!registeredLink && !archiveLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 			Calendar cutOffDate = Calendar.getInstance();
 			cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
 			boolean deletionAllowed = dataManagementService
@@ -1899,9 +1951,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// Delete the file from the archive (if it's archived and not a link and it is a
+		// Delete the physical file from the archive (if it's archived and not a link and it is a
 		// hard delete).
-		if (!registeredLink && force) {
+		if (deleteDataFile) {
 			if (!abort) {
 				switch (systemGeneratedMetadata.getDataTransferStatus()) {
 				case ARCHIVED:
@@ -1923,32 +1975,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// Remove the file from data management.
-		if (!abort && force) {
-			try {
-				dataManagementService.delete(path, false);
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-
-			} catch (HpcException e) {
-				logger.error("Failed to delete file from datamanagement", e);
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-				dataObjectDeleteResponse.setMessage(e.getMessage());
-			}
-		} else {
-			if (!abort) {
+		if(!abort) {
+			if (deleteDataObjectRecord) {
+				// Remove the file record from data management(IRODS)
 				try {
-					securityService.executeAsSystemAccount(Optional.empty(),
-							() -> dataManagementService.softDelete(path, Optional.of(false)));
+					dataManagementService.delete(path, false);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+
 				} catch (HpcException e) {
-					logger.error("Failed to soft delete file from datamanagement", e);
+					logger.error("Failed to delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-					dataObjectDeleteResponse.setArchiveDeleteStatus(false);
 					dataObjectDeleteResponse.setMessage(e.getMessage());
 				}
-			} else
-				dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+			} else if (moveToDeletedArchive) {
+					// Soft delete
+					try {
+						securityService.executeAsSystemAccount(Optional.empty(),
+								() -> dataManagementService.softDelete(path, Optional.of(false)));
+						dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+						dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+					} catch (HpcException e) {
+						logger.error("Failed to soft delete file from datamanagement", e);
+						dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+						dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+						dataObjectDeleteResponse.setMessage(e.getMessage());
+					}
+			}
+		} else {
+			// Abort is true
+			dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 		}
 
 		// Add an audit record of this deletion attempt.
@@ -1965,6 +2020,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return dataObjectDeleteResponse;
 	}
+
 
 	@Override
 	public HpcEntityPermissionsResponseDTO setDataObjectPermissions(String path,
@@ -2475,6 +2531,95 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return bulkMetadataUpdateResponse;
 	}
 
+	@Override
+	public HpcListObjectsResponseDTO listObjects(String path) throws HpcException {
+		
+		HpcListObjectsResponseDTO listObjectsResponse = new HpcListObjectsResponseDTO();
+		
+		// Validate the path and get the corresponding archive path from the configuration
+		String archivePath = validateExternalPath(path);
+		
+		// Construct the File location
+		HpcFileLocation fileLocation = new HpcFileLocation();
+		fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
+		fileLocation.setFileId(path);
+		
+		// Get the directory listing for the input path
+		List<HpcListObjectsEntry> directoryListing = dataTransferService.listDirectory(fileLocation);
+		listObjectsResponse.getContents().addAll(directoryListing);
+		
+		// HashSet of path
+		HashSet<String> listingPaths = new HashSet<>();
+		for(HpcListObjectsEntry entry: directoryListing) {
+			listingPaths.add(entry.getPath());
+		}
+		
+		// Get the collection listing for archive path
+		HpcSystemGeneratedMetadata metadata = metadataService
+				.getCollectionSystemGeneratedMetadata(archivePath);
+		HpcCollection collection = dataManagementService.getFullCollection(archivePath, metadata.getLinkSourcePath());
+		
+		// Prepare the response
+		if(collection != null && collection.getDataObjectsTotalRecords() + collection.getSubCollectionsTotalRecords() > 0) {
+			
+			// If it is an archive link record (path is also in directory listing), don't add to the contents
+			listObjectsResponse.getContents().addAll(populateListObjectEntries(path, collection.getSubCollections(), true, listingPaths));
+			listObjectsResponse.getContents().addAll(populateListObjectEntries(path, collection.getDataObjects(), false, listingPaths));
+		}
+		listObjectsResponse.setName(StringUtils.substringAfterLast(archivePath, "/"));
+		listObjectsResponse.setPath(path);
+		listObjectsResponse.setArchivePath(archivePath);
+		listObjectsResponse.setTotalRecords(listObjectsResponse.getContents().size());
+		
+		return listObjectsResponse;
+	}
+	
+	@Override
+	public HpcCalculateTotalSizeResponseDTO calculateTotalSize(
+			HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest) throws HpcException {
+		
+		HpcCalculateTotalSizeResponseDTO calculateTotalSizeResponse = new HpcCalculateTotalSizeResponseDTO();
+		
+		for(String path: calculateTotalSizeRequest.getPaths()) {
+			
+			// Validate the path and get the corresponding archive path from the configuration
+			String archivePath = validateExternalPath(path);
+			
+		
+			// Construct the File location
+			HpcFileLocation fileLocation = new HpcFileLocation();
+			fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
+			fileLocation.setFileId(path);
+		
+			
+			HpcCalculateTotalSizeEntry calculateTotalSizeEntry = new HpcCalculateTotalSizeEntry();
+			calculateTotalSizeEntry.setPath(path);
+		
+			// Calculate the total size and object count of the path by recursively adding the file sizes and object counts
+			calculateTotalSizeEntry = calculateTotalSizeAndCount(calculateTotalSizeEntry, fileLocation);
+			
+			if(calculateTotalSizeRequest.getIncludeArchived()) {
+				
+				// Obtain the summary by path report for collection size and num object
+				HpcReport totalSizeReport = null;
+				totalSizeReport = getTotalSizeAndDataObjectCountReport(archivePath);
+
+				calculateTotalSizeEntry.setArchivePath(archivePath);
+				for(HpcReportEntry entry : totalSizeReport.getReportEntries()) {
+					if(entry.getAttribute().equals(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS)) {
+						calculateTotalSizeEntry.setArchiveCount(Long.parseLong(entry.getValue()));
+					} else if (entry.getAttribute().equals(HpcReportEntryAttribute.TOTAL_DATA_SIZE)) {
+						calculateTotalSizeEntry.setArchiveSize(Long.parseLong(entry.getValue()));
+					}
+				
+				}
+			}
+			calculateTotalSizeResponse.getCalculateTotalSizeResponse().add(calculateTotalSizeEntry);			
+		}
+		
+		return calculateTotalSizeResponse;
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -4752,5 +4897,115 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return uploadResponse;
 	}
+	
+	/**
+	 * Calculates the total size and object count for a given path recursively
+	 * 
+	 * @param calculateTotalSizeEntry The entry to track the total size and count
+	 * @param HpcFileLocation The file location
+	 * @return calculateTotalSizeEntry The entry to track the total size and count
+	 * @throws HpcException
+	 */
+	private HpcCalculateTotalSizeEntry calculateTotalSizeAndCount(HpcCalculateTotalSizeEntry calculateTotalSizeEntry,
+			HpcFileLocation fileLocation) throws HpcException {
 
+		List<HpcListObjectsEntry> directoryListing = dataTransferService.listDirectory(fileLocation);
+		
+		for(HpcListObjectsEntry entry: directoryListing) {
+			if (entry.getIsDirectory()) {
+				HpcFileLocation childLocation = new HpcFileLocation();
+				childLocation.setFileContainerId("External"); // This is not used for local path but required for validation
+				childLocation.setFileId(entry.getPath());
+				calculateTotalSizeEntry = calculateTotalSizeAndCount(calculateTotalSizeEntry, childLocation);
+			} else {
+				calculateTotalSizeEntry.setSize(calculateTotalSizeEntry.getSize()+ entry.getSize());
+				calculateTotalSizeEntry.setObjectCount(calculateTotalSizeEntry.getObjectCount() + 1);
+			}
+		}
+		return calculateTotalSizeEntry;
+	}
+	
+	/**
+	 * Convert a list of HpcCollectionListingEntry to a list of HpcListObjectsEntry
+	 * 
+	 * @param path The path
+	 * @param entries HpcCollectionListingEntry to convert to HpcListObjectsEntry
+	 * @param isCollection true if it is a collection
+	 * @param excludePaths The paths to exclude
+	 * @return List of HpcListObjectsEntry
+	 * @throws HpcException
+	 */
+	private List<HpcListObjectsEntry> populateListObjectEntries(String path, List<HpcCollectionListingEntry> entries,
+			boolean isCollection, HashSet<String> excludePaths) throws HpcException {
+
+		List<HpcListObjectsEntry> listObjectsEntries = new ArrayList<>();
+
+		for (HpcCollectionListingEntry entry : entries) {
+			HpcListObjectsEntry listObjectEntry = new HpcListObjectsEntry();
+			listObjectEntry.setArchivePath(entry.getPath());
+			Path fullPath = Paths.get(entry.getPath());
+			listObjectEntry.setName(fullPath.getFileName().toString());
+			listObjectEntry.setPath(path + File.separator + listObjectEntry.getName());
+			listObjectEntry.setIsDirectory(isCollection ? true : false);
+			listObjectEntry.setCreated(entry.getCreatedAt());
+			listObjectEntry.setLastModified(entry.getCreatedAt());
+			listObjectEntry.setSize(isCollection ? 0 : entry.getDataSize());
+			listObjectEntry.setArchived(true);
+			if(!excludePaths.contains(listObjectEntry.getPath()))
+				listObjectsEntries.add(listObjectEntry);
+		}
+		return listObjectsEntries;
+	}
+	
+	/**
+	 * Validates a user requested external path to check for the following
+	 * 1. The external path is a configured path in DME
+	 * 2. The user has permission to the archive
+	 * 3. The external path is accessible
+	 * 4. The user has own permission to the external folder
+	 * @param path The external path
+	 * @return The corresponding archive path of the external path provided.
+	 * @throws HpcException, if validation fails
+	 */
+	private String validateExternalPath(String path) throws HpcException {
+		
+		// Check whether it is an external path that is configured in DME
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
+				.findDataManagementConfigurationFromExternalPath(path);
+		if(dataManagementConfiguration == null) {
+			throw new HpcException("External path not configured in DME: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementService
+				.getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId());
+		// Derive the archive path for the input path from the configuration
+		String archivePath = dataManagementConfiguration.getBasePath() + StringUtils.substringAfter(path, dataTransferConfiguration.getPosixPath());
+		
+		// Validate that the invoker has access to that archive.
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		HpcPermission permission = dataManagementService.getCollectionPermission(dataManagementConfiguration.getBasePath()).getPermission();
+		if (!HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) && permission.equals(HpcPermission.NONE)) {
+			throw new HpcException(
+					"You do not have permission to access the archive: " + dataManagementConfiguration.getBasePath(),
+					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+		}
+					
+		// Validate the input path - ensure it is an existing folder and not a file.
+		HpcFileLocation fileLocation = new HpcFileLocation();
+		fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
+		fileLocation.setFileId(path);
+		HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
+		if (!pathAttributes.getIsDirectory()) {
+          throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+
+		// Validate that the invoker has own permission to the folder
+		if(!pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
+			throw new HpcException(
+					"You do not have permission to access the external folder: " + path,
+					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+		}
+		
+		return archivePath;
+	}
 }
