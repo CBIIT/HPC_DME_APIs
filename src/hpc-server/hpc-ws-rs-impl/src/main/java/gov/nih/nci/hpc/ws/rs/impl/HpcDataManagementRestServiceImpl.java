@@ -75,6 +75,9 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
@@ -944,6 +947,32 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		}
 
 		return okResponse(bulkMetadataUpdateResponse, false);
+	}
+	
+	@Override
+	public Response listObjects(String path) {
+		HpcListObjectsResponseDTO listObjectsResponse = null;
+		try {
+			listObjectsResponse = dataManagementBusService.listObjects(toNormalizedPath(path));
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+		
+		return okResponse(listObjectsResponse, false);
+	}
+
+	@Override
+	public Response calculateTotalSize(HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest) {
+		HpcCalculateTotalSizeResponseDTO calculateTotalSizeResponse = null;
+		try {
+			calculateTotalSizeResponse = dataManagementBusService.calculateTotalSize(calculateTotalSizeRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+		
+		return okResponse(calculateTotalSizeResponse, false);
 	}
 
 	// ---------------------------------------------------------------------//

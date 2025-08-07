@@ -45,8 +45,11 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -635,5 +638,27 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcBulkMetadataUpdateResponseDTO updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest)
 			throws HpcException;
+
+	/**
+	 * List objects directly under path. Non-recursive listing.
+	 *
+	 * @param path The path.
+	 * @return A response DTO containing the list of objects directly under the path. 
+	 * @throws HpcException on service failure.
+	 */
+	public HpcListObjectsResponseDTO listObjects(String path) throws HpcException;
+	
+	/**
+	 * Calculate Total size of each path requested in the request.
+	 *
+	 * @param calculateTotalSizeRequest The request containing the paths to 
+	 * calculate the total size.
+	 * @return A response DTO containing the total size for each path requested.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCalculateTotalSizeResponseDTO calculateTotalSize(
+			HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest) throws HpcException;
+
+	
 
 }
