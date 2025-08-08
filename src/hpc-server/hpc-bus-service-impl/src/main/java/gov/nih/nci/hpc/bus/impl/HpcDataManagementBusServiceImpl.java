@@ -2923,15 +2923,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationType(HpcDataTransferType.BOX);
 			}
 
-			// Get the status of the individual data object download tasks if the collection
-			// status is not yet
-			// ACTIVE, because the collection items field does not get populated before that
+			// Get the status of the individual data object download tasks if the collection status
+			// is not yet ACTIVE, because the collection items field does not get populated before that
+
 			List<HpcCollectionDownloadTaskItem> items = taskStatus.getCollectionDownloadTask().getItems();
 			if (!HpcCollectionDownloadTaskStatus.ACTIVE.equals(taskStatus.getCollectionDownloadTask().getStatus())
 					&& CollectionUtils.isEmpty(items)) {
 				logger.info("Retrieving download tasks in collection {} with status {}",
 						taskStatus.getCollectionDownloadTask().getPath(),
 						taskStatus.getCollectionDownloadTask().getStatus());
+
+				//Get the status of the in-progress data object items from the download task table
 				for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataTransferService
 						.getDataObjectDownloadTasksByCollectionDownloadTaskId(taskId)) {
 					HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -2968,7 +2970,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 											: null);
 					items.add(downloadItem);
 				}
+
+				//Get the status of the completed data object items from the download task result table
+				for (HpcDownloadTaskResult dataObjectDownloadTaskResult : dataTransferService
+						.getDataObjectDownloadTaskResultsByCollectionDownloadTaskId(taskId)) {
+					HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+					downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadTaskResult.getId());
+					downloadItem.setPath(dataObjectDownloadTaskResult.getPath());
+					downloadItem.setSize(dataObjectDownloadTaskResult.getSize());
+					downloadItem.setDestinationLocation(dataObjectDownloadTaskResult.getDestinationLocation());
+					downloadItem.setResult(dataObjectDownloadTaskResult.getResult());
+					items.add(downloadItem);
+				}
+
 			}
+
 			downloadStatus.setPercentComplete(
 					calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
