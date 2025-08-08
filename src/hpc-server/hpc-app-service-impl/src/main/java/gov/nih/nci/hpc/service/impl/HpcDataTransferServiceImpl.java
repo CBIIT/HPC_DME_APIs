@@ -997,6 +997,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public List<HpcDownloadTaskResult> getDataObjectDownloadTaskResultsByCollectionDownloadTaskId(String taskId)
+			throws HpcException {
+		return dataDownloadDAO.getDataObjectDownloadTaskResultByCollectionDownloadTaskId(taskId);
+	}
+
+	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
 			throws HpcException {
