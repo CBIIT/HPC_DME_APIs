@@ -2238,11 +2238,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	private HpcDataManagementRulesDTO getDataManagementRules(HpcDataManagementConfiguration dataManagementConfiguration,
-			Boolean metadataRules) {
+			Boolean metadataRules) throws HpcException {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
 		rules.setId(dataManagementConfiguration.getId());
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
+
+		HpcDataTransferConfiguration s3Configuration = (dataManagementConfiguration.getS3UploadConfigurationId() != null
+				&& !dataManagementConfiguration.getS3UploadConfigurationId().trim().isEmpty())
+						? dataManagementService
+								.getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId())
+						: null;
+
+		// If External Storage is true, and the Posix Path is not empty, set the ExternalArchivePath in the response dto
+		if (s3Configuration != null && s3Configuration.getExternalStorage() && s3Configuration.getPosixPath() != null
+				&& !s3Configuration.getPosixPath().isEmpty()) {
+			rules.setExternalArchivePath(s3Configuration.getPosixPath());
+		}
 
 		if (metadataRules) {
 			rules.getCollectionMetadataValidationRules()
