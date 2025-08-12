@@ -2244,15 +2244,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
 
-		HpcDataTransferConfiguration s3Configuration = (dataManagementConfiguration.getS3UploadConfigurationId() != null
-				&& !dataManagementConfiguration.getS3UploadConfigurationId().trim().isEmpty())
+		HpcDataTransferConfiguration s3Configuration = !StringUtils.isBlank(dataManagementConfiguration.getS3UploadConfigurationId())
 						? dataManagementService
 								.getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId())
 						: null;
 
-		// If External Storage is true, and the Posix Path is not empty, set the ExternalArchivePath in the response dto
-		if (s3Configuration != null && s3Configuration.getExternalStorage() && s3Configuration.getPosixPath() != null
-				&& !s3Configuration.getPosixPath().isEmpty()) {
+		// If External Storage is true, and the POSIX Path is not empty, set the ExternalArchivePath in the response dto
+		if (s3Configuration != null && s3Configuration.getExternalStorage() && !StringUtils.isBlank(s3Configuration.getPosixPath())) {
 			rules.setExternalArchivePath(s3Configuration.getPosixPath());
 		}
 
