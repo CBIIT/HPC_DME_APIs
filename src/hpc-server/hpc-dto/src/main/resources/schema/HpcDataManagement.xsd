@@ -634,7 +634,7 @@
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="basePath" type="xsd:string" />
-			<xsd:element name="externalArchivePath" type="xsd:string" />
+			<xsd:element name="externalArchivePath" type="xsd:string" minOccurs="0" />
 			<xsd:element name="collectionMetadataValidationRules"
 				type="hpc-domain-metadata:HpcMetadataValidationRule" minOccurs="0"
 				maxOccurs="unbounded" />
