@@ -613,10 +613,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				// is done and the 2nd hop has not started, OR
 				// this is a two hop collection download where the 1st hop is not done
 				// but the 2nd hop has already started then show the status as IN_PROGRESS
-				if ( (hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE")
-						&& rs.getInt("STAGING_PERCENT_COMPLETE") == 100) ||
-					 (hasColumnWithValue(rs, "TOTAL_BYTES_TRANSFERRED")
-						&& rs.getLong("TOTAL_BYTES_TRANSFERRED") > 0) ) {
+				if ((hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE") && rs.getInt("STAGING_PERCENT_COMPLETE") == 100)
+						|| (hasColumnWithValue(rs, "TOTAL_BYTES_TRANSFERRED")
+								&& rs.getLong("TOTAL_BYTES_TRANSFERRED") > 0)) {
 					userDownloadRequest.setStatus("IN_PROGRESS");
 				}
 			}
@@ -647,7 +646,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			userDownloadRequest.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		}
 		userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
-
 
 		return userDownloadRequest;
 	};
@@ -996,7 +994,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			boolean updated = jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess,
 					s3DownloadTaskServerId, id, inProcess) > 0;
 			if (!updated) {
-				logger.info("download task: [taskId={}] - Row not updated after locking", id);
+				logger.info("download task: [taskId={}] - Row not updated after locking. inProcess={}", id, inProcess);
 			}
 			return updated;
 
