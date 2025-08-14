@@ -178,7 +178,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
+			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS, TOTAL_BYTES_TRANSFERRED from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
 
 	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, RETRY_USER_ID, ITEMS, DESTINATION_TYPE, MESSAGE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
@@ -193,10 +193,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "null as RESULT, null as MESSAGE, null as ITEMS, DESTINATION_TYPE, RETRY_USER_ID, DATA_TRANSFER_STATUS as STATUS, STAGING_PERCENT_COMPLETE from HPC_DATA_OBJECT_DOWNLOAD_TASK where COMPLETION_EVENT = '1' order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and (TASK.DOC = ? or TASK.USER_ID = ?) order by CREATED";
+			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS, TOTAL_BYTES_TRANSFERRED from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and (TASK.DOC = ? or TASK.USER_ID = ?) order by CREATED";
 
 	private static final String GET_ALL_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
+			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS, TOTAL_BYTES_TRANSFERRED from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
 
 	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, MESSAGE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and (TASK.DOC = ? or TASK.USER_ID = ?) and "
@@ -609,12 +609,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			userDownloadRequest.setStatus(rs.getString(("STATUS")));
 
 			if (userDownloadRequest.getStatus().equals("RECEIVED")) {
-				// If this is a two hop data object download where the 1st hop (staging) is done
-				// and 2nd hop
-				// has not started, then show the status as IN_PROGRESS since the transaction
-				// has already begun
-				if (hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE")
-						&& rs.getInt("STAGING_PERCENT_COMPLETE") == 100) {
+				// If this is a two hop data object download where the 1st hop (staging)
+				// is done and the 2nd hop has not started, OR
+				// this is a two hop collection download where the 1st hop is not done
+				// but the 2nd hop has already started then show the status as IN_PROGRESS
+				if ( (hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE")
+						&& rs.getInt("STAGING_PERCENT_COMPLETE") == 100) ||
+					 (hasColumnWithValue(rs, "TOTAL_BYTES_TRANSFERRED")
+						&& rs.getLong("TOTAL_BYTES_TRANSFERRED") > 0) ) {
 					userDownloadRequest.setStatus("IN_PROGRESS");
 				}
 			}
@@ -645,6 +647,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			userDownloadRequest.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		}
 		userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+
+
 		return userDownloadRequest;
 	};
 
