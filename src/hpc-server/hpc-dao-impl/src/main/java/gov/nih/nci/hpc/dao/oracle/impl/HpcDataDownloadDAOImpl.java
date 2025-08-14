@@ -612,7 +612,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				// If this is a two hop data object download where the 1st hop (staging)
 				// is done and the 2nd hop has not started, OR
 				// this is a two hop collection download where the 1st hop is not done
-				//but the 2nd hop has already started then show the status as IN_PROGRESS
+				// but the 2nd hop has already started then show the status as IN_PROGRESS
 				if ( (hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE")
 						&& rs.getInt("STAGING_PERCENT_COMPLETE") == 100) ||
 					 (hasColumnWithValue(rs, "TOTAL_BYTES_TRANSFERRED")
