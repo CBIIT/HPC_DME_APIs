@@ -102,7 +102,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (DATA_TRANSFER_STATUS = ? and DESTINATION_TYPE = ?)";
 
-	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? for update skip locked";
+	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? and IN_PROCESS != ? for update skip locked";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set IN_PROCESS = ?, S3_DOWNLOAD_TASK_SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
@@ -989,7 +989,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			throws HpcException {
 		try {
 			jdbcTemplate.queryForObject(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL,
-					dataObjectDownloadTaskRowMapper, id);
+					dataObjectDownloadTaskRowMapper, id, inProcess);
 
 			boolean updated = jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess,
 					s3DownloadTaskServerId, id, inProcess) > 0;
