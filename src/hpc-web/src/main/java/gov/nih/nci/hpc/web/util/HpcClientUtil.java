@@ -24,6 +24,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
@@ -39,6 +41,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
@@ -74,6 +77,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -2280,6 +2284,57 @@ public class HpcClientUtil {
       throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
     }
   }
+  
+  public static HpcListObjectsResponseDTO listObjectsForExternalPath(String token,
+      String hpclistObjectsURL, String hpcCertPath, String hpcCertPassword, String externalPath) {
+
+    try {
+      final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
+          hpclistObjectsURL).path("/{external-path}");
+
+      final String serviceURL = ucBuilder.buildAndExpand(externalPath).encode().toUri()
+        .toURL().toExternalForm();
+      
+      WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+  
+      Response restResponse = client.get();
+  
+      if (restResponse == null || restResponse.getStatus() != 200)
+        return null;
+      
+      return (HpcListObjectsResponseDTO) HpcClientUtil.getObject(restResponse,
+          HpcListObjectsResponseDTO.class);
+    } catch (IllegalStateException | IOException e) {
+      logger.error("Failed to get directory listing of external path: " + externalPath, e);
+      throw new HpcWebException("Failed to get directory listing of external path: " + externalPath + e.getMessage());
+    }
+  }
+  
+  public static HpcCalculateTotalSizeResponseDTO calcTotalSizeForExternalPath(String token,
+      String hpcCalcTotalSizeURL, String hpcCertPath, String hpcCertPassword, Object[] externalPaths) {
+
+    try {
+      HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequestDTO = new HpcCalculateTotalSizeRequestDTO();
+      
+      calculateTotalSizeRequestDTO.setIncludeArchived(true);
+      calculateTotalSizeRequestDTO.getPaths().add((String) externalPaths[0]);
+  
+      WebClient client = HpcClientUtil.getWebClient(hpcCalcTotalSizeURL, hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+  
+      Response restResponse = client.invoke("POST", calculateTotalSizeRequestDTO);
+  
+      if (restResponse == null || restResponse.getStatus() != 200)
+        return null;
+      
+      return (HpcCalculateTotalSizeResponseDTO) HpcClientUtil.getObject(restResponse,
+          HpcCalculateTotalSizeResponseDTO.class);
+    } catch (IllegalStateException e) {
+      logger.error("Failed to calculate total size of external paths: " + Arrays.toString(externalPaths), e);
+      throw new HpcWebException("Failed to calculate total size of external path: " + Arrays.toString(externalPaths) + e.getMessage());
+    }
+  }
 
   public static RestTemplate getRestTemplate(String hpcCertPath, String hpcCertPassword) {
 
@@ -2416,6 +2471,7 @@ public class HpcClientUtil {
         new JacksonAnnotationIntrospector());
     mapper.setAnnotationIntrospector(intr);
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
 
     MappingJsonFactory factory = new MappingJsonFactory(mapper);
     JsonParser parser;
