@@ -7,29 +7,34 @@ export default function SessionProvider({children}) {
     const [session, setSession] = useState();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const sessionUrl = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/sessionMap';
 
     useEffect(() => {
-        const fetchData = async () => {
+        const sessionUrl = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/sessionMap';
+        const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
 
+        if(useExternalApi) {
+            const fetchData = async () => {
 
-            try {
-                const response = await fetch(sessionUrl, {
-                    credentials: 'include',
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                try {
+                    const response = await fetch(sessionUrl, {
+                        credentials: 'include',
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const json = await response.json();
+                    setSession(json);
+                } catch (e) {
+                    setError(e);
+                } finally {
+                    setLoading(false);
                 }
-                const json = await response.json();
-                setSession(json);
-            } catch (e) {
-                setError(e);
-            } finally {
-                setLoading(false);
             }
-        }
 
-        fetchData();
+            fetchData();
+        } else {
+            setLoading(false);
+        }
     }, []); // Empty dependency array ensures this runs only once after initial render
 
     if (loading) {
