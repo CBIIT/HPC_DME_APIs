@@ -2223,11 +2223,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException {
+	  
+	    List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
+      
 		// Input validation.
+	    if (!getPathAttributes(fileLocation).getExists()) {
+	        return directoryListing;
+	    }
 		if (!getPathAttributes(fileLocation).getIsDirectory()) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
 		
 		File directory = new File(fileLocation.getFileId());
         File[] files = directory.listFiles();
@@ -2238,7 +2243,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             	childEntry.setPath(file.getPath());
             	childEntry.setName(file.getName());
             	childEntry.setIsDirectory(file.isDirectory() ? true : false);
-            	childEntry.setSize(file.length());
+            	childEntry.setSize(file.isDirectory() ? 0 : file.length());
     			childEntry.setArchived(false);
     			
             	Path filePath = Paths.get(file.getPath());
