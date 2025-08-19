@@ -5,13 +5,20 @@ import React from "react";
 
 export default function Usage() {
     const session = useSession();
+
+    const handleCloseWindow = () => {
+        if (typeof window !== 'undefined') {
+            window.close();
+        }
+    }
+
     return (
         <>
             <div className="container mb-4">
                 <div className="row justify-content-end">
                     <div className="col-lg-1">
                         {/* Close button */}
-                        <button type="button" className="btn btn-primary form-control">
+                        <button type="button" className="btn btn-primary form-control" onClick={handleCloseWindow}>
                             <span>Close</span>
                         </button>
                     </div>
