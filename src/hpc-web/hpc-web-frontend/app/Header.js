@@ -61,8 +61,8 @@ export default function Header() {
                                         <li className="eborder-top"><a
                                             href="https://wiki.nci.nih.gov/display/DMEdoc" target="_blank"><i
                                             className="icon_book_alt"></i>User Guide</a></li>
-                                        <li><a href="/swagger-ui/index.html" target="_blank"><img
-                                            src="img/swagger.svg" width="13"/>&nbsp;&nbsp;&nbsp;&nbsp;API
+                                        <li><a href="/swagger-ui/index.html" target="_blank"><Image
+                                            src="img/swagger.svg" height = "13" width="13" alt="Swagger"/>&nbsp;&nbsp;&nbsp;&nbsp;API
                                             Specification</a></li>
                                         <li><a href="https://github.com/CBIIT/HPC_DME_APIs" target="_blank"><i
                                             className="icon_key_alt"></i>DME Site on GitHub</a></li>

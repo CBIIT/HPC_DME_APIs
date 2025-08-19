@@ -1,82 +1,128 @@
-[
-    {
-        "name": "PI_0002",
-        "path": "/data/CMM/PI_0002",
-        "size": "-",
-        "created": "2021-05-21 15:18:46",
-        "lastModified": "2022-04-29 13:28:49",
-        "archived": "No"
-    },
-    {
-        "name": "PI_0003",
-        "path": "/data/CMM/PI_0003",
-        "size": "-",
-        "created": "2021-06-17 12:26:56",
-        "lastModified": "2024-12-16 13:40:16",
-        "archived": "Yes"
-    },
-    {
-        "name": "PI_0004",
-        "path": "/data/CMM/PI_0004",
-        "size": "-",
-        "created": "2021-06-14 15:08:04",
-        "lastModified": "2021-06-23 15:36:11",
-        "archived": "No"
-    },
-    {
-        "name": "PI_0005",
-        "path": "/data/CMM/PI_0005",
-        "size": "-",
-        "created": "2021-06-23 15:36:11",
-        "lastModified": "2024-12-16 13:40:16",
-        "archived": "No"
-    },
-    {
-        "name": "PI_0006",
-        "path": "/data/CMM/PI_0006",
-        "size": "-",
-        "created": "2021-06-14 15:39:21",
-        "lastModified": "2022-04-29 13:28:49",
-        "archived": "No"
-    },
-    {
-        "name": "PI_0007",
-        "path": "/data/CMM/PI_0007",
-        "size": "-",
-        "created": "2021-02-11 13:28:57",
-        "lastModified": "2022-04-29 13:28:49",
-        "archived": "No"
-    },
-    {
-        "name": "PI_0008",
-        "path": "/data/CMM/PI_0008",
-        "size": "-",
-        "created": "2021-06-16 08:40:03",
-        "lastModified": "2022-04-29 13:28:49",
-        "archived": "No"
-    },
-    {
-        "name": "PI_0010",
-        "path": "/data/CMM/PI_0010",
-        "size": "-",
-        "created": "2019-05-02 13:49:50",
-        "lastModified": "2025-02-03 14:05:28",
-        "archived": "Yes"
-    },
-    {
-        "name": "PI_0011",
-        "path": "/data/CMM/PI_0011",
-        "size": "-",
-        "created": "2019-10-16 10:59:07",
-        "lastModified": "2021-02-11 13:28:57",
-        "archived": "No"
-    },
-    {
-        "name": "PI_0012",
-        "path": "/data/CMM/PI_0012",
-        "size": "-",
-        "created": "2021-06-24 03:43:43",
-        "lastModified": "2021-06-16 08:40:03",
-        "archived": "No"
-    }
-]
+{
+    "name": "CCR_CMM_Archive",
+    "path": "/Users/dinhys/data/CMM_Data",
+    "archivePath": "/CCR_CMM_Archive",
+    "totalRecords": 12,
+    "contents": [
+        {
+            "name": ".DS_Store",
+            "path": "/Users/dinhys/data/CMM_Data/.DS_Store",
+            "archivePath": null,
+            "created": "2020-06-12T12:36:09.000+00:00",
+            "lastModified": "2025-07-23T13:01:21.393+00:00",
+            "isDirectory": false,
+            "archived": false,
+            "size": 6148
+        },
+        {
+            "name": "0010",
+            "path": "/Users/dinhys/data/CMM_Data/0010",
+            "archivePath": null,
+            "created": "2019-04-29T11:28:49.000+00:00",
+            "lastModified": "2020-06-12T12:36:09.475+00:00",
+            "isDirectory": true,
+            "archived": false,
+            "size": 0
+        },
+        {
+            "name": "PI_0001",
+            "path": "/Users/dinhys/data/CMM_Data/PI_0001",
+            "archivePath": null,
+            "created": "2019-04-29T11:28:49.000+00:00",
+            "lastModified": "2020-06-12T12:36:09.475+00:00",
+            "isDirectory": true,
+            "archived": false,
+            "size": 0
+        },
+        {
+            "name": "0022",
+            "path": "/Users/dinhys/data/CMM_Data/0022",
+            "archivePath": null,
+            "created": "2019-03-04T23:26:14.000+00:00",
+            "lastModified": "2019-03-04T23:26:14.000+00:00",
+            "isDirectory": true,
+            "archived": false,
+            "size": 0
+        },
+        {
+            "name": "PI_0002",
+            "path": "/Users/dinhys/data/CMM_Data/PI_0002",
+            "archivePath": "/CCR_CMM_Archive/PI_0002",
+            "created": "2021-05-20T16:55:31.000+00:00",
+            "lastModified": "2021-05-20T16:55:31.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        },
+        {
+            "name": "PI_0007",
+            "path": "/Users/dinhys/data/CMM_Data/PI_0007",
+            "archivePath": "/CCR_CMM_Archive/PI_0007",
+            "created": "2021-02-12T02:21:28.000+00:00",
+            "lastModified": "2021-02-12T02:21:28.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        },
+        {
+            "name": "PI_0010",
+            "path": "/Users/dinhys/data/CMM_Data/PI_0010",
+            "archivePath": "/CCR_CMM_Archive/PI_0010",
+            "created": "2019-06-12T13:24:03.000+00:00",
+            "lastModified": "2019-06-12T13:24:03.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        },
+        {
+            "name": "PI_0044",
+            "path": "/Users/dinhys/data/CMM_Data/PI_0044",
+            "archivePath": "/CCR_CMM_Archive/PI_0044",
+            "created": "2021-05-07T19:25:10.000+00:00",
+            "lastModified": "2021-05-07T19:25:10.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        },
+        {
+            "name": "PI_Lab_Test",
+            "path": "/Users/dinhys/data/CMM_Data/PI_Lab_Test",
+            "archivePath": "/CCR_CMM_Archive/PI_Lab_Test",
+            "created": "2019-05-08T20:44:07.000+00:00",
+            "lastModified": "2019-05-08T20:44:07.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        },
+        {
+            "name": "Test_PI_Lab",
+            "path": "/Users/dinhys/data/CMM_Data/Test_PI_Lab",
+            "archivePath": "/CCR_CMM_Archive/Test_PI_Lab",
+            "created": "2019-04-25T03:20:59.000+00:00",
+            "lastModified": "2019-04-25T03:20:59.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        },
+        {
+            "name": "pi_lab_test",
+            "path": "/Users/dinhys/data/CMM_Data/pi_lab_test",
+            "archivePath": "/CCR_CMM_Archive/pi_lab_test",
+            "created": "2019-05-07T20:55:51.000+00:00",
+            "lastModified": "2019-05-07T20:55:51.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        },
+        {
+            "name": "test_pi_lab",
+            "path": "/Users/dinhys/data/CMM_Data/test_pi_lab",
+            "archivePath": "/CCR_CMM_Archive/test_pi_lab",
+            "created": "2019-05-13T22:54:14.000+00:00",
+            "lastModified": "2019-05-13T22:54:14.000+00:00",
+            "isDirectory": true,
+            "archived": true,
+            "size": 0
+        }
+    ]
+}
