@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -448,7 +449,9 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
 		completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-		totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+		totalItemsCount = completedItemsCount +
+				  (downloadTask.getCanceledItems() != null ? downloadTask.getCanceledItems().size() : 0)
+				  + (downloadTask.getFailedItems() != null ? downloadTask.getFailedItems().size() : 0);
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
@@ -515,7 +518,9 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
 		completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-		totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+		totalItemsCount = completedItemsCount +
+				(downloadTask.getCanceledItems() != null ? downloadTask.getCanceledItems().size() : 0)
+				+ (downloadTask.getFailedItems() != null ? downloadTask.getFailedItems().size() : 0);
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
@@ -556,7 +561,9 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		//If previousTasks is not empty, update the message to include the items in it
 		if(!previousTasks.isEmpty()) {
 			completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-			totalItemsCount = getTotalItemsCount(downloadTask, previousTasks);
+			totalItemsCount = completedItemsCount +
+			(downloadTask.getCanceledItems() != null ? downloadTask.getCanceledItems().size() : 0)
+			+ (downloadTask.getFailedItems() != null ? downloadTask.getFailedItems().size() : 0);
 			//Override the server message
 			String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 			downloadTask.setMessage(message);
@@ -568,22 +575,6 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	    model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
 	    model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
 	    return "dataobjectsdownloadtask";
-  }
-
-
-  private int getTotalItemsCount(HpcCollectionDownloadStatusDTO downloadTask, List<HpcCollectionDownloadStatusDTO> previousTasks) {
-	  int totalDownloadTaskItemsCount = 0;
-	  List<HpcCollectionDownloadStatusDTO> parentPreviousTasks = null;
-	  if(!previousTasks.isEmpty()) {
-		  HpcCollectionDownloadStatusDTO previousTask = previousTasks.get(0);
-		  totalDownloadTaskItemsCount +=
-				  (previousTask.getCanceledItems() != null ? previousTask.getCanceledItems().size() : 0)
-				  + (previousTask.getFailedItems() != null ? previousTask.getFailedItems().size() : 0);
-		  parentPreviousTasks = new ArrayList<>(previousTasks);
-		  parentPreviousTasks.remove(0);
-	  }
-
-	  return totalDownloadTaskItemsCount + getCompletedItemsCount(previousTasks.get(0), parentPreviousTasks);
   }
 
 
