@@ -2565,9 +2565,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		// Get the collection listing for archive path
-		HpcSystemGeneratedMetadata metadata = metadataService
-				.getCollectionSystemGeneratedMetadata(archivePath);
-		HpcCollection collection = dataManagementService.getFullCollection(archivePath, metadata.getLinkSourcePath());
+		HpcCollection collection = null;
+		boolean isCollection = false;
+		try {
+		    isCollection = dataManagementService.collectionExists(archivePath);
+		} catch (HpcException e){
+		    // Path not archived yet, so no listing is available.
+		}
+		
+		if(isCollection) {
+		    HpcCollectionDTO collectionDTO = getCollectionChildrenWithPaging(archivePath, 0, false);
+            collection = collectionDTO.getCollection();
+		}
 		
 		// Prepare the response
 		if(collection != null && collection.getDataObjectsTotalRecords() + collection.getSubCollectionsTotalRecords() > 0) {
@@ -4977,7 +4986,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			listObjectEntry.setLastModified(entry.getCreatedAt());
 			listObjectEntry.setSize(isCollection ? 0 : entry.getDataSize());
 			listObjectEntry.setArchived(true);
-			if(!excludePaths.contains(listObjectEntry.getPath()))
+			if(excludePaths.isEmpty() || !excludePaths.contains(listObjectEntry.getPath()))
 				listObjectsEntries.add(listObjectEntry);
 		}
 		return listObjectsEntries;
@@ -5021,12 +5030,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
 		fileLocation.setFileId(path);
 		HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
-		if (!pathAttributes.getIsDirectory()) {
+		if (pathAttributes.getExists() && !pathAttributes.getIsDirectory()) {
           throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
         }
 
 		// Validate that the invoker has own permission to the folder
-		if(!pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
+		if(pathAttributes.getExists() && !pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
 			throw new HpcException(
 					"You do not have permission to access the external folder: " + path,
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
