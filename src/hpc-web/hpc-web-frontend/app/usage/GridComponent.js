@@ -1,7 +1,7 @@
 "use client";
 
 import { AgGridReact } from 'ag-grid-react';
-import { useEffect, useState } from "react";
+import {useCallback, useEffect, useState} from "react";
 import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { useSearchParams } from 'next/navigation';
 
@@ -47,7 +47,6 @@ const GridComponent = () => {
     { headerName: 'Archived Count', field: "archiveCount" }
   ]);
 
-
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/usage/calcTotalSize?path=';
     const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
@@ -64,12 +63,14 @@ const GridComponent = () => {
             credentials: 'include',
           });
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, Message: ${errorData || 'Unknown error'}`);
           }
           const json = await response.json();
           return json.calculateTotalSizeResponse;
         } catch (e) {
           setError(e);
+          console.error("Fetch total size:", e);
         } finally {
           setLoading(false);
         }
@@ -81,7 +82,8 @@ const GridComponent = () => {
   return (
     <div className="p-4" style={{ width: "100%", height: "123px" }}>
       <AgGridReact rowData={rowData}
-                   columnDefs={columnDefs} />
+                   columnDefs={columnDefs}
+                   loading={loading} />
     </div>
   );
 };
