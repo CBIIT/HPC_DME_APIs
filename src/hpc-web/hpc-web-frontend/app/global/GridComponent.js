@@ -128,22 +128,27 @@ const GridComponent = () => {
             return data.contents;
           })
           .then((rowData) => setRowData(rowData));
-    } else {
+    } else if(absolutePath !== null) {
       const fetchData = async () => {
         try {
+          setLoading(true);
+          gridApi.setGridOption("loading", true)
           const response = await fetch(url + absolutePath, {
             credentials: 'include',
           });
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, Message: ${errorData || 'Unknown error'}`);
           }
           const json = await response.json();
           setRelativePath(json.path.split("/").pop() + '/');
           return json.contents;
         } catch (e) {
           setError(e);
+          console.error("Fetch object list:", e);
         } finally {
           setLoading(false);
+          gridApi.setGridOption("loading", false)
         }
       }
       fetchData().then((rowData) => setRowData(rowData));
@@ -162,7 +167,8 @@ const GridComponent = () => {
                        paginationPageSizeSelector={paginationPageSizeSelector}
                        theme={myTheme}
                        onGridReady={onGridReady}
-                       onSelectionChanged={onSelectionChanged} />
+                       onSelectionChanged={onSelectionChanged}
+                       loading={loading} />
         </div>
       </>
   );
