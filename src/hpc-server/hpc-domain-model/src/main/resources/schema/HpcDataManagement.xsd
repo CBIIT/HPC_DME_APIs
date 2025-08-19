@@ -55,6 +55,7 @@
 			<xsd:element name="dataManagementConfigurationId" type="xsd:string" />
 			<xsd:element name="posixPath" type="xsd:string" />
 			<xsd:element name="externalStorage" type="xsd:boolean" />
+			<xsd:element name="posixPath" type="xsd:string" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
