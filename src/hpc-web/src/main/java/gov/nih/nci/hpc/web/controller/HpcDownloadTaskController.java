@@ -449,9 +449,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
 		completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-		totalItemsCount = completedItemsCount +
-				  (downloadTask.getCanceledItems() != null ? downloadTask.getCanceledItems().size() : 0)
-				  + (downloadTask.getFailedItems() != null ? downloadTask.getFailedItems().size() : 0);
+		totalItemsCount = getTotalItemsCount(downloadTask, completedItemsCount);
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
@@ -518,9 +516,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	//If previousTasks is not empty, update the message to include the items in it
 	if(!previousTasks.isEmpty()) {
 		completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-		totalItemsCount = completedItemsCount +
-				(downloadTask.getCanceledItems() != null ? downloadTask.getCanceledItems().size() : 0)
-				+ (downloadTask.getFailedItems() != null ? downloadTask.getFailedItems().size() : 0);
+		totalItemsCount = getTotalItemsCount(downloadTask, completedItemsCount);
 		//Override the server message
 		String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 		downloadTask.setMessage(message);
@@ -561,9 +557,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		//If previousTasks is not empty, update the message to include the items in it
 		if(!previousTasks.isEmpty()) {
 			completedItemsCount = getCompletedItemsCount(downloadTask, previousTasks);
-			totalItemsCount = completedItemsCount +
-			(downloadTask.getCanceledItems() != null ? downloadTask.getCanceledItems().size() : 0)
-			+ (downloadTask.getFailedItems() != null ? downloadTask.getFailedItems().size() : 0);
+			totalItemsCount = getTotalItemsCount(downloadTask, completedItemsCount);
 			//Override the server message
 			String message = completedItemsCount + " items downloaded successfully out of " + totalItemsCount;
 			downloadTask.setMessage(message);
@@ -575,6 +569,14 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	    model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
 	    model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
 	    return "dataobjectsdownloadtask";
+  }
+
+
+  private int getTotalItemsCount(HpcCollectionDownloadStatusDTO downloadTask, int completedItemsCount) {
+
+      return (completedItemsCount +
+          (downloadTask.getCanceledItems() != null ? downloadTask.getCanceledItems().size() : 0)
+          + (downloadTask.getFailedItems() != null ? downloadTask.getFailedItems().size() : 0) );
   }
 
 
