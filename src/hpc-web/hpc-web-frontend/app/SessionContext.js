@@ -26,6 +26,7 @@ export default function SessionProvider({children}) {
                     setSession(json);
                 } catch (e) {
                     setError(e);
+                    console.error("Fetch session info: ", e);
                 } finally {
                     setLoading(false);
                 }

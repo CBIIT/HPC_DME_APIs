@@ -64,13 +64,15 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                         credentials: 'include',
                     });
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        const errorData = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, Message: ${errorData || 'Unknown error'}`);
                     }
                     const json = await response.json();
                     setArchives(json);
                     setAbsolutePath(json[0] || ''); // Set the first archive as the default path
                 } catch (e) {
                     setError(e);
+                    console.error("Fetch external archives list:", e);
                 } finally {
                     setLoading(false);
                 }
