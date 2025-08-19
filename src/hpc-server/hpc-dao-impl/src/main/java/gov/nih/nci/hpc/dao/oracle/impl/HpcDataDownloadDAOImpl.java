@@ -42,6 +42,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.transaction.annotation.Transactional;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAsperaAccount;
@@ -101,7 +102,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (DATA_TRANSFER_STATUS = ? and DESTINATION_TYPE = ?)";
 
-	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? for update nowait";
+	private static final String SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ? and IN_PROCESS != ? for update skip locked";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set IN_PROCESS = ?, S3_DOWNLOAD_TASK_SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
@@ -119,6 +120,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? ";
 
 	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_COLLECTION_DOWNLOAD_TASK_ID_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where COLLECTION_DOWNLOAD_TASK_ID = ? ";
+
+	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_RESULTS_BY_COLLECTION_DOWNLOAD_TASK_ID_SQL = "select * from HPC_DOWNLOAD_TASK_RESULT where COLLECTION_DOWNLOAD_TASK_ID = ? and TYPE = 'DATA_OBJECT'";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
 			+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
@@ -175,7 +178,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
+			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS, TOTAL_BYTES_TRANSFERRED from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
 
 	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, RETRY_USER_ID, ITEMS, DESTINATION_TYPE, MESSAGE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
@@ -190,10 +193,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "null as RESULT, null as MESSAGE, null as ITEMS, DESTINATION_TYPE, RETRY_USER_ID, DATA_TRANSFER_STATUS as STATUS, STAGING_PERCENT_COMPLETE from HPC_DATA_OBJECT_DOWNLOAD_TASK where COMPLETION_EVENT = '1' order by CREATED";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and (TASK.DOC = ? or TASK.USER_ID = ?) order by CREATED";
+			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS, TOTAL_BYTES_TRANSFERRED from HPC_COLLECTION_DOWNLOAD_TASK TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and (TASK.DOC = ? or TASK.USER_ID = ?) order by CREATED";
 
 	private static final String GET_ALL_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
-			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
+			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS, TOTAL_BYTES_TRANSFERRED from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
 
 	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, MESSAGE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and (TASK.DOC = ? or TASK.USER_ID = ?) and "
@@ -602,16 +605,20 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		userDownloadRequest.setPath(rs.getString("PATH"));
 		userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 
-		if(hasColumnWithValue(rs, "STATUS")) {
-		    userDownloadRequest.setStatus(rs.getString(("STATUS")));
+		if (hasColumnWithValue(rs, "STATUS")) {
+			userDownloadRequest.setStatus(rs.getString(("STATUS")));
 
-		    if(userDownloadRequest.getStatus().equals("RECEIVED")) {
-		        //If this is a two hop data object download where the 1st hop (staging) is done and 2nd hop
-		        //has not started, then show the status as IN_PROGRESS since the transaction has already begun
-		        if (hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE") && rs.getInt("STAGING_PERCENT_COMPLETE") == 100)  {
-		            userDownloadRequest.setStatus("IN_PROGRESS");
-		        }
-		    }
+			if (userDownloadRequest.getStatus().equals("RECEIVED")) {
+				// If this is a two hop data object download where the 1st hop (staging)
+				// is done and the 2nd hop has not started, OR
+				// this is a two hop collection download where the 1st hop is not done
+				// but the 2nd hop has already started then show the status as IN_PROGRESS
+				if ((hasColumnWithValue(rs, "STAGING_PERCENT_COMPLETE") && rs.getInt("STAGING_PERCENT_COMPLETE") == 100)
+						|| (hasColumnWithValue(rs, "TOTAL_BYTES_TRANSFERRED")
+								&& rs.getLong("TOTAL_BYTES_TRANSFERRED") > 0)) {
+					userDownloadRequest.setStatus("IN_PROGRESS");
+				}
+			}
 		}
 
 		if (rs.getObject("RESULT") != null) {
@@ -639,6 +646,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			userDownloadRequest.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		}
 		userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+
 		return userDownloadRequest;
 	};
 
@@ -943,6 +951,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
+	public List<HpcDownloadTaskResult> getDataObjectDownloadTaskResultByCollectionDownloadTaskId(
+			String collectionDownloadTaskId) throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_ALL_DATA_OBJECT_DOWNLOAD_RESULTS_BY_COLLECTION_DOWNLOAD_TASK_ID_SQL,
+					downloadTaskResultRowMapper, collectionDownloadTaskId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get data object download task results: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
 			throws HpcException {
@@ -963,15 +984,27 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
+	@Transactional
 	public boolean setDataObjectDownloadTaskInProcess(String id, boolean inProcess, String s3DownloadTaskServerId)
 			throws HpcException {
 		try {
-			jdbcTemplate.update(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, id);
-			return jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess, s3DownloadTaskServerId,
-					id, inProcess) > 0;
+			jdbcTemplate.queryForObject(SELECT_FOR_UPDATE_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL,
+					dataObjectDownloadTaskRowMapper, id, inProcess);
+
+			boolean updated = jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess,
+					s3DownloadTaskServerId, id, inProcess) > 0;
+			if (!updated) {
+				logger.info("download task: [taskId={}] - Row not updated after locking. inProcess={}", id, inProcess);
+			}
+			return updated;
+
+		} catch (IncorrectResultSizeDataAccessException irse) {
+			logger.info("download task: [taskId={}] - Row not updated (locked or not found): {}", id,
+					irse.getMessage());
+			return false;
 
 		} catch (DataAccessException e) {
-			logger.debug("download task: [taskId={}] - DB row locked by another process: {}", id, e.getMessage());
+			logger.error("download task: [taskId={}] - Failed to update row: {}", id, e);
 			return false;
 		}
 	}
@@ -1700,25 +1733,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		return downloadItems;
 	}
 
-
 	/**
 	 * Check if the given resultset has the column with the specified table
 	 *
-	 * @param rs The resultset to check
+	 * @param rs         The resultset to check
 	 * @param columnName The label of the specified column
 	 * @return True if the column exists
 	 * @throws SQLException
 	 */
 	public boolean hasColumnWithValue(ResultSet rs, String columnName) throws SQLException {
-        ResultSetMetaData metaData = rs.getMetaData();
-        int columns = metaData.getColumnCount();
-        for (int i = 1; i <= columns; i++) {
-            if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
-                if(rs.getObject(columnName) != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+		ResultSetMetaData metaData = rs.getMetaData();
+		int columns = metaData.getColumnCount();
+		for (int i = 1; i <= columns; i++) {
+			if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
+				if (rs.getObject(columnName) != null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
