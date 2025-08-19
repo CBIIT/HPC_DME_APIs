@@ -210,7 +210,7 @@ function dm_register () {
     
     if [ "$TYPE" == "dataObject" ]
     then
-        if [ -z "$DATAOBJECT_FILE" ]
+        if [ -z "$DATAOBJECT_FILE" ] && [ -z "$DESTINATION_PATH" ]
         then
             #Perform async upload
             curl -H "Content-type: application/json" -d @$DESCRIPTION $CURL_FLAGS_ASYNC -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status

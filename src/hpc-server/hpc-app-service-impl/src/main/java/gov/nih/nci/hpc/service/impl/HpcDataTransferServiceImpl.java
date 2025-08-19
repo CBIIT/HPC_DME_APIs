@@ -999,6 +999,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public List<HpcDownloadTaskResult> getDataObjectDownloadTaskResultsByCollectionDownloadTaskId(String taskId)
+			throws HpcException {
+		return dataDownloadDAO.getDataObjectDownloadTaskResultByCollectionDownloadTaskId(taskId);
+	}
+
+	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
 			throws HpcException {
@@ -1487,14 +1493,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
 		boolean updated = true;
+		String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
 
 		logger.debug(
-				"download task: [taskId={}] - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}]",
-				downloadTask.getId(), inProcess, downloadTask.getDataTransferType(),
-				HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
+				"download task: [taskId={}] - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}, transfer-status={}]",
+				downloadTask.getId(), inProcess, downloadTask.getDataTransferType(), serverId, downloadTask.getDataTransferStatus());
 		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
-			String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
+			
 			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
 			if (updated)
 				logger.debug(
@@ -2217,11 +2223,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException {
+	  
+	    List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
+      
 		// Input validation.
+	    if (!getPathAttributes(fileLocation).getExists()) {
+	        return directoryListing;
+	    }
 		if (!getPathAttributes(fileLocation).getIsDirectory()) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
 		
 		File directory = new File(fileLocation.getFileId());
         File[] files = directory.listFiles();
@@ -2232,7 +2243,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             	childEntry.setPath(file.getPath());
             	childEntry.setName(file.getName());
             	childEntry.setIsDirectory(file.isDirectory() ? true : false);
-            	childEntry.setSize(file.length());
+            	childEntry.setSize(file.isDirectory() ? 0 : file.length());
     			childEntry.setArchived(false);
     			
             	Path filePath = Paths.get(file.getPath());

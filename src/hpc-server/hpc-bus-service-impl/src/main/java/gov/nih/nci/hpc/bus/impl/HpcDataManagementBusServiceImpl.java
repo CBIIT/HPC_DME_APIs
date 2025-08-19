@@ -2264,11 +2264,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	private HpcDataManagementRulesDTO getDataManagementRules(HpcDataManagementConfiguration dataManagementConfiguration,
-			Boolean metadataRules) {
+			Boolean metadataRules) throws HpcException {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
 		rules.setId(dataManagementConfiguration.getId());
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
+
+		HpcDataTransferConfiguration s3Configuration = !StringUtils.isBlank(dataManagementConfiguration.getS3UploadConfigurationId())
+						? dataManagementService
+								.getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId())
+						: null;
+
+		// If External Storage is true, and the POSIX Path is not empty, set the ExternalArchivePath in the response dto
+		if (s3Configuration != null && s3Configuration.getExternalStorage() && !StringUtils.isBlank(s3Configuration.getPosixPath())) {
+			rules.setExternalArchivePath(s3Configuration.getPosixPath());
+		}
 
 		if (metadataRules) {
 			rules.getCollectionMetadataValidationRules()
@@ -2555,9 +2565,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		// Get the collection listing for archive path
-		HpcSystemGeneratedMetadata metadata = metadataService
-				.getCollectionSystemGeneratedMetadata(archivePath);
-		HpcCollection collection = dataManagementService.getFullCollection(archivePath, metadata.getLinkSourcePath());
+		HpcCollection collection = null;
+		boolean isCollection = false;
+		try {
+		    isCollection = dataManagementService.collectionExists(archivePath);
+		} catch (HpcException e){
+		    // Path not archived yet, so no listing is available.
+		}
+		
+		if(isCollection) {
+		    HpcCollectionDTO collectionDTO = getCollectionChildrenWithPaging(archivePath, 0, false);
+            collection = collectionDTO.getCollection();
+		}
 		
 		// Prepare the response
 		if(collection != null && collection.getDataObjectsTotalRecords() + collection.getSubCollectionsTotalRecords() > 0) {
@@ -3038,15 +3057,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationType(HpcDataTransferType.BOX);
 			}
 
-			// Get the status of the individual data object download tasks if the collection
-			// status is not yet
-			// ACTIVE, because the collection items field does not get populated before that
+			// Get the status of the individual data object download tasks if the collection status
+			// is not yet ACTIVE, because the collection items field does not get populated before that
+
 			List<HpcCollectionDownloadTaskItem> items = taskStatus.getCollectionDownloadTask().getItems();
 			if (!HpcCollectionDownloadTaskStatus.ACTIVE.equals(taskStatus.getCollectionDownloadTask().getStatus())
 					&& CollectionUtils.isEmpty(items)) {
 				logger.info("Retrieving download tasks in collection {} with status {}",
 						taskStatus.getCollectionDownloadTask().getPath(),
 						taskStatus.getCollectionDownloadTask().getStatus());
+
+				//Get the status of the in-progress data object items from the download task table
 				for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataTransferService
 						.getDataObjectDownloadTasksByCollectionDownloadTaskId(taskId)) {
 					HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -3083,7 +3104,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 											: null);
 					items.add(downloadItem);
 				}
+
+				//Get the status of the completed data object items from the download task result table
+				for (HpcDownloadTaskResult dataObjectDownloadTaskResult : dataTransferService
+						.getDataObjectDownloadTaskResultsByCollectionDownloadTaskId(taskId)) {
+					HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+					downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadTaskResult.getId());
+					downloadItem.setPath(dataObjectDownloadTaskResult.getPath());
+					downloadItem.setSize(dataObjectDownloadTaskResult.getSize());
+					downloadItem.setDestinationLocation(dataObjectDownloadTaskResult.getDestinationLocation());
+					downloadItem.setResult(dataObjectDownloadTaskResult.getResult());
+					items.add(downloadItem);
+				}
+
 			}
+
 			downloadStatus.setPercentComplete(
 					calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
 			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
@@ -4951,7 +4986,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			listObjectEntry.setLastModified(entry.getCreatedAt());
 			listObjectEntry.setSize(isCollection ? 0 : entry.getDataSize());
 			listObjectEntry.setArchived(true);
-			if(!excludePaths.contains(listObjectEntry.getPath()))
+			if(excludePaths.isEmpty() || !excludePaths.contains(listObjectEntry.getPath()))
 				listObjectsEntries.add(listObjectEntry);
 		}
 		return listObjectsEntries;
@@ -4995,12 +5030,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
 		fileLocation.setFileId(path);
 		HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
-		if (!pathAttributes.getIsDirectory()) {
+		if (pathAttributes.getExists() && !pathAttributes.getIsDirectory()) {
           throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
         }
 
 		// Validate that the invoker has own permission to the folder
-		if(!pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
+		if(pathAttributes.getExists() && !pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
 			throw new HpcException(
 					"You do not have permission to access the external folder: " + path,
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
