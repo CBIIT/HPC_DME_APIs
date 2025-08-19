@@ -851,7 +851,7 @@ public interface HpcDataManagementRestService {
 	 * @return The REST service response w/ HpcCalculateTotalSizeResponseDTO
 	 *         entity.
 	 */
-	@GET
+	@POST
 	@Path("/calculateTotalSize")
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
