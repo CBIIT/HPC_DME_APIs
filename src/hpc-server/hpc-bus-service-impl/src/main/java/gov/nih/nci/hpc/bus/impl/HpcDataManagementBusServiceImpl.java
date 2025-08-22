@@ -2565,15 +2565,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		// Get the collection listing for archive path
-		HpcCollection collection = null;
-		boolean isCollection = false;
-		try {
-		    isCollection = dataManagementService.collectionExists(archivePath);
-		} catch (HpcException e){
-		    // Path not archived yet, so no listing is available.
-		}
+        HpcCollection collection = null;
 		
-		if(isCollection) {
+		if(StringUtils.isNotEmpty(archivePath)) {
 		    HpcCollectionDTO collectionDTO = getCollectionChildrenWithPaging(archivePath, 0, false);
             collection = collectionDTO.getCollection();
 		}
@@ -2585,7 +2579,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			listObjectsResponse.getContents().addAll(populateListObjectEntries(path, collection.getSubCollections(), true, listingPaths));
 			listObjectsResponse.getContents().addAll(populateListObjectEntries(path, collection.getDataObjects(), false, listingPaths));
 		}
-		listObjectsResponse.setName(StringUtils.substringAfterLast(archivePath, "/"));
+		listObjectsResponse.setName(StringUtils.substringAfterLast(path, "/"));
 		listObjectsResponse.setPath(path);
 		listObjectsResponse.setArchivePath(archivePath);
 		listObjectsResponse.setTotalRecords(listObjectsResponse.getContents().size());
@@ -4998,6 +4992,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * 2. The user has permission to the archive
 	 * 3. The external path is accessible
 	 * 4. The user has own permission to the external folder
+	 * 5. The mapped archive path exists if external path does not
 	 * @param path The external path
 	 * @return The corresponding archive path of the external path provided.
 	 * @throws HpcException, if validation fails
@@ -5031,7 +5026,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		fileLocation.setFileId(path);
 		HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
 		if (pathAttributes.getExists() && !pathAttributes.getIsDirectory()) {
-          throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+          throw new HpcException("Invalid file location: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
         }
 
 		// Validate that the invoker has own permission to the folder
@@ -5040,6 +5035,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					"You do not have permission to access the external folder: " + path,
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
+		
+		// Check if the archive path requested exists
+		boolean collectionExists = false;
+		collectionExists = dataManagementService.collectionExists(archivePath);
+       
+		if(!pathAttributes.getExists() && !collectionExists) {
+            // Both the external path and archive path does not exist, throw an error
+            throw new HpcException("Invalid file location: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		} else if (!collectionExists) {
+            // Path not archived yet. Remove archivePath
+            archivePath = "";
+        }
 		
 		return archivePath;
 	}
