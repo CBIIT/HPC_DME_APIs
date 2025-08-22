@@ -128,6 +128,7 @@ const GridComponent = () => {
             return data.contents;
           })
           .then((rowData) => setRowData(rowData));
+      setLoading(false);
     } else if(absolutePath !== null) {
       const fetchData = async () => {
         try {

@@ -56,6 +56,7 @@ const GridComponent = () => {
       fetch("/usage.json") // Fetch data from server
         .then((result) => result.json()) // Convert to JSON
         .then((rowData) => setRowData(rowData)); // Update state of `rowData`
+      setLoading(false);
     } else {
       const fetchData = async () => {
         try {
