@@ -5,16 +5,27 @@ import { useEffect, useState, useCallback, useContext } from "react";
 import { useMemo } from 'react';
 import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { GridContext } from './GridContext';
+import {faAngleLeft} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 
 
 const GridComponent = () => {
-  const {rowData, setRowData, gridApi, setGridApi, setSelectedRows, absolutePath, setAbsolutePath} = useContext(GridContext);
+  const {
+    rowData,
+    setRowData,
+    gridApi,
+    setGridApi,
+    setSelectedRows,
+    absolutePath,
+    setAbsolutePath
+  } = useContext(GridContext);
   const [relativePath, setRelativePath] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [parentPath, setParentPath] = useState(null);
 
   const handleSpanClick = (event) => {
     setAbsolutePath(event.currentTarget.id);
@@ -115,6 +126,9 @@ const GridComponent = () => {
     }
   }, [gridApi, setSelectedRows]);
 
+  const handleBackButtonClick = (event) => {
+    setAbsolutePath(event.currentTarget.id);
+  };
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/list?path=';
@@ -124,10 +138,12 @@ const GridComponent = () => {
       fetch("/folders.json") // Fetch data from server
           .then((result) => result.json()) // Convert to JSON
           .then((data) => {
-            setRelativePath(data.path.split("/").pop());
+            setRelativePath(data.path.split("/").pop() + '/');
+            setParentPath(data.path.substring(0, data.path.lastIndexOf("/")));
             return data.contents;
           })
           .then((rowData) => setRowData(rowData));
+      setLoading(false);
     } else if(absolutePath !== null) {
       const fetchData = async () => {
         try {
@@ -142,6 +158,7 @@ const GridComponent = () => {
           }
           const json = await response.json();
           setRelativePath(json.path.split("/").pop() + '/');
+          setParentPath(json.path.substring(0, json.path.lastIndexOf("/")));
           return json.contents;
         } catch (e) {
           setError(e);
@@ -157,8 +174,10 @@ const GridComponent = () => {
 
   return (
       <>
-        <h3>{relativePath}</h3>
-        <div style={{ width: "98%", height: "520px" }}>
+
+        <h3><a id={parentPath} href="#" onClick={handleBackButtonClick}><span className="m-3" ><FontAwesomeIcon icon={faAngleLeft} /></span></a>
+          {relativePath}</h3>
+        <div className="ps-3" style={{ width: "98%", height: "520px" }}>
           <AgGridReact rowData={rowData}
                        columnDefs={columnDefs}
                        rowSelection={rowSelection}
