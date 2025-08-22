@@ -1,9 +1,11 @@
 "use client";
 import { useSession } from "../SessionContext";
-import {GridContext, GridProvider} from './GridContext';
+import {GridProvider} from './GridContext';
 import GridComponent from "./GridComponent";
 import Sidebar from "./Sidebar";
-import {useContext, useState} from 'react';
+import ActionsBar from "./ActionsBar";
+import {useState} from 'react';
+
 
 export default function Global() {
     const session = useSession();
@@ -18,6 +20,7 @@ export default function Global() {
         <div>
             <GridProvider>
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar}/>
+                <ActionsBar isOpen={isSidebarOpen} />
                 <div
                     className={`${isSidebarOpen ? 'offset-md-3' : ''}`}
                     style={{
@@ -25,7 +28,7 @@ export default function Global() {
                         flexGrow: 1
                     }}
                 >
-                    <section className="bg-white">
+                    <section className="bg-white rounded-3">
                         <GridComponent />
                     </section>
                 </div>

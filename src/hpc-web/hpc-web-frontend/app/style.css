@@ -395,3 +395,8 @@ ul.navbar-nav li.active a, ul.navbar-nav li a:hover, ul.navbar-nav li a:focus {
 li.sub-menu a {
     text-decoration: none;
 }
+
+ol.dme-breadcrumb {
+    display: flex;
+    flex-direction: row;
+}

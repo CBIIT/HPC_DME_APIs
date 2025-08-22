@@ -7,6 +7,8 @@ export const GridContext = createContext({
     setGridApi: () => {},
     absolutePath: null,
     setAbsolutePath: () => {},
+    basePath: null,
+    setBasePath: () => {},
     selectedRows: [],
     setSelectedRows: () => {}
 });
@@ -15,6 +17,7 @@ export const GridProvider = ({ children }) => {
     const [rowData, setRowData] = useState([]);
     const [gridApi, setGridApi] = useState(null);
     const [absolutePath, setAbsolutePath] = useState(null);
+    const [basePath, setBasePath] = useState(null);
     const [selectedRows, setSelectedRows] = useState([]);
 
     const value = {
@@ -24,6 +27,8 @@ export const GridProvider = ({ children }) => {
         setGridApi,
         absolutePath,
         setAbsolutePath,
+        basePath,
+        setBasePath,
         selectedRows,
         setSelectedRows
     };
