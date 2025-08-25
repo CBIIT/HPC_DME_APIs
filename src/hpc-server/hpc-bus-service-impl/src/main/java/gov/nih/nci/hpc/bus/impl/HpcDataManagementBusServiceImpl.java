@@ -5030,7 +5030,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         }
 
 		// Validate that the invoker has own permission to the folder
-		if(pathAttributes.getExists() && !pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
+		if(!HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) && pathAttributes.getExists() && !pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
 			throw new HpcException(
 					"You do not have permission to access the external folder: " + path,
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
