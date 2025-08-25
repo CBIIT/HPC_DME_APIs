@@ -1,7 +1,7 @@
 "use client";
 
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faDownload} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import React, { useContext } from 'react';
 import { GridContext } from './GridContext';
 

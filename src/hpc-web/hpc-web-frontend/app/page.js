@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import {useSession} from "./SessionContext";
+import { useSession } from "./SessionContext";
 
 export default function Home() {
     const session = useSession();

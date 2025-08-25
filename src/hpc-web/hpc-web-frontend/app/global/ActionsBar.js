@@ -3,15 +3,18 @@
 
 import ActionsButton from "./ActionsButton";
 import DownloadButton from "./DownloadButton";
-import {faSearch, faFilter} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {useCallback, useContext} from "react";
-import {GridContext} from "@/app/global/GridContext";
+import { faSearch, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useContext } from "react";
+import { GridContext } from "@/app/global/GridContext";
+import { useRouter, useSearchParams } from "next/navigation";
 
 
 const ActionsBar = ({isOpen}) => {
 
     const {gridApi, absolutePath, setAbsolutePath } = useContext(GridContext);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const onFilterTextBoxChanged = useCallback(() => {
         gridApi.setGridOption(
@@ -26,8 +29,9 @@ const ActionsBar = ({isOpen}) => {
         if(path === '') {
             console.log("Path is empty");
         } else {
-            // Fetch data from server with the new path
-            setAbsolutePath(path);
+            const currentParams = new URLSearchParams(searchParams.toString());
+            currentParams.set('path', path);
+            router.push(`/global?${currentParams.toString()}`);
         }
     };
 
