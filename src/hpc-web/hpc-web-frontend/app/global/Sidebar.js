@@ -1,35 +1,42 @@
 //Sidebar.js
 "use client";
 
-import {useContext, useEffect, useState} from "react";
-import {GridContext} from "./GridContext";
+import { useContext, useEffect, useState } from "react";
+import { GridContext } from "./GridContext";
 import BreadCrumb from "./BreadCrumb";
-
+import { useRouter, useSearchParams } from "next/navigation";
 
 const Sidebar = ({isOpen, toggleSidebar}) => {
 
-    const {setBasePath, setAbsolutePath } = useContext(GridContext);
+    const {setBasePath } = useContext(GridContext);
     const [archives, setArchives] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleArchiveClick = (event) => {
-        setAbsolutePath(event.currentTarget.id);
         setBasePath(event.currentTarget.id);
+        const currentParams = new URLSearchParams(searchParams.toString());
+        currentParams.set('path', event.currentTarget.id);
+        router.push(`/global?${currentParams.toString()}`);
     };
 
 
     useEffect(() => {
         const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/externalArchives';
         const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
+        const param = searchParams.get('path');
 
         if(!useExternalApi) {
             fetch("/archives.json") // Fetch data from server
                 .then((result) => result.json()) // Convert to JSON
                 .then((data) => {
                     setArchives(data);
-                    setAbsolutePath(data[0] || '');
                     setBasePath(data[0] || '');
+                    const currentParams = new URLSearchParams(searchParams.toString());
+                    currentParams.set('path', data[0] || '');
+                    router.push(`/global?${currentParams.toString()}`);
                 });
         } else {
             const fetchData = async () => {
@@ -43,8 +50,18 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                     }
                     const json = await response.json();
                     setArchives(json);
-                    setAbsolutePath(json[0] || ''); // Set the first archive as the default path
-                    setBasePath(json[0] || '');
+                    if(param == null) {
+                        setBasePath(json[0] || '');
+                        const currentParams = new URLSearchParams(searchParams.toString());
+                        currentParams.set('path', json[0] || '');
+                        router.push(`/global?${currentParams.toString()}`);
+                    } else  {
+                        for (const archive of json) {
+                            if (param.includes(archive)) {
+                                setBasePath(archive);
+                            }
+                        }
+                    }
                 } catch (e) {
                     setError(e);
                     console.error("Fetch external archives list:", e);
@@ -54,7 +71,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
             }
             fetchData();
         }
-    }, [setAbsolutePath, setArchives, setBasePath]);
+    }, []);
 
     return (
         <div className="flex">

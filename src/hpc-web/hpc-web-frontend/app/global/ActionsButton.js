@@ -1,9 +1,9 @@
 "use client";
 
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCaretDown} from "@fortawesome/free-solid-svg-icons";
-import {useContext} from "react";
-import {GridContext} from "./GridContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { useContext } from "react";
+import { GridContext } from "./GridContext";
 
 export default function ActionsButton() {
     const { selectedRows } = useContext(GridContext);

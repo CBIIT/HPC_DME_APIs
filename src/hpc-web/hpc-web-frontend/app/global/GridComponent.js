@@ -5,12 +5,11 @@ import { useEffect, useState, useCallback, useContext } from "react";
 import { useMemo } from 'react';
 import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { GridContext } from './GridContext';
-import {faAngleLeft} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useRouter, useSearchParams } from "next/navigation";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-
 
 const GridComponent = () => {
   const {
@@ -19,16 +18,21 @@ const GridComponent = () => {
     gridApi,
     setGridApi,
     setSelectedRows,
-    absolutePath,
+    basePath,
     setAbsolutePath
   } = useContext(GridContext);
   const [relativePath, setRelativePath] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [parentPath, setParentPath] = useState(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
 
   const handleSpanClick = (event) => {
-    setAbsolutePath(event.currentTarget.id);
+    const currentParams = new URLSearchParams(searchParams.toString());
+    currentParams.set('path', event.currentTarget.id);
+    router.push(`/global?${currentParams.toString()}`);
   };
 
   function folderNameRenderer(props) {
@@ -127,29 +131,36 @@ const GridComponent = () => {
   }, [gridApi, setSelectedRows]);
 
   const handleBackButtonClick = (event) => {
-    setAbsolutePath(event.currentTarget.id);
+    const currentParams = new URLSearchParams(searchParams.toString());
+    const path = event.currentTarget.id.length < basePath.length ? basePath : event.currentTarget.id;
+    currentParams.set('path', path);
+    router.push(`/global?${currentParams.toString()}`);
   };
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/list?path=';
     const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
+    const param = searchParams.get('path');
 
     if(!useExternalApi) {
       fetch("/folders.json") // Fetch data from server
           .then((result) => result.json()) // Convert to JSON
           .then((data) => {
+            setAbsolutePath(data.path);
             setRelativePath(data.path.split("/").pop() + '/');
             setParentPath(data.path.substring(0, data.path.lastIndexOf("/")));
             return data.contents;
           })
           .then((rowData) => setRowData(rowData));
       setLoading(false);
-    } else if(absolutePath !== null) {
+    } else if(param !== null) {
       const fetchData = async () => {
         try {
           setLoading(true);
-          gridApi.setGridOption("loading", true)
-          const response = await fetch(url + absolutePath, {
+          if (gridApi) {
+            gridApi.setGridOption("loading", true)
+          }
+          const response = await fetch(url + param, {
             credentials: 'include',
           });
           if (!response.ok) {
@@ -157,6 +168,7 @@ const GridComponent = () => {
             throw new Error(`HTTP error! status: ${response.status}, Message: ${errorData || 'Unknown error'}`);
           }
           const json = await response.json();
+          setAbsolutePath(json.path);
           setRelativePath(json.path.split("/").pop() + '/');
           setParentPath(json.path.substring(0, json.path.lastIndexOf("/")));
           return json.contents;
@@ -165,12 +177,14 @@ const GridComponent = () => {
           console.error("Fetch object list:", e);
         } finally {
           setLoading(false);
-          gridApi.setGridOption("loading", false)
+          if(gridApi) {
+            gridApi.setGridOption("loading", false)
+          }
         }
       }
       fetchData().then((rowData) => setRowData(rowData));
     }
-  }, [absolutePath,setRelativePath,setRowData]);
+  }, [searchParams]);
 
   return (
       <>

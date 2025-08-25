@@ -2,18 +2,21 @@
 "use client";
 
 
-import {useContext, useEffect, useState} from "react";
-import {GridContext} from "./GridContext";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faAngleRight} from "@fortawesome/free-solid-svg-icons";
+import { useContext, useEffect, useState } from "react";
+import { GridContext } from "./GridContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
+import { useRouter, useSearchParams } from "next/navigation";
 
 
 const BreadCrumb = () => {
 
-    const {absolutePath, setAbsolutePath, basePath } = useContext(GridContext);
+    const {absolutePath, basePath } = useContext(GridContext);
     const [folder, setFolder] = useState(null);
     const [tokens, setTokens] = useState([]);
     const [fullPaths, setFullPaths] = useState([]);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         if(!absolutePath || !basePath) {
@@ -33,7 +36,9 @@ const BreadCrumb = () => {
     }, [absolutePath]);
 
     const handleBreadCrumbClick = (event) => {
-        setAbsolutePath(event.currentTarget.id);
+        const currentParams = new URLSearchParams(searchParams.toString());
+        currentParams.set('path', event.currentTarget.id);
+        router.push(`/global?${currentParams.toString()}`);
     };
 
     return (

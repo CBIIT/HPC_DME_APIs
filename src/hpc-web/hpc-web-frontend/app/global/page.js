@@ -1,14 +1,12 @@
 "use client";
-import { useSession } from "../SessionContext";
-import {GridProvider} from './GridContext';
+import { GridProvider } from './GridContext';
 import GridComponent from "./GridComponent";
 import Sidebar from "./Sidebar";
 import ActionsBar from "./ActionsBar";
-import {useState} from 'react';
+import { useState } from 'react';
 
 
 export default function Global() {
-    const session = useSession();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
