@@ -1,7 +1,7 @@
 "use client";
 
 import { AgGridReact } from 'ag-grid-react';
-import {useCallback, useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { useSearchParams } from 'next/navigation';
 

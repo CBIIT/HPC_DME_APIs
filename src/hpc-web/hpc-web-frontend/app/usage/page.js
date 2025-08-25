@@ -1,10 +1,8 @@
 "use client";
-import {useSession} from "../SessionContext";
 import GridComponent from "./GridComponent";
 import React from "react";
 
 export default function Usage() {
-    const session = useSession();
 
     const handleCloseWindow = () => {
         if (typeof window !== 'undefined') {
