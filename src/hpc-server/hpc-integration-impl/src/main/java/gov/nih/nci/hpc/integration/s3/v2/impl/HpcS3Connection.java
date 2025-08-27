@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.crt.CrtRuntimeException;
 import software.amazon.awssdk.crt.Log;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
@@ -361,7 +362,7 @@ public class HpcS3Connection {
 
 			return s3;
 
-		} catch (SdkException e) {
+		} catch (SdkException | CrtRuntimeException e) {
 			throw new HpcException(
 					"[S3] Failed to authenticate S3 Provider: " + s3Provider.value() + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -405,7 +406,7 @@ public class HpcS3Connection {
 
 			return s3;
 
-		} catch (SdkException e) {
+		} catch (SdkException | CrtRuntimeException e) {
 			throw new HpcException("[S3] Failed to authenticate S3 in region " + region + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
