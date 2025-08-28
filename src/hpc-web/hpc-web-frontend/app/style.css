@@ -400,3 +400,26 @@ ol.dme-breadcrumb {
     display: flex;
     flex-direction: row;
 }
+
+.clear-button {
+    position: absolute;
+    right: 5px; /* Adjust as needed */
+    top: 50%;
+    transform: translateY(-50%);
+    /* Add styling for appearance (e.g., background, border, font size) */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: #888;
+}
+
+.ag-header-container .ag-header-cell-resize {
+    width: 4px;
+}
+.ag-header-container .ag-header-cell .ag-header-cell-resize::after {
+    background-color: white;
+    height: 100%;
+    top: 0;
+    width: 100%;
+}
