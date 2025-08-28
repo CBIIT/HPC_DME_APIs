@@ -17,6 +17,7 @@ const BreadCrumb = () => {
     const [fullPaths, setFullPaths] = useState([]);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
 
     useEffect(() => {
         if(!absolutePath || !basePath) {
@@ -38,7 +39,7 @@ const BreadCrumb = () => {
     const handleBreadCrumbClick = (event) => {
         const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('path', event.currentTarget.id);
-        router.push(`/global?${currentParams.toString()}`);
+        router.push(url + `?${currentParams.toString()}`);
     };
 
     return (
