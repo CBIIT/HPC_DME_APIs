@@ -27,12 +27,13 @@ const GridComponent = () => {
   const [parentPath, setParentPath] = useState(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
 
 
   const handleSpanClick = (event) => {
     const currentParams = new URLSearchParams(searchParams.toString());
     currentParams.set('path', event.currentTarget.id);
-    router.push(`/global?${currentParams.toString()}`);
+    router.push(url + `?${currentParams.toString()}`);
   };
 
   function folderNameRenderer(props) {
@@ -50,13 +51,13 @@ const GridComponent = () => {
     );
   };
 
-  const archivedValueFormatter = params => {
-    if (params.value === true) {
+  function archivedFilterValueGetter(params) {
+    if (params.data.archived === true) {
       return 'Yes';
-    } else if (params.value === false) {
+    } else if (params.data.archived === false) {
       return 'No';
     }
-    return ''; // Handle null/undefined values
+    return 'No'; // Handle null/undefined values
   };
 
   const isoDateFormatter = params => {
@@ -88,20 +89,37 @@ const GridComponent = () => {
   });
 
   const [columnDefs, setColumnDefs] = useState([
-    { headerName: 'Name', field: "name", filter: true,
-      cellRenderer: folderNameRenderer
+    { headerName: 'Name', field: "name",
+      cellRenderer: folderNameRenderer,
+      filter: 'agTextColumnFilter',
+      suppressMovable: true
     },
     { headerName: 'Size', field: "size",
       valueFormatter: (params) => formatBytes(params.value),
-      cellDataType: 'number', filter: true,
+      cellDataType: 'number',
+      suppressMovable: true
     },
-    { headerName: 'Date Created', field: "created", valueFormatter: isoDateFormatter },
-    { headerName: 'Date Modified', field: "lastModified", valueFormatter: isoDateFormatter },
-    { headerName: 'Archived', field: "archived",
-      cellDataType: 'object', filter: true,
-      valueFormatter: archivedValueFormatter,
+    { headerName: 'Date Created', field: "created", valueFormatter: isoDateFormatter, suppressMovable: true },
+    { headerName: 'Date Modified', field: "lastModified", valueFormatter: isoDateFormatter, suppressMovable: true },
+    { headerName: 'Archived',
+      filter: 'agTextColumnFilter',
+      cellDataType: 'text',
+      filterValueGetter: archivedFilterValueGetter,
+      valueGetter: function(params) {
+        if (params.data.archived && typeof params.data.archived === 'boolean') {
+          return params.data.archived ? 'Yes' : 'No';
+        }
+        return 'No'; // Handle cases where data or field is not present/boolean
+      },
+      suppressMovable: true
     }
   ]);
+
+  const gridOptions = {
+    suppressMoveWhenColumnDragging: true,
+    suppressDragLeaveHidesColumns: true,
+    maintainColumnOrder: true,
+  };
 
   const rowSelection = useMemo(() => {
     return {
@@ -134,7 +152,7 @@ const GridComponent = () => {
     const currentParams = new URLSearchParams(searchParams.toString());
     const path = event.currentTarget.id.length < basePath.length ? basePath : event.currentTarget.id;
     currentParams.set('path', path);
-    router.push(`/global?${currentParams.toString()}`);
+    router.push(url + `?${currentParams.toString()}`);
   };
 
   useEffect(() => {
@@ -192,7 +210,8 @@ const GridComponent = () => {
         <h3><a id={parentPath} href="#" onClick={handleBackButtonClick}><span className="m-3" ><FontAwesomeIcon icon={faAngleLeft} /></span></a>
           {relativePath}</h3>
         <div className="ps-3" style={{ width: "98%", height: "520px" }}>
-          <AgGridReact rowData={rowData}
+          <AgGridReact gridOptions={gridOptions}
+                       rowData={rowData}
                        columnDefs={columnDefs}
                        rowSelection={rowSelection}
                        pagination={pagination}

@@ -5,7 +5,7 @@ import ActionsButton from "./ActionsButton";
 import DownloadButton from "./DownloadButton";
 import { faSearch, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useCallback, useContext } from "react";
+import {useState, useCallback, useContext, useEffect} from "react";
 import { GridContext } from "@/app/global/GridContext";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -15,30 +15,44 @@ const ActionsBar = ({isOpen}) => {
     const {gridApi, absolutePath, setAbsolutePath } = useContext(GridContext);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [browseTextValue, setBrowseTextValue] = useState('');
+    const [filterTextValue, setFilterTextValue] = useState('');
+    const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
 
-    const onFilterTextBoxChanged = useCallback(() => {
-        gridApi.setGridOption(
-            "quickFilterText",
-            (document.getElementById("filter-text-box")).value,
-        );
-    }, [gridApi]);
+    useEffect(() => {
+        if(gridApi) {
+            gridApi.setGridOption(
+                "quickFilterText",
+                filterTextValue,
+            );
+        }
+    }, [gridApi, filterTextValue]);
 
     const onBrowseTextBoxChanged= async () => {
-        const path = document.getElementById("browse-text-box").value;
+        const path = browseTextValue;
         console.log("Browse to path: ", path);
         if(path === '') {
             console.log("Path is empty");
         } else {
             const currentParams = new URLSearchParams(searchParams.toString());
             currentParams.set('path', path);
-            router.push(`/global?${currentParams.toString()}`);
+            router.push(url + `?${currentParams.toString()}`);
         }
     };
 
     const handleEnterPress = (event) => {
+        setBrowseTextValue(document.getElementById("browse-text-box").value);
         if (event.key === 'Enter') {
             onBrowseTextBoxChanged();
         }
+    };
+
+    const handleBrowseTextClear = () => {
+        setBrowseTextValue('');
+    };
+
+    const handleFilterTextClear = () => {
+        setFilterTextValue('');
     };
 
     return (
@@ -56,7 +70,14 @@ const ActionsBar = ({isOpen}) => {
                                     style={{ paddingLeft: '35px', width: '100%' }}
                                     id="browse-text-box"
                                     onKeyDown={handleEnterPress}
+                                    value={browseTextValue}
+                                    onChange={handleEnterPress}
                                 />
+                                {browseTextValue && ( // Conditionally render the clear button
+                                    <button className="clear-button" onClick={handleBrowseTextClear}>
+                                        x
+                                    </button>
+                                )}
                             </div>
                         </div>
                         <div className="col-sm-3 filter-text">
@@ -68,8 +89,14 @@ const ActionsBar = ({isOpen}) => {
                                     placeholder="Filter"
                                     style={{ paddingLeft: '35px', width: '100%' }}
                                     id="filter-text-box"
-                                    onInput={onFilterTextBoxChanged}
+                                    value={filterTextValue}
+                                    onChange={e => setFilterTextValue(e.target.value)}
                                 />
+                                {filterTextValue && ( // Conditionally render the clear button
+                                    <button className="clear-button" onClick={handleFilterTextClear}>
+                                        x
+                                    </button>
+                                )}
                             </div>
                         </div>
                         <ActionsButton/>

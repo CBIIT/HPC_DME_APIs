@@ -14,17 +14,18 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
     const [error, setError] = useState(null);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
 
     const handleArchiveClick = (event) => {
         setBasePath(event.currentTarget.id);
         const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('path', event.currentTarget.id);
-        router.push(`/global?${currentParams.toString()}`);
+        router.push(url + `?${currentParams.toString()}`);
     };
 
 
     useEffect(() => {
-        const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/externalArchives';
+        const archiveURL = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/externalArchives';
         const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
         const param = searchParams.get('path');
 
@@ -36,12 +37,12 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                     setBasePath(data[0] || '');
                     const currentParams = new URLSearchParams(searchParams.toString());
                     currentParams.set('path', data[0] || '');
-                    router.push(`/global?${currentParams.toString()}`);
+                    router.push(url + `?${currentParams.toString()}`);
                 });
         } else {
             const fetchData = async () => {
                 try {
-                    const response = await fetch(url, {
+                    const response = await fetch(archiveURL, {
                         credentials: 'include',
                     });
                     if (!response.ok) {
@@ -54,7 +55,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                         setBasePath(json[0] || '');
                         const currentParams = new URLSearchParams(searchParams.toString());
                         currentParams.set('path', json[0] || '');
-                        router.push(`/global?${currentParams.toString()}`);
+                        router.push(url + `?${currentParams.toString()}`);
                     } else  {
                         for (const archive of json) {
                             if (param.includes(archive)) {
