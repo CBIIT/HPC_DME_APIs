@@ -89,9 +89,14 @@
 						<li id="sub-menu-search" class="sub-menu"><a th:href="@{/criteria}" class=""> <i
 								class="icon_search"></i> <span>Search</span>
 						</a></li>
-						<li id="sub-menu-browse" class="sub-menu"><a th:href="@{/browse?base}" class=""> <i
-								class="icon_folder"></i> <span>Browse</span>
-						</a></li>
+						<li id="sub-menu-browse" class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i 
+								class="icon_folder"></i> <span>Browse</span><span
+								class="menu-arrow arrow_carrot-right"></span>
+						</a>
+							<ul class="sub dropdown-menu" aria-labelledby="browse_dropdown">
+								<li><a class="" th:href="@{/browse?base}">NCI Data Vault</a></li>
+								<li><a class="" th:href="@{/global.html}">External Archive</a></li>
+							</ul></li>
 						<li id="sub-menu-manage" class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 								<i class="fa fa-gear" style="color:white; padding-right:2px;"></i><span>Manage</span> <span
 								class="menu-arrow arrow_carrot-right"></span>
