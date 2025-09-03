@@ -1,0 +1,124 @@
+name: Build and Deploy API war file
+permissions:
+  contents: write
+  id-token: write
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: env to build war file
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prod
+      environment_target:
+        description: target environment
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prod
+      code_branch:
+        description: branch to build
+        required: true
+        default: main
+run-name: "Build WARs for ${{ github.event.inputs.environment }} (branch: ${{ github.event.inputs.code_branch }}, target: ${{ github.event.inputs.environment_target }})"
+jobs:
+  build:
+    name: Build war file
+    runs-on: cbiit-global-runners
+    environment: ${{ inputs.environment }}
+    env:
+      CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
+    outputs:
+      artifact-name: hpc-api-artifacts
+    steps:
+      - name: check git installation
+        run: git --version
+
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+        with:
+          #ref: ${{ github.event.inputs.code_branch }}
+          ref: ${{ env.CODE_BRANCH }}
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+          cache: 'maven'
+      - name: set up maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: '3.9.4'
+      - name: build the war
+        run: |
+          #cd HPC_DME_APIs/src
+          cd $GITHUB_WORKSPACE/src
+          mvn clean install -D${{ github.event.inputs.environment_target }}
+      - name: upload artifacts for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: hpc-api-artifacts
+          path: |
+            src/hpc-server/hpc-ws-rs-impl/target/*.war
+            src/hpc-server/hpc-scheduler/target/*.war
+            src/hpc-server/hpc-scheduler-migration/target/*.war
+
+  deploy:
+    needs: build
+    runs-on: cbiit-global-runners
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: hpc-api-artifacts
+          path: ./artifacts
+
+      - name: list downloaded artifacts
+        run: |
+          ls -R ./artifacts || echo "Artifacts not found!"
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.TOMCAT_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.TOMCAT_HOST }} >> ~/.ssh/known_hosts
+
+      - name: deploy tomcat
+        env:
+          remote_user: ${{ secrets.REMOTE_USER }}
+          remote: ${{ secrets.TOMCAT_HOST }}
+          tomcat_home: /local/content/tomcat/ncifhpcdmsvcp
+          dist: /local/content/tomcat/ncifhpcdmsvcp/webapps
+          remote_tomcat: tomcat-ncifhpcdmsvcp
+          app: hpc-server
+          app1: hpc-scheduler
+          app2: hpc-scheduler-migration
+          unit: hpc-server.war
+          unit1: hpc-scheduler.war
+          unit2: hpc-scheduler-migration.war
+        run: |
+          set -xe
+          echo "Stopping tomcat"
+          ssh -qt $remote_user@$remote "sudo /sbin/service $remote_tomcat stop"
+          echo "Cleaning old backups and symlinks..."
+          ssh -qt ${remote_user}@${remote} " umask 022; cd ${dist} && if [ -d ${app} ]; then rm -rf ${app}; fi ;  "
+          ssh -qt ${remote_user}@${remote} " umask 022; cd ${dist} && if [ -d ${app1} ]; then rm -rf ${app1}; fi ;  "
+          ssh -qt ${remote_user}@${remote} " umask 022; cd ${dist} && if [ -d ${app2} ]; then rm -rf ${app2}; fi ;  "
+          ssh -qt ${remote_user}@${remote} " cd ${dist}; rm -f hpc-server-[0-9]*.war_backup* hpc-server-[0-9]*.war.backup*; rm -f hpc-scheduler-[0-9]*.war_backup* hpc-scheduler-[0-9]*.war.backup*; rm -f hpc-scheduler-migration-[0-9]*.war_backup* hpc-scheduler-migration-[0-9]*.war.backup* "
+          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit} ]; then rm -f ${unit}; else echo "No symlink found"; fi ; "
+          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit1} ]; then rm -f ${unit1}; else echo "No symlink found"; fi ;  "
+          ssh -qt ${remote_user}@${remote} " cd ${dist} && if [ -L ${unit2} ]; then rm -f ${unit2}; else echo "No symlink found"; fi ;  "
+          ssh -qt ${remote_user}@${remote} " export TZ='America/New_York'; cd ${dist}; find -type f -name ${app}-*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \; && find -type f -name ${app1}-[0-9]*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \; && find -type f -name ${app2}-*.war -exec mv {} {}_backup_$(date +%Y%m%d.%H%M) \;" || exit $?
+          echo "upoading wars to remote server"
+          scp -pq artifacts/hpc-ws-rs-impl/target/${app}-*.war ${remote_user}@${remote}:${dist}
+          scp -pq artifacts/hpc-scheduler/target/${app1}-*.war ${remote_user}@${remote}:${dist}
+          scp -pq artifacts/hpc-scheduler-migration/target/${app2}-*.war ${remote_user}@${remote}:${dist}
+          echo "creating symlink"
+          ssh -qt ${remote_user}@${remote} " cd ${dist} && ln -s $app-*.war ${unit};  cd ${dist} && ln -s $app1-[0-9]*.war ${unit1}; cd ${dist} && ln -s $app2-*.war ${unit2}"
+          echo "restart tomcat"
+          ssh -qt ${remote_user}@${remote} " sudo /sbin/service $remote_tomcat start"
