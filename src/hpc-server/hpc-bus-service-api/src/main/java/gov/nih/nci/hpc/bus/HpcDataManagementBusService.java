@@ -133,6 +133,15 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
+     * Get Full Collection children including any sub collection and data objects that extend beyond the first page.
+     *
+     * @param path   The collection's path.
+     * @return A Collection DTO.
+     * @throws HpcException on service failure.
+     */
+	public HpcCollectionDTO getFullCollection(String path) throws HpcException;
+
+	/**
 	 * Download a collection tree.
 	 *
 	 * @param path            The collection path.
