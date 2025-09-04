@@ -159,12 +159,12 @@ const GridComponent = () => {
     const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/list?path=';
     const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
     const param = searchParams.get('path');
+    setAbsolutePath(param);
 
     if(!useExternalApi) {
       fetch("/folders.json") // Fetch data from server
           .then((result) => result.json()) // Convert to JSON
           .then((data) => {
-            setAbsolutePath(data.path);
             setRelativePath(data.path.split("/").pop() + '/');
             setParentPath(data.path.substring(0, data.path.lastIndexOf("/")));
             return data.contents;
@@ -186,7 +186,6 @@ const GridComponent = () => {
             throw new Error(`HTTP error! status: ${response.status}, Message: ${errorData || 'Unknown error'}`);
           }
           const json = await response.json();
-          setAbsolutePath(json.path);
           setRelativePath(json.path.split("/").pop() + '/');
           setParentPath(json.path.substring(0, json.path.lastIndexOf("/")));
           return json.contents;
