@@ -34,7 +34,7 @@ const BreadCrumb = () => {
         setFullPaths([]);
         setTokens(segments);
         setFullPaths(linkPaths);
-    }, [absolutePath]);
+    }, [basePath, absolutePath]);
 
     const handleBreadCrumbClick = (event) => {
         const currentParams = new URLSearchParams(searchParams.toString());
