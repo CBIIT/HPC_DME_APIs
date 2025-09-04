@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 const Sidebar = ({isOpen, toggleSidebar}) => {
 
-    const {setBasePath } = useContext(GridContext);
+    const {setBasePath, setAbsolutePath } = useContext(GridContext);
     const [archives, setArchives] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -38,6 +38,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                     const currentParams = new URLSearchParams(searchParams.toString());
                     currentParams.set('path', data[0] || '');
                     router.push(url + `?${currentParams.toString()}`);
+                    setAbsolutePath(data[0] || '');
                 });
         } else {
             const fetchData = async () => {
@@ -53,10 +54,12 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                     setArchives(json);
                     if(param == null) {
                         setBasePath(json[0] || '');
+                        setAbsolutePath(json[0] || '');
                         const currentParams = new URLSearchParams(searchParams.toString());
                         currentParams.set('path', json[0] || '');
                         router.push(url + `?${currentParams.toString()}`);
                     } else  {
+                        setAbsolutePath(param);
                         for (const archive of json) {
                             if (param.includes(archive)) {
                                 setBasePath(archive);
