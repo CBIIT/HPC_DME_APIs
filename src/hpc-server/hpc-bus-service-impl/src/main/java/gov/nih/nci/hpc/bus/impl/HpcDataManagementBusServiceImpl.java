@@ -473,6 +473,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
+    public HpcCollectionDTO getFullCollection(String path) throws HpcException {
+
+      HpcCollectionDTO collectionDto = getCollectionChildrenWithPaging(path, 0, false);
+      HpcCollection collection = collectionDto.getCollection();
+
+      int totalRecordsFetched =
+          (collection.getSubCollections() == null ? 0 : collection.getSubCollections().size())
+              + (collection.getDataObjects() == null ? 0 : collection.getDataObjects().size());
+      int totalRecords =
+          collection.getSubCollectionsTotalRecords() + collection.getDataObjectsTotalRecords();
+
+      // Check if there are more sub-collections or data objects to be fetched
+      while (totalRecordsFetched < totalRecords) {
+        HpcCollectionDTO collectionContinuedDto = getCollectionChildrenWithPaging(
+            path, totalRecordsFetched, false);
+        HpcCollection collectionContinued = collectionContinuedDto.getCollection();
+        collectionDto.getCollection().getSubCollections().addAll(collectionContinued.getSubCollections());
+        collectionDto.getCollection().getDataObjects().addAll(collectionContinued.getDataObjects());
+        totalRecordsFetched =
+            (collectionDto.getCollection().getSubCollections() == null ? 0 : collectionDto.getCollection().getSubCollections().size())
+                + (collectionDto.getCollection().getDataObjects() == null ? 0 : collectionDto.getCollection().getDataObjects().size());
+      }
+      return collectionDto;
+
+    }
+
+	@Override
 	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report)
 			throws HpcException {
 		// Input validation.
@@ -2568,7 +2595,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         HpcCollection collection = null;
 		
 		if(StringUtils.isNotEmpty(archivePath)) {
-		    HpcCollectionDTO collectionDTO = getCollectionChildrenWithPaging(archivePath, 0, false);
+		    HpcCollectionDTO collectionDTO = getFullCollection(archivePath);
             collection = collectionDTO.getCollection();
 		}
 		
