@@ -931,7 +931,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			jdbcTemplate.update(UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_PRIORITY_SQL, priority, collectionDownloadTaskId);
 
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to update a data objects download task priority with collection task id: " + collectionDownloadTaskId + e.getMessage(),
+			throw new HpcException("Failed to update a data objects download task priority with collection task id: " + collectionDownloadTaskId + " " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
