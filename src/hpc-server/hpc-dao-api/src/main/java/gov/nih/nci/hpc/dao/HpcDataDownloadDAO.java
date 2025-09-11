@@ -529,8 +529,9 @@ public interface HpcDataDownloadDAO {
      * Get collection download task priority. 
      *
      * @param id The collection task ID.
+     * @return The priority of the collection download task, or null if not found.
      * @throws HpcException on database error.
-     */
+    */
     public Integer getCollectionDownloadTaskPriority(String id) throws HpcException;
 
 }
