@@ -526,7 +526,7 @@ public interface HpcDataDownloadDAO {
 	public void updateTotalBytesTransferred(String collectionDownloadTaskId, long bytesTransferred) throws HpcException;
 
 	/**
-     * Get collection download task priority. 
+     * Get collection download task priority.
      *
      * @param id The collection task ID.
      * @return The priority of the collection download task, or null if not found.
