@@ -86,7 +86,7 @@ public interface HpcDataDownloadDAO {
 	 * @param priority The priority of the task.
 	 * @throws HpcException on database error.
 	 */
-	public void updateDataObjectDownloadTaskPriority(String id, Integer priority) throws HpcException;
+	public void updateDataObjectDownloadTaskPriority(String id, int priority) throws HpcException;
 	
 	/**
 	 * Update data object download tasks priority.
@@ -96,7 +96,7 @@ public interface HpcDataDownloadDAO {
 	 * @param priority The priority of the task.
 	 * @throws HpcException on database error.
 	 */
-	public void updateDataObjectsDownloadTaskPriority(String collectionDownloadTaskId, Integer priority) throws HpcException;
+	public void updateDataObjectsDownloadTaskPriority(String collectionDownloadTaskId, int priority) throws HpcException;
 	
 	/**
 	 * Get data object download task status.
@@ -248,7 +248,7 @@ public interface HpcDataDownloadDAO {
 	 * @param priority The priority of the task.
 	 * @throws HpcException on database error.
 	 */
-	public void updateCollectionDownloadTaskPriority(String id, Integer priority) throws HpcException;
+	public void updateCollectionDownloadTaskPriority(String id, int priority) throws HpcException;
 	
 	/**
 	 * Get collection download requests in process.
