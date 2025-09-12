@@ -1059,5 +1059,5 @@ public interface HpcDataTransferService {
 	 * @param priority The priority to set.
 	 * @throws HpcException on service failure.
 	 */
-	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, Integer priority) throws HpcException;
+	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, int priority) throws HpcException;
 }

@@ -2220,7 +2220,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, Integer priority) throws HpcException {
+	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, int priority) throws HpcException {
 		if (taskType == null) {
 			throw new HpcException("Null download task type", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
