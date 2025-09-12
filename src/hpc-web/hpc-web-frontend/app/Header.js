@@ -12,8 +12,6 @@ export default function Header() {
     const isCurator = session?.hpcUser?.dataCurator;
     const isAdmin = session?.hpcUser?.userRole === "SYSTEM_ADMIN";
     const isGroupAdmin = session?.hpcUser?.userRole === "GROUP_ADMIN";
-    const browseUrl = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
-
 
     return (
         <header>
@@ -111,19 +109,9 @@ export default function Header() {
                             <li id="sub-menu-search" className="sub-menu"><a href="/criteria"> <i
                                 className="icon_search"></i> <span>Search</span>
                             </a></li>
-                            <li id="sub-menu-browse" className="sub-menu"><a href="javascript:;"
-                                                                             className="dropdown-toggle"
-                                                                             data-bs-toggle="dropdown" role="button"
-                                                                             aria-haspopup="true"
-                                                                             aria-expanded="false">
-                                <i
-                                    className="icon_folder"></i> <span>Browse</span><span
-                                className="menu-arrow arrow_carrot-right"></span>
-                            </a>
-                                <ul className="sub dropdown-menu" aria-labelledby="browse_dropdown">
-                                    <li><a href="/browse?base">NCI Data Vault</a></li>
-                                    <li><a href={browseUrl}>External Archive</a></li>
-                                </ul></li>
+                            <li id="sub-menu-browse" className="sub-menu"><a href="/browse?base"> <i
+                                className="icon_folder"></i> <span>Browse</span>
+                            </a></li>
                             <li id="sub-menu-manage" className="sub-menu"><a href="javascript:;"
                                                                              className="dropdown-toggle"
                                                                              data-bs-toggle="dropdown" role="button"
