@@ -65,7 +65,7 @@ public class HpcUnifiedBrowseController extends AbstractHpcController {
     String authToken = (String) session.getAttribute("hpcUserToken");
 
     if (user == null || authToken == null) {
-      // TODO return authentication error
+    	return new ResponseEntity<>("Authentication error", HttpStatus.UNAUTHORIZED);
     }
 
     log.info("get external archives for user: " + user.getUserId());
