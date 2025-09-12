@@ -737,8 +737,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			
 			if(StringUtils.isNotEmpty(dataObjectDownloadTask.getCollectionDownloadTaskId())) {
 			    // Get the collection download task priority
-			    Integer priority = getCollectionDownloadTaskPriority(dataObjectDownloadTask.getCollectionDownloadTaskId());
-			    dataObjectDownloadTask.setPriority(priority);
+			    dataObjectDownloadTask.setPriority(getCollectionDownloadTaskPriority(dataObjectDownloadTask.getCollectionDownloadTaskId()));
 			}
 
 			jdbcTemplate.update(CREATE_DATA_OBJECT_DOWNLOAD_TASK_SQL, dataObjectDownloadTask.getId(),
@@ -915,7 +914,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public void updateDataObjectDownloadTaskPriority(String id, Integer priority) throws HpcException {
+	public void updateDataObjectDownloadTaskPriority(String id, int priority) throws HpcException {
 		try {
 			jdbcTemplate.update(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_PRIORITY_SQL, priority, id);
 
@@ -926,7 +925,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 	
 	@Override
-	public void updateDataObjectsDownloadTaskPriority(String collectionDownloadTaskId, Integer priority) throws HpcException {
+	public void updateDataObjectsDownloadTaskPriority(String collectionDownloadTaskId, int priority) throws HpcException {
 		try {
 			jdbcTemplate.update(UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_PRIORITY_SQL, priority, collectionDownloadTaskId);
 
@@ -1272,7 +1271,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 	
 	@Override
-	public void updateCollectionDownloadTaskPriority(String id, Integer priority) throws HpcException {
+	public void updateCollectionDownloadTaskPriority(String id, int priority) throws HpcException {
 		try {
 			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL, priority, id);
 
@@ -1620,9 +1619,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	@Override
     public Integer getCollectionDownloadTaskPriority(String id) throws HpcException {
         try {
-            Integer priority = jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL, Integer.class,
+            return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL, Integer.class,
                     id);
-            return priority;
 
         } catch (IncorrectResultSizeDataAccessException irse) {
             return null;
