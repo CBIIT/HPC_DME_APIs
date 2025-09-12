@@ -7,6 +7,7 @@ export default function SessionProvider({children}) {
     const [session, setSession] = useState();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     useEffect(() => {
         const sessionUrl = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/sessionMap';
@@ -36,14 +37,23 @@ export default function SessionProvider({children}) {
         } else {
             setLoading(false);
         }
+        const storedSidebarSession = localStorage.getItem('sidebarSession');
+        if (storedSidebarSession) {
+            setIsSidebarOpen(storedSidebarSession === 'true');
+        }
     }, []); // Empty dependency array ensures this runs only once after initial render
 
     if (loading) {
         return <p>Loading...</p>;
     }
 
+    const saveSidebarSession = (newSidebarSession) => {
+        setIsSidebarOpen(newSidebarSession);
+        localStorage.setItem('sidebarSession', newSidebarSession ? 'true' : 'false');
+    };
+
     return (
-        <SessionContext.Provider value={{session}}>
+        <SessionContext.Provider value={{session, isSidebarOpen, saveSidebarSession}}>
             {children}
         </SessionContext.Provider>
     );
@@ -56,3 +66,12 @@ export function useSession() {
     }
     return context.session;
 }
+
+export function useSessionContext() {
+    const context = useContext(SessionContext);
+    if (!context) {
+        throw new Error("SessionContext must be used within a SessionProvider");
+    }
+    return context;
+}
+
