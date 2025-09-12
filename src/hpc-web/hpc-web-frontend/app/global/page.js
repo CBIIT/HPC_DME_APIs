@@ -3,15 +3,15 @@ import { GridProvider } from './GridContext';
 import GridComponent from "./GridComponent";
 import Sidebar from "./Sidebar";
 import ActionsBar from "./ActionsBar";
-import { useState } from 'react';
+import { useSessionContext } from '../SessionContext';
 
 
 export default function Global() {
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const {isSidebarOpen, saveSidebarSession} = useSessionContext();
 
     const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
+        saveSidebarSession(!isSidebarOpen);
     };
 
     return (
