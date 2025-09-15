@@ -326,6 +326,9 @@ public class HpcS3Connection {
 			}
 
 			// Instantiate a S3 async client.
+			// Note: Both AWS and S3 providers now use RequestChecksumCalculation.WHEN_SUPPORTED for checksum validation.
+			// This is intentional for consistency and compatibility with the current SDK. 
+			// Previous comments suggesting .checksumValidationEnabled(true) for AWS are outdated.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
 					.minimumPartSizeInBytes(minimumUploadPartSize).requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
 					.thresholdInBytes(multipartUploadThreshold).build();
