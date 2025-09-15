@@ -5,13 +5,16 @@ import { useContext, useEffect, useState } from "react";
 import { GridContext } from "./GridContext";
 import BreadCrumb from "./BreadCrumb";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSessionContext } from "../SessionContext";
 
 const Sidebar = ({isOpen, toggleSidebar}) => {
 
     const {setBasePath, setAbsolutePath } = useContext(GridContext);
     const [archives, setArchives] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+	const [loading, setLoading] = useState(true);
+    const {
+        setMessage
+    } = useSessionContext();
     const router = useRouter();
     const searchParams = useSearchParams();
     const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
@@ -67,7 +70,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                         }
                     }
                 } catch (e) {
-                    setError(e);
+                    setMessage("Error fetching external archives list");
                     console.error("Fetch external archives list:", e);
                 } finally {
                     setLoading(false);
