@@ -8,6 +8,7 @@ import { GridContext } from './GridContext';
 import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter, useSearchParams } from "next/navigation";
+import {useSessionContext} from "../SessionContext";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -21,9 +22,11 @@ const GridComponent = () => {
     basePath,
     setAbsolutePath
   } = useContext(GridContext);
+  const {
+    setMessage
+  } = useSessionContext();
   const [relativePath, setRelativePath] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [parentPath, setParentPath] = useState(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -190,7 +193,7 @@ const GridComponent = () => {
           setParentPath(json.path.substring(0, json.path.lastIndexOf("/")));
           return json.contents;
         } catch (e) {
-          setError(e);
+          setMessage("Error getting object list for " + param);
           console.error("Fetch object list:", e);
         } finally {
           setLoading(false);

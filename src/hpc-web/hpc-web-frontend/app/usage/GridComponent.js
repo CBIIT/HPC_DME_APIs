@@ -4,6 +4,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState } from "react";
 import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { useSearchParams } from 'next/navigation';
+import {useSessionContext} from "../SessionContext";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -11,7 +12,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const GridComponent = () => {
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {setMessage} = useSessionContext();
   const searchParams = useSearchParams();
 
   function formatBytes(bytes, decimals = 2) {
@@ -70,7 +71,7 @@ const GridComponent = () => {
           const json = await response.json();
           return json.calculateTotalSizeResponse;
         } catch (e) {
-          setError(e);
+          setMessage("Error fetching total size of " + param);
           console.error("Fetch total size:", e);
         } finally {
           setLoading(false);
