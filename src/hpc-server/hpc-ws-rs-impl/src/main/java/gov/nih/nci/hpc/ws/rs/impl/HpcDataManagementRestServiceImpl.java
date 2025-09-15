@@ -68,6 +68,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadTaskUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
@@ -844,6 +845,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return okResponse(null, false);
 	}
 
+	@Override
+	public Response updateDownloadTask(HpcDownloadTaskUpdateRequestDTO downloadTaskUpdateRequest) {
+		try {
+			dataManagementBusService.updateDownloadTask(downloadTaskUpdateRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(null, false);
+	}
+	
 	@Override
 	public Response retryDataObjectsOrCollectionsDownloadTask(String taskId,
 			HpcDownloadRetryRequestDTO downloadRetryRequest) {
