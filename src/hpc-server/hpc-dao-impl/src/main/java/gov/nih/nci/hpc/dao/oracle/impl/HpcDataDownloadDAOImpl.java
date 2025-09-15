@@ -84,8 +84,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, "
 			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_ACCESS_TOKEN, ASPERA_ACCOUNT_USER, ASPERA_ACCOUNT_PASSWORD, ASPERA_ACCOUNT_HOST, BOX_ACCESS_TOKEN, BOX_REFRESH_TOKEN, "
 			+ "COMPLETION_EVENT, COLLECTION_DOWNLOAD_TASK_ID, PERCENT_COMPLETE, STAGING_PERCENT_COMPLETE, DATA_SIZE, CREATED, "
-			+ "PROCESSED, IN_PROCESS, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_TASK_ID, RETRY_USER_ID, DOC) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "PROCESSED, IN_PROCESS, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_TASK_ID, RETRY_USER_ID, DOC, PRIORITY) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK "
 			+ "set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, S3_ARCHIVE_CONFIGURATION_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, "
@@ -99,6 +99,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
 	private static final String UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_STATUS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set DATA_TRANSFER_STATUS = ? where COLLECTION_DOWNLOAD_TASK_ID = ?";
+
+	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_PRIORITY_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set PRIORITY = ? where ID = ?";
+
+	private static final String UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_PRIORITY_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set PRIORITY = ? where COLLECTION_DOWNLOAD_TASK_ID = ?";
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (DATA_TRANSFER_STATUS = ? and DESTINATION_TYPE = ?)";
 
@@ -160,9 +164,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_CLOBS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
+	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set PRIORITY = ? where ID = ?";
+
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
 
 	private static final String DELETE_COLLECTION_DOWNLOAD_TASK_SQL = "delete from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
+	
+	private static final String GET_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL = "select PRIORITY from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASKS_BY_STATUS_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where STATUS = ? "
 			+ "order by \"PRIORITY\", \"CREATED\"";
@@ -283,6 +291,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		dataObjectDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		dataObjectDownloadTask.setDoc(rs.getString("DOC"));
+		dataObjectDownloadTask.setPriority(rs.getInt("PRIORITY"));
 
 		int stagingPercentComplete = rs.getInt("STAGING_PERCENT_COMPLETE");
 		dataObjectDownloadTask.setStagingPercentComplete(stagingPercentComplete > 0 ? stagingPercentComplete : null);
@@ -464,6 +473,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		collectionDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		collectionDownloadTask.setDoc(rs.getString("DOC"));
+		collectionDownloadTask.setPriority(rs.getInt("PRIORITY"));
 
 		long totalBytesTransferred = rs.getLong("TOTAL_BYTES_TRANSFERRED");
 		collectionDownloadTask.setTotalBytesTransferred(totalBytesTransferred > 0 ? totalBytesTransferred : null);
@@ -724,6 +734,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			} else {
 				throw new HpcException("No download destination in a download task", HpcErrorType.UNEXPECTED_ERROR);
 			}
+			
+			if(StringUtils.isNotEmpty(dataObjectDownloadTask.getCollectionDownloadTaskId())) {
+			    // Get the collection download task priority
+			    dataObjectDownloadTask.setPriority(getCollectionDownloadTaskPriority(dataObjectDownloadTask.getCollectionDownloadTaskId()));
+			}
 
 			jdbcTemplate.update(CREATE_DATA_OBJECT_DOWNLOAD_TASK_SQL, dataObjectDownloadTask.getId(),
 					dataObjectDownloadTask.getUserId(), dataObjectDownloadTask.getPath(),
@@ -745,7 +760,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
 					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
-					dataObjectDownloadTask.getDoc());
+					dataObjectDownloadTask.getDoc(),
+					dataObjectDownloadTask.getPriority());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
@@ -897,6 +913,28 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 	}
 
+	@Override
+	public void updateDataObjectDownloadTaskPriority(String id, int priority) throws HpcException {
+		try {
+			jdbcTemplate.update(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_PRIORITY_SQL, priority, id);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to update a data object download task priority with task id: " + id + " " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public void updateDataObjectsDownloadTaskPriority(String collectionDownloadTaskId, int priority) throws HpcException {
+		try {
+			jdbcTemplate.update(UPDATE_DATA_OBJECTS_DOWNLOAD_TASK_PRIORITY_SQL, priority, collectionDownloadTaskId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to update a data objects download task priority with collection task id: " + collectionDownloadTaskId + " " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
 	@Override
 	public HpcDataTransferDownloadStatus getDataObjectDownloadTaskStatus(String id) throws HpcException {
 		try {
@@ -1228,6 +1266,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to delete a collection download task: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public void updateCollectionDownloadTaskPriority(String id, int priority) throws HpcException {
+		try {
+			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL, priority, id);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to update a collection download task priority with ID: " + id + " " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
@@ -1566,6 +1615,21 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTaskId, e);
 		}
 	}
+	
+	@Override
+    public Integer getCollectionDownloadTaskPriority(String id) throws HpcException {
+        try {
+            return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL, Integer.class,
+                    id);
+
+        } catch (IncorrectResultSizeDataAccessException irse) {
+            return null;
+
+        } catch (DataAccessException e) {
+            throw new HpcException("Failed to get a collection download task priority : " + e.getMessage(),
+                    HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+        }
+    }
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods

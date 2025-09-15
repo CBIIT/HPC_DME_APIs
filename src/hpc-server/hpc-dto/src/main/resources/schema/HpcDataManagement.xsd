@@ -478,6 +478,7 @@
 				<xsd:element name="stagingPercentComplete" type="xsd:int" minOccurs="0" />
 				<xsd:element name="retryTaskId" type="xsd:string" />
 				<xsd:element name="retryUserId" type="xsd:string" />
+				<xsd:element name="priority" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -550,6 +551,7 @@
 				<xsd:element name="collectionListResultSummary"
 					type="hpc-dto-datamanagement:HpcCollectionResultSummaryDTO"
 					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="priority" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -591,6 +593,16 @@
 					type="hpc-domain-datatransfer:HpcAsperaAccount" />
 				<xsd:element name="boxAccessToken" type="xsd:string" />
 				<xsd:element name="boxRefreshToken" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcDownloadTaskUpdateRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="taskId" type="xsd:string" />
+				<xsd:element name="priority" type="xsd:int"
+					minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
