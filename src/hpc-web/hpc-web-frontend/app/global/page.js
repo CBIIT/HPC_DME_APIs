@@ -4,11 +4,14 @@ import GridComponent from "./GridComponent";
 import Sidebar from "./Sidebar";
 import ActionsBar from "./ActionsBar";
 import { useSessionContext } from '../SessionContext';
-
+import ErrorAlert from '../ErrorAlert';
 
 export default function Global() {
 
     const {isSidebarOpen, saveSidebarSession} = useSessionContext();
+    const {
+        message, setMessage
+    } = useSessionContext();
 
     const toggleSidebar = () => {
         saveSidebarSession(!isSidebarOpen);
@@ -16,6 +19,7 @@ export default function Global() {
 
     return (
         <div>
+            {message && <ErrorAlert message={message} onClose={() => setMessage(null)} />}
             <GridProvider>
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar}/>
                 <ActionsBar isOpen={isSidebarOpen} />

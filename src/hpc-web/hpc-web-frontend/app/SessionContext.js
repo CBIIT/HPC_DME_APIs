@@ -6,7 +6,7 @@ const SessionContext = createContext(null);
 export default function SessionProvider({children}) {
     const [session, setSession] = useState();
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [message, setMessage] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     useEffect(() => {
@@ -26,7 +26,7 @@ export default function SessionProvider({children}) {
                     const json = await response.json();
                     setSession(json);
                 } catch (e) {
-                    setError(e);
+                    setMessage(e.message);
                     console.error("Fetch session info: ", e);
                 } finally {
                     setLoading(false);
@@ -53,7 +53,7 @@ export default function SessionProvider({children}) {
     };
 
     return (
-        <SessionContext.Provider value={{session, isSidebarOpen, saveSidebarSession}}>
+        <SessionContext.Provider value={{session, message, setMessage, isSidebarOpen, saveSidebarSession}}>
             {children}
         </SessionContext.Provider>
     );

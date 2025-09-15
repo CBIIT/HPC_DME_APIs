@@ -1,8 +1,14 @@
 "use client";
 import GridComponent from "./GridComponent";
-import React from "react";
+import React, {useContext} from "react";
+import ErrorAlert from "../ErrorAlert";
+import {useSessionContext} from "../SessionContext";
 
 export default function Usage() {
+
+    const {
+        message, setMessage
+    } = useSessionContext();
 
     const handleCloseWindow = () => {
         if (typeof window !== 'undefined') {
@@ -12,6 +18,7 @@ export default function Usage() {
 
     return (
         <>
+            {message && <ErrorAlert message={message} onClose={() => setMessage(null)} />}
             <div className="container mb-4">
                 <div className="row justify-content-end">
                     <div className="col-lg-1">
