@@ -273,6 +273,7 @@ public class HpcS3Connection {
 			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
 					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
 					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
+					// Use WHEN_SUPPORTED to avoid signature failures with some third-party S3 providers (e.g., Cloudian) when checksums are always enabled.
 					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
 					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
 
