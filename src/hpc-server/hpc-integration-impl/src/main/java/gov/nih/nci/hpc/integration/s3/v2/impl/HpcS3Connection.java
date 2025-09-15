@@ -30,7 +30,9 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
 import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.crt.CrtRuntimeException;
 import software.amazon.awssdk.crt.Log;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
@@ -271,7 +273,9 @@ public class HpcS3Connection {
 			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
 					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
 					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
-					.checksumValidationEnabled(false)
+					// Use WHEN_SUPPORTED to avoid signature failures with some third-party S3
+					// providers (e.g., Cloudian) when checksums are always enabled.
+					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
 					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
 
 			if (trustAllCerts) {
@@ -280,75 +284,6 @@ public class HpcS3Connection {
 			}
 
 			s3.client = crtAsyncClientBuilder.build();
-
-			// ERAN - Code review notes
-			// 1. checksumValidation if set to true - signature failure for Cloudian
-			// 2. Options in V1 no longer available in V2
-			// - disableParallelDownloads(true)
-			// - shutDownThreadPools(false)
-			// - clientConfiguration() - used to set socket timeout
-			// 2. New options in V2 to consider in the config
-			// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3CrtAsyncClientBuilder.html)
-			// - initialReadBufferSizeInBytes
-			// - maxConcurrency
-			// - maxNativeMemoryLimitInBytes
-			// - minimumPartSizeInBytes
-			// - targetThroughputInGbps
-
-			/*
-			 * This is the exception thrown by Cloudian if uploading w/ checksumValidation
-			 * 
-			 * 
-			 * Caused by: software.amazon.awssdk.services.s3.model.S3Exception: The request
-			 * signature we calculated does not match the signature you provided. Check your
-			 * AWS Secret Access Key and signing method. For more information, see REST
-			 * Authentication and SOAP Authentication for details. (Service: S3, Status
-			 * Code: 403, Request ID: c395b26e-7c0e-1d20-8073-ac1f6ba5c94a) at
-			 * software.amazon.awssdk.protocols.xml.internal.unmarshall.
-			 * AwsXmlPredicatedResponseHandler.handleErrorResponse(
-			 * AwsXmlPredicatedResponseHandler.java:156) at
-			 * software.amazon.awssdk.protocols.xml.internal.unmarshall.
-			 * AwsXmlPredicatedResponseHandler.handleResponse(
-			 * AwsXmlPredicatedResponseHandler.java:108) at
-			 * software.amazon.awssdk.protocols.xml.internal.unmarshall.
-			 * AwsXmlPredicatedResponseHandler.handle(AwsXmlPredicatedResponseHandler.java:
-			 * 85) at software.amazon.awssdk.protocols.xml.internal.unmarshall.
-			 * AwsXmlPredicatedResponseHandler.handle(AwsXmlPredicatedResponseHandler.java:
-			 * 43) at software.amazon.awssdk.core.internal.handler.BaseClientHandler.
-			 * lambda$successTransformationResponseHandler$7(BaseClientHandler.java:279) at
-			 * software.amazon.awssdk.core.internal.http.async.AsyncResponseHandler.
-			 * lambda$prepare$0(AsyncResponseHandler.java:92) at
-			 * java.base/java.util.concurrent.CompletableFuture$UniCompose.tryFire(
-			 * CompletableFuture.java:1072) at
-			 * java.base/java.util.concurrent.CompletableFuture.postComplete(
-			 * CompletableFuture.java:506) at
-			 * java.base/java.util.concurrent.CompletableFuture.complete(CompletableFuture.
-			 * java:2079) at software.amazon.awssdk.core.internal.http.async.
-			 * AsyncResponseHandler$BaosSubscriber.onComplete(AsyncResponseHandler.java:135)
-			 * at software.amazon.awssdk.core.internal.metrics.
-			 * BytesReadTrackingPublisher$BytesReadTracker.onComplete(
-			 * BytesReadTrackingPublisher.java:74) at
-			 * software.amazon.awssdk.utils.async.SimplePublisher.doProcessQueue(
-			 * SimplePublisher.java:275) at
-			 * software.amazon.awssdk.utils.async.SimplePublisher.processEventQueue(
-			 * SimplePublisher.java:224) at
-			 * software.amazon.awssdk.utils.async.SimplePublisher.complete(SimplePublisher.
-			 * java:157) at
-			 * java.base/java.util.concurrent.CompletableFuture.uniRunNow(CompletableFuture.
-			 * java:815) at java.base/java.util.concurrent.CompletableFuture.uniRunStage(
-			 * CompletableFuture.java:799) at
-			 * java.base/java.util.concurrent.CompletableFuture.thenRun(CompletableFuture.
-			 * java:2127) at
-			 * software.amazon.awssdk.services.s3.internal.crt.S3CrtResponseHandlerAdapter.
-			 * onErrorResponseComplete(S3CrtResponseHandlerAdapter.java:181) at
-			 * software.amazon.awssdk.services.s3.internal.crt.S3CrtResponseHandlerAdapter.
-			 * handleError(S3CrtResponseHandlerAdapter.java:160) at
-			 * software.amazon.awssdk.services.s3.internal.crt.S3CrtResponseHandlerAdapter.
-			 * onFinished(S3CrtResponseHandlerAdapter.java:129) at
-			 * software.amazon.awssdk.crt.s3.S3MetaRequestResponseHandlerNativeAdapter.
-			 * onFinished(S3MetaRequestResponseHandlerNativeAdapter.java:25)
-			 * 
-			 */
 
 			// Instantiate the S3 transfer manager.
 			s3.transferManager = S3TransferManager.builder().s3Client(s3.client).executor(executorService).build();
@@ -361,7 +296,7 @@ public class HpcS3Connection {
 
 			return s3;
 
-		} catch (SdkException e) {
+		} catch (SdkException | CrtRuntimeException e) {
 			throw new HpcException(
 					"[S3] Failed to authenticate S3 Provider: " + s3Provider.value() + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -392,8 +327,15 @@ public class HpcS3Connection {
 			}
 
 			// Instantiate a S3 async client.
+			
+			// Note: Both AWS and S3 providers now use
+			// RequestChecksumCalculation.WHEN_SUPPORTED for checksum validation.
+			// This is intentional for consistency and compatibility with the current SDK.
+			// Previous comments suggesting .checksumValidationEnabled(true) for AWS are
+			// outdated.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
-					.minimumPartSizeInBytes(minimumUploadPartSize).checksumValidationEnabled(true)
+					.minimumPartSizeInBytes(minimumUploadPartSize)
+					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
 					.thresholdInBytes(multipartUploadThreshold).build();
 
 			// Instantiate the S3 transfer manager.
@@ -405,7 +347,7 @@ public class HpcS3Connection {
 
 			return s3;
 
-		} catch (SdkException e) {
+		} catch (SdkException | CrtRuntimeException e) {
 			throw new HpcException("[S3] Failed to authenticate S3 in region " + region + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
