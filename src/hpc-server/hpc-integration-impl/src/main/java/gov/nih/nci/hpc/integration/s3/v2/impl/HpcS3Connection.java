@@ -328,6 +328,7 @@ public class HpcS3Connection {
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
 					.minimumPartSizeInBytes(minimumUploadPartSize)
+					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
 					.thresholdInBytes(multipartUploadThreshold).build();
 
 			// Instantiate the S3 transfer manager.
