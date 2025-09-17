@@ -649,20 +649,20 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
-	 * List objects directly under path. Non-recursive listing.
+	 * List objects directly under the external path. Non-recursive listing.
 	 *
-	 * @param path The path.
+	 * @param externalPath The external path.
 	 * @return A response DTO containing the list of objects directly under the path. 
 	 * @throws HpcException on service failure.
 	 */
-	public HpcListObjectsResponseDTO listObjects(String path) throws HpcException;
+	public HpcListObjectsResponseDTO listObjects(String externalPath) throws HpcException;
 	
 	/**
-	 * Calculate Total size of each path requested in the request.
+	 * Calculate Total size of each external path requested in the request.
 	 *
-	 * @param calculateTotalSizeRequest The request containing the paths to 
+	 * @param calculateTotalSizeRequest The request containing the external paths to 
 	 * calculate the total size.
-	 * @return A response DTO containing the total size for each path requested.
+	 * @return A response DTO containing the total size for each external path requested.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCalculateTotalSizeResponseDTO calculateTotalSize(
