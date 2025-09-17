@@ -273,6 +273,7 @@ public class HpcS3Connection {
 			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
 					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
 					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
+					// This is required until VAST is upgraded to version 5.3.0+
 					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
 					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
 
@@ -327,7 +328,6 @@ public class HpcS3Connection {
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
 					.minimumPartSizeInBytes(minimumUploadPartSize)
-					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
 					.thresholdInBytes(multipartUploadThreshold).build();
 
 			// Instantiate the S3 transfer manager.
