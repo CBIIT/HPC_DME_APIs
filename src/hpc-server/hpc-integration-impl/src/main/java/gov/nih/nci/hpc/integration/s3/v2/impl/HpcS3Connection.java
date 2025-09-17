@@ -273,14 +273,14 @@ public class HpcS3Connection {
 			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
 					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
 					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
-					// Use WHEN_SUPPORTED to avoid signature failures with some third-party S3
-					// providers (e.g., Cloudian) when checksums are always enabled.
-					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
+					// This is required until VAST is upgraded to version 5.3.0+. After upgrade
+					// change to WHEN_SUPPORTED.
+					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
 					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
 
 			if (trustAllCerts) {
 				crtAsyncClientBuilder.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true));
-				logger.warn("hpc.integration.s3.trustAllCerts property is set to true. CRT cert vslidation is off");
+				logger.warn("hpc.integration.s3.trustAllCerts property is set to true. CRT cert validation is off");
 			}
 
 			s3.client = crtAsyncClientBuilder.build();
@@ -327,12 +327,6 @@ public class HpcS3Connection {
 			}
 
 			// Instantiate a S3 async client.
-			
-			// Note: Both AWS and S3 providers now use
-			// RequestChecksumCalculation.WHEN_SUPPORTED for checksum validation.
-			// This is intentional for consistency and compatibility with the current SDK.
-			// Previous comments suggesting .checksumValidationEnabled(true) for AWS are
-			// outdated.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
 					.minimumPartSizeInBytes(minimumUploadPartSize)
 					.requestChecksumCalculation(RequestChecksumCalculation.WHEN_SUPPORTED)
