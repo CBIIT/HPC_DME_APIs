@@ -164,7 +164,7 @@ window.onclick = function(event) {
 					},{
 						field : 'link',
 						width : 100,
-						displayName : 'Create Link',
+						displayName : 'Create Soft Link',
 						cellFilter : 'dmePathEncoding',
 						cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" href="../link?type=datafile&amp;linkFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source={{grid.appScope.source}}"><i class="fa fa-link" aria-hidden="true"></i></a></div>',
 						exporterSuppressExport : true,
@@ -175,7 +175,7 @@ window.onclick = function(event) {
 			        title: 'Hide All Columns',
 			        action: function ($event) {
 			        	this.grid.columns.forEach(function(col){
-			                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission'&& col.displayName != 'Create Link') {
+			                   if(col.displayName != 'Path' && col.displayName != '' && col.displayName != 'Download'&& col.displayName != 'Permission'&& col.displayName != 'Create Soft Link') {
 			                	   col.hideColumn();
 			                	   deselectedColumns.push(col.field);
 			                 }  
@@ -724,7 +724,7 @@ window.onclick = function(event) {
 										><i class="fa fa-users" title="Manage Permissions on Selected Data Files"></i></a>
 									<a data-toggle="modal" id="linkselectedlink"
 										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
-										><i class="fa fa-link" title="Create Links for Selected Data Files"></i></a>
+										><i class="fa fa-link" title="Create Soft Links for Selected Data Files"></i></a>
 									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Data Files: <strong id="totalSizeDisplay"></strong></label>
 								</div>
 									<div class="pull-right" id="searchInputDiv" style="display: none">
