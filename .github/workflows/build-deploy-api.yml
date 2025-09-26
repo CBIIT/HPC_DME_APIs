@@ -18,7 +18,6 @@ on:
         default: dev
         options:
           - dev
-          - prod
       code_branch:
         description: branch to build
         required: true
@@ -92,9 +91,9 @@ jobs:
         env:
           remote_user: ${{ secrets.REMOTE_USER }}
           remote: ${{ secrets.TOMCAT_HOST }}
-          tomcat_home: /local/content/tomcat/ncifhpcdmsvcp
-          dist: /local/content/tomcat/ncifhpcdmsvcp/webapps
-          remote_tomcat: tomcat-ncifhpcdmsvcp
+          tomcat_home: /local/content/tomcat/dme-project
+          dist: /local/content/tomcat/dme-project/webapps
+          remote_tomcat: tomcat-dme-project
           app: hpc-server
           app1: hpc-scheduler
           app2: hpc-scheduler-migration
