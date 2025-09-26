@@ -74,7 +74,7 @@ jobs:
           unit2: hpc-scheduler-migration.war
         run: |
           set -xe
-          ssh -o StrictHostKeyChecking=no ncif-hpcdm-svc@ncias-d3610-v "sudo /sbin/service $remote_tomcat stop"
+          #ssh -o StrictHostKeyChecking=no ncif-hpcdm-svc@ncias-d3610-v "sudo /sbin/service $remote_tomcat stop"
           echo "Stopping tomcat"
           ssh -qt $remote_user@$remote "sudo /sbin/service $remote_tomcat stop"
           echo "Cleaning old backups and symlinks..."
@@ -93,4 +93,4 @@ jobs:
           echo "creating symlink"
           ssh -qt ${remote_user}@${remote} " cd ${dist} && ln -s $app-*.war ${unit};  cd ${dist} && ln -s $app1-[0-9]*.war ${unit1}; cd ${dist} && ln -s $app2-*.war ${unit2}"
           echo "restart tomcat"
-          ssh -qt ${remote_user}@${remote} " sudo /sbin/service $remote_tomcat start"
+          ssh -qt ${remote_user}@${remote} "sudo /sbin/service $remote_tomcat start"
