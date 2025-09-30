@@ -1051,4 +1051,13 @@ public interface HpcDataTransferService {
 	 */
 	public void deleteGlobusTransferTask(String dataTransferRequestId) throws HpcException;
 
+	/**
+	 * Update download task priority.
+	 *
+	 * @param taskId   The download task ID.
+	 * @param taskType The download task type (data-object or collection).
+	 * @param priority The priority to set.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, int priority) throws HpcException;
 }
