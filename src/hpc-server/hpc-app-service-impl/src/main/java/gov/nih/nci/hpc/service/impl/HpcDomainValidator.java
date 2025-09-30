@@ -549,7 +549,10 @@ public class HpcDomainValidator {
 				validationResult.setMessage("attributeMatch provided w/ path-operator [" + metadataQuery + "]");
 				return validationResult;
 			} else if (dataManagementProxy != null) {
-				metadataQuery.setValue(dataManagementProxy.getAbsolutePath(toNormalizedPath(metadataQuery.getValue())));
+				// If wildcard is at the beginning of the path, remove the leading slash to include the base path.
+				String path = metadataQuery.getValue().startsWith("%/") ? "%" + metadataQuery.getValue().substring(2)
+						: metadataQuery.getValue();
+				metadataQuery.setValue(dataManagementProxy.getAbsolutePath(toNormalizedPath(path)));
 				metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.PATH);
 			}
 		}

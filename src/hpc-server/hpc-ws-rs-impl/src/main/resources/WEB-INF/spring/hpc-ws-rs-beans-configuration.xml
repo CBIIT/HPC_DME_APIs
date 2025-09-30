@@ -254,6 +254,8 @@
 					value="${hpc.ws.rs.auth.data-management.get-all-download-summary}" />
 				<entry key="getAllRegistrationSummary"
 					value="${hpc.ws.rs.auth.data-management.get-all-registration-summary}" />
+				<entry key="updateDownloadTask"
+					value="${hpc.ws.rs.auth.data-management.update-download-task}" />
 
 				<!-- Data Tiering Service Authorizations -->
 				<entry key="tierDataObject"

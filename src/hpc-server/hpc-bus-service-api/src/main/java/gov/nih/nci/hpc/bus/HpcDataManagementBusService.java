@@ -35,6 +35,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadTaskUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
@@ -635,5 +636,13 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcBulkMetadataUpdateResponseDTO updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest)
 			throws HpcException;
+
+	/**
+	 * Update download task of a data object, collection, list of data objects or a list of collections.
+	 *
+	 * @param HpcDownloadTaskUpdateRequestDTO Update download task request.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateDownloadTask(HpcDownloadTaskUpdateRequestDTO downloadTaskUpdateRequest) throws HpcException;
 
 }
