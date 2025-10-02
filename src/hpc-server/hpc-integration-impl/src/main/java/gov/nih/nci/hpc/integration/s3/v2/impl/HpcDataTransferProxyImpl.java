@@ -584,7 +584,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 			logger.info("[S3] Restoration Status [{}] - {}", s3ObjectName, objectMetadata.getRestorationStatus());
 
-			objectMetadata.setChecksum(headObjectResponse.eTag().replaceAll("\"", ""));
+			objectMetadata.setChecksum(headObjectResponse.eTag().replace("\"", ""));
 			logger.info("[S3] Checksum [{}] - {}", s3ObjectName, objectMetadata.getChecksum());
 
 		} catch (CompletionException e) {
