@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.18.0</version>
+		<version>3.19.0</version>
 	</parent>
 	<artifactId>hpc-ws-rs-api</artifactId>
 	<packaging>jar</packaging>
