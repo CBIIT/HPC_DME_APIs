@@ -35,7 +35,7 @@ export default function Usage() {
                     <h3 className="ms-4 mt-4">Selected Path</h3>
                     <GridComponent />
                 </div>
-            </section>`
+            </section>
         </>
     );
 }
