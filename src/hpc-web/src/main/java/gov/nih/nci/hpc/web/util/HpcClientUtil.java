@@ -2309,7 +2309,7 @@ public class HpcClientUtil {
           HpcListObjectsResponseDTO.class);
     } catch (IllegalStateException | IOException e) {
       logger.error("Failed to get directory listing of external path: " + externalPath, e);
-      throw new HpcWebException("Failed to get directory listing of external path: " + externalPath + e.getMessage());
+      throw new HpcWebException("Failed to get directory listing of external path: " + externalPath + ": " + e.getMessage());
     }
   }
   
