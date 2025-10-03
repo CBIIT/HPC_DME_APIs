@@ -24,6 +24,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
@@ -2236,7 +2238,55 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 		
 	}
+	
+	@Override
+	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException {
+	  
+	    List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
+      
+		// Input validation.
+	    if (!getPathAttributes(fileLocation).getExists()) {
+	        return directoryListing;
+	    }
+		if (!getPathAttributes(fileLocation).getIsDirectory()) {
+			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		File directory = new File(fileLocation.getFileId());
+        File[] files = directory.listFiles();
 
+        if (files != null) {
+            for (File file : files) {
+            	HpcListObjectsEntry childEntry = new HpcListObjectsEntry();
+            	childEntry.setPath(file.getPath());
+            	childEntry.setName(file.getName());
+            	childEntry.setIsDirectory(file.isDirectory() ? true : false);
+            	childEntry.setSize(file.isDirectory() ? 0 : file.length());
+    			childEntry.setArchived(false);
+    			
+            	Path filePath = Paths.get(file.getPath());
+            	try {
+            		BasicFileAttributes attributes = Files.readAttributes(filePath, BasicFileAttributes.class);
+            		long createdTime = attributes.creationTime().toMillis();
+            		Calendar created = Calendar.getInstance();
+            		created.setTimeInMillis(createdTime);
+            		childEntry.setCreated(created);
+                
+	                Calendar modified = Calendar.getInstance();
+	                modified.setTimeInMillis(file.lastModified());
+	            	childEntry.setLastModified(modified);
+            	} catch (Exception e) {
+        			logger.error("Failed to get basic file attribute for path: {}", file.getPath());
+        			throw new HpcException("Failed to get basic file attribute for path: " + file.getPath(), e);
+        		}
+            	
+            	directoryListing.add(childEntry);
+            }
+        }
+
+		return directoryListing;
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -4371,5 +4421,5 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 	}
-	
+
 }

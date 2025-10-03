@@ -46,8 +46,11 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -129,6 +132,15 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcCollectionDTO getCollectionChildrenWithPaging(String path, Integer offset, Boolean report)
 			throws HpcException;
+
+	/**
+     * Get Full Collection children including any sub collection and data objects that extend beyond the first page.
+     *
+     * @param path   The collection's path.
+     * @return A Collection DTO.
+     * @throws HpcException on service failure.
+     */
+	public HpcCollectionDTO getFullCollection(String path) throws HpcException;
 
 	/**
 	 * Download a collection tree.
@@ -645,4 +657,25 @@ public interface HpcDataManagementBusService {
 	 */
 	public void updateDownloadTask(HpcDownloadTaskUpdateRequestDTO downloadTaskUpdateRequest) throws HpcException;
 
+	/**
+	 * List objects directly under the external path. Non-recursive listing.
+	 *
+	 * @param externalPath The external path.
+	 * @return A response DTO containing the list of objects directly under the path. 
+	 * @throws HpcException on service failure.
+	 */
+	public HpcListObjectsResponseDTO listObjects(String externalPath) throws HpcException;
+	
+	/**
+	 * Calculate Total size of each external path requested in the request.
+	 *
+	 * @param calculateTotalSizeRequest The request containing the external paths to 
+	 * calculate the total size.
+	 * @return A response DTO containing the total size for each external path requested.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCalculateTotalSizeResponseDTO calculateTotalSize(
+			HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest) throws HpcException;
+
+	
 }
