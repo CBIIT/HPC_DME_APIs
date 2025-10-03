@@ -2222,6 +2222,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, int priority) throws HpcException {
+		if (taskType == null) {
+			throw new HpcException("Null download task type", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT)) {
+			dataDownloadDAO.updateDataObjectDownloadTaskPriority(taskId, priority);
+		}
+
+		if (taskType.equals(HpcDownloadTaskType.COLLECTION) || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)
+				|| taskType.equals(HpcDownloadTaskType.COLLECTION_LIST)) {
+			dataDownloadDAO.updateCollectionDownloadTaskPriority(taskId, priority);
+			dataDownloadDAO.updateDataObjectsDownloadTaskPriority(taskId, priority);
+		}
+		
+	}
+	
+	@Override
 	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException {
 	  
 	    List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
