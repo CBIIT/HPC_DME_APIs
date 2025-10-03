@@ -1068,7 +1068,6 @@ public interface HpcDataTransferService {
 	 * @param fileLocation The path to get the listing for.
 	 * @return The list of HpcListObjectsEntry.
 	 * @throws HpcException on service failure.
-	 * @throws  
 	 */
 	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException;
 
