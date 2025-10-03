@@ -108,7 +108,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                 <div className="flex flex-col items-center">
                     <div className="mt-4">
                         <h3>
-                        My Archives
+                        External Archives
                         </h3>
                     </div>
                     <div className="mt-4">
