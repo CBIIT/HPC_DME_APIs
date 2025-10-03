@@ -2336,7 +2336,7 @@ public class HpcClientUtil {
           HpcCalculateTotalSizeResponseDTO.class);
     } catch (IllegalStateException | IOException e) {
       logger.error("Failed to calculate total size of external paths: " + Arrays.toString(externalPaths), e);
-      throw new HpcWebException("Failed to calculate total size of external path: " + Arrays.toString(externalPaths) + e.getMessage());
+      throw new HpcWebException("Failed to calculate total size of external path: " + Arrays.toString(externalPaths) + ": " + e.getMessage());
     }
   }
 
