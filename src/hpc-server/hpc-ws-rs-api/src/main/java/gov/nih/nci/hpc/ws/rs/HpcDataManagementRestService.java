@@ -839,7 +839,7 @@ public interface HpcDataManagementRestService {
 	 * @return The REST service response w/ HpcListObjectResponseDTO entity.
 	 */
 	@GET
-	@Path("/listObjects/{path:.*}")
+	@Path("/ext/listObjects/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response listObjects(@PathParam("path") String path);
 	
@@ -852,7 +852,7 @@ public interface HpcDataManagementRestService {
 	 *         entity.
 	 */
 	@POST
-	@Path("/calculateTotalSize")
+	@Path("/ext/calculateTotalSize")
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response calculateTotalSize(HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest);
