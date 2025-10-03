@@ -82,6 +82,7 @@ import software.amazon.awssdk.services.s3.model.LifecycleRule;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.MetadataDirective;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreObjectRequest;
@@ -304,7 +305,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
 				.sourceBucket(fileLocation.getFileContainerId()).sourceKey(fileLocation.getFileId())
 				.destinationBucket(fileLocation.getFileContainerId()).destinationKey(fileLocation.getFileId())
-				.storageClass(storageClass).metadata(toS3Metadata(metadataEntries)).build();
+				.storageClass(storageClass).metadata(toS3Metadata(metadataEntries))
+				.metadataDirective(MetadataDirective.REPLACE).build();
 
 		CopyRequest copyRequest = CopyRequest.builder().copyObjectRequest(copyObjectRequest).build();
 

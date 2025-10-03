@@ -144,6 +144,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadTaskUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
@@ -1757,6 +1758,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getDataObjectDownloadTask().getRetryTaskId());
+			downloadStatus.setPriority(taskStatus.getDataObjectDownloadTask().getPriority());
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
 			downloadStatus.setPath(taskStatus.getResult().getPath());
@@ -2569,6 +2571,31 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
+	public void updateDownloadTask(HpcDownloadTaskUpdateRequestDTO downloadTaskUpdateRequest) throws HpcException {
+		// Input validation
+		if (StringUtils.isBlank(downloadTaskUpdateRequest.getTaskId())) {
+			throw new HpcException("Failed to update download task, task id is empty.",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// Check if task id exists
+		HpcDownloadTaskStatus taskStatus = dataTransferService
+				.getDownloadTaskStatus(downloadTaskUpdateRequest.getTaskId(), HpcDownloadTaskType.COLLECTION);
+		if (taskStatus == null) {
+			taskStatus = dataTransferService.getDownloadTaskStatus(downloadTaskUpdateRequest.getTaskId(),
+					HpcDownloadTaskType.DATA_OBJECT);
+		}
+		if (taskStatus == null) {
+			throw new HpcException("Download task not found: " + downloadTaskUpdateRequest.getTaskId(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (downloadTaskUpdateRequest.getPriority() != null && downloadTaskUpdateRequest.getPriority() >= 0 && taskStatus.getInProgress()) {
+			HpcDownloadTaskType taskType = taskStatus.getCollectionDownloadTask() != null ? HpcDownloadTaskType.COLLECTION : HpcDownloadTaskType.DATA_OBJECT;
+			// Update the priority of this task id
+			dataTransferService.updateDownloadTaskPriority(downloadTaskUpdateRequest.getTaskId(), taskType, downloadTaskUpdateRequest.getPriority());
+		}
+	}
+	
+	@Override
 	public HpcListObjectsResponseDTO listObjects(String externalPath) throws HpcException {
 		
 		HpcListObjectsResponseDTO listObjectsResponse = new HpcListObjectsResponseDTO();
@@ -3095,6 +3122,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						taskStatus.getCollectionDownloadTask().getBoxDownloadDestination().getDestinationLocation());
 				downloadStatus.setDestinationType(HpcDataTransferType.BOX);
 			}
+			downloadStatus.setPriority(taskStatus.getCollectionDownloadTask().getPriority());
 
 			// Get the status of the individual data object download tasks if the collection status
 			// is not yet ACTIVE, because the collection items field does not get populated before that
