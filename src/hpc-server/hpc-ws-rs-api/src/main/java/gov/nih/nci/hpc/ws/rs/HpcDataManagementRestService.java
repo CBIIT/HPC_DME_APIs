@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadTaskUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
 
@@ -741,6 +742,18 @@ public interface HpcDataManagementRestService {
 	public Response cancelDataObjectsOrCollectionsDownloadTask(@PathParam("taskId") String taskId);
 
 	/**
+	 * Update download task of a data object, collection, list of data objects or a list of collections.
+	 *
+	 * @param HpcDownloadTaskUpdateRequestDTO Update download task request.
+	 * @return The REST service response w/o entity.
+	 */
+	@POST
+	@Path("/download/task")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response updateDownloadTask(HpcDownloadTaskUpdateRequestDTO downloadTaskUpdateRequest);
+
+	
+	/**
 	 * Retry download task of a list of data objects or a list of collections.
 	 *
 	 * @param taskId               The download task ID.
@@ -839,7 +852,7 @@ public interface HpcDataManagementRestService {
 	 * @return The REST service response w/ HpcListObjectResponseDTO entity.
 	 */
 	@GET
-	@Path("/listObjects/{path:.*}")
+	@Path("/ext/listObjects/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response listObjects(@PathParam("path") String path);
 	
@@ -852,7 +865,7 @@ public interface HpcDataManagementRestService {
 	 *         entity.
 	 */
 	@POST
-	@Path("/calculateTotalSize")
+	@Path("/ext/calculateTotalSize")
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response calculateTotalSize(HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest);
