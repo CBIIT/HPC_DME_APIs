@@ -314,7 +314,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			Copy copy = s3Connection.getTransferManager(authenticatedToken).copy(copyRequest);
 
 			CompletedCopy completedCopy = copy.completionFuture().join();
-			response.setChecksum(completedCopy.response().copyObjectResult().eTag().replaceAll("\"", ""));
+			response.setChecksum(completedCopy.response().copyObjectResult().eTag().replace("\"", ""));
 			response.setMetadataAdded(true);
 			return response;
 
