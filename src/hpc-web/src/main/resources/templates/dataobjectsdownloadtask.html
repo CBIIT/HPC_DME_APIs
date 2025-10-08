@@ -716,7 +716,7 @@ function cancelDownload(task, taskType)
 	document.getElementById("taskId").value = task;
 	document.getElementById("taskType").value = taskType;
 	$("#cancelForm").submit();
-	$('#alertMessage').value = "Cancellation Requested."
+	$('#alertMessage').text("Cancellation Requested.");
 }
 
 var pollPercentComplete = setInterval(
