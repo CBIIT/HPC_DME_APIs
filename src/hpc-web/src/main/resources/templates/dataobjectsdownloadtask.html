@@ -102,7 +102,7 @@
 								  </h2>
 							    </div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() == null or (hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0) }">
-									<h2>
+									<h2 th:if="${!hpcDataObjectsDownloadStatusDTO.getCancellationRequested()}">
 										<strong> <button id="cancelDownload"
 											class="btn btn-link btn-sm"
 											th:data-task-id="${taskId}" th:data-task-type="${taskType}" 
@@ -114,15 +114,21 @@
 								</div>
 							</div>
 							<div th:if="${error != null}">
-								<div class="alert alert-error">
+								<div class="alert alert-danger">
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${error}" th:utext="${error}"></label>
 								</div>
 							</div>
 							<div th:if="${message != null}">
-								<div class="alert alert-error">
+								<div class="alert alert-info">
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${message}" th:utext="${message}"></label>
+								</div>
+							</div>
+							<div th:if="${message == null}" style="display:none">
+								<div class="alert alert-info">
+									<a class="close" data-dismiss="alert">×</a> <label id="alertMessage"
+										for="alertMessage"></label>
 								</div>
 							</div>
 							<!--panel-body start-->
@@ -710,7 +716,7 @@ function cancelDownload(task, taskType)
 	document.getElementById("taskId").value = task;
 	document.getElementById("taskType").value = taskType;
 	$("#cancelForm").submit();
-	
+	$('#alertMessage').value = "Cancellation Requested."
 }
 
 var pollPercentComplete = setInterval(
