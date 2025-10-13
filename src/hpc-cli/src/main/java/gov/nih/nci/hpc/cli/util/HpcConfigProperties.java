@@ -7,6 +7,7 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
 
+import java.io.File;
 import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
@@ -32,20 +33,38 @@ public class HpcConfigProperties {
 			Map<String, String> env = System.getenv();
 			String basePath=env.get("HPC_DM_UTILS");
 			String properties = HPC_PROPS;
+			String configProperties = COFIG_PROPS;
 			String filePath = System.getProperty("hpc.client.properties");
 			if (filePath != null)
 				properties = filePath;
 			
-			//properties = basePath + File.separator + properties;
+			String configFilePath = basePath + File.separator + configProperties;
+			File configFile = new File(configFilePath);
+
+	        if (configFile.exists()) {
+	        	configProperties = configFilePath;
+	        }
 			
 			System.out.println("Reading properties from "+properties);
+			System.out.println("Reading config properties from "+configProperties);
 			configuration = new CompositeConfiguration();
 			// configuration.addConfiguration(pConfig);
+			
+			// First add the config properties for system configured properties
+			// This ensures that the users cannot override the property configured internally.
+			builder = new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
+					.configure(new Parameters().properties().setFileName(configProperties));
+			configuration.addConfiguration(builder.getConfiguration());
+						
+			// Then add the user properties
 			builder = new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
 			    .configure(new Parameters().properties()
 			        .setFileName(properties));
-			
 			configuration.addConfiguration(builder.getConfiguration());
+			
+		    
+			System.out.println("Value of hpc.max.upload.filesize: " + getProperty("hpc.max.upload.filesize"));
+		    
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
