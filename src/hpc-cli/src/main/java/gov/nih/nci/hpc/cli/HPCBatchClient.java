@@ -58,6 +58,7 @@ public abstract class HPCBatchClient {
 	protected int multipartPoolSize = 0;
 	protected long multipartThreshold = 0;
 	protected long multipartChunksize = 0;
+	protected long maxUploadFilesize = 0;
     protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	public HPCBatchClient() {
@@ -170,6 +171,14 @@ public abstract class HPCBatchClient {
         } catch (Exception e) {
             logger.info("Defaulting hpc.multipart.chunksize value. Setting it to 524288000 (500MB)");
             multipartChunksize = 524288000L;
+        }
+        String maxUploadFilesizeStr = configProperties.getProperty("hpc.max.upload.filesize");
+        logger.debug("hpc.max.upload.filesize "+maxUploadFilesizeStr);
+        try {
+        	maxUploadFilesize = Long.parseLong(maxUploadFilesizeStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.max.upload.filesize value. Setting it to 2748779069440 (2.5TB)");
+            multipartChunksize = 2748779069440L;
         }
         
 		initializeLog();
