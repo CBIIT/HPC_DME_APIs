@@ -178,7 +178,7 @@ public abstract class HPCBatchClient {
         	maxUploadFilesize = Long.parseLong(maxUploadFilesizeStr);
         } catch (Exception e) {
             logger.info("Defaulting hpc.max.upload.filesize value. Setting it to 2748779069440 (2.5TB)");
-            multipartChunksize = 2748779069440L;
+            maxUploadFilesize = 2748779069440L;
         }
         
 		initializeLog();
