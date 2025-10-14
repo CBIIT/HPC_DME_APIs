@@ -170,16 +170,6 @@ function dm_register () {
         fi
     fi
 
-	if [ ! -z "$DATAOBJECT_FILE" ]
-    then
-        local MAX_FILE_SIZE=$(get_max_upload_file_size) || return 1
-        FILE_SIZE=$(stat -c %s "$DATAOBJECT_FILE")
-        if [ $FILE_SIZE > $MAX_FILE_SIZE ]
-        then 
-            echo "ERROR: File size exceeds the max allowed: $DATAOBJECT_FILE" >&2
-            return 1
-        fi
-    fi
     
     local DESCRIPTION="$1"
     local TYPE="$2"
@@ -411,17 +401,6 @@ function dm_register_dataobject_presigned {
     then
      echo "cannot extract checksum of source file" >&2
      return 1
-    fi
-    
-    if [ ! -z "$source_file" ]
-    then
-        local MAX_FILE_SIZE=$(get_max_upload_file_size) || return 1
-        FILE_SIZE=$(stat -c %s "$source_file")
-        if [ $FILE_SIZE > $MAX_FILE_SIZE ]
-        then 
-            echo "ERROR: File size exceeds the max allowed: $source_file" >&2
-            return 1
-        fi
     fi
     
     local description_json=`get_file_value "$description"`
