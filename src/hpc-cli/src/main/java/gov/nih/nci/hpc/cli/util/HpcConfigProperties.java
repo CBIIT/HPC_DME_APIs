@@ -23,7 +23,7 @@ public class HpcConfigProperties {
 
 	private CompositeConfiguration configuration;
 	private FileBasedConfigurationBuilder<PropertiesConfiguration> builder;
-	private static final String COFIG_PROPS = "config.properties";
+	private static final String CONFIG_PROPS = "config.properties";
 	private static final String HPC_PROPS = "hpc.properties";
 
 	@PostConstruct
@@ -32,7 +32,7 @@ public class HpcConfigProperties {
 			Map<String, String> env = System.getenv();
 			String basePath=env.get("HPC_DM_UTILS");
 			String properties = HPC_PROPS;
-			String configProperties = COFIG_PROPS;
+			String configProperties = CONFIG_PROPS;
 			String filePath = System.getProperty("hpc.client.properties");
 			if (filePath != null)
 				properties = filePath;
