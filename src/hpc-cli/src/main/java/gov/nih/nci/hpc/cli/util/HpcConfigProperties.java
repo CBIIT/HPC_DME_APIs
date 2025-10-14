@@ -7,7 +7,6 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
 
-import java.io.File;
 import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
@@ -38,12 +37,6 @@ public class HpcConfigProperties {
 			if (filePath != null)
 				properties = filePath;
 			
-			String configFilePath = basePath + File.separator + configProperties;
-			File configFile = new File(configFilePath);
-
-	        if (configFile.exists()) {
-	        	configProperties = configFilePath;
-	        }
 			
 			System.out.println("Reading properties from "+properties);
 			System.out.println("Reading config properties from "+configProperties);
@@ -60,11 +53,8 @@ public class HpcConfigProperties {
 			builder = new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
 			    .configure(new Parameters().properties()
 			        .setFileName(properties));
-			configuration.addConfiguration(builder.getConfiguration());
 			
-		    
-			System.out.println("Value of hpc.max.upload.filesize: " + getProperty("hpc.max.upload.filesize"));
-		    
+			configuration.addConfiguration(builder.getConfiguration());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
