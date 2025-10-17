@@ -218,7 +218,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	          
 		} catch (Exception e) {
 			result.setMessage("Retry bulk download request is not successful: " + e.getMessage());
-			model.addAttribute("message", "Retry bulk download request is not successful. Task Id: " + taskId);
+			model.addAttribute("error", "Retry bulk download request is not successful. Task Id: " + taskId);
 			model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 	        return "dataobjectsdownloadtask";
 		}
@@ -359,15 +359,15 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           if (cancelled)
           {
             result.setMessage(
-                "Cancel request successful. Task Id: " + taskId);
+                "Cancellation request successful. Task Id: " + taskId);
             model.addAttribute("message",
-            		"Cancel request successful. Task Id: " + taskId);
+            		"Cancellation Requested");
           }
 
         } catch (Exception e) {
-          result.setMessage("Cancel request is not successful: " + e.getMessage());
-          model.addAttribute("message",
-          		"Cancel request is not successful. Task Id: " + taskId);
+          result.setMessage("Cancellation request is not successful: " + e.getMessage());
+          model.addAttribute("error",
+          		"Cancellation request is not successful. Task Id: " + taskId);
         }
 
       }
@@ -463,6 +463,10 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			downloadTask.setTaskStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
 		}
 	}
+	
+	if(downloadTask.getCancellationRequested()) {
+		model.addAttribute("message", "Cancellation Requested");
+	}
 
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
@@ -522,6 +526,10 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		downloadTask.setMessage(message);
 	}
 
+	if(downloadTask.getCancellationRequested()) {
+		model.addAttribute("message", "Cancellation Requested");
+	}
+	
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
@@ -563,6 +571,10 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			downloadTask.setMessage(message);
 		}
 
+		if(downloadTask.getCancellationRequested()) {
+			model.addAttribute("message", "Cancellation Requested");
+		}
+		
 		model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
 	    model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 	    model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
