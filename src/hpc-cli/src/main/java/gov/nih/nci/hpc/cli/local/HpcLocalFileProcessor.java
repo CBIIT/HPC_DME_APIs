@@ -79,6 +79,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	int multipartPoolSize = 1;
 	protected long multipartThreshold = 5373952000L;
 	protected long multipartChunksize = 5368709120L;
+	protected long maxUploadFilesize = 2748779069440L;
 
 	public HpcLocalFileProcessor(HpcServerConnection connection) throws IOException {
 		super(connection);
@@ -109,6 +110,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
         this.multipartPoolSize = dataObject.getMultipartPoolSize();
         this.multipartThreshold = dataObject.getMultipartThreshold();
         this.multipartChunksize = dataObject.getMultipartChunksize();
+        this.maxUploadFilesize = dataObject.getMaxUploadFilesize();
 	}
 
   @Override
@@ -195,6 +197,12 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		File file = new File(entity.getAbsolutePath());
     if (!file.exists()) {
       String message = "File does not exist. Skipping: " + entity.getAbsolutePath();
+      System.out.println(message);
+      HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
+      HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
+      throw new RecordProcessingException(message);
+    } else if (file.length() > this.maxUploadFilesize) {
+      String message = "File size exceeds the max allowed. Skipping: " + entity.getAbsolutePath();
       System.out.println(message);
       HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
       HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
