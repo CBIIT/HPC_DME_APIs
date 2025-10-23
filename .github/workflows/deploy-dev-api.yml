@@ -11,7 +11,6 @@ on:
         default: dev
         options:
           - dev
-          - prod
       code_branch:
         description: branch to build
         required: true
@@ -64,9 +63,9 @@ jobs:
         env:
           remote_user: ${{ secrets.REMOTE_USER }}
           remote: ${{ secrets.TOMCAT_HOST }}
-          tomcat_home: /local/content/tomcat/ncifhpcdmsvcp
-          dist: /local/content/tomcat/ncifhpcdmsvcp/webapps
-          remote_tomcat: tomcat-ncifhpcdmsvcp
+          tomcat_home: /local/content/tomcat/dme-project
+          dist: /local/content/tomcat/dme-project/webapps
+          remote_tomcat: tomcat-dme-project
           app: hpc-server
           app1: hpc-scheduler
           app2: hpc-scheduler-migration
@@ -75,6 +74,7 @@ jobs:
           unit2: hpc-scheduler-migration.war
         run: |
           set -xe
+          #ssh -o StrictHostKeyChecking=no ncif-hpcdm-svc@ncias-d3610-v "sudo /sbin/service $remote_tomcat stop"
           echo "Stopping tomcat"
           ssh -qt $remote_user@$remote "sudo /sbin/service $remote_tomcat stop"
           echo "Cleaning old backups and symlinks..."
@@ -93,4 +93,4 @@ jobs:
           echo "creating symlink"
           ssh -qt ${remote_user}@${remote} " cd ${dist} && ln -s $app-*.war ${unit};  cd ${dist} && ln -s $app1-[0-9]*.war ${unit1}; cd ${dist} && ln -s $app2-*.war ${unit2}"
           echo "restart tomcat"
-          ssh -qt ${remote_user}@${remote} " sudo /sbin/service $remote_tomcat start"
+          ssh -qt ${remote_user}@${remote} "sudo /sbin/service $remote_tomcat start"

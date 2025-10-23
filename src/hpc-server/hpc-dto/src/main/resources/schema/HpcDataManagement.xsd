@@ -548,6 +548,7 @@
 				<xsd:element name="completed" type="xsd:dateTime" />
 				<xsd:element name="retryTaskId" type="xsd:string" />
 				<xsd:element name="retryUserId" type="xsd:string" />
+				<xsd:element name="cancellationRequested" type="xsd:boolean" />
 				<xsd:element name="collectionListResultSummary"
 					type="hpc-dto-datamanagement:HpcCollectionResultSummaryDTO"
 					minOccurs="0" maxOccurs="unbounded" />
