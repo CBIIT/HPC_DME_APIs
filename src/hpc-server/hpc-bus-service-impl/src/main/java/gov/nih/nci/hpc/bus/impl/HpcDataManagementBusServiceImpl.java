@@ -707,6 +707,46 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return responseDTO;
 	}
 
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+			throws HpcException {
+	
+		HpcDataObjectRegistrationRequestDTO dataObjectRegistration = new HpcDataObjectRegistrationRequestDTO();
+		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(path);
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+		String posixPath =  s3ArchiveConfiguration.getPosixPath();
+		String bucket =  s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+		String basePath = dataManagementConfiguration.getBasePath();
+		HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
+		HpcDataObjectRegistrationRequest dataObjectRegistrationRequest = new HpcDataObjectRegistrationRequest();
+		dto.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
+		dataObjectRegistrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
+		String[] pathSubstring = path.split(s3ArchiveConfiguration.getPosixPath());
+		String filePath = dataManagementConfiguration.getBasePath() + pathSubstring[1];
+		dto.setPath(filePath);
+		HpcFileLocation sourceLocation = new HpcFileLocation();
+		sourceLocation.setFileContainerId(bucket);
+		sourceLocation.setFileId(filePath);
+		HpcUploadSource uploadSource = new HpcUploadSource();
+		uploadSource.setSourceLocation(sourceLocation);
+		dto.setArchiveLinkSource(uploadSource);
+		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
+        registrationBulkRequestDTO.getDataObjectRegistrationItems().add(dto);
+		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
+		registrationRequest.setArchiveLinkSource(uploadSource);
+		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
+		// Single data object call
+		//registerDataObject(filePath, registrationRequest, null, invokerNciAccount.getUserId(),
+		//		invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), s3ArchiveConfiguration.getDataManagementConfigurationId(), false);
+		///
+		//HpcBulkDataObjectRegistrationResponseDTO registrationResponse = registerDataObjects(registrationBulkRequestDTO);
+		//HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
+		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
+				invokerNciAccount.getUserId(), null, true, null);
+		return downloadResponse;
+	}
+
+
 	@Override
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) throws HpcException {
 		return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION);
