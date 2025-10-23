@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -98,6 +99,15 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	 */
 	public Set<String> getDocs() {
 		return docs;
+	}
+
+	/**
+	 * Get all supported S3 Archive configurations.
+	 *
+	 * @return A collection of all supported S3 Archive configurations.
+	 */
+	public Collection<HpcDataTransferConfiguration>  getS3ArchiveConfigurations() {
+		return s3ArchiveConfigurations.values();
 	}
 
 	/**
