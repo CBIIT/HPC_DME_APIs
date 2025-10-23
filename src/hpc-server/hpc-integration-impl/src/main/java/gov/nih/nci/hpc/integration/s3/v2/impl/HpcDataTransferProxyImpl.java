@@ -289,7 +289,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			if (metadataAlreadySet) {
 				logger.info("System metadata in S3 archive already set for [{}]. No need to copy-object in archive",
 						fileLocation.getFileId());
-				response.setChecksum(headObjectResponse.eTag());
+				response.setChecksum(headObjectResponse.eTag().replace("\"", ""));
 				response.setMetadataAdded(false);
 				return response;
 			}
@@ -314,7 +314,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			Copy copy = s3Connection.getTransferManager(authenticatedToken).copy(copyRequest);
 
 			CompletedCopy completedCopy = copy.completionFuture().join();
-			response.setChecksum(completedCopy.response().copyObjectResult().eTag());
+			response.setChecksum(completedCopy.response().copyObjectResult().eTag().replace("\"", ""));
 			response.setMetadataAdded(true);
 			return response;
 
@@ -584,7 +584,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 			logger.info("[S3] Restoration Status [{}] - {}", s3ObjectName, objectMetadata.getRestorationStatus());
 
-			objectMetadata.setChecksum(headObjectResponse.eTag());
+			objectMetadata.setChecksum(headObjectResponse.eTag().replace("\"", ""));
 			logger.info("[S3] Checksum [{}] - {}", s3ObjectName, objectMetadata.getChecksum());
 
 		} catch (CompletionException e) {
