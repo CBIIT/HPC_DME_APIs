@@ -23,7 +23,7 @@ public class HpcConfigProperties {
 
 	private CompositeConfiguration configuration;
 	private FileBasedConfigurationBuilder<PropertiesConfiguration> builder;
-	private static final String COFIG_PROPS = "config.properties";
+	private static final String CONFIG_PROPS = "config.properties";
 	private static final String HPC_PROPS = "hpc.properties";
 
 	@PostConstruct
@@ -32,15 +32,24 @@ public class HpcConfigProperties {
 			Map<String, String> env = System.getenv();
 			String basePath=env.get("HPC_DM_UTILS");
 			String properties = HPC_PROPS;
+			String configProperties = CONFIG_PROPS;
 			String filePath = System.getProperty("hpc.client.properties");
 			if (filePath != null)
 				properties = filePath;
 			
-			//properties = basePath + File.separator + properties;
 			
 			System.out.println("Reading properties from "+properties);
+			System.out.println("Reading config properties from "+configProperties);
 			configuration = new CompositeConfiguration();
 			// configuration.addConfiguration(pConfig);
+			
+			// First add the config properties for system configured properties
+			// This ensures that the users cannot override the property configured internally.
+			builder = new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
+					.configure(new Parameters().properties().setFileName(configProperties));
+			configuration.addConfiguration(builder.getConfiguration());
+						
+			// Then add the user properties
 			builder = new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
 			    .configure(new Parameters().properties()
 			        .setFileName(properties));

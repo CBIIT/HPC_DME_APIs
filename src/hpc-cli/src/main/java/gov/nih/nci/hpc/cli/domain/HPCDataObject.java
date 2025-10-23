@@ -41,6 +41,7 @@ public class HPCDataObject {
     protected int multipartPoolSize;
 	protected long multipartThreshold;
 	protected long multipartChunksize;
+	protected long maxUploadFilesize;
 	
 	public HpcServerConnection getConnection() {
 		return connection;
@@ -227,6 +228,14 @@ public class HPCDataObject {
 
 	public void setMultipartChunksize(long multipartChunksize) {
 		this.multipartChunksize = multipartChunksize;
+	}
+	
+	public long getMaxUploadFilesize() {
+		return maxUploadFilesize;
+	}
+
+	public void setMaxUploadFilesize(long maxUploadFilesize) {
+		this.maxUploadFilesize = maxUploadFilesize;
 	}
 
 @Override
