@@ -2961,6 +2961,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadStatus.setDestinationType(HpcDataTransferType.BOX);
 			}
 			downloadStatus.setPriority(taskStatus.getCollectionDownloadTask().getPriority());
+			downloadStatus.setCancellationRequested(dataTransferService.getCollectionDownloadTaskCancellationRequested(taskId));
 			
 			// Get the status of the individual data object download tasks if the collection status
 			// is not yet ACTIVE, because the collection items field does not get populated before that
