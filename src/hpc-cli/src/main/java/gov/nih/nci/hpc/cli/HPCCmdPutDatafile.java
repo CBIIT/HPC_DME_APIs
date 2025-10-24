@@ -109,6 +109,7 @@ public class HPCCmdPutDatafile extends HPCCmdClient {
 					dataObject.setMultipartPoolSize(multipartPoolSize);
 					dataObject.setMultipartThreshold(multipartThreshold);
 					dataObject.setMultipartChunksize(multipartChunksize);
+					dataObject.setMaxUploadFilesize(maxUploadFilesize);
 					
 					HpcLocalFileProcessor fileProcess;
 					fileProcess = new HpcLocalFileProcessor(dataObject);
