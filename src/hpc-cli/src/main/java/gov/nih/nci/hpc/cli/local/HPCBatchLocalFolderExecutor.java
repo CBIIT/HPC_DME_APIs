@@ -59,11 +59,11 @@ public class HPCBatchLocalFolderExecutor {
   protected int multipartPoolSize;
   protected long multipartThreshold;
   protected long multipartChunksize;
-	
+  protected long maxUploadFilesize;
 
 	public HPCBatchLocalFolderExecutor(Map<String, String> criteriaMap, HpcServerConnection connection, String logFile,
 			String errorRecordsFile, String authToken, int maxAttempts, long backOffPeriod, int multipartPoolSize,
-			long multipartThreshold, long multipartChunksize) {
+			long multipartThreshold, long multipartChunksize, long maxUploadFilesize) {
     this.logFile = logFile;
     this.errorRecordsFile = errorRecordsFile;
     this.criteriaMap = criteriaMap;
@@ -73,6 +73,7 @@ public class HPCBatchLocalFolderExecutor {
     this.multipartPoolSize = multipartPoolSize;
     this.multipartThreshold = multipartThreshold;
     this.multipartChunksize = multipartChunksize;
+    this.maxUploadFilesize = maxUploadFilesize;
   }
 
   public String processData() throws HpcBatchException {
@@ -244,7 +245,8 @@ public class HPCBatchLocalFolderExecutor {
               backOffPeriod,
               multipartPoolSize,
               multipartThreshold,
-              multipartChunksize))
+              multipartChunksize,
+              maxUploadFilesize))
           .dispatcher(roundRobinRecordDispatcher)
           .jobListener(new PoisonRecordBroadcaster<>(queueList))
           .build();
