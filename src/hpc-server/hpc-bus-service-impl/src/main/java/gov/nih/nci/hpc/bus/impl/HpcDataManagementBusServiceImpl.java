@@ -736,10 +736,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
 		// Single data object call
-		registerDataObject(filePath, registrationRequest, null, invokerNciAccount.getUserId(),
-				invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), s3ArchiveConfiguration.getDataManagementConfigurationId(), false);
+		//registerDataObject(filePath, registrationRequest, null, invokerNciAccount.getUserId(),
+		//		invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), s3ArchiveConfiguration.getDataManagementConfigurationId(), false);
 		///
-		//HpcBulkDataObjectRegistrationResponseDTO registrationResponse = registerDataObjects(registrationBulkRequestDTO);
+		HpcBulkDataObjectRegistrationResponseDTO registrationResponse = registerDataObjects(registrationBulkRequestDTO);
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		//HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
 		//		invokerNciAccount.getUserId(), null, true, null);
