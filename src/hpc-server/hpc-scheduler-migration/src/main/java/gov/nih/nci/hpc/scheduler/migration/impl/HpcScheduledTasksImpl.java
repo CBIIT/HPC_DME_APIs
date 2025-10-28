@@ -96,7 +96,7 @@ public class HpcScheduledTasksImpl {
 	}
 
 	/** Process received data object metadata migration tasks. */
-	@Scheduled(cron =  "${hpc.scheduler.migration.cron.processEx}")
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectMetadataUpdatetMigrationReceived.delay}")
 	private void processDataObjectMetadataUpdatetMigrationReceivedTask() {
 		execute("processDataObjectMetadataUpdateMigrationReceived()",
 				dataMigrationBusService::processDataObjectMetadataUpdateMigrationReceived, logger);
