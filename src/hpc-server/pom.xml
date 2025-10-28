@@ -31,7 +31,7 @@
 		<commons-compress.version>1.26.2</commons-compress.version>
 		<commons-pool2.version>2.11.1</commons-pool2.version>
 		<cxf.version>4.0.6</cxf.version>
-		<cxf-xjc.version>4.0.2</cxf-xjc.version>
+		<cxf-xjc.version>4.1.0</cxf-xjc.version>
 		<oracle.version>19.7.0.0</oracle.version>
 		<slf4j.version>2.0.15</slf4j.version>
 		<logback.version>1.5.18</logback.version>
@@ -87,32 +87,32 @@
 				<plugin>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>6.0.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.12</version>
+					<version>3.6.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.9.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.0.2</version>
+					<version>3.3.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.10.1</version>
+					<version>3.14.1</version>
 					<configuration>
 						<source>21</source>
 						<target>21</target>
@@ -121,12 +121,12 @@
 				<plugin>
            			<groupId>org.apache.maven.plugins</groupId>
             		<artifactId>maven-war-plugin</artifactId>
-           			<version>3.4.0</version>
+           			<version>3.5.0</version>
         		</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>keytool-maven-plugin</artifactId>
-					<version>1.5</version>
+					<version>1.7</version>
 				</plugin>
 				<plugin>
 					<groupId>com.coderplus.maven.plugins</groupId>
@@ -136,7 +136,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.10.4</version>
+					<version>3.12.0</version>
 					<configuration>
 						<show>private</show>
 						<nohelp>true</nohelp>
@@ -151,12 +151,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-install-plugin</artifactId>
-					<version>2.5.2</version>
+					<version>3.1.4</version>
 				</plugin>
 				<plugin>
     				<groupId>org.codehaus.mojo</groupId>
     				<artifactId>versions-maven-plugin</artifactId>
-    				<version>2.14.2</version>
+    				<version>2.19.1</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
