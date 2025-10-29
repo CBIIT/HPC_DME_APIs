@@ -170,6 +170,10 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+
 /**
  * HPC Data Management Business Service Implementation.
  *
@@ -187,6 +191,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// Archive permissions setting
 	private static final int ARCHIVE_FILE_PERMISSIONS_MODE = 440;
 	private static final int ARCHIVE_DIRECTORY_PERMISSIONS_MODE = 550;
+	
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -234,6 +240,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	
+	
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -725,7 +733,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dto.setPath(filePath);
 		HpcFileLocation sourceLocation = new HpcFileLocation();
 		sourceLocation.setFileContainerId(bucket);
-		sourceLocation.setFileId(filePath);
+		sourceLocation.setFileId(filePath.substring(1));
 		HpcUploadSource uploadSource = new HpcUploadSource();
 		uploadSource.setSourceLocation(sourceLocation);
 		dto.setArchiveLinkSource(uploadSource);
@@ -735,17 +743,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
-		// Single data object call
-		//registerDataObject(filePath, registrationRequest, null, invokerNciAccount.getUserId(),
-		//		invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), s3ArchiveConfiguration.getDataManagementConfigurationId(), false);
-		///
-		HpcBulkDataObjectRegistrationResponseDTO registrationResponse = registerDataObjects(registrationBulkRequestDTO);
-		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
-		//HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
-		//		invokerNciAccount.getUserId(), null, true, null);
+		
+		logger.info("Registration Request: " + gson.toJson(registrationRequest));
+		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(path, registrationRequest, null);
+		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
+				invokerNciAccount.getUserId(), null, true, null);
 		return downloadResponse;
 	}
+	
+	@Override
+	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+			throws HpcException {
 
+		// Create and return a DTO with the request receipt.
+		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
+		return responseDTO;
+	}
+
+	@Override
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
+			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException {
+		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();		
+		return responseDTO;
+	}
 
 	@Override
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) throws HpcException {
@@ -1147,6 +1167,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Input validation.
 		validatePath(path);
 
+		logger.info("In RegisterDataObject path: " +path);
+		
+		logger.info("In RegisterDataObject dataObjectRegistration: " + gson.toJson(dataObjectRegistration));
+
+		logger.info("In RegisterDataObject dataObjectFile: " + gson.toJson(dataObjectFile));
+		
 		if (dataObjectRegistration == null) {
 			throw new HpcException("Null dataObjectRegistrationDTO", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
