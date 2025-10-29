@@ -407,7 +407,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 					// There is an existing record without system metadata. Remove it from Data Management.
 					delete(path, true);
 					
-					throw new HpcException("Detected data object record without system metadata" + path,
+					throw new HpcException("Detected data object record without system metadata " + path,
 							HpcErrorType.UNEXPECTED_ERROR);
 				}
 				// File already exists.
