@@ -1123,7 +1123,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Create a data object file (in the data management system).
 		HpcDataObjectRegistrationResponseDTO responseDTO = new HpcDataObjectRegistrationResponseDTO();
 		timeBefore = System.currentTimeMillis();
-		responseDTO.setRegistered(dataManagementService.createFile(path));
+		
+		try {
+			responseDTO.setRegistered(dataManagementService.createFile(path));
+		} catch (HpcException e) {
+			// Record a data object registration result.
+			dataManagementService.addDataObjectRegistrationResult(path,
+					toFailedDataObjectRegistrationResult(path, userId, null, e.getMessage()), null);
+			
+			throw e;
+		}
+		 
 		taskProfilingLog("Registration", path, "File created in iRODS", System.currentTimeMillis() - timeBefore);
 
 		// Get the collection type containing the data object.
