@@ -191,8 +191,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// Archive permissions setting
 	private static final int ARCHIVE_FILE_PERMISSIONS_MODE = 440;
 	private static final int ARCHIVE_DIRECTORY_PERMISSIONS_MODE = 550;
-	
-	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -241,7 +239,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
-	
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
