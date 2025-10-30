@@ -4022,7 +4022,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		 * @throws HpcException If it failed to create a download task.
 		 */
 		public HpcSecondHopDownload(HpcDataObjectDownloadRequest firstHopDownloadRequest,
-				HpcDataTransferDownloadStatus dataTransferDownloadStatus) throws HpcException {
+				HpcDataTransferDownloadStatus dataTransferDownloadStatus) throws HpcException {		
+			logger.info("2097: In HpcSecondHopDownload in App:HpcDataTransfer firstHopDownloadRequest: " + gson.toJson(firstHopDownloadRequest));
+			logger.info("2097: In HpcSecondHopDownload in App:HpcDataTransfer dataTransferDownloadStatus: " + gson.toJson(dataTransferDownloadStatus));
 			// Create the second-hop archive location and destination
 			HpcFileLocation secondHopArchiveLocation = getSecondHopDownloadSourceLocation(
 					firstHopDownloadRequest.getConfigurationId(), firstHopDownloadRequest.getS3ArchiveConfigurationId(),
@@ -4283,7 +4285,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				HpcFileLocation secondHopArchiveLocation, HpcGlobusDownloadDestination secondHopGlobusDestination,
 				HpcDataTransferDownloadStatus dataTransferDownloadStatus, HpcDataTransferType destinationType)
 				throws HpcException {
-
+			logger.info("2097: In app:DataTransfer firstHopDownloadRequest : " + gson.toJson(firstHopDownloadRequest));
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 			downloadTask.setDataTransferStatus(dataTransferDownloadStatus);
 			downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
@@ -4313,6 +4315,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
 			}
+			logger.info("2097: In app:DataTransfer downloadTask : " + gson.toJson(downloadTask));
 			dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 		}
 
