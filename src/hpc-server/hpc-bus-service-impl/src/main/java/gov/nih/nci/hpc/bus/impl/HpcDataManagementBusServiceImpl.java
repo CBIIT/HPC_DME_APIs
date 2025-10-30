@@ -744,7 +744,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
 		
-		logger.info("Registration Request: " + gson.toJson(registrationRequest));
+		logger.info("2097: Bus:Registration Request: " + gson.toJson(registrationRequest));
 		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(path, registrationRequest, null);
 		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
 				invokerNciAccount.getUserId(), null, true, null);
@@ -1167,11 +1167,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Input validation.
 		validatePath(path);
 
-		logger.info("In RegisterDataObject path: " +path);
+		logger.info("2097: In RegisterDataObject path: " +path);
 		
-		logger.info("In RegisterDataObject dataObjectRegistration: " + gson.toJson(dataObjectRegistration));
+		logger.info("2097: In RegisterDataObject dataObjectRegistration: " + gson.toJson(dataObjectRegistration));
 
-		logger.info("In RegisterDataObject dataObjectFile: " + gson.toJson(dataObjectFile));
+		logger.info("2097: In RegisterDataObject dataObjectFile: " + gson.toJson(dataObjectFile));
 		
 		if (dataObjectRegistration == null) {
 			throw new HpcException("Null dataObjectRegistrationDTO", HpcErrorType.INVALID_REQUEST_INPUT);

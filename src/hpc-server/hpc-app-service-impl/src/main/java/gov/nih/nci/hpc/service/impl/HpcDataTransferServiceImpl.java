@@ -118,6 +118,8 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -247,6 +249,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -570,6 +574,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
 			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
 			throws HpcException {
+		logger.info("2097: In downloadDataObject in App:HpcDataTransfer path: " + path);
+
+		logger.info("2097: In downloadDataObject in App:HpcDataTransfer globusDownloadDestination: " + gson.toJson(globusDownloadDestination));
+		
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -663,6 +671,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Globus destination.
 			// Note: this can also be a 2nd hop download from temporary file-system archive
 			// to a Globus destination (after the 1st hop completed).
+			logger.info("2097: Performing Asynchronous Globug download");
 			performGlobusAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3)
@@ -3182,6 +3191,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void performGlobusAsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataObjectDownloadResponse response, HpcDataTransferConfiguration dataTransferConfiguration)
 			throws HpcException {
+		logger.info("2097: In performGlobusAsynchronousDownload in App:HpcDataTransfer downloadRequest: " + gson.toJson(downloadRequest));
 		// Create a download task.
 		HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 		downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
@@ -3212,6 +3222,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setRetryUserId(downloadRequest.getRetryUserId());
 		downloadTask.setDoc(
 				dataManagementService.getDataManagementConfiguration(downloadRequest.getConfigurationId()).getDoc());
+
+		logger.info("2097: In performGlobusAsynchronousDownload in App:HpcDataTransfer downloadRequest: " + gson.toJson(downloadTask));
 
 		// Persist the download task. The download will be performed by a scheduled task
 		// picking up
