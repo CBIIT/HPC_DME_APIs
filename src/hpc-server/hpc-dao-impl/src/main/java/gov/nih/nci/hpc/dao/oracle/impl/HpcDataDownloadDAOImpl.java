@@ -67,6 +67,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * HPC Data Download DAO Implementation.
@@ -266,6 +268,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// Encryptor.
 	@Autowired
 	private HpcEncryptor encryptor = null;
+	
+	private Gson gson = new Gson();
 
 	// HpcDataObjectDownloadTask table to object mapper.
 	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> {
@@ -678,6 +682,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	@Override
 	public void createDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException {
+		
+		logger.info("2097: In DAO:createDataObjectDownloadTask dataObjectDownloadTask: " + gson.toJson(dataObjectDownloadTask));
+
 		try {
 			if (dataObjectDownloadTask.getId() != null) {
 				throw new HpcException("Task ID provided in download task creation: " + dataObjectDownloadTask.getId(),
