@@ -146,13 +146,21 @@ public interface HpcSystemBusService {
 	public void startAsperaDataObjectDownloadTasks() throws HpcException;
 
 	/**
+	 * Start all received external data objects download tasks for Archive Links and process to make
+	 * them in progress.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void startArchiveLinkDataObjectDownloadTasks() throws HpcException;
+
+	/**
 	 * Start all received data objects download tasks for Box and process to make
 	 * them in progress.
 	 *
 	 * @throws HpcException on service failure.
 	 */
-	public void startBoxDataObjectDownloadTasks() throws HpcException;
-
+	public void startBoxDataObjectDownloadTasks() throws HpcException;	
+	
 	/**
 	 * Check status of all in-progress data objects download tasks and complete
 	 * these that are no longer in progress.
