@@ -675,7 +675,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void startArchiveLinkDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are received and type
 		// is Box.
-		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL, HpcDataTransferType.S_3);
+		//processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL, HpcDataTransferType.S_3);
 	}
 
 	@Override
