@@ -105,6 +105,8 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * HPC System Business Service Implementation.
@@ -195,6 +197,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -621,6 +625,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void startGlobusDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are received and type
 		// is GLOBUS.
+		logger.info("2097: startGlobusDataObjectDownloadTasks ");
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GLOBUS);
 	}
 
@@ -663,6 +668,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through all the data object download tasks that are received and type
 		// is Box.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.BOX);
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void startArchiveLinkDataObjectDownloadTasks() throws HpcException {
+		// Iterate through all the data object download tasks that are received and type
+		// is Box.
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL, HpcDataTransferType.S_3);
 	}
 
 	@Override
@@ -2155,6 +2168,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination, String userId,
 			HpcFileLocation retryDestinationLocation, String collectionDownloadTaskId) {
+		logger.info("2097: In downloadDataObject in Bus:HpcSystem globusDownloadDestination: " + gson.toJson(globusDownloadDestination));
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
 		dataObjectDownloadRequest.setGlobusDownloadDestination(
 				calculateGlobusDownloadDestination(globusDownloadDestination, path, appendPathToDownloadDestination,

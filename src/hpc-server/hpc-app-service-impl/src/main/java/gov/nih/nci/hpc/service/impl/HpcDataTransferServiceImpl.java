@@ -577,7 +577,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info("2097: In downloadDataObject in App:HpcDataTransfer path: " + path);
 
 		logger.info("2097: In downloadDataObject in App:HpcDataTransfer globusDownloadDestination: " + gson.toJson(globusDownloadDestination));
-		
+
+		logger.info("2097: In downloadDataObject in App:HpcDataTransfer dataTransferType: " + gson.toJson(dataTransferType));		
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -659,6 +660,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				return response;
 			}
 		}
+		
+		//logger.info("2097: In downloadDataObject in App:HpcDataTransfer before perform downloadRequest: " + gson.toJson(downloadRequest));
 
 		if (globusDownloadDestination == null && s3DownloadDestination == null && googleDriveDownloadDestination == null
 				&& googleCloudStorageDownloadDestination == null && asperaDownloadDestination == null
@@ -671,7 +674,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Globus destination.
 			// Note: this can also be a 2nd hop download from temporary file-system archive
 			// to a Globus destination (after the 1st hop completed).
-			logger.info("2097: Performing Asynchronous Globug download");
+			//logger.info("2097: Performing Asynchronous Globug download");
 			performGlobusAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3)
@@ -1232,7 +1235,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 
 		// Cleanup the DB record.
-		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
+		//dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
 		// Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
@@ -4285,7 +4288,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				HpcFileLocation secondHopArchiveLocation, HpcGlobusDownloadDestination secondHopGlobusDestination,
 				HpcDataTransferDownloadStatus dataTransferDownloadStatus, HpcDataTransferType destinationType)
 				throws HpcException {
-			logger.info("2097: In app:DataTransfer firstHopDownloadRequest : " + gson.toJson(firstHopDownloadRequest));
+			logger.info("2097: createDownloadTask In app:DataTransfer firstHopDownloadRequest : " + gson.toJson(firstHopDownloadRequest));
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 			downloadTask.setDataTransferStatus(dataTransferDownloadStatus);
 			downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
@@ -4315,7 +4318,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
 			}
-			logger.info("2097: In app:DataTransfer downloadTask : " + gson.toJson(downloadTask));
+			logger.info("2097: In createDownloadTask app:DataTransfer downloadTask : " + gson.toJson(downloadTask));
 			dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 		}
 
