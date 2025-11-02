@@ -778,6 +778,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	@Override
 	public boolean updateDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException {
+		logger.info("2097: In DAO:updateDataObjectDownloadTask dataObjectDownloadTask: " + gson.toJson(dataObjectDownloadTask));
 		try {
 			if (dataObjectDownloadTask.getId() == null) {
 				throw new HpcException("Task ID not provided in download task update", HpcErrorType.UNEXPECTED_ERROR);
