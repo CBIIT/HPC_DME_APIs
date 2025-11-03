@@ -1470,7 +1470,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-
+		logger.info("2097: In downloadDataObject in App:HpcDataTransfer downloadTask: " + gson.toJson(downloadTask));
+		
 		logger.debug(
 				"download task: [taskId={}] - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]",
 				downloadTask.getId(), downloadTask.getDataTransferType(),
@@ -1502,6 +1503,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
+		logger.info("2097: In markProcessedDataObjectDownloadTask in App:HpcDataTransfer downloadTask: " + gson.toJson(downloadTask));
 		boolean updated = true;
 		String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
 
