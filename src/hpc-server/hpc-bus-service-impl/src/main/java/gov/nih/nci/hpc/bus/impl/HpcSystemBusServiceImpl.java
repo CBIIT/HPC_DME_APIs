@@ -695,6 +695,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void restartDataObjectDownloadTasks() throws HpcException {
+		logger.info("2097: In restartDataObjectDownloadTasks in Bus:HpcSystem");
 		// Iterate through all the data object download tasks that are in-progress w/ S3
 		// / GoogleDrive / Google Cloud Storage / Aspera transfer.
 		for (HpcDataObjectDownloadTask downloadTask : dataTransferService.getDataObjectDownloadTasks()) {
