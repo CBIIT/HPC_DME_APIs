@@ -1470,7 +1470,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		logger.info("2097: In downloadDataObject in App:HpcDataTransfer downloadTask: " + gson.toJson(downloadTask));
+		logger.info("2097: In resetDataObjectDownloadTask in App:HpcDataTransfer downloadTask: " + gson.toJson(downloadTask));
 		
 		logger.debug(
 				"download task: [taskId={}] - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]",
