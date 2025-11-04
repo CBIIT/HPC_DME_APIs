@@ -404,6 +404,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
 		if (pathAttributes.getExists()) {
 			if (pathAttributes.getIsFile()) {
+				// If the file already exists, check to see if system metadata is present.
+				HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+				if(metadata.getDataTransferStatus() == null && StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+					// There is an existing record without system metadata. Remove it from Data Management.
+					delete(path, true);
+					
+					throw new HpcException("Detected data object record without system metadata " + path,
+							HpcErrorType.UNEXPECTED_ERROR);
+				}
 				// File already exists.
 				return false;
 			}
