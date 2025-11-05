@@ -634,6 +634,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void startS3DataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are received and type
 		// is S3.
+		logger.info("2097: startS3DataObjectDownloadTasks ");
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3);
 	}
 
@@ -709,6 +710,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.BOX))
 						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: [taskId={}]", downloadTask.getId());
+					logger.info("2097: In restartDataObjectDownloadTasks in Bus:HpcSystem downloadTask" + gson.toJson(downloadTask));
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);
 				}
 
@@ -2724,6 +2726,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 		} else {
 			// Download is still in progress. Update the progress (percent complete).
+			logger.info("2097: updateDataObjectDownloadTask call 12 in Bus:System");
 			dataTransferService.updateDataObjectDownloadTask(downloadTask,
 					dataTransferDownloadReport.getBytesTransferred());
 

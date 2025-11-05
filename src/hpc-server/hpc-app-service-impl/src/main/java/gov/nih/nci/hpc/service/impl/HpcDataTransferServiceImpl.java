@@ -574,11 +574,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
 			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
 			throws HpcException {
-		logger.info("2097: In downloadDataObject in App:HpcDataTransfer path: " + path);
+		logger.info(": In downloadDataObject in App:HpcDataTransfer path: " + path);
 
-		logger.info("2097: In downloadDataObject in App:HpcDataTransfer globusDownloadDestination: " + gson.toJson(globusDownloadDestination));
+		logger.info(": In downloadDataObject in App:HpcDataTransfer globusDownloadDestination: " + gson.toJson(globusDownloadDestination));
 
-		logger.info("2097: In downloadDataObject in App:HpcDataTransfer dataTransferType: " + gson.toJson(dataTransferType));		
+		logger.info(": In downloadDataObject in App:HpcDataTransfer dataTransferType: " + gson.toJson(dataTransferType));		
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -661,7 +661,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 		
-		//logger.info("2097: In downloadDataObject in App:HpcDataTransfer before perform downloadRequest: " + gson.toJson(downloadRequest));
+		//logger.info(": In downloadDataObject in App:HpcDataTransfer before perform downloadRequest: " + gson.toJson(downloadRequest));
 
 		if (globusDownloadDestination == null && s3DownloadDestination == null && googleDriveDownloadDestination == null
 				&& googleCloudStorageDownloadDestination == null && asperaDownloadDestination == null
@@ -674,13 +674,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Globus destination.
 			// Note: this can also be a 2nd hop download from temporary file-system archive
 			// to a Globus destination (after the 1st hop completed).
-			//logger.info("2097: Performing Asynchronous Globug download");
+			logger.info("2097: App:Datatransfer Performing Asynchronous Globus download");
 			performGlobusAsynchronousDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3)
 				&& (globusDownloadDestination != null || asperaDownloadDestination != null)) {
 			// This is an asynchronous download request from a S3 archive to a
 			// Globus or Aspera destination. It is performed in 2-hops.
+			logger.info("2097: App:Datatransfer Performing 2Hop download");
 			perform2HopDownload(downloadRequest, response, dataTransferConfiguration);
 
 		} else if (s3DownloadDestination != null) {
@@ -1116,7 +1117,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
-
+		logger.info("2097: app:Transfer completeDataObjectDownloadTask downloadTask=" + gson.toJson(downloadTask));
 		// Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1235,7 +1236,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 
 		// Cleanup the DB record.
-		//dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
+		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
 		// Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
@@ -1273,6 +1274,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public boolean continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		logger.info("2097: App:Transfer continueDataObjectDownloadTask downloadTask:" + gson.toJson(downloadTask));
 		// Recreate the download request from the task (that was persisted).
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -1413,6 +1415,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.ofNullable(dataDownloadDAO.getDataObjectDownloadTaskStatus(downloadTask.getId()))
 				.orElse(HpcDataTransferDownloadStatus.CANCELED).equals(HpcDataTransferDownloadStatus.CANCELED)) {
 			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+			logger.info("2097: updateDataObjectDownloadTask call 1 in App:TRansfer");
 			dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 		}
 
@@ -1465,6 +1468,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setInProcess(false);
 
 		// Persist the task.
+		logger.info("2097: updateDataObjectDownloadTask call 2 in App:TRansfer");
 		dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 	}
 
@@ -1489,7 +1493,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.ASPERA)) {
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 		}
-
+		logger.info("2097: updateDataObjectDownloadTask call 3 in App:TRansfer");
 		dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 	}
 
@@ -1577,7 +1581,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info("download task: [taskId={}] - % complete - {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), percentComplete, downloadTask.getDataTransferType(),
 				downloadTask.getDestinationType());
-
+		logger.info("2097: updateDataObjectDownloadTask call 5 in App:TRansfer");
 		return dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 	}
 
@@ -3410,6 +3414,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					.getIntegratedSystemTokens(authenticatedToken);
 			HpcDataObjectDownloadTask downloadTask = boxDownload.getDownloadTask();
 			downloadTask.getBoxDownloadDestination().setRefreshToken(boxTokens.getRefreshToken());
+			logger.info("2097: updateDataObjectDownloadTask call 6 in App:TRansfer");
 			dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 
 			// Perform the download (From S3 Archive to User's Box).
@@ -3506,6 +3511,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	private HpcCanPerform2HopDownloadResponse canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload)
 			throws HpcException {
+		logger.info("2097: App:transfer canPerfom2HopDownloade");
 		HpcCanPerform2HopDownloadResponse response = new HpcCanPerform2HopDownloadResponse();
 		int inProcessS3DownloadsForGlobus = dataDownloadDAO.getDataObjectDownloadTasksCountByStatusAndType(
 				HpcDataTransferType.S_3, HpcDataTransferType.GLOBUS, HpcDataTransferDownloadStatus.IN_PROGRESS,
@@ -4169,6 +4175,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					downloadTask.setStagingPercentComplete(100);
 
 					// Persist the download task.
+					logger.info("2097: updateDataObjectDownloadTask call 7 in App:TRansfer");
 					dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 				}
 
@@ -4355,7 +4362,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 			this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 			this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
-
+			logger.info("2097: updateDataObjectDownloadTask call 8 in App:TRansfer");
 			dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		}
 
