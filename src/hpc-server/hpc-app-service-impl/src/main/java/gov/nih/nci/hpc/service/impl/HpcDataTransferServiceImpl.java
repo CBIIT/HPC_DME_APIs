@@ -572,7 +572,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
+			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchive)
 			throws HpcException {
 		logger.info(": In downloadDataObject in App:HpcDataTransfer path: " + path);
 
@@ -608,6 +608,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setCompletionEvent(completionEvent);
 		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
+		downloadRequest.setExternalArchiveFlag(externalArchive);
 
 		// Create a download response.
 		HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
@@ -1494,6 +1495,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 		}
 		logger.info("2097: updateDataObjectDownloadTask call 3 in App:TRansfer");
+		logger.info("2097: In resetDataObjectDownloadTask in App:HpcDataTransfer downloadTask: " + gson.toJson(downloadTask));
+		
 		dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 	}
 
@@ -3456,6 +3459,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest,
 				HpcDataTransferDownloadStatus.IN_PROGRESS);
 
+		logger.info("2097: in perform2HopDownload App:Transfer downloadRequest="+gson.toJson(secondHopDownload));
+		logger.info("2097: in perform2HopDownload App:Transfer secondHopDownload="+gson.toJson(secondHopDownload));
 		// Set the first hop file destination to be the source file of the second hop.
 		downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 
@@ -3469,6 +3474,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		try {
 			// Reset the download task, so the 1st-hop is picked up by a scheduled-task.
 			resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+			logger.info("2097: in perform2HopDownload after RESET App:Transfer secondHopDownload="+gson.toJson(secondHopDownload));
 
 			if (!StringUtils.isEmpty(downloadRequest.getCollectionDownloadTaskId())) {
 				logger.info(
@@ -4317,6 +4323,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
 			downloadTask.setFirstHopRetried(false);
+			downloadTask.setExternalArchiveFlag(true);
 			downloadTask.setS3DownloadTaskServerId(
 					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
 							? s3DownloadTaskServerId
