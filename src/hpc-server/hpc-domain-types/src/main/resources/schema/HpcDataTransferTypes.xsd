@@ -72,6 +72,7 @@
 			<xsd:enumeration value="CANCELED" />
 			<xsd:enumeration value="RESTORE_REQUESTED" />
 			<xsd:enumeration value="GLOBUS_BUNCHING" />
+			<xsd:enumeration value="RECEIVED_EXTERNAL" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -352,6 +353,7 @@
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -413,6 +415,7 @@
 			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="priority" type="xsd:int" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />			
 		</xsd:sequence>
 	</xsd:complexType>
 

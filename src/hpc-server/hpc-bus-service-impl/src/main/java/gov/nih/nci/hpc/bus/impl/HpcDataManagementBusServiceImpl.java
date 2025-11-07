@@ -744,8 +744,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		
 		logger.info("2097: Bus:Registration Request: " + gson.toJson(registrationRequest));
 		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(path, registrationRequest, null);
-		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
-				invokerNciAccount.getUserId(), null, true, null);
+		//HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
+		//		invokerNciAccount.getUserId(), null, true, null);
+		downloadRequest.setExternalArchiveFlag(true);
+		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest);
 		return downloadResponse;
 	}
 	
@@ -1713,7 +1715,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId, userId, retryUserId,
 				completionEvent, collectionDownloadTaskId,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
-				metadata.getDeepArchiveStatus());
+				metadata.getDeepArchiveStatus(),
+				downloadRequest.getExternalArchiveFlag());
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
