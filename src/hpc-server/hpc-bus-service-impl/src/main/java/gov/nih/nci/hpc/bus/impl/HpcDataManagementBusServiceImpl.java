@@ -1716,7 +1716,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				completionEvent, collectionDownloadTaskId,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
 				metadata.getDeepArchiveStatus(),
-				downloadRequest.getExternalArchiveFlag());
+				downloadRequest.getExternalArchiveFlag() != null ? downloadRequest.getExternalArchiveFlag() : false );
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
