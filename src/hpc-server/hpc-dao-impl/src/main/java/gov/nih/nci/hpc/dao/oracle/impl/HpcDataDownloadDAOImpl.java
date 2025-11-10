@@ -769,7 +769,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
 					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
 					dataObjectDownloadTask.getDoc(),
-					dataObjectDownloadTask.getPriority());
+					dataObjectDownloadTask.getPriority(),
+					dataObjectDownloadTask.getExternalArchiveFlag());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
@@ -854,7 +855,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
+					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getExternalArchiveFlag(),
 					dataObjectDownloadTask.getId()) > 0;
 
 		} catch (DataAccessException e) {
