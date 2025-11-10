@@ -1482,7 +1482,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				downloadTask.getId(), downloadTask.getDataTransferType(),
 				HpcDataTransferType.S_3.equals(downloadTask.getDataTransferType()) ? s3DownloadTaskServerId : null);
 
-		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		if(downloadTask.getExternalArchiveFlag()) {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		} else {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL);
+		}
 		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
 		downloadTask.setS3DownloadTaskServerId(null);
