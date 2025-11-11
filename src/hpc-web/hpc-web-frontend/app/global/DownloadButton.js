@@ -11,6 +11,10 @@ export default function DownloadButton() {
     const handleDownload = async () => {
         if (selectedRows.length > 0) {
             const selectedRowData = selectedRows[0];
+            const url = selectedRowData.isDirectory ?
+                '/download?ext=true&type=collection&path=' + selectedRowData.path :
+                '/download?ext=true&type=datafile&downloadFilePath=' + selectedRowData.path;
+            window.open(url, '_blank', 'noopener noreferrer');
             console.log('Selected row data:', selectedRowData);
         } else {
             console.log('No row selected.');
