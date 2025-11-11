@@ -2276,7 +2276,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	                modified.setTimeInMillis(file.lastModified());
 	            	childEntry.setLastModified(modified);
             	} catch (Exception e) {
-        			logger.error("Failed to get basic file attribute for path: ", file.getPath());
+        			logger.error("Failed to get basic file attribute for path: {}", file.getPath());
         			throw new HpcException("Failed to get basic file attribute for path: " + file.getPath(), e);
         		}
             	
