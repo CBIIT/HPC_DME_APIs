@@ -1,7 +1,6 @@
 
 <configuration>
-
-    <property name="API_SERVER_LOG" value="${catalina.base}/logs/hpc-server/hpc-server.log"/>
+    <property name="API_SERVER_LOG" value="${catalina.home}/logs/hpc-server/hpc-server.log"/>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${API_SERVER_LOG}</file>
