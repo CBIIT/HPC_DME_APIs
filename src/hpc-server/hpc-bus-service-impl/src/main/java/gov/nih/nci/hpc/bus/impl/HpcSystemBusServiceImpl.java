@@ -634,7 +634,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void startS3DataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are received and type
 		// is S3.
-		logger.info("2097: startS3DataObjectDownloadTasks ");
+		logger.info("2097: startS3DataObjectDownloadTasks in Bus:System ");
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3);
 	}
 
@@ -683,6 +683,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@HpcExecuteAsSystemAccount
 	public void completeInProgressDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress.
+		logger.info("2097: In completeInProgressDataObjectDownloadTasks in Bus:HpcSystem");
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.IN_PROGRESS, null);
 	}
 
@@ -1536,7 +1537,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
 					
-					logger.info("2097: In markProcessedDataObjectDownloadTask in Bus System CALL 1");
+					logger.info("2097!: In markProcessedDataObjectDownloadTask in Bus System CALL 1 downloadTask="+gson.toJson(downloadTask));
 					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 							dataTransferType, true);
 
