@@ -59,6 +59,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,6 +124,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		String endPointName = request.getParameter("endpoint_id");
 		String downloadType = request.getParameter("type");
 		String source = request.getParameter("source");
+		String external = request.getParameter("ext");
 		String downloadFilePath = null;
 		// Setting default values for Aspera variables
 		model.addAttribute("asperaHost", "gap-submit.ncbi.nlm.nih.gov");
@@ -143,6 +145,7 @@ public class HpcDownloadController extends AbstractHpcController {
             //Return from Google Drive Authorization
             downloadFilePath = (String)session.getAttribute("downloadFilePath");
             downloadType = (String)session.getAttribute("downloadType");
+            external = (String)session.getAttribute("external");
             source = (String)session.getAttribute("downloadSource");
 			String authorizedActionFrom =(String)session.getAttribute("authorizedActionFrom");
             final String returnURL = this.webServerName + "/download";
@@ -191,6 +194,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			session.removeAttribute("downloadType");
 			session.removeAttribute("downloadSource");
 			session.removeAttribute("downloadFilePath");
+			session.removeAttribute("external");
 		}
 
 		if (downloadFilePath != null) {
@@ -220,6 +224,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			session.setAttribute("downloadSource", source);
 			downloadFilePath = request.getParameter("downloadFilePath");
 			session.setAttribute("downloadFilePath", downloadFilePath);
+			session.setAttribute("external", external);
 
 			model.addAttribute("useraction", "globus");
 			session.removeAttribute("GlobusEndpoint");
@@ -236,6 +241,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		if (action != null && action.toLowerCase().equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("downloadSource", source);
+			session.setAttribute("external", external);
 			downloadFilePath = request.getParameter("downloadFilePath");
 			session.setAttribute("downloadFilePath", downloadFilePath);
 			session.setAttribute("authorizedActionFrom", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
@@ -251,6 +257,7 @@ public class HpcDownloadController extends AbstractHpcController {
 
 		if (action != null && action.equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
   		    session.setAttribute("downloadType", downloadType);
+  		    session.setAttribute("external", external);
             session.setAttribute("downloadSource", source);
             downloadFilePath = request.getParameter("downloadFilePath");
             session.setAttribute("downloadFilePath", downloadFilePath);
@@ -268,6 +275,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		if (action != null && action.equals(HpcAuthorizationService.BOX_TYPE)) {
 			session.setAttribute("downloadType", downloadType);
 			session.setAttribute("downloadSource", source);
+			session.setAttribute("external", external);
 			downloadFilePath = request.getParameter("downloadFilePath");
 			session.setAttribute("downloadFilePath", downloadFilePath);
 			session.setAttribute("authorizedActionFrom", HpcAuthorizationService.BOX_TYPE);
@@ -291,10 +299,12 @@ public class HpcDownloadController extends AbstractHpcController {
 			downloadFilePath = (String)session.getAttribute("downloadFilePath");
 			downloadType = (String)session.getAttribute("downloadType");
 			source = (String)session.getAttribute("downloadSource");
+			external = (String)session.getAttribute("external");
 		}
 
 		model.addAttribute("downloadFilePath", downloadFilePath);
 		model.addAttribute("downloadType", downloadType);
+		model.addAttribute("external", external);
 
 		HpcSearch hpcSearch = (HpcSearch)session.getAttribute("hpcSearch");
 		if(hpcSearch != null)
@@ -306,7 +316,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		model.addAttribute("source", source);
 		model.addAttribute("deselectedColumns", hpcSearch.getDeselectedColumns());
 		model.addAttribute(ATTR_CAN_DOWNLOAD, Boolean.TRUE.toString());
-		if(downloadType.equals("datafile")) {
+		if(StringUtils.isEmpty(external) && downloadType.equals("datafile")) {
 			HpcDataObjectDTO datafile = HpcClientUtil.getDatafilesWithoutAttributes(authToken, dataObjectDownloadServiceURL, downloadFilePath, false, false, 
 					sslCertPath, sslCertPassword);
 			if (datafile != null && datafile.getMetadataEntries() != null) {
@@ -449,6 +459,17 @@ public class HpcDownloadController extends AbstractHpcController {
             final String downloadTaskType = "collection".equals(downloadFile.
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :
                         HpcDownloadTaskType.DATA_OBJECT.name();
+            
+            //TODO YURI If this is an external archive download, we need to call the /ext URL
+            String external = downloadFile.getExternal();
+            boolean externalArchive = false;
+    		if(StringUtils.isNoneEmpty(external)) {
+    			externalArchive = Boolean.parseBoolean(external);
+    		}
+    		if(externalArchive) {
+    			result.setMessage("External Archive Download task requested: " + downloadFile.getDestinationPath());
+    			return result;
+    		}
 			return HpcClientUtil.downloadDataFile(authToken, serviceURL, dto, downloadTaskType, sslCertPath, sslCertPassword);
 		} catch (HttpStatusCodeException e) {
 			result.setMessage("Download request is not successful: " + e.getMessage());

@@ -140,7 +140,7 @@
 								<div id="driveDiv" style="display: none">
 									<div class="col-sm-12 column leftMargin">
 										<a class="btn btn-primary" id="driveAuthlink"
-                                    				th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">
+                                    				th:href="@{../download(ext=${external},type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">
                                     				Authorize DME to Access Your Google Drive</a>
 									</div>
 									<div th:replace = "~{downloadFragment.html :: googleDriveCommonBlock}"></div>
@@ -150,7 +150,7 @@
 								<div id="googleCloudDiv" style="display: none">
 									<div class="col-sm-12 column leftMargin">
 										<a class="btn btn-primary" id="googleCloudAuthlink"
-							                                     th:href="@{../download(type=${downloadType},source=${source},actionType=googleCloud,downloadFilePath=${downloadFilePath})}">
+							                                     th:href="@{../download(ext=${external},type=${downloadType},source=${source},actionType=googleCloud,downloadFilePath=${downloadFilePath})}">
 							                                     Authorize DME to Access Your Google Cloud</a>
 									</div>
 									<div th:replace = "~{downloadFragment.html :: googleCloudCommonBlock}"></div>
@@ -163,7 +163,7 @@
 								<div id="boxDiv" style="display: none">
 									<div class="col-sm-12 column leftMargin">
 										<a class="btn btn-primary" id="boxAuthlink"
-							                                     th:href="@{../download(type=${downloadType},source=${source},actionType=box,downloadFilePath=${downloadFilePath})}">
+							                                     th:href="@{../download(ext=${external},type=${downloadType},source=${source},actionType=box,downloadFilePath=${downloadFilePath})}">
 							                                     Authorize DME to Access your Box</a>
 									</div>
 									<div th:replace = "~{downloadFragment.html :: boxCommonBlock}"></div>
@@ -194,6 +194,8 @@
 							th:value="${downloadType}" />
 						<input type="hidden" name="transferType" id="transferType"
 							th:value="${transferType}" />
+						<input type="hidden" name="external" id="external"
+							th:value="${external}" />
 	                  </div>
 	               </div>
                  </div> 
