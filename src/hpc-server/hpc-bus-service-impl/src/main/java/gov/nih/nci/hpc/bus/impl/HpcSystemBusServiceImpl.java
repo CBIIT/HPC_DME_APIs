@@ -1535,6 +1535,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// separate threads), we set their in-process indicator to true so they are
 					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
+					
+					logger.info("2097: In markProcessedDataObjectDownloadTask in Bus System CALL 1");
 					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 							dataTransferType, true);
 
@@ -1574,6 +1576,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 							dataTransferService
 									.cancelCollectionDownloadTaskItems(downloadTask.getCollectionDownloadTaskId());
+							logger.info("2097: In markProcessedDataObjectDownloadTask in Bus System CALL 2");
 							markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 							break;
 						}
@@ -1596,6 +1599,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType(), e);
 							} finally {
+								logger.info("2097: In markProcessedDataObjectDownloadTask in Bus System CALL 3");
+
 								markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 							}
 							break;
@@ -1630,6 +1635,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									logger.debug(
 											"download task: [taskId={}] - finally block called: to markProcessedDataObjectDownloadTask in-process=false [transfer-type={}]",
 											downloadTask.getId(), downloadTask.getDataTransferType());
+									logger.info("2097: In markProcessedDataObjectDownloadTask in Bus System CALL 4");
+
 									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 											dataTransferType, false);
 
@@ -3331,6 +3338,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcDataTransferType dataTransferType, boolean inProcess) {
 
 		try {
+			logger.info("2097: In markProcessedDataObjectDownloadTask in Bus System CALL 6");
+
 			dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 
 		} catch (HpcException e) {
