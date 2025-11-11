@@ -170,7 +170,7 @@ function dm_register () {
         fi
     fi
 
-        
+    
     local DESCRIPTION="$1"
     local TYPE="$2"
 
