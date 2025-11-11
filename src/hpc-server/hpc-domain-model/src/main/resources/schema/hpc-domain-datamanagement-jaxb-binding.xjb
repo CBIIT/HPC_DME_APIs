@@ -86,6 +86,12 @@
       <jaxb:bindings node="//xsd:complexType[@name='HpcUserPermsOnManyCollections']">
          <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermsOnManyCollections" />
       </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcListObjectsEntry']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry" />
+      </jaxb:bindings>
+      <jaxb:bindings node="//xsd:complexType[@name='HpcCalculateTotalSizeEntry']">
+         <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCalculateTotalSizeEntry" />
+      </jaxb:bindings>
 	</jaxb:bindings>
    
 	<jaxb:bindings schemaLocation="HpcMetadataTypes.xsd">
