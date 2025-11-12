@@ -1483,8 +1483,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				HpcDataTransferType.S_3.equals(downloadTask.getDataTransferType()) ? s3DownloadTaskServerId : null);
 
 		if(downloadTask.getExternalArchiveFlag()) {
-			//downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL);
-			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL);
 		} else {
 			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 		}
@@ -1508,6 +1507,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void resetDataObjectDownloadTasksInProcess() throws HpcException {
 		dataDownloadDAO.resetDataObjectDownloadTaskInProcess(s3DownloadTaskServerId);
+	}
+	
+	@Override
+	public void changeDataObjectDownloadTaskExternalStatus(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		if(downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL)) {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+			downloadTask.setExternalArchiveFlag(true);
+		}
+		dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
+		//return downloadTask;
 	}
 
 	@Override
@@ -4328,7 +4337,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
 			downloadTask.setFirstHopRetried(false);
-			downloadTask.setExternalArchiveFlag(true);
+			downloadTask.setExternalArchiveFlag(firstHopDownloadRequest.getExternalArchiveFlag());
 			downloadTask.setS3DownloadTaskServerId(
 					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
 							? s3DownloadTaskServerId
@@ -4374,6 +4383,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 			this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 			this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
+			this.downloadTask.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 			logger.info("2097: updateDataObjectDownloadTask call 8 in App:TRansfer");
 			dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		}
