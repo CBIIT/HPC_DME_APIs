@@ -572,13 +572,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchive)
+			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchiveFlag)
 			throws HpcException {
 		logger.info(": In downloadDataObject in App:HpcDataTransfer path: " + path);
 
 		logger.info(": In downloadDataObject in App:HpcDataTransfer globusDownloadDestination: " + gson.toJson(globusDownloadDestination));
 
 		logger.info(": In downloadDataObject in App:HpcDataTransfer dataTransferType: " + gson.toJson(dataTransferType));		
+
+		logger.info(": In downloadDataObject in App:HpcDataTransfer externalArchiveFlag: " + externalArchiveFlag);
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
 			throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -608,7 +610,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setCompletionEvent(completionEvent);
 		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
-		downloadRequest.setExternalArchiveFlag(externalArchive);
+		downloadRequest.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Create a download response.
 		HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
