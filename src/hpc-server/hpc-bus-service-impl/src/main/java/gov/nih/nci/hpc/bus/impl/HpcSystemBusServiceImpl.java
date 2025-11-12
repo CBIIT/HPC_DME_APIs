@@ -674,9 +674,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void startArchiveLinkDataObjectDownloadTasks() throws HpcException {
-		// Iterate through all the data object download tasks that are received and type
-		// is Box.
-		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3);
+		// Iterate through all the data object download tasks that are received_external and type
+		// S_3
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL, HpcDataTransferType.S_3);
 	}
 
 	@Override
@@ -1650,6 +1650,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							}
 
 						}, dataObjectDownloadTaskExecutor);
+						break;
+
+					case RECEIVED_EXTERNAL:
+						logger.info(
+								"download task: [taskId={}] - changed received_external state to received [transfer-type={}, destination-type={}]",
+								downloadTask.getId(), downloadTask.getDataTransferType(),
+								downloadTask.getDestinationType());
+								dataTransferService.changeDataObjectDownloadTaskExternalStatus(downloadTask);
 						break;
 
 					case IN_PROGRESS:
