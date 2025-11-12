@@ -584,6 +584,17 @@ public interface HpcDataTransferService {
 			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException;
 
 	/**
+	 * Update a data object download task.
+	 *
+	 * @param downloadTask     The download task to update
+	 * @return true if the task was updated, or false if the task no longer exist
+	 *         (removed / canceled).
+	 * @throws HpcException on service failure.
+	 */
+	public void changeDataObjectDownloadTaskExternalStatus(HpcDataObjectDownloadTask downloadTask)
+			throws HpcException;
+
+	/**
 	 * Update a data object download task. % Complete is calculated and any change
 	 * on the task object will be persisted.
 	 *
