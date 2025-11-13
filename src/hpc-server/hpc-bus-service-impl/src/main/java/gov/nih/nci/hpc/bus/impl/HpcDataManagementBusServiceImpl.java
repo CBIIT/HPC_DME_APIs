@@ -743,10 +743,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
 		
 		logger.info("2097: Bus:Registration Request: " + gson.toJson(registrationRequest));
-		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(path, registrationRequest, null);
+		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
+		logger.info("2097: Bus:Registration Compeleted: " + gson.toJson(registrationResponseDTO));
 		//HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest, null,
 		//		invokerNciAccount.getUserId(), null, true, null);
 		downloadRequest.setExternalArchiveFlag(true);
+		logger.info("2097: Bus:Download Begins request: " + gson.toJson(downloadRequest));
 		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest);
 		return downloadResponse;
 	}
