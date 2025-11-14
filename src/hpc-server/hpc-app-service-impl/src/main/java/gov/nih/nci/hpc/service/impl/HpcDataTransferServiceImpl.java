@@ -1527,6 +1527,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
 		logger.info("2097: In markProcessedDataObjectDownloadTask in App:HpcDataTransfer downloadTask: " + gson.toJson(downloadTask));
+		if(downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL)) {
+			return false;
+		}
 		boolean updated = true;
 		String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
 
