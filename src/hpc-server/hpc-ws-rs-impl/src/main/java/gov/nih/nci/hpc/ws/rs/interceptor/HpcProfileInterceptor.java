@@ -131,7 +131,7 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 			String contentType = (String) message.get(Message.CONTENT_TYPE);
 
 		    if (contentType != null) {
-		    	if (!"GET".equalsIgnoreCase(request.getMethod()) && contentType.toLowerCase().contains("application/json")) {
+		    	if (!"GET".equalsIgnoreCase(request.getMethod()) && contentType.toLowerCase().startsWith("application/json")) {
 		    		try {
 		                InputStream is = message.getContent(InputStream.class);
 		                if (is != null) {
