@@ -268,7 +268,6 @@ public interface HpcSecurityBusService {
 	 * @param serverId          The server handled the request
 	 * @param created           The time the request was created.
 	 * @param completed         The time the request was completed.
-	 * @param jsonBody 
 	 * @param jsonBody			The json body of the request.
 	 * @throws HpcException on database error.
 	 */
