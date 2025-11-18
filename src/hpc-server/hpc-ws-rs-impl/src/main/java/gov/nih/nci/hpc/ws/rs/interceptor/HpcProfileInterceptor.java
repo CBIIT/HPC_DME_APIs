@@ -11,11 +11,14 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.io.CachedOutputStream;
 import org.apache.cxf.message.Message;
@@ -62,6 +65,10 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 	// A configured ID representing the server performing a migration task.
 	@Value("${hpc.service.serverId}")
 	private String serverId = null;
+
+	// List of URIs that will not store the json body in the audit table
+	@Value("#{'${hpc.ws.rs.profile.excludeJsonURI:}'.split(',')}")
+	private List<String> excludeJsonURI = null;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -131,7 +138,7 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 			String contentType = (String) message.get(Message.CONTENT_TYPE);
 
 		    if (contentType != null) {
-		    	if (!"GET".equalsIgnoreCase(request.getMethod()) && contentType.toLowerCase().startsWith("application/json")) {
+		    	if (!"GET".equalsIgnoreCase(request.getMethod()) && contentType.toLowerCase().startsWith("application/json") && !skipJson(serviceURI)) {
 		    		try {
 		                InputStream is = message.getContent(InputStream.class);
 		                if (is != null) {
@@ -201,5 +208,12 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 				logger.info("failed to add API call audit record", e);
 			}
 		}
+	}
+	
+	private boolean skipJson(String uri) {
+		
+		return excludeJsonURI != null && excludeJsonURI.stream()
+			      .anyMatch(str -> StringUtils.isNotEmpty(str) && uri.contains(str));
+
 	}
 }
