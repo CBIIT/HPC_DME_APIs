@@ -268,10 +268,12 @@ public interface HpcSecurityBusService {
 	 * @param serverId          The server handled the request
 	 * @param created           The time the request was created.
 	 * @param completed         The time the request was completed.
+	 * @param jsonBody 
+	 * @param jsonBody			The json body of the request.
 	 * @throws HpcException on database error.
 	 */
 	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
-			String serverId, Calendar created, Calendar completed) throws HpcException;
+			String serverId, Calendar created, Calendar completed, String jsonBody) throws HpcException;
 	
 	/**
 	 * Refresh Investigators.
