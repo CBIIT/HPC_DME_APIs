@@ -1089,15 +1089,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) {
+	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) throws HpcException {
 		try {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
 
 		} catch (HpcException e) {
 			logger.error("Failed to get cancellation request for task ID: " + taskId);
-			// If it can not find the collection download task, it is cancelled and removed
-			// from the table.
-			return true;
+			throw e;
 		}
 	}
 
