@@ -667,6 +667,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void startArchiveLinkDataObjectDownloadTasks() throws HpcException {
+		// Iterate through all the data object download tasks that are received_external and type
+		// S_3
+		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL, HpcDataTransferType.S_3);
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void completeInProgressDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress.
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.IN_PROGRESS, null);
@@ -1519,6 +1527,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// separate threads), we set their in-process indicator to true so they are
 					// not picked up by another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
+
 					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 							dataTransferType, true);
 
@@ -1580,6 +1589,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType(), e);
 							} finally {
+
 								markProcessedDataObjectDownloadTask(downloadTask, dataTransferType, false);
 							}
 							break;
@@ -1614,6 +1624,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									logger.debug(
 											"download task: [taskId={}] - finally block called: to markProcessedDataObjectDownloadTask in-process=false [transfer-type={}]",
 											downloadTask.getId(), downloadTask.getDataTransferType());
+
 									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 											dataTransferType, false);
 
@@ -1626,6 +1637,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							}
 
 						}, dataObjectDownloadTaskExecutor);
+						break;
+
+					case RECEIVED_EXTERNAL:
+						logger.info(
+								"download task: [taskId={}] - changed received_external state to received [transfer-type={}, destination-type={}]",
+								downloadTask.getId(), downloadTask.getDataTransferType(),
+								downloadTask.getDestinationType());
+								dataTransferService.changeDataObjectDownloadTaskExternalStatus(downloadTask);
 						break;
 
 					case IN_PROGRESS:

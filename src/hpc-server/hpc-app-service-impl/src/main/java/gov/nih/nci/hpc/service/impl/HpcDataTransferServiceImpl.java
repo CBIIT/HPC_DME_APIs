@@ -568,7 +568,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
+			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchiveFlag)
 			throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
@@ -599,6 +599,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setCompletionEvent(completionEvent);
 		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
+		downloadRequest.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Create a download response.
 		HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
@@ -1104,7 +1105,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
-
 		// Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1152,6 +1152,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			File downloadFile = new File(downloadTask.getDownloadFilePath());
 			if (downloadFile.exists() && !FileUtils.deleteQuietly(downloadFile)) {
 				logger.error("Failed to delete file: {}", downloadTask.getDownloadFilePath());
+			}
+		}
+
+		// If from an external archive, delete the path from IRODs
+		if (downloadTask.getExternalArchiveFlag()) {
+			try {
+				dataManagementService.delete(downloadTask.getPath(), false);
+			} catch (HpcException e) {
+				logger.error("Failed to delete file from datamanagement", e);
 			}
 		}
 
@@ -1458,13 +1467,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-
 		logger.debug(
 				"download task: [taskId={}] - resetDataObjectDownloadTask called. Setting in-process=false [transfer-type={}, server-id={}]",
 				downloadTask.getId(), downloadTask.getDataTransferType(),
 				HpcDataTransferType.S_3.equals(downloadTask.getDataTransferType()) ? s3DownloadTaskServerId : null);
 
-		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		if(downloadTask.getExternalArchiveFlag()) {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL);
+		} else {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		}
 		downloadTask.setPercentComplete(0);
 		downloadTask.setInProcess(false);
 		downloadTask.setS3DownloadTaskServerId(null);
@@ -1486,10 +1498,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public void changeDataObjectDownloadTaskExternalStatus(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		if(downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL)) {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+			downloadTask.setExternalArchiveFlag(true);
+		}
+		dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
+		//return downloadTask;
+	}
+
+	@Override
 	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException {
 		// Only set in-process to true if this task in a RECEIVED status, and the
 		// in-process not already true.
+		if(downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL)) {
+			return false;
+		}
 		boolean updated = true;
 		String serverId = HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null;
 
@@ -1563,7 +1588,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info("download task: [taskId={}] - % complete - {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), percentComplete, downloadTask.getDataTransferType(),
 				downloadTask.getDestinationType());
-
 		return dataDownloadDAO.updateDataObjectDownloadTask(downloadTask);
 	}
 
@@ -4271,7 +4295,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				HpcFileLocation secondHopArchiveLocation, HpcGlobusDownloadDestination secondHopGlobusDestination,
 				HpcDataTransferDownloadStatus dataTransferDownloadStatus, HpcDataTransferType destinationType)
 				throws HpcException {
-
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 			downloadTask.setDataTransferStatus(dataTransferDownloadStatus);
 			downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
@@ -4291,6 +4314,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
 			downloadTask.setFirstHopRetried(false);
+			downloadTask.setExternalArchiveFlag(firstHopDownloadRequest.getExternalArchiveFlag());
 			downloadTask.setS3DownloadTaskServerId(
 					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
 							? s3DownloadTaskServerId
@@ -4335,7 +4359,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 			this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 			this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
-
+			this.downloadTask.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 			dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		}
 

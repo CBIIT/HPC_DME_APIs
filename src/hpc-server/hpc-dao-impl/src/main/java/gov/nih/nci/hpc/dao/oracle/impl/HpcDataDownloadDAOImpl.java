@@ -67,6 +67,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * HPC Data Download DAO Implementation.
@@ -84,8 +86,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, "
 			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_ACCESS_TOKEN, ASPERA_ACCOUNT_USER, ASPERA_ACCOUNT_PASSWORD, ASPERA_ACCOUNT_HOST, BOX_ACCESS_TOKEN, BOX_REFRESH_TOKEN, "
 			+ "COMPLETION_EVENT, COLLECTION_DOWNLOAD_TASK_ID, PERCENT_COMPLETE, STAGING_PERCENT_COMPLETE, DATA_SIZE, CREATED, "
-			+ "PROCESSED, IN_PROCESS, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_TASK_ID, RETRY_USER_ID, DOC, PRIORITY) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "PROCESSED, IN_PROCESS, RESTORE_REQUESTED, S3_DOWNLOAD_TASK_SERVER_ID, FIRST_HOP_RETRIED, RETRY_TASK_ID, RETRY_USER_ID, DOC, PRIORITY, EXTERNAL_ARCHIVE_FLAG) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK "
 			+ "set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, S3_ARCHIVE_CONFIGURATION_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, "
@@ -94,7 +96,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_ACCESS_TOKEN = ?, "
 			+ "ASPERA_ACCOUNT_USER = ?, ASPERA_ACCOUNT_PASSWORD = ?, ASPERA_ACCOUNT_HOST = ?, BOX_ACCESS_TOKEN = ?, BOX_REFRESH_TOKEN = ?, "
 			+ "COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, PERCENT_COMPLETE = ?, STAGING_PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ?, "
-			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ? where ID = ?";
+			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, EXTERNAL_ARCHIVE_FLAG = ? where ID = ?";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -266,6 +268,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// Encryptor.
 	@Autowired
 	private HpcEncryptor encryptor = null;
+	
+	private Gson gson = new Gson();
 
 	// HpcDataObjectDownloadTask table to object mapper.
 	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> {
@@ -292,6 +296,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		dataObjectDownloadTask.setDoc(rs.getString("DOC"));
 		dataObjectDownloadTask.setPriority(rs.getInt("PRIORITY"));
+		dataObjectDownloadTask.setExternalArchiveFlag(rs.getBoolean("EXTERNAL_ARCHIVE_FLAG"));
 
 		int stagingPercentComplete = rs.getInt("STAGING_PERCENT_COMPLETE");
 		dataObjectDownloadTask.setStagingPercentComplete(stagingPercentComplete > 0 ? stagingPercentComplete : null);
@@ -678,6 +683,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	@Override
 	public void createDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) throws HpcException {
+
 		try {
 			if (dataObjectDownloadTask.getId() != null) {
 				throw new HpcException("Task ID provided in download task creation: " + dataObjectDownloadTask.getId(),
@@ -761,7 +767,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
 					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
 					dataObjectDownloadTask.getDoc(),
-					dataObjectDownloadTask.getPriority());
+					dataObjectDownloadTask.getPriority(),
+					dataObjectDownloadTask.getExternalArchiveFlag());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
@@ -845,7 +852,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
-					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
+					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(), dataObjectDownloadTask.getExternalArchiveFlag(),
 					dataObjectDownloadTask.getId()) > 0;
 
 		} catch (DataAccessException e) {
