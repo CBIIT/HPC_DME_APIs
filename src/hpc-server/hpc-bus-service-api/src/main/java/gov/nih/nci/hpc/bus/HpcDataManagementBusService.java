@@ -142,6 +142,17 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
+	 * Download a collection tree.
+	 *
+	 * @param path            The collection path.
+	 * @param downloadRequest The download request DTO.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+			throws HpcException;
+
+	/**
 	 * Download data objects or collections. Note: API doesn't support mixed, so
 	 * user expected to provide a list of data objects or a list of collections, not
 	 * both.
@@ -151,6 +162,18 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollections(
+			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
+
+	/**
+	 * Download data objects or collections from external source. Note: API doesn't support mixed, so
+	 * user expected to provide a list of data objects or a list of collections, not
+	 * both.
+	 *
+	 * @param downloadRequest The download request DTO.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
 
 	/**
@@ -453,6 +476,19 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest)
+			throws HpcException;
+
+	/**
+	 * Download Data Object from External Source. In this overloaded method, the request invoker will be
+	 * notified (if subscribed) when the download is complete. To specify a
+	 * different user-id and turn off notification, use the other overloaded method.
+	 *
+	 * @param path            The data object path.
+	 * @param downloadRequest The download request DTO.
+	 * @return Download ResponseDTO
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException;
 
 	/**

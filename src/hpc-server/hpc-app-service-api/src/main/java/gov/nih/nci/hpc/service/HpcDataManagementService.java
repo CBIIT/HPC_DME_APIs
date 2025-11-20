@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -593,6 +594,14 @@ public interface HpcDataManagementService {
 	 * @return A configuration ID, or null if not found.
 	 */
 	public HpcDataManagementConfiguration getDataManagementConfiguration(String id);
+
+	/**
+	 * Returns HpcDataTransferConfiguration for the given external path
+	 *
+	 * @return HpcDataTransferConfiguration
+	 */
+
+	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path)  throws HpcException;
 
 	/**
 	 * Add a data object registration request result to the DB.

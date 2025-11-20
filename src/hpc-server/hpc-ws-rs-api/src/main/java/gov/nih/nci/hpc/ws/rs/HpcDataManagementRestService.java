@@ -146,6 +146,21 @@ public interface HpcDataManagementRestService {
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest);
 
 	/**
+	 * Download a collection.
+	 *
+	 * @param path            The collection path.
+	 * @param downloadRequest The download request.
+	 * @return The REST service response w/ HpcCollectionDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/ext/collection/{path:.*}/download")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response downloadCollectionFromExternalSource(@PathParam("path") String path,
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest);
+
+
+	/**
 	 * Get collection download task status.
 	 *
 	 * @param taskId The collection download task ID.
@@ -566,6 +581,22 @@ public interface HpcDataManagementRestService {
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest, @Context MessageContext mc);
 
 	/**
+	 * Download a data object from an External Source
+	 *
+	 * @param path            The data object path.
+	 * @param downloadRequest The download request.
+	 * @param mc              The message context.
+	 * @return The REST service response w/ either a file attached or
+	 *         HpcDataObjectDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/ext/dataObject/{path:.*}/download")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8, application/octet-stream")
+	public Response downloadDataObjectFromExternalSource(@PathParam("path") String path,
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest, @Context MessageContext mc);
+
+	/**
 	 * Get Data object download task status.
 	 *
 	 * @param taskId The data object download task ID.
@@ -716,6 +747,20 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response downloadDataObjectsOrCollections(
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
+
+	/**
+	 * Download a list of data objects or a list of collections from an External Source
+	 *
+	 * @param downloadRequest The download request.
+	 * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO
+	 *         entity.
+	 */
+	@POST
+	@Path("/ext/download")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response downloadDataObjectsOrCollectionsFromExternalSource(
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 
 	/**
