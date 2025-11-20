@@ -201,7 +201,7 @@ public interface HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
+			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchiveFlag) throws HpcException;
 
 	/**
 	 * Generate a (pre-signed) download URL for a data object file.
@@ -582,6 +582,17 @@ public interface HpcDataTransferService {
 	 */
 	public boolean markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException;
+
+	/**
+	 * Update a data object download task.
+	 *
+	 * @param downloadTask     The download task to update
+	 * @return true if the task was updated, or false if the task no longer exist
+	 *         (removed / canceled).
+	 * @throws HpcException on service failure.
+	 */
+	public void changeDataObjectDownloadTaskExternalStatus(HpcDataObjectDownloadTask downloadTask)
+			throws HpcException;
 
 	/**
 	 * Update a data object download task. % Complete is calculated and any change
