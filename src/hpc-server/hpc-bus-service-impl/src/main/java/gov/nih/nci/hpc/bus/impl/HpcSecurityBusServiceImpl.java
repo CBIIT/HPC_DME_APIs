@@ -823,9 +823,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
 	@Override
 	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
-			String serverId, Calendar created, Calendar completed) throws HpcException {
+			String serverId, Calendar created, Calendar completed, String jsonBody) throws HpcException {
 		securityService.addApiCallAuditRecord(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created,
-				completed);
+				completed, jsonBody);
 	}
 	
 	@Override
