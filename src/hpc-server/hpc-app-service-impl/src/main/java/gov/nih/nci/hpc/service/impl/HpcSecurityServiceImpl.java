@@ -724,8 +724,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 
 	@Override
 	public void addApiCallAuditRecord(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
-			String serverId, Calendar created, Calendar completed) throws HpcException {
-		apiCallsAuditDAO.insert(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created, completed);
+			String serverId, Calendar created, Calendar completed, String jsonBody) throws HpcException {
+		apiCallsAuditDAO.insert(userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created, completed, jsonBody);
 	}
 
 	@Override
