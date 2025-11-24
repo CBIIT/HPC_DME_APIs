@@ -749,6 +749,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void processCollectionDownloadTasks() throws HpcException {
 		// Iterate through all the collection download requests that were submitted (not
 		// processed yet).
+		logger.info("2097: In processCollectionDownloadTasks Bus:System ");
 
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
@@ -1911,8 +1912,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.info("Processing collection download task {}: Excluded Paths: {}", collectionDownloadTaskId,
 				excludedPaths);
 
+		logger.info("2097: In downloadCollection in Bus:HpcSystem: ");
+
 		// Iterate through the data objects in the collection and download them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
+			logger.info("2097: In downloadCollection in Bus:HpcSystem dataObjectEntry: " + gson.toJson(dataObjectEntry));
 			if (excludedPaths.contains(dataObjectEntry.getPath())) {
 				// This file was successfully downloaded in the original run. No need to
 				// download in this retry attempt.
@@ -1928,6 +1932,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, userId, null,
 						collectionDownloadTaskId);
 				downloadItems.add(downloadItem);
+				logger.info("2097: In downloadCollection in Bus:HpcSystem downloadItem: " + gson.toJson(downloadItem));				
 				if (collectionDownloadBreaker.abortDownload(downloadItem)) {
 					// Need to abort collection download processing. Cancel and return the items
 					// processed so
