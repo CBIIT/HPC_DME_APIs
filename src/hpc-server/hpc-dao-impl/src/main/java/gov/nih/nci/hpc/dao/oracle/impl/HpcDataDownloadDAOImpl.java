@@ -1147,6 +1147,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	@Override
 	public void upsertCollectionDownloadTask(HpcCollectionDownloadTask collectionDownloadTask) throws HpcException {
+		logger.info("2097: In DAO:upsertCollectionDownloadTask collectionDownloadTask: " + gson.toJson(collectionDownloadTask));
 		try {
 			if (collectionDownloadTask.getId() == null) {
 				collectionDownloadTask.setId(UUID.randomUUID().toString());

@@ -544,6 +544,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollection(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
+		logger.info("2097: Bus:downloadCollection downloadRequest: " + gson.toJson(downloadRequest));
 		// Input validation.
 		if (path == null || downloadRequest == null) {
 			throw new HpcException("Null path or download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -596,12 +597,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		responseDTO.setTaskId(collectionDownloadTask.getId());
 		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
 
+		logger.info("2097: Bus:downloadCollection collectionDownloadTask: " + gson.toJson(collectionDownloadTask));
+		
 		return responseDTO;
 	}
 
 	@Override
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollections(
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException {
+		logger.info("2097: Bus:downloadDataObjectsOrCollections downloadRequest: " + gson.toJson(downloadRequest));
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -709,6 +713,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
 		responseDTO.setTaskId(collectionDownloadTask.getId());
 		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+		
+		logger.info("2097: Bus:downloadDataObjectsOrCollections ]: " + gson.toJson(collectionDownloadTask));
 
 		return responseDTO;
 	}

@@ -1626,6 +1626,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
 			boolean appendCollectionNameToDownloadDestination) throws HpcException {
 
+		logger.info("2097: In downloadCollection App:HpcDataTransfer path: " + path);
+		
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, null,
@@ -1656,6 +1658,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 
+		logger.info("2097: In downloadCollection App:HpcDataTransfer after upsertCollection downloadTask: " + gson.toJson(downloadTask));
 		return downloadTask;
 	}
 
@@ -1692,6 +1695,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+		
+		logger.info("2097: In downloadCollections App:HpcDataTransfer after upsertCollection downloadTask: " + gson.toJson(downloadTask));
 
 		return downloadTask;
 	}
@@ -1733,6 +1738,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 
+		logger.info("2097: In downloadDataObjects App:HpcDataTransfer after upsertCollection downloadTask: " + gson.toJson(downloadTask));
+		
 		return downloadTask;
 	}
 
@@ -1743,6 +1750,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	public void processCollectionDownloadTaskSecondHopBunch(HpcCollectionDownloadTask collectionDownloadTask,
 			List<HpcDataObjectDownloadTask> dataObjectDownloadTasks) throws HpcException {
+
+		logger.info("2097: In downloadDataObjects App:HpcDataTransfer processCollectionDownloadTaskSecondHopBunch collectionDownloadTask: " + gson.toJson(collectionDownloadTask));
 
 		// Create a Globus transfer request for the bunch.
 		String configurationId = null;
