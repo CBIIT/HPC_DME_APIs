@@ -8,11 +8,19 @@
  */
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.helpers.IOUtils;
+import org.apache.cxf.io.CachedOutputStream;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -41,6 +49,7 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 	private static String SERVICE_INVOKE_TIME_MC_ATTRIBUTE = "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceInvokeTime";
 	private static String SERVICE_URI_MC_ATTRIBUTE = "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceURI";
 	private static String SERVICE_METHOD_MC_ATTRIBUTE = "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceMethod";
+	private static String SERVICE_JSON_MC_ATTRIBUTE = "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceJSON";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -56,6 +65,10 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 	// A configured ID representing the server performing a migration task.
 	@Value("${hpc.service.serverId}")
 	private String serverId = null;
+
+	// List of URIs that will not store the json body in the audit table
+	@Value("#{'${hpc.ws.rs.profile.excludeJsonURI:}'.split(',')}")
+	private List<String> excludeJsonURI = null;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -121,6 +134,32 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 			message.getExchange().put(SERVICE_INVOKE_TIME_MC_ATTRIBUTE, System.currentTimeMillis());
 			message.getExchange().put(SERVICE_URI_MC_ATTRIBUTE, serviceURI);
 			message.getExchange().put(SERVICE_METHOD_MC_ATTRIBUTE, request.getMethod());
+			
+			String contentType = (String) message.get(Message.CONTENT_TYPE);
+
+		    if (contentType != null) {
+		    	if (!"GET".equalsIgnoreCase(request.getMethod()) && contentType.toLowerCase().startsWith("application/json") && !skipJson(serviceURI)) {
+		    		try {
+		                InputStream is = message.getContent(InputStream.class);
+		                if (is != null) {
+		                    CachedOutputStream cos = new CachedOutputStream();
+		                    IOUtils.copy(is, cos);
+		                    cos.flush();
+
+		                    // Read the content as a String (assuming UTF-8 for JSON)
+		                    String jsonBody = IOUtils.toString(cos.getInputStream(), "UTF-8");
+		                    message.getExchange().put(SERVICE_JSON_MC_ATTRIBUTE, jsonBody);
+
+		                    // Re-set the input stream on the message so subsequent interceptors can still read it
+		                    message.setContent(InputStream.class, new ByteArrayInputStream(cos.getBytes()));
+		                    cos.close();
+		                }
+		            } catch (IOException e) {
+		            	logger.error("failed to parse json content for API call audit record", e);
+		            }
+	            } 
+		    }
+			
 
 		} else if (phase.equals(Phase.SEND_ENDING)) {
 
@@ -159,13 +198,22 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 			String responseCode = Optional.ofNullable(message.get(Message.RESPONSE_CODE)).orElse("Unknown").toString();
 			String userId = authenticationResponse != null ? authenticationResponse.getUserId() : "Unknown";
 
+			String jsonBody = (String) message.getExchange().get(SERVICE_JSON_MC_ATTRIBUTE);
+    
 			try {
 				securityBusService.addApiCallAuditRecord(userId, serviceMethod, serviceURI, responseCode, serverId,
-						created, completed);
+						created, completed, jsonBody);
 
 			} catch (HpcException e) {
 				logger.info("failed to add API call audit record", e);
 			}
 		}
+	}
+	
+	private boolean skipJson(String uri) {
+		
+		return excludeJsonURI != null && excludeJsonURI.stream()
+			      .anyMatch(str -> StringUtils.isNotEmpty(str) && uri.contains(str));
+
 	}
 }
