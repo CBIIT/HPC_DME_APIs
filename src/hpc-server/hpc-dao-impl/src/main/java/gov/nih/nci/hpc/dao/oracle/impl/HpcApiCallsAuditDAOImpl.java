@@ -36,8 +36,8 @@ public class HpcApiCallsAuditDAOImpl implements HpcApiCallsAuditDAO {
 
 	// SQL Queries.
 	public static final String INSERT_SQL = "insert into HPC_API_CALLS_AUDIT ( "
-			+ "USER_ID, HTTP_REQUEST_METHOD, ENDPOINT, HTTP_RESPONSE_CODE, SERVER_ID, CREATED, COMPLETED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?)";
+			+ "USER_ID, HTTP_REQUEST_METHOD, ENDPOINT, HTTP_RESPONSE_CODE, SERVER_ID, CREATED, COMPLETED, JSON_BODY) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -68,10 +68,10 @@ public class HpcApiCallsAuditDAOImpl implements HpcApiCallsAuditDAO {
 
 	@Override
 	public void insert(String userId, String httpRequestMethod, String endpoint, String httpResponseCode,
-			String serverId, Calendar created, Calendar completed) throws HpcException {
+			String serverId, Calendar created, Calendar completed, String jsonBody) throws HpcException {
 		try {
 			jdbcTemplate.update(INSERT_SQL, userId, httpRequestMethod, endpoint, httpResponseCode, serverId, created,
-					completed);
+					completed, jsonBody);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to insert an API calls audit record: " + e.getMessage(),
