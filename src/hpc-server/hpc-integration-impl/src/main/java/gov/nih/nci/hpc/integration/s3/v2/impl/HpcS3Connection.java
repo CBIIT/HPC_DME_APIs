@@ -272,7 +272,7 @@ public class HpcS3Connection {
 			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
 					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
 					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
-					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
+					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold).maxConcurrency(1);
 
 			if (trustAllCerts) {
 				crtAsyncClientBuilder.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true));
@@ -325,7 +325,7 @@ public class HpcS3Connection {
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
 					.minimumPartSizeInBytes(minimumUploadPartSize)
-					.thresholdInBytes(multipartUploadThreshold).build();
+					.thresholdInBytes(multipartUploadThreshold).maxConcurrency(1).build();
 
 			// Instantiate the S3 transfer manager.
 			s3.transferManager = S3TransferManager.builder().s3Client(s3.client).executor(executorService).build();
