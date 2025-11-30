@@ -729,7 +729,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
 		uploadResponse.setDataTransferStarted(dataTransferStarted);
 		uploadResponse.setDataTransferCompleted(dataTransferCompleted);
-		uploadResponse.setDataTransferRequestId(String.valueOf(fileUpload.hashCode()));
+		uploadResponse.setDataTransferRequestId(String.valueOf(fileUpload.completionFuture().hashCode()));
 		uploadResponse.setSourceSize(sourceFile.length());
 		uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.SYNC);
 		if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
