@@ -253,10 +253,10 @@ public class HpcS3Connection {
         try {
             // Instantiate a S3 async client.
             s3.client = S3AsyncClient.builder()
-                    .credentialsProvider(s3ProviderCredentialsProvider).
-                    forcePathStyle(pathStyleAccessEnabled)
-                    .endpointOverride(uri).
-                    multipartConfiguration(mpConfigBuilder -> mpConfigBuilder
+                    .credentialsProvider(s3ProviderCredentialsProvider)
+                    .forcePathStyle(pathStyleAccessEnabled)
+                    .endpointOverride(uri)
+                    .multipartConfiguration(mpConfigBuilder -> mpConfigBuilder
                             .minimumPartSizeInBytes(minimumUploadPartSize)
                             .thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold))
                     .build();
