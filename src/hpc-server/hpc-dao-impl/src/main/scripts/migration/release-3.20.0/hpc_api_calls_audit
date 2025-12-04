@@ -1,0 +1,16 @@
+--
+-- hpc_api_calls_audit.sql
+--
+-- Copyright SVG, Inc.
+-- Copyright Leidos Biomedical Research, Inc
+-- 
+-- Distributed under the OSI-approved BSD 3-Clause License.
+-- See http://ncip.github.com/HPC/LICENSE.txt for details.
+--
+--
+-- @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+--
+                
+ALTER TABLE HPC_API_CALLS_AUDIT ADD (JSON_BODY CLOB); 
+COMMENT ON COLUMN HPC_API_CALLS_AUDIT.JSON_BODY IS 
+                 'The json body of the request';
