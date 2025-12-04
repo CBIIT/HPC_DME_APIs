@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -1451,6 +1452,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL, Boolean.class, id);
 			return cancellationRequested != null ? cancellationRequested : false;
 
+		} catch (EmptyResultDataAccessException e) {
+			// If it can not find the collection download task, it is cancelled and removed
+			// from the table.
+			return true;
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get cancellation request of: " + id + " " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);

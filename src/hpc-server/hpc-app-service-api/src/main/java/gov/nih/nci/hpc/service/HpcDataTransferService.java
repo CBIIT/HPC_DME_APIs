@@ -482,9 +482,10 @@ public interface HpcDataTransferService {
 	 *
 	 * @param taskId The collection download task ID.
 	 * @return The value of 'cancellation requested' column for this collection
-	 *         download task. False on any error (task doesn't exist, etc)
+	 *         download task. True if task no longer exist (cancelled)
+	 * @throws HpcException on any error
 	 */
-	public boolean getCollectionDownloadTaskCancellationRequested(String taskId);
+	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) throws HpcException;
 
 	/**
 	 *
