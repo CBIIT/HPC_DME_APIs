@@ -60,7 +60,7 @@
 	    <div class="col-sm-12 column leftMargin">
 			<label for="endPointName">Globus Endpoint UUID:</label> 
 			<a id="downloadlink" 
-	                                    th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">                                  
+	                                    th:href="@{../download(ext=${external},type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">                                  
 	                                    Obtain from Globus (Optional)</a>
 			<input type="hidden" name="actionType" id="actionType" />
 			<input

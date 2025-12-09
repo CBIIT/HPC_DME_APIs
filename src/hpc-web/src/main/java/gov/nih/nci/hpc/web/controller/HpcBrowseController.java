@@ -302,6 +302,9 @@ public class HpcBrowseController extends AbstractHpcController {
     }
     Set<String> userBasePaths = (Set<String>)session.getAttribute("userBasePaths");
     model.addAttribute("userBasePaths", userBasePaths);
+    
+    Set<String> userExternalArchives = (Set<String>) session.getAttribute("userExternalArchives");
+    model.addAttribute("externalArchives", userExternalArchives);
 
     String partial = request.getParameter("partial");
     String refresh = request.getParameter("refresh");

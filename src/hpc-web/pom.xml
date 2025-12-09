@@ -184,13 +184,18 @@
 		    <groupId>com.box</groupId>
 		    <artifactId>box-java-sdk</artifactId>
 		    <version>2.32.0</version>
-		</dependency>		
+		</dependency>
+		<dependency>
+			<groupId>com.github.eirslett</groupId>
+			<artifactId>frontend-maven-plugin</artifactId>
+			<version>1.15.4</version>
+		</dependency>	
     </dependencies>
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version><!--$NO-MVN-MAN-VER$-->
+                <version>3.14.1</version><!--$NO-MVN-MAN-VER$-->
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -221,29 +226,82 @@
                 </configuration>
             </plugin>
             <plugin>
+			   <groupId>com.github.eirslett</groupId>
+			   <artifactId>frontend-maven-plugin</artifactId>
+			   <version>1.15.1</version>
+			   <configuration>
+			      <workingDirectory>hpc-web-frontend</workingDirectory>
+			      <installDirectory>target</installDirectory>
+			   </configuration>
+			   <executions>
+			      <execution>
+			         <id>install node and npm</id>
+			         <goals>
+			            <goal>install-node-and-npm</goal>
+			         </goals>
+			         <configuration>
+			            <nodeVersion>v22.15.0</nodeVersion>
+			            <npmVersion>10.9.2</npmVersion>
+			         </configuration>
+			      </execution>
+			      <execution>
+			         <id>npm install</id>
+			         <goals>
+			            <goal>npm</goal>
+			         </goals>
+			         <configuration>
+			            <arguments>install</arguments>
+			         </configuration>
+			      </execution>
+			      <execution>
+			         <id>npm run build</id>
+			         <goals>
+			            <goal>npm</goal>
+			         </goals>
+			         <configuration>
+			            <arguments>run build</arguments>
+			         </configuration>
+			      </execution>
+			   </executions>
+			</plugin>
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                
-		<executions>
-		  <execution>
-		    <id>gen-app-props</id>
-		    <phase>generate-resources</phase>
-		    <configuration>
-		      <target>
-		        <!-- 
+
+				<executions>
+					<execution>
+						<id>gen-app-props</id>
+						<phase>generate-resources</phase>
+						<configuration>
+							<target>
+								<!-- 
 		             Generate application.properties file by combining 
 		             common.conf and environment-specific .conf 
 		          -->
-			<concat destfile="${resources.basedir}/application.properties">
-			    <filelist dir="${app.configs.dir}"
-                                      files="common.conf,${myProfile}-env.conf" />
-			</concat>
-		      </target>
-		    </configuration>
-		    <goals>
-		      <goal>run</goal>
-		    </goals>
-		  </execution>
-                </executions>
+								<concat
+									destfile="${resources.basedir}/application.properties">
+									<filelist dir="${app.configs.dir}"
+										files="common.conf,${myProfile}-env.conf" />
+								</concat>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+				         <phase>generate-resources</phase>
+				         <configuration>
+				            <target>
+				               <copy todir="${project.build.directory}/classes/static">
+				                  <fileset dir="${project.basedir}/hpc-web-frontend/out"/>
+				               </copy>
+				            </target>
+				         </configuration>
+				         <goals>
+				            <goal>run</goal>
+				         </goals>
+				    </execution>
+				</executions>
             </plugin>
         </plugins>
     </build>
