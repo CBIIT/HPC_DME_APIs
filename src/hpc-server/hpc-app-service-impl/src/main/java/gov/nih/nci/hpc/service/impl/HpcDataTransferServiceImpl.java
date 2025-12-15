@@ -1166,7 +1166,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// If from an external archive, delete the path from IRODs
 		if (downloadTask.getExternalArchiveFlag()) {
 			try {
-				dataManagementService.delete(downloadTask.getPath(), false);
+				dataManagementService.delete(downloadTask.getPath(), true);
 			} catch (HpcException e) {
 				logger.error("Failed to delete file from datamanagement", e);
 			}
