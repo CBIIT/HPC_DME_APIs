@@ -1360,11 +1360,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void refreshDailyViews() throws HpcException {
-		reportService.refreshViews();
-
-		logger.info("calling detectDupMetadataEntries()");
-		metadataService.detectDupMetadataEntries();
-		logger.info("completed detectDupMetadataEntries()");
+		try {
+			reportService.refreshViews();
+		} catch (HpcException e) {
+			throw e;
+		} finally {
+			logger.info("calling detectDupMetadataEntries()");
+			try {
+				metadataService.detectDupMetadataEntries();
+			} catch (HpcException e) {
+				notificationService.sendNotification(e);
+			}
+			logger.info("completed detectDupMetadataEntries()");
+		}
 	}
 
 	@Override
