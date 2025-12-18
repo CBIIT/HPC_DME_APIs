@@ -283,7 +283,11 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 			}
 			model.addAttribute("updateAll", "true");
 			model.addAttribute("totalCount", totalCount);
-			req.setCollectionCompoundQuery(compoundQuery.getCompoundQuery());
+			if (downloadType.equals("collections")) {
+				req.setCollectionCompoundQuery(compoundQuery.getCompoundQuery());
+			} else {
+				req.setDataObjectCompoundQuery(compoundQuery.getCompoundQuery());
+			}
 		} else {
 			List<String> paths = new ArrayList<>();
 			String selectedPathsStr = bulkMetadataUpdateRequest.getSelectedFilePaths();
@@ -294,7 +298,11 @@ public class HpcBulkMetadataController extends AbstractHpcController {
 				paths.add(path);
 			}
 			bulkMetadataUpdateRequest.setSelectedFilePaths(selectedPathsStr);
-			req.getCollectionPaths().addAll(paths);
+			if (downloadType.equals("collections")) {
+				req.getCollectionPaths().addAll(paths);
+			} else {
+				req.getDataObjectPaths().addAll(paths);
+			}
 		}
 		req.getMetadataEntries().addAll(userMetadataList);
 		try {
