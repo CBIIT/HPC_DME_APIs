@@ -298,7 +298,7 @@ public interface HpcMetadataDAO {
 	/**
 	 * Get a list of any duplicate data object metadata in HPC_DATA_META_MAIN table
 	 *
-	 * @return A list of HpcDupMetadataEntry
+	 * @return A list of object IDs as integers
 	 * @throws HpcException on database error.
 	 */
 	public List<Integer> getDupHpcDataObjectMetadataEntries() throws HpcException;
