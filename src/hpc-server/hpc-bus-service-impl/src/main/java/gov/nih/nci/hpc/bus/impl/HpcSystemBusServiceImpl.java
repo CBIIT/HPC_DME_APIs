@@ -1362,8 +1362,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void refreshDailyViews() throws HpcException {
 		try {
 			reportService.refreshViews();
-		} catch (HpcException e) {
-			throw e;
 		} finally {
 			logger.info("calling detectDupMetadataEntries()");
 			try {
