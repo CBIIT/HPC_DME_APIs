@@ -249,12 +249,12 @@
 						</thead>
 						<tbody>
 							<tr id='attrCol0' th:if="${downloadType == 'collections'}" th:each="pathDetail : ${pathDetails}">
-								<td id="path30"><a th:href="@{/collection(path=${pathDetail.path}, action=displayOnly)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
-								<td id='path31' th:if="${result} == 'true'" th:text="${pathDetail.result}"></td>
+								<td id="collectionPath"><a th:href="@{/collection(path=${pathDetail.path}, action=displayOnly)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
+								<td id='collectionPathResult' th:if="${result} == 'true'" th:text="${pathDetail.result}"></td>
 							</tr>
 							<tr id='attrCol0' th:if="${downloadType == 'datafiles'}" th:each="pathDetail : ${pathDetails}">
-								<td id="path32"><a th:href="@{/datafile(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
-								<td id='path33' th:if="${result} == 'true'" th:text="${pathDetail.result}"></td>
+								<td id="dataObjectPath"><a th:href="@{/datafile(path=${pathDetail.path}, action=view)}"  th:text="${pathDetail.path}"  target="_blank"></a></td>
+								<td id='dataObjectPathResult' th:if="${result} == 'true'" th:text="${pathDetail.result}"></td>
 							</tr>
 						</tbody>
 					</table>
