@@ -296,6 +296,14 @@ public interface HpcMetadataDAO {
 	public List<HpcDupMetadataEntry> getDupDataObjectMetadataEntries() throws HpcException;
 
 	/**
+	 * Get a list of any duplicate data object metadata in HPC_DATA_META_MAIN table
+	 *
+	 * @return A list of HpcDupMetadataEntry
+	 * @throws HpcException on database error.
+	 */
+	public List<Integer> getDupHpcDataObjectMetadataEntries() throws HpcException;
+
+	/**
 	 * Upsert data object metadata in the table used for data object search
 	 * materialized view creation.
 	 *
