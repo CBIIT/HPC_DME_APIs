@@ -572,7 +572,7 @@ window.onclick = function(event) {
             }
           console.log(' after updatedList: ', updatedList);
 
-		if(updatedList == null || updatedList.length == 0){
+		if(updatedList === null || updatedList.length === 0){
 			if(action == 'download')
 				alert("Select at least one data file to download");
 			else if (action == 'permission')
