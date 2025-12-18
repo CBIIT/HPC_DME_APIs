@@ -301,7 +301,7 @@
         $scope.bulkUpdate = function() {
 			var updatedList = [];
 			document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
-			if(source == "criteria")
+			if(source === "criteria")
 			   document.getElementById("searchType4").value = "criteria";
 			 else
 			   document.getElementById("searchType4").value = "search";
@@ -499,7 +499,7 @@
 										><i class="fa fa-link" title="Create Soft Links for Selected Data Files"></i></a>
 									<a data-toggle="modal" id="bulkUpdateMetadatalink"
 										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('updatemetadata')"
-										><i class="fa fa-edit" title="Manage Metadata Updates on Selected Data files"></i></a>						
+										><i class="fa fa-edit" title="Manage Metadata Updates on Selected Data Files"></i></a>
 								</div>
 							  </div>
 								<div class="modal fade" id="saveModal" tabindex="-1" role="dialog"
