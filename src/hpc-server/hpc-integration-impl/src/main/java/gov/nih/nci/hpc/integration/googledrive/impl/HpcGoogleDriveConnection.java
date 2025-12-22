@@ -11,14 +11,17 @@
 package gov.nih.nci.hpc.integration.googledrive.impl;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -63,8 +66,8 @@ public class HpcGoogleDriveConnection {
 	public Object authenticate(String accessToken) throws HpcException {
 		Drive drive = null;
 		try {
-			drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),
-					new GoogleCredential().setAccessToken(accessToken)).setApplicationName(hpcApplicationName).build();
+			drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(),
+					new HttpCredentialsAdapter(GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8)))).setApplicationName(hpcApplicationName).build();
 
 			// Confirm the drive is accessible.
 			drive.about().get().setFields("appInstalled").execute();
