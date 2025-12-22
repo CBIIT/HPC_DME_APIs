@@ -60,14 +60,14 @@ public class HpcGoogleDriveConnection {
 	/**
 	 * Authenticate a google drive.
 	 *
-	 * @param accessToken Google Drive Access Token.
+	 * @param credentialsJson Google Drive Credentials Json.
 	 * @throws HpcException if authentication failed
 	 */
-	public Object authenticate(String accessToken) throws HpcException {
+	public Object authenticate(String credentialsJson) throws HpcException {
 		Drive drive = null;
 		try {
 			drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(),
-					new HttpCredentialsAdapter(GoogleCredentials.fromStream(IOUtils.toInputStream(accessToken, StandardCharsets.UTF_8)))).setApplicationName(hpcApplicationName).build();
+					new HttpCredentialsAdapter(GoogleCredentials.fromStream(IOUtils.toInputStream(credentialsJson, StandardCharsets.UTF_8)))).setApplicationName(hpcApplicationName).build();
 
 			// Confirm the drive is accessible.
 			drive.about().get().setFields("appInstalled").execute();
