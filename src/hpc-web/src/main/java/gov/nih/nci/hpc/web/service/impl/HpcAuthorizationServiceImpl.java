@@ -92,14 +92,14 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     return redirectUrl;
   }
 
-  public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
+  public GoogleTokenResponse getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
     flow = getFlow(resourceType);
     tokenResponse =
           flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     logger.info("HpcAuthorizationServiceImpl::getToken: tokenResponse: " + gson.toJson(tokenResponse));
-    return tokenResponse.getAccessToken();
+    return tokenResponse;
   }
 
   public String getRefreshToken(String code, String redirectUri, ResourceType resourceType, String userId) throws Exception {
