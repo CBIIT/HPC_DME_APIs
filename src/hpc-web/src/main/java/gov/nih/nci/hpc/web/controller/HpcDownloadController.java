@@ -150,7 +150,7 @@ public class HpcDownloadController extends AbstractHpcController {
             try {
 				if(authorizedActionFrom.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
 					GoogleTokenResponse token = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
-					session.setAttribute("accessToken", token.getRefreshToken());
+					session.setAttribute("accessToken", hpcAuthorizationService.toJsonCredentialsForGoogle(token));
 					model.addAttribute("accessToken", token.getAccessToken());
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
