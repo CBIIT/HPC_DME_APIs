@@ -163,7 +163,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			String parent, String source, boolean refresh) {
 		String endPoint = request.getParameter("endpoint_id");
 		String globusPath = request.getParameter("path");
-		String accessToken = (String) session.getAttribute("accessToken");
+		//String accessToken = (String) session.getAttribute("accessToken");
 		String refreshTokenDetailsGoogleCloud = (String) session.getAttribute("refreshTokenDetailsGoogleCloud");
 		List<String> fileNames = new ArrayList<String>();
 		List<String> folderNames = new ArrayList<String>();
