@@ -72,7 +72,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES)
             //.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
             .setAccessType("offline")
-            .setApprovalPrompt("consent")
+            .setApprovalPrompt("force")
             .build();
     
       // Build flow and trigger user authorization request for Google Cloud with a forced login
