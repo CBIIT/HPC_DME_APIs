@@ -62,6 +62,7 @@ import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.gson.Gson;
 
 /**
@@ -148,9 +149,9 @@ public class HpcDownloadController extends AbstractHpcController {
             final String returnURL = this.webServerName + "/download";
             try {
 				if(authorizedActionFrom.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
-					String accessToken = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
-					session.setAttribute("accessToken", accessToken);
-					model.addAttribute("accessToken", accessToken);
+					GoogleTokenResponse token = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
+					session.setAttribute("accessToken", token.getRefreshToken());
+					model.addAttribute("accessToken", token.getAccessToken());
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("transferType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
 		            model.addAttribute("authorized", "true");
