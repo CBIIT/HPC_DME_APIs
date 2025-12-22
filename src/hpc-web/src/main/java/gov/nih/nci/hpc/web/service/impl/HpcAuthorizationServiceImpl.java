@@ -72,7 +72,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES)
             //.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
             .setAccessType("offline")
-            .setApprovalPrompt("force")
+            .setApprovalPrompt("consent")
             .build();
     
       // Build flow and trigger user authorization request for Google Cloud with a forced login
@@ -190,7 +190,6 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 	    json.put("type", "authorized_user");
 	    // Logging the JSON associated with the refresh token
 	    String generatedJsonForGoogleToken = gson.toJson(json);
-	    logger.info("HpcAuthorizationServiceImpl::getRefreshToken: Final JSON with refreshToken: " + generatedJsonForGoogleToken);
 	    
 	    return generatedJsonForGoogleToken;
 	}
