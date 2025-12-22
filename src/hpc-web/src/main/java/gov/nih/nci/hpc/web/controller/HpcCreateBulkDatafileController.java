@@ -142,7 +142,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	            try {
 				  if(StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) ){
 					GoogleTokenResponse token = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
-					session.setAttribute("accessToken", hpcAuthorizationService.toJsonCredentialsForGoogle(token));
+					session.setAttribute("refreshTokenDetailsGoogleCloud", hpcAuthorizationService.toJsonCredentialsForGoogle(token));
+					session.setAttribute("accessToken", token.getAccessToken());
 					model.addAttribute("accessToken", token.getAccessToken());
 					model.addAttribute("authorized", "true");
 				  } else if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) ) {
