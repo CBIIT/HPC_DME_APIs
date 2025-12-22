@@ -253,7 +253,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			final String returnURL = this.webServerName + "/downloadfiles";
 			try {
 				if(authorizedActionFrom.equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)){
-					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
+					String accessToken = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);
 					session.setAttribute("accessToken", accessToken);
 					model.addAttribute("accessToken", accessToken);
 					model.addAttribute("searchType", HpcAuthorizationService.GOOGLE_DRIVE_TYPE);
