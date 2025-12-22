@@ -163,7 +163,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			String parent, String source, boolean refresh) {
 		String endPoint = request.getParameter("endpoint_id");
 		String globusPath = request.getParameter("path");
-		//String accessToken = (String) session.getAttribute("accessToken");
+		String accessToken = (String) session.getAttribute("accessToken");
 		String refreshTokenDetailsGoogleCloud = (String) session.getAttribute("refreshTokenDetailsGoogleCloud");
 		List<String> fileNames = new ArrayList<String>();
 		List<String> folderNames = new ArrayList<String>();
@@ -417,7 +417,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 String fileName = filePath.getFileName().toString();
                 HpcStreamingUploadSource googleDriveSource = new HpcStreamingUploadSource();
                 googleDriveSource.setSourceLocation(source);
-                googleDriveSource.setAccessToken(accessToken);
+                googleDriveSource.setAccessToken(refreshTokenDetailsGoogleCloud);
                 file.setGoogleDriveUploadSource(googleDriveSource);
                 file.setCreateParentCollections(true);
                 file.setPath(path + "/" + fileName);
@@ -491,7 +491,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 folder.setBasePath(datafilePath);
                 HpcGoogleScanDirectory googleDriveDirectory = new HpcGoogleScanDirectory();
                 googleDriveDirectory.setDirectoryLocation(source);
-                googleDriveDirectory.setAccessToken(accessToken);
+                googleDriveDirectory.setAccessToken(refreshTokenDetailsGoogleCloud);
                 folder.setGoogleDriveScanDirectory(googleDriveDirectory);
                 folders.add(folder);
                 if(!fromPath.equals(toPath)) {
