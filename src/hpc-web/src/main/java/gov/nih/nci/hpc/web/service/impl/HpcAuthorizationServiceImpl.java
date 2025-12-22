@@ -101,23 +101,6 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
           flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     logger.info("HpcAuthorizationServiceImpl::getToken: tokenResponse: " + gson.toJson(tokenResponse));
     
-    GenericJson json  = new GenericJson();
-    if (clientId != null ) {
-      json.put("client_id", clientId);
-    }
-    if (clientSecret != null ) {
-      json.put("client_secret", clientSecret);
-    }
-    if(refreshToken != null ) {
-      json.put("refresh_token", refreshToken);
-    }
-    json.put("type", "authorized_user");
-    // Logging the JSON associated with the refresh token
-    String generatedJsonForGoogleToken = gson.toJson(json);
-    logger.info("HpcAuthorizationServiceImpl::getRefreshToken: Final JSON with refreshToken: " + generatedJsonForGoogleToken);
-
-    tokenResponse.setRefreshToken(generatedJsonForGoogleToken);
-    
     return tokenResponse;
   }
 
@@ -197,5 +180,18 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 			logger.error("Unable to get Box token: ", e);
 		}
 		return resultTokenList;
+	}
+	
+	public String toJsonCredentialsForGoogle(GoogleTokenResponse tokenResponse) {
+		GenericJson json  = new GenericJson();
+	    json.put("client_id", clientId);
+	    json.put("client_secret", clientSecret);
+	    json.put("refresh_token", tokenResponse.getRefreshToken());
+	    json.put("type", "authorized_user");
+	    // Logging the JSON associated with the refresh token
+	    String generatedJsonForGoogleToken = gson.toJson(json);
+	    logger.info("HpcAuthorizationServiceImpl::getRefreshToken: Final JSON with refreshToken: " + generatedJsonForGoogleToken);
+	    
+	    return generatedJsonForGoogleToken;
 	}
 }

@@ -64,6 +64,14 @@ public interface HpcAuthorizationService {
    */
   public List<String> getBoxToken(String code) throws Exception;
 
+  /**
+   * Convert Google token response to Json credentials
+   *
+   * @param tokenResponse The token.
+   * @return json credentials.
+   */
+  public String toJsonCredentialsForGoogle(GoogleTokenResponse tokenResponse);
+
   public enum ResourceType {
     GOOGLEDRIVE,
     GOOGLECLOUD,
