@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.web.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+
 /**
  * HPC Authorization Service Interface.
  *
@@ -28,13 +30,13 @@ public interface HpcAuthorizationService {
   public String authorize(String redirectUri, HpcAuthorizationService.ResourceType resourceType, String userId) throws Exception;
 
   /**
-   * Obtain access token using the code.
+   * Obtain google token using the code.
    *
    * @param code The code.
    * @param redirectUri The redirectUri.
    * @throws Exception on service failure.
    */
-  public String getToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType) throws Exception;
+  public GoogleTokenResponse getToken(String code, String redirectUri, HpcAuthorizationService.ResourceType resourceType) throws Exception;
 
 /**
    * Obtain access token using the code.
@@ -61,6 +63,14 @@ public interface HpcAuthorizationService {
    * @throws Exception on service failure.
    */
   public List<String> getBoxToken(String code) throws Exception;
+
+  /**
+   * Convert Google token response to Json credentials
+   *
+   * @param tokenResponse The token.
+   * @return json credentials.
+   */
+  public String toJsonCredentialsForGoogle(GoogleTokenResponse tokenResponse);
 
   public enum ResourceType {
     GOOGLEDRIVE,
