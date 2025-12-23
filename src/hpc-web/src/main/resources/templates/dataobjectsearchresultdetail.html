@@ -528,21 +528,26 @@ window.onclick = function(event) {
     		});
 		};
 
-		$scope.bulkUpdate = function() {
-			var updatedList = [];
-			document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
-	        if(source == "criteria")
+		function populateBulkMetadataForm(selectedFilePaths, updateAllValue) {
+			var form = document.getElementById("bulkMetadataform");
+			form.elements.namedItem("selectedFilePaths").value = selectedFilePaths;
+	        if (source == "criteria")
 	          document.getElementById("searchType4").value = "criteria";
 	        else
 	          document.getElementById("searchType4").value = "search";
-	        document.getElementById("bulkMetadataform").elements.namedItem("pageNumber").value =  currentPage;
-	        document.getElementById("bulkMetadataform").elements.namedItem("pageSize").value =  currentPageSize;
-	        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
-	        document.getElementById("bulkMetadataform").elements.namedItem("totalSize").value = totalSize.toString();
-	        document.getElementById("bulkMetadataform").elements.namedItem("deselectedColumns").value = deselectedColumns;
-	        document.getElementById("bulkMetadataform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
-	        document.getElementById("bulkMetadataform").elements.namedItem("updateAll").value =  "true";
+	        form.elements.namedItem("pageNumber").value = currentPage;
+	        form.elements.namedItem("pageSize").value = currentPageSize;
+	        form.elements.namedItem("queryName").value = queryName;
+	        form.elements.namedItem("totalSize").value = totalSize.toString();
+	        form.elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        form.elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
+	        form.elements.namedItem("updateAll").value = updateAllValue;
 	        document.getElementById("downloadType4").value = "datafiles";
+		}
+
+		$scope.bulkUpdate = function() {
+			var updatedList = [];
+			populateBulkMetadataForm(updatedList, "true");
 	        document.getElementById("bulkMetadataform").submit();
         }
 
