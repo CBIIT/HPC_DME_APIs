@@ -996,6 +996,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 					"Duplicate data object metadata detected [" + StringUtils.join(dupMetadataEntries, ",") + "]",
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.ORACLE);
 		}
+		List<Integer> dupHpcMetadataEntries = metadataDAO.getDupHpcDataObjectMetadataEntries();
+		if (!CollectionUtils.isEmpty(dupHpcMetadataEntries)) {
+			throw new HpcException(
+					"Duplicate data object metadata detected in HPC_DATA_META_MAIN for object_id [" + StringUtils.join(dupHpcMetadataEntries, ",") + "]",
+					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.ORACLE);
+		}
 	}
 
 	// ---------------------------------------------------------------------//
