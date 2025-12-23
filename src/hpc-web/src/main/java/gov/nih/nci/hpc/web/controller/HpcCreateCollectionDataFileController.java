@@ -417,7 +417,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 String fileName = filePath.getFileName().toString();
                 HpcStreamingUploadSource googleDriveSource = new HpcStreamingUploadSource();
                 googleDriveSource.setSourceLocation(source);
-                googleDriveSource.setAccessToken(accessToken);
+                googleDriveSource.setAccessToken(refreshTokenDetailsGoogleCloud);
                 file.setGoogleDriveUploadSource(googleDriveSource);
                 file.setCreateParentCollections(true);
                 file.setPath(path + "/" + fileName);
@@ -491,7 +491,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 folder.setBasePath(datafilePath);
                 HpcGoogleScanDirectory googleDriveDirectory = new HpcGoogleScanDirectory();
                 googleDriveDirectory.setDirectoryLocation(source);
-                googleDriveDirectory.setAccessToken(accessToken);
+                googleDriveDirectory.setAccessToken(refreshTokenDetailsGoogleCloud);
                 folder.setGoogleDriveScanDirectory(googleDriveDirectory);
                 folders.add(folder);
                 if(!fromPath.equals(toPath)) {
