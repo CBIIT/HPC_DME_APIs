@@ -72,6 +72,7 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
         new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES)
             //.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
             .setAccessType("offline")
+            .setApprovalPrompt("force")
             .build();
     
       // Build flow and trigger user authorization request for Google Cloud with a forced login
@@ -92,14 +93,15 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
     return redirectUrl;
   }
 
-  public String getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
+  public GoogleTokenResponse getToken(String code, String redirectUri, ResourceType resourceType) throws Exception {
     GoogleTokenResponse tokenResponse = new GoogleTokenResponse();
     // exchange the code against the access token and refresh token
     flow = getFlow(resourceType);
     tokenResponse =
           flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
     logger.info("HpcAuthorizationServiceImpl::getToken: tokenResponse: " + gson.toJson(tokenResponse));
-    return tokenResponse.getAccessToken();
+    
+    return tokenResponse;
   }
 
   public String getRefreshToken(String code, String redirectUri, ResourceType resourceType, String userId) throws Exception {
@@ -178,5 +180,17 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
 			logger.error("Unable to get Box token: ", e);
 		}
 		return resultTokenList;
+	}
+	
+	public String toJsonCredentialsForGoogle(GoogleTokenResponse tokenResponse) {
+		GenericJson json  = new GenericJson();
+	    json.put("client_id", clientId);
+	    json.put("client_secret", clientSecret);
+	    json.put("refresh_token", tokenResponse.getRefreshToken());
+	    json.put("type", "authorized_user");
+	    // Logging the JSON associated with the refresh token
+	    String generatedJsonForGoogleToken = gson.toJson(json);
+	    
+	    return generatedJsonForGoogleToken;
 	}
 }
