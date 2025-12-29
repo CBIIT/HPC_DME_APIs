@@ -204,17 +204,12 @@
 		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
 			<label for="asperaBucketName" style="min-width: 180px; margin-bottom: 0;">Aspera Destination Directory:</label>
 			<div style="flex: 1;">
-				<select name="asperaBucketName" id="asperaBucketName" class="form-control fieldWidth fieldMargin"
-					th:if="${asperaBucketName == 'test'}"
-					style="margin-left: 10px;">
-					<option th:value="test" th:text="test" selected="selected"></option>
-				</select>
-				<select name="asperaBucketName" id="asperaBucketName" class="form-control fieldWidth fieldMargin"
-					th:if="${asperaBucketName != 'test'}"
-					style="margin-left: 10px;">
-					<option th:value="${asperaBucketName}" th:text="${asperaBucketName}" selected="selected"></option>
-					<option th:value="test" th:text="test"></option>
-				</select>
+                <select name="asperaBucketName" id="asperaBucketName" class="form-control fieldWidth fieldMargin" style="margin-left: 10px;">
+                    <option th:value="${asperaBucketName}" th:text="${asperaBucketName}"
+                        th:if="${asperaBucketName != null and asperaBucketName != 'test'}"
+                        th:selected="${asperaBucketName != null and asperaBucketName != 'test'}"></option>
+                    <option value="test" th:selected="${asperaBucketName == 'test'}">test</option>
+                </select>
 			</div>
 		</div>
 		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
