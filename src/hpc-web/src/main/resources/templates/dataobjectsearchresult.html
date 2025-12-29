@@ -298,6 +298,22 @@
         	document.getElementById("editsearchform").submit();
         };
         
+        $scope.bulkUpdate = function() {
+			var updatedList = [];
+			document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
+			if(source === "criteria")
+			   document.getElementById("searchType4").value = "criteria";
+			 else
+			   document.getElementById("searchType4").value = "search";
+			document.getElementById("bulkMetadataform").elements.namedItem("totalCount").value =  totalRows;
+			document.getElementById("bulkMetadataform").elements.namedItem("updateAll").value =  "true";
+			document.getElementById("bulkMetadataform").elements.namedItem("pageNumber").value =  currentPage;
+			document.getElementById("bulkMetadataform").elements.namedItem("pageSize").value =  currentPageSize;
+			document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
+			document.getElementById("downloadType4").value = "datafiles";
+			document.getElementById("bulkMetadataform").submit();
+        };
+
         $scope.performActionSelectedRows = function(action) {
           console.log('$scope.selectedRows: ', $scope.selectedRows);
           console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
@@ -343,7 +359,7 @@
 	          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
 	          document.getElementById("downloadType").value = "datafiles";
 	          document.getElementById("downloadFilesform").submit();
-          } else {
+          } else if (action == 'permission') {
         	document.getElementById("bulkPermissionsform").elements.namedItem("selectedFilePaths").value = updatedList;
 	        if(source == "criteria")
 	          document.getElementById("searchType3").value = "criteria";
@@ -354,8 +370,19 @@
 	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
 	        document.getElementById("downloadType3").value = "datafiles";
 	        document.getElementById("bulkPermissionsform").submit();
-          }
-        };
+		} else if (action == 'updatemetadata') {
+			document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
+	        if(source == "criteria")
+	          document.getElementById("searchType4").value = "criteria";
+	        else
+	          document.getElementById("searchType4").value = "search";
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageNumber").value =  currentPage;
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageSize").value =  currentPageSize;
+	        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("downloadType4").value = "datafiles";
+	        document.getElementById("bulkMetadataform").submit();
+		}
+	};
 
         $scope.linkSelectedRows = function() {
             console.log('$scope.selectedRows: ', $scope.selectedRows);
@@ -454,6 +481,9 @@
 									<a id="editsearchlink"
 										class="btn btn-link btn-sm" ng-click="editSearch()"
 										>Edit Search Criteria</a>
+									<a id="bulkUpdate"
+										class="btn btn-link btn-sm" ng-click="bulkUpdate()"
+										>Update Metadata on All Search Results </a>
 								</div>
 							  </div>
 							  <div class="row" style="background-color: #fff;border-top: 1px solid #ccc;border-bottom: none;">
@@ -467,6 +497,9 @@
 									<a data-toggle="modal" id="linksearchlink"
 										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
 										><i class="fa fa-link" title="Create Soft Links for Selected Data Files"></i></a>
+									<a data-toggle="modal" id="bulkUpdateMetadatalink"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('updatemetadata')"
+										><i class="fa fa-edit" title="Manage Metadata Updates on Selected Data Files"></i></a>
 								</div>
 							  </div>
 								<div class="modal fade" id="saveModal" tabindex="-1" role="dialog"
@@ -553,6 +586,18 @@
 						<input type="hidden" id="pageSize3" name="pageSize"/>
 						<input type="hidden" id="queryName3" name="queryName"/>
 					</form> 
+					<form class="form-horizontal" id="bulkMetadataform" action="#"
+						role="form" th:action="@{/bulkupdatemetadata}"
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="selectedFilePaths4" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="downloadType4" name="downloadType" value=""/>
+						<input type="hidden" id="searchType4" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber4" name="pageNumber"/>
+						<input type="hidden" id="pageSize4" name="pageSize"/>
+						<input type="hidden" id="queryName4" name="queryName"/>
+						<input type="hidden" id="totalCount" name="totalCount"/>
+						<input type="hidden" id="updateAll" name="updateAll"/>
+					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
 						method="post" enctype="multipart/form-data">
