@@ -680,6 +680,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
 
+		logger.debug("Validating collection migration request for [{}] metadata returned - {}", path, (metadata == null ? "" : metadata.toString()));
+		
 		// Validate collection is not linked.
 		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
 			throw new HpcException("Collection is linked to: " + metadata.getLinkSourcePath(),

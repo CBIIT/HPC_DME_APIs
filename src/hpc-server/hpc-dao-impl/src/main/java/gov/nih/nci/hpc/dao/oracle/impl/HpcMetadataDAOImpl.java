@@ -913,8 +913,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	public void deleteDataObjectMetadataUnderCollection(String path) throws HpcException {
 		try {
 			// Remove all self metadata for this path
-			jdbcTemplate.update(DELETE_DATA_META_MAIN_UNDER_COLL_SQL, path + "/%");
-
+			int affected = jdbcTemplate.update(DELETE_DATA_META_MAIN_UNDER_COLL_SQL, path + "/%");
+			logger.debug("Deleted {} data object metadata rows under collection [{}] ", affected, path);
+			
 		} catch (DataAccessException e) {
 			throw new HpcException(
 					"Failed to delete data object metadata under collection path : " + path + e.getMessage(),
