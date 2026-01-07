@@ -18,6 +18,8 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.auth.http.HttpCredentialsAdapter;
@@ -41,6 +43,9 @@ public class HpcGoogleDriveConnection {
 	// app name.
 	@Value("${hpc.integration.googledrive.hpcApplicationName}")
 	String hpcApplicationName = null;
+	
+	@Value("${hpc.integration.googledrive.httpTimeout}")
+	private static final int hpcGoogleDriveHttpTimeout = 20000; // 20 seconds google default
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -52,7 +57,17 @@ public class HpcGoogleDriveConnection {
 	 */
 	private HpcGoogleDriveConnection() {
 	}
-
+	
+	private static HttpRequestInitializer setHttpTimeout(final HttpRequestInitializer requestInitializer) {
+        return new HttpRequestInitializer() {
+            @Override
+            public void initialize(HttpRequest httpRequest) throws IOException {
+                requestInitializer.initialize(httpRequest);
+                httpRequest.setConnectTimeout(hpcGoogleDriveHttpTimeout);
+                httpRequest.setReadTimeout(hpcGoogleDriveHttpTimeout);
+            }
+        };
+    }
 	// ---------------------------------------------------------------------//
 	// Methods
 	// ---------------------------------------------------------------------//
@@ -66,8 +81,10 @@ public class HpcGoogleDriveConnection {
 	public Object authenticate(String credentialsJson) throws HpcException {
 		Drive drive = null;
 		try {
+			HttpRequestInitializer initializerWithTimeout = setHttpTimeout(new HttpCredentialsAdapter(GoogleCredentials.fromStream(IOUtils.toInputStream(credentialsJson, StandardCharsets.UTF_8))));
+
 			drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(),
-					new HttpCredentialsAdapter(GoogleCredentials.fromStream(IOUtils.toInputStream(credentialsJson, StandardCharsets.UTF_8)))).setApplicationName(hpcApplicationName).build();
+					initializerWithTimeout).setApplicationName(hpcApplicationName).build();
 
 			// Confirm the drive is accessible.
 			drive.about().get().setFields("appInstalled").execute();
