@@ -887,7 +887,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	public void insertDataObjectMetadataUnderCollection(String path) throws HpcException {
 		try {
 			// Insert back all self metadata for this path
-			jdbcTemplate.update(INSERT_DATA_META_MAIN_UNDER_COLL_SQL, path + "%");
+			jdbcTemplate.update(INSERT_DATA_META_MAIN_UNDER_COLL_SQL, path + "/%");
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to insert data object metadata under coll path: " + path + e.getMessage(),
