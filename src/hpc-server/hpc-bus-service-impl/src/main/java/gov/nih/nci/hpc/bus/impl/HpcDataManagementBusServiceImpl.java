@@ -1899,8 +1899,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Get the metadata for this data object.
 		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
+		
+		logger.info("2097: In DeleteDataObject metadataEntries: " + gson.toJson(metadataEntries));
+
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+		logger.info("2097: In DeleteDataObject systemGeneratedMetadata: " + gson.toJson(systemGeneratedMetadata));
 
 		// For a Registered Link: 1) Soft delete is not supported 2) The IRODS record is deleted 3) The physical file is not deleted.
 		boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
