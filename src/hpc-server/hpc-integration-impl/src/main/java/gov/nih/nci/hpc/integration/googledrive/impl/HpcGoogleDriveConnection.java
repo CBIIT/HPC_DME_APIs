@@ -81,7 +81,10 @@ public class HpcGoogleDriveConnection {
 	public Object authenticate(String credentialsJson) throws HpcException {
 		Drive drive = null;
 		try {
-			HttpRequestInitializer initializerWithTimeout = setHttpTimeout(new HttpCredentialsAdapter(GoogleCredentials.fromStream(IOUtils.toInputStream(credentialsJson, StandardCharsets.UTF_8))));
+			GoogleCredentials googleCredentials =
+					GoogleCredentials.fromStream(IOUtils.toInputStream(credentialsJson, StandardCharsets.UTF_8));
+			HttpRequestInitializer credentialsInitializer = new HttpCredentialsAdapter(googleCredentials);
+			HttpRequestInitializer initializerWithTimeout = setHttpTimeout(credentialsInitializer);
 
 			drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(),
 					initializerWithTimeout).setApplicationName(hpcApplicationName).build();
