@@ -58,7 +58,7 @@ public class HpcGoogleDriveConnection {
 	private HpcGoogleDriveConnection() {
 	}
 	
-	private static HttpRequestInitializer setHttpTimeout(final HttpRequestInitializer requestInitializer) {
+	private HttpRequestInitializer setHttpTimeout(final HttpRequestInitializer requestInitializer) {
         return new HttpRequestInitializer() {
             @Override
             public void initialize(HttpRequest httpRequest) throws IOException {
