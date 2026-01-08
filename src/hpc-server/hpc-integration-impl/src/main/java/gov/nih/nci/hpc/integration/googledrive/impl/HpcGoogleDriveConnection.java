@@ -58,6 +58,13 @@ public class HpcGoogleDriveConnection {
 	private HpcGoogleDriveConnection() {
 	}
 	
+	/**
+	 * Set Timeout settings
+	 * This method wraps an existing HttpRequestInitializer to apply custom connect and read timeout values
+	 * 
+	 * @param requestInitializer
+	 * @return HttpRequestInitializer
+	 */
 	private HttpRequestInitializer setHttpTimeout(final HttpRequestInitializer requestInitializer) {
         return new HttpRequestInitializer() {
             @Override
