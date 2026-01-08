@@ -45,7 +45,7 @@ public class HpcGoogleDriveConnection {
 	String hpcApplicationName = null;
 	
 	@Value("${hpc.integration.googledrive.httpTimeout}")
-	private static final int hpcGoogleDriveHttpTimeout = 20000; // 20 seconds google default
+	private int hpcGoogleDriveHttpTimeout = 20000; // 20 seconds google default
 
 	// ---------------------------------------------------------------------//
 	// Constructors
