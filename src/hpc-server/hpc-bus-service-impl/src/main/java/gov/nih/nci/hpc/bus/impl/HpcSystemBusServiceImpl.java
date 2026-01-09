@@ -1492,6 +1492,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
+	@HpcExecuteAsSystemAccount
+	public void removeGoogleAccessTokens() throws HpcException {
+		// Removes google access token retained for retries beyond the retention period.
+		dataTransferService.removeGoogleAccessTokens();
+	}
+	
+	@Override
 	public void closeConnection() {
 		dataManagementService.closeConnection();
 	}
