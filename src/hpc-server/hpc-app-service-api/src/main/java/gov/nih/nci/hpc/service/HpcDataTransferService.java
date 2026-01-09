@@ -1061,4 +1061,11 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, int priority) throws HpcException;
+
+	/**
+	 * Removes google access token retained for retries beyond the retention period.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void removeGoogleAccessTokens() throws HpcException;
 }
