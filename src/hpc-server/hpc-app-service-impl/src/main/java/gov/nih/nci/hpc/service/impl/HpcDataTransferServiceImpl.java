@@ -239,6 +239,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.serverId}")
 	private String s3DownloadTaskServerId = null;
 
+	// Google access token retention period in hours available for retries
+	@Value("${hpc.service.dataTransfer.googleAccessTokenRetentionPeriod}")
+	private Integer googleAccessTokenRetentionPeriod = null;
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -1170,6 +1174,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
@@ -1981,6 +1987,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());				
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
@@ -2229,6 +2237,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		
 	}
 
+	@Override
+	public void removeGoogleAccessTokens() throws HpcException {
+		dataDownloadDAO.removeGoogleAccessTokens(googleAccessTokenRetentionPeriod);
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
