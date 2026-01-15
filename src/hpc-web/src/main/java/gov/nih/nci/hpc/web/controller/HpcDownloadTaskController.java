@@ -405,7 +405,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
           if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+              || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+            		  && !downloadTask.getRetryable())
               || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX))
             retry = false;
 		}
@@ -431,7 +432,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
         if (downloadTask.getDestinationType() != null
             && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-                || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+                || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+              		  && !downloadTask.getRetryable())
                 || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
            retry = false;
 	} else {
@@ -502,7 +504,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
       if (downloadTask.getDestinationType() != null
           && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-              || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+              || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+            		  && !downloadTask.getRetryable())
               || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
         retry = false;
 	} else {
@@ -548,7 +551,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		{
             if (downloadTask.getDestinationType() != null
                 && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
-                    || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+                    || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
+                  		  && !downloadTask.getRetryable())
                     || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
                retry = false;
 		} else {
