@@ -808,7 +808,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Collection download task in-progress: " + taskId,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
+		
+		if(StringUtils.isEmpty(downloadRetryRequest.getGoogleAccessToken()) && taskStatus.getResult().getGoogleDriveDownloadDestination() != null)
+			downloadRetryRequest.setGoogleAccessToken(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken());
+		
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
@@ -956,6 +959,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		if(StringUtils.isEmpty(downloadRetryRequest.getGoogleAccessToken()) && taskStatus.getResult().getGoogleDriveDownloadDestination() != null)
+			downloadRetryRequest.setGoogleAccessToken(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken());
+		
 		// Submit the download retry request.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.retryCollectionDownloadTask(
 				taskStatus.getResult(), downloadRetryRequest.getDestinationOverwrite(),
@@ -1807,6 +1813,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setSize(taskStatus.getResult().getSize());
 			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
+			downloadStatus.setRetryable(taskStatus.getResult().getGoogleDriveDownloadDestination() != null);
 		}
 
 		return downloadStatus;
@@ -3140,6 +3147,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				populateCollectionListResultSummary(downloadStatus, taskStatus.getResult().getCollectionPaths(),
 						taskStatus.getResult().getItems());
 			}
+			downloadStatus.setRetryable(taskStatus.getResult().getGoogleDriveDownloadDestination() != null);
 		}
 
 		return downloadStatus;
@@ -4363,7 +4371,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.setDestinationOverwrite(downloadRetryRequest.getDestinationOverwrite());
 		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
-			googleDriveDownloadDestination.setAccessToken(downloadRetryRequest.getGoogleAccessToken());
+			if(StringUtils.isEmpty(downloadRetryRequest.getGoogleAccessToken()) && downloadTaskResult.getGoogleDriveDownloadDestination() != null)
+				googleDriveDownloadDestination.setAccessToken(downloadTaskResult.getGoogleDriveDownloadDestination().getAccessToken());
+			else
+				googleDriveDownloadDestination.setAccessToken(downloadRetryRequest.getGoogleAccessToken());
 			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			downloadRequest.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
 		} else if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
