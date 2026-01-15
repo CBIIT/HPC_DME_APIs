@@ -332,4 +332,11 @@ public interface HpcSystemBusService {
 
 	/** Close connection to Data Management system for the current service call. */
 	public void closeConnection();
+
+	/**
+	 * Removes google access token retained for retries beyond the retention period.
+	 * 
+	 * @throws HpcException on service failure.
+	 */
+	public void removeGoogleAccessTokens() throws HpcException;
 }

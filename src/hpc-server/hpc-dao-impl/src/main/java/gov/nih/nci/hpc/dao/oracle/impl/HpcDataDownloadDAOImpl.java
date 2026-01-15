@@ -142,11 +142,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_NAME = ?, DESTINATION_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
-			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, FIRST_HOP_RETRIED = ?, DOC = ? "
+			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, FIRST_HOP_RETRIED = ?, DOC = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
-			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, RETRY_USER_ID, FIRST_HOP_RETRIED, DOC) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, RETRY_USER_ID, FIRST_HOP_RETRIED, DOC, GOOGLE_DRIVE_ACCESS_TOKEN) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -252,6 +252,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ? and STATUS = 'RECEIVED' for update nowait";
 	private static final String UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set TOTAL_BYTES_TRANSFERRED = nvl(TOTAL_BYTES_TRANSFERRED, 0) + ? where ID = ? and STATUS = 'RECEIVED'";
 
+	private static final String REMOVE_GOOGLE_ACCESS_TOKEN_FROM_DOWNLOAD_TASK_RESULT_SQL =
+			"update HPC_DOWNLOAD_TASK_RESULT set GOOGLE_DRIVE_ACCESS_TOKEN='' where GOOGLE_DRIVE_ACCESS_TOKEN is not null and COMPLETED < sysdate  - (?/24)";
+	
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -463,6 +466,18 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		downloadTaskResult.setRestoreRequested(rs.getBoolean("RESTORE_REQUESTED"));
 		downloadTaskResult.setFirstHopRetried(rs.getBoolean("FIRST_HOP_RETRIED"));
 
+		String googleDriveAccessToken = null;
+		byte[] driveToken = rs.getBytes("GOOGLE_DRIVE_ACCESS_TOKEN");
+		if (driveToken != null && driveToken.length > 0) {
+			googleDriveAccessToken = encryptor.decrypt(driveToken);
+		}
+		if (googleDriveAccessToken != null) {
+			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
+			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
+			downloadTaskResult.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		}
+		
 		return downloadTaskResult;
 	};
 
@@ -1097,6 +1112,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			String archiveLocationFileId = taskResult.getArchiveLocation() != null
 					? taskResult.getArchiveLocation().getFileId()
 					: null;
+			byte[] googleDriveAccessToken = taskResult.getGoogleDriveDownloadDestination() != null
+					? encryptor.encrypt(taskResult.getGoogleDriveDownloadDestination().getAccessToken())
+					: null;
 
 			jdbcTemplate.update(UPSERT_DOWNLOAD_TASK_RESULT_SQL, taskResult.getId(), taskResult.getUserId(),
 					taskResult.getPath(), taskResult.getDataTransferRequestId(), dataTransferType,
@@ -1108,7 +1126,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getCollectionDownloadTaskId(), taskResult.getEffectiveTransferSpeed(),
 					taskResult.getSize(), taskResult.getCreated(), taskResult.getCompleted(),
 					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), taskResult.getRetryTaskId(),
-					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(),
+					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(), googleDriveAccessToken,
 					taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
 					taskResult.getDataTransferRequestId(), dataTransferType, archiveLocationFileContainerId,
 					archiveLocationFileId, taskResult.getDestinationLocation().getFileContainerId(),
@@ -1118,7 +1136,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getCollectionDownloadTaskId(), taskResult.getEffectiveTransferSpeed(),
 					taskResult.getSize(), taskResult.getCreated(), taskResult.getCompleted(),
 					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), taskResult.getRetryTaskId(),
-					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc());
+					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(), googleDriveAccessToken);
 
 			jdbcTemplate.update(UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL,
 					new Object[] { new SqlLobValue(toJSON(taskResult.getItems()), lobHandler),
@@ -1647,6 +1665,18 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         }
     }
 
+
+	@Override
+	public void removeGoogleAccessTokens(Integer googleAccessTokenRetentionPeriod) throws HpcException {
+		try {
+			jdbcTemplate.update(REMOVE_GOOGLE_ACCESS_TOKEN_FROM_DOWNLOAD_TASK_RESULT_SQL, googleAccessTokenRetentionPeriod);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to remove google access tokens retained for " + googleAccessTokenRetentionPeriod + " hours",
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
