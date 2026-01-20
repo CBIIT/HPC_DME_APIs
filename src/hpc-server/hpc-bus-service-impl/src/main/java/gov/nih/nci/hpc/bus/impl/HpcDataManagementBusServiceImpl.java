@@ -1974,6 +1974,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				try {
 					dataManagementService.delete(path, false);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+					/* Ticket 2134 Begin */
+						HpcAddArchiveObjectMetadataResponse addArchiveObjectMetadataResponse = dataTransferService
+				.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
+						systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
+						systemGeneratedMetadata.getS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
+						systemGeneratedMetadata.getRegistrarId());
+					/* Ticket 2134 End */
 
 				} catch (HpcException e) {
 					logger.error("Failed to delete file from datamanagement", e);
