@@ -260,6 +260,24 @@ public interface HpcDataTransferService {
 	 *                                 applicable for S3 archives, not POSIX.
 	 * @throws HpcException on service failure.
 	 */
+	public HpcAddArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
+			String objectId, String registrarId) throws HpcException;
+
+
+	/**
+	 * Delete a data object file.
+	 *
+	 * @param fileLocation             The file location.
+	 * @param dataTransferType         The data transfer type.
+	 * @param configurationId          The configuration ID (needed to determine the
+	 *                                 archive connection config).
+	 * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID.
+	 *                                 Used to identify the S3 archive the
+	 *                                 data-object is stored in. This is only
+	 *                                 applicable for S3 archives, not POSIX.
+	 * @throws HpcException on service failure.
+	 */
 	public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 

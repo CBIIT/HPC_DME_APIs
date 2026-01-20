@@ -787,6 +787,33 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public HpcAddArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
+			String objectId, String registrarId) throws HpcException {
+		// Add metadata is done by copying the object to itself w/ attached metadata.
+		// Check that the data transfer system can accept transfer requests.
+		boolean globusSyncUpload = dataTransferType.equals(HpcDataTransferType.GLOBUS) && fileLocation != null;
+
+		// Get the data transfer configuration.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
+		HpcAddArchiveObjectMetadataResponse response = new HpcAddArchiveObjectMetadataResponse();
+
+		// Set the metadata of the data-object in the archive
+		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
+				.setDataObjectMetadata(
+						!globusSyncUpload
+								? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
+								: null,
+						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
+						null,  // empty metadata list to delete all metadata
+						dataTransferConfiguration.getStorageClass());
+
+		return response;
+	}
+
+	@Override
 	public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 		// Input validation.
@@ -800,7 +827,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
 						.getBaseArchiveDestination());
 	}
-
+	
 	@Override
 	public HpcDataTransferUploadReport getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
 			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId, String loggingPrefix)
