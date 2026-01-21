@@ -255,7 +255,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		// We clear S3 metadata by copying the data-object to itself w/ empty metadata
 		CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
-				.withNewObjectMetadata(new ObjectMetadata()).withStorageClass(storageClass);
+				.withNewObjectMetadata(new ObjectMetadata())
+				.withMetadataDirective(CopyObjectRequest.MetadataDirective.REPLACE)
+				.withStorageClass(storageClass);
 
 		try {
 			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
