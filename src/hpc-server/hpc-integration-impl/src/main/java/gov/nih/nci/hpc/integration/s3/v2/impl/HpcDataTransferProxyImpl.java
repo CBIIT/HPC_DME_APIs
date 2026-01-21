@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -264,11 +265,48 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
+	private HpcSetArchiveObjectMetadataResponse clearDataObjectMetadata(Object authenticatedToken,
+			HpcFileLocation fileLocation, String storageClass) throws HpcException {
+
+		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
+
+		// We clear S3 metadata by copying the data-object to itself w/ empty metadata.
+		CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
+				.sourceBucket(fileLocation.getFileContainerId()).sourceKey(fileLocation.getFileId())
+				.destinationBucket(fileLocation.getFileContainerId()).destinationKey(fileLocation.getFileId())
+				.storageClass(storageClass)
+				.metadata(new HashMap<String, String>()) // Empty metadata
+				.metadataDirective(MetadataDirective.REPLACE).build();
+
+		CopyRequest copyRequest = CopyRequest.builder().copyObjectRequest(copyObjectRequest).build();
+
+		try {
+			Copy copy = s3Connection.getTransferManager(authenticatedToken).copy(copyRequest);
+
+			CompletedCopy completedCopy = copy.completionFuture().join();
+			response.setChecksum(completedCopy.response().copyObjectResult().eTag().replace("\"", ""));
+			// metadataClearStatus is set to true to indicate that the metadata has been cleared successfully.
+			response.setMetadataClearStatus(true);
+			return response;
+
+		} catch (CompletionException e) {
+			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+					s3Connection.getS3Provider(authenticatedToken), e.getCause());
+		}
+
+	}
+
 	@Override
 	public HpcSetArchiveObjectMetadataResponse setDataObjectMetadata(Object authenticatedToken,
 			HpcFileLocation fileLocation, HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries,
 			String storageClass) throws HpcException {
+
 		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
+		// If no metadata entries provided, clear existing metadata.
+		if (CollectionUtils.isEmpty(metadataEntries)) {
+			response = clearDataObjectMetadata(authenticatedToken, fileLocation, storageClass);
+			return response;
+		}
 
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {
