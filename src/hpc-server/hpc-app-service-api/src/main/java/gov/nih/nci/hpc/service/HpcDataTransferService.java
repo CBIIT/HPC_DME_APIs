@@ -44,6 +44,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
@@ -248,7 +249,7 @@ public interface HpcDataTransferService {
 			String objectId, String registrarId) throws HpcException;
 
 	/**
-	 * Delete a data object file.
+	 * Delete metadata of a data object file.
 	 *
 	 * @param fileLocation             The file location.
 	 * @param dataTransferType         The data transfer type.
@@ -260,10 +261,8 @@ public interface HpcDataTransferService {
 	 *                                 applicable for S3 archives, not POSIX.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcAddArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
-			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
-			String objectId, String registrarId) throws HpcException;
-
+	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
 	/**
 	 * Delete a data object file.
