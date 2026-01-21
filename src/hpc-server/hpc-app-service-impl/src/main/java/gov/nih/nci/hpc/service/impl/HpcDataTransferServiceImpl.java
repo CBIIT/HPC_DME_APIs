@@ -787,30 +787,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcAddArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
-			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
-			String objectId, String registrarId) throws HpcException {
-		// Add metadata is done by copying the object to itself w/ attached metadata.
-		// Check that the data transfer system can accept transfer requests.
-		boolean globusSyncUpload = dataTransferType.equals(HpcDataTransferType.GLOBUS) && fileLocation != null;
+	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
-		HpcAddArchiveObjectMetadataResponse response = new HpcAddArchiveObjectMetadataResponse();
-
-		// Set the metadata of the data-object in the archive
+		// Delete all the metadata of the dataObject
 		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
-				.setDataObjectMetadata(
-						!globusSyncUpload
-								? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
-								: null,
+				.setDataObjectMetadata(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
 						null,  // empty metadata list to delete all metadata
 						dataTransferConfiguration.getStorageClass());
 
-		return response;
+		return setMetadataResponse;
 	}
 
 	@Override
