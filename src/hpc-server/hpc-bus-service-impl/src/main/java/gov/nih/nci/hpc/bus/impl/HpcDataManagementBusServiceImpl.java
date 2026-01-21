@@ -77,6 +77,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -1972,16 +1973,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (deleteDataObjectRecord) {
 				// Remove the file record from data management(IRODS)
 				try {
-					dataManagementService.delete(path, false);
-					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-					/* Ticket 2134 Begin */
-						HpcAddArchiveObjectMetadataResponse addArchiveObjectMetadataResponse = dataTransferService
+						// Delete dataObject metadata
+						HpcSetArchiveObjectMetadataResponse clearMetadataResponse = dataTransferService
 				.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
 						systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
-						systemGeneratedMetadata.getS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
-						systemGeneratedMetadata.getRegistrarId());
-					/* Ticket 2134 End */
-
+						systemGeneratedMetadata.getS3ArchiveConfigurationId());
+						if (!clearMetadataResponse.getMetadataClearStatus()) {
+							logger.error("Failed to clear archive object metadata for data object at path: " + path);
+						}
+					dataManagementService.delete(path, false);
+					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 				} catch (HpcException e) {
 					logger.error("Failed to delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
