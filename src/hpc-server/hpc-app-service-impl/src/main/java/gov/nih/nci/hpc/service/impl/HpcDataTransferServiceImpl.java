@@ -798,7 +798,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
 				.setDataObjectMetadata(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
-						null,  // null to trigger deletion of all metadata
+						new ArrayList<HpcMetadataEntry>(),  // empty list to trigger deletion of all metadata
 						dataTransferConfiguration.getStorageClass());
 
 		return setMetadataResponse;
