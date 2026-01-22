@@ -256,11 +256,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
 				fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
 				.withNewObjectMetadata(new ObjectMetadata())
-				.withMetadataDirective(CopyObjectRequest.MetadataDirective.REPLACE)
 				.withStorageClass(storageClass);
 
 		try {
-			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+			s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.copyObject(copyRequest);
 			// metadataClearStatus is set to true to indicate that the metadata has been cleared successfully.
 			response.setMetadataClearStatus(true);
