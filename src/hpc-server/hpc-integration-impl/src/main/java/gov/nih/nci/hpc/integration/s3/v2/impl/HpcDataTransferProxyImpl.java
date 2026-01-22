@@ -282,10 +282,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		CopyRequest copyRequest = CopyRequest.builder().copyObjectRequest(copyObjectRequest).build();
 
 		try {
-			Copy copy = s3Connection.getTransferManager(authenticatedToken).copy(copyRequest);
+				s3Connection.getTransferManager(authenticatedToken).copy(copyRequest);
 
-			CompletedCopy completedCopy = copy.completionFuture().join();
-			response.setChecksum(completedCopy.response().copyObjectResult().eTag().replace("\"", ""));
 			// metadataClearStatus is set to true to indicate that the metadata has been cleared successfully.
 			response.setMetadataClearStatus(true);
 			return response;
