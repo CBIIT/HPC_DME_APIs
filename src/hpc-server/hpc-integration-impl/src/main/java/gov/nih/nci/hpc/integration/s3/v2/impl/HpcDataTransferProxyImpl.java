@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -275,7 +276,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				.sourceBucket(fileLocation.getFileContainerId()).sourceKey(fileLocation.getFileId())
 				.destinationBucket(fileLocation.getFileContainerId()).destinationKey(fileLocation.getFileId())
 				.storageClass(storageClass)
-				.metadata(new HashMap<String, String>()) // Empty metadata
+				.metadata(Collections.emptyMap()) // Empty metadata
 				.metadataDirective(MetadataDirective.REPLACE).build();
 
 		CopyRequest copyRequest = CopyRequest.builder().copyObjectRequest(copyObjectRequest).build();
