@@ -1973,21 +1973,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (deleteDataObjectRecord) {
 				// Remove the file record from data management(IRODS)
 				try {
-						// Delete dataObject metadata
+					dataManagementService.delete(path, false);
+					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+					if (archiveLink) {
 						HpcSetArchiveObjectMetadataResponse clearMetadataResponse = dataTransferService
-				.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
-						systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getConfigurationId(),
-						systemGeneratedMetadata.getS3ArchiveConfigurationId());
+								.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
+										systemGeneratedMetadata.getDataTransferType(),
+										systemGeneratedMetadata.getConfigurationId(),
+										systemGeneratedMetadata.getS3ArchiveConfigurationId());
 						if (!clearMetadataResponse.getMetadataClearStatus()) {
-							String errorMessage = "Failed to clear archive object metadata for data object at path: " + path;
+							String errorMessage = "Failed to clear archive object metadata for data object at path: "
+									+ path;
 							logger.error(errorMessage);
 							dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
 							dataObjectDeleteResponse.setMessage(errorMessage);
-						} else {
-							// Delete dataObject record from data management
-							dataManagementService.delete(path, false);
-							dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 						}
+					}
 				} catch (HpcException e) {
 					logger.error("Failed to delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
