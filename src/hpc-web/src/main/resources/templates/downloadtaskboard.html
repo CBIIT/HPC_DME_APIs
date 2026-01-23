@@ -446,14 +446,26 @@ tfoot input {
 			},
 		} );
 
-		// Enable column resizing on the table
-		$('#resultsGrid').colResizable({
-		  liveDrag: true,
-		  partialRefresh: true,
-		  resizeMode: 'fit',
-		  gripInnerHtml: "<div class='grip'></div>",
-		  draggingClass: "dragging"
-		});
+
+		function applyColResizable() {
+			  // Destroy colResizable before re-applying, to avoid duplicate handles
+			  try { $('#resultsGrid').colResizable({ disable: true }); } catch (e) {}
+			  $('#resultsGrid').colResizable({
+			    liveDrag: true,
+			    partialRefresh: true,
+			    resizeMode: 'fit',
+			    gripInnerHtml: "<div class='grip'></div>",
+			    draggingClass: "dragging"
+			  });
+			}
+
+			applyColResizable();
+
+			// Important: Re-apply colResizable after every DataTables redraw (sort, search, etc)
+			table.on('draw', function () {
+			  applyColResizable();
+			});
+
 
 		// Add event listener for opening and closing details
 		table.on('click', 'td.dt-control', function (e) {
