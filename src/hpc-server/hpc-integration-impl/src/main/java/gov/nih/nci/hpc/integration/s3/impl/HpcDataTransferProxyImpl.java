@@ -248,7 +248,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return url.toString();
 	}
 
-	private HpcSetArchiveObjectMetadataResponse clearDataObjectMetadata(Object authenticatedToken,
+	@Override
+	public HpcSetArchiveObjectMetadataResponse clearDataObjectMetadata(Object authenticatedToken,
 			HpcFileLocation fileLocation, String storageClass) throws HpcException {
 
 		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
@@ -281,11 +282,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			String storageClass) throws HpcException {
 
 		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
-		// If no metadata entries provided, clear existing metadata.
-		if (CollectionUtils.isEmpty(metadataEntries)) {
-			response = clearDataObjectMetadata(authenticatedToken, fileLocation, storageClass);
-			return response;
-		}
 
 		// Check if the metadata was already set on the data-object in the S3 archive.
 		try {

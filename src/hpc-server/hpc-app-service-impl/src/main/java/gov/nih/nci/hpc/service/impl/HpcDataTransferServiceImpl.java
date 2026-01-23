@@ -789,6 +789,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		// Input validation.
+		if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
+			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
@@ -796,10 +800,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Delete all the metadata of the dataObject
 		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
-				.setDataObjectMetadata(getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-						fileLocation, dataTransferConfiguration.getBaseArchiveDestination(),
-						new ArrayList<HpcMetadataEntry>(),  // empty list to trigger deletion of all metadata
-						dataTransferConfiguration.getStorageClass());
+				.clearDataObjectMetadata(
+						getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+						fileLocation, dataTransferConfiguration.getStorageClass());
 
 		return setMetadataResponse;
 	}
