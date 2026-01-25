@@ -1976,6 +1976,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					dataManagementService.delete(path, false);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 					if (archiveLink) {
+						// Clear the remaining metadata fields: x-amz-meta-user-id and x-amz-meta-uuid
 						HpcSetArchiveObjectMetadataResponse clearMetadataResponse = dataTransferService
 								.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
 										systemGeneratedMetadata.getDataTransferType(),
