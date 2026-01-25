@@ -793,6 +793,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		if(dataTransferType == null) {
+			throw new HpcException("Invalid data transfer type", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(StringUtils.isEmpty(configurationId)) {
+			throw new HpcException("Invalid configuration ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(StringUtils.isEmpty(s3ArchiveConfigurationId)) {
+			throw new HpcException("Invalid S3 archive configuration ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
