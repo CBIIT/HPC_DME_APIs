@@ -1974,7 +1974,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Remove the file record from data management(IRODS)
 				try {
 					if (archiveLink) {
-						// Clear the S3 metadata fields: x-amz-meta-user-id and x-amz-meta-uuid
+						// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
 						HpcSetArchiveObjectMetadataResponse clearMetadataResponse = dataTransferService
 								.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
 										systemGeneratedMetadata.getDataTransferType(),
