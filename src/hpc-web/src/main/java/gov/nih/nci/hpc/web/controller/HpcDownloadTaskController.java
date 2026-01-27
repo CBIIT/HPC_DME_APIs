@@ -646,14 +646,30 @@ public class HpcDownloadTaskController extends AbstractHpcController {
   /**
    * Map a raw error message to a user-friendly message.
    */
+  private static final String UNKNOWN_ERROR_MESSAGE = "Unknown error occurred.";
+  private static final String GOOGLE_DRIVE_IDENTIFIER = "googledrive";
+  private static final String GOOGLE_DRIVE_QUOTA_EXCEEDED_PATTERN = "storage quota has been exceeded";
+  private static final String GOOGLE_DRIVE_QUOTA_EXCEEDED_USER_MESSAGE =
+      "Download failed. The daily Google Drive transfer limit of 750 GB has been exceeded.";
+
   private String mapToUserFriendlyMessage(String message) {
-    if (message == null || message.isEmpty()) {
-      return "Unknown error occurred.";
-    } else if (message.contains("GoogleDrive") && message.contains("storage quota has been exceeded")) {
-      return "Download failed. The daily Google Drive transfer limit of 750 GB has been exceeded.";
-    } else {
-      return message; // Use the original message if no specific mapping is found
+    if (message == null) {
+      return UNKNOWN_ERROR_MESSAGE;
     }
+
+    String trimmedMessage = message.trim();
+    if (trimmedMessage.isEmpty()) {
+      return UNKNOWN_ERROR_MESSAGE;
+    }
+
+    String normalizedMessage = trimmedMessage.toLowerCase();
+    if (normalizedMessage.contains(GOOGLE_DRIVE_IDENTIFIER)
+        && normalizedMessage.contains(GOOGLE_DRIVE_QUOTA_EXCEEDED_PATTERN)) {
+      return GOOGLE_DRIVE_QUOTA_EXCEEDED_USER_MESSAGE;
+    }
+
+    // Use the original message if no specific mapping is found
+    return trimmedMessage;
   }
 
   /**
