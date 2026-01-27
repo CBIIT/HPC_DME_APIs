@@ -1973,10 +1973,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (deleteDataObjectRecord) {
 				// Remove the file record from data management(IRODS)
 				try {
-					dataManagementService.delete(path, false);
-					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 					if (archiveLink) {
-						// Clear the remaining S3 metadata fields: x-amz-meta-user-id and x-amz-meta-uuid
+						// Clear the S3 metadata fields: x-amz-meta-user-id and x-amz-meta-uuid
 						HpcSetArchiveObjectMetadataResponse clearMetadataResponse = dataTransferService
 								.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
 										systemGeneratedMetadata.getDataTransferType(),
@@ -1985,10 +1983,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						if (!clearMetadataResponse.getMetadataClearStatus()) {
 							String errorMessage = "Failed to clear archive object metadata for data object at path: "
 									+ path;
-							logger.error(errorMessage);
-							dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-							dataObjectDeleteResponse.setMessage(errorMessage);
+							throw new HpcException(errorMessage, HpcErrorType.UNEXPECTED_ERROR);
+						} else {
+							// Successfully cleared the metadata, proceed to delete the data management record from iRODS
+							dataManagementService.delete(path, false);
+							dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 						}
+					} else {
+							// Not an archive link, proceed to delete the data management record from iRODS
+							dataManagementService.delete(path, false);
+							dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 					}
 				} catch (HpcException e) {
 					logger.error("Failed to delete file from datamanagement", e);
