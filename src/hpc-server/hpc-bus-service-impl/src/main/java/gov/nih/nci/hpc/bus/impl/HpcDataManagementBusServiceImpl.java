@@ -1859,12 +1859,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Determine if the dataObject is an archive link
-		boolean archiveLink = systemGeneratedMetadata.getDataTransferMethod().equals(HpcDataTransferUploadMethod.ARCHIVE_LINK);
+		boolean archiveLink = (systemGeneratedMetadata.getDataTransferMethod() != null) ? systemGeneratedMetadata.getDataTransferMethod().equals(HpcDataTransferUploadMethod.ARCHIVE_LINK) : false;
 		// If it is an archive link, then the storage must be external
+		// If it is not an archive link, then the storage must not be external
 		boolean externalStorage = (s3Configuration != null) ? s3Configuration.getExternalStorage() : false;
-		if (archiveLink && !externalStorage) {
-			throw new HpcException("Inconsistent archive link metadata and external storage configuration",
-					HpcErrorType.UNEXPECTED_ERROR);
+		if (archiveLink != externalStorage) {
+			if(archiveLink && !externalStorage) {
+				throw new HpcException("For this Archive link, the External Storage is expected to be set to true in the Configuration. It is set to false.",
+						HpcErrorType.UNEXPECTED_ERROR);
+			} else {
+				throw new HpcException("This is not an Archive Link and the External Storage is expected to be set to false in the Configuration. It is set to true.",
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
 		}
 
 		// Physical file can be deleted if it is a regular file(not a Link) when the Delete API param force is set to True
