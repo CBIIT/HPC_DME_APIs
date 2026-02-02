@@ -585,6 +585,13 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		dataMigrationService.resetMigrationTasksInProcess();
 	}
 
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void processAutoTiering() throws HpcException {
+		// obtain a list of HPC data management configurations which are to be included in auto-tiering scan
+		//this.
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

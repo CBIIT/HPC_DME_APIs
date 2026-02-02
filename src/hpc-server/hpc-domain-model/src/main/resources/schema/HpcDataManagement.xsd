@@ -54,7 +54,9 @@
 			<xsd:element name="hyperfileArchive" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="dataManagementConfigurationId" type="xsd:string" />
 			<xsd:element name="externalStorage" type="xsd:boolean" />
-			<xsd:element name="posixPath" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="posixPath" type="xsd:string" />
+			<xsd:element name="autoTieringSearchPath" type="xsd:string" />
+			<xsd:element name="autoTieringInactivityMonths" type="xsd:int" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
