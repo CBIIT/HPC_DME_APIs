@@ -102,6 +102,12 @@ public class HpcScheduledTasksImpl {
 				dataMigrationBusService::processDataObjectMetadataUpdateMigrationReceived, logger);
 	}
 
+	/** Process auto-tiering task. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processAutoTiering.delay}")
+	private void processAutoTieringTask() {
+		execute("processAutoTiering()", dataMigrationBusService::processAutoTiering, logger);
+	}
+
 	/**
 	 * Called by Spring dependency injection. Reset all active S3 upload/download in
 	 * progress tasks, so they are restarted following a server restart.
