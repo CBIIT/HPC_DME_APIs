@@ -203,6 +203,23 @@ public interface HpcDataTransferProxy {
 	}
 
 	/**
+	 * Clear metadata for object file in the archive.
+	 *
+	 * @param authenticatedToken     An authenticated token.
+	 * @param fileLocation           The file location.
+	 * @param storageClass           (Optional) The storage class to use when
+	 *                               setting the data object metadata. Applicable
+	 *                               for S3 archives only.
+	 * @return A response w/ the object checksum, and an indicator whether metadata
+	 *         got added or already existed.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default HpcSetArchiveObjectMetadataResponse clearDataObjectMetadata(Object authenticatedToken,
+			HpcFileLocation fileLocation, String storageClass) throws HpcException {
+		throw new HpcException("clearDataObjectMetadata() is not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	/**
 	 * Set metadata for object file in the archive.
 	 *
 	 * @param authenticatedToken     An authenticated token.
