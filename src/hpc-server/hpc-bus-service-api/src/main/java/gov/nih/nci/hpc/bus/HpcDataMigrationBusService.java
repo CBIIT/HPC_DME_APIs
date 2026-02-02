@@ -164,7 +164,6 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void assignMigrationServer() throws HpcException;
-	
 
 	/**
 	 * Restart data object and collection migration tasks that are in progress.
@@ -172,4 +171,13 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void restartDataMigrationTasks() throws HpcException;
+
+	/**
+	 * Process auto-tiering tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processAutoTiering() throws HpcException;
+
+
 }
