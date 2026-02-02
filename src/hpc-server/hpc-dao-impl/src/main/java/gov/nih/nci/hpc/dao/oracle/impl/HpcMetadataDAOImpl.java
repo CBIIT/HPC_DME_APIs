@@ -263,7 +263,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DUP_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, object_id, count(*) "
 			+ "FROM r_meta_main a, r_objt_metamap b, r_data_main c "
 			+ "WHERE a.meta_id = b.meta_id AND b.object_id = c.data_id "
-			+ "GROUP BY a.meta_attr_name, b.object_id having count(*)> 1";
+			+ "GROUP BY a.meta_attr_name, b.object_id having count(*) > 1";
+	
+	private static final String GET_DUP_HPC_DATA_OBJECT_METADATA_SQL = "select object_id, meta_id, count(*) "
+			+ "FROM hpc_data_meta_main "
+			+ "GROUP BY object_id, meta_id having count(*) > 1";
 
 	private static final String INSERT_DATA_META_MAIN_SQL = "insert into HPC_DATA_META_MAIN "
 			+ "(OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT) "
@@ -848,6 +852,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
+	
+	@Override
+	public List<Integer> getDupHpcDataObjectMetadataEntries() throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_DUP_HPC_DATA_OBJECT_METADATA_SQL, (rs, rowNum) -> rs.getInt("object_id"));
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to detect data object duplicate metadata: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
 
 	@Override
 	public void upsertDataObjectMetadata(String path) throws HpcException {
@@ -872,7 +887,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	public void insertDataObjectMetadataUnderCollection(String path) throws HpcException {
 		try {
 			// Insert back all self metadata for this path
-			jdbcTemplate.update(INSERT_DATA_META_MAIN_UNDER_COLL_SQL, path + "%");
+			jdbcTemplate.update(INSERT_DATA_META_MAIN_UNDER_COLL_SQL, path + "/%");
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to insert data object metadata under coll path: " + path + e.getMessage(),
@@ -898,8 +913,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	public void deleteDataObjectMetadataUnderCollection(String path) throws HpcException {
 		try {
 			// Remove all self metadata for this path
-			jdbcTemplate.update(DELETE_DATA_META_MAIN_UNDER_COLL_SQL, path + "/%");
-
+			int affected = jdbcTemplate.update(DELETE_DATA_META_MAIN_UNDER_COLL_SQL, path + "/%");
+			logger.debug("Deleted {} data object metadata rows under collection [{}] ", affected, path);
+			
 		} catch (DataAccessException e) {
 			throw new HpcException(
 					"Failed to delete data object metadata under collection path : " + path + e.getMessage(),

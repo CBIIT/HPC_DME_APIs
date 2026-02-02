@@ -456,6 +456,8 @@
 			<xsd:element name="retryUserId" type="xsd:string" />
 			<xsd:element name="firstHopRetried" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="googleDriveDownloadDestination"
+				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -605,6 +607,7 @@
 		<xsd:sequence>
 			<xsd:element name="checksum" type="xsd:string" />
 			<xsd:element name="metadataAdded" type="xsd:boolean" />
+			<xsd:element name="metadataClearStatus" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

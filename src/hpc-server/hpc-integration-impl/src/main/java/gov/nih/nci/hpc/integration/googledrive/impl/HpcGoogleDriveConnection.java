@@ -11,14 +11,19 @@
 package gov.nih.nci.hpc.integration.googledrive.impl;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -38,6 +43,9 @@ public class HpcGoogleDriveConnection {
 	// app name.
 	@Value("${hpc.integration.googledrive.hpcApplicationName}")
 	String hpcApplicationName = null;
+	
+	@Value("${hpc.integration.googledrive.httpTimeout}")
+	private int hpcGoogleDriveHttpTimeout = 20000; // 20 seconds fallback if property is not set
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -49,7 +57,25 @@ public class HpcGoogleDriveConnection {
 	 */
 	private HpcGoogleDriveConnection() {
 	}
-
+	
+	/**
+	 * Set Timeout settings
+	 * This method wraps an existing HttpRequestInitializer to apply custom connect and read timeout values
+	 * 
+	 * @param requestInitializer The requestInitializer
+	 * @return HttpRequestInitializer The requestInitializer with timeout setting
+	 * @throws IOException upon initialize failure
+	 */
+	private HttpRequestInitializer setHttpTimeout(final HttpRequestInitializer requestInitializer) throws IOException {
+        return new HttpRequestInitializer() {
+            @Override
+            public void initialize(HttpRequest httpRequest) throws IOException {
+                requestInitializer.initialize(httpRequest);
+                httpRequest.setConnectTimeout(hpcGoogleDriveHttpTimeout);
+                httpRequest.setReadTimeout(hpcGoogleDriveHttpTimeout);
+            }
+        };
+    }
 	// ---------------------------------------------------------------------//
 	// Methods
 	// ---------------------------------------------------------------------//
@@ -57,14 +83,19 @@ public class HpcGoogleDriveConnection {
 	/**
 	 * Authenticate a google drive.
 	 *
-	 * @param accessToken Google Drive Access Token.
+	 * @param credentialsJson Google Drive Credentials Json.
 	 * @throws HpcException if authentication failed
 	 */
-	public Object authenticate(String accessToken) throws HpcException {
+	public Object authenticate(String credentialsJson) throws HpcException {
 		Drive drive = null;
 		try {
-			drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),
-					new GoogleCredential().setAccessToken(accessToken)).setApplicationName(hpcApplicationName).build();
+			GoogleCredentials googleCredentials =
+					GoogleCredentials.fromStream(IOUtils.toInputStream(credentialsJson, StandardCharsets.UTF_8));
+			HttpRequestInitializer credentialsInitializer = new HttpCredentialsAdapter(googleCredentials);
+			HttpRequestInitializer initializerWithTimeout = setHttpTimeout(credentialsInitializer);
+
+			drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(),
+					initializerWithTimeout).setApplicationName(hpcApplicationName).build();
 
 			// Confirm the drive is accessible.
 			drive.about().get().setFields("appInstalled").execute();
