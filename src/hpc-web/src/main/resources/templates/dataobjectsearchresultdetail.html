@@ -526,8 +526,31 @@ window.onclick = function(event) {
     				 console.log(JSON.stringify(e));
     			}
     		});
-    	};      
-        
+		};
+
+		function populateBulkMetadataForm(selectedFilePaths, updateAllValue) {
+			var form = document.getElementById("bulkMetadataform");
+			form.elements.namedItem("selectedFilePaths").value = selectedFilePaths;
+	        if (source == "criteria")
+	          document.getElementById("searchType4").value = "criteria";
+	        else
+	          document.getElementById("searchType4").value = "search";
+	        form.elements.namedItem("pageNumber").value = currentPage;
+	        form.elements.namedItem("pageSize").value = currentPageSize;
+	        form.elements.namedItem("queryName").value = queryName;
+	        form.elements.namedItem("totalSize").value = totalSize.toString();
+	        form.elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        form.elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
+	        form.elements.namedItem("updateAll").value = updateAllValue;
+	        document.getElementById("downloadType4").value = "datafiles";
+		}
+
+		$scope.bulkUpdate = function() {
+			var updatedList = [];
+			populateBulkMetadataForm(updatedList, "true");
+	        document.getElementById("bulkMetadataform").submit();
+        }
+
         $scope.performActionSelectedRows = function(action) {
           console.log('$scope.selectedRows: ', $scope.selectedRows);
           console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
@@ -554,15 +577,16 @@ window.onclick = function(event) {
             }
           console.log(' after updatedList: ', updatedList);
 
-          if(updatedList == null || updatedList.length == 0)
-          {
-        	if(action == 'download')
-            	alert("Select at least one data file to download");
-        	else
-            	alert("Select at least one data file to manage permissions");
-            return false;
-          }
-          if (action == 'download') {
+		if(updatedList === null || updatedList.length === 0){
+			if(action == 'download')
+				alert("Select at least one data file to download");
+			else if (action == 'permission')
+				alert("Select at least one data file to manage permissions");
+			else if (action == 'updatemetadata')
+				alert("Select at least one data file to manage metadata");
+			return false;
+		}
+		if (action == 'download') {
 	          document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
 	          if(source == "criteria")
 	            document.getElementById("downloadFilesform").elements.namedItem("searchType").value = "criteria";
@@ -576,7 +600,7 @@ window.onclick = function(event) {
 		      document.getElementById("downloadFilesform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;      
 	          document.getElementById("downloadType").value = "datafiles";
 	          document.getElementById("downloadFilesform").submit();
-          } else {
+		} else if (action == 'permission') {
         	document.getElementById("bulkPermissionsform").elements.namedItem("selectedFilePaths").value = updatedList;
 	        if(source == "criteria")
 	          document.getElementById("searchType3").value = "criteria";
@@ -590,6 +614,20 @@ window.onclick = function(event) {
 	        document.getElementById("bulkPermissionsform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
 	        document.getElementById("downloadType3").value = "datafiles";
 	        document.getElementById("bulkPermissionsform").submit();
+		} else if (action == 'updatemetadata') {
+			document.getElementById("bulkMetadataform").elements.namedItem("selectedFilePaths").value = updatedList;
+	        if(source == "criteria")
+	          document.getElementById("searchType4").value = "criteria";
+	        else
+	          document.getElementById("searchType4").value = "search";
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageNumber").value =  currentPage;
+	        document.getElementById("bulkMetadataform").elements.namedItem("pageSize").value =  currentPageSize;
+	        document.getElementById("bulkMetadataform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("bulkMetadataform").elements.namedItem("totalSize").value = totalSize.toString();
+	        document.getElementById("bulkMetadataform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+	        document.getElementById("bulkMetadataform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
+	        document.getElementById("downloadType4").value = "datafiles";
+	        document.getElementById("bulkMetadataform").submit();
           }
         };
 
@@ -712,6 +750,9 @@ window.onclick = function(event) {
 												</div>
 											</div>
 										</div>
+										<a id="bulkUpdate" class="btn btn-link btn-sm"
+											ng-click="bulkUpdate()">Update Metadata on All
+											Search Results </a>
 									</div>
 							  </div>
 							  <div class="row" style="background-color: #fff;border-top: 1px solid #ccc;border-bottom: none;">
@@ -725,6 +766,9 @@ window.onclick = function(event) {
 									<a data-toggle="modal" id="linkselectedlink"
 										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
 										><i class="fa fa-link" title="Create Soft Links for Selected Data Files"></i></a>
+									<a data-toggle="modal" id="bulkMetadatalink"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('updatemetadata')"
+										><i class="fa fa-edit" title="Manage Metadata Updates on Selected Data Files"></i></a>
 									<label id="totalSizeLabel" class="btn btn-sm" style="display:none">Total Size of Selected Data Files: <strong id="totalSizeDisplay"></strong></label>
 								</div>
 									<div class="pull-right" id="searchInputDiv" style="display: none">
@@ -850,6 +894,20 @@ window.onclick = function(event) {
 						<input type="hidden" id="deselectedColumns3" name="deselectedColumns" value=""/>
 						<input type="hidden" id="globalMetadataSearchText3" name="globalMetadataSearchText"/>
 					</form> 
+					<form class="form-horizontal" id="bulkMetadataform" action="#"
+						role="form" th:action="@{/bulkupdatemetadata}"
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="selectedFilePaths4" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="downloadType4" name="downloadType" value=""/>
+						<input type="hidden" id="searchType4" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber4" name="pageNumber"/>
+						<input type="hidden" id="pageSize4" name="pageSize"/>
+						<input type="hidden" id="queryName4" name="queryName"/>
+						<input type="hidden" id="totalSize4" name="totalSize"/>
+						<input type="hidden" id="updateAll" name="updateAll"/>
+						<input type="hidden" id="deselectedColumns4" name="deselectedColumns" value=""/>
+						<input type="hidden" id="globalMetadataSearchText4" name="globalMetadataSearchText"/>
+					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
 						method="post" enctype="multipart/form-data">

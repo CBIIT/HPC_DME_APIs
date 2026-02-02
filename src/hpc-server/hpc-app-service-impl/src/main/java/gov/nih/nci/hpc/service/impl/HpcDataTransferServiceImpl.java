@@ -239,6 +239,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.serverId}")
 	private String s3DownloadTaskServerId = null;
 
+	// Google access token retention period in hours available for retries
+	@Value("${hpc.service.dataTransfer.googleAccessTokenRetentionPeriod}")
+	private Integer googleAccessTokenRetentionPeriod = null;
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -784,6 +788,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		// Input validation.
+		if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
+			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(dataTransferType == null) {
+			throw new HpcException("Invalid data transfer type", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(StringUtils.isEmpty(configurationId)) {
+			throw new HpcException("Invalid configuration ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(StringUtils.isEmpty(s3ArchiveConfigurationId)) {
+			throw new HpcException("Invalid S3 archive configuration ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the data transfer configuration.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
+		// Delete all the metadata of the dataObject
+		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
+				.clearDataObjectMetadata(
+						getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+						fileLocation, dataTransferConfiguration.getStorageClass());
+
+		return setMetadataResponse;
+	}
+
+	@Override
 	public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 		// Input validation.
@@ -797,7 +831,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
 						.getBaseArchiveDestination());
 	}
-
+	
 	@Override
 	public HpcDataTransferUploadReport getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
 			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId, String loggingPrefix)
@@ -1090,16 +1124,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) {
-		try {
+	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) throws HpcException {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
-
-		} catch (HpcException e) {
-			logger.error("Failed to get cancellation request for task ID: " + taskId);
-			// If it can not find the collection download task, it is cancelled and removed
-			// from the table.
-			return true;
-		}
 	}
 
 	@Override
@@ -1187,6 +1213,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
@@ -2013,6 +2041,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult
 					.setDestinationLocation(downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleDriveDownloadDestination(downloadTask.getGoogleDriveDownloadDestination());				
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
@@ -2261,6 +2291,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		
 	}
 
+	@Override
+	public void removeGoogleAccessTokens() throws HpcException {
+		dataDownloadDAO.removeGoogleAccessTokens(googleAccessTokenRetentionPeriod);
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

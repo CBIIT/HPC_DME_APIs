@@ -493,8 +493,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		// Perform the move request.
+		logger.debug("[Move] Before calling iRODS move for source path [{}] and destination path[{}]", sourcePath, destinationPath);
+		
 		dataManagementProxy.move(authenticatedToken, sourcePath, destinationPath);
-
+		
+		logger.debug("[Move] After calling iRODS move for source path [{}] and destination path[{}]", sourcePath, destinationPath);
+		
 		// Validate the hierarchy.
 		try {
 			// Calculate the validation path. It's the collection containing the data object
@@ -521,9 +525,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		} else {
 			// Delete data object metadata entries from table, HPC_DATA_META_MAIN for the
 			// source path
+			logger.debug("[Move] Calling delete data object metadata under collection after renaming a collection for source path [{}]", sourcePath);
 			metadataDAO.deleteDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(sourcePath));
 
 			// Refresh data object metadata entries from table, HPC_DATA_META_MAIN
+			logger.debug("[Move] Calling insert data object metadata under collection after renaming a collection to destination path [{}]", destinationPath);
 			metadataDAO.insertDataObjectMetadataUnderCollection(dataManagementProxy.getAbsolutePath(destinationPath));
 		}
 
