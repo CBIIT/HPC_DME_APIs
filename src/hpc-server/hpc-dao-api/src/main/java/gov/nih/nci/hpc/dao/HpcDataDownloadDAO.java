@@ -534,4 +534,12 @@ public interface HpcDataDownloadDAO {
     */
     public Integer getCollectionDownloadTaskPriority(String id) throws HpcException;
 
+    /**
+	 * Remove google access token retained for retries beyond the retention period.
+	 *
+	 * @param googleAccessTokenRetentionPeriod The retention period in hours.
+	 * @throws HpcException on database error.
+	 */
+	public void removeGoogleAccessTokens(Integer googleAccessTokenRetentionPeriod) throws HpcException;
+
 }
