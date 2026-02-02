@@ -77,6 +77,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -1856,8 +1857,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw new HpcException("S3 Configuration is null", HpcErrorType.UNEXPECTED_ERROR);
 			}
 		}
+
+		// Determine if the dataObject is an archive link
+		boolean archiveLink = (systemGeneratedMetadata.getDataTransferMethod() != null) ? systemGeneratedMetadata.getDataTransferMethod().equals(HpcDataTransferUploadMethod.ARCHIVE_LINK) : false;
+		// If it is an archive link, then the storage must be external
+		// If it is not an archive link, then the storage must not be external
 		boolean externalStorage = (s3Configuration != null) ? s3Configuration.getExternalStorage() : false;
-		boolean archiveLink = externalStorage ? true : false;
+		if (archiveLink != externalStorage) {
+			logger.error("Inconsistent values: Archive Link is " + archiveLink + " but external storage is " + externalStorage);
+			throw new HpcException("Inconsistent archive link metadata and external storage configuration",
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
 
 		// Physical file can be deleted if it is a regular file(not a Link) when the Delete API param force is set to True
 		boolean deleteDataFile = !registeredLink && !archiveLink && force;
@@ -1972,9 +1982,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (deleteDataObjectRecord) {
 				// Remove the file record from data management(IRODS)
 				try {
-					dataManagementService.delete(path, false);
-					dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
-
+					if (archiveLink) {
+						// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
+						HpcSetArchiveObjectMetadataResponse clearMetadataResponse = dataTransferService
+								.deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
+										systemGeneratedMetadata.getDataTransferType(),
+										systemGeneratedMetadata.getConfigurationId(),
+										systemGeneratedMetadata.getS3ArchiveConfigurationId());
+						if (!clearMetadataResponse.getMetadataClearStatus()) {
+							String errorMessage = "Failed to clear archive object metadata for data object at path: "
+									+ path;
+							throw new HpcException(errorMessage, HpcErrorType.UNEXPECTED_ERROR);
+						} else {
+							// Successfully cleared the metadata, proceed to delete the data management record from iRODS
+							dataManagementService.delete(path, false);
+							dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+						}
+					} else {
+							// Not an archive link, proceed to delete the data management record from iRODS
+							dataManagementService.delete(path, false);
+							dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+					}
 				} catch (HpcException e) {
 					logger.error("Failed to delete file from datamanagement", e);
 					dataObjectDeleteResponse.setDataManagementDeleteStatus(false);

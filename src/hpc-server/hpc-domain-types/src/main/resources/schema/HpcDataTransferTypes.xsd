@@ -604,6 +604,7 @@
 		<xsd:sequence>
 			<xsd:element name="checksum" type="xsd:string" />
 			<xsd:element name="metadataAdded" type="xsd:boolean" />
+			<xsd:element name="metadataClearStatus" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
