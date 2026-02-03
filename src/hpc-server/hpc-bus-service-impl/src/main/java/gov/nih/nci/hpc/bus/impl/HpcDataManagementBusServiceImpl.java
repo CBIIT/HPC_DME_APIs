@@ -3109,10 +3109,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				populateCollectionListResultSummary(downloadStatus, taskStatus.getResult().getCollectionPaths(),
 						taskStatus.getResult().getItems());
 			}
-			downloadStatus.setRetryable(taskStatus.getResult().getGoogleDriveDownloadDestination() != null
-					&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken())
-					|| taskStatus.getResult().getGoogleCloudStorageDestination() != null 
-					&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken()));
+			downloadStatus.setRetryable(
+					(taskStatus.getResult().getGoogleDriveDownloadDestination() != null
+							&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken()))
+							|| (taskStatus.getResult().getGoogleCloudStorageDestination() != null
+									&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken())));
 		}
 
 		return downloadStatus;
