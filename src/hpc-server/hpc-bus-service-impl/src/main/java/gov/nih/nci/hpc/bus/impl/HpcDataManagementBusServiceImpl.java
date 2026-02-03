@@ -1745,10 +1745,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setSize(taskStatus.getResult().getSize());
 			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
-			downloadStatus.setRetryable(taskStatus.getResult().getGoogleDriveDownloadDestination() != null
-					&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken())
-					|| taskStatus.getResult().getGoogleCloudStorageDestination() != null 
-					&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken()));
+			downloadStatus.setRetryable(
+					(taskStatus.getResult().getGoogleDriveDownloadDestination() != null
+							&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken()))
+							|| (taskStatus.getResult().getGoogleCloudStorageDestination() != null
+									&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken())));
 		}
 
 		return downloadStatus;
