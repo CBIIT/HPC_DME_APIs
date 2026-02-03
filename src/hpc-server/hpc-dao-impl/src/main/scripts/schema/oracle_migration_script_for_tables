@@ -313,7 +313,7 @@ create table HPC_DATA_OBJECT_DOWNLOAD_TASK
     S3_DOWNLOAD_TASK_SERVER_ID             VARCHAR2(50),
     COLLECTION_DOWNLOAD_TASK_ID            VARCHAR2(50),
     FIRST_HOP_RETRIED                      CHAR,
-    STAGING_PERCENT_COMPLETE               NUMBER(10)
+    STAGING_PERCENT_COMPLETE               NUMBER(10),
     RETRY_USER_ID                          VARCHAR2(250),
     DOC                                    VARCHAR(50),
     RETRY_TASK_ID                          VARCHAR2(50),
