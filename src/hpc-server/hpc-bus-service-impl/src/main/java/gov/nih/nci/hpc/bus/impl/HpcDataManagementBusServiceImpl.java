@@ -1901,7 +1901,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Validate the data object exists in iRODs.
 		if (dataObject == null) {
-			//throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Get the metadata for this data object.
