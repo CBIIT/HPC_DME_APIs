@@ -455,6 +455,8 @@
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="googleDriveDownloadDestination"
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
+			<xsd:element name="googleCloudStorageDestination"
+				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 		</xsd:sequence>
 	</xsd:complexType>
 
