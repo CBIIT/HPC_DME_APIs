@@ -1,0 +1,23 @@
+--
+-- hpc_data_object_download.sql
+--
+-- Copyright Leidos Biomedical Research, Inc
+-- 
+-- Distributed under the OSI-approved BSD 3-Clause License.
+-- See http://ncip.github.com/HPC/LICENSE.txt for details.
+--
+--
+-- @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+--
+
+-- DROP UNUSED COLUMN
+ALTER TABLE HPC_COLLECTION_DOWNLOAD_TASK drop column GOOGLE_ACCESS_TOKEN_TYPE;
+ALTER TABLE HPC_DATA_OBJECT_DOWNLOAD_TASK drop column GOOGLE_ACCESS_TOKEN_TYPE;
+
+-- DROP NO LONGER USED COLUMN
+ALTER TABLE HPC_COLLECTION_DOWNLOAD_TASK drop column GOOGLE_DRIVE_ACCESS_TOKEN;
+ALTER TABLE HPC_COLLECTION_DOWNLOAD_TASK drop column GOOGLE_CLOUD_ACCESS_TOKEN;
+
+-- UPDATE COLUMN NAME
+ALTER TABLE HPC_DOWNLOAD_TASK_RESULT RENAME COLUMN GOOGLE_DRIVE_ACCESS_TOKEN TO GOOGLE_ACCESS_TOKEN;
+COMMENT ON COLUMN HPC_DOWNLOAD_TASK_RESULT.GOOGLE_ACCESS_TOKEN IS 'Google drive/cloud storage access token';  

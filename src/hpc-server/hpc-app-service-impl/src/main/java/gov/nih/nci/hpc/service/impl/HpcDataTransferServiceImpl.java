@@ -803,6 +803,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		// Input validation.
+		if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
+			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(dataTransferType == null) {
+			throw new HpcException("Invalid data transfer type", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(StringUtils.isEmpty(configurationId)) {
+			throw new HpcException("Invalid configuration ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(StringUtils.isEmpty(s3ArchiveConfigurationId)) {
+			throw new HpcException("Invalid S3 archive configuration ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the data transfer configuration.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
+		// Delete all the metadata of the dataObject
+		HpcSetArchiveObjectMetadataResponse setMetadataResponse = dataTransferProxies.get(dataTransferType)
+				.clearDataObjectMetadata(
+						getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+						fileLocation, dataTransferConfiguration.getStorageClass());
+
+		return setMetadataResponse;
+	}
+
+	@Override
 	public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 		// Input validation.
@@ -816,7 +846,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
 						.getBaseArchiveDestination());
 	}
-
+	
 	@Override
 	public HpcDataTransferUploadReport getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
 			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId, String loggingPrefix)
@@ -1206,6 +1236,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleCloudStorageDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		} else if (downloadTask.getAsperaDownloadDestination() != null) {
 			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 		} else if (downloadTask.getBoxDownloadDestination() != null) {
@@ -2053,6 +2085,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleCloudStorageDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		} else if (downloadTask.getAsperaDownloadDestination() != null) {
 			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.ASPERA);
