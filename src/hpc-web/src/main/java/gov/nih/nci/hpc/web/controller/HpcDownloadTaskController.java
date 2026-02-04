@@ -407,7 +407,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		{
 		  downloadTask.setMessage(mapToUserFriendlyMessage(downloadTask.getMessage()));
 		  
-          if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+          if ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !downloadTask.getRetryable())
               || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
             		  && !downloadTask.getRetryable())
               || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX))
@@ -438,7 +439,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		downloadTask.getFailedItems().addAll(failedItems);
 		  
         if (downloadTask.getDestinationType() != null
-            && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+            && ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !downloadTask.getRetryable())
                 || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
               		  && !downloadTask.getRetryable())
                 || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
@@ -514,7 +516,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	  downloadTask.getFailedItems().addAll(failedItems);
 		
       if (downloadTask.getDestinationType() != null
-          && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+          && ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !downloadTask.getRetryable())
               || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
             		  && !downloadTask.getRetryable())
               || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
@@ -565,7 +568,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			downloadTask.getFailedItems().addAll(failedItems);
 			
             if (downloadTask.getDestinationType() != null
-                && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+                && ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+    					&& !downloadTask.getRetryable())
                     || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
                   		  && !downloadTask.getRetryable())
                     || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
