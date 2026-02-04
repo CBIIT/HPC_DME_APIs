@@ -18,6 +18,7 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -128,7 +129,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       else if (type.equals(HpcDownloadTaskType.DATA_OBJECT.name()))
         return displayDataObjectTask(authToken, taskId, model);
       else if (type.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name()))
-        return diplayDataObjectListTask(authToken, taskId, model);
+        return displayDataObjectListTask(authToken, taskId, model);
       else if (type.equals(HpcDownloadTaskType.COLLECTION_LIST.name()))
           return displayCollectionListTask(authToken, taskId, model);
       else {
@@ -376,7 +377,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT.name()))
           return displayDataObjectTask(authToken, taskId, model);
         else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name()))
-          return diplayDataObjectListTask(authToken, taskId, model);
+          return displayDataObjectListTask(authToken, taskId, model);
         else if (taskType.equals(HpcDownloadTaskType.COLLECTION_LIST.name()))
             return displayCollectionListTask(authToken, taskId, model);
       
@@ -404,7 +405,10 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	{
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
-          if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+		  downloadTask.setMessage(mapToUserFriendlyMessage(downloadTask.getMessage()));
+		  
+          if ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !downloadTask.getRetryable())
               || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
             		  && !downloadTask.getRetryable())
               || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX))
@@ -430,8 +434,13 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	boolean retry = true;
 	if(downloadTask.getResult() != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 	{
+		List <HpcCollectionDownloadTaskItem> failedItems = getUserFriendlyFailedItems(downloadTask.getFailedItems());
+		downloadTask.getFailedItems().clear();
+		downloadTask.getFailedItems().addAll(failedItems);
+		  
         if (downloadTask.getDestinationType() != null
-            && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+            && ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !downloadTask.getRetryable())
                 || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
               		  && !downloadTask.getRetryable())
                 || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
@@ -495,15 +504,20 @@ public class HpcDownloadTaskController extends AbstractHpcController {
   }
 
 
-  private String diplayDataObjectListTask(String authToken, String taskId, Model model) {
+  private String displayDataObjectListTask(String authToken, String taskId, Model model) {
     String queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
 	boolean retry = true;
 	if(downloadTask != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 	{
+	  List <HpcCollectionDownloadTaskItem> failedItems = getUserFriendlyFailedItems(downloadTask.getFailedItems());
+	  downloadTask.getFailedItems().clear();
+	  downloadTask.getFailedItems().addAll(failedItems);
+		
       if (downloadTask.getDestinationType() != null
-          && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+          && ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+					&& !downloadTask.getRetryable())
               || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
             		  && !downloadTask.getRetryable())
               || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
@@ -549,8 +563,13 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		boolean retry = true;
 		if(downloadTask.getResult() != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 		{
+			List <HpcCollectionDownloadTaskItem> failedItems = getUserFriendlyFailedItems(downloadTask.getFailedItems());
+			downloadTask.getFailedItems().clear();
+			downloadTask.getFailedItems().addAll(failedItems);
+			
             if (downloadTask.getDestinationType() != null
-                && (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+                && ((downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)
+    					&& !downloadTask.getRetryable())
                     || (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)
                   		  && !downloadTask.getRetryable())
                     || downloadTask.getDestinationType().equals(HpcDataTransferType.BOX)))
@@ -626,6 +645,56 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 						? inProgressItem.getSize() * (inProgressItem.getPercentComplete() / 100.0) : 0;
 	  }
 	  return completedItemsSize;
+  }
+
+  /**
+   * Map a raw error message to a user-friendly message.
+   */
+  private static final String UNKNOWN_ERROR_MESSAGE = "Unknown error occurred.";
+  private static final String GOOGLE_DRIVE_IDENTIFIER = "googledrive";
+  private static final String GOOGLE_DRIVE_QUOTA_EXCEEDED_PATTERN = "storage quota has been exceeded";
+  private static final String GOOGLE_DRIVE_QUOTA_EXCEEDED_USER_MESSAGE =
+      "Download failed. The daily Google Drive transfer limit of 750 GB has been exceeded.";
+
+  private String mapToUserFriendlyMessage(String message) {
+    if (message == null) {
+      return UNKNOWN_ERROR_MESSAGE;
+    }
+
+    String trimmedMessage = message.trim();
+    if (trimmedMessage.isEmpty()) {
+      return UNKNOWN_ERROR_MESSAGE;
+    }
+
+    String normalizedMessage = trimmedMessage.toLowerCase();
+    if (normalizedMessage.contains(GOOGLE_DRIVE_IDENTIFIER)
+        && normalizedMessage.contains(GOOGLE_DRIVE_QUOTA_EXCEEDED_PATTERN)) {
+      return GOOGLE_DRIVE_QUOTA_EXCEEDED_USER_MESSAGE;
+    }
+
+    // Use the original message if no specific mapping is found
+    return trimmedMessage;
+  }
+
+  /**
+   * Converts failed item error messages to user-friendly messages and returns a new list of items.
+   * 
+   * @param failedItems List of failed download task items
+   * @return List of HpcCollectionDownloadTaskItem with user-friendly error messages
+   */
+  private List<HpcCollectionDownloadTaskItem> getUserFriendlyFailedItems(List<HpcCollectionDownloadTaskItem> failedItems) {
+    List<HpcCollectionDownloadTaskItem> userFriendlyItems = new ArrayList<>();
+    if (failedItems == null) {
+      return userFriendlyItems;
+    }
+    for (HpcCollectionDownloadTaskItem item : failedItems) {
+      String userMessage = mapToUserFriendlyMessage(item.getMessage());
+      HpcCollectionDownloadTaskItem newItem = new HpcCollectionDownloadTaskItem();
+      BeanUtils.copyProperties(item, newItem);
+      newItem.setMessage(userMessage);
+      userFriendlyItems.add(newItem);
+    }
+    return userFriendlyItems;
   }
 
 }
