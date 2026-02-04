@@ -1209,6 +1209,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		} else if (downloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleCloudStorageDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		} else if (downloadTask.getAsperaDownloadDestination() != null) {
 			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 		} else if (downloadTask.getBoxDownloadDestination() != null) {
@@ -2023,6 +2025,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			taskResult.setDestinationLocation(
 					downloadTask.getGoogleCloudStorageDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
+			if (result.equals(HpcDownloadResult.FAILED) || result.equals(HpcDownloadResult.CANCELED))
+				taskResult.setGoogleCloudStorageDestination(downloadTask.getGoogleCloudStorageDownloadDestination());
 		} else if (downloadTask.getAsperaDownloadDestination() != null) {
 			taskResult.setDestinationLocation(downloadTask.getAsperaDownloadDestination().getDestinationLocation());
 			taskResult.setDestinationType(HpcDataTransferType.ASPERA);
