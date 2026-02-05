@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
@@ -96,6 +97,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
@@ -1198,14 +1200,40 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// If from an external archive, delete the path from IRODs
-		/* Temporarily commenting cout
 		if (downloadTask.getExternalArchiveFlag()) {
 			try {
-				dataManagementService.delete(downloadTask.getPath(), false);
+				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs");
+				String path = downloadTask.getPath();
+				HpcDataObject dataObject = dataManagementService.getDataObject(path);
+				// Validate the data object exists in iRODs.
+				if (dataObject == null) {
+					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				// Get the metadata for this data object.
+				HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
+				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+				// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
+				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
+								systemGeneratedMetadata.getDataTransferType(),
+								systemGeneratedMetadata.getConfigurationId(),
+								systemGeneratedMetadata.getS3ArchiveConfigurationId());
+				if (!clearMetadataResponse.getMetadataClearStatus()) {
+					String errorMessage = "Failed to clear archive object metadata for data object at path: "
+							+ path;
+					throw new HpcException(errorMessage, HpcErrorType.UNEXPECTED_ERROR);
+				} else {
+					// Successfully cleared the metadata, proceed to delete the data management record from iRODS
+					logger.info("2097: app:Transfer completeDataObjectDownloadTask: cleared metadata");
+					dataManagementService.delete(path, false);
+					logger.info("2097: app:Transfer completeDataObjectDownloadTask: deleted irods record");
+					logger.info("Successfully deleted data object at path: {} from iRODS", path);
+				}
 			} catch (HpcException e) {
 				logger.error("Failed to delete file from datamanagement", e);
 			}
-		}*/
+		}
 		logger.info("2097: app:Transfer completeDataObjectDownloadTask: successfully deleted path from IRODs");
 
 		// Create a task result object.
