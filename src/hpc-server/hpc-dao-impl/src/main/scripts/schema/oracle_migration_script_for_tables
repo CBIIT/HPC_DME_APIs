@@ -364,6 +364,9 @@ comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."ASPERA_ACCOUNT_HOST" is 'The 
 create index HPC_DATA_OBJECT_DOWNLOAD_TASK_DATA_TRANSFER_STATUS_IDX
 on IRODS.HPC_DATA_OBJECT_DOWNLOAD_TASK (DATA_TRANSFER_STATUS);
 
+create index HPC_DATA_OBJECT_DOWNLOAD_TASK_COMPLETION_EVENT_IDX
+    on irods.hpc_data_object_download_task (completion_event);
+    
 CREATE TABLE "IRODS"."HPC_DATA_OBJECT_REGISTRATION_RESULT"
 (
    ID VARCHAR2(50) PRIMARY KEY NOT NULL,
@@ -735,6 +738,7 @@ comment on column IRODS."HPC_USER"."ACTIVE_UPDATED_BY" is 'The administrator use
 
 comment on column IRODS."HPC_USER"."DEFAULT_CONFIGURATION_ID" is 'The default configuration ID associated with the user';
 
+create unique index HPC_USER_UNIQUE on irods.hpc_user (user_id);
 
 
 CREATE TABLE "IRODS"."HPC_USER_BOOKMARK"
@@ -825,4 +829,23 @@ comment on column irods.hpc_data_meta_main.meta_attr_unit is 'Metadata unit: r_m
 
 create index hpc_data_meta_main_path_query
     on irods.hpc_data_meta_main (object_path);
+    
+create table HPC_GLOBUS_TRANSFER_TASK
+(
+    GLOBUS_ACCOUNT 			  VARCHAR2(250)    not null,
+    DATA_TRANSFER_REQUEST_ID  VARCHAR2(50)     not null,
+    PATH                      VARCHAR2(2700)   not null,
+    DOWNLOAD                  CHAR default '0' not null,
+    CREATED                   TIMESTAMP(6)     not null
+);
+
+comment on table HPC_GLOBUS_TRANSFER_TASK is 'Lists all ongoing Globus transfer requests';
+comment on column HPC_GLOBUS_TRANSFER_TASK.GLOBUS_ACCOUNT is 'The globus account used for the transfer';
+comment on column HPC_GLOBUS_TRANSFER_TASK.DATA_TRANSFER_REQUEST_ID is 'The globus transfer request ID';
+comment on column HPC_GLOBUS_TRANSFER_TASK.PATH is 'The DME path';
+comment on column HPC_GLOBUS_TRANSFER_TASK.DOWNLOAD is 'An indicator if the transfer is a download task or an upload task';
+comment on column HPC_GLOBUS_TRANSFER_TASK.CREATED is 'The date and time the request was created';
+
+create index HPC_GLOBUS_TRANSFER_TASK_GLOBUS_ACCOUNT_IDX
+    on irods.hpc_globus_transfer_task (globus_account);
     
