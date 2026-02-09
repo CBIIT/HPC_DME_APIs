@@ -31,6 +31,7 @@
 			<xsd:enumeration value="COLLECTION_LIST" />
 			<xsd:enumeration value="BULK_METADATA_UPDATE" />
 			<xsd:enumeration value="DATA_OBJECT_METADATA_UPDATE" />
+			<xsd:enumeration value="BULK_AUTO_TIERING" />
 		</xsd:restriction>
 	</xsd:simpleType>
 

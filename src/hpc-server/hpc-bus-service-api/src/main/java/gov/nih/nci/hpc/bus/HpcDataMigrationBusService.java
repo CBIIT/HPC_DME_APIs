@@ -173,11 +173,18 @@ public interface HpcDataMigrationBusService {
 	public void restartDataMigrationTasks() throws HpcException;
 
 	/**
-	 * Process auto-tiering tasks.
+	 * Process auto-tiering for all data management configurations
 	 *
 	 * @throws HpcException on service failure.
 	 */
 	public void processAutoTiering() throws HpcException;
 
-
+	/**
+	 * Process auto-tiering for a given data management configuration ID
+	 *
+	 * @param configurationId The data management configuration ID.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO processAutoTiering(String configurationId) throws HpcException;
 }

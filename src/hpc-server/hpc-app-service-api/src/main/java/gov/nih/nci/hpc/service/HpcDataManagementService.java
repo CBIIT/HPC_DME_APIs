@@ -595,6 +595,15 @@ public interface HpcDataManagementService {
 	public HpcDataManagementConfiguration getDataManagementConfiguration(String id);
 
 	/**
+	 * Get all Data Management Configurations that have auto-tiering enabled.
+	 * A configuration is considered to have auto-tiering enabled if it has a
+	 * non-null s3AutoTieringArchiveConfigurationId.
+	 *
+	 * @return List of data management configurations with auto-tiering enabled.
+	 */
+	public List<HpcDataManagementConfiguration> getAutoTieringDataManagementConfigurations();
+
+	/**
 	 * Add a data object registration request result to the DB.
 	 *
 	 * @param path                    The data object path.

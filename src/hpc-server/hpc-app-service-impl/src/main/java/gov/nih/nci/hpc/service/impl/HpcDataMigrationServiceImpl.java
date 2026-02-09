@@ -632,4 +632,33 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
 		return migrationTask;
 	}
+
+	@Override
+	public HpcDataMigrationTask createBulkAutoTieringTask(String configurationId, String fromS3ArchiveConfigurationId,
+			String toS3ArchiveConfigurationId, String userId) throws HpcException {
+		// Create and persist a bulk auto-tiering task.
+		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+		migrationTask.setConfigurationId(configurationId);
+		migrationTask.setUserId(userId);
+		migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
+		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+		migrationTask.setCreated(Calendar.getInstance());
+		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+		migrationTask.setType(HpcDataMigrationType.BULK_AUTO_TIERING);
+		migrationTask.setPath(null);
+		migrationTask.setAlignArchivePath(false);
+		migrationTask.setPercentComplete(0);
+		migrationTask.setSize(null);
+		migrationTask.setRetryTaskId(null);
+		migrationTask.setRetryUserId(null);
+		migrationTask.setRetryFailedItemsOnly(null);
+		migrationTask.setMetadataFromArchiveFileContainerId(null);
+		migrationTask.setMetadataToArchiveFileContainerId(null);
+		migrationTask.setMetadataArchiveFileIdPattern(null);
+
+		// Persist the task.
+		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+		return migrationTask;
+	}
 }
+
