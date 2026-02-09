@@ -13,3 +13,6 @@
 
 create index HPC_DATA_OBJECT_DOWNLOAD_TASK_COMPLETION_EVENT_IDX
     on irods.hpc_data_object_download_task (completion_event);
+    
+create index HPC_COLLECTION_DOWNLOAD_TASK_STATUS_IDX
+    on irods.hpc_collection_download_task (status);
