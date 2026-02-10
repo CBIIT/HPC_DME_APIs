@@ -27,7 +27,7 @@ run-name: "Build WARs for ${{ github.event.inputs.environment }} (branch: ${{ gi
 jobs:
   build:
     name: Build war file
-    runs-on: cbiit-global-runners
+    runs-on: "nonprod-org-runner"
     environment: ${{ inputs.environment }}
     env:
       CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
