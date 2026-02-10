@@ -26,7 +26,7 @@ jobs:
   deploy:
     if: |
       github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: cbiit-global-runners
+    runs-on: "nonprod-org-runner"
     environment: ${{ inputs.environment }}
     env:
       CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
