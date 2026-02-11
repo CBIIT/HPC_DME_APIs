@@ -26,7 +26,9 @@ jobs:
   deploy:
     if: |
       github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: "nonprod-org-runner"
+    runs-on:
+      group: cbiit-global-runners
+      labels: [self-hosted]
     environment: ${{ inputs.environment }}
     env:
       CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
@@ -43,7 +45,7 @@ jobs:
           fi
 
       - name: Download Artifacts
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v4
         with:
           workflow: build-dev-api.yml
           run_number: ${{ github.event.workflow_run.run_number }}
