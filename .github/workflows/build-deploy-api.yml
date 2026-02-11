@@ -26,7 +26,9 @@ run-name: "Build WARs for ${{ github.event.inputs.environment }} (branch: ${{ gi
 jobs:
   build:
     name: Build war file
-    runs-on: "nonprod-org-runner"
+    runs-on:
+      group: cbiit-global-runners
+      labels: [self-hosted]
     environment: ${{ inputs.environment }}
     env:
       CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
@@ -67,7 +69,9 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: "nonprod-org-runner"
+    runs-on:
+      group: cbiit-global-runners
+      labels: [self-hosted]
     environment: ${{ inputs.environment }}
     steps:
       - name: Download Artifacts
