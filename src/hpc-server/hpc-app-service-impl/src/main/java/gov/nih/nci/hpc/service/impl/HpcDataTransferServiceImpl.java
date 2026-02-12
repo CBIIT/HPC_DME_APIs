@@ -1203,11 +1203,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// If from an external archive, delete the path from IRODs
 		if (downloadTask.getExternalArchiveFlag()) {
 			try {
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs");
+				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs path="
+						+ downloadTask.getPath());
 				String path = downloadTask.getPath();
 				HpcDataObject dataObject = dataManagementService.getDataObject(path);
 				// Validate the data object exists in iRODs.
 				if (dataObject == null) {
+					logger.info("2097: app:Transfer completeDataObjectDownloadTask: validated data object does not exist in IRODs");
 					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				logger.info("2097: app:Transfer completeDataObjectDownloadTask: validated data object exists in IRODs");
@@ -1236,7 +1238,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				logger.error("Failed to delete file from datamanagement", e);
 			}
 		}
-		logger.info("2097: app:Transfer completeDataObjectDownloadTask: successfully deleted path from IRODs");
 
 		// Create a task result object.
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
