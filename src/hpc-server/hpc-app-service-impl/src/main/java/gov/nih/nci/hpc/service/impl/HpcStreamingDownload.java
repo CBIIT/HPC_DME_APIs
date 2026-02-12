@@ -195,7 +195,15 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	 */
 	private void createDownloadTask(HpcDataObjectDownloadRequest downloadRequest) throws HpcException {
 
-		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+		logger.info("2097: Creating download task for streaming download, path: {}, userId: {}, externalArchiveFlag: {}",
+				downloadRequest.getPath(), downloadRequest.getUserId(), downloadRequest.getExternalArchiveFlag());
+
+		if (!downloadRequest.getExternalArchiveFlag()) {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+		} else {
+			downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED_EXTERNAL);
+			downloadTask.setExternalArchiveFlag(downloadRequest.getExternalArchiveFlag());
+		}
 		downloadTask.setDownloadFilePath(null);
 		downloadTask.setUserId(downloadRequest.getUserId());
 		downloadTask.setPath(downloadRequest.getPath());
@@ -241,6 +249,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	 * @throws HpcException If it failed to persist the task.
 	 */
 	private void updateDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		logger.info("2097: Updating download task for streaming download, path: {}, userId: {}, externalArchiveFlag: {}",
+				downloadTask.getPath(), downloadTask.getUserId(), downloadTask.getExternalArchiveFlag());
 		this.downloadTask.setId(downloadTask.getId());
 		this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 		this.downloadTask.setDownloadFilePath(downloadTask.getDownloadFilePath());
@@ -263,6 +273,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 		this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 		this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
+		this.downloadTask.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 		if (this.downloadTask.getS3DownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
