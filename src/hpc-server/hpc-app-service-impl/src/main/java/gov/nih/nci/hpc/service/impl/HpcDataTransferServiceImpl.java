@@ -698,6 +698,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// provided
 			// S3 destination.
 			// Note: The user S3 destination can be either AWS or 3rd Party S3 provider.
+			logger.info("2097: App:Datatransfer calling performS3AsynchronousDownload");
 			performS3AsynchronousDownload(downloadRequest, dataTransferType, response, dataTransferConfiguration);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleDriveDownloadDestination != null) {
