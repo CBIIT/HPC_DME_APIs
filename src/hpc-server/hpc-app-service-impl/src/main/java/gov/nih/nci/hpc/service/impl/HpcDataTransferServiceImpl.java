@@ -1210,6 +1210,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				if (dataObject == null) {
 					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 				}
+				logger.info("2097: app:Transfer completeDataObjectDownloadTask: validated data object exists in IRODs");
 				// Get the metadata for this data object.
 				HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
@@ -3367,6 +3368,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void performS3AsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataTransferType dataTransferType, HpcDataObjectDownloadResponse response,
 			HpcDataTransferConfiguration dataTransferConfiguration) throws HpcException {
+
+				logger.info("2097: App:Datatransfer inside performS3AsynchronousDownload");
 
 		HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
 				this);
