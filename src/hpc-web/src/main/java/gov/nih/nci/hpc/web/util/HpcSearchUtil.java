@@ -170,7 +170,6 @@ public class HpcSearchUtil {
 				returnResult.setPath(result.getDataObject().getAbsolutePath());
 				returnResult.setUniqueId(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
 				returnResult.setDownload(result.getDataObject().getAbsolutePath());
 				returnResult.setPermission(result.getDataObject().getAbsolutePath());
