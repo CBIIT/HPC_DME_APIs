@@ -193,10 +193,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_DATA_OBJECT_PATHS_SQL = "select distinct object_path from r_data_hierarchy_meta_main mv, (select distinct object_id from ( ";
 
-	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
-			+ "data.data_path, data.data_owner_name, data.create_ts, mv.meta_attr_name, "
+	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select mv.object_id, mv.coll_id, mv.object_path, mv.meta_attr_name, "
 			+ "mv.meta_attr_value, mv.meta_attr_unit, mv.data_level, mv.level_label "
-			+ "from r_data_hierarchy_meta_main mv, r_data_main data, r_coll_main coll, "
+			+ "from r_data_hierarchy_meta_main mv, "
 			+ "(select distinct object_id from ( ";
 
 	private static final String GET_ALL_DATA_OBJECT_PATHS_SQL = "select main1.object_id, coll.coll_name, main1.object_path, "
@@ -272,7 +271,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String INSERT_DATA_META_MAIN_SQL = "insert into HPC_DATA_META_MAIN "
 			+ "(OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT) "
 			+ "select data.data_id, ? , "
-			+ "null, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
+			+ "data.coll_id, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
 			+ "from r_data_main data, r_objt_metamap map, r_meta_main meta, r_coll_main coll "
 			+ "where data.coll_id = coll.coll_id and coll.coll_name = ? and data.data_name = ? "
 			+ "and data.data_id=map.object_id and map.meta_id=meta.meta_id ";
@@ -280,7 +279,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String INSERT_DATA_META_MAIN_UNDER_COLL_SQL = "insert into HPC_DATA_META_MAIN "
 			+ "(OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT) "
 			+ "select data.data_id, coll_name||'/'||data_name , "
-			+ "null, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
+			+ "data.coll_id, map.meta_id, 1, 'DataObject', meta.META_ATTR_NAME, meta.META_ATTR_VALUE, meta.META_ATTR_UNIT "
 			+ "from r_data_main data, r_objt_metamap map, r_meta_main meta, r_coll_main coll "
 			+ "where data.coll_id = coll.coll_id and coll.coll_name like ? "
 			+ "and data.data_id=map.object_id and map.meta_id=meta.meta_id ";
@@ -356,22 +355,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setId(id != null ? id.intValue() : null);
 		Long collId = rs.getLong(2);
 		searchMetadataEntry.setCollectionId(collId != null ? collId.intValue() : null);
-		searchMetadataEntry.setCollectionName(rs.getString(3));
-		searchMetadataEntry.setAbsolutePath(rs.getString(4));
-		Long dataSize = rs.getLong(5);
-		searchMetadataEntry.setDataSize(dataSize != null ? dataSize.longValue() : null);
-		searchMetadataEntry.setDataPath(rs.getString(6));
-		searchMetadataEntry.setDataOwnerName(rs.getString(7));
-		String createTs = rs.getString(8);
-		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(Long.parseLong(createTs) * 1000);
-		searchMetadataEntry.setCreatedAt(cal);
-		searchMetadataEntry.setAttribute(rs.getString(9));
-		searchMetadataEntry.setValue(rs.getString(10));
-		searchMetadataEntry.setUnit(rs.getString(11));
-		Long level = rs.getLong(12);
+		searchMetadataEntry.setAbsolutePath(rs.getString(3));
+		searchMetadataEntry.setAttribute(rs.getString(4));
+		searchMetadataEntry.setValue(rs.getString(5));
+		searchMetadataEntry.setUnit(rs.getString(6));
+		Long level = rs.getLong(7);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
-		searchMetadataEntry.setLevelLabel(rs.getString(13));
+		searchMetadataEntry.setLevelLabel(rs.getString(8));
 
 		return searchMetadataEntry;
 	};
@@ -997,7 +987,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			sqlQueryBuilder.append(") hit where hit.object_id = mv.object_id");
 		else if (detail & !count)
 			sqlQueryBuilder.append(
-					") hit where hit.object_id = mv.object_id and data.data_id = mv.object_id and coll.coll_id = data.coll_id");
+					") hit where hit.object_id = mv.object_id ");
 		else if (!detail & !count)
 			sqlQueryBuilder.append(") hit where hit.object_id = mv.object_id");
 
