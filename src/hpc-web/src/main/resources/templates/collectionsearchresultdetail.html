@@ -601,6 +601,76 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
        $scope.gridApi.selection.clearSelectedRows();
    };
 
+  // Pagination control functions
+  $scope.goToFirstPage = function() {
+      if ($scope.currentPage > 1) {
+          updatePage('first', $scope.currentPageSize);
+      }
+  };
+
+  $scope.goToPreviousPage = function() {
+      if ($scope.currentPage > 1) {
+          updatePage('previous', $scope.currentPageSize);
+      }
+  };
+
+  $scope.goToNextPage = function() {
+      if ($scope.currentPage < $scope.totalPages) {
+          updatePage('next', $scope.currentPageSize);
+      }
+  };
+
+  $scope.goToLastPage = function() {
+      if ($scope.currentPage < $scope.totalPages) {
+          updatePage('last', $scope.currentPageSize);
+      }
+  };
+
+  $scope.goToPageOnEnter = function(event) {
+      if (event.which === 13) {
+          var pageNumber = parseInt($scope.jumpToPage);
+          if (pageNumber >= 1 && pageNumber <= $scope.totalPages && pageNumber !== $scope.currentPage) {
+              // Update the form and submit for the specific page
+              document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = pageNumber;
+              if(source == "'search'" || source == 'search')
+                  document.getElementById("simplesearchform").action = "/search";
+              else
+                  document.getElementById("simplesearchform").action = "/criteria";
+              
+              document.getElementById("simplesearchform").elements.namedItem("pageSize").value = $scope.currentPageSize;
+              document.getElementById("simplesearchform").elements.namedItem("searchPathOrMetadata").value = searchPathOrMetadata;
+              document.getElementById("simplesearchform").elements.namedItem("globalMetadataSearchText").value = globalMetadataSearchText;
+              document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
+              
+              var updatedList = [];
+              if(selectedRowsData != null) {
+                  if(hpcSelectedDatafileList != null) {
+                      for(var i=hpcSelectedDatafileList.length-1;i>=0;i--) {
+                          var row = hpcSelectedDatafileList[i];
+                          var pageRow = row.substring(0,row.lastIndexOf(":"));
+                          var page = pageRow.substring(0,pageRow.indexOf(":"));
+                          if(page != $scope.currentPage)
+                              updatedList.push(row)
+                      }
+                  }
+                  
+                  for(var i=0;i<selectedRowsData.length;i++) {
+                      if(!updatedList.contains(selectedRowsData[i]))
+                          updatedList.push(selectedRowsData[i]);
+                  }
+              }
+              document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
+              document.getElementById("simplesearchform").elements.namedItem("deselectedColumns").value = deselectedColumns;
+              document.getElementById("simplesearchform").submit();
+          }
+          $scope.jumpToPage = '';
+      }
+  };
+
+  $scope.changePageSize = function() {
+      updatePage('first', $scope.currentPageSize);
+  };
+
   $scope.getId = function(grid,row,col)
   {
     console.log(row);
@@ -767,6 +837,40 @@ window.onclick = function(event) {
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body">
+								<!-- Top Pagination Controls -->
+								<div class="pagination-controls-top" style="margin-bottom: 10px; text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9;">
+									<div class="pagination-info" style="display: inline-block; margin-right: 20px;">
+										<span>Page {{currentPage}} of {{totalPages}} | Total Records: {{totalRows}}</span>
+									</div>
+									<div class="pagination-buttons" style="display: inline-block;">
+										<button class="btn btn-sm btn-default" ng-click="goToFirstPage()" ng-disabled="currentPage <= 1">
+											<i class="fa fa-angle-double-left"></i> First
+										</button>
+										<button class="btn btn-sm btn-default" ng-click="goToPreviousPage()" ng-disabled="currentPage <= 1">
+											<i class="fa fa-angle-left"></i> Previous
+										</button>
+										<input type="number" class="form-control" style="display: inline-block; width: 60px; margin: 0 5px; text-align: center;" 
+											ng-model="jumpToPage" ng-keypress="goToPageOnEnter($event)" 
+											min="1" max="{{totalPages}}" placeholder="{{currentPage}}">
+										<button class="btn btn-sm btn-default" ng-click="goToNextPage()" ng-disabled="currentPage >= totalPages">
+											Next <i class="fa fa-angle-right"></i>
+										</button>
+										<button class="btn btn-sm btn-default" ng-click="goToLastPage()" ng-disabled="currentPage >= totalPages">
+											Last <i class="fa fa-angle-double-right"></i>
+										</button>
+									</div>
+									<div class="page-size-selector" style="display: inline-block; margin-left: 20px;">
+										<label style="margin-right: 5px;">Page Size:</label>
+										<select class="form-control" style="display: inline-block; width: 80px;" 
+											ng-model="currentPageSize" ng-change="changePageSize()">
+											<option value="500">500</option>
+											<option value="1000">1000</option>
+											<option value="2000">2000</option>
+											<option value="5000">5000</option>
+										</select>
+									</div>
+								</div>
+								
 								<div>
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
