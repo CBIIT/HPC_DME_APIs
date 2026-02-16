@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
@@ -659,6 +661,20 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
 		return migrationTask;
+	}
+
+	@Override
+	public Map<String, HpcFileLocation> getFilesForAutoTiering(String configurationId,
+			String s3ArchiveConfigurationId) throws HpcException {
+		logger.info("searchFilesForAutoTiering called with configurationId: {}, s3ArchiveConfigurationId: {}",
+				configurationId, s3ArchiveConfigurationId);
+
+		// TODO: Implement logic to:
+		// 1. Get the data management configuration to retrieve auto-tiering settings
+		// 2. Query the external archive DAO for files not accessed within the specified period
+		// 3. Build and return the map of file paths to HpcFileLocation objects
+
+		return new HashMap<>();
 	}
 }
 
