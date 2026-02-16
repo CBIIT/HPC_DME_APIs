@@ -11,12 +11,14 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * HPC Data Migration Application Service Interface.
@@ -297,6 +299,19 @@ public interface HpcDataMigrationService {
      */
     HpcDataMigrationTask createBulkAutoTieringTask(String configurationId, String fromS3ArchiveConfigurationId,
                                                    String toS3ArchiveConfigurationId, String userId) throws HpcException;
+
+    /**
+     * Search for files in the external archive that are candidates for auto-tiering migration.
+     * Files that have not been accessed within the configured time period will be identified
+     * and their locations returned.
+     *
+     * @param configurationId        The data management configuration ID.
+     * @param s3ArchiveConfigurationId The S3 archive configuration ID.
+     * @return A map of file paths to their corresponding file locations in the external archive.
+     * @throws HpcException on service failure.
+     */
+    Map<String, HpcFileLocation> getFilesForAutoTiering(String configurationId, String s3ArchiveConfigurationId)
+            throws HpcException;
 }
 
 

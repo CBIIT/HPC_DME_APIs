@@ -187,4 +187,11 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcMigrationResponseDTO processAutoTiering(String configurationId) throws HpcException;
+
+	/**
+	 * Process received bulk auto-tiering migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processBulkAutoTieringMigrationReceived() throws HpcException;
 }

@@ -619,6 +619,41 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
     @Override
     @HpcExecuteAsSystemAccount
+    public void processBulkAutoTieringMigrationReceived() throws HpcException {
+        dataMigrationService
+                .getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.BULK_AUTO_TIERING)
+                .forEach(bulkAutoTieringTask -> {
+                    if (markInProcess(bulkAutoTieringTask)) {
+                        try {
+                            logger.info("Processing bulk auto-tiering migration task - {}",
+                                    bulkAutoTieringTask.getId());
+
+                            // TODO - implement
+                            processBulkAutoTieringMigration(bulkAutoTieringTask);
+
+                            // Mark the bulk metadata update task - in-progress
+                            bulkAutoTieringTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
+                            dataMigrationService.updateDataMigrationTask(bulkAutoTieringTask);
+
+                        } catch (HpcException e) {
+                            logger.error("Failed to process bulk auto-tiering: task - {}",
+                                    bulkAutoTieringTask.getId(), e);
+                            try {
+                                dataMigrationService.completeBulkMigrationTask(bulkAutoTieringTask, e.getMessage());
+
+                            } catch (HpcException ex) {
+                                logger.error("Failed to complete bulk auto-tiering: task - {}",
+                                        bulkAutoTieringTask.getId(), ex);
+                            }
+                        } finally {
+                            doneProcessingDataMigrationTask(bulkAutoTieringTask);
+                        }
+                    }
+                });
+    }
+
+    @Override
+    @HpcExecuteAsSystemAccount
     public void assignMigrationServer() throws HpcException {
         dataMigrationService.assignDataMigrationTasks();
     }
@@ -1288,5 +1323,19 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
         }
 
         return dataObjectPaths;
+    }
+
+    /**
+     * Process a received bulk auto-tiering migration task.
+     * This method handles the migration of files from an external archive to S3 Glacier (auto-tiering).
+     * For a given DME config, It queries the files that have not been accessed
+     * within the specified time period and creates an individual migration task to get them registered with DME and
+     * then migrated to Glacier
+     *
+     * @param bulkAutoTieringTask The bulk auto-tiering migration task to process.
+     * @throws HpcException If failed to process the auto-tiering migration task.
+     */
+    private void processBulkAutoTieringMigration(HpcDataMigrationTask bulkAutoTieringTask) throws HpcException {
+
     }
 }
