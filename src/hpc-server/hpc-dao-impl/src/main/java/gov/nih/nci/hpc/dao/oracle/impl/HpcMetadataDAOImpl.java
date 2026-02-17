@@ -363,13 +363,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
 		searchMetadataEntry.setLevelLabel(rs.getString(8));
 
-		// Populate createdAt if the simplified query returns a creation timestamp column.
-		String createTs = rs.getString(9);
-		if (StringUtils.isNotBlank(createTs)) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(Long.parseLong(createTs) * 1000);
-			searchMetadataEntry.setCreatedAt(cal);
-		}
 		return searchMetadataEntry;
 	};
 
