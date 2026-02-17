@@ -42,6 +42,7 @@
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
 				<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
+				<xsd:element name="collectionCreated" type="xsd:dateTime" />
 				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
 				<xsd:element name="sourceURL" type="xsd:string" />
 				<xsd:element name="sourcePermissions" type="hpc-domain-datamanagement:HpcPathPermissions" />
@@ -50,6 +51,7 @@
 				<xsd:element name="metadataUpdated" type="xsd:dateTime" />
 				<xsd:element name="registrationEventRequired" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="linkSourcePath" type="xsd:string" />
+				<xsd:element name="linkCreated" type="xsd:dateTime" />
 				<xsd:element name="extractedMetadataAttributes" type="xsd:string" />
 				<xsd:element name="dmeDataId" type="xsd:string" />
 				<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" />
