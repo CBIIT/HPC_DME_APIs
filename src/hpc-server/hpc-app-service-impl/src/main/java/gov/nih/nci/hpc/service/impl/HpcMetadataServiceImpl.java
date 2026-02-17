@@ -751,10 +751,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 
 		// Create the link source path and link created metadata.
-		if (!StringUtils.isEmpty(linkSourcePath)) {
-			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
-			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_CREATED_ATTRIBUTE, toDateStr(Calendar.getInstance())));
-		}
+		addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
+		addMetadataEntry(metadataEntries, toMetadataEntry(LINK_CREATED_ATTRIBUTE, toDateStr(Calendar.getInstance())));
 		
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
