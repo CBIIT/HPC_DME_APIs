@@ -292,7 +292,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// metadata.
 		metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
 
-		// Create the link source path and link created metadata.
+		// Create link metadata for soft links, or collection creation metadata for regular collections.
 		if (!StringUtils.isEmpty(linkSourcePath)) {
 			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
 			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_CREATED_ATTRIBUTE, toDateStr(Calendar.getInstance())));
