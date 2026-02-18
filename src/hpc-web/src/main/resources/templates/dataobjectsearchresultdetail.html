@@ -210,6 +210,12 @@ window.onclick = function(event) {
         $scope.selectedRows = [];
         $scope.source = source;
         $scope.tableHeight = 'height: 600px';
+         // Options to disable pagination buttons
+        $scope.disableFirst = parseInt(currentPage) <= 1;
+        $scope.disablePrevious = parseInt(currentPage) <= 1;
+        $scope.disableNext = parseInt(currentPage) >= parseInt(totalPages);
+        $scope.disableLast = parseInt(currentPage) >= parseInt(totalPages);
+		alert("totalRows: "+totalRows+", totalPages: "+totalPages+", currentPage: "+currentPage+", currentPageSize: "+currentPageSize);
 
         $scope.selectAll = function() {
           $scope.gridApi.selection.selectAllRows();
@@ -678,25 +684,25 @@ window.onclick = function(event) {
           
         // Pagination control functions
         $scope.goToFirstPage = function() {
-            if ($scope.currentPage > 1) {
+            if (parseInt.currentPage > 1) {
                 updatePage('first', $scope.currentPageSize);
             }
         };
 
         $scope.goToPreviousPage = function() {
-            if ($scope.currentPage > 1) {
+            if (parseInt($scope.currentPage) > 1) {
                 updatePage('previous', $scope.currentPageSize);
             }
         };
 
         $scope.goToNextPage = function() {
-            if ($scope.currentPage < $scope.totalPages) {
+            if (parseInt($scope.currentPage) < parseInt($scope.totalPages)) {
                 updatePage('next', $scope.currentPageSize);
             }
         };
 
         $scope.goToLastPage = function() {
-            if ($scope.currentPage < $scope.totalPages) {
+            if (parseInt($scope.currentPage) < parseInt($scope.totalPages)) {
                 updatePage('last', $scope.currentPageSize);
             }
         };
@@ -908,19 +914,19 @@ window.onclick = function(event) {
 										<span>Page {{currentPage}} of {{totalPages}} | Total Records: {{totalRows}}</span>
 									</div>
 									<div class="pagination-buttons" style="display: inline-block;">
-										<button class="btn btn-sm btn-default" ng-click="goToFirstPage()" ng-disabled="currentPage <= 1">
+										<button class="btn btn-sm btn-default" ng-click="goToFirstPage()" ng-disabled="disableFirst">
 											<i class="fa fa-angle-double-left"></i> First
 										</button>
-										<button class="btn btn-sm btn-default" ng-click="goToPreviousPage()" ng-disabled="currentPage <= 1">
+										<button class="btn btn-sm btn-default" ng-click="goToPreviousPage()" ng-disabled="disablePrevious">
 											<i class="fa fa-angle-left"></i> Previous
 										</button>
 										<input type="number" class="form-control" style="display: inline-block; width: 60px; margin: 0 5px; text-align: center;" 
 											ng-model="jumpToPage" ng-keypress="goToPageOnEnter($event)" 
 											min="1" max="{{totalPages}}" placeholder="{{currentPage}}">
-										<button class="btn btn-sm btn-default" ng-click="goToNextPage()" ng-disabled="currentPage >= totalPages">
+										<button class="btn btn-sm btn-default" ng-click="goToNextPage()" ng-disabled="disableNext">
 											Next <i class="fa fa-angle-right"></i>
 										</button>
-										<button class="btn btn-sm btn-default" ng-click="goToLastPage()" ng-disabled="currentPage >= totalPages">
+										<button class="btn btn-sm btn-default" ng-click="goToLastPage()" ng-disabled="disableLast">
 											Last <i class="fa fa-angle-double-right"></i>
 										</button>
 									</div>
