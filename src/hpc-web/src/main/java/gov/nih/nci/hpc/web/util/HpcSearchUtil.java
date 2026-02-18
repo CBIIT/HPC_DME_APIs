@@ -170,8 +170,11 @@ public class HpcSearchUtil {
 				returnResult.setPath(result.getDataObject().getAbsolutePath());
 				returnResult.setUniqueId(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
+				// Populate createdOn so that exports have the correct createdOn column.
+				if (result.getDataObject().getCreatedAt() != null) {
+					returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt()));
+				}
 				returnResult.setDownload(result.getDataObject().getAbsolutePath());
 				returnResult.setPermission(result.getDataObject().getAbsolutePath());
 				returnResult.setLink(result.getDataObject().getAbsolutePath());
@@ -367,7 +370,6 @@ public class HpcSearchUtil {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
 			headers.add("uuid");
-			headers.add("createdOn");
 			
 			for (HpcDatafileSearchResultDetailed datafile : datafileResults) {
 				List<String> result = new ArrayList<String>();
@@ -395,8 +397,6 @@ public class HpcSearchUtil {
 						}
 						if(!found && header.equals("registeredBy"))
 							result.add(datafile.getRegisteredBy());
-						else if(!found && header.equals("createdOn"))
-							result.add(datafile.getCreatedOn());
 						else if(!found && !header.equals("path") && !header.equals("uuid"))
 							result.add("");
 					}
