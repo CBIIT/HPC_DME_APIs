@@ -30,6 +30,8 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DME_ID_ATTRIBUTE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_CREATED_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.COLLECTION_CREATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
@@ -290,9 +292,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// metadata.
 		metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
 
-		// Create the link source path metadata.
+		// Create link metadata for soft links, or collection creation metadata for regular collections.
 		if (!StringUtils.isEmpty(linkSourcePath)) {
 			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
+			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_CREATED_ATTRIBUTE, toDateStr(Calendar.getInstance())));
+		} else {
+			// Create the Collection-Created metadata.
+			addMetadataEntry(metadataEntries, toMetadataEntry(COLLECTION_CREATED_ATTRIBUTE, toDateStr(Calendar.getInstance())));
 		}
 
 		// Add Metadata to the DM system.
@@ -326,6 +332,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		systemGeneratedMetadata.setConfigurationId(metadataMap.get(CONFIGURATION_ID_ATTRIBUTE));
 		systemGeneratedMetadata.setS3ArchiveConfigurationId(metadataMap.get(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE));
 		systemGeneratedMetadata.setLinkSourcePath(metadataMap.get(LINK_SOURCE_PATH_ATTRIBUTE));
+		if (metadataMap.get(LINK_CREATED_ATTRIBUTE) != null) {
+			systemGeneratedMetadata.setLinkCreated(toCalendar(metadataMap.get(LINK_CREATED_ATTRIBUTE)));
+		}
+		if (metadataMap.get(COLLECTION_CREATED_ATTRIBUTE) != null) {
+			systemGeneratedMetadata.setCollectionCreated(toCalendar(metadataMap.get(COLLECTION_CREATED_ATTRIBUTE)));
+		}
 		systemGeneratedMetadata
 				.setExtractedMetadataAttributes(metadataMap.get(EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE));
 
@@ -737,8 +749,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// metadata.
 		metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
 
-		// Create the link source path metadata.
+
+		// Create the link source path and link created metadata for soft links.
 		addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
+		addMetadataEntry(metadataEntries, toMetadataEntry(LINK_CREATED_ATTRIBUTE, toDateStr(Calendar.getInstance())));
 
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
