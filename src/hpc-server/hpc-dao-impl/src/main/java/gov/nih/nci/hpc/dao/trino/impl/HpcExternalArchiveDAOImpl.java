@@ -59,9 +59,9 @@ public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
 		// TODO: Implement actual query logic using Trino to scan external archive
 		// For now, return dummy paths for testing
 		List<String> filePaths = new ArrayList<>();
-		filePaths.add("/CBIIT/DMAP/DMEDataStage2/AUTO_TIERING/Eran/eran-file-1.txt");
-		filePaths.add("/CBIIT/DMAP/DMEDataStage2/AUTO_TIERING/Eran/eran-file-2.txt");
-		filePaths.add("/CBIIT/DMAP/DMEDataStage2/AUTO_TIERING/Eran/eran-file-3.txt");
+		filePaths.add("/Eran/eran-file-1.txt");
+		filePaths.add("/Eran/eran-file-2.txt");
+		filePaths.add("/Eran/eran-file-3.txt");
 
 		logger.info("Returning {} file paths", filePaths.size());
 		return filePaths;
