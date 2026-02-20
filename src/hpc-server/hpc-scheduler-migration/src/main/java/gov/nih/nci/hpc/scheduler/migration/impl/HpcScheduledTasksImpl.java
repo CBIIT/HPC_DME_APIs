@@ -102,7 +102,10 @@ public class HpcScheduledTasksImpl {
 				dataMigrationBusService::processDataObjectMetadataUpdateMigrationReceived, logger);
 	}
 
-	/** Process auto-tiering task. */
+	/**
+	 * Process auto-tiering task. Retrieves all data management configurations with auto-tiering enabled
+	 * and creates a bulk auto-tiering migration task for each configuration.
+	 */
 	@Scheduled(cron = "${hpc.scheduler.migration.cron.processAutoTiering.delay}")
 	private void processAutoTieringTask() {
 		execute("processAutoTiering()", dataMigrationBusService::processAutoTiering, logger);

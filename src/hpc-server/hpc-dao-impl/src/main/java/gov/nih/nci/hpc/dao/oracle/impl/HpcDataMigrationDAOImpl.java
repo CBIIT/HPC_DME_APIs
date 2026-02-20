@@ -10,18 +10,16 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
-import static gov.nih.nci.hpc.util.HpcUtil.fromPathsString;
-import static gov.nih.nci.hpc.util.HpcUtil.toPathsString;
-
-import java.sql.Types;
-import java.util.AbstractMap;
-import java.util.Calendar;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
+import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.exception.HpcException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,16 +32,11 @@ import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
-import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.exception.HpcException;
+import java.sql.Types;
+import java.util.*;
+
+import static gov.nih.nci.hpc.util.HpcUtil.fromPathsString;
+import static gov.nih.nci.hpc.util.HpcUtil.toPathsString;
 
 /**
  * HPC Data Migration DAO Implementation.
@@ -60,11 +53,12 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, PERCENT_COMPLETE = ?, SERVER_ID = ?, "
 			+ "RETRY_TASK_ID = ?, RETRY_USER_ID = ?, RETRY_FAILED_ITEMS_ONLY = ?, METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID = ?, "
-			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ? "
+			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ?, FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, FROM_S3_ARCHIVE_LOCATION_FILE_ID = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, STATUS, CREATED, ALIGN_ARCHIVE_PATH, DATA_SIZE, PERCENT_COMPLETE, SERVER_ID, RETRY_TASK_ID, RETRY_USER_ID, "
-			+ "RETRY_FAILED_ITEMS_ONLY, METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID, METADATA_TO_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "RETRY_FAILED_ITEMS_ONLY, METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID, METADATA_TO_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN, "
+			+ "FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, FROM_S3_ARCHIVE_LOCATION_FILE_ID) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -74,13 +68,13 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, FROM_S3_ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, TO_S3_ARCHIVE_LOCATION_FILE_ID = ?, SERVER_ID = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, "
 			+ "RETRY_TASK_ID = ?, RETRY_USER_ID = ?, METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID = ?, "
-			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ? "
+			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ?, AUTO_TIERING_FILE_CONTAINER_ID = ?, AUTO_TIERING_FILE_ID = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, RESULT, CREATED, COMPLETED, MESSAGE, FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, "
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_ID, TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, TO_S3_ARCHIVE_LOCATION_FILE_ID, SERVER_ID, "
 			+ "ALIGN_ARCHIVE_PATH, DATA_SIZE, RETRY_TASK_ID, RETRY_USER_ID, METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID, "
-			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN, AUTO_TIERING_FILE_CONTAINER_ID, AUTO_TIERING_FILE_ID) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -90,7 +84,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String GET_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where STATUS = ? and TYPE = ? and SERVER_ID = ?";
 
-	private static final String GET_UNASSIGNED_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where STATUS = 'RECEIVED' and SERVER_ID is null";
+	private static final String GET_UNASSIGNED_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where STATUS in ('RECEIVED', 'AUTO_TIERING_RECEIVED') and SERVER_ID is null";
 
 	private static final String GET_DATA_OBJECT_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK  where PARENT_ID = ?";
 
@@ -154,6 +148,14 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 				.setMetadataFromArchiveFileContainerId(rs.getString("METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID"));
 		dataMigrationTask.setMetadataToArchiveFileContainerId(rs.getString("METADATA_TO_ARCHIVE_FILE_CONTAINER_ID"));
 		dataMigrationTask.setMetadataArchiveFileIdPattern(rs.getString("METADATA_ARCHIVE_FILE_ID_PATTERN"));
+
+		HpcFileLocation fromS3ArchiveLocation = new HpcFileLocation();
+		fromS3ArchiveLocation.setFileContainerId(rs.getString("FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID"));
+		fromS3ArchiveLocation.setFileId(rs.getString("FROM_S3_ARCHIVE_LOCATION_FILE_ID"));
+		if(!StringUtils.isEmpty(fromS3ArchiveLocation.getFileContainerId()) &&
+				!StringUtils.isEmpty(fromS3ArchiveLocation.getFileId())) {
+			dataMigrationTask.setFromS3ArchiveLocation(fromS3ArchiveLocation);
+		}
 
 		if (rs.getObject("RETRY_FAILED_ITEMS_ONLY") != null) {
 			dataMigrationTask.setRetryFailedItemsOnly(rs.getBoolean("RETRY_FAILED_ITEMS_ONLY"));
@@ -256,6 +258,12 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					? toPathsString(dataMigrationTask.getCollectionPaths())
 					: null;
 
+			String fromS3ArchiveLocationFileContainerId = null, fromS3ArchiveLocationFileId = null;
+			if(dataMigrationTask.getFromS3ArchiveLocation() != null) {
+				fromS3ArchiveLocationFileContainerId = dataMigrationTask.getFromS3ArchiveLocation().getFileContainerId();
+				fromS3ArchiveLocationFileId = dataMigrationTask.getFromS3ArchiveLocation().getFileId();
+			}
+
 			jdbcTemplate.update(UPSERT_DATA_MIGRATION_TASK_SQL, dataMigrationTask.getId(),
 					dataMigrationTask.getParentId(), dataMigrationTask.getUserId(), dataMigrationTask.getPath(),
 					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
@@ -267,7 +275,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getRetryFailedItemsOnly(),
 					dataMigrationTask.getMetadataFromArchiveFileContainerId(),
 					dataMigrationTask.getMetadataToArchiveFileContainerId(),
-					dataMigrationTask.getMetadataArchiveFileIdPattern(), dataMigrationTask.getId(),
+					dataMigrationTask.getMetadataArchiveFileIdPattern(),
+					fromS3ArchiveLocationFileContainerId, fromS3ArchiveLocationFileId,
+					dataMigrationTask.getId(),
 					dataMigrationTask.getParentId(), dataMigrationTask.getUserId(), dataMigrationTask.getPath(),
 					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
@@ -278,7 +288,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getRetryFailedItemsOnly(),
 					dataMigrationTask.getMetadataFromArchiveFileContainerId(),
 					dataMigrationTask.getMetadataToArchiveFileContainerId(),
-					dataMigrationTask.getMetadataArchiveFileIdPattern());
+					dataMigrationTask.getMetadataArchiveFileIdPattern(),
+					fromS3ArchiveLocationFileContainerId, fromS3ArchiveLocationFileId);
 
 			jdbcTemplate.update(UPDATE_DATA_MIGRATION_TASK_CLOBS_SQL,
 					new Object[] { new SqlLobValue(dataObjectPaths, lobHandler),
@@ -440,7 +451,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					dataMigrationTask.getSize(), dataMigrationTask.getRetryTaskId(), dataMigrationTask.getRetryUserId(),
 					dataMigrationTask.getMetadataFromArchiveFileContainerId(),
 					dataMigrationTask.getMetadataToArchiveFileContainerId(),
-					dataMigrationTask.getMetadataArchiveFileIdPattern(), dataMigrationTask.getId(),
+					dataMigrationTask.getMetadataArchiveFileIdPattern(),
+					dataMigrationTask.getId(),
 					dataMigrationTask.getParentId(), dataMigrationTask.getUserId(), dataMigrationTask.getPath(),
 					dataMigrationTask.getConfigurationId(), dataMigrationTask.getFromS3ArchiveConfigurationId(),
 					dataMigrationTask.getToS3ArchiveConfigurationId(), dataMigrationTask.getType().value(),
@@ -547,6 +559,5 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			throw new HpcException("Failed to cleanup a data migration tasks: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
-
 	}
 }

@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.google.common.collect.Iterables;
 
 import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
+import gov.nih.nci.hpc.dao.HpcExternalArchiveDAO;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
@@ -37,6 +38,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -47,6 +49,8 @@ import gov.nih.nci.hpc.service.HpcDataMigrationService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 
 /**
  * HPC Data Search Application Service Implementation.
@@ -87,6 +91,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Autowired
 	private HpcSecurityService securityService = null;
 
+	// External Archive DAO.
+	@Autowired
+	private HpcExternalArchiveDAO externalArchiveDAO = null;
+
 	// A configured ID representing the server performing a migration task.
 	@Value("${hpc.service.serverId}")
 	private String serverId = null;
@@ -125,8 +133,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
 			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
-			String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId) throws HpcException {
+			boolean alignArchivePath, Long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
+			String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId,
+			boolean autoTieringRequest, HpcFileLocation fromS3ArchiveLocation) throws HpcException {
 		// Check if a task already exist.
 		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
 				path);
@@ -148,6 +157,12 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			return migrationTask;
 		}
 
+		// Validate auto tiering request.
+		if(autoTieringRequest && !isValidFileLocation(fromS3ArchiveLocation)) {
+			throw new HpcException("Auto tiering requested w/o an external file location",
+			                       HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		// Create and persist a migration task.
 		migrationTask.setPath(path);
 		migrationTask.setUserId(userId);
@@ -155,7 +170,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
 		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
 		migrationTask.setCreated(Calendar.getInstance());
-		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+		migrationTask.setStatus(autoTieringRequest ? HpcDataMigrationStatus.AUTO_TIERING_RECEIVED :
+		                                             HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(metadataUpdateRequest ? HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE
 				: HpcDataMigrationType.DATA_OBJECT);
 		migrationTask.setParentId(collectionMigrationTaskId);
@@ -166,6 +182,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setRetryUserId(retryUserId);
 		migrationTask.setMetadataFromArchiveFileContainerId(metadataFromArchiveFileContainerId);
 		migrationTask.setMetadataToArchiveFileContainerId(metadataToArchiveFileContainerId);
+		migrationTask.setFromS3ArchiveLocation(fromS3ArchiveLocation);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -664,17 +681,57 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	}
 
 	@Override
-	public Map<String, HpcFileLocation> getFilesForAutoTiering(String configurationId,
+	public Map<String, HpcFileLocation> getDataObjectsForAutoTiering(String configurationId,
 			String s3ArchiveConfigurationId) throws HpcException {
-		logger.info("searchFilesForAutoTiering called with configurationId: {}, s3ArchiveConfigurationId: {}",
+		logger.info("getDataObjectsForAutoTiering called with configurationId: {}, s3ArchiveConfigurationId: {}",
 				configurationId, s3ArchiveConfigurationId);
 
-		// TODO: Implement logic to:
-		// 1. Get the data management configuration to retrieve auto-tiering settings
-		// 2. Query the external archive DAO for files not accessed within the specified period
-		// 3. Build and return the map of file paths to HpcFileLocation objects
+		// Get the data management configuration.
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementConfigurationLocator.get(configurationId);
+		if (dataManagementConfiguration == null) {
+			throw new HpcException("Data management configuration not found for ID: " + configurationId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
-		return new HashMap<>();
+		// Get the S3 data transfer configuration
+		HpcDataTransferConfiguration s3Configuration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, HpcDataTransferType.S_3);
+		if (s3Configuration == null) {
+			throw new HpcException("S3 archive configuration not found for ID: " + s3ArchiveConfigurationId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate search path and inactivity months are defined
+		if (StringUtils.isEmpty(s3Configuration.getAutoTieringSearchPath())) {
+			throw new HpcException("Auto-tiering search path is not defined for S3 configuration: " + s3ArchiveConfigurationId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (s3Configuration.getAutoTieringInactivityMonths() == null) {
+			throw new HpcException("Auto-tiering inactivity months is not defined for S3 configuration: " + s3ArchiveConfigurationId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Build the map of file paths to HpcFileLocation - these are the data objects to be auto-tiered.
+		String basePath = dataManagementConfiguration.getBasePath();
+		String bucket = s3Configuration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+		String objectIdPrefix = s3Configuration.getBaseArchiveDestination().getFileLocation().getFileId();
+
+		Map<String, HpcFileLocation> autoTieringDataObjects = new HashMap<>();
+		// Query for files not accessed within the specified period and create the map of data obejcts to return.
+		externalArchiveDAO.getFilesNotAccessed(
+				s3Configuration.getAutoTieringSearchPath(),
+				s3Configuration.getAutoTieringInactivityMonths()).forEach(searchRelativePath -> {
+					// Construct HpcFileLocation of the data object to be auto-tiered.
+					HpcFileLocation fileLocation = new HpcFileLocation();
+					fileLocation.setFileContainerId(bucket);
+			        fileLocation.setFileId(objectIdPrefix + searchRelativePath);
+
+					// Add this data object to the returned map.
+					autoTieringDataObjects.put(basePath + searchRelativePath, fileLocation);
+				});
+
+		logger.info("Found {} files for auto-tiering for configuration: {}", autoTieringDataObjects.size(), configurationId);
+		return autoTieringDataObjects;
 	}
 }
 
