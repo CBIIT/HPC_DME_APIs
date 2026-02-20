@@ -55,13 +55,21 @@ public interface HpcDataMigrationService {
      *                                           from archive file container ID.
      * @param metadataToArchiveFileContainerId   (Optional) The metadata migration
      *                                           to archive file container ID.
+     * @param autoTieringRequest                 True to indicate this is an auto-tiering
+     *                                           migration request for files from external
+     *                                           archive to S3 Glacier Deep Archive.
+     * @param fromS3ArchiveLocation              (Optional) The external archive file location
+     *                                           for auto-tiering requests, containing the
+     *                                           file container ID and file ID of the source
+     *                                           file in the external archive.
      * @return A migration task ID.
      * @throws HpcException on service failure.
      */
     public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
                                                               String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-                                                              boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
-                                                              String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId) throws HpcException;
+                                                              boolean alignArchivePath, Long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
+                                                              String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId,
+                                                              boolean autoTieringRequest, HpcFileLocation fromS3ArchiveLocation) throws HpcException;
 
     /**
      * Get a list of migration tasks in specific status and type.
@@ -302,15 +310,15 @@ public interface HpcDataMigrationService {
 
     /**
      * Search for files in the external archive that are candidates for auto-tiering migration.
-     * Files that have not been accessed within the configured time period will be identified
-     * and their locations returned.
+     * Files that have not been accessed within the configured time period will be identified,
+     * and their DME path and external archive locations returned
      *
      * @param configurationId        The data management configuration ID.
      * @param s3ArchiveConfigurationId The S3 archive configuration ID.
-     * @return A map of file paths to their corresponding file locations in the external archive.
+     * @return A map of data object paths to their corresponding file locations in the external archive.
      * @throws HpcException on service failure.
      */
-    Map<String, HpcFileLocation> getFilesForAutoTiering(String configurationId, String s3ArchiveConfigurationId)
+    Map<String, HpcFileLocation> getDataObjectsForAutoTiering(String configurationId, String s3ArchiveConfigurationId)
             throws HpcException;
 }
 

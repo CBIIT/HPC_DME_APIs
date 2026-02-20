@@ -46,6 +46,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
@@ -628,7 +629,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                             logger.info("Processing bulk auto-tiering migration task - {}",
                                     bulkAutoTieringTask.getId());
 
-                            // TODO - implement
+                            // Get data objects eligible for auto-tiering and create individual migration tasks
                             processBulkAutoTieringMigration(bulkAutoTieringTask);
 
                             // Mark the bulk metadata update task - in-progress
@@ -908,7 +909,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                         userId, null, null,
                         migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
                         collectionMigrationTaskId, alignArchivePath, metadata != null ? metadata.getSourceSize() : null,
-                        retryTaskId, retryUserId, false, null, null);
+                        retryTaskId, retryUserId, false, null, null,
+                        false, null);
                 dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
                         HpcDataMigrationResult.IGNORED, "Invalid migration request: " + e.getMessage(), null, null);
                 migrationResponse.setTaskId(dataObjectMigrationTask.getId());
@@ -923,7 +925,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                 metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
                 migrationRequest != null ? migrationRequest.getS3ArchiveConfigurationId() : null,
                 collectionMigrationTaskId, alignArchivePath, metadata.getSourceSize(), retryTaskId, retryUserId, false,
-                null, null).getId());
+                null, null, false, null).getId());
 
         return migrationResponse;
     }
@@ -1072,7 +1074,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                     bulkMetadataUpdateTask.getToS3ArchiveConfigurationId(), bulkMetadataUpdateTask.getId(), false,
                     metadata != null ? Optional.ofNullable(metadata.getSourceSize()).orElse(0L) : 0, null, null, true,
                     bulkMetadataUpdateTask.getMetadataFromArchiveFileContainerId(),
-                    bulkMetadataUpdateTask.getMetadataToArchiveFileContainerId());
+                    bulkMetadataUpdateTask.getMetadataToArchiveFileContainerId(), false, null);
             dataMigrationService.completeDataObjectMetadataUpdateTask(dataObjectMetadataUpdateTask,
                     HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE,
                     "Invalid metadata update request: " + e.getMessage());
@@ -1088,7 +1090,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                 bulkMetadataUpdateTask.getToS3ArchiveConfigurationId(), bulkMetadataUpdateTask.getId(), false,
                 metadata.getSourceSize(), null, null, true,
                 bulkMetadataUpdateTask.getMetadataFromArchiveFileContainerId(),
-                bulkMetadataUpdateTask.getMetadataToArchiveFileContainerId());
+                bulkMetadataUpdateTask.getMetadataToArchiveFileContainerId(), false, null);
     }
 
     /**
@@ -1337,5 +1339,21 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
      */
     private void processBulkAutoTieringMigration(HpcDataMigrationTask bulkAutoTieringTask) throws HpcException {
 
+        for(Map.Entry<String, HpcFileLocation> autoTieringEntry :
+                dataMigrationService.getDataObjectsForAutoTiering(bulkAutoTieringTask.getConfigurationId(),
+                                                                  bulkAutoTieringTask.getFromS3ArchiveConfigurationId()).
+                                                                  entrySet()) {
+
+            HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(autoTieringEntry.getKey(),
+                    bulkAutoTieringTask.getUserId(), bulkAutoTieringTask.getConfigurationId(),
+                    bulkAutoTieringTask.getFromS3ArchiveConfigurationId(),
+                    bulkAutoTieringTask.getToS3ArchiveConfigurationId(),
+                    bulkAutoTieringTask.getId(), bulkAutoTieringTask.getAlignArchivePath(),
+                    null, null, bulkAutoTieringTask.getRetryUserId(),
+                    false, null, null,
+                    true, autoTieringEntry.getValue());
+
+            logger.info("Data object auto-tiering task - {}: created", dataObjectMigrationTask.getId());
+        }
     }
 }
