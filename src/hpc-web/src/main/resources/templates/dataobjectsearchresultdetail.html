@@ -209,7 +209,6 @@ window.onclick = function(event) {
         $scope.gridOptions1.data = results;
         $scope.selectedRows = [];
         $scope.source = source;
-        $scope.tableHeight = 'height: 550px';
 
         $scope.selectAll = function() {
           $scope.gridApi.selection.selectAllRows();
@@ -812,7 +811,7 @@ window.onclick = function(event) {
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"
-										style="{{tableHeight}}"></div>
+										class="search-results-grid"></div>
 										
 								</div>
 							</div>

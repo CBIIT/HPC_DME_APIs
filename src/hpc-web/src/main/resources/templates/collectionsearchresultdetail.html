@@ -182,8 +182,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
   $scope.selectedRows = [];
   $scope.currentPage = currentPage;
   $scope.source = source;
-  $scope.gridHeightPx = 550;
-  $scope.tableHeight = 'height: ' + $scope.gridHeightPx + 'px';
   
   $scope.selectAll = function() {
   	$scope.gridApi.selection.selectAllRows();
@@ -748,7 +746,7 @@ window.onclick = function(event) {
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true" 
-										style="{{tableHeight}}"></div>
+										class="search-results-grid"></div>
 								</div>
 							</div>
 						</div>
