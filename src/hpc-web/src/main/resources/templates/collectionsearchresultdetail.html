@@ -182,7 +182,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $h
   $scope.selectedRows = [];
   $scope.currentPage = currentPage;
   $scope.source = source;
-  $scope.tableHeight = 'height: 550px';
+  $scope.gridHeightPx = 550;
+  $scope.tableHeight = 'height: ' + $scope.gridHeightPx + 'px';
   
   $scope.selectAll = function() {
   	$scope.gridApi.selection.selectAllRows();
