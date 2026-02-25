@@ -171,10 +171,6 @@ public class HpcSearchUtil {
 				returnResult.setUniqueId(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
-				// Populate createdOn so that exports have the correct createdOn column.
-				if (result.getDataObject().getCreatedAt() != null) {
-					returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt()));
-				}
 				returnResult.setDownload(result.getDataObject().getAbsolutePath());
 				returnResult.setPermission(result.getDataObject().getAbsolutePath());
 				returnResult.setLink(result.getDataObject().getAbsolutePath());
