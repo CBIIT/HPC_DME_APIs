@@ -72,3 +72,7 @@
 	height: 5px;
 	z-index: 9999;
 }
+
+.search-results-grid {
+	height: 550px;
+}
