@@ -40,6 +40,11 @@ body {
 .pad40-top {
     padding-top: 40px;
 }
+
+/* Search results grid height */
+.search-results-grid {
+    height: 550px;
+}
             
 h1,h2,h3,h4,h5{
     font-weight: 300;
