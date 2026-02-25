@@ -27,6 +27,7 @@
 <link href="css/style-responsive.css" rel="stylesheet" />
 <link href="css/xcharts.min.css" rel=" stylesheet" />
 <link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="css/search.css" th:href="@{/css/search.css}"/>
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -147,7 +148,6 @@
         $scope.gridOptions1.data = results;
         $scope.selectedRows = [];
         $scope.source = source;
-        $scope.tableHeight = 'height: 550px';
 
         $scope.selectAll = function() {
           $scope.gridApi.selection.selectAllRows();
@@ -517,7 +517,7 @@
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"
-										style="{{tableHeight}}"></div>
+										class="search-results-grid"></div>
 										
 								</div>
 							</div>
