@@ -142,8 +142,6 @@ public class HpcExporter
 				CollectionUtils.isNotEmpty(dataObjectsDTO.getDataObjectPaths())) {
 			List<List<String>> rows = new ArrayList<>();
 			headers.add("path");
-			if (deselectedColumns != null && !deselectedColumns.contains(("createdOn")))
-              headers.add("createdOn");
             if (deselectedColumns != null && !deselectedColumns.contains(("uniqueId")))
               headers.add("uuid");
             if (deselectedColumns != null && !deselectedColumns.contains(("registeredBy")))
@@ -159,8 +157,6 @@ public class HpcExporter
 			for (HpcDataObjectDTO datafile : dataObjectsDTO.getDataObjects()) {
 				List<String> result = new ArrayList<String>();
 				result.add(datafile.getDataObject().getAbsolutePath());
-				if(headers.contains("createdOn"))
-					result.add(format.format(datafile.getDataObject().getCreatedAt().getTime()));
 				if (datafile != null && datafile.getMetadataEntries() != null) {
 					List<HpcMetadataEntry> combinedMetadataEntries = new ArrayList<>();
 					combinedMetadataEntries.addAll(datafile.getMetadataEntries().getSelfMetadataEntries());
