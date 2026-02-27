@@ -472,14 +472,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			googleAccessToken = encryptor.decrypt(token);
 		}
 
-		if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+		if (downloadTaskResult.getDestinationType() != null && downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			googleDriveDownloadDestination.setAccessToken(googleAccessToken);
 			downloadTaskResult.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
 		}
 		
-		if (downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
+		if (downloadTaskResult.getDestinationType() != null && downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
 			HpcGoogleDownloadDestination googleCloudStorageDestination = new HpcGoogleDownloadDestination();
 			googleCloudStorageDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
 			googleCloudStorageDestination.setAccessToken(googleAccessToken);
