@@ -230,7 +230,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 				// Add bulk metadata to iRODS, and validate the result.
 				for (BulkAVUOperationResponse addAvuResponse : irodsConnection.getCollectionAO(authenticatedToken)
 						.addBulkAVUMetadataToCollection(getAbsolutePath(path), avuDatas)) {
-					if (!addAvuResponse.getResultStatus().equals(ResultStatus.OK)) {
+					if (addAvuResponse.getResultStatus() != ResultStatus.OK) {
 						// Add metadata failed.
 						String message = "Failed to add metadata to a collection [" + path + "]: "
 								+ addAvuResponse.getResultStatus() + " - " + addAvuResponse.getMessage();
