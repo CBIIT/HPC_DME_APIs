@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -139,11 +140,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_NAME = ?, DESTINATION_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
-			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, FIRST_HOP_RETRIED = ?, DOC = ? "
+			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, FIRST_HOP_RETRIED = ?, DOC = ?, GOOGLE_ACCESS_TOKEN = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
-			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, RETRY_USER_ID, FIRST_HOP_RETRIED, DOC) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, RETRY_USER_ID, FIRST_HOP_RETRIED, DOC, GOOGLE_ACCESS_TOKEN) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -152,15 +153,15 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = "merge into HPC_COLLECTION_DOWNLOAD_TASK  using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_OVERWRITE = ?, S3_ACCOUNT_ACCESS_KEY = ?, S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, "
-			+ "S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, GOOGLE_CLOUD_ACCESS_TOKEN = ?,"
+			+ "S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_ACCESS_TOKEN = ?, "
 			+ "ASPERA_ACCOUNT_USER = ?, ASPERA_ACCOUNT_PASSWORD = ?, ASPERA_ACCOUNT_HOST = ?, BOX_ACCESS_TOKEN = ?, BOX_REFRESH_TOKEN = ?, "
 			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, APPEND_COLLECTION_NAME_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, CREATED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, "
 			+ "DATA_TRANSFER_REQUEST_ID = ?, DESTINATION_TYPE = ?, DOC = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_ID, "
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, "
-			+ "GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_CLOUD_ACCESS_TOKEN, ASPERA_ACCOUNT_USER, ASPERA_ACCOUNT_PASSWORD, ASPERA_ACCOUNT_HOST, BOX_ACCESS_TOKEN, BOX_REFRESH_TOKEN, "
+			+ "GOOGLE_ACCESS_TOKEN, ASPERA_ACCOUNT_USER, ASPERA_ACCOUNT_PASSWORD, ASPERA_ACCOUNT_HOST, BOX_ACCESS_TOKEN, BOX_REFRESH_TOKEN, "
 			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION, APPEND_COLLECTION_NAME_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, CREATED, RETRY_TASK_ID, RETRY_USER_ID, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE, DOC) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_CLOBS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -249,6 +250,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String SELECT_FOR_UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ? and STATUS = 'RECEIVED' for update nowait";
 	private static final String UPDATE_TOTAL_BYTES_TRANSFERRED_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set TOTAL_BYTES_TRANSFERRED = nvl(TOTAL_BYTES_TRANSFERRED, 0) + ? where ID = ? and STATUS = 'RECEIVED'";
 
+	private static final String REMOVE_GOOGLE_ACCESS_TOKEN_FROM_DOWNLOAD_TASK_RESULT_SQL =
+			"update HPC_DOWNLOAD_TASK_RESULT set GOOGLE_ACCESS_TOKEN='' where GOOGLE_ACCESS_TOKEN is not null and COMPLETED < sysdate  - (?/24)";
+	
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -457,6 +461,26 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		downloadTaskResult.setRestoreRequested(rs.getBoolean("RESTORE_REQUESTED"));
 		downloadTaskResult.setFirstHopRetried(rs.getBoolean("FIRST_HOP_RETRIED"));
 
+		String googleAccessToken = null;
+		byte[] token = rs.getBytes("GOOGLE_ACCESS_TOKEN");
+		if (token != null && token.length > 0) {
+			googleAccessToken = encryptor.decrypt(token);
+		}
+
+		if (downloadTaskResult.getDestinationType() != null && downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
+			googleDriveDownloadDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			googleDriveDownloadDestination.setAccessToken(googleAccessToken);
+			downloadTaskResult.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		}
+		
+		if (downloadTaskResult.getDestinationType() != null && downloadTaskResult.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
+			HpcGoogleDownloadDestination googleCloudStorageDestination = new HpcGoogleDownloadDestination();
+			googleCloudStorageDestination.setDestinationLocation(downloadTaskResult.getDestinationLocation());
+			googleCloudStorageDestination.setAccessToken(googleAccessToken);
+			downloadTaskResult.setGoogleCloudStorageDestination(googleCloudStorageDestination);
+		}
+		
 		return downloadTaskResult;
 	};
 
@@ -503,16 +527,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			s3Account.setPathStyleAccessEnabled(rs.getBoolean("S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED"));
 		}
 
-		String googleDriveAccessToken = null;
-		byte[] driveToken = rs.getBytes("GOOGLE_DRIVE_ACCESS_TOKEN");
-		if (driveToken != null && driveToken.length > 0) {
-			googleDriveAccessToken = encryptor.decrypt(driveToken);
-		}
-
-		String googleCloudAccessToken = null;
-		byte[] cloudToken = rs.getBytes("GOOGLE_CLOUD_ACCESS_TOKEN");
-		if (cloudToken != null && cloudToken.length > 0) {
-			googleCloudAccessToken = encryptor.decrypt(cloudToken);
+		String googleAccessToken = null;
+		byte[] token = rs.getBytes("GOOGLE_ACCESS_TOKEN");
+		if (token != null && token.length > 0) {
+			googleAccessToken = encryptor.decrypt(token);
 		}
 
 		HpcAsperaAccount asperaAccount = null;
@@ -546,19 +564,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				collectionDownloadTask.setDestinationType(HpcDataTransferType.S_3);
 			}
 
-		} else if (googleDriveAccessToken != null) {
+		} else if (collectionDownloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination = new HpcGoogleDownloadDestination();
 			googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
-			googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
+			googleDriveDownloadDestination.setAccessToken(googleAccessToken);
 			collectionDownloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
 			if (destinationType == null) {
 				collectionDownloadTask.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
 			}
 
-		} else if (googleCloudAccessToken != null) {
+		} else if (collectionDownloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_CLOUD_STORAGE)) {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination = new HpcGoogleDownloadDestination();
 			googleCloudStorageDownloadDestination.setDestinationLocation(destinationLocation);
-			googleCloudStorageDownloadDestination.setAccessToken(googleCloudAccessToken);
+			googleCloudStorageDownloadDestination.setAccessToken(googleAccessToken);
 			collectionDownloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
 			if (destinationType == null) {
 				collectionDownloadTask.setDestinationType(HpcDataTransferType.GOOGLE_CLOUD_STORAGE);
@@ -1086,6 +1104,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			String archiveLocationFileId = taskResult.getArchiveLocation() != null
 					? taskResult.getArchiveLocation().getFileId()
 					: null;
+			
+			byte[] googleAccessToken = null;
+			if(taskResult.getGoogleDriveDownloadDestination() != null)
+				googleAccessToken = encryptor.encrypt(taskResult.getGoogleDriveDownloadDestination().getAccessToken());
+			else if(taskResult.getGoogleCloudStorageDestination() != null)
+				googleAccessToken = encryptor.encrypt(taskResult.getGoogleCloudStorageDestination().getAccessToken());
 
 			jdbcTemplate.update(UPSERT_DOWNLOAD_TASK_RESULT_SQL, taskResult.getId(), taskResult.getUserId(),
 					taskResult.getPath(), taskResult.getDataTransferRequestId(), dataTransferType,
@@ -1097,7 +1121,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getCollectionDownloadTaskId(), taskResult.getEffectiveTransferSpeed(),
 					taskResult.getSize(), taskResult.getCreated(), taskResult.getCompleted(),
 					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), taskResult.getRetryTaskId(),
-					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(),
+					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(), googleAccessToken,
 					taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
 					taskResult.getDataTransferRequestId(), dataTransferType, archiveLocationFileContainerId,
 					archiveLocationFileId, taskResult.getDestinationLocation().getFileContainerId(),
@@ -1107,7 +1131,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getCollectionDownloadTaskId(), taskResult.getEffectiveTransferSpeed(),
 					taskResult.getSize(), taskResult.getCreated(), taskResult.getCompleted(),
 					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), taskResult.getRetryTaskId(),
-					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc());
+					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(), googleAccessToken);
 
 			jdbcTemplate.update(UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL,
 					new Object[] { new SqlLobValue(toJSON(taskResult.getItems()), lobHandler),
@@ -1160,8 +1184,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			byte[] asperaAccountUser = null;
 			byte[] asperaAccountPassword = null;
 			String asperaAccountHost = null;
-			byte[] googleDriveAccessToken = null;
-			byte[] googleCloudAccessToken = null;
+			byte[] googleAccessToken = null;
 			byte[] boxAccessToken = null;
 			byte[] boxRefreshToken = null;
 
@@ -1181,13 +1204,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			} else if (collectionDownloadTask.getGoogleDriveDownloadDestination() != null) {
 				destinationLocation = collectionDownloadTask.getGoogleDriveDownloadDestination()
 						.getDestinationLocation();
-				googleDriveAccessToken = encryptor
+				googleAccessToken = encryptor
 						.encrypt(collectionDownloadTask.getGoogleDriveDownloadDestination().getAccessToken());
 				destinationType = HpcDataTransferType.GOOGLE_DRIVE.name();
 			} else if (collectionDownloadTask.getGoogleCloudStorageDownloadDestination() != null) {
 				destinationLocation = collectionDownloadTask.getGoogleCloudStorageDownloadDestination()
 						.getDestinationLocation();
-				googleCloudAccessToken = encryptor
+				googleAccessToken = encryptor
 						.encrypt(collectionDownloadTask.getGoogleCloudStorageDownloadDestination().getAccessToken());
 				destinationType = HpcDataTransferType.GOOGLE_CLOUD_STORAGE.name();
 			} else if (collectionDownloadTask.getAsperaDownloadDestination() != null) {
@@ -1213,8 +1236,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
 					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
-					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
-					googleCloudAccessToken, asperaAccountUser, asperaAccountPassword, asperaAccountHost, boxAccessToken,
+					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleAccessToken,
+					asperaAccountUser, asperaAccountPassword, asperaAccountHost, boxAccessToken,
 					boxRefreshToken, collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getAppendCollectionNameToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
@@ -1224,8 +1247,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
 					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
-					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
-					googleCloudAccessToken, asperaAccountUser, asperaAccountPassword, asperaAccountHost, boxAccessToken,
+					s3AccountRegion, s3AccountUrl, s3AccountPathStyleAccessEnabled, googleAccessToken,
+					asperaAccountUser, asperaAccountPassword, asperaAccountHost, boxAccessToken,
 					boxRefreshToken, collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getAppendCollectionNameToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
@@ -1440,6 +1463,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL, Boolean.class, id);
 			return cancellationRequested != null ? cancellationRequested : false;
 
+		} catch (EmptyResultDataAccessException e) {
+			// If it can not find the collection download task, it is cancelled and removed
+			// from the table.
+			return true;
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get cancellation request of: " + id + " " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
@@ -1631,6 +1658,18 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         }
     }
 
+
+	@Override
+	public void removeGoogleAccessTokens(Integer googleAccessTokenRetentionPeriod) throws HpcException {
+		try {
+			jdbcTemplate.update(REMOVE_GOOGLE_ACCESS_TOKEN_FROM_DOWNLOAD_TASK_RESULT_SQL, googleAccessTokenRetentionPeriod);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to remove google access tokens retained for " + googleAccessTokenRetentionPeriod + " hours",
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
