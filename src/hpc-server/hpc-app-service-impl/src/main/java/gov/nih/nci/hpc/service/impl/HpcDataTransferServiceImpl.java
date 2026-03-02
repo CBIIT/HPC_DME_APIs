@@ -1210,7 +1210,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				String path = downloadTask.getPath();
 				// Get the metadata for this data object.
 				try{
-				metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
+				metadataEntries = metadataService.getDataObjectMetadataEntries(path, true);
 				if(metadataEntries != null){
 				logger.info("2097: app:Transfer completeDataObjectDownloadTask: metadataEntries for path="
 						+ gson.toJson(metadataEntries));
@@ -1219,6 +1219,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							+ path);
 				}
 			} catch (HpcException e) {
+				logger.info("2097: app:Transfer completeDataObjectDownloadTask: failed to get metadataEntries for path="
+						+ path);
+				logger.info(e.getStackTraceString());	
 				logger.error("Failed to get metadata entries for path: " + path, e);
 				throw e;
 			}
