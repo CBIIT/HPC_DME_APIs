@@ -538,6 +538,34 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 					}
 				});
 	}
+	
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void processStagedMetadataAttributes() throws HpcException {
+		dataMigrationService.getStagedMetadataAttributes().forEach(stagedMetadataAttribute -> {
+					try {
+						logger.info("Adding staged metadata {}:{} to path - {}", stagedMetadataAttribute.getAttribute(),
+								stagedMetadataAttribute.getValue(),
+								stagedMetadataAttribute.getPath());
+						
+						boolean isCollection = dataManagementService.isPathCollection(stagedMetadataAttribute.getPath());
+						String configurationId = dataManagementService.findDataManagementConfigurationId(stagedMetadataAttribute.getPath());
+						// Get the collection type containing the data object.
+						String collectionPath = isCollection ? null : stagedMetadataAttribute.getPath().substring(0, stagedMetadataAttribute.getPath().lastIndexOf('/'));
+						String collectionType = isCollection ? null : dataManagementService.getCollectionType(collectionPath);
+						
+						// Add the metadata
+						dataMigrationService.addStagedMetadataAttribute(stagedMetadataAttribute, isCollection, configurationId, collectionType);
+						
+						// Delete the staged metadata after it's added to the data object/collection.
+						dataMigrationService.cleanupStagedMetadataAttribute(stagedMetadataAttribute);
+
+					} catch (HpcException e) {
+						logger.error("Failed to add staged metadata {}:{} to path - {}", stagedMetadataAttribute.getAttribute(), 
+								stagedMetadataAttribute.getValue(), stagedMetadataAttribute.getPath());
+					}
+				});
+	}
 
 	@Override
 	@HpcExecuteAsSystemAccount
