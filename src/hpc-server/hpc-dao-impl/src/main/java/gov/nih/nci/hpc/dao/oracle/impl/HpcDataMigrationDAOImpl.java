@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
+import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -117,6 +118,13 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "(select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? "
 			+ "union all select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(PERCENT_COMPLETE / 100 * DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK where PARENT_ID = ?)) "
 			+ "where ID = ? and STATUS = ? and TYPE != ?";
+	
+	private static final String GET_STAGED_METADATA_ATTRIBUTES_SQL = "select * from HPC_STAGED_METADATA_ATTRIBUTES";
+	
+	private static final String CLEANUP_STAGED_METADATA_ATTRIBUTE_SQL = "delete from HPC_STAGED_METADATA_ATTRIBUTES where path = ? and meta_attr_name = ? ";
+	
+	private static final String INSERT_MIGRATED_METADATA_ATTRIBUTE_SQL = "insert into HPC_MIGRATED_METADATA_ATTRIBUTES ( "
+			+ "PATH, META_ATTR_NAME, META_ATTR_VALUE, COMPLETED) values (?, ?, ?, ?)";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -221,6 +229,16 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			rowNum) -> {
 		return new AbstractMap.SimpleEntry<HpcDataMigrationResult, Integer>(
 				HpcDataMigrationResult.fromValue(rs.getString("RESULT")), rs.getInt("COUNT"));
+	};
+	
+	// Mapper to get staged metadata entries for processing
+	private RowMapper<HpcStagedMetadataAttribute> stagedMetadataAttributesRowMapper = (rs, rowNum) -> {
+		HpcStagedMetadataAttribute metadataEntry = new HpcStagedMetadataAttribute();
+		metadataEntry.setPath(rs.getString("PATH"));
+		metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
+		metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
+
+		return metadataEntry;
 	};
 
 	// The Logger instance.
@@ -548,5 +566,30 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 
+	}
+	
+	@Override
+	public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes() throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_STAGED_METADATA_ATTRIBUTES_SQL, stagedMetadataAttributesRowMapper);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get staged metadata attributes: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public int cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
+		try {
+			jdbcTemplate.update(INSERT_MIGRATED_METADATA_ATTRIBUTE_SQL, stagedMetadataAttribute.getPath(), stagedMetadataAttribute.getAttribute(),
+					stagedMetadataAttribute.getValue(), Calendar.getInstance());
+
+			return jdbcTemplate.update(CLEANUP_STAGED_METADATA_ATTRIBUTE_SQL, stagedMetadataAttribute.getPath(), stagedMetadataAttribute.getAttribute());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to cleanup staged metadata attribute: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
 	}
 }
