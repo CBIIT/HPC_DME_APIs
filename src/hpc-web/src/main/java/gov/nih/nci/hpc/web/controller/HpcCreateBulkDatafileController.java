@@ -60,6 +60,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcExcelUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -140,9 +141,10 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	            final String returnURL = this.webServerName + "/addbulk";
 	            try {
 				  if(StringUtils.equals(bulkType, GOOGLE_DRIVE_BULK_TYPE) ){
-					String accessToken = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
-					session.setAttribute("accessToken", accessToken);
-					model.addAttribute("accessToken", accessToken);
+					GoogleTokenResponse token = hpcAuthorizationService.getToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE);
+					session.setAttribute("refreshTokenDetailsGoogleCloud", hpcAuthorizationService.toJsonCredentialsForGoogle(token));
+					session.setAttribute("accessToken", token.getAccessToken());
+					model.addAttribute("accessToken", token.getAccessToken());
 					model.addAttribute("authorized", "true");
 				  } else if (StringUtils.equals(bulkType, GOOGLE_CLOUD_BULK_TYPE) ) {
 					String refreshTokenDetailsGoogleCloud = hpcAuthorizationService.getRefreshToken(code, returnURL, HpcAuthorizationService.ResourceType.GOOGLEDRIVE, userId);

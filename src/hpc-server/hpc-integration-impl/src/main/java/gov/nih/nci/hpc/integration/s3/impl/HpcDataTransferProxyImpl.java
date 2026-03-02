@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -245,6 +246,34 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				.generatePresignedUrl(generatePresignedUrlRequest);
 
 		return url.toString();
+	}
+
+	@Override
+	public HpcSetArchiveObjectMetadataResponse clearDataObjectMetadata(Object authenticatedToken,
+			HpcFileLocation fileLocation, String storageClass) throws HpcException {
+
+		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
+		// We clear S3 metadata by copying the data-object to itself w/ empty metadata
+		CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
+				fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
+				.withNewObjectMetadata(new ObjectMetadata())
+				.withStorageClass(storageClass);
+
+		try {
+			s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+					.copyObject(copyRequest);
+			// metadataClearStatus is set to true to indicate that the metadata has been cleared successfully.
+			response.setMetadataClearStatus(true);
+			return response;
+
+		} catch (AmazonServiceException ase) {
+			throw new HpcException("[S3] Failed to copy file and clear metadata: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+					s3Connection.getS3Provider(authenticatedToken), ase);
+
+		} catch (AmazonClientException ace) {
+			throw new HpcException("[S3] Failed to copy file and clear metadata: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+					s3Connection.getS3Provider(authenticatedToken), ace);
+		}
 	}
 
 	@Override

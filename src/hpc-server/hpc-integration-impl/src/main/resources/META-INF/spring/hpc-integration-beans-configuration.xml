@@ -54,14 +54,14 @@
 	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
 	
 	<!--  S3 Connection  -->
-	<bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.v2.impl.HpcS3Connection" >
+	<bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.impl.HpcS3Connection" >
 		<constructor-arg value="${hpc.integration.s3.pathStyleAccessEnabledProviders}" index="0" />
 		<constructor-arg value="${hpc.integration.s3.awsTransferManagerThreadPoolSize}" index="1" />
 	</bean>
 	
 	<!-- S3 Data Transfer Proxy -->
 	<bean id="hpcS3DataTransferProxy" 
-	      class="gov.nih.nci.hpc.integration.s3.v2.impl.HpcDataTransferProxyImpl" />
+	      class="gov.nih.nci.hpc.integration.s3.impl.HpcDataTransferProxyImpl" />
 	      
 	<!-- Google Drive Data Transfer Proxy -->
 	<bean id="hpcGoogleDriveDataTransferProxy" 

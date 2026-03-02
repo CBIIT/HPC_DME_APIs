@@ -73,7 +73,7 @@ FROM r_coll_hierarchy_metamap coll_hierarchy_metamap
     JOIN r_meta_main coll_type_metadata ON metamap.meta_id = coll_type_metadata.meta_id AND
                                            cast(coll_type_metadata.meta_attr_name as varchar2(250)) = cast('collection_type' as varchar2(50)))
                    ON metamap.object_id = coll_hierarchy_metamap.coll_id
-UNION
+UNION ALL
 select coll_hierarchy_metamap.object_id,
        coll_hierarchy_metamap.object_path,
        coll_hierarchy_metamap.coll_id,
@@ -115,9 +115,6 @@ create unique index r_coll_hierarchy_meta_main_unique
 
 create index r_coll_hierarchy_meta_main_path_query
     on irods.r_coll_hierarchy_meta_main (object_path);
-
-create index r_coll_hierarchy_meta_main_id_query
-    on irods.r_coll_hierarchy_meta_main (object_id);
 
 create index r_coll_hierarchy_meta_main_metadata_query_level
     on irods.r_coll_hierarchy_meta_main (meta_attr_name, meta_attr_value, data_level);
