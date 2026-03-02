@@ -579,6 +579,18 @@ public interface HpcDataManagementService {
 	public String findDataManagementConfigurationId(String path);
 
 	/**
+	 * Find data management configuration for a given external path. This is searched by
+	 * matching the given path to all configuration posix paths. If any configuration
+	 * posix path is found to be the 'posix path' of the given path, then the
+	 * corresponding configuration is returned
+	 *
+	 * @param path the external path to find a config for.
+	 * @return A configuration if matched by posix path, or null otherwise
+	 */
+	public HpcDataManagementConfiguration findDataManagementConfigurationFromExternalPath(String path);
+
+	
+	/**
 	 * Get data management configuration ID by base path.
 	 *
 	 * @param basePath The base path to get the config for.
