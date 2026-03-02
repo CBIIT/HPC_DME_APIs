@@ -322,6 +322,12 @@ public class HpcScheduledTasksImpl {
 		execute("sendWeeklyQueryResults()", dataSearchBusService::sendWeeklyQueryResults, logger);
 	}
 
+	/** Remove Google Access Token. */
+	@Scheduled(cron = "${hpc.scheduler.cron.removeGoogleAccessTokens.delay}")
+	private void removeGoogleAccessTokens() {
+		execute("removeGoogleAccessTokens()", systemBusService::removeGoogleAccessTokens, logger);
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
