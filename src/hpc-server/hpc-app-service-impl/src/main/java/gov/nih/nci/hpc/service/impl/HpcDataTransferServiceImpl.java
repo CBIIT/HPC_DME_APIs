@@ -1200,62 +1200,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		HpcMetadataEntries metadataEntries;
-		HpcSystemGeneratedMetadata systemGeneratedMetadata;
+		logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs path="
+				+ downloadTask.getPath());
 		// If from an external archive, delete the path from IRODs
 		if (downloadTask.getExternalArchiveFlag()) {
 			try {
 				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs path="
 						+ downloadTask.getPath());
-				String path = downloadTask.getPath();
-				// Get the metadata for this data object.
-				try{
-				metadataEntries = metadataService.getDataObjectMetadataEntries(path, true);
-				if(metadataEntries != null){
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: metadataEntries for path="
-						+ gson.toJson(metadataEntries));
-				} else {
-					logger.info("2097: app:Transfer completeDataObjectDownloadTask: no metadataEntries found for path="
-							+ path);
-				}
-			} catch (HpcException e) {
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: failed to get metadataEntries for path="
-						+ path);
-				logger.info(e.getStackTraceString());	
-				logger.error("Failed to get metadata entries for path: " + path, e);
-				throw e;
-			}
-
-				systemGeneratedMetadata = metadataService
-					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
-
-				if(systemGeneratedMetadata != null){
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: systemGeneratedMetadata for path="
-						+ gson.toJson(systemGeneratedMetadata));
-				} else {
-					logger.info("2097: app:Transfer completeDataObjectDownloadTask: no systemGeneratedMetadata found for path="
-							+ path);
-				
-				}
-
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin clearing metadata and deleting irods record for path="
-						+ downloadTask.getPath());
-
 				// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
-				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
-								systemGeneratedMetadata.getDataTransferType(),
-								systemGeneratedMetadata.getConfigurationId(),
-								systemGeneratedMetadata.getS3ArchiveConfigurationId());
+				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(downloadTask.getArchiveLocation(),
+								downloadTask.getDataTransferType(),
+								downloadTask.getConfigurationId(),
+								downloadTask.getS3ArchiveConfigurationId());
 				if (!clearMetadataResponse.getMetadataClearStatus()) {
 					String errorMessage = "Failed to clear archive object metadata for data object at path: "
-							+ path;
+							+ downloadTask.getPath();
 					throw new HpcException(errorMessage, HpcErrorType.UNEXPECTED_ERROR);
 				} else {
 					// Successfully cleared the metadata, proceed to delete the data management record from iRODS
 					logger.info("2097: app:Transfer completeDataObjectDownloadTask: cleared metadata");
-					dataManagementService.delete(path, false);
+					dataManagementService.delete(downloadTask.getPath(), false);
 					logger.info("2097: app:Transfer completeDataObjectDownloadTask: deleted irods record");
-					logger.info("Successfully deleted data object at path: {} from iRODS", path);
+					logger.info("Successfully deleted data object at path: {} from iRODS", downloadTask.getPath());
 				}
 			} catch (HpcException e) {
 				logger.error("Failed to delete file from datamanagement", e);
