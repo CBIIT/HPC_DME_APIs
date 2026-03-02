@@ -1360,11 +1360,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void refreshDailyViews() throws HpcException {
-		reportService.refreshViews();
-
-		logger.info("calling detectDupMetadataEntries()");
-		metadataService.detectDupMetadataEntries();
-		logger.info("completed detectDupMetadataEntries()");
+		try {
+			reportService.refreshViews();
+		} finally {
+			logger.info("calling detectDupMetadataEntries()");
+			try {
+				metadataService.detectDupMetadataEntries();
+			} catch (HpcException e) {
+				notificationService.sendNotification(e);
+			}
+			logger.info("completed detectDupMetadataEntries()");
+		}
 	}
 
 	@Override
@@ -1485,6 +1491,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 	}
 
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void removeGoogleAccessTokens() throws HpcException {
+		// Removes google access token retained for retries beyond the retention period.
+		dataTransferService.removeGoogleAccessTokens();
+	}
+	
 	@Override
 	public void closeConnection() {
 		dataManagementService.closeConnection();
