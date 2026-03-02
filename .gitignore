@@ -1051,3 +1051,8 @@ src/hpc-server/hpc-integration-api/target/hpc-integration-api-3.14.0.jar
 src/hpc-server/hpc-integration-api/target/classes/META-INF/MANIFEST.MF
 src/hpc-server/hpc-integration-api/target/classes/META-INF/maven/gov.nih.nci.hpc/hpc-integration-api/pom.properties
 src/hpc-server/hpc-integration-api/target/classes/META-INF/maven/gov.nih.nci.hpc/hpc-integration-api/pom.xml
+src/hpc-server/.idea/copilot.data.migration.agent.xml
+src/hpc-server/.idea/copilot.data.migration.ask.xml
+src/hpc-server/.idea/copilot.data.migration.ask2agent.xml
+src/hpc-server/.idea/copilot.data.migration.edit.xml
+src/hpc-server/.idea/copilotDiffState.xml
