@@ -1200,6 +1200,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
+		HpcMetadataEntries metadataEntries;
+		HpcSystemGeneratedMetadata systemGeneratedMetadata;
 		// If from an external archive, delete the path from IRODs
 		if (downloadTask.getExternalArchiveFlag()) {
 			try {
@@ -1207,7 +1209,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						+ downloadTask.getPath());
 				String path = downloadTask.getPath();
 				// Get the metadata for this data object.
-				HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
+				try{
+				metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
 				if(metadataEntries != null){
 				logger.info("2097: app:Transfer completeDataObjectDownloadTask: metadataEntries for path="
 						+ gson.toJson(metadataEntries));
@@ -1215,8 +1218,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					logger.info("2097: app:Transfer completeDataObjectDownloadTask: no metadataEntries found for path="
 							+ path);
 				}
+			} catch (HpcException e) {
+				logger.error("Failed to get metadata entries for path: " + path, e);
+				throw e;
+			}
 
-				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+				systemGeneratedMetadata = metadataService
 					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 
 				if(systemGeneratedMetadata != null){
@@ -1227,7 +1234,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 							+ path);
 				
 				}
-				
+
 				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin clearing metadata and deleting irods record for path="
 						+ downloadTask.getPath());
 
