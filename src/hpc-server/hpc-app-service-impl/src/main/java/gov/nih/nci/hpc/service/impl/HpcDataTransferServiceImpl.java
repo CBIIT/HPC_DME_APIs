@@ -1208,8 +1208,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				String path = downloadTask.getPath();
 				// Get the metadata for this data object.
 				HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
+				if(metadataEntries != null){
+				logger.info("2097: app:Transfer completeDataObjectDownloadTask: metadataEntries for path="
+						+ gson.toJson(metadataEntries));
+				} else {
+					logger.info("2097: app:Transfer completeDataObjectDownloadTask: no metadataEntries found for path="
+							+ path);
+				}
+
 				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+				if(systemGeneratedMetadata != null){
+				logger.info("2097: app:Transfer completeDataObjectDownloadTask: systemGeneratedMetadata for path="
+						+ gson.toJson(systemGeneratedMetadata));
+				} else {
+					logger.info("2097: app:Transfer completeDataObjectDownloadTask: no systemGeneratedMetadata found for path="
+							+ path);
+				
+				}
+				
+				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin clearing metadata and deleting irods record for path="
+						+ downloadTask.getPath());
 
 				// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
 				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
