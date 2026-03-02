@@ -62,7 +62,7 @@
 				type="text" style="margin-left: 10px; margin-right: 5px;" class="form-control fieldWidth fieldMargin" name="endPointName" th:value="${endPointName}"
 				id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 			<a id="downloadlink"
-	             th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">
+	             th:href="@{../download(ext=${external},type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">
 	             Obtain from Globus (Optional)</a>
 		</div>
 		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
