@@ -1,4 +1,3 @@
-
 <th:block th:fragment="downloadSelectFragment">
 	<div style="width: 100%">
 		<div id="radioset">
@@ -48,130 +47,138 @@
 </th:block>
 
 
-
 <th:block th:fragment="globusHelpFragment">
     <div id="globus-help-links" style="display: none; margin-top: -15px; margin-bottom: 20px">
-              To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
+        To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
     </div>
 </th:block>
 
 <th:block th:fragment="globusDivFragment">
-	<div id="AsyncDiv" style="display: none">
-	    <div class="col-sm-12 column leftMargin">
-			<label for="endPointName">Globus Endpoint UUID:</label> 
-			<a id="downloadlink" 
-	                                    th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">                                  
-	                                    Obtain from Globus (Optional)</a>
+	<div id="AsyncDiv" style="display: none;">
+	    <div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="endPointName" style="min-width: 180px; margin-bottom: 0;">Endpoint UUID:</label>
 			<input type="hidden" name="actionType" id="actionType" />
 			<input
-				type="text" style="margin-top: 2px; margin-bottom: 10px;" class="form-control fieldWidth" name="endPointName" th:value="${endPointName}"
+				type="text" style="margin-left: 10px; margin-right: 5px;" class="form-control fieldWidth fieldMargin" name="endPointName" th:value="${endPointName}"
 				id="endPointName" placeholder="Enter Globus Endpoint UUID" />
+			<a id="downloadlink"
+	             th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">
+	             Obtain from Globus (Optional)</a>
 		</div>
-		<div class="col-sm-12 column leftMargin">
-			<label for="endPointLocation">Endpoint Path:</label> 
+		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="endPointLocation" style="min-width: 180px; margin-bottom: 0;">Endpoint Path:</label>
 			<input
-				type="text" class="form-control fieldWidth"
+				type="text" style="margin-left: 10px;" class="form-control fieldWidth"
 				th:value="${endPointLocation}"
-				name="endPointLocation" id="endPointLocation" style="margin-top: 1px; margin-bottom: 1px;" 
+				name="endPointLocation" id="endPointLocation"
 				placeholder="Enter Globus Endpoint Path" />
 		</div>
 	</div>
 </th:block>
 
 <th:block th:fragment="globusDivMultiFragment">
-	<div id="AsyncDiv" style="display: none">
-	    <div class="col-sm-12 column leftMargin">
-			<label for="endPointName">Globus Endpoint UUID:</label>
+	<div id="AsyncDiv" style="display: none;">
+	    <div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="endPointName" style="min-width: 180px; margin-bottom: 0;">Globus Endpoint UUID:</label>
+			<input
+				type="text" style="margin-left: 10px; margin-right: 5px;" class="form-control fieldWidth fieldMargin" name="endPointName" th:value="${endPointName}"
+				id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 			<a id="downloadlink"
 				th:href="@{../downloadfiles(transferType=globus,downloadType=${downloadType})}">
                 Obtain from Globus (Optional)</a>
-			<input type="hidden" name="actionType" id="actionType" />
-			<input
-				type="text" style="margin-top: 2px; margin-bottom: 10px;" class="form-control fieldWidth" name="endPointName" th:value="${endPointName}"
-				id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 		</div>
-		<div class="col-sm-12 column leftMargin">
-			<label for="endPointLocation">Endpoint Path:</label> 
+		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="endPointLocation" style="min-width: 180px; margin-bottom: 0;">Endpoint Path:</label>
 			<input
 				type="text" class="form-control fieldWidth"
 				th:value="${endPointLocation}"
-				name="endPointLocation" id="endPointLocation" style="margin-top: 1px; margin-bottom: 1px;" 
+				name="endPointLocation" id="endPointLocation" style="margin-left: 10px;"
 				placeholder="Enter Globus Endpoint Path" />
 		</div>
 	</div>
 </th:block>
 
-<th:block th:fragment="awsBlock">		
+<th:block th:fragment="awsBlock">        
 		<div id="s3Div" style="display: none;">
-			<div class="col-sm-12 column leftMargin">
-				<label for="bucketName">S3 Bucket:</label>
+			<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+				<label for="bucketName" style="min-width: 180px; margin-bottom: 0;">S3 Bucket:</label>
 				<input
-					type="text" class="form-control" name="bucketName" th:value="${bucketName}"
-					id="bucketName" placeholder="Enter S3 Bucket Name" style="margin-top: 1px; margin-bottom: 10px; width:600px;" />
+					type="text" class="form-control fieldWidth fieldMargin"
+					name="bucketName"
+					th:value="${bucketName}"
+					id="bucketName" placeholder="Enter S3 Bucket Name" style="margin-left: 10px; width:600px;" />
 			</div>
-			<div class="col-sm-12 column leftMargin">
-				<label for="s3Path">Endpoint Path:</label> <input
+			<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+				<label for="s3Path" style="min-width: 180px; margin-bottom: 0;">Endpoint Path:</label>
+				<input
 					type="text" class="form-control fieldWidth fieldMargin"
 					th:value="${s3Path}"
 					name="s3Path" id="s3Path"
-					placeholder="Enter S3 Endpoint Path" />
+					placeholder="Enter S3 Endpoint Path" style="margin-left: 10px;" />
 			</div>
-			<div class="col-sm-12 column leftMargin">
-				<label for="accessKey">Access Key:</label> <input
+			<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+				<label for="accessKey" style="min-width: 180px; margin-bottom: 0;">Access Key:</label>
+				<input
 					type="text" class="form-control fieldWidth fieldMargin"
 					th:value="${accessKey}"
 					name="accessKey" id="accessKey"
-					placeholder="Enter Access Key" style="margin-top: 1px; margin-bottom: 10px; width:600px;"  />
+					placeholder="Enter Access Key" style="margin-left: 10px; width:600px;"  />
 			</div>
-			<div class="col-sm-12 column leftMargin">
-				<label for="secretKey">Secret Access Key:</label> <input
+			<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+				<label for="secretKey" style="min-width: 180px; margin-bottom: 0;">Secret Access Key:</label>
+				<input
 					type="password" autocomplete="secret-access-key" class="form-control fieldWidth fieldMargin"
 					th:value="${secretKey}"
 					name="secretKey" id="secretKey"
-					placeholder="Enter Secret Access Key" />
+					placeholder="Enter Secret Access Key" style="margin-left: 10px;" />
 			</div>
-			<div class="col-sm-12 column leftMargin">
-				<label for="region">Region:</label> <input
+			<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+				<label for="region" style="min-width: 180px; margin-bottom: 0;">Region:</label>
+				<input
 					type="text" class="form-control fieldWidth"
 					th:value="${region}"
 					name="region" id="region"
-					placeholder="Enter Region (for Example us-east-1)" />
+					placeholder="Enter Region (for Example us-east-1)" style="margin-left: 10px;" />
 			</div>
-		</div>							
+		</div>                            
 </th:block>
 
 <th:block th:fragment="googleDriveCommonBlock">
 	<div th:if="${authorized != null}" class="alert-success" style="margin-top: 10px"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 	<br/>
-	<div class="col-sm-12 column leftMargin">
-		<label for="drivePath">Endpoint Path:</label>
-		<a th:if="${authorized != null}" id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">
-                                    Select from Google Drive (Optional)</a>
-		<input
-			type="text" class="form-control" style="width:600px;"
-			th:value="${drivePath}"
-			name="drivePath" id="drivePath"
-			placeholder="Enter Google Drive Endpoint Path" size="40" />
+	<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+	    <label for="drivePath" style="min-width: 180px; margin-bottom: 0;">Endpoint Path:</label>
+	    <input
+	        type="text" class="form-control"
+	        th:value="${drivePath}"
+	        name="drivePath" id="drivePath"
+	        placeholder="Enter Google Drive Endpoint Path" size="40"
+	        style="margin-left: 10px; width:600px;" />
+	    <a th:if="${authorized != null}" id="pickerLink" onclick="loadDownloadPicker()" style="margin-left: 15px; cursor:pointer">
+	        Select from Google Drive (Optional)
+	    </a>
 	</div>
 </th:block>
 
 <th:block th:fragment="googleCloudCommonBlock">
 	<div th:if="${authorizedGC != null}" class="alert-success" style="margin-top: 10px"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 	<br/>
-	<div class="col-sm-12 column leftMargin">
-		<label for="googleCloudBucketName">Google Cloud Bucket</label>
+	<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+		<label for="googleCloudBucketName" style="min-width: 180px; margin-bottom: 0;">Google Cloud Bucket:</label>
 		<input
-			type="text" class="form-control fieldWidth" name="googleCloudBucketName" th:value="${googleCloudBucketName}"
-			id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name" />
+			type="text" class="form-control fieldWidth fieldMargin"
+			name="googleCloudBucketName" th:value="${googleCloudBucketName}"
+			id="googleCloudBucketName" placeholder="Enter Google Cloud Bucket Name"
+			style="margin-left: 10px; width:600px;" />
 	</div>
-	<br/>
-	<div class="col-sm-12 column leftMargin">
-		<label for="googleCloudPath">Endpoint Path:</label>
-		<input
-			type="text" class="form-control fieldWidth"
-			th:value="${googleCloudPath}"
-			name="googleCloudPath" id="googleCloudPath"
-			placeholder="Enter Google Cloud Endpoint Path" />
+	<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+	    <label for="googleCloudPath" style="min-width: 180px; margin-bottom: 0;">Endpoint Path:</label>
+	    <input
+	        type="text" class="form-control fieldWidth"
+	        th:value="${googleCloudPath}"
+	        name="googleCloudPath" id="googleCloudPath"
+	        placeholder="Enter Google Cloud Endpoint Path"
+	        style="margin-left: 10px;" />
 	</div>
 </th:block>
 
@@ -181,55 +188,55 @@
 	<!-- The name of Box container is MyBox -->
 	<input type="hidden" name="boxContainerName" id="boxContainerName"
 		th:value="MyBox" />
-	<div class="col-sm-12 column leftMargin">
-		<label for="boxPath">Endpoint Path:</label>
-		<input
-			type="text" class="form-control fieldWidth"
-			th:value="${boxPath}"
-			name="boxPath" id="boxPath"
-			placeholder="Enter Box Endpoint Path" />
+	<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+	    <label for="boxPath" style="min-width: 180px; margin-bottom: 0;">Endpoint Path:</label>
+	    <input
+	        type="text" class="form-control fieldWidth"
+	        th:value="${boxPath}"
+	        name="boxPath" id="boxPath"
+	        placeholder="Enter Box Endpoint Path"
+	        style="margin-left: 10px; width:600px;" />
 	</div>
 </th:block>
 
 <th:block th:fragment="asperaBlock">
 	<div id="asperaDiv" style="display: none;">
-		<div class="col-sm-12 column leftMargin">
-			<label for="asperaBucketName">Aspera Destination Directory:</label>
-			<div th:if="${asperaBucketName == 'test'}" id="oneOption">
-				<select name="asperaBucketName" id="asperaBucketName" class="form-control fieldWidth fieldMargin">
-					<option th:value="test" th:text="test" selected="selected"></option>
-				</select>
-			</div>
-			<div th:if="${asperaBucketName != 'test'}"  id="multipleOption">
-				<select name="asperaBucketName" id="asperaBucketName" class="form-control fieldWidth fieldMargin">
-					<option th:value="${asperaBucketName}" th:text="${asperaBucketName}" selected="selected"></option>
-					<option th:value="test" th:text="test" ></option>
-				</select>
+		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="asperaBucketName" style="min-width: 180px; margin-bottom: 0;">Aspera Destination Directory:</label>
+			<div style="flex: 1;">
+                <select name="asperaBucketName" id="asperaBucketName" class="form-control fieldWidth fieldMargin" style="margin-left: 10px;">
+                    <option th:value="${asperaBucketName}" th:text="${asperaBucketName}"
+                        th:if="${asperaBucketName != null and asperaBucketName != 'test'}"
+                        th:selected="${asperaBucketName != null and asperaBucketName != 'test'}"></option>
+                    <option value="test" th:selected="${asperaBucketName == 'test'}">test</option>
+                </select>
 			</div>
 		</div>
-		<div class="col-sm-12 column leftMargin">
-			<label for="asperaUser">Aspera Account User:</label> <input
+		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="asperaUser" style="min-width: 180px; margin-bottom: 0;">Aspera Account User:</label>
+			<input
 				type="text" class="form-control fieldWidth fieldMargin"
 				th:value="${asperaUser}"
 				name="asperaUser" id="asperaUser"
-				placeholder="Enter User" />
+				placeholder="Enter User" style="margin-left: 10px;" />
 		</div>
 		<input type="hidden" name="asperaPath" id="asperaPath"
 				th:value="${asperaPath}" />
-		<div class="col-sm-12 column leftMargin">
-			<label for="asperaPassword">Aspera Account Password:</label> <input
+		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="asperaPassword" style="min-width: 180px; margin-bottom: 0;">Aspera Account Password:</label>
+			<input
 				type="password" autocomplete="secret-access-key" class="form-control fieldWidth  fieldMargin"
 				th:value="${asperaPassword}"
 				name="asperaPassword" id="asperaPassword"
-				placeholder="Enter Aspera Password" />
+				placeholder="Enter Aspera Password" style="margin-left: 10px;" />
 		</div>
-		<div class="col-sm-12 column leftMargin">
-			<label for="asperaHost">Aspera Host:</label> <input
+		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
+			<label for="asperaHost" style="min-width: 180px; margin-bottom: 0;">Aspera Host:</label>
+			<input
 				type="text" class="form-control fieldWidth"
 				th:value="${asperaHost}"
 				name="asperaHost" id="asperaHost"
-				placeholder="Enter Aspera Host" />
+				placeholder="Enter Aspera Host" style="margin-left: 10px;" />
 		</div>
 	</div>
 </th:block>
-

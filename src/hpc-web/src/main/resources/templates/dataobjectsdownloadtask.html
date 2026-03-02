@@ -66,12 +66,13 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h4 th:if="${taskType == 'DATA_OBJECT_LIST'}">
-							<i class="fa fa-laptop"></i> Data Object
-								Download
+							<i class="fa fa-laptop"></i> Data Object List Download
 						</h4>
-						<h4 th:if="${taskType != 'DATA_OBJECT_LIST'}">
-							<i class="fa fa-laptop"></i> Collection
-								Download
+						<h4 th:if="${taskType == 'COLLECTION_LIST'}">
+							<i class="fa fa-laptop"></i> Collection List Download
+						</h4>
+						<h4 th:if="${taskType == 'COLLECTION'}">
+							<i class="fa fa-laptop"></i> Collection Download
 						</h4>
 					</div>
 				</div>
