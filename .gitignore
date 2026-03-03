@@ -1056,3 +1056,4 @@ src/hpc-server/.idea/copilot.data.migration.ask.xml
 src/hpc-server/.idea/copilot.data.migration.ask2agent.xml
 src/hpc-server/.idea/copilot.data.migration.edit.xml
 src/hpc-server/.idea/copilotDiffState.xml
+src/hpc-server/hpc-domain-types/target/
