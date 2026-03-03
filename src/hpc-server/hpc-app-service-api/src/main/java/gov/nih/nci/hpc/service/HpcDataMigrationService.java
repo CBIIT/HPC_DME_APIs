@@ -309,6 +309,17 @@ public interface HpcDataMigrationService {
 			String configurationId, String collectionType) throws HpcException;
 
 	/**
+	 * Claim a staged metadata attribute for processing, so that in a multi-node
+	 * deployment only one server processes each row.
+	 *
+	 * @param stagedMetadataAttribute staged metadata entry to claim
+	 * @return true if successfully claimed, false if another node already claimed it.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException;
+
+	/**
 	 * Clean processed staged metadata attribute.
 	 * 
 	 * @param stagedMetadataAttribute staged metadata entry to clean up

@@ -544,6 +544,17 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	public void processStagedMetadataAttributes() throws HpcException {
 		dataMigrationService.getStagedMetadataAttributes().forEach(stagedMetadataAttribute -> {
 					try {
+						// Claim the row via an atomic conditional UPDATE (IN_PROCESS = 0 → 1).
+						// Oracle's row-level locking ensures that if two nodes execute this
+						// UPDATE concurrently on the same row, only one succeeds; the other
+						// finds IN_PROCESS already set and updates 0 rows.
+						if (!dataMigrationService.claimStagedMetadataAttribute(stagedMetadataAttribute)) {
+							logger.debug("Staged metadata {}:{} for path - {} already claimed by another node, skipping.",
+									stagedMetadataAttribute.getAttribute(), stagedMetadataAttribute.getValue(),
+									stagedMetadataAttribute.getPath());
+							return;
+						}
+
 						logger.info("Adding staged metadata {}:{} to path - {}", stagedMetadataAttribute.getAttribute(),
 								stagedMetadataAttribute.getValue(),
 								stagedMetadataAttribute.getPath());
