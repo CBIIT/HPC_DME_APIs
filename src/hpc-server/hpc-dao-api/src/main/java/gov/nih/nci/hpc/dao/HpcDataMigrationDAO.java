@@ -210,6 +210,18 @@ public interface HpcDataMigrationDAO {
 	public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes() throws HpcException;
 	
 	/**
+	 * Claim a staged metadata attribute for processing. Uses an atomic update so
+	 * that only one server node claims each row in a multi-node deployment.
+	 *
+	 * @param stagedMetadataAttribute The staged metadata entry to claim.
+	 * @return true if the row was successfully claimed, false if another node
+	 *         already claimed it.
+	 * @throws HpcException on database error.
+	 */
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException;
+
+	/**
 	 * Cleanup staged metadata attributes processed.
 	 *
 	 * @param stagedMetadataAttribute The staged metadata to be cleaned up
