@@ -33,6 +33,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.transaction.annotation.Transactional;
 
 import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
@@ -580,6 +581,7 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	}
 	
 	@Override
+	@Transactional
 	public int cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
 		try {
 			jdbcTemplate.update(INSERT_MIGRATED_METADATA_ATTRIBUTE_SQL, stagedMetadataAttribute.getPath(), stagedMetadataAttribute.getAttribute(),
