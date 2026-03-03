@@ -649,10 +649,6 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		List<HpcStagedMetadataAttribute> stagedMetadataEntries = dataMigrationDAO.getStagedMetadataAttributes();
 		logger.info("{} staged metadata attributes retrieved.", stagedMetadataEntries.size());
-
-		for (HpcStagedMetadataAttribute entry : stagedMetadataEntries) {
-			entry.setPath(entry.getPath());
-		}
 		
 		return stagedMetadataEntries;
 	}
