@@ -1209,7 +1209,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						+ downloadTask.getPath());
 				// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
 				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(downloadTask.getArchiveLocation(),
-								downloadTask.getDataTransferType(),
+								HpcDataTransferType.S_3,
 								downloadTask.getConfigurationId(),
 								downloadTask.getS3ArchiveConfigurationId());
 				if (!clearMetadataResponse.getMetadataClearStatus()) {
