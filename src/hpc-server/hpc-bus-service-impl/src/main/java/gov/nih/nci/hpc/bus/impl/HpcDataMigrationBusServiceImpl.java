@@ -561,8 +561,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 						dataMigrationService.cleanupStagedMetadataAttribute(stagedMetadataAttribute);
 
 					} catch (HpcException e) {
-						logger.error("Failed to add staged metadata {}:{} to path - {}", stagedMetadataAttribute.getAttribute(), 
-								stagedMetadataAttribute.getValue(), stagedMetadataAttribute.getPath());
+						logger.error("Failed to add staged metadata {}:{} to path - {}. Error: {}", stagedMetadataAttribute.getAttribute(), 
+								stagedMetadataAttribute.getValue(), stagedMetadataAttribute.getPath(), e.getMessage(), e);
 					}
 				});
 	}
