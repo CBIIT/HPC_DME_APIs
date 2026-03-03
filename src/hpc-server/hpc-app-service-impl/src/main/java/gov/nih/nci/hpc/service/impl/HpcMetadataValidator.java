@@ -299,7 +299,8 @@ public class HpcMetadataValidator {
 			// If the restrict_metadata flag is set in the database, then ensure
 			// that the add/update metadata entry defined in the validation rules
 			// i.e. it is a mandatory or optional metadata for the applicable DOC
-			if (restrictMetadata && !allowSystemMetadata) {
+			if (restrictMetadata && !(allowSystemMetadata
+					&& systemGeneratedMetadataAttributes.contains(metadataEntry.getAttribute()))) {
 				// Do this check only for new files or collections so that fixing
 				// of existing ones is not necessitated
 				if (CollectionUtils.isNullOrEmpty(existingMetadataEntries)) {
