@@ -120,8 +120,10 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "union all select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(PERCENT_COMPLETE / 100 * DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK where PARENT_ID = ?)) "
 			+ "where ID = ? and STATUS = ? and TYPE != ?";
 	
-	private static final String GET_STAGED_METADATA_ATTRIBUTES_SQL = "select * from HPC_STAGED_METADATA_ATTRIBUTES";
+	private static final String GET_STAGED_METADATA_ATTRIBUTES_SQL = "select * from HPC_STAGED_METADATA_ATTRIBUTES where IN_PROCESS = 0";
 	
+	private static final String CLAIM_STAGED_METADATA_ATTRIBUTE_SQL = "update HPC_STAGED_METADATA_ATTRIBUTES set IN_PROCESS = 1 where PATH = ? and META_ATTR_NAME = ? and IN_PROCESS = 0";
+
 	private static final String CLEANUP_STAGED_METADATA_ATTRIBUTE_SQL = "delete from HPC_STAGED_METADATA_ATTRIBUTES where path = ? and meta_attr_name = ? ";
 	
 	private static final String INSERT_MIGRATED_METADATA_ATTRIBUTE_SQL = "insert into HPC_MIGRATED_METADATA_ATTRIBUTES ( "
@@ -580,6 +582,19 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		}
 	}
 	
+	@Override
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException {
+		try {
+			return jdbcTemplate.update(CLAIM_STAGED_METADATA_ATTRIBUTE_SQL, stagedMetadataAttribute.getPath(),
+					stagedMetadataAttribute.getAttribute()) > 0;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to claim staged metadata attribute: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
 	@Override
 	@Transactional
 	public int cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
