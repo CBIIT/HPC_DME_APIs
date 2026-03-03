@@ -712,6 +712,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	}
 	
 	@Override
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException {
+
+		return dataMigrationDAO.claimStagedMetadataAttribute(stagedMetadataAttribute);
+	}
+
+	@Override
 	public void cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
 
 		int count = dataMigrationDAO.cleanupStagedMetadataAttribute(stagedMetadataAttribute);
