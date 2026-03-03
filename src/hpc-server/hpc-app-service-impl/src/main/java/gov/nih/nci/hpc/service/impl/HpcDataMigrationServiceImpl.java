@@ -45,8 +45,8 @@ import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataMigrationService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -711,6 +711,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	}
 	
+	@Override
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException {
+
+		return dataMigrationDAO.claimStagedMetadataAttribute(stagedMetadataAttribute);
+	}
+
 	@Override
 	public void cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
 
