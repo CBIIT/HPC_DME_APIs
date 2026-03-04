@@ -1212,41 +1212,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				
 				String path = downloadTask.getPath();
 
-				// TODO REMOVE - this is to help debug missing metadata issue in 2097. We will remove it after the issue is resolved.
-				metadataEntries = metadataService.getDataObjectMetadataEntries(path, true);
-				if(metadataEntries != null){
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: metadataEntries for path="
-						+ gson.toJson(metadataEntries));
-				} else {
-					logger.info("2097: app:Transfer completeDataObjectDownloadTask: no metadataEntries found for path="
-							+ path);
-				}
-
-				systemGeneratedMetadata = metadataService
-					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
-
-				if(systemGeneratedMetadata != null){
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: systemGeneratedMetadata for path="
-						+ gson.toJson(systemGeneratedMetadata));
-				} else {
-					logger.info("2097: app:Transfer completeDataObjectDownloadTask: no systemGeneratedMetadata found for path="
-							+ path);
-				
-				}
-
-			/// END TODO REMOVE
-				logger.info("2097: systemGeneratedMetadata file location =" + gson.toJson(systemGeneratedMetadata.getArchiveLocation()));
 				logger.info("2097: download Task file location =" + gson.toJson(downloadTask.getArchiveLocation()));
 
-				logger.info("2097: systemGeneratedMetadata transfer type =" + gson.toJson(systemGeneratedMetadata.getDataTransferType()));
 				logger.info("2097: download transfer type  =" + gson.toJson(downloadTask.getDataTransferType()));
 
-				logger.info("2097: SystemGeneratedMetadata configuration =" + gson.toJson(systemGeneratedMetadata.getConfigurationId()));
 				logger.info("2097: download configurtion =" + gson.toJson(downloadTask.getConfigurationId()	));
 
-				logger.info("2097: SystemGeneratedMetadata S3 configuration =" + gson.toJson(systemGeneratedMetadata.getS3ArchiveConfigurationId()));
 				logger.info("2097: download S3 configurtion =" + gson.toJson(downloadTask.getS3ArchiveConfigurationId()));
-
 
 				// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
 				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(downloadTask.getArchiveLocation(),
