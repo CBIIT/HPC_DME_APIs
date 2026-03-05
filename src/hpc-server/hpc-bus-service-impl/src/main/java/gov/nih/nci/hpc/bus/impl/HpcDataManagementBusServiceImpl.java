@@ -1903,6 +1903,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path, Boolean force,
 			HpcStorageRecoveryConfiguration storageRecoveryConfiguration) throws HpcException {
+
+		logger.info("2097: In DeleteDataObject path: " + path + ", force: " + force + ", storageRecoveryConfiguration: " + gson.toJson(storageRecoveryConfiguration));	
 		// Input validation.
 		if (StringUtils.isEmpty(path)) {
 			throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
