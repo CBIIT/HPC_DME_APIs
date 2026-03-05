@@ -1202,44 +1202,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs path="
 				+ downloadTask.getPath());
-		HpcMetadataEntries metadataEntries;
-		HpcSystemGeneratedMetadata systemGeneratedMetadata;		
-		// If from an external archive, delete the path from IRODs
-		if (downloadTask.getExternalArchiveFlag()) {
-			try {
-				logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs path="
-						+ downloadTask.getPath());
-				
-				String path = downloadTask.getPath();
-
-				logger.info("2097: download Task file location =" + gson.toJson(downloadTask.getArchiveLocation()));
-
-				logger.info("2097: download transfer type  =" + gson.toJson(downloadTask.getDataTransferType()));
-
-				logger.info("2097: download configurtion =" + gson.toJson(downloadTask.getConfigurationId()	));
-
-				logger.info("2097: download S3 configurtion =" + gson.toJson(downloadTask.getS3ArchiveConfigurationId()));
-
-				// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
-				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(downloadTask.getArchiveLocation(),
-								HpcDataTransferType.S_3,
-								downloadTask.getConfigurationId(),
-								downloadTask.getS3ArchiveConfigurationId());
-				if (!clearMetadataResponse.getMetadataClearStatus()) {
-					String errorMessage = "Failed to clear archive object metadata for data object at path: "
-							+ downloadTask.getPath();
-					throw new HpcException(errorMessage, HpcErrorType.UNEXPECTED_ERROR);
-				} else {
-					// Successfully cleared the metadata, proceed to delete the data management record from iRODS
-					logger.info("2097: app:Transfer completeDataObjectDownloadTask: cleared metadata");
-					dataManagementService.delete(downloadTask.getPath(), false);
-					logger.info("2097: app:Transfer completeDataObjectDownloadTask: deleted irods record");
-					logger.info("Successfully deleted data object at path: {} from iRODS", downloadTask.getPath());
-				}
-			} catch (HpcException e) {
-				logger.error("Failed to delete file from datamanagement", e);
-			}
-		}
 
 		// Create a task result object.
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
