@@ -2751,6 +2751,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					dataTransferDownloadReport.getBytesTransferred());
 
+			logger.info("2097: Begin deleteDataObject Bus:System");
+			dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+			logger.info("2097: Completed deleteDataObject Bus:System");
+
 			// Send a download completion event (if requested to).
 			if (downloadTask.getCompletionEvent()) {
 				addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
