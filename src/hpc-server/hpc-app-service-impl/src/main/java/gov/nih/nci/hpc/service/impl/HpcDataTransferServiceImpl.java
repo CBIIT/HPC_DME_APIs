@@ -1183,39 +1183,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		// If from an external archive, delete the path from IRODs
-		if (downloadTask.getExternalArchiveFlag()) {
-			try {
-				String path = downloadTask.getPath();
-				HpcDataObject dataObject = dataManagementService.getDataObject(path);
-				// Validate the data object exists in iRODs.
-				if (dataObject == null) {
-					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-				// Get the metadata for this data object.
-				HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
-				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
-
-				// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
-				HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(systemGeneratedMetadata.getArchiveLocation(),
-								systemGeneratedMetadata.getDataTransferType(),
-								systemGeneratedMetadata.getConfigurationId(),
-								systemGeneratedMetadata.getS3ArchiveConfigurationId());
-				if (!clearMetadataResponse.getMetadataClearStatus()) {
-					String errorMessage = "Failed to clear archive object metadata for data object at path: "
-							+ path;
-					throw new HpcException(errorMessage, HpcErrorType.UNEXPECTED_ERROR);
-				} else {
-					// Successfully cleared the metadata, proceed to delete the data management record from iRODS
-					dataManagementService.delete(path, false);
-					logger.info("completeDataObjectDownloadTask:Successfully deleted data object at path: {} from iRODS and cleared metadata", path);
-				}
-			} catch (HpcException e) {
-				logger.error("Failed to delete file from datamanagement", e);
-			}
-		}
-
 		// Create a task result object.
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
 		taskResult.setId(downloadTask.getId());
