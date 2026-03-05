@@ -2731,6 +2731,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					dataTransferDownloadReport.getBytesTransferred());
 
+			if(downloadTask.getExternalArchiveFlag()) {
+				// If this is an external archive download, delete the data object from iRODS after the download is completed/failed.
+				dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+			}
 			// Send a download completion event (if requested to).
 			if (downloadTask.getCompletionEvent()) {
 				addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
