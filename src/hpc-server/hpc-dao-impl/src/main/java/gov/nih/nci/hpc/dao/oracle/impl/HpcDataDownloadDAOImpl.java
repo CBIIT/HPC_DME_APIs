@@ -35,6 +35,7 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -258,8 +259,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+    @Autowired
+    @Qualifier("hpcOracleJdbcTemplate")
+    private JdbcTemplate jdbcTemplate = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());

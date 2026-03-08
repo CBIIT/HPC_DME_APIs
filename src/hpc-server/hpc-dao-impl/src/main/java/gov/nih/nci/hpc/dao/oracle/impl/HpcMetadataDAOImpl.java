@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -293,8 +294,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+        @Autowired
+        @Qualifier("hpcOracleJdbcTemplate")
+        private JdbcTemplate jdbcTemplate = null;
 
 	private int fetchSize = 1000;
 

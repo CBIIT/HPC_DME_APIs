@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -68,13 +69,13 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, FROM_S3_ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, TO_S3_ARCHIVE_LOCATION_FILE_ID = ?, SERVER_ID = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, "
 			+ "RETRY_TASK_ID = ?, RETRY_USER_ID = ?, METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID = ?, "
-			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ?, AUTO_TIERING_FILE_CONTAINER_ID = ?, AUTO_TIERING_FILE_ID = ? "
+			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID = ?, METADATA_ARCHIVE_FILE_ID_PATTERN = ? "
 			+ "when not matched then insert (ID, PARENT_ID, USER_ID, PATH, CONFIGURATION_ID, FROM_S3_ARCHIVE_CONFIGURATION_ID, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID, TYPE, RESULT, CREATED, COMPLETED, MESSAGE, FROM_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, "
 			+ "FROM_S3_ARCHIVE_LOCATION_FILE_ID, TO_S3_ARCHIVE_LOCATION_FILE_CONTAINER_ID, TO_S3_ARCHIVE_LOCATION_FILE_ID, SERVER_ID, "
 			+ "ALIGN_ARCHIVE_PATH, DATA_SIZE, RETRY_TASK_ID, RETRY_USER_ID, METADATA_FROM_ARCHIVE_FILE_CONTAINER_ID, "
-			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN, AUTO_TIERING_FILE_CONTAINER_ID, AUTO_TIERING_FILE_ID) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "METADATA_TO_ARCHIVE_FILE_CONTAINER_ID, METADATA_ARCHIVE_FILE_ID_PATTERN) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DATA_MIGRATION_TASK_RESULT_CLOBS_SQL = "update HPC_DATA_MIGRATION_TASK_RESULT set DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -117,8 +118,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+   @Autowired
+   @Qualifier("hpcOracleJdbcTemplate")
+   private JdbcTemplate jdbcTemplate = null;
 
 	// Lob handler
 	private LobHandler lobHandler = new DefaultLobHandler();
