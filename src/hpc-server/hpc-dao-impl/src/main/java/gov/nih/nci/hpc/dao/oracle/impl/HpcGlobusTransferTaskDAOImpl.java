@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -50,8 +51,9 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+       @Autowired
+       @Qualifier("hpcOracleJdbcTemplate")
+       private JdbcTemplate jdbcTemplate = null;
 
 	// Row mapper.
 	private RowMapper<String> globusAccountsRowMapper = (rs, rowNum) -> {
