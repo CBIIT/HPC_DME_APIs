@@ -5223,3 +5223,8 @@ input:checked + .slider:before {
 img.softlink {
 	margin-left: 3px;
 }
+
+/* Search result grid height */
+.search-result-grid {
+	height: 550px;
+}
