@@ -592,7 +592,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
 				downloadRequest.getAppendPathToDownloadDestination(),
-				downloadRequest.getAppendCollectionNameToDownloadDestination());
+				downloadRequest.getAppendCollectionNameToDownloadDestination(), downloadRequest.getExternalArchiveFlag());
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -749,7 +749,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
-		
 		logger.info("2097: Bus:Registration Request: " + gson.toJson(registrationRequest));
 		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
 		logger.info("2097: Bus:Registration Compeleted: " + gson.toJson(registrationResponseDTO));
@@ -781,9 +780,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
 		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO);
-
 		// Create and return a DTO with the request receipt.
-		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
+		String filePath = dataManagementConfiguration.getBasePath() + pathSubstring[1];
+		downloadRequest.setExternalArchiveFlag(true);
+		HpcCollectionDownloadResponseDTO responseDTO = downloadCollection(filePath, downloadRequest);
 		return responseDTO;
 	    }
 
