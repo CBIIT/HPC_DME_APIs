@@ -507,6 +507,7 @@
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="totalBytesTransferred " type="xsd:long" minOccurs="0" />
 			<xsd:element name="priority" type="xsd:int" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
