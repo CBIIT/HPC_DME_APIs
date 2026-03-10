@@ -77,6 +77,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
@@ -760,14 +761,31 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return downloadResponse;
 	}
 	
-	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
-			throws HpcException {
+	        throws HpcException {
+		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService
+				.findDataTransferConfigurationForExternalPath(path);
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
+				.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+		String[] pathSubstring = path.split(s3ArchiveConfiguration.getPosixPath());
+		String folderName = dataManagementConfiguration.getBasePath().substring(1) + pathSubstring[1];
+		HpcFileLocation directoryLocation = new HpcFileLocation();
+		directoryLocation.setFileContainerId(s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId());
+		directoryLocation.setFileId(folderName);
+		HpcScanDirectory s3ArchiveScanDirectory = new HpcScanDirectory();
+		s3ArchiveScanDirectory.setDirectoryLocation(directoryLocation);
+		HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem = new HpcDirectoryScanRegistrationItemDTO();
+		directoryScanRegistrationItem.setBasePath(dataManagementConfiguration.getBasePath());
+		directoryScanRegistrationItem.setS3ArchiveScanDirectory(s3ArchiveScanDirectory);
+		directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
+		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
+		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
+		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO);
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
 		return responseDTO;
-	}
+	    }
 
 	@Override
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
