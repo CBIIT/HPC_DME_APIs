@@ -163,7 +163,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, "
 			+ "GOOGLE_ACCESS_TOKEN, ASPERA_ACCOUNT_USER, ASPERA_ACCOUNT_PASSWORD, ASPERA_ACCOUNT_HOST, BOX_ACCESS_TOKEN, BOX_REFRESH_TOKEN, "
 			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION, APPEND_COLLECTION_NAME_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, CREATED, RETRY_TASK_ID, RETRY_USER_ID, DATA_TRANSFER_REQUEST_ID, DESTINATION_TYPE, DOC, EXTERNAL_ARCHIVE_FLAG) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_CLOBS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ?, DATA_OBJECT_PATHS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -1265,7 +1265,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					collectionDownloadTask.getCreated(), collectionDownloadTask.getRetryTaskId(),
 					collectionDownloadTask.getRetryUserId(), collectionDownloadTask.getDataTransferRequestId(),
-					destinationType, collectionDownloadTask.getDoc());
+					destinationType, collectionDownloadTask.getDoc(), collectionDownloadTask.getExternalArchiveFlag());
 
 			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_CLOBS_SQL,
 					new Object[] { new SqlLobValue(toJSON(collectionDownloadTask.getItems()), lobHandler),

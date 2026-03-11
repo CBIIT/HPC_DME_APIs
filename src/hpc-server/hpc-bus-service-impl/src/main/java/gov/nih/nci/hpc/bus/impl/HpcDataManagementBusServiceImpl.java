@@ -564,7 +564,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Verify data objects found under this collection.
 		if (!dataManagementService.hasDataObjects(collection)) {
 			// No data objects found under this collection.
-			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("No data objects found under collection " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
@@ -743,8 +743,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcUploadSource uploadSource = new HpcUploadSource();
 		uploadSource.setSourceLocation(sourceLocation);
 		dto.setArchiveLinkSource(uploadSource);
-		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-        registrationBulkRequestDTO.getDataObjectRegistrationItems().add(dto);
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
 		registrationRequest.setArchiveLinkSource(uploadSource);
@@ -781,7 +779,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO);
 		// Create and return a DTO with the request receipt.
-		String filePath = dataManagementConfiguration.getBasePath() + pathSubstring[1];
+		String filePath = dataManagementConfiguration.getBasePath() + "/" + folderName;
 		downloadRequest.setExternalArchiveFlag(true);
 		HpcCollectionDownloadResponseDTO responseDTO = downloadCollection(filePath, downloadRequest);
 		return responseDTO;
