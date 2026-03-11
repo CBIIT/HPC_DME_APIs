@@ -58,6 +58,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
+	
+	// The following queries are used for upserting and retrieving data migration tasks and results.
+	
 	private static final String UPSERT_DATA_MIGRATION_TASK_SQL = "merge into HPC_DATA_MIGRATION_TASK using dual on (ID = ?) "
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, PERCENT_COMPLETE = ?, SERVER_ID = ?, "
@@ -119,6 +122,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "(select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? "
 			+ "union all select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(PERCENT_COMPLETE / 100 * DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK where PARENT_ID = ?)) "
 			+ "where ID = ? and STATUS = ? and TYPE != ?";
+	
+	// The following queries are used for retrieving staged metadata attributes for processing and tracking migrated attributes.
 	
 	private static final String GET_STAGED_METADATA_ATTRIBUTES_SQL = "select * from HPC_STAGED_METADATA_ATTRIBUTES where IN_PROCESS = 0";
 	
