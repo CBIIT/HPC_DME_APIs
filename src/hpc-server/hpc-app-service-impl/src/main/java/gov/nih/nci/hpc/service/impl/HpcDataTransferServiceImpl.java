@@ -1149,7 +1149,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
-		logger.info("2097: app:Transfer completeDataObjectDownloadTask downloadTask=" + gson.toJson(downloadTask));
 		// Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1199,9 +1198,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				logger.error("Failed to delete file: {}", downloadTask.getDownloadFilePath());
 			}
 		}
-
-		logger.info("2097: app:Transfer completeDataObjectDownloadTask: begin deleted path from IRODs path="
-				+ downloadTask.getPath());
 
 		// Create a task result object.
 		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
