@@ -764,6 +764,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				continue;
 			}
 
+			logger.info("2097: In processCollectionDownloadTasks Bus:System downloadTask" + gson.toJson(downloadTask));
+
 			// We limit a user to one download (collection breakdown or processing) task at
 			// a time for the same collection
 			int tasksInProcessForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
@@ -2752,7 +2754,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					dataTransferDownloadReport.getBytesTransferred());
 
 			logger.info("2097: Begin deleteDataObject Bus:System");
-			dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+			if (downloadTask.getExternalArchiveFlag()) {
+				dataManagementBusService.deleteDataObject(downloadTask.getPath(), true, null);
+			} 
 			logger.info("2097: Completed deleteDataObject Bus:System");
 
 			// Send a download completion event (if requested to).

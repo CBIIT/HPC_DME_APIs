@@ -779,7 +779,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO);
 		// Create and return a DTO with the request receipt.
-		String filePath = dataManagementConfiguration.getBasePath() + "/" + folderName;
+		String filePath =  "/" + folderName;
 		downloadRequest.setExternalArchiveFlag(true);
 		HpcCollectionDownloadResponseDTO responseDTO = downloadCollection(filePath, downloadRequest);
 		return responseDTO;
