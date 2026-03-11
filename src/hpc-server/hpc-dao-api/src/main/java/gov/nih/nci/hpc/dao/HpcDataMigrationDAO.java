@@ -229,4 +229,11 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public int cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException;
+
+	/**
+	 * Reset in-process staged metadata attributes.
+	 *
+	 * @throws HpcException on database error.
+	 */
+	public void resetStagedMetadataAttribute() throws HpcException;
 }
