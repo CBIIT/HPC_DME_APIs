@@ -451,7 +451,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		int taskCount = dataMigrationDAO.cleanupDataMigrationTasks();
 		logger.info("Cleaned up {} data migration tasks", taskCount);
-
+		
+		// Reset any in-process metadata attribute migration
+		dataMigrationDAO.resetStagedMetadataAttribute();
 	}
 
 	@Override
