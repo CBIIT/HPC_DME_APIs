@@ -134,6 +134,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	private static final String INSERT_MIGRATED_METADATA_ATTRIBUTE_SQL = "insert into HPC_MIGRATED_METADATA_ATTRIBUTES ( "
 			+ "PATH, META_ATTR_NAME, META_ATTR_VALUE, COMPLETED) values (?, ?, ?, ?)";
 
+	private static final String RESET_STAGED_METADATA_ATTRIBUTE_SQL = "update HPC_STAGED_METADATA_ATTRIBUTES set IN_PROCESS = 0 where IN_PROCESS = 1";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -612,6 +614,17 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to cleanup staged metadata attribute: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public void resetStagedMetadataAttribute() throws HpcException {
+		try {
+			jdbcTemplate.update(RESET_STAGED_METADATA_ATTRIBUTE_SQL);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to reset in process staged metadata attribute: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 }
