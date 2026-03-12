@@ -248,6 +248,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// Methods
 	// ---------------------------------------------------------------------//
 
+	/**
+	 * Creates an HpcUploadSource with the specified container ID and file ID.
+	 *
+	 * @param containerId the file container ID
+	 * @param fileId the file ID
+	 * @return configured HpcUploadSource object
+	 */
+	private HpcUploadSource createUploadSource(String containerId, String fileId) {
+		HpcFileLocation sourceLocation = new HpcFileLocation();
+		sourceLocation.setFileContainerId(containerId);
+		sourceLocation.setFileId(fileId);
+
+		HpcUploadSource uploadSource = new HpcUploadSource();
+		uploadSource.setSourceLocation(sourceLocation);
+		return uploadSource;
+	}
+
 	// ---------------------------------------------------------------------//
 	// HpcDataManagementBusService Interface Implementation
 	// ---------------------------------------------------------------------//
@@ -710,28 +727,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
-		HpcDataObjectRegistrationRequestDTO dataObjectRegistration = new HpcDataObjectRegistrationRequestDTO();
 		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(path);
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		String posixPath =  s3ArchiveConfiguration.getPosixPath();
 		String bucket =  s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-		String basePath = dataManagementConfiguration.getBasePath();
-		HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
-		HpcDataObjectRegistrationRequest dataObjectRegistrationRequest = new HpcDataObjectRegistrationRequest();
-		dto.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
-		dataObjectRegistrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
-		String[] pathSubstring = path.split(s3ArchiveConfiguration.getPosixPath());
-		String filePath = dataManagementConfiguration.getBasePath() + pathSubstring[1];
-		dto.setPath(filePath);
-		HpcFileLocation sourceLocation = new HpcFileLocation();
-		sourceLocation.setFileContainerId(bucket);
-		sourceLocation.setFileId(filePath.substring(1));
-		HpcUploadSource uploadSource = new HpcUploadSource();
-		uploadSource.setSourceLocation(sourceLocation);
-		dto.setArchiveLinkSource(uploadSource);
-		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-        registrationBulkRequestDTO.getDataObjectRegistrationItems().add(dto);
-		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+		String filePath = dataManagementConfiguration.getBasePath() +  path.split(s3ArchiveConfiguration.getPosixPath())[1];
+		HpcUploadSource uploadSource = createUploadSource(bucket, filePath.substring(1));
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
