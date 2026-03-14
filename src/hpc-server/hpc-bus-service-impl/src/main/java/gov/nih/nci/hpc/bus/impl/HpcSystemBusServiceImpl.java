@@ -752,6 +752,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.info("2097: In processCollectionDownloadTasks Bus:System ");
 
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
+				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)) {
+					logger.info("2097: In processCollectionDownloadTasks for RECEIVED_EXTERNAL downloadTasks" + gson.toJson(downloadTask));
+					// TODO
+					//downloadTask.setExternalArchiveFlag(true);
+		}
+
+		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
 			logger.info("collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
 					downloadTask.getType());
