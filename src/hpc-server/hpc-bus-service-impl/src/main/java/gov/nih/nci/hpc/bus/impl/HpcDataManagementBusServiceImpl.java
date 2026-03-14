@@ -764,10 +764,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				.findDataTransferConfigurationForExternalPath(path);
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
 				.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		String[] pathSubstring = path.split(s3ArchiveConfiguration.getPosixPath());
-		String folderName = dataManagementConfiguration.getBasePath().substring(1) + pathSubstring[1];
+		String fileDirectory = path.split(s3ArchiveConfiguration.getPosixPath())[1];
+		String folderName = dataManagementConfiguration.getBasePath().substring(1) + fileDirectory;
+		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
 		HpcFileLocation directoryLocation = new HpcFileLocation();
-		directoryLocation.setFileContainerId(s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId());
+		directoryLocation.setFileContainerId(bucket);
 		directoryLocation.setFileId(folderName);
 		HpcScanDirectory s3ArchiveScanDirectory = new HpcScanDirectory();
 		s3ArchiveScanDirectory.setDirectoryLocation(directoryLocation);
@@ -779,11 +780,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO);
 		// Create and return a DTO with the request receipt.
-		String filePath =  "/" + folderName;
+		String filePath = dataManagementConfiguration.getBasePath() + "/" + folderName;
 		downloadRequest.setExternalArchiveFlag(true);
 		HpcCollectionDownloadResponseDTO responseDTO = downloadCollection(filePath, downloadRequest);
 		return responseDTO;
-	    }
+	}
 
 	@Override
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
