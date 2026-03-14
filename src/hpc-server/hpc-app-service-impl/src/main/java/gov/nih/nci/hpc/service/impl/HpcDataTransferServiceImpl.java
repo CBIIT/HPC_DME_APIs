@@ -1671,7 +1671,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
-		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		if(externalArchiveFlag) {
+			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL);
+		} else {
+			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		}
+		//downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
