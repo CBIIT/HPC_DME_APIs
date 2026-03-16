@@ -128,6 +128,7 @@
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="ACTIVE" />
 			<xsd:enumeration value="GLOBUS_BUNCHING" />
+			<xsd:enumeration value="RECEIVED_EXTERNAL" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -507,6 +508,7 @@
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="totalBytesTransferred " type="xsd:long" minOccurs="0" />
 			<xsd:element name="priority" type="xsd:int" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
