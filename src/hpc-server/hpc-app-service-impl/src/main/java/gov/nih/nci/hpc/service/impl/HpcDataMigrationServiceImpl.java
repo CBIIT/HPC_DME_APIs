@@ -690,7 +690,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			}
 			
 		} else {
-			// Get the metadata for this collection.
+			// Get the metadata for this data object.
 			HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(stagedMetadataAttribute.getPath(), true);
 
 			// Update the metadata.
@@ -700,7 +700,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				metadataService.updateDataObjectMetadata(stagedMetadataAttribute.getPath(), metadataEntries,
 						configurationId, collectionType, false, true);
 			} catch (HpcException e) {
-				// Collection metadata update failed. Capture this in the audit record.
+				// Data object metadata update failed. Capture this in the audit record.
 				updated = false;
 				message = e.getMessage();
 			} finally {
