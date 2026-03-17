@@ -821,7 +821,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					logger.warn("Bucket is empty for S3 configuration ID: " + s3ArchiveConfiguration.getId());
 					throw new HpcException("Invalid bucket for S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
 				}
-				String pathWithPosixPathRemoved = path.split(s3ArchiveConfiguration.getPosixPath())[1];
+				String posixPath = s3ArchiveConfiguration.getPosixPath();
+				String pathWithPosixPathRemoved = path.substring(posixPath.length());
+				if (pathWithPosixPathRemoved.startsWith("/")) {
+					pathWithPosixPathRemoved = pathWithPosixPathRemoved.substring(1);
+				}
 				if(StringUtils.isEmpty(pathWithPosixPathRemoved)) {
 					logger.warn("Path without POSIX is empty for S3 configuration ID: " + s3ArchiveConfiguration.getId());
 					throw new HpcException("Invalid path without POSIX for S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
