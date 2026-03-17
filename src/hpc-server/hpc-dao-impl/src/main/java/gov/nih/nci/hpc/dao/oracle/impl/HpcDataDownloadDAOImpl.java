@@ -68,8 +68,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * HPC Data Download DAO Implementation.
@@ -272,8 +270,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// Encryptor.
 	@Autowired
 	private HpcEncryptor encryptor = null;
-	
-	private Gson gson = new Gson();
 
 	// HpcDataObjectDownloadTask table to object mapper.
 	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> {
