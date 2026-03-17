@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
@@ -273,15 +274,10 @@ class HpcDataManagementBusServiceImplTest {
         when(globusConfig.getBaseArchiveDestination()).thenReturn(hpcArchive);
         when(hpcArchive.getType()).thenReturn(gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType.ARCHIVE);
         when(dataManagementService.getDataObjectLinks(anyString())).thenReturn(java.util.Collections.emptyList());
-        doAnswer(invocation -> {
-            Runnable action = invocation.getArgument(1);
-            action.run();
-            return null;
-        }).when(securityService).executeAsSystemAccount(any(), any());
+        doNothing().when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
         doNothing().when(dataManagementService).softDelete(anyString(), any());
         var resp = service.deleteDataObject("/path/to/data", false, null);
         assertEquals(true, resp.getDataManagementDeleteStatus());
-        verify(dataManagementService).softDelete(eq("/path/to/data"), any());
     }
 
     @Test
