@@ -788,12 +788,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
-	 * Get the mapping from S3ConfigurationID to DataManagementConfigurationId.
+	 * Get external download details for the given S3 archive configuration and path.
+	 * <p>
+	 * Derives the data management base path, S3 bucket, and the portion of the
+	 * requested path after the configured POSIX prefix, based on the provided
+	 * {@link HpcDataTransferConfiguration} and user-supplied path.
 	 *
-	 * @param s3ConfigurationId The S3 configuration ID.
-	 * @param path The user provided path for the data object or collection to be downloaded which is used to get the S3 configuration and the associated data management configuration.
-	 * @return A map containing the S3ConfigurationID to DataManagementConfigurationId mapping.
-	 * @throws HpcException on service failure.
+	 * @param s3ArchiveConfiguration The S3 archive configuration used to resolve data
+	 *                               management configuration and target bucket.
+	 * @param path                   The user-provided path for the data object or
+	 *                               collection to be downloaded.
+	 * @return A map containing the derived external download details with keys:
+	 *         {@code "basePath"}, {@code "bucket"}, and
+	 *         {@code "pathWithPosixPathRemoved"}.
+	 * @throws HpcException on service failure or invalid configuration.
 	 */
 	private Map<String, String> externalDownloadDetailsMapping(HpcDataTransferConfiguration s3ArchiveConfiguration, String path) throws HpcException {
 		Map<String, String> details = new HashMap<>();
