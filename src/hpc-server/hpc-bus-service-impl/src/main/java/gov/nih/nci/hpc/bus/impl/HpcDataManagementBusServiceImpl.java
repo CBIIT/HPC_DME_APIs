@@ -828,11 +828,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				details.put("bucket", bucket);
 				details.put("pathWithPosixPathRemoved", pathWithPosixPathRemoved);
 			} else {
-				logger.warn("S3 archive configuration not found for path: " + s3ArchiveConfiguration.getPosixPath());
-				throw new HpcException("S3 archive configuration not found for path: " + s3ArchiveConfiguration.getPosixPath(), HpcErrorType.INVALID_REQUEST_INPUT);
+				logger.warn("S3 archive configuration not found for path: " + path);
+				throw new HpcException("S3 archive configuration not found for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		} catch (HpcException e) {
-			logger.error("Failed to retrieve S3 configuration for ID: " + s3ArchiveConfiguration.getId(), e);
+			logger.error(
+					"Failed to retrieve S3 configuration. Path: " + path + ", configuration ID: "
+							+ (s3ArchiveConfiguration != null ? s3ArchiveConfiguration.getId() : "null"),
+					e);
 			throw e;
 		}
 		
