@@ -273,10 +273,15 @@ class HpcDataManagementBusServiceImplTest {
         when(globusConfig.getBaseArchiveDestination()).thenReturn(hpcArchive);
         when(hpcArchive.getType()).thenReturn(gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType.ARCHIVE);
         when(dataManagementService.getDataObjectLinks(anyString())).thenReturn(java.util.Collections.emptyList());
-        //doNothing().when(securityService).executeAsSystemAccount(any(), any());
+        doAnswer(invocation -> {
+            Runnable action = invocation.getArgument(1);
+            action.run();
+            return null;
+        }).when(securityService).executeAsSystemAccount(any(), any());
         doNothing().when(dataManagementService).softDelete(anyString(), any());
         var resp = service.deleteDataObject("/path/to/data", false, null);
         assertEquals(true, resp.getDataManagementDeleteStatus());
+        verify(dataManagementService).softDelete(eq("/path/to/data"), any());
     }
 
     @Test
