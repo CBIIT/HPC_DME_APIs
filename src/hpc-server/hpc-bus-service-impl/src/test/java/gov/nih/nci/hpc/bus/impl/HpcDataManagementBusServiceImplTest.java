@@ -120,10 +120,10 @@ class HpcDataManagementBusServiceImplTest {
         when(hpcArchive.getType()).thenReturn(gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType.TEMPORARY_ARCHIVE);
         when(dataManagementService.getDataManagementConfiguration(anyString())).thenReturn(dataMgmConfig);
         
-        var HpcPathAttributes = mock(gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes.class);
-        when(HpcPathAttributes.getExists()).thenReturn(true);
-        when(HpcPathAttributes.getIsFile()).thenReturn(true);
-        when(dataTransferService.getPathAttributes(any(), any(), anyBoolean(), any(), any())).thenReturn(HpcPathAttributes);
+        var pathAttributes = mock(gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes.class);
+        when(pathAttributes.getExists()).thenReturn(true);
+        when(pathAttributes.getIsFile()).thenReturn(true);
+        when(dataTransferService.getPathAttributes(any(), any(), anyBoolean(), any(), any())).thenReturn(pathAttributes);
         
         Exception exception = assertThrows(HpcException.class, () -> {
             service.deleteDataObject("/path/to/data", false, null);
