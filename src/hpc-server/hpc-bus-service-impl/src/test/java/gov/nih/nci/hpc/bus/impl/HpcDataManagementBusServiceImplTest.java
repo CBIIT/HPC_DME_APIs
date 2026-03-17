@@ -404,10 +404,10 @@ class HpcDataManagementBusServiceImplTest {
         doNothing().when(dataManagementService).delete(eq("/link/path"), anyBoolean());
         doNothing().when(dataManagementService).delete(anyString(), anyBoolean());
         
-        var HpcPathAttributes = mock(gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes.class);
-        when(HpcPathAttributes.getExists()).thenReturn(true);
-        when(HpcPathAttributes.getIsFile()).thenReturn(true);
-        when(dataTransferService.getPathAttributes(any(), any(), anyBoolean(), any(), any())).thenReturn(HpcPathAttributes);
+        var pathAttributes = mock(gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes.class);
+        when(pathAttributes.getExists()).thenReturn(true);
+        when(pathAttributes.getIsFile()).thenReturn(true);
+        when(dataTransferService.getPathAttributes(any(), any(), anyBoolean(), any(), any())).thenReturn(pathAttributes);
         
         var resp = service.deleteDataObject("/path/to/data", true, null);
         assertEquals(true, resp.getLinksDeleteStatus());
