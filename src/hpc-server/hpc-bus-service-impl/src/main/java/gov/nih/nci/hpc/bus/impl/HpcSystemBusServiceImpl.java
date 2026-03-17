@@ -1664,7 +1664,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								"download task: [taskId={}] - changed received_external state to received [transfer-type={}, destination-type={}]",
 								downloadTask.getId(), downloadTask.getDataTransferType(),
 								downloadTask.getDestinationType());
-								dataTransferService.changeDataObjectDownloadTaskExternalStatus(downloadTask);
+						dataTransferService.changeDataObjectDownloadTaskExternalStatus(downloadTask);
 						break;
 
 					case IN_PROGRESS:
