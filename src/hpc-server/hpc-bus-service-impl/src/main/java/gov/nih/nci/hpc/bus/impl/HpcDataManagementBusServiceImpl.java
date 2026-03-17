@@ -847,8 +847,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException {
-		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
-		return responseDTO;
+		throw new HpcException(
+				"Bulk data object or collection download from external source is not supported",
+				HpcErrorType.INVALID_REQUEST_INPUT);
 	}
 
 	@Override
