@@ -726,48 +726,118 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return responseDTO;
 	}
 
+	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
-		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(path);
-		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		String bucket =  s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-		String filePath = dataManagementConfiguration.getBasePath() +  path.split(s3ArchiveConfiguration.getPosixPath())[1];
-		HpcUploadSource uploadSource = createUploadSource(bucket, filePath.substring(1));
-		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
-		registrationRequest.setArchiveLinkSource(uploadSource);
-		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
-		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
-		downloadRequest.setExternalArchiveFlag(true);
-		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest);
+		HpcDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			// Build details for Registering the Archive links associated with the collection in the external archive
+			HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(path);
+			Map<String, String> details = externalDownloadDetailsMapping(s3ArchiveConfiguration, path);
+			String filePath = details.get("basePath") +  details.get("pathWithPosixPathRemoved");
+			HpcUploadSource uploadSource = createUploadSource(details.get("bucket"), filePath.substring(1));
+			HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
+			registrationRequest.setArchiveLinkSource(uploadSource);
+			registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
+			registerDataObject(filePath, registrationRequest, null);
+
+			// Download the external data files with the help of the registered links in the previous step
+			downloadRequest.setExternalArchiveFlag(true);
+			downloadResponse = downloadDataObject(filePath, downloadRequest);
+		} catch (HpcException e) {
+			logger.error("Failed to download data object from external source: " + path, e);
+			throw e;
+		}
 		return downloadResponse;
 	}
 
+	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 	        throws HpcException {
-		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService
-				.findDataTransferConfigurationForExternalPath(path);
-		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
-				.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		String fileDirectory = path.split(s3ArchiveConfiguration.getPosixPath())[1];
-		String folderName = dataManagementConfiguration.getBasePath().substring(1) + fileDirectory;
-		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-		HpcFileLocation directoryLocation = new HpcFileLocation();
-		directoryLocation.setFileContainerId(bucket);
-		directoryLocation.setFileId(folderName);
-		HpcScanDirectory s3ArchiveScanDirectory = new HpcScanDirectory();
-		s3ArchiveScanDirectory.setDirectoryLocation(directoryLocation);
-		HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem = new HpcDirectoryScanRegistrationItemDTO();
-		directoryScanRegistrationItem.setBasePath(dataManagementConfiguration.getBasePath());
-		directoryScanRegistrationItem.setS3ArchiveScanDirectory(s3ArchiveScanDirectory);
-		directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
-		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
-		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO);
-		// Create and return a DTO with the request receipt.
-		String filePath = dataManagementConfiguration.getBasePath() + "/" + folderName;
-		downloadRequest.setExternalArchiveFlag(true);
-		HpcCollectionDownloadResponseDTO responseDTO = downloadCollection(filePath, downloadRequest);
+		HpcCollectionDownloadResponseDTO responseDTO = null;
+		try{
+			// Build details for Registering the Archive links associated with the collection in the external archive
+			HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService
+					.findDataTransferConfigurationForExternalPath(path);
+			Map<String, String> details = externalDownloadDetailsMapping(s3ArchiveConfiguration, path);
+			String folderName = details.get("basePath").substring(1) + details.get("pathWithPosixPathRemoved");
+			HpcFileLocation directoryLocation = new HpcFileLocation();
+			directoryLocation.setFileContainerId(details.get("bucket"));
+			directoryLocation.setFileId(folderName);
+			HpcScanDirectory s3ArchiveScanDirectory = new HpcScanDirectory();
+			s3ArchiveScanDirectory.setDirectoryLocation(directoryLocation);
+			HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem = new HpcDirectoryScanRegistrationItemDTO();
+			directoryScanRegistrationItem.setBasePath(details.get("basePath"));
+			directoryScanRegistrationItem.setS3ArchiveScanDirectory(s3ArchiveScanDirectory);
+			directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
+			HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
+			registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
+			registerDataObjects(registrationBulkRequestDTO);
+
+			// Download the external collection with the help of the registered links in the previous step
+			String filePath = details.get("basePath") + "/" + folderName;
+			downloadRequest.setExternalArchiveFlag(true);
+			responseDTO = downloadCollection(filePath, downloadRequest);
+		} catch (HpcException e) {
+			logger.error("Failed to download collection from external source: " + path, e);
+			throw e;
+		}
 		return responseDTO;
+	}
+
+	/**
+	 * Get the mapping from S3ConfigurationID to DataManagementConfigurationId.
+	 *
+	 * @param s3ConfigurationId The S3 configuration ID.
+	 * @param path The user provided path for the data object or collection to be downloaded which is used to get the S3 configuration and the associated data management configuration.
+	 * @return A map containing the S3ConfigurationID to DataManagementConfigurationId mapping.
+	 * @throws HpcException on service failure.
+	 */
+	private Map<String, String> externalDownloadDetailsMapping(HpcDataTransferConfiguration s3ArchiveConfiguration, String path) throws HpcException {
+		Map<String, String> details = new HashMap<>();
+		
+		try {
+			// Get the S3 archive configuration
+			if (s3ArchiveConfiguration != null) {
+				String dataManagementConfigurationId = s3ArchiveConfiguration.getDataManagementConfigurationId();
+				if(StringUtils.isEmpty(dataManagementConfigurationId)) {
+					logger.warn("Data management configuration ID is empty for S3 configuration ID: " + s3ArchiveConfiguration.getId());
+					throw new HpcException("Invalid data management configuration ID for S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+				if(dataManagementConfiguration == null) {
+					logger.warn("Data management configuration not found for ID: " + dataManagementConfigurationId);
+					throw new HpcException("Invalid data management configuration ID for S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				String basePath = dataManagementConfiguration.getBasePath();
+				if (StringUtils.isEmpty(basePath)) {
+					logger.warn("Base path is empty for data management configuration ID: " + dataManagementConfigurationId);
+					throw new HpcException("Invalid base path for S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+				if (StringUtils.isEmpty(bucket)) {
+					logger.warn("Bucket is empty for S3 configuration ID: " + s3ArchiveConfiguration.getId());
+					throw new HpcException("Invalid bucket for S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				String pathWithPosixPathRemoved = path.split(s3ArchiveConfiguration.getPosixPath())[1];
+				if(StringUtils.isEmpty(pathWithPosixPathRemoved)) {
+					logger.warn("Path without POSIX is empty for S3 configuration ID: " + s3ArchiveConfiguration.getId());
+					throw new HpcException("Invalid path without POSIX for S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				details.put("dataManagementConfigurationId", dataManagementConfigurationId);
+				details.put("basePath", basePath);
+				details.put("bucket", bucket);
+				details.put("pathWithPosixPathRemoved", pathWithPosixPathRemoved);
+			} else {
+				logger.warn("S3 archive configuration not found for path: " + s3ArchiveConfiguration.getPosixPath());
+				throw new HpcException("S3 archive configuration not found for path: " + s3ArchiveConfiguration.getPosixPath(), HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} catch (HpcException e) {
+			logger.error("Failed to retrieve S3 configuration for ID: " + s3ArchiveConfiguration.getId(), e);
+			throw e;
+		}
+		
+		return details;
 	}
 
 	@Override
