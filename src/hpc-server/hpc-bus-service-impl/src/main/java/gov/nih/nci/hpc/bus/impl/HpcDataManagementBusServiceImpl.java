@@ -595,6 +595,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Submit a collection download task.
+		boolean externalArchiveFlag = Boolean.TRUE.equals(downloadRequest.getExternalArchiveFlag());
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
 				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 				downloadRequest.getGoogleDriveDownloadDestination(),
@@ -602,7 +603,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
 				downloadRequest.getAppendPathToDownloadDestination(),
-				downloadRequest.getAppendCollectionNameToDownloadDestination(), downloadRequest.getExternalArchiveFlag());
+				downloadRequest.getAppendCollectionNameToDownloadDestination(), externalArchiveFlag);
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
