@@ -605,8 +605,6 @@ public interface HpcDataTransferService {
 	 * Update a data object download task.
 	 *
 	 * @param downloadTask     The download task to update
-	 * @return true if the task was updated, or false if the task no longer exist
-	 *         (removed / canceled).
 	 * @throws HpcException on service failure.
 	 */
 	public void changeDataObjectDownloadTaskExternalStatus(HpcDataObjectDownloadTask downloadTask)
