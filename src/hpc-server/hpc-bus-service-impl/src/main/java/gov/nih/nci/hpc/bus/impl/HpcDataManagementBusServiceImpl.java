@@ -777,7 +777,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			registerDataObjects(registrationBulkRequestDTO);
 
 			// Download the external collection with the help of the registered links in the previous step
-			String filePath = details.get("basePath") + details.get("pathWithPosixPathRemoved");
+			String filePath = details.get("basePath") + "/" + folderName;
 			downloadRequest.setExternalArchiveFlag(true);
 			responseDTO = downloadCollection(filePath, downloadRequest);
 		} catch (HpcException e) {
