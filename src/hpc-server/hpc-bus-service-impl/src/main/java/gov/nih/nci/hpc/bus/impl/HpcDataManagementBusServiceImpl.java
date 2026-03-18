@@ -809,6 +809,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		try {
 			// Get the S3 archive configuration
 			if (s3ArchiveConfiguration != null) {
+				if(!s3ArchiveConfiguration.getExternalStorage()){
+					logger.warn("Data transfer configuration is not marked for external storage for S3 configuration ID: " + s3ArchiveConfiguration.getId());
+					throw new HpcException("Invalid S3 configuration for external download with S3 configuration ID: " + s3ArchiveConfiguration.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+
 				String dataManagementConfigurationId = s3ArchiveConfiguration.getDataManagementConfigurationId();
 				if(StringUtils.isEmpty(dataManagementConfigurationId)) {
 					logger.warn("Data management configuration ID is empty for S3 configuration ID: " + s3ArchiveConfiguration.getId());
