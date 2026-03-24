@@ -741,7 +741,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
 			registrationRequest.setArchiveLinkSource(uploadSource);
 			registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
-			registerDataObject(filePath, registrationRequest, null);
+			HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
 
 			// Download the external data files with the help of the registered links in the previous step
 			downloadRequest.setExternalArchiveFlag(true);
@@ -774,7 +774,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
 			HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
 			registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
-			registerDataObjects(registrationBulkRequestDTO);
+			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO =  registerDataObjects(registrationBulkRequestDTO);
 
 			// Download the external collection with the help of the registered links in the previous step
 			String filePath = details.get("basePath") + "/" + folderName;
