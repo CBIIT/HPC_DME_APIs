@@ -709,6 +709,31 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+			throws HpcException {
+		HpcDataObjectDownloadResponseDTO downloadResponse = null;
+		/*try {
+			// Build details for Registering the Archive links associated with the collection in the external archive
+			HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(path);
+			Map<String, String> details = externalDownloadDetailsMapping(s3ArchiveConfiguration, path);
+			String filePath = details.get("basePath") +  details.get("pathWithPosixPathRemoved");
+			HpcUploadSource uploadSource = createUploadSource(details.get("bucket"), filePath.substring(1));
+			HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
+			registrationRequest.setArchiveLinkSource(uploadSource);
+			registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
+			HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
+
+			// Download the external data files with the help of the registered links in the previous step
+			downloadRequest.setExternalArchiveFlag(true);
+			downloadResponse = downloadDataObject(filePath, downloadRequest);
+		} catch (HpcException e) {
+			logger.error("Failed to download data object from external source: " + path, e);
+			throw e;
+		}*/
+		return downloadResponse;
+	}
+
+	@Override
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) throws HpcException {
 		return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION);
 	}

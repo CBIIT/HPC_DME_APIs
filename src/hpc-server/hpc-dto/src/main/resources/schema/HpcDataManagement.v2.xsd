@@ -95,6 +95,8 @@
 					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="appendCollectionNameToDownloadDestination"
 					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="externalArchiveFlag" type="xsd:boolean"
+					minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
