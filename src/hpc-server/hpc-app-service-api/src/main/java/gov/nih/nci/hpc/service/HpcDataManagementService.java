@@ -579,6 +579,15 @@ public interface HpcDataManagementService {
 	public String findDataManagementConfigurationId(String path);
 
 	/**
+	 * Returns HpcDataTransferConfiguration for the given external path. This is searched by
+	 * matching the posix path of HpcDataTransferConfiguration to the start of a given path. If any configuration 
+	 *
+	 * @return HpcDataTransferConfiguration
+	 */
+
+	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path)  throws HpcException;
+
+	/**
 	 * Get data management configuration ID by base path.
 	 *
 	 * @param basePath The base path to get the config for.

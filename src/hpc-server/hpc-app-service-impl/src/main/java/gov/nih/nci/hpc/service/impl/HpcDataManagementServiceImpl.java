@@ -1180,6 +1180,22 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
+	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path) throws HpcException  {
+		HpcDataTransferConfiguration dataTransferConfiguration = null;
+		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
+			String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
+			if (dataTransferConfigurationId != null) {
+				HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
+				if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getPosixPath() != null && path.startsWith(dataTransferConfigurationCandidate.getPosixPath())) {
+					dataTransferConfiguration = dataTransferConfigurationCandidate;
+					break;
+				}
+			}
+		}
+		return dataTransferConfiguration;
+	}
+
+	@Override
 	public String findDataManagementConfigurationId(String path) {
 		if (StringUtils.isEmpty(path)) {
 			return null;
