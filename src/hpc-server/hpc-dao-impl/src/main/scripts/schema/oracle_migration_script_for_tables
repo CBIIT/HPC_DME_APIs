@@ -794,44 +794,48 @@ comment on column IRODS."HPC_USER_QUERY"."CREATED" is 'The date / time the query
 
 comment on column IRODS."HPC_USER_QUERY"."UPDATED" is 'The date / time the query was updated';
 
-create table hpc_data_meta_main parallel 4 nologging as
-SELECT /*+parallel(r_data_main 4)*/
-    DATA_ID                                     as object_id,
-    (cast(data_coll.coll_name as varchar2(2700)) || cast('/' as varchar2(1))) ||
-    cast(data_base.data_name as varchar2(2700)) as object_path,
-    cast(NULL as number)                        as coll_id,
-    meta.META_ID,
-    1                                           as data_level,
-    'DataObject'                                as level_label,
-    meta.META_ATTR_NAME,
-    meta.META_ATTR_VALUE,
-    meta.META_ATTR_UNIT
-FROM r_data_main data_base,
-     r_coll_main data_coll,
-     R_OBJT_METAMAP map,
-     R_META_MAIN meta
-where data_base.coll_id = data_coll.coll_id
-  and DATA_ID = map.OBJECT_ID
-  and map.META_ID = meta.META_ID;
+CREATE TABLE irods.hpc_data_meta_main
+(ID 									   NUMBER GENERATED ALWAYS AS IDENTITY,
+ OBJECT_ID                                 NUMBER not null,
+ OBJECT_PATH                               VARCHAR2(2700),
+ COLL_ID                                   NUMBER,
+ META_ID                                   NUMBER not null,
+ DATA_LEVEL                                NUMBER,
+ LEVEL_LABEL                               CHAR(10),
+ META_ATTR_NAME                            VARCHAR2(2700) not null,
+ META_ATTR_VALUE                           VARCHAR2(2700) not null,
+ META_ATTR_UNIT                            VARCHAR2(250),
+CREATE_TS                                  DATE DEFAULT SYSDATE NOT NULL,
+PRIMARY KEY (ID)
+)
+PARTITION BY RANGE (CREATE_TS) interval(numtoyminterval(1,'YEAR')) 
+(
+partition p_2017 values less than (DATE '2018-01-01'),
+partition p_2018 values less than (DATE '2019-01-01'),
+partition p_2019 values less than (DATE '2020-01-01'),
+partition p_2020 values less than (DATE '2021-01-01'),
+partition p_2021 values less than (DATE '2022-01-01'),
+partition p_2022 values less than (DATE '2023-01-01'),
+partition p_2023 values less than (DATE '2024-01-01'),
+partition p_2024 values less than (DATE '2025-01-01'),
+partition p_2025 values less than (DATE '2026-01-01'),
+partition p_2026 values less than (DATE '2027-01-01'),
+partition p_2027 values less than (DATE '2028-01-01'),
+partition p_2028 values less than (DATE '2029-01-01'),
+partition p_2029 values less than (DATE '2030-01-01')
+);
   
 comment on column irods.hpc_data_meta_main.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
-
 comment on column irods.hpc_data_meta_main.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
-
 comment on column irods.hpc_data_meta_main.meta_id is 'Metadata ID: r_meta_main.meta_id';
-
 comment on column irods.hpc_data_meta_main.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
-
 comment on column irods.hpc_data_meta_main.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level. "DataObject" if the metadata is associated with the data object itself';
-
 comment on column irods.hpc_data_meta_main.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
-
 comment on column irods.hpc_data_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
-
 comment on column irods.hpc_data_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
 
-create index hpc_data_meta_main_path_query
-    on irods.hpc_data_meta_main (object_path);
+create index hpc_data_meta_main_path_idx
+    on irods.hpc_data_meta_main (object_path) nologging;
     
 create table HPC_GLOBUS_TRANSFER_TASK
 (

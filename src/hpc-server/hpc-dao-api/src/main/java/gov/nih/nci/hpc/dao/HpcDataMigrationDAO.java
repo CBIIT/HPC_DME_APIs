@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
+import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -199,4 +200,40 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public int cleanupDataMigrationTasks() throws HpcException;
+
+	/**
+	 * Get staged metadata attributes for processing.
+	 *
+	 * @return A list of staged metadata attribute.
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes() throws HpcException;
+	
+	/**
+	 * Claim a staged metadata attribute for processing. Uses an atomic update so
+	 * that only one server node claims each row in a multi-node deployment.
+	 *
+	 * @param stagedMetadataAttribute The staged metadata entry to claim.
+	 * @return true if the row was successfully claimed, false if another node
+	 *         already claimed it.
+	 * @throws HpcException on database error.
+	 */
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException;
+
+	/**
+	 * Cleanup staged metadata attributes processed.
+	 *
+	 * @param stagedMetadataAttribute The staged metadata to be cleaned up
+	 * @return The number of records cleaned up.
+	 * @throws HpcException on database error.
+	 */
+	public int cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException;
+
+	/**
+	 * Reset in-process staged metadata attributes.
+	 *
+	 * @throws HpcException on database error.
+	 */
+	public void resetStagedMetadataAttribute() throws HpcException;
 }
