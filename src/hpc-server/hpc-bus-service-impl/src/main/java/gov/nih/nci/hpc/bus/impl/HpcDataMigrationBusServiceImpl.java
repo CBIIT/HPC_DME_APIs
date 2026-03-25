@@ -567,6 +567,45 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
     @Override
     @HpcExecuteAsSystemAccount
+    public void processStagedMetadataAttributes() throws HpcException {
+        dataMigrationService.getStagedMetadataAttributes().forEach(stagedMetadataAttribute -> {
+            try {
+                // Claim the row via an atomic conditional UPDATE (IN_PROCESS = 0 → 1).
+                // Oracle's row-level locking ensures that if two nodes execute this
+                // UPDATE concurrently on the same row, only one succeeds; the other
+                // finds IN_PROCESS already set and updates 0 rows.
+                if (!dataMigrationService.claimStagedMetadataAttribute(stagedMetadataAttribute)) {
+                    logger.debug("Staged metadata {}:{} for path - {} already claimed by another node, skipping.",
+                            stagedMetadataAttribute.getAttribute(), stagedMetadataAttribute.getValue(),
+                            stagedMetadataAttribute.getPath());
+                    return;
+                }
+
+                logger.info("Adding staged metadata {}:{} to path - {}", stagedMetadataAttribute.getAttribute(),
+                        stagedMetadataAttribute.getValue(),
+                        stagedMetadataAttribute.getPath());
+
+                boolean isCollection = dataManagementService.isPathCollection(stagedMetadataAttribute.getPath());
+                String configurationId = dataManagementService.findDataManagementConfigurationId(stagedMetadataAttribute.getPath());
+                // Get the collection type containing the data object.
+                String collectionPath = isCollection ? null : stagedMetadataAttribute.getPath().substring(0, stagedMetadataAttribute.getPath().lastIndexOf('/'));
+                String collectionType = isCollection ? null : dataManagementService.getCollectionType(collectionPath);
+
+                // Add the metadata
+                dataMigrationService.addStagedMetadataAttribute(stagedMetadataAttribute, isCollection, configurationId, collectionType);
+
+                // Delete the staged metadata after it's added to the data object/collection.
+                dataMigrationService.cleanupStagedMetadataAttribute(stagedMetadataAttribute);
+
+            } catch (HpcException e) {
+                logger.error("Failed to add staged metadata {}:{} to path - {}. Error: {}", stagedMetadataAttribute.getAttribute(),
+                        stagedMetadataAttribute.getValue(), stagedMetadataAttribute.getPath(), e.getMessage(), e);
+            }
+        });
+    }
+
+    @Override
+    @HpcExecuteAsSystemAccount
     public void processAutoTiering() throws HpcException {
         // obtain a list of HPC data management configurations which are to be included in auto-tiering scan and
         // create a task for each.

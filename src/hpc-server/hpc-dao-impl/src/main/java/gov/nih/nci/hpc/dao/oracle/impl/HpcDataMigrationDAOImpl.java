@@ -10,6 +10,31 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.fromPathsString;
+import static gov.nih.nci.hpc.util.HpcUtil.toPathsString;
+
+import java.sql.Types;
+import java.util.AbstractMap;
+import java.util.Calendar;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.support.SqlLobValue;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
+import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.transaction.annotation.Transactional;
+
 import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
@@ -18,6 +43,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
+import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +76,9 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
+	
+	// The following queries are used for upserting and retrieving data migration tasks and results.
+	
 	private static final String UPSERT_DATA_MIGRATION_TASK_SQL = "merge into HPC_DATA_MIGRATION_TASK using dual on (ID = ?) "
 			+ "when matched then update set PARENT_ID = ?, USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, FROM_S3_ARCHIVE_CONFIGURATION_ID = ?, "
 			+ "TO_S3_ARCHIVE_CONFIGURATION_ID = ?, TYPE = ?, STATUS = ?, CREATED = ?, ALIGN_ARCHIVE_PATH = ?, DATA_SIZE = ?, PERCENT_COMPLETE = ?, SERVER_ID = ?, "
@@ -112,6 +141,19 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			+ "(select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK_RESULT where PARENT_ID = ? "
 			+ "union all select COALESCE(sum(DATA_SIZE), 0) as total, COALESCE(sum(PERCENT_COMPLETE / 100 * DATA_SIZE), 0) as transferred from HPC_DATA_MIGRATION_TASK where PARENT_ID = ?)) "
 			+ "where ID = ? and STATUS = ? and TYPE != ?";
+	
+	// The following queries are used for retrieving staged metadata attributes for processing and tracking migrated attributes.
+	
+	private static final String GET_STAGED_METADATA_ATTRIBUTES_SQL = "select * from HPC_STAGED_METADATA_ATTRIBUTES where IN_PROCESS = 0";
+	
+	private static final String CLAIM_STAGED_METADATA_ATTRIBUTE_SQL = "update HPC_STAGED_METADATA_ATTRIBUTES set IN_PROCESS = 1 where PATH = ? and META_ATTR_NAME = ? and IN_PROCESS = 0";
+
+	private static final String CLEANUP_STAGED_METADATA_ATTRIBUTE_SQL = "delete from HPC_STAGED_METADATA_ATTRIBUTES where path = ? and meta_attr_name = ? ";
+	
+	private static final String INSERT_MIGRATED_METADATA_ATTRIBUTE_SQL = "insert into HPC_MIGRATED_METADATA_ATTRIBUTES ( "
+			+ "PATH, META_ATTR_NAME, META_ATTR_VALUE, COMPLETED) values (?, ?, ?, ?)";
+
+	private static final String RESET_STAGED_METADATA_ATTRIBUTE_SQL = "update HPC_STAGED_METADATA_ATTRIBUTES set IN_PROCESS = 0 where IN_PROCESS = 1";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -225,6 +267,16 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 			rowNum) -> {
 		return new AbstractMap.SimpleEntry<HpcDataMigrationResult, Integer>(
 				HpcDataMigrationResult.fromValue(rs.getString("RESULT")), rs.getInt("COUNT"));
+	};
+	
+	// Mapper to get staged metadata entries for processing
+	private RowMapper<HpcStagedMetadataAttribute> stagedMetadataAttributesRowMapper = (rs, rowNum) -> {
+		HpcStagedMetadataAttribute metadataEntry = new HpcStagedMetadataAttribute();
+		metadataEntry.setPath(rs.getString("PATH"));
+		metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
+		metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
+
+		return metadataEntry;
 	};
 
 	// The Logger instance.
@@ -559,6 +611,56 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to cleanup a data migration tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes() throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_STAGED_METADATA_ATTRIBUTES_SQL, stagedMetadataAttributesRowMapper);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get staged metadata attributes: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException {
+		try {
+			return jdbcTemplate.update(CLAIM_STAGED_METADATA_ATTRIBUTE_SQL, stagedMetadataAttribute.getPath(),
+					stagedMetadataAttribute.getAttribute()) > 0;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to claim staged metadata attribute: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	@Transactional
+	public int cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
+		try {
+			jdbcTemplate.update(INSERT_MIGRATED_METADATA_ATTRIBUTE_SQL, stagedMetadataAttribute.getPath(), stagedMetadataAttribute.getAttribute(),
+					stagedMetadataAttribute.getValue(), Calendar.getInstance());
+
+			return jdbcTemplate.update(CLEANUP_STAGED_METADATA_ATTRIBUTE_SQL, stagedMetadataAttribute.getPath(), stagedMetadataAttribute.getAttribute());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to cleanup staged metadata attribute: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
+	public void resetStagedMetadataAttribute() throws HpcException {
+		try {
+			jdbcTemplate.update(RESET_STAGED_METADATA_ATTRIBUTE_SQL);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to reset in process staged metadata attribute: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}

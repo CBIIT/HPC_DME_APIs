@@ -111,5 +111,13 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:complexType name="HpcStagedMetadataAttribute">
+		<xsd:sequence>
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="value" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 </xsd:schema>
