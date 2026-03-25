@@ -194,4 +194,11 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void processBulkAutoTieringMigrationReceived() throws HpcException;
+
+	/**
+	 * Process received data object auto-tiering migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processDataObjectAutoTieringMigrationReceived() throws HpcException;
 }
