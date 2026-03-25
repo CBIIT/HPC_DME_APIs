@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
+import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -320,6 +321,46 @@ public interface HpcDataMigrationService {
      */
     Map<String, HpcFileLocation> getDataObjectsForAutoTiering(String configurationId, String s3ArchiveConfigurationId)
             throws HpcException;
+
+	/**
+	 * Get a list of staged metadata attributes to be processed.
+	 *
+	 * @return A List of staged metadata entries.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes() throws HpcException;
+
+
+	/**
+	 * Add staged metadata attribute to path.
+	 * 
+	 * @param stagedMetadataAttribute staged metadata entry to add
+	 * @param isCollection true if path is a collection path
+	 * @param configurationId The configuration ID.
+	 * @param collectionType The collection type.
+	 * @throws HpcException on service failure.
+	 */
+	public void addStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute, boolean isCollection,
+			String configurationId, String collectionType) throws HpcException;
+
+	/**
+	 * Claim a staged metadata attribute for processing, so that in a multi-node
+	 * deployment only one server processes each row.
+	 *
+	 * @param stagedMetadataAttribute staged metadata entry to claim
+	 * @return true if successfully claimed, false if another node already claimed it.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException;
+
+	/**
+	 * Clean processed staged metadata attribute.
+	 * 
+	 * @param stagedMetadataAttribute staged metadata entry to clean up
+	 * @throws HpcException on service failure.
+	 */
+	public void cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException;
 }
 
 

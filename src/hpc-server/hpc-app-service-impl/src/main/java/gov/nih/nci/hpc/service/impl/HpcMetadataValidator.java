@@ -156,7 +156,7 @@ public class HpcMetadataValidator {
 	 * @throws HpcException If the metadata is invalid.
 	 */
 	public void validateCollectionMetadata(String configurationId, List<HpcMetadataEntry> existingMetadataEntries,
-			List<HpcMetadataEntry> addUpdateMetadataEntries) throws HpcException {
+			List<HpcMetadataEntry> addUpdateMetadataEntries, boolean allowSystemMetadata) throws HpcException {
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementConfigurationLocator
 				.get(configurationId);
 		if (dataManagementConfiguration == null) {
@@ -165,7 +165,7 @@ public class HpcMetadataValidator {
 
 		validateMetadata(existingMetadataEntries, addUpdateMetadataEntries,
 				dataManagementConfiguration.getCollectionMetadataValidationRules(), null,
-				dataManagementConfiguration.getRestrictMetadata());
+				dataManagementConfiguration.getRestrictMetadata(), allowSystemMetadata);
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class HpcMetadataValidator {
 	 * @throws HpcException If the metadata is invalid.
 	 */
 	public void validateDataObjectMetadata(String configurationId, List<HpcMetadataEntry> existingMetadataEntries,
-			List<HpcMetadataEntry> addUpdateMetadataEntries, String collectionType) throws HpcException {
+			List<HpcMetadataEntry> addUpdateMetadataEntries, String collectionType, boolean allowSystemMetadata) throws HpcException {
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementConfigurationLocator
 				.get(configurationId);
 		if (dataManagementConfiguration == null) {
@@ -194,7 +194,8 @@ public class HpcMetadataValidator {
 
 		validateMetadata(existingMetadataEntries, addUpdateMetadataEntries,
 				dataManagementConfiguration.getDataObjectMetadataValidationRules(), collectionType,
-				dataManagementConfiguration.getRestrictMetadata());
+				dataManagementConfiguration.getRestrictMetadata(),
+				allowSystemMetadata);
 	}
 
 	/**
@@ -245,7 +246,7 @@ public class HpcMetadataValidator {
 	 */
 	private void validateMetadata(List<HpcMetadataEntry> existingMetadataEntries,
 			List<HpcMetadataEntry> addUpdateMetadataEntries, List<HpcMetadataValidationRule> metadataValidationRules,
-			String collectionType, Boolean restrictMetadata) throws HpcException {
+			String collectionType, Boolean restrictMetadata, boolean allowSystemMetadata) throws HpcException {
 		// Crate a metadata <attribute, value> map. Put existing entries first.
 		Map<String, String> metadataEntriesMap = new HashMap<>();
 		if (existingMetadataEntries != null) {
@@ -298,7 +299,8 @@ public class HpcMetadataValidator {
 			// If the restrict_metadata flag is set in the database, then ensure
 			// that the add/update metadata entry defined in the validation rules
 			// i.e. it is a mandatory or optional metadata for the applicable DOC
-			if (restrictMetadata) {
+			if (restrictMetadata && !(allowSystemMetadata
+					&& systemGeneratedMetadataAttributes.contains(metadataEntry.getAttribute()))) {
 				// Do this check only for new files or collections so that fixing
 				// of existing ones is not necessitated
 				if (CollectionUtils.isNullOrEmpty(existingMetadataEntries)) {
@@ -318,12 +320,15 @@ public class HpcMetadataValidator {
 			}
 		}
 
-		// Validate the add/update metadata entries don't include reserved system
-		// generated metadata.
-		for (String metadataAttribue : systemGeneratedMetadataAttributes) {
-			if (addUpdateMetadataEntriesMap.containsKey(metadataAttribue)) {
-				throw new HpcException("System generated metadata cannot be set/changed: " + metadataAttribue,
-						HpcErrorType.INVALID_REQUEST_INPUT);
+		// If the allowSystemMetadata flag is not set, validate that add/update metadata entries don't include reserved system generated metadata.
+		if (!allowSystemMetadata) {
+			// Validate the add/update metadata entries don't include reserved system
+			// generated metadata.
+			for (String metadataAttribue : systemGeneratedMetadataAttributes) {
+				if (addUpdateMetadataEntriesMap.containsKey(metadataAttribue)) {
+					throw new HpcException("System generated metadata cannot be set/changed: " + metadataAttribue,
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
 			}
 		}
 
