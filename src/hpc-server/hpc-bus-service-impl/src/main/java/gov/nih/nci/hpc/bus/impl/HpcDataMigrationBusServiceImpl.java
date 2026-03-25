@@ -10,6 +10,7 @@
  */
 package gov.nih.nci.hpc.bus.impl;
 
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount;
@@ -22,6 +23,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.*;
@@ -30,6 +32,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMetadataMigrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcMigrationRequestDTO;
@@ -77,6 +80,9 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
     // The Data Management Application Service Instance.
     @Autowired
     private HpcDataManagementService dataManagementService = null;
+    // The Data Management Business Service Instance.
+    @Autowired
+    private HpcDataManagementBusService dataManagementBusService = null;
     // The Metadata Application Service Instance.
     @Autowired
     private HpcMetadataService metadataService = null;
@@ -648,6 +654,54 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                             }
                         } finally {
                             doneProcessingDataMigrationTask(bulkAutoTieringTask);
+                        }
+                    }
+                });
+    }
+
+    @Override
+    @HpcExecuteAsSystemAccount
+    public void processDataObjectAutoTieringMigrationReceived() throws HpcException {
+        dataMigrationService
+                .getDataMigrationTasks(HpcDataMigrationStatus.AUTO_TIERING_RECEIVED, HpcDataMigrationType.DATA_OBJECT)
+                .forEach(dataObjectMigrationTask -> {
+                    if (markInProcess(dataObjectMigrationTask)) {
+                        try {
+                            logger.info("Registering auto-tiering data object: task - {}, path - {}",
+                                    dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath());
+
+                            // Build the registration request using archive linking to the external archive location.
+                            HpcDataObjectRegistrationRequestDTO registrationRequest =
+                                    buildAutoTieringRegistrationRequest(dataObjectMigrationTask);
+
+                            // Register the data object in DME using archive linking.
+                            dataManagementBusService.registerDataObject(
+                                    dataObjectMigrationTask.getPath(),
+                                    registrationRequest,
+                                    null,
+                                    dataObjectMigrationTask.getUserId(),
+                                    null, // TODO: map user name if needed
+                                    dataObjectMigrationTask.getConfigurationId(),
+                                    false);
+
+                            // Registration succeeded - transition task status to RECEIVED
+                            // so processDataObjectMigrationReceived() picks it up for the S3 transfer.
+                            dataObjectMigrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+                            dataMigrationService.updateDataMigrationTask(dataObjectMigrationTask);
+
+                        } catch (HpcException e) {
+                            logger.error("Failed to register auto-tiering data object: task - {}, path - {}",
+                                    dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath(), e);
+                            try {
+                                dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
+                                        HpcDataMigrationResult.FAILED, e.getMessage(), null, null);
+
+                            } catch (HpcException ex) {
+                                logger.error("Failed to complete auto-tiering data object migration: task - {}, path - {}",
+                                        dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath(), ex);
+                            }
+                        } finally {
+                            doneProcessingDataMigrationTask(dataObjectMigrationTask);
                         }
                     }
                 });
@@ -1355,5 +1409,33 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
             logger.info("Data object auto-tiering task - {}: created", dataObjectMigrationTask.getId());
         }
+    }
+
+    /**
+     * Build a data object registration request for auto-tiering, using archive
+     * linking to the source location in the external archive (e.g. VAST).
+     *
+     * @param dataObjectMigrationTask The auto-tiering migration task.
+     * @return A populated {@link HpcDataObjectRegistrationRequestDTO}.
+     */
+    private HpcDataObjectRegistrationRequestDTO buildAutoTieringRegistrationRequest(
+            HpcDataMigrationTask dataObjectMigrationTask) {
+
+        // Point archiveLinkSource at the existing external archive location.
+        HpcUploadSource archiveLinkSource = new HpcUploadSource();
+        archiveLinkSource.setSourceLocation(dataObjectMigrationTask.getFromS3ArchiveLocation());
+
+        HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
+        registrationRequest.setArchiveLinkSource(archiveLinkSource);
+
+        // Source S3 archive of the migrated object.
+        registrationRequest.setS3ArchiveConfigurationId(dataObjectMigrationTask.getFromS3ArchiveConfigurationId());
+
+        // Create parent collections automatically if they do not yet exist.
+        registrationRequest.setCreateParentCollections(true);
+
+        // TODO: map metadata entries from the migration task if applicable.
+
+        return registrationRequest;
     }
 }
