@@ -3775,7 +3775,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (!metadataContained(metadataEntries, metadataBefore.getSelfMetadataEntries())) {
 				synchronized (this) {
 					metadataService.updateCollectionMetadata(path, metadataEntries,
-							systemGeneratedMetadata.getConfigurationId());
+							systemGeneratedMetadata.getConfigurationId(), false);
 				}
 			} else {
 				logger.info(
@@ -3839,7 +3839,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String message = null;
 		try {
 			metadataService.updateDataObjectMetadata(path, metadataEntries,
-					systemGeneratedMetadata.getConfigurationId(), collectionType, false);
+					systemGeneratedMetadata.getConfigurationId(), collectionType, false, false);
 
 		} catch (HpcException e) {
 			// Data object metadata update failed. Capture this in the audit record.

@@ -29,3 +29,30 @@ FROM r_coll_main coll
     JOIN r_meta_main meta_softlink ON meta_softlink.meta_id = map_softlink.meta_id AND
                                   meta_softlink.meta_attr_name = 'link_source_path')
                    ON map_softlink.object_id = coll.coll_id;
+                   
+                   
+create or replace view irods.hpc_data_hierarchy_meta_main_v as
+select object_id,
+  object_path,
+  coll_id,
+  meta_id,
+  data_level,
+  level_label,
+  meta_attr_name,
+  meta_attr_value,
+  meta_attr_unit
+from irods.hpc_data_meta_main_mv
+union all
+select object_id,
+  object_path,
+  coll_id,
+  meta_id,
+  data_level,
+  level_label,
+  meta_attr_name,
+  meta_attr_value,
+  meta_attr_unit
+from irods.hpc_data_inherited_meta_main_mv;
+
+
+CREATE or REPLACE SYNONYM r_data_hierarchy_meta_main FOR irods.hpc_data_hierarchy_meta_main_v;
