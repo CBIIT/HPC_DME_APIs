@@ -205,7 +205,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		// Validate Metadata.
-		metadataValidator.validateCollectionMetadata(configurationId, null, metadataEntries);
+		metadataValidator.validateCollectionMetadata(configurationId, null, metadataEntries, false);
 
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(), path,
@@ -213,7 +213,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
-	public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
+	public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId, boolean allowSystemMetadata)
 			throws HpcException {
 		// Input validation.
 		if (path == null) {
@@ -234,7 +234,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
 
 		// Validate the metadata.
-		metadataValidator.validateCollectionMetadata(configurationId, existingMetadataEntries, metadataEntries);
+		metadataValidator.validateCollectionMetadata(configurationId, existingMetadataEntries, metadataEntries, allowSystemMetadata);
 
 		// Update the 'metadata updated' system-metadata to record the time of this
 		// metadata update.
@@ -541,7 +541,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		// Validate Metadata.
-		metadataValidator.validateDataObjectMetadata(configurationId, null, metadataEntries, collectionType);
+		metadataValidator.validateDataObjectMetadata(configurationId, null, metadataEntries, collectionType, false);
 
 		// Add Metadata to the DM system.
 		dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), path,
@@ -608,7 +608,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			String configurationId, String collectionType) throws HpcException {
 		// Update the data object's metadata.
 		updateDataObjectMetadata(path, new ArrayList<HpcMetadataEntry>(extractedMetadataEntries), configurationId,
-				collectionType, true);
+				collectionType, true, false);
 
 		// Set the extracted-metadata-attributes system generated metadata to have all
 		// the attributes
@@ -884,7 +884,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 	@Override
 	public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId,
-			String collectionType, boolean extractedMetadata) throws HpcException {
+			String collectionType, boolean extractedMetadata, boolean allowSystemMetadata) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -901,7 +901,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Validate the metadata.
 		metadataValidator.validateDataObjectMetadata(configurationId, metadataRetriever.getDataObjectMetadata(path),
-				metadataEntries, collectionType);
+				metadataEntries, collectionType, allowSystemMetadata);
 
 		// Update the 'metadata updated' system-metadata to record the time of this
 		// metadata update. This is skipped for updated the data object w/ extracted
