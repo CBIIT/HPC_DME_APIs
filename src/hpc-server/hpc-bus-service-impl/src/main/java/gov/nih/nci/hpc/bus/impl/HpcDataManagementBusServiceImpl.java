@@ -754,7 +754,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		File file = new File(filePath);
         String filename = file.getName();
 		filename = "101_" + filename;
-		String dirString = file.getParent();
+		String dirString = "/TEST_EXT_Archive/medscan/";
 		filePath = dirString + filename;
         /* filePath = "/DME_download_Archive" + filePath;*/
 
@@ -763,7 +763,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		logger.info("2097: Bus:Registration Compeleted: " + gson.toJson(registrationResponseDTO));
 		downloadRequest.setExternalArchiveFlag(true);
 		logger.info("2097: Bus:Download Begins request: " + gson.toJson(downloadRequest));
-		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject("/TEST_EXT_Archive/medscan/" + filename, downloadRequest);
+		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(dirString + filename, downloadRequest);
 		return downloadResponse;
 	}
 	
