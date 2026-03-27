@@ -754,12 +754,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		File file = new File(filePath);
         String filename = file.getName();
 		filename = "101_" + filename;
-		String dirString = "/TEST_EXT_Archive/medscan/";
+		String dirString = "/DME_Download_Archive/TEST_EXT_Archive/medscan/";
 		filePath = dirString + filename;
-        /* filePath = "/DME_download_Archive" + filePath;*/
 
-
-		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
+		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(path, registrationRequest, null, invokerNciAccount.getUserId(),
+				invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), s3ArchiveConfiguration.getDataManagementConfigurationId(), true);
+		
+		//HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
 		logger.info("2097: Bus:Registration Compeleted: " + gson.toJson(registrationResponseDTO));
 		downloadRequest.setExternalArchiveFlag(true);
 		logger.info("2097: Bus:Download Begins request: " + gson.toJson(downloadRequest));
@@ -1199,9 +1201,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Failed to determine data management configuration for: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		return registerDataObject(path, dataObjectRegistration, dataObjectFile, invokerNciAccount.getUserId(),
+
 				invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), configurationId, true);
 	}
 
