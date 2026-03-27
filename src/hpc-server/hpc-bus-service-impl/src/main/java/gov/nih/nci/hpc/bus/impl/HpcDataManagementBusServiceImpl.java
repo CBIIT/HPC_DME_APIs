@@ -750,11 +750,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
 		logger.info("2097: Bus:Registration Request: " + gson.toJson(registrationRequest));
+
+		File file = new File(filePath);
+        String filename = file.getName();
+		filename = "101_" + filename;
+		String dirString = file.getParent();
+		filePath = dirString + filename;
+        /* filePath = "/DME_download_Archive" + filePath;*/
+
+
 		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(filePath, registrationRequest, null);
 		logger.info("2097: Bus:Registration Compeleted: " + gson.toJson(registrationResponseDTO));
 		downloadRequest.setExternalArchiveFlag(true);
 		logger.info("2097: Bus:Download Begins request: " + gson.toJson(downloadRequest));
-		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject(filePath, downloadRequest);
+		HpcDataObjectDownloadResponseDTO downloadResponse = downloadDataObject("/TEST_EXT_Archive/medscan/" + filename, downloadRequest);
 		return downloadResponse;
 	}
 	
