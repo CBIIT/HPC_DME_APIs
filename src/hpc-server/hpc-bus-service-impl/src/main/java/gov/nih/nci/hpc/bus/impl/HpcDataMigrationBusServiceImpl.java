@@ -70,31 +70,40 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
     // The logger instance.
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
     // The collection download task executor.
     @Autowired
     @Qualifier("hpcDataObjectMetadataUpdateTaskExecutor")
     Executor dataObjectMetadataUpdateTaskExecutor = null;
+
     // The Data Migration Application Service Instance.
     @Autowired
     private HpcDataMigrationService dataMigrationService = null;
+
     // The Data Management Application Service Instance.
     @Autowired
     private HpcDataManagementService dataManagementService = null;
+
     // The Data Management Business Service Instance.
     @Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
+
     // The Metadata Application Service Instance.
     @Autowired
     private HpcMetadataService metadataService = null;
+
     // The Security Application Service Instance.
     @Autowired
     private HpcSecurityService securityService = null;
+
     // The Data Transfer Application Service Instance.
     @Autowired
     private HpcDataTransferService dataTransferService = null;
+
     // The Data Search Business Service Instance.
     @Autowired
     private HpcDataSearchBusService dataSearchBusService = null;
+
     @Value("${hpc.bus.getMetadataUpdateObjectsDefaultPageSize}")
     private int getMetadataUpdateObjectsDefaultPageSize = 0;
 
