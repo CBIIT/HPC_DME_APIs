@@ -1,0 +1,11 @@
+$kind: http-request
+name: Interrogate Path Type
+method: GET
+url: '{{baseUrl}}{{basePath}}/pathType/{{path}}'
+order: 1000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'
