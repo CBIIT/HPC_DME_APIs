@@ -1,0 +1,5 @@
+$kind: http-request
+name: Refresh Data Management Configurations
+method: POST
+url: '{{baseUrl}}{{basePath}}/refreshDataManagementConfigurations'
+order: 16000

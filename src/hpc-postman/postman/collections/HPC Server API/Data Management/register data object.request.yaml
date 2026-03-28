@@ -1,0 +1,22 @@
+$kind: http-request
+name: Register Data Object (v2)
+method: PUT
+url: '{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}'
+order: 11000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection/myFile.txt'
+body:
+  type: formdata
+  content:
+    - key: dataObjectRegistration
+      type: text
+      value: |-
+        {
+          "metadataEntries": [{ "attribute": "file_type", "value": "txt" }],
+          "source": { "fileContainerId": "s3-bucket", "fileId": "path/to/file.txt" }
+        }
+      contentType: 'application/json'

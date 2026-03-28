@@ -1,0 +1,11 @@
+$kind: http-request
+name: Retry Data Object Migration
+method: POST
+url: '{{baseUrl}}{{basePath}}/dataObject/migrate/{{taskId}}/retry'
+order: 4000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: taskId
+    value: 'task-id-here'

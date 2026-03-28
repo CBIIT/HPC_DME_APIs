@@ -1,0 +1,25 @@
+$kind: http-request
+name: Email Export Query
+method: POST
+url: '{{baseUrl}}{{basePath}}/emailExport/query'
+order: 12000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "compoundQuery": {
+        "operator": "AND",
+        "queries": [
+          { "attribute": "collection_type", "value": "Project", "operator": "EQUAL" }
+        ]
+      },
+      "detailedResponse": true,
+      "page": 1,
+      "pageSize": 1000,
+      "totalCount": true
+    }

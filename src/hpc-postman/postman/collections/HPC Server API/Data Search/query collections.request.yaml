@@ -1,0 +1,25 @@
+$kind: http-request
+name: Query Collections
+method: POST
+url: '{{baseUrl}}{{basePath}}/collection/query'
+order: 1000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "compoundQuery": {
+        "operator": "AND",
+        "queries": [
+          { "attribute": "collection_type", "value": "Project", "operator": "EQUAL" }
+        ]
+      },
+      "detailedResponse": false,
+      "page": 1,
+      "pageSize": 100,
+      "totalCount": true
+    }
