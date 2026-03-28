@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Delivery Receipt
+method: GET
+url: '{{baseUrl}}{{basePath}}/notification/deliveryReceipt'
+order: 4000
+headers:
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: eventId
+    value: '1'

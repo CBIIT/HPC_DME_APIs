@@ -1,0 +1,18 @@
+$kind: http-request
+name: Get Collection
+method: GET
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}'
+order: 1039
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'
+queryParams:
+  - key: list
+    value: 'true'
+    disabled: true
+  - key: includeAcl
+    value: 'false'
+    disabled: true

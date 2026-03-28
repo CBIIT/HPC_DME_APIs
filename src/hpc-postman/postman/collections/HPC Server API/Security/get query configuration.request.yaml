@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Query Configuration
+method: GET
+url: '{{baseUrl}}{{basePath}}/queryConfig/{{path}}'
+order: 17000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI'

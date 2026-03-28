@@ -1,0 +1,28 @@
+$kind: http-request
+name: Subscribe Notifications
+method: POST
+url: '{{baseUrl}}{{basePath}}/notification'
+order: 1000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: nciUserId
+    value: ''
+    disabled: true
+body:
+  type: json
+  content: |-
+    {
+      "addSubscriptions": [
+        {
+          "eventType": "COLLECTION_UPDATED",
+          "payloadEntries": [
+            { "attribute": "collection_path", "value": "/NCI/myCollection" }
+          ]
+        }
+      ],
+      "deleteSubscriptions": []
+    }
