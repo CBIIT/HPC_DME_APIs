@@ -118,7 +118,7 @@ public class HpcScheduledTasksImpl {
 		execute("processAutoTiering()", dataMigrationBusService::processAutoTiering, logger);
 	}
 
-	/** process bulk auto-tiering migration task **/
+	/** Process bulk auto-tiering migration task **/
 	@Scheduled(cron = "${hpc.scheduler.migration.cron.processBulkAutoTieringMigrationReceived.delay}")
 	private void processBulkAutoTieringMigrationReceivedTask() {
 		execute("processBulkAutoTieringMigrationReceived()",
