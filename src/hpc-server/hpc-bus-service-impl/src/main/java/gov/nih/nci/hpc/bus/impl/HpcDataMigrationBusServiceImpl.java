@@ -552,6 +552,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                 HpcDataMigrationType.COLLECTION_LIST));
         bulkMigrationTasks.addAll(dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.IN_PROGRESS,
                 HpcDataMigrationType.BULK_METADATA_UPDATE));
+        bulkMigrationTasks.addAll(dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.IN_PROGRESS,
+                HpcDataMigrationType.BULK_AUTO_TIERING));
 
         bulkMigrationTasks.forEach(bulkMigrationTask -> {
             try {
