@@ -216,7 +216,8 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 		} catch (IOException e) {
 			response.setStatus(400);
 			try {
-				response.getWriter().write("Failed to download: " + e.getMessage());
+				log.error("Failed to download: " + e.getMessage());
+				response.getWriter().write("Failed to download.");
 			} catch (IOException ex) {
 				log.error(ex.getMessage());
 			}
@@ -274,7 +275,8 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 		} catch (RestClientException | IOException e) {
 			response.setStatus(400);
 			try {
-				response.getWriter().write("Failed to download: " + e.getMessage());
+				log.error("Failed to download: " + e.getMessage());
+				response.getWriter().write("Failed to download");
 			} catch (IOException ex) {
 				log.error(ex.getMessage());
 			}
