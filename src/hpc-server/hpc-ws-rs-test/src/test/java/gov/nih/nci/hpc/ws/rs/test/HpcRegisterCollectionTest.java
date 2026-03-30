@@ -10,8 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs.test;
 
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -93,7 +92,7 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     public void testInvalidCollectionPathDOC() throws HpcException 
     {
     	// Mock Integration / DAO services.
-    	when(dataManagementProxyMock.getRelativePath(eq("/UnitTest"))).thenReturn("/UnitTest");
+    	when(dataManagementProxyMock.getRelativePath("/UnitTest")).thenReturn("/UnitTest");
     	
     	// Invoke the service.
     	HpcCollectionRegistrationDTO collectionRegistrationRequest = 
@@ -116,7 +115,7 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     public void testInvalidCollectionPathRoot() throws HpcException 
     {
     	// Mock Integration / DAO services.
-    	when(dataManagementProxyMock.getRelativePath(eq("/"))).thenReturn("/");
+    	when(dataManagementProxyMock.getRelativePath("/")).thenReturn("/");
     	
     	// Invoke the service.
     	HpcCollectionRegistrationDTO collectionRegistrationRequest = 
@@ -138,8 +137,8 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     public void testInvalidCollectionPathExistsAsFile() throws HpcException 
     {
     	// Mock Integration / DAO services.
-    	when(dataManagementProxyMock.getPathAttributes(anyObject(), eq("/UnitTest/file"))).thenReturn(pathExistsAsFile);
-    	when(dataManagementProxyMock.getRelativePath(eq("/UnitTest/file"))).thenReturn("/UnitTest/file");
+    	when(dataManagementProxyMock.getPathAttributes(any(), "/UnitTest/file")).thenReturn(pathExistsAsFile);
+    	when(dataManagementProxyMock.getRelativePath("/UnitTest/file")).thenReturn("/UnitTest/file");
     	
     	// Invoke the service.
     	HpcCollectionRegistrationDTO collectionRegistrationRequest = 
