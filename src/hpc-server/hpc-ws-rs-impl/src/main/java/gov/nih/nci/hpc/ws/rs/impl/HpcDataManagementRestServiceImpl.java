@@ -232,6 +232,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return okResponse(downloadResponse, false);
 	}
 
+	@Override
+	public Response downloadCollectionFromExternalSource(String path,
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest) {
+		HpcCollectionDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.downloadCollectionFromExternalSource(toNormalizedPath(path), downloadRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(downloadResponse, false);
+	}
+
 	@Deprecated
 	@Override
 	public Response getCollectionDownloadStatusV1(String taskId) {
@@ -674,6 +688,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return downloadResponse(downloadResponse, messageContext);
 	}
 
+	@Override
+	public Response downloadDataObjectFromExternalSource(String path,
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest,
+			MessageContext messageContext) {
+		HpcDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.downloadDataObjectFromExternalSource(toNormalizedPath(path), downloadRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return downloadResponse(downloadResponse, messageContext);
+	}
+
 	@Deprecated
 	@Override
 	public Response getDataObjectDownloadStatusV1(String taskId) {
@@ -819,6 +848,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 		return okResponse(downloadResponse, false);
 	}
+
+
+	@Override
+	public Response downloadDataObjectsOrCollectionsFromExternalSource(
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
+		HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.downloadDataObjectsOrCollectionsFromExternalSource(downloadRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(downloadResponse, false);
+	}
+
 
 	@Override
 	public Response getDataObjectsOrCollectionsDownloadStatus(String taskId) {

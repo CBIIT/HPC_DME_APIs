@@ -25,9 +25,11 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -70,6 +72,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -1177,6 +1180,22 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public List<HpcDataManagementConfiguration> getDataManagementConfigurations() {
 		return new ArrayList<>(dataManagementConfigurationLocator.values());
+	}
+
+	@Override
+	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path) throws HpcException  {
+		HpcDataTransferConfiguration dataTransferConfiguration = null;
+		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
+			String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
+			if (dataTransferConfigurationId != null) {
+				HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
+				if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getPosixPath() != null && path.startsWith(dataTransferConfigurationCandidate.getPosixPath())) {
+					dataTransferConfiguration = dataTransferConfigurationCandidate;
+					break;
+				}
+			}
+		}
+		return dataTransferConfiguration;
 	}
 
 	@Override
