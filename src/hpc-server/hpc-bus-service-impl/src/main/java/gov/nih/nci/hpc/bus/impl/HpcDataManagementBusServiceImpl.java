@@ -1933,7 +1933,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			boolean deletionAllowed = dataManagementService
 					.getDataManagementConfiguration(systemGeneratedMetadata.getConfigurationId()).getDeletionAllowed();
 			deletionAllowed = deletionAllowed & !force;
-			if (!deletionAllowed && systemGeneratedMetadata.getDataTransferCompleted().before(cutOffDate)) {
+			Calendar dataTransferCompleted = systemGeneratedMetadata.getDataTransferCompleted();
+			if (!deletionAllowed && dataTransferCompleted != null && dataTransferCompleted.before(cutOffDate)) {
 				String message = "The data object at " + path
 						+ " is not eligible for deletion because the file is at least 90 days old.";
 				logger.error(message);
