@@ -1162,15 +1162,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
 		hpcDataObject.setCollectionName(getRelativePath(irodsDataObject.getCollectionName()));
 		hpcDataObject.setAbsolutePath(getRelativePath(irodsDataObject.getAbsolutePath()));
-		hpcDataObject.setDataSize(irodsDataObject.getDataSize());
-		hpcDataObject.setDataPath(irodsDataObject.getDataPath());
 		hpcDataObject.setDataOwnerName(irodsDataObject.getDataOwnerName());
-
-		Calendar createdAt = Calendar.getInstance();
-		if (irodsDataObject.getCreatedAt() != null) {
-			createdAt.setTime(irodsDataObject.getCreatedAt());
-			hpcDataObject.setCreatedAt(createdAt);
-		}
 
 		return hpcDataObject;
 	}
