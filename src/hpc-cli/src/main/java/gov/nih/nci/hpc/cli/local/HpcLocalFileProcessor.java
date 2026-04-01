@@ -2,8 +2,13 @@ package gov.nih.nci.hpc.cli.local;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
@@ -23,6 +28,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
@@ -254,6 +260,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 				  	  } catch (Exception e) {
 				  		logger.error("Failed to parse calendar string: {}", entry.getValue());
 				  	  }
+				  	  break;
 	        	  }
 	          }
 
@@ -773,7 +780,15 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
           Response response = client.get();
           
 	      if (response.getStatus() == 200) {
-	        MappingJsonFactory factory = new MappingJsonFactory();
+	    	ObjectMapper mapper = new ObjectMapper();
+	    	AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+		            new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
+		            new JacksonAnnotationIntrospector());
+		    mapper.setAnnotationIntrospector(intr);
+		    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		    mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+		    mapper.configure(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS, true);
+	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
             try (JsonParser parser = factory.createParser((InputStream) response.getEntity())){
                 
             	dataObjectDTO = parser.readValueAs(HpcDataObjectDTO.class);
