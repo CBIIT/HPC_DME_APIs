@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Bulk Registration Status (v2)
+method: GET
+url: '{{baseUrl}}{{basePath}}/v2/registration/{{taskId}}'
+order: 18000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: taskId
+    value: 'task-id-here'
