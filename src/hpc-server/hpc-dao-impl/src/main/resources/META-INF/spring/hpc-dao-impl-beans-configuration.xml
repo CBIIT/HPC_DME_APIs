@@ -35,11 +35,25 @@
 		<constructor-arg value="${hpc.dao.oracle.encryptor.key}" />
 	</bean>
 	
-	<!-- Spring JDBC Template -->
+	<!-- Spring Oracle JDBC Template -->
     <bean id="hpcOracleJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<constructor-arg ref="hpcOracleDataSource" />
 	</bean>
-	
+
+	<!-- HPC Trino DB data source -->
+	<bean id="hpcTrinoDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="io.trino.jdbc.TrinoDriver" />
+		<property name="url" value="${hpc.dao.trino.url}" />
+		<property name="username" value="${hpc.dao.trino.username}" />
+		<property name="password" value="${hpc.dao.trino.password}" />
+		<property name="maxActive" value="${hpc.dao.trino.maxActive}" />
+	</bean>
+
+	<!-- Spring Trino JDBC Template -->
+	<bean id="hpcTrinoJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<constructor-arg ref="hpcTrinoDataSource" />
+	</bean>
+
 	<!-- HPC DAO Implementation Beans -->
 	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserDAOImpl" /> 
 	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" />
@@ -70,5 +84,6 @@
 	<bean id="hpcReviewDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReviewDAOImpl" /> 
 	<bean id="hpcQueryConfigDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcQueryConfigDAOImpl" />
 	<bean id="hpcGlobusTransferTaskDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGlobusTransferTaskDAOImpl" />
-	
+	<bean id="hpcExternalArchiveDAO" class="gov.nih.nci.hpc.dao.trino.impl.HpcExternalArchiveDAOImpl"
+		  init-method="dbConnect" />
 </beans>

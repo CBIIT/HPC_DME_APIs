@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -1203,6 +1204,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public HpcDataManagementConfiguration getDataManagementConfiguration(String id) {
 		return dataManagementConfigurationLocator.get(id);
+	}
+
+	@Override
+	public List<HpcDataManagementConfiguration> getAutoTieringDataManagementConfigurations() {
+		return dataManagementConfigurationLocator.values().stream()
+				.filter(config -> !StringUtils.isEmpty(config.getS3AutoTieringConfigurationId()))
+				.collect(Collectors.toList());
 	}
 
 	@Override

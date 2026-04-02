@@ -19,6 +19,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -57,8 +58,9 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+      @Autowired
+      @Qualifier("hpcOracleJdbcTemplate")
+      private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
 	@Autowired
@@ -73,6 +75,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		dataManagementConfiguration.setS3UploadConfigurationId(rs.getString("S3_UPLOAD_ARCHIVE_CONFIGURATION_ID"));
 		dataManagementConfiguration
 				.setS3DefaultDownloadConfigurationId(rs.getString("S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID"));
+		dataManagementConfiguration
+				.setS3AutoTieringConfigurationId(rs.getString("S3_AUTO_TIERING_ARCHIVE_CONFIGURATION_ID"));
 		dataManagementConfiguration.setCreateArchiveMetadata(rs.getBoolean("CREATE_ARCHIVE_METADATA"));
 		dataManagementConfiguration.setRegistrationEventWithDownloadRequestURL(
 				rs.getBoolean("REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL"));
@@ -144,6 +148,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setDataManagementConfigurationId(rs.getString("DATA_MANAGEMENT_CONFIGURATION_ID"));
 		s3Configuration.setExternalStorage(rs.getBoolean("EXTERNAL_STORAGE"));
 		s3Configuration.setPosixPath(rs.getString("POSIX_PATH"));
+		s3Configuration.setAutoTieringSearchPath(rs.getString("AUTO_TIERING_SEARCH_PATH"));
+		s3Configuration.setAutoTieringInactivityMonths(rs.getInt("AUTO_TIERING_INACTIVITY_MONTHS"));
 
 		return s3Configuration;
 	};
