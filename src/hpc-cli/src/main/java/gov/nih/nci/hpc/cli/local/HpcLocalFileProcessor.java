@@ -2,8 +2,13 @@ package gov.nih.nci.hpc.cli.local;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
@@ -21,11 +26,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import java.io.BufferedInputStream;
@@ -43,6 +47,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -242,8 +247,23 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 	            throw new RecordProcessingException(message);
 	          }
-	          Date uploadedTimestamp = dataObjectDTO.getDataObject().getCreatedAt().getTime();
-	          if(uploadedTimestamp.compareTo(modifiedTimestamp) > 0) {
+	          Date uploadedTimestamp = null;
+	          for(HpcMetadataEntry entry: dataObjectDTO.getMetadataEntries().getSelfMetadataEntries().getSystemMetadataEntries()) {
+	        	  
+	        	  if(entry.getAttribute().equals("data_transfer_completed")) {
+	        		  Calendar cal = Calendar.getInstance();
+			  		  SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+				  	  try {
+				  		cal.setTime(dateFormat.parse(entry.getValue()));
+				  		uploadedTimestamp = cal.getTime();
+				  	  } catch (Exception e) {
+				  		logger.error("Failed to parse calendar string: {}", entry.getValue());
+				  	  }
+				  	  break;
+	        	  }
+	          }
+
+	          if(uploadedTimestamp != null && uploadedTimestamp.compareTo(modifiedTimestamp) > 0) {
 	            //Modified is before the last upload, here we don't need to throw exception... TODO
 	            String message =
 	                "Skipping file: " + entity.getAbsolutePath() + " Reason: File is not modified";
@@ -251,7 +271,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	            HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
 	            HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 	            throw new RecordProcessingException(message);
-	          } else {
+	          } else if(uploadedTimestamp != null) {
 	            //Modified after the last upload, so we need to delete and re-upload
 	            deleteDataObject(dmePath);
 	          }
@@ -745,7 +765,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	      //Call dataObject API
 	      String dataObjectUrl =
 	          UriComponentsBuilder.fromHttpUrl(connection.getHpcServerURL())
-	              .path("/dataObject".concat(destinationPath))
+	              .path("/v2/dataObject".concat(destinationPath))
 	              .build().encode().toUri().toURL().toExternalForm();
 
 	      WebClient client = HpcClientUtil.getWebClient(dataObjectUrl,
@@ -759,14 +779,18 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
           Response response = client.get();
           
 	      if (response.getStatus() == 200) {
-	        MappingJsonFactory factory = new MappingJsonFactory();
-	        HpcDataObjectListDTO dataObjectListDTO = null;
+	    	ObjectMapper mapper = new ObjectMapper();
+	    	AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+		            new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()),
+		            new JacksonAnnotationIntrospector());
+		    mapper.setAnnotationIntrospector(intr);
+		    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		    mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+		    mapper.configure(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS, true);
+	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
             try (JsonParser parser = factory.createParser((InputStream) response.getEntity())){
                 
-                dataObjectListDTO = parser.readValueAs(HpcDataObjectListDTO.class);
-                if (dataObjectListDTO != null) {
-                  dataObjectDTO = dataObjectListDTO.getDataObjects().get(0);
-                }
+            	dataObjectDTO = parser.readValueAs(HpcDataObjectDTO.class);
             } catch (Exception e) {
                 HpcLogWriter.getInstance().WriteLog(logFile, destinationPath + "|"
                         + "Unable to parse the response for get data object");
