@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>3.24.0</version>
+		<version>3.25.0</version>
 	</parent>
 
 	<groupId>gov.nih.nci.hpc.cli</groupId>
@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>gov.nih.nci.hpc</groupId>
 			<artifactId>hpc-dto</artifactId>
-			<version>3.24.0</version>
+			<version>3.25.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>6.2.15</version>
+			<version>6.2.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
