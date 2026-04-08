@@ -353,6 +353,18 @@
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-core</artifactId>
 				<version>${jargon.version}</version>
+				<exclusions>
+				    <exclusion>
+				        <groupId>org.apache.logging.log4j</groupId>
+				        <artifactId>log4j-core</artifactId>
+				    </exclusion>
+				</exclusions>
+			</dependency>
+			<!-- Manually add the preferred version -->
+			<dependency>
+			    <groupId>org.apache.logging.log4j</groupId>
+			    <artifactId>log4j-core</artifactId>
+			    <version>2.25.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
@@ -488,6 +500,18 @@
 			    <groupId>org.apache.poi</groupId>
 			    <artifactId>poi-ooxml</artifactId>
 			    <version>${poi.version}</version>
+				<exclusions>
+				    <exclusion>
+				        <groupId>org.apache.logging.log4j</groupId>
+				        <artifactId>log4j-api</artifactId>
+				    </exclusion>
+				</exclusions>
+			</dependency>
+			<!-- Manually add the preferred version -->
+			<dependency>
+			    <groupId>org.apache.logging.log4j</groupId>
+			    <artifactId>log4j-api</artifactId>
+			    <version>2.25.3</version>
 			</dependency>
 		    <dependency>
 			    <groupId>jakarta.xml.bind</groupId>
