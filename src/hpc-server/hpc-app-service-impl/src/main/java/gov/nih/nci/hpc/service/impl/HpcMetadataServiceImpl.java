@@ -231,7 +231,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Validate collection type is not in the update request.
 		List<HpcMetadataEntry> existingMetadataEntries = metadataRetriever.getCollectionMetadata(path);
-		validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
+		if(!allowSystemMetadata)
+			validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
 
 		// Validate the metadata.
 		metadataValidator.validateCollectionMetadata(configurationId, existingMetadataEntries, metadataEntries, allowSystemMetadata);
