@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Bookmark
+method: GET
+url: '{{baseUrl}}{{basePath}}/bookmark/{{bookmarkName}}'
+order: 3000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: bookmarkName
+    value: 'myBookmark'

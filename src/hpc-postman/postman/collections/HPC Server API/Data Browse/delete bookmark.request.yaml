@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Bookmark
+method: DELETE
+url: '{{baseUrl}}{{basePath}}/bookmark/{{bookmarkName}}'
+order: 5000
+pathVariables:
+  - key: bookmarkName
+    value: 'myBookmark'
