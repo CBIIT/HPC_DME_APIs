@@ -1,0 +1,4 @@
+$kind: collection
+name: Notifications
+description: Notification subscription management and delivery receipt retrieval.
+order: 5000

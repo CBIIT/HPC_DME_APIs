@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Bookmark
+method: POST
+url: '{{baseUrl}}{{basePath}}/bookmark/{{bookmarkName}}'
+order: 2000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+pathVariables:
+  - key: bookmarkName
+    value: 'myBookmark'
+body:
+  type: json
+  content: |-
+    {
+      "path": "/NCI/newCollection"
+    }

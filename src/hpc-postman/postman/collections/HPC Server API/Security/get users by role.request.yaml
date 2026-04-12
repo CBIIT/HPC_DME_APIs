@@ -1,0 +1,18 @@
+$kind: http-request
+name: Get Users By Role
+method: GET
+url: '{{baseUrl}}{{basePath}}/user/role/{{roleName}}'
+order: 9000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: roleName
+    value: 'USER'
+queryParams:
+  - key: doc
+    value: ''
+    disabled: true
+  - key: defaultBasePath
+    value: ''
+    disabled: true
