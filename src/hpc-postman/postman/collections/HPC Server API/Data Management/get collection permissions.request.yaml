@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Collection Permissions
+method: GET
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}/acl'
+order: 10000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'

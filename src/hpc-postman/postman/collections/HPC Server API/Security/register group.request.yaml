@@ -1,0 +1,19 @@
+$kind: http-request
+name: Register Group
+method: PUT
+url: '{{baseUrl}}{{basePath}}/group/{{groupName}}'
+order: 11000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: groupName
+    value: 'myGroup'
+body:
+  type: json
+  content: |-
+    {
+      "addUserRequests": [{ "userId": "userId1" }]
+    }

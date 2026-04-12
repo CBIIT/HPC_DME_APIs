@@ -1,0 +1,22 @@
+$kind: http-request
+name: Bulk Register Data Objects (v2)
+method: PUT
+url: '{{baseUrl}}{{basePath}}/v2/registration'
+order: 17000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "dataObjectRegistrationItems": [
+        {
+          "path": "/NCI/myCollection/file1.txt",
+          "metadataEntries": [{ "attribute": "file_type", "value": "txt" }],
+          "source": { "fileContainerId": "s3-bucket", "fileId": "path/to/file1.txt" }
+        }
+      ]
+    }
