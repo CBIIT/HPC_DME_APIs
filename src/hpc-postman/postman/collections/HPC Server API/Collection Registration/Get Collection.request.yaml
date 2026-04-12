@@ -2,7 +2,7 @@ $kind: http-request
 name: Get Collection
 method: GET
 url: '{{baseUrl}}{{basePath}}/collection/{{path}}'
-order: 1039
+order: 1776026293243
 headers:
   - key: Accept
     value: 'application/json'
