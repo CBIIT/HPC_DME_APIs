@@ -1,0 +1,20 @@
+$kind: http-request
+name: Update Group
+method: POST
+url: '{{baseUrl}}{{basePath}}/group/{{groupName}}'
+order: 12000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: groupName
+    value: 'myGroup'
+body:
+  type: json
+  content: |-
+    {
+      "addUserRequests": [{ "userId": "userId1" }],
+      "deleteUserRequests": []
+    }

@@ -1,0 +1,4 @@
+$kind: collection
+name: Review
+description: Review workflow management for data curation.
+order: 9000
