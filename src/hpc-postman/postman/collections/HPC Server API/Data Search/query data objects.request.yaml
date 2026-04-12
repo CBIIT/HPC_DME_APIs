@@ -1,0 +1,29 @@
+$kind: http-request
+name: Query Data Objects
+method: POST
+url: '{{baseUrl}}{{basePath}}/dataObject/query'
+order: 3000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: returnParent
+    value: 'false'
+    disabled: true
+body:
+  type: json
+  content: |-
+    {
+      "compoundQuery": {
+        "operator": "AND",
+        "queries": [
+          { "attribute": "file_type", "value": "txt", "operator": "EQUAL" }
+        ]
+      },
+      "detailedResponse": false,
+      "page": 1,
+      "pageSize": 100,
+      "totalCount": true
+    }

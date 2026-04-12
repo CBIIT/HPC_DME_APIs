@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Notification Subscriptions
+method: GET
+url: '{{baseUrl}}{{basePath}}/notification'
+order: 2000
+headers:
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: nciUserId
+    value: ''
+    disabled: true

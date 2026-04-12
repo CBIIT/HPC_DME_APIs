@@ -1,0 +1,15 @@
+$kind: http-request
+name: Delete Collection
+method: DELETE
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}'
+order: 5000
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'
+queryParams:
+  - key: recursive
+    value: 'false'
+    disabled: true
+  - key: force
+    value: 'false'
+    disabled: true
