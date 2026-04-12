@@ -441,21 +441,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		dataObject.setCollectionId(rs.getInt("COLL_ID"));
 		dataObject.setCollectionName(rs.getString("COLL_NAME"));
 		dataObject.setAbsolutePath(rs.getString("COLL_NAME") + "/" + rs.getString("DATA_NAME"));
-		dataObject.setDataSize(rs.getLong("DATA_SIZE"));
-		dataObject.setDataPath(rs.getString("DATA_PATH"));
 		dataObject.setDataOwnerName(rs.getString("DATA_OWNER_NAME"));
-
-		String createdAtStr = rs.getString("CREATE_TS");
-		if (createdAtStr != null) {
-			try {
-				Calendar createdAt = Calendar.getInstance();
-				createdAt.setTimeInMillis(Long.valueOf(createdAtStr) * 1000L);
-				dataObject.setCreatedAt(createdAt);
-
-			} catch (NumberFormatException e) {
-				logger.error("Unexpected timestamp value: [{}] - {}", dataObject.getAbsolutePath(), createdAtStr);
-			}
-		}
 
 		return dataObject;
 	};
