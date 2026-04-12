@@ -1,0 +1,24 @@
+$kind: http-request
+name: Register User
+method: PUT
+url: '{{baseUrl}}{{basePath}}/user/{{nciUserId}}'
+order: 3000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: nciUserId
+    value: 'userId'
+body:
+  type: json
+  content: |-
+    {
+      "firstName": "John",
+      "lastName": "Doe",
+      "doc": "NCI",
+      "defaultBasePath": "/NCI",
+      "userRole": "USER",
+      "active": true
+    }

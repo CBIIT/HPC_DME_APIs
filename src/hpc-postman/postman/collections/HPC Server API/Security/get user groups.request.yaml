@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get User Groups
+method: GET
+url: '{{baseUrl}}{{basePath}}/user/group/{{nciUserId}}'
+order: 10000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: nciUserId
+    value: 'userId'

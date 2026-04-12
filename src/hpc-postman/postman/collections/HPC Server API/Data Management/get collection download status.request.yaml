@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Collection Download Status
+method: GET
+url: '{{baseUrl}}{{basePath}}/collection/download/{{taskId}}'
+order: 8000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: taskId
+    value: 'task-id-here'
