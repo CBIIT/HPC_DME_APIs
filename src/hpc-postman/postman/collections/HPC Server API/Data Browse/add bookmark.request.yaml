@@ -1,0 +1,17 @@
+$kind: http-request
+name: Add Bookmark
+method: PUT
+url: '{{baseUrl}}{{basePath}}/bookmark/{{bookmarkName}}'
+order: 1000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+pathVariables:
+  - key: bookmarkName
+    value: 'myBookmark'
+body:
+  type: json
+  content: |-
+    {
+      "path": "/NCI/myCollection"
+    }
