@@ -122,6 +122,9 @@ tfoot input {
 .retryUserIdWidth{
 	width:80px;
 }
+.dataSizeWidth{
+	width:100px;
+}
 .errorWidth{
 	width:360px;
 	white-space: nowrap;
@@ -231,7 +234,9 @@ tfoot input {
 									<th class="column-heading completedWidth" id='colheading007' th:text="'Completed On'"></th>
 									<th class="column-heading resultWidth" id='colheading008' th:text="'Task Status'"></th>
 									<th class="column-heading retryUserIdWidth" id='colheading009' th:text="'Retry User ID'"></th>
-									<th class="column-heading errorWidth" id='colheading010' th:text="'Error'"></th>
+									<th class="column-heading dataSizeWidth" id='colheading010' th:text="'Download Size'"></th>
+									<th class="column-heading errorWidth" id='colheading011' th:text="'Error'"></th>
+
 								</tr>
 								<tr>
 									<th class="" id='col2heading001'>
@@ -248,7 +253,9 @@ tfoot input {
 									<th class="filterhead completedWidth" id='col2heading007'  th:text="'Completed On'"></th>
 									<th class="filterhead resultWidth" id='col2heading008' th:text="'Task Status'"></th>
 									<th class="filterhead retryUserIdWidth" id='col2heading009' th:text="'Retry User ID'"></th>
-									<th class="filterhead errorWidth" id='col2heading010' th:text="'Error'"></th>
+									<th class="filterhead dataSizeWidth" id='col2heading010' th:text="'Download Size'"></th>
+									<th class="filterhead errorWidth" id='col2heading011' th:text="'Error'"></th>
+
 								</tr>
 							</thead>
 							<tbody>
@@ -276,10 +283,11 @@ tfoot input {
 									<td id='col7' class="completedWidth" th:text="${result.completed}"></td>
 									<td id='col8' class="resultWidth" th:text="${result.status}"></td>
 									<td id='col9' class="retryUserIdWidth" th:text="${result.retryUserId}"></td>
-									<td id='col10' class="errorWidth" style="word-break:break-all;" th:text="${result.error}"></td>
-									<td id='col11' style="visibility: hidden;" th:text="${result.displayPath}"></td>
-									<td id='col12' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
-									<td id='col13' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
+									<td id='col10' class="dataSizeWidth" th:text="${result.dataSize}"></td>
+									<td id='col11' class="errorWidth" style="word-break:break-all;" th:text="${result.error}"></td>
+									<td id='col12' style="visibility: hidden;" th:text="${result.displayPath}"></td>
+									<td id='col13' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
+									<td id='col14' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
 								</tr>
 								<br/>
 							</tbody>
@@ -386,10 +394,11 @@ tfoot input {
 						{targets: 7, data: 'completed', width: 110, visible: true, orderData:[7,13]},  // completed
 						{targets: 8, data: 'result', width: 90, visible: true},  // transfer result
 						{targets: 9, data: 'retryUserId', width: 80, visible: true, type: 'non-empty-string'},  // retryUserId
-						{targets: 10, data: 'error', width:360, type: 'non-empty-string', render: DataTable.render.ellipsis( 60, true )}, // error
-						{targets: 11, data: 'displayPath', visible: false},
-						{targets: 12, data: 'sortCreated', visible: false, searchable: false},
-						{targets: 13, data: 'sortCompleted', visible: false, searchable: false}
+						{targets: 10, data: 'dataSize', width: 100, visible: true, type: 'non-empty-string'}, //size
+						{targets: 11, data: 'error', width:360, type: 'non-empty-string', render: DataTable.render.ellipsis( 60, true )}, // error
+						{targets: 12, data: 'displayPath', visible: false},
+						{targets: 13, data: 'sortCreated', visible: false, searchable: false},
+						{targets: 14, data: 'sortCompleted', visible: false, searchable: false}
 					],
 			"lengthMenu": [ [-1], ["All"] ],
 			"initComplete": function () {
