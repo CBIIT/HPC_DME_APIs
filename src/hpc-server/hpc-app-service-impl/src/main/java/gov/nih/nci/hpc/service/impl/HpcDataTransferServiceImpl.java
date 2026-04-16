@@ -116,6 +116,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
 
@@ -184,6 +185,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Data Management Service
 	@Autowired
 	private HpcDataManagementService dataManagementService = null;
+
+	// Report Service
+	@Autowired
+	private HpcReportService reportService = null;
 
 	// Data Registration DAO.
 	@Autowired
@@ -1632,7 +1637,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
-
+        downloadTask.setDataSize(reportService.getCollectionSize(path));
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 
@@ -1669,6 +1674,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+		downloadTask.setDataSize(getTotalSizeOfCollectionPaths(collectionPaths));
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
@@ -1707,6 +1713,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+		downloadTask.setDataSize(getTotalSizeOfDataObjectPaths(dataObjectPaths));
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 
@@ -2281,6 +2288,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// ---------------------------------------------------------------------//
 
 	/**
+	 * Compute the total size of the given list of collections
+	 *
+	 * @param collectionPaths paths of the collections
+	 *
+	 * @return total size of the specified collections
+	 * @throws HpcException
+	 */
+	private Long getTotalSizeOfCollectionPaths(List<String> collectionPaths) throws HpcException {
+		Long totalSize = 0L;
+
+		for(String path: collectionPaths) {
+			totalSize += reportService.getCollectionSize(path);
+		}
+
+		return totalSize;
+	}
+
+
+	private Long getTotalSizeOfDataObjectPaths (List<String> dataObjectPaths) throws HpcException {
+		Long totalSize = 0L;
+
+		for(String path: dataObjectPaths) {
+			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+			totalSize += metadata.getSourceSize() != null ? metadata.getSourceSize() : 0;
+		}
+		return totalSize;
+	}
+
+
+	/**
 	 * Get the data transfer authenticated token if cached. If it's not cached or
 	 * expired, get a token by authenticating.
 	 *
@@ -2652,6 +2689,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return pathAttributes;
 	}
+
 
 	private void checkForDuplicateCollectionDownloadRequests(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination) throws HpcException {
