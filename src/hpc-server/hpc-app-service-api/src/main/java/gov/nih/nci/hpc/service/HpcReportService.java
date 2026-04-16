@@ -28,6 +28,19 @@ public interface HpcReportService {
    * @throws HpcException on service failure.
    */
   public List<HpcReport> generateReport(HpcReportCriteria criteria) throws HpcException;
+  
+  
+  /*
+   * Get the size of the specified collection from the reports table capturing 
+   * collection sizes. 
+   * 
+   * @param collectionPath path of the collection
+   * 
+   * @return the size of the specified collection
+   * 
+   */
+  public Long getCollectionSize(String collectionPath) throws HpcException;
+  
 
   /**
    * Refresh all reports materialized views.
@@ -35,4 +48,6 @@ public interface HpcReportService {
    * @throws HpcException on service failure.
    */
   public void refreshViews() throws HpcException;
+
+
 }

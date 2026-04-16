@@ -140,7 +140,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					if(download.getStatus() != null) {
 						task.setStatus(download.getStatus());
 					}
-					
+					task.setDataSize(String.valueOf(download.getDataSize()));
 					result.add(task);
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
@@ -176,7 +176,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				task.setDisplayPath(download.getPath());// For display purpose only. The above path gets modified to a link in the display
 				
 				task.setStatus(getResultDisplayText(download.getResult()));
-				
+				task.setDataSize(String.valueOf(download.getDataSize()));
 				
 				result.add(task);
 			}
