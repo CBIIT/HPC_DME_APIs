@@ -22,6 +22,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -67,6 +68,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static String FILE_RANGE_WHERE = "";
 
 	private static final String FILE_RANGE_GROUP = " group by " + FILE_SIZE_FUNC_SQL;
+
+	private static final String COMPUTED_COLLECTION_SIZE_SQL = "select TOTALSIZE from R_REPORT_COLLECTION_SIZE where COL_NAME = ?";
+
 
 	private RowMapper<Map<String, Object>> fileSizeRangeRowMapper = (rs, rowNum) -> {
 		Map<String, Object> range = new HashMap<String, Object>();
@@ -872,6 +876,18 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	}
 
 
+	@Override
+	public Long getCollectionSize(String collectionPath) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(COMPUTED_COLLECTION_SIZE_SQL, Long.class, collectionPath);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get collection size for path: " + collectionPath + ": " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+
 	private RowMapper<HpcArchiveSummary> archiveSummaryByReportTypeRowMapper = (rs, rowNum) -> {
 		HpcArchiveSummary archiveSummary = new HpcArchiveSummary();
 		archiveSummary.repName = rs.getString("repName");
@@ -1057,6 +1073,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 
 	}
+
 
 	private void setGridFieldValue(boolean isBasePathReport, Map<String, HpcReport> mapReports,
 			List<Map<String, Object>> totalObjList, HpcReportEntryAttribute reportEntryAttributeName,

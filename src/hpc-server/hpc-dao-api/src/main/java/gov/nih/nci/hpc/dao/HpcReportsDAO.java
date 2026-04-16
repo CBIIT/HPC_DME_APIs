@@ -41,7 +41,16 @@ public interface HpcReportsDAO
      * @throws HpcException on database error.
      */
     public void refreshViews() throws HpcException;
-    
+
+    /**
+     * Get the size of the specified collection from the reports table
+     * capturing collection sizes.
+     *
+     * @param collectionPath path of the collection
+     * @return size of the specified collection
+     */
+	public Long getCollectionSize(String collectionPath) throws HpcException;
+
 }
 
  

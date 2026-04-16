@@ -82,6 +82,11 @@ public class HpcReportServiceImpl implements HpcReportService {
     }
     return reportsDAO.generatReport(criteria);
   }
+  
+  @Override
+  public Long getCollectionSize(String collectionPath) throws HpcException {
+	  return reportsDAO.getCollectionSize(collectionPath);
+  }
 
   @Override
   public void refreshViews() throws HpcException {

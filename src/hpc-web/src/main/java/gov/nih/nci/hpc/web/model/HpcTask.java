@@ -33,6 +33,8 @@ public class HpcTask {
     protected String error;
     @JsonView(Views.Public.class)
     protected String displayPath;
+    @JsonView(Views.Public.class)
+    protected String dataSize;
 
 	public String getUserId() {
 		return userId;
@@ -123,5 +125,11 @@ public class HpcTask {
 	}
 	public void setDisplayPath(String displayPath) {
 		this.displayPath = displayPath;
+	}
+	public String getDataSize() {
+		return displayPath;
+	}
+	public void setDataSize(String dataSize) {
+		this.dataSize = dataSize;
 	}
 }
