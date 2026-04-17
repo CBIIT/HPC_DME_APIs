@@ -69,7 +69,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String FILE_RANGE_GROUP = " group by " + FILE_SIZE_FUNC_SQL;
 
-	private static final String COMPUTED_COLLECTION_SIZE_SQL = "select TOTALSIZE from R_REPORT_COLLECTION_SIZE where COL_NAME = ?";
+	private static final String TOTAL_COLLECTION_SIZE_SQL = "SELECT SUM(TOTALSIZE) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
 
 
 	private RowMapper<Map<String, Object>> fileSizeRangeRowMapper = (rs, rowNum) -> {
@@ -879,7 +879,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	@Override
 	public Long getCollectionSize(String collectionPath) throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(COMPUTED_COLLECTION_SIZE_SQL, Long.class, collectionPath);
+			return jdbcTemplate.queryForObject(TOTAL_COLLECTION_SIZE_SQL, Long.class, collectionPath);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection size for path: " + collectionPath + ": " + e.getMessage(),

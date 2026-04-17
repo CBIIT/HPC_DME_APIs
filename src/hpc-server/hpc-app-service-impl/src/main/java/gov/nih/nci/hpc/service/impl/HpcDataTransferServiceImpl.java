@@ -108,6 +108,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemTokens;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
@@ -205,6 +206,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// The compressed archive extractor. Used to extract files from TAR/TGZ/ZIP.
 	@Autowired
 	private HpcCompressedArchiveExtractor compressedArchiveExtractor = null;
+
+	// The Data Management Proxy instance.
+	@Autowired
+	private HpcDataManagementProxy dataManagementProxy = null;
 
 	// The pattern convenient class to support string pattern matching
 	@Autowired
@@ -1637,10 +1642,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
-        downloadTask.setDataSize(reportService.getCollectionSize(path));
+		downloadTask.setDataSize(reportService.getCollectionSize(dataManagementProxy.getAbsolutePath(path)));
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
-
 		return downloadTask;
 	}
 
@@ -1678,7 +1682,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
-
 		return downloadTask;
 	}
 
@@ -2299,7 +2302,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		Long totalSize = 0L;
 
 		for(String path: collectionPaths) {
-			totalSize += reportService.getCollectionSize(path);
+			totalSize += reportService.getCollectionSize(dataManagementProxy.getAbsolutePath(path));
 		}
 
 		return totalSize;
@@ -2310,7 +2313,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		Long totalSize = 0L;
 
 		for(String path: dataObjectPaths) {
-			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+			HpcSystemGeneratedMetadata metadata = 
+				metadataService.getDataObjectSystemGeneratedMetadata(dataManagementProxy.getAbsolutePath(path));
 			totalSize += metadata.getSourceSize() != null ? metadata.getSourceSize() : 0;
 		}
 		return totalSize;
