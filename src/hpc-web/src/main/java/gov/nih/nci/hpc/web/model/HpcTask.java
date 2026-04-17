@@ -35,6 +35,8 @@ public class HpcTask {
     protected String displayPath;
     @JsonView(Views.Public.class)
     protected String dataSize;
+    @JsonView(Views.Public.class)
+    protected String humanReadableSize;
 
 	public String getUserId() {
 		return userId;
@@ -127,9 +129,15 @@ public class HpcTask {
 		this.displayPath = displayPath;
 	}
 	public String getDataSize() {
-		return displayPath;
+		return dataSize;
 	}
 	public void setDataSize(String dataSize) {
 		this.dataSize = dataSize;
+	}
+	public String getHumanReadableSize() {
+		return humanReadableSize;
+	}
+	public void setHumanReadableSize(String humanReadableSize) {
+		this.humanReadableSize = humanReadableSize;
 	}
 }
