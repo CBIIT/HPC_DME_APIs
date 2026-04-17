@@ -1642,7 +1642,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
-		downloadTask.setDataSize(reportService.getCollectionSize(dataManagementProxy.getAbsolutePath(path)));
+		Long collectionSize = reportService.getCollectionSize(dataManagementProxy.getAbsolutePath(path));
+		downloadTask.setDataSize(collectionSize != null ? collectionSize : 0L);
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 		return downloadTask;
