@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.web.model.HpcTask;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 
 /**
  * <p>
@@ -141,6 +142,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 						task.setStatus(download.getStatus());
 					}
 					task.setDataSize(String.valueOf(download.getDataSize()));
+					task.setHumanReadableSize(MiscUtil.getHumanReadableSize(String.valueOf(download.getDataSize()), true));
 					result.add(task);
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
@@ -177,6 +179,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				
 				task.setStatus(getResultDisplayText(download.getResult()));
 				task.setDataSize(String.valueOf(download.getDataSize()));
+				task.setHumanReadableSize(MiscUtil.getHumanReadableSize(String.valueOf(download.getDataSize()), true));
 				
 				result.add(task);
 			}
