@@ -30,7 +30,7 @@ public interface HpcReportService {
   public List<HpcReport> generateReport(HpcReportCriteria criteria) throws HpcException;
   
   
-  /*
+  /**
    * Get the size of the specified collection from the reports table capturing 
    * collection sizes. 
    * 

@@ -2302,8 +2302,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private Long getTotalSizeOfCollectionPaths(List<String> collectionPaths) throws HpcException {
 		Long totalSize = 0L;
 
+		Map<String, Long> collectionSizeCache = new HashMap<>();
 		for(String path: collectionPaths) {
-			totalSize += reportService.getCollectionSize(dataManagementProxy.getAbsolutePath(path));
+			String absolutePath = dataManagementProxy.getAbsolutePath(path);
+			Long collectionSize = collectionSizeCache.get(absolutePath);
+			if (collectionSize == null) {
+				collectionSize = reportService.getCollectionSize(absolutePath) != null ? reportService.getCollectionSize(absolutePath) : 0L;
+				collectionSizeCache.put(absolutePath, collectionSize);
+			}
+			totalSize += collectionSize;
 		}
 
 		return totalSize;
@@ -2313,10 +2320,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private Long getTotalSizeOfDataObjectPaths (List<String> dataObjectPaths) throws HpcException {
 		Long totalSize = 0L;
 
+		Map<String, Long> dataObjectSizeCache = new HashMap<>();
 		for(String path: dataObjectPaths) {
-			HpcSystemGeneratedMetadata metadata = 
-				metadataService.getDataObjectSystemGeneratedMetadata(dataManagementProxy.getAbsolutePath(path));
-			totalSize += metadata.getSourceSize() != null ? metadata.getSourceSize() : 0;
+			String absolutePath = dataManagementProxy.getAbsolutePath(path);
+			Long dataObjectSize = dataObjectSizeCache.get(absolutePath);
+			if (dataObjectSize == null) {
+				HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(absolutePath);
+				dataObjectSize = metadata.getSourceSize() != null ? metadata.getSourceSize() : 0L;
+				dataObjectSizeCache.put(absolutePath, dataObjectSize);
+			}
+			totalSize += dataObjectSize;
 		}
 		return totalSize;
 	}
