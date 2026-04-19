@@ -22,7 +22,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -69,7 +68,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String FILE_RANGE_GROUP = " group by " + FILE_SIZE_FUNC_SQL;
 
-	private static final String TOTAL_COLLECTION_SIZE_SQL = "SELECT SUM(TOTALSIZE) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
+	private static final String TOTAL_COLLECTION_SIZE_SQL = "SELECT NVL(SUM(TOTALSIZE), 0) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
 
 
 	private RowMapper<Map<String, Object>> fileSizeRangeRowMapper = (rs, rowNum) -> {
@@ -879,7 +878,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	@Override
 	public Long getCollectionSize(String collectionPath) throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(TOTAL_COLLECTION_SIZE_SQL, Long.class, collectionPath);
+			Long collectionSize = jdbcTemplate.queryForObject(TOTAL_COLLECTION_SIZE_SQL, Long.class, collectionPath);
+			return collectionSize != null ? collectionSize : 0L;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection size for path: " + collectionPath + ": " + e.getMessage(),
