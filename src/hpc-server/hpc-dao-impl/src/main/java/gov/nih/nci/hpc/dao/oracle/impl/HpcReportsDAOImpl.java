@@ -871,7 +871,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 	}
 
-
 	private RowMapper<HpcArchiveSummary> archiveSummaryByReportTypeRowMapper = (rs, rowNum) -> {
 		HpcArchiveSummary archiveSummary = new HpcArchiveSummary();
 		archiveSummary.repName = rs.getString("repName");
@@ -1057,6 +1056,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 
 	}
+
 
 	private void setGridFieldValue(boolean isBasePathReport, Map<String, HpcReport> mapReports,
 			List<Map<String, Object>> totalObjList, HpcReportEntryAttribute reportEntryAttributeName,
