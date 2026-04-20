@@ -1020,6 +1020,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 	}
 
+	@Override
+	public Long getCollectionSizeForPath(String path) throws HpcException {
+        return metadataDAO.getCollectionSizeForPath(path);
+    }
+
+	@Override
+	public Long getDataObjectSizeForPath(String path) throws HpcException {
+        return metadataDAO.getDataObjectSizeForPath(path);
+    }
+
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
