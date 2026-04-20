@@ -304,10 +304,32 @@ public interface HpcMetadataDAO {
 	public List<Integer> getDupHpcDataObjectMetadataEntries() throws HpcException;
 
 	/**
+	 * Get the size of the collection from the specified path.
+	 *
+	 * @param paths The collection path.
+	 *
+	 * @return The size in bytes.
+	 * @throws HpcException on database error.
+	 *
+	 */
+	public Long getCollectionSizeForPath(String path) throws HpcException;
+
+	/**
+	 * Get the size of a dataObject from the specified path.
+	 *
+	 * @param paths The dataObject path.
+	 *
+	 * @return The size in bytes.
+	 * @throws HpcException on database error.
+	 */
+	public Long getDataObjectSizeForPath(String path) throws HpcException;
+
+	/**
 	 * Upsert data object metadata in the table used for data object search
 	 * materialized view creation.
 	 *
 	 * @param path
+	 *
 	 * @throws HpcException on database error.
 	 */
 	public void upsertDataObjectMetadata(String path) throws HpcException;
@@ -338,5 +360,6 @@ public interface HpcMetadataDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void deleteDataObjectMetadataUnderCollection(String path) throws HpcException;
+
 
 }
