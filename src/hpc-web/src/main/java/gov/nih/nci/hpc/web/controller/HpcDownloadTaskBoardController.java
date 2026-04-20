@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.web.model.HpcTask;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 
 /**
  * <p>
@@ -136,11 +137,14 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setResult(getResultDisplayText(download.getResult()));
 					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					task.setDisplayPath(download.getPath()); // For display purpose only. The above path gets modified to a link
-				
+
 					if(download.getStatus() != null) {
 						task.setStatus(download.getStatus());
 					}
 					
+					String dataSize = download.getDataSize() != null ? String.valueOf(download.getDataSize()) : "0";
+					task.setDataSize(dataSize);
+					task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
 					result.add(task);
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
@@ -174,14 +178,15 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 						download.getCompleted() != null ? sortFormat.format(download.getCompleted().getTime()) : "");task.setResult(getResultDisplayText(download.getResult()));
 				task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 				task.setDisplayPath(download.getPath());// For display purpose only. The above path gets modified to a link in the display
-				
+
 				task.setStatus(getResultDisplayText(download.getResult()));
-				
-				
+				String dataSize = download.getDataSize() != null ? String.valueOf(download.getDataSize()) : "0";
+				task.setDataSize(dataSize);
+				task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
+
 				result.add(task);
 			}
-			
-			
+
 			model.addAttribute("currentPage", Integer.toString(page));
 			model.addAttribute("totalCount", downloads.getTotalCount());
 			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(downloads.getTotalCount(), downloads.getLimit()));

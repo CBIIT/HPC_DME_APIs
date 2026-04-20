@@ -381,4 +381,24 @@ public interface HpcMetadataService {
 	 */
 	public void detectDupMetadataEntries() throws HpcException;
 
+	/**
+	 * Get the size of a collection from the specified path
+	 *
+	 * @param paths The collection path.
+	 *
+	 * @return The total size in bytes.
+	 * @throws HpcException on database error.
+	 */
+	public Long getCollectionSizeForPath(String path) throws HpcException;
+
+	/**
+	 * Get the size of a data object from the specified path.
+	 *
+	 * @param paths The dataObject path.
+	 *
+	 * @return The total size in bytes.
+	 * @throws HpcException on database error.
+	 */
+	public Long getDataObjectSizeForPath(String path) throws HpcException;
+
 }
