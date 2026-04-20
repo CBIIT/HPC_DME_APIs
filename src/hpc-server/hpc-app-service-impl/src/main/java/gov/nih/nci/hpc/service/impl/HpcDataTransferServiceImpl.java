@@ -1642,7 +1642,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
-		Long collectionSize = reportService.getCollectionSize(dataManagementProxy.getAbsolutePath(path));
+		Long collectionSize = metadataService.getCollectionSizeForPath(dataManagementProxy.getAbsolutePath(path));
 		downloadTask.setDataSize(collectionSize != null ? collectionSize : 0L);
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
@@ -2307,7 +2307,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String absolutePath = dataManagementProxy.getAbsolutePath(path);
 			Long collectionSize = collectionSizeCache.get(absolutePath);
 			if (collectionSize == null) {
-				collectionSize = reportService.getCollectionSize(absolutePath) != null ? reportService.getCollectionSize(absolutePath) : 0L;
+				collectionSize = metadataService.getCollectionSizeForPath(absolutePath);
 				collectionSizeCache.put(absolutePath, collectionSize);
 			}
 			totalSize += collectionSize;
@@ -2325,8 +2325,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String absolutePath = dataManagementProxy.getAbsolutePath(path);
 			Long dataObjectSize = dataObjectSizeCache.get(absolutePath);
 			if (dataObjectSize == null) {
-				HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(absolutePath);
-				dataObjectSize = metadata.getSourceSize() != null ? metadata.getSourceSize() : 0L;
+				dataObjectSize = metadataService.getDataObjectSizeForPath(absolutePath);
 				dataObjectSizeCache.put(absolutePath, dataObjectSize);
 			}
 			totalSize += dataObjectSize;

@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.CollectionUtils;
+import org.springframework.dao.DataAccessException;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -267,6 +268,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DUP_HPC_DATA_OBJECT_METADATA_SQL = "select object_id, meta_id, count(*) "
 			+ "FROM hpc_data_meta_main "
 			+ "GROUP BY object_id, meta_id having count(*) > 1";
+
+	private static final String GET_DATA_OBJECT_SIZE_FOR_PATH_SQL = "select NVL(DATA_SIZE, 0) from R_BROWSE_META_MAIN where path = ?";
+
+	private static final String GET_COLLECTION_SIZE_FOR_PATH_SQL = "SELECT NVL(SUM(TOTALSIZE), 0) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
 
 	private static final String INSERT_DATA_META_MAIN_SQL = "insert into HPC_DATA_META_MAIN "
 			+ "(OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT) "
@@ -836,6 +841,34 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to detect data object duplicate metadata: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public Long getDataObjectSizeForPath(String dataObjectPath) throws HpcException {
+		try {
+			Long dataObjectSize = jdbcTemplate.queryForObject(GET_DATA_OBJECT_SIZE_FOR_PATH_SQL, Long.class, dataObjectPath);
+			return dataObjectSize != null ? dataObjectSize : 0L;
+
+		} catch (Exception e) {
+			String errorMessage = "Failed to get size for dataObjectPath: " + dataObjectPath;
+			logger.error(errorMessage, e);
+			throw new HpcException(errorMessage,
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public Long getCollectionSizeForPath(String collectionPath) throws HpcException {
+		try {
+			Long collectionSize = jdbcTemplate.queryForObject(GET_COLLECTION_SIZE_FOR_PATH_SQL, Long.class, collectionPath);
+			return collectionSize != null ? collectionSize : 0L;
+
+		} catch (Exception e) {
+			String errorMessage = "Failed to get size for collectionPath: " + collectionPath;
+			logger.error(errorMessage, e);
+			throw new HpcException(errorMessage,
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
