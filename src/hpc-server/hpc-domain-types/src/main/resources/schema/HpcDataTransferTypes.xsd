@@ -504,6 +504,7 @@
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="totalBytesTransferred " type="xsd:long" minOccurs="0" />
 			<xsd:element name="priority" type="xsd:int" />
+			<xsd:element name="dataSize" type="xsd:long" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -562,6 +563,7 @@
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="dataSize" type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
