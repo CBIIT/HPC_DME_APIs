@@ -117,7 +117,6 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
-import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
 
@@ -186,10 +185,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Data Management Service
 	@Autowired
 	private HpcDataManagementService dataManagementService = null;
-
-	// Report Service
-	@Autowired
-	private HpcReportService reportService = null;
 
 	// Data Registration DAO.
 	@Autowired
