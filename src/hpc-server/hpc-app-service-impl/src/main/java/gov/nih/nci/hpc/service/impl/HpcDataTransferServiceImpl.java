@@ -1837,6 +1837,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(downloadTaskResult.getPath());
 		downloadTask.setDoc(downloadTaskResult.getDoc());
 		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
+		downloadTask.setDataSize(getTotalSizeOfDataObjectItems(downloadTaskResult.getItems()));
 
 		// Set the configuration ID for collection(s) retry.
 		String configurationId = null;
@@ -2304,8 +2305,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (collectionSize == null) {
 				collectionSize = metadataService.getCollectionSizeForPath(absolutePath);
 				collectionSizeCache.put(absolutePath, collectionSize);
+				totalSize += collectionSize;
 			}
-			totalSize += collectionSize;
 		}
 
 		return totalSize;
@@ -2322,8 +2323,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (dataObjectSize == null) {
 				dataObjectSize = metadataService.getDataObjectSizeForPath(absolutePath);
 				dataObjectSizeCache.put(absolutePath, dataObjectSize);
+				totalSize += dataObjectSize;
 			}
-			totalSize += dataObjectSize;
+		}
+		return totalSize;
+	}
+
+
+	private Long getTotalSizeOfDataObjectItems (List<HpcCollectionDownloadTaskItem> items)
+			throws HpcException {
+		Long totalSize = 0L;
+
+		Map<String, Long> dataObjectSizeCache = new HashMap<>();
+		for(HpcCollectionDownloadTaskItem item: items) {
+			if(!item.getResult().equals(HpcDownloadResult.COMPLETED)) {
+				String path = item.getPath();
+				String absolutePath = dataManagementProxy.getAbsolutePath(path);
+				Long dataObjectSize = dataObjectSizeCache.get(absolutePath);
+				if (dataObjectSize == null) {
+					dataObjectSize = metadataService.getDataObjectSizeForPath(absolutePath);
+					dataObjectSizeCache.put(absolutePath, dataObjectSize);
+					totalSize += dataObjectSize;
+				}
+			}
 		}
 		return totalSize;
 	}
