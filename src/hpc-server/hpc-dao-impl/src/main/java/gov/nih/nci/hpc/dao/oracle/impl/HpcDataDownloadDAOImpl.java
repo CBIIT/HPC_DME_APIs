@@ -143,8 +143,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, FIRST_HOP_RETRIED = ?, DOC = ?, GOOGLE_ACCESS_TOKEN = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
-			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, RETRY_USER_ID, FIRST_HOP_RETRIED, DOC, GOOGLE_ACCESS_TOKEN) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "COLLECTION_DOWNLOAD_TASK_ID, EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED, RETRY_TASK_ID, RETRY_USER_ID, FIRST_HOP_RETRIED, DOC, GOOGLE_ACCESS_TOKEN, EXTERNAL_ARCHIVE_FLAG) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ?, COLLECTION_PATHS = ? where ID = ?";
 
@@ -224,6 +224,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_GLOBUS_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_IN_PROGRESS_FOR_USER_BY_PATH_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
 			+ "(DATA_TRANSFER_STATUS = 'IN_PROGRESS' OR DATA_TRANSFER_TYPE = 'GLOBUS') and DESTINATION_TYPE = 'GLOBUS' and USER_ID = ? and PATH = ? ";
+
+	private static final String GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
+			+ "(EXTERNAL_ARCHIVE_FLAG = 1 and PATH = ? ";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? and "
 			+ "STATUS = ? and IN_PROCESS = ?";
@@ -418,6 +421,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		downloadTaskResult.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		downloadTaskResult.setRetryTaskId(rs.getString("RETRY_TASK_ID"));
 		downloadTaskResult.setRetryUserId(rs.getString("RETRY_USER_ID"));
+		downloadTaskResult.setExternalArchiveFlag(rs.getBoolean("EXTERNAL_ARCHIVE_FLAG"));
 		String dataTransferType = rs.getString("DATA_TRANSFER_TYPE");
 		downloadTaskResult
 				.setDataTransferType(dataTransferType != null ? HpcDataTransferType.fromValue(dataTransferType) : null);
@@ -1134,7 +1138,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getCollectionDownloadTaskId(), taskResult.getEffectiveTransferSpeed(),
 					taskResult.getSize(), taskResult.getCreated(), taskResult.getCompleted(),
 					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), taskResult.getRetryTaskId(),
-					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(), googleAccessToken);
+					taskResult.getRetryUserId(), taskResult.getFirstHopRetried(), taskResult.getDoc(), googleAccessToken, taskResult.getExternalArchiveFlag());
 
 			jdbcTemplate.update(UPDATE_DOWNLOAD_TASK_RESULT_CLOBS_SQL,
 					new Object[] { new SqlLobValue(toJSON(taskResult.getItems()), lobHandler),
@@ -1420,6 +1424,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get inprocess data object download tasks count: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public int getDownloadTasksCountForExternalArchiveByPath(String path)
+			throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(
+					GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL, Integer.class, path);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get external data object download tasks count: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}

@@ -459,6 +459,7 @@
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="googleCloudStorageDestination"
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
