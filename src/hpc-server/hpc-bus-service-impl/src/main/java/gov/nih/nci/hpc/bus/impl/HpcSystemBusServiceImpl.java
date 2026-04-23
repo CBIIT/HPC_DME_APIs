@@ -2712,6 +2712,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					dataTransferDownloadReport.getBytesTransferred());
 
+			if(downloadTask.getExternalArchiveFlag()) {
+				// If this is an external archive download, delete the data object from iRODS after the download is completed/failed.
+				// Also a check is needed before deleting the data object to make sure there are no other external archive download tasks for this path.
+				// This is needed to avoid deleting the data object while there are still active external archive download tasks for this data object.
+				logger.info("ticket 2168: download task: [count={}] - external archive download completed/failed. Deleting data object from iRODS: {}",
+						dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath()), downloadTask.getPath());
+				logger.info("ticket 2168: download task: [taskId={}] - external archive download completed/failed. Deleting data object from iRODS: {}",
+				downloadTask.getId(), downloadTask.getPath());
+
+				if(dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath()) <= 1) {
+					logger.info(" ticket 2168: deleting data object");
+					dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+				}
+			}
+
 			// Send a download completion event (if requested to).
 			if (downloadTask.getCompletionEvent()) {
 				addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),

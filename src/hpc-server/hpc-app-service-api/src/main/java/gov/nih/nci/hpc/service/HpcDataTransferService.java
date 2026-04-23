@@ -456,6 +456,15 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
+	 * Get all data object download tasks associated with an external archive path.
+	 *
+	 * @param path The external archive path
+	 * @return A list of data object download tasks.
+	 * @throws HpcException on service failure.
+	 */
+	int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException;
+
+	/**
 	 * Get next data object download task to process given data transfer status and
 	 * data transfer type.
 	 *
