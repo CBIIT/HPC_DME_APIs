@@ -1,0 +1,27 @@
+$kind: http-request
+name: Query Data Objects By Named Query
+method: GET
+url: '{{baseUrl}}{{basePath}}/dataObject/query/{{queryName}}'
+order: 4000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: queryName
+    value: 'myQuery'
+queryParams:
+  - key: detailedResponse
+    value: 'false'
+    disabled: true
+  - key: page
+    value: '1'
+    disabled: true
+  - key: pageSize
+    value: '100'
+    disabled: true
+  - key: totalCount
+    value: 'true'
+    disabled: true
+  - key: returnParent
+    value: 'false'
+    disabled: true

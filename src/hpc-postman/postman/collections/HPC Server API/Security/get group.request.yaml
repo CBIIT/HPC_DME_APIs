@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Group
+method: GET
+url: '{{baseUrl}}{{basePath}}/group/{{groupName}}'
+order: 13000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: groupName
+    value: 'myGroup'
