@@ -22,7 +22,5 @@ sleep 1
 
 curl_register input.json "$REGISTERED_PROJECT" collection
 
-get_http_code "$RESPONSE_HEADER" >&2 
-get_json_value  "$RESPONSE_MSG" "errorType" >&2
-get_json_value  "$RESPONSE_MSG" "message" >&2
+get_http_code $RESPONSE_HEADER
 #../../utils/registration-runtest collection ${REGISTERED_PROJECT}/test-${NAME} 

@@ -41,7 +41,7 @@ public interface HpcReportsDAO
      * @throws HpcException on database error.
      */
     public void refreshViews() throws HpcException;
-    
+
 }
 
  

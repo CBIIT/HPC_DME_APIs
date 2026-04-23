@@ -3824,10 +3824,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean updated = true;
 		String message = null;
 		try {
+			//If system admin, allow system metadata update, otherwise only allow user metadata update.
+			HpcRequestInvoker invoker = securityService.getRequestInvoker();
+			boolean allowSystemMetadataUpdate = HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole());
 			if (!metadataContained(metadataEntries, metadataBefore.getSelfMetadataEntries())) {
 				synchronized (this) {
 					metadataService.updateCollectionMetadata(path, metadataEntries,
-							systemGeneratedMetadata.getConfigurationId(), false);
+							systemGeneratedMetadata.getConfigurationId(), allowSystemMetadataUpdate);
 				}
 			} else {
 				logger.info(
@@ -3886,12 +3889,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcErrorType.REQUEST_REJECTED).withSuppressStackTraceLogging(true);
 		}
 
+		
 		// Update the metadata.
 		boolean updated = true;
 		String message = null;
 		try {
+			//If system admin, allow system metadata update, otherwise only allow user metadata update.
+			HpcRequestInvoker invoker = securityService.getRequestInvoker();
+			boolean allowSystemMetadataUpdate = HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole());
 			metadataService.updateDataObjectMetadata(path, metadataEntries,
-					systemGeneratedMetadata.getConfigurationId(), collectionType, false, false);
+					systemGeneratedMetadata.getConfigurationId(), collectionType, false, allowSystemMetadataUpdate);
 
 		} catch (HpcException e) {
 			// Data object metadata update failed. Capture this in the audit record.

@@ -231,7 +231,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		// Validate collection type is not in the update request.
 		List<HpcMetadataEntry> existingMetadataEntries = metadataRetriever.getCollectionMetadata(path);
-		validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
+		if (!allowSystemMetadata) {
+			validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
+		}
 
 		// Validate the metadata.
 		metadataValidator.validateCollectionMetadata(configurationId, existingMetadataEntries, metadataEntries, allowSystemMetadata);
@@ -1017,6 +1019,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.ORACLE);
 		}
 	}
+
+	@Override
+	public Long getCollectionSizeForPath(String path) throws HpcException {
+        return metadataDAO.getCollectionSizeForPath(path);
+    }
+
+	@Override
+	public Long getDataObjectSizeForPath(String path) throws HpcException {
+        return metadataDAO.getDataObjectSizeForPath(path);
+    }
+
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods

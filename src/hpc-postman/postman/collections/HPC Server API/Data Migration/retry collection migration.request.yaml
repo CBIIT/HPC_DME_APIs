@@ -1,0 +1,15 @@
+$kind: http-request
+name: Retry Collection Migration
+method: POST
+url: '{{baseUrl}}{{basePath}}/collection/migrate/{{taskId}}/retry'
+order: 5000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: taskId
+    value: 'task-id-here'
+queryParams:
+  - key: failedItemsOnly
+    value: 'true'
+    disabled: true

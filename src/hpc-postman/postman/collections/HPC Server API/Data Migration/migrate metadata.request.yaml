@@ -1,0 +1,17 @@
+$kind: http-request
+name: Migrate Metadata
+method: POST
+url: '{{baseUrl}}{{basePath}}/migrateMetadata'
+order: 6000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "fromConfigurationId": "source-config-id",
+      "toConfigurationId": "target-config-id"
+    }

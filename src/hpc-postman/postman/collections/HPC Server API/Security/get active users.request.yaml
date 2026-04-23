@@ -1,0 +1,24 @@
+$kind: http-request
+name: Get Active Users
+method: GET
+url: '{{baseUrl}}{{basePath}}/user/active'
+order: 7000
+headers:
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: nciUserId
+    value: ''
+    disabled: true
+  - key: firstNamePattern
+    value: ''
+    disabled: true
+  - key: lastNamePattern
+    value: ''
+    disabled: true
+  - key: doc
+    value: ''
+    disabled: true
+  - key: defaultBasePath
+    value: ''
+    disabled: true
