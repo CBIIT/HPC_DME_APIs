@@ -1,0 +1,4 @@
+$kind: collection
+name: Data Search
+description: Metadata queries, named queries, catalog search, and metadata attributes.
+order: 3000
