@@ -1037,6 +1037,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return dataDownloadDAO.getDataObjectDownloadTaskResultByCollectionDownloadTaskId(taskId);
 	}
 
+	// # 2168
+	@Override
+	public int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException {
+		return dataDownloadDAO.getDownloadResultsCount(path);
+	}
+
 	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
@@ -1230,6 +1236,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setFirstHopRetried(downloadTask.getFirstHopRetried());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
+		taskResult.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
