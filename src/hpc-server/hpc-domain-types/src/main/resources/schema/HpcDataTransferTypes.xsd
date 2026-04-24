@@ -567,6 +567,7 @@
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="dataSize" type="xsd:long" minOccurs="0" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
