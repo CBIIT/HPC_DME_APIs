@@ -226,7 +226,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "(DATA_TRANSFER_STATUS = 'IN_PROGRESS' OR DATA_TRANSFER_TYPE = 'GLOBUS') and DESTINATION_TYPE = 'GLOBUS' and USER_ID = ? and PATH = ? ";
 
 	private static final String GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "(EXTERNAL_ARCHIVE_FLAG = 1 and PATH = ? ";
+			+ "EXTERNAL_ARCHIVE_FLAG = 1 and PATH LIKE ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? and "
 			+ "STATUS = ? and IN_PROCESS = ?";
