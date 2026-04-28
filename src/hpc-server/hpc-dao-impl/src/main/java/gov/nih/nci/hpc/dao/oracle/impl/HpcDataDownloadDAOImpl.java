@@ -1438,9 +1438,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public int getDownloadTasksCountForExternalArchiveByPath(String path)
 			throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(
+			int count = jdbcTemplate.queryForObject(
 					GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL, Integer.class,
 					path != null ? path.trim() : null);
+				logger.info("2168: path: " + path);
+				logger.info("2168: string length of path: " + path.length());
+				logger.info("2168: string trimmed length of path: " + (path != null ? path.trim().length() : 0));
+				logger.info(
+						"DAO 2168 - {} total number of tasks for same path {}",
+						 count, path != null ? path.trim() : null);
+			
+			return count;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get external data object download tasks count: " + e.getMessage(),
