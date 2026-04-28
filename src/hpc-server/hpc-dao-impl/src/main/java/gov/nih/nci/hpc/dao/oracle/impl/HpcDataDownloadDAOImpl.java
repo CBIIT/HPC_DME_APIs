@@ -226,7 +226,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "(DATA_TRANSFER_STATUS = 'IN_PROGRESS' OR DATA_TRANSFER_TYPE = 'GLOBUS') and DESTINATION_TYPE = 'GLOBUS' and USER_ID = ? and PATH = ? ";
 
 	private static final String GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "EXTERNAL_ARCHIVE_FLAG = 1 and PATH LIKE ?";
+			+ "EXTERNAL_ARCHIVE_FLAG = 1 and PATH = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? and "
 			+ "STATUS = ? and IN_PROCESS = ?";
@@ -1439,7 +1439,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			throws HpcException {
 		try {
 			return jdbcTemplate.queryForObject(
-					GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL, Integer.class, path);
+					GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL, Integer.class,
+					path != null ? path.trim() : null);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get external data object download tasks count: " + e.getMessage(),
