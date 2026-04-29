@@ -270,7 +270,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "FROM hpc_data_meta_main "
 			+ "GROUP BY object_id, meta_id having count(*) > 1";
 
-	private static final String GET_DATA_OBJECT_SIZE_FOR_PATH_SQL = "select NVL(DATA_SIZE, 0) from R_BROWSE_META_MAIN where path = ?";
+	private static final String GET_DATA_OBJECT_SIZE_FOR_PATH_SQL = "select NVL(TO_NUMBER(META_ATTR_VALUE), 0) from HPC_DATA_META_MAIN where object_path = ? and meta_attr_name='source_file_size'";
 
 	private static final String GET_COLLECTION_SIZE_FOR_PATH_SQL = "SELECT NVL(SUM(TOTALSIZE), 0) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
 
