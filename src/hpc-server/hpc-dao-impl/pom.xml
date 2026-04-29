@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>3.24.0</version>
+		<version>3.26.0</version>
 	</parent>
 	<artifactId>hpc-dao-impl</artifactId>
 	<packaging>jar</packaging>
@@ -59,6 +59,10 @@
 		    <groupId>commons-dbcp</groupId>
 		    <artifactId>commons-dbcp</artifactId>
 		    <version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>io.trino</groupId>
+			<artifactId>trino-jdbc</artifactId>
 		</dependency>
         <dependency>
             <groupId>junit</groupId>

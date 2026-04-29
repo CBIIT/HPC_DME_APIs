@@ -370,7 +370,7 @@ class HpcDataManagementBusServiceImplTest {
         when(hpcArchive.getType()).thenReturn(gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType.ARCHIVE);
         Calendar fileDate = Calendar.getInstance();
         fileDate.add(Calendar.DAY_OF_YEAR, -100);
-        when(dataObject.getCreatedAt()).thenReturn(fileDate);
+        when(sysMeta.getDataTransferCompleted()).thenReturn(fileDate);
         when(dataMgmConfig.getDeletionAllowed()).thenReturn(false);
         when(dataManagementService.getDataManagementConfiguration(any())).thenReturn(dataMgmConfig);
         

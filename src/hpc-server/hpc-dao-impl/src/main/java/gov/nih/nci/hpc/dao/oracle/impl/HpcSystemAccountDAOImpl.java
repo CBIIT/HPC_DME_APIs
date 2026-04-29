@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,8 +49,9 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+    @Autowired
+    @Qualifier("hpcOracleJdbcTemplate")
+    private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
 	@Autowired

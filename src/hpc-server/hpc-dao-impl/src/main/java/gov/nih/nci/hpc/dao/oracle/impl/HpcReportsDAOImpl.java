@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -412,8 +413,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+ @Autowired
+ @Qualifier("hpcOracleJdbcTemplate")
+ private JdbcTemplate jdbcTemplate = null;
 
 	private String iRodsBasePath = "";
 
@@ -871,7 +873,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 	}
 
-
 	private RowMapper<HpcArchiveSummary> archiveSummaryByReportTypeRowMapper = (rs, rowNum) -> {
 		HpcArchiveSummary archiveSummary = new HpcArchiveSummary();
 		archiveSummary.repName = rs.getString("repName");
@@ -1057,6 +1058,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 
 	}
+
 
 	private void setGridFieldValue(boolean isBasePathReport, Map<String, HpcReport> mapReports,
 			List<Map<String, Object>> totalObjList, HpcReportEntryAttribute reportEntryAttributeName,

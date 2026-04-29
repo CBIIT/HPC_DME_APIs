@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Groups
+method: GET
+url: '{{baseUrl}}{{basePath}}/group'
+order: 14000
+headers:
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: groupPattern
+    value: '%'
+    disabled: true

@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Collection Children
+method: GET
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}/children'
+order: 4000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'

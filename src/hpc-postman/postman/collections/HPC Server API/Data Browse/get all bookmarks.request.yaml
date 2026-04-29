@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get All Bookmarks
+method: GET
+url: '{{baseUrl}}{{basePath}}/bookmark'
+order: 4000
+headers:
+  - key: Accept
+    value: 'application/json'

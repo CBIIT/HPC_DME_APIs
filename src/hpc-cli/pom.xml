@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>3.24.0</version>
+		<version>3.26.0</version>
 	</parent>
 
 	<groupId>gov.nih.nci.hpc.cli</groupId>
@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>gov.nih.nci.hpc</groupId>
 			<artifactId>hpc-dto</artifactId>
-			<version>3.24.0</version>
+			<version>3.26.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-rs-client</artifactId>
-			<version>4.0.6</version>
+			<version>4.0.9</version>
 		</dependency>
 		<dependency>
             <groupId>jakarta.ws.rs</groupId>
@@ -176,12 +176,12 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk18on</artifactId>
-			<version>1.79</version>
+			<version>1.84</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.79</version>
+			<version>1.84</version>
 		</dependency>
 		<dependency>
     		<groupId>commons-io</groupId>
