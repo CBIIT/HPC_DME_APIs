@@ -736,7 +736,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadDetails = validateExternalDownloadPath(path, downloadDetails);
 		} catch (HpcException e) {
 			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
-			throw new HpcException("Failed Path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		try {
@@ -878,8 +878,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String posixPath = configDetails.get("posixPath");
 		String pathWithPosixPathRemoved = path.substring(posixPath.length());
 		if(StringUtils.isEmpty(pathWithPosixPathRemoved)) {
-			logger.warn("Path without POSIX prefix is empty for path: " + path);
-			throw new HpcException("Invalid path without POSIX prefix for Path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			logger.warn("Path after POSIX prefix is empty for path: " + path);
+			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		String dmePath = configDetails.get("basePath") +  pathWithPosixPathRemoved;
 
