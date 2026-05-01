@@ -581,8 +581,11 @@ public interface HpcDataManagementService {
 	/**
 	 * Returns HpcDataTransferConfiguration for the given external path. This is searched by
 	 * matching the posix path of HpcDataTransferConfiguration to the start of a given path. If any configuration 
+	 * is found where its posix path matches the beginning of the provided path, that configuration is returned.
 	 *
-	 * @return HpcDataTransferConfiguration
+	 * @param path The external path to find a data transfer configuration for.
+	 * @return HpcDataTransferConfiguration if a matching configuration is found, null otherwise.
+	 * @throws HpcException on service failure.
 	 */
 
 	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path)  throws HpcException;
