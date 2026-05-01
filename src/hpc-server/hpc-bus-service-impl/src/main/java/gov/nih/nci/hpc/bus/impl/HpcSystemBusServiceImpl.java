@@ -94,6 +94,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -2729,8 +2730,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
-					logger.info("download task: [taskId={}] Deleting external archive link data object from iRODS: {}", downloadTask.getId(), downloadTask.getPath());
-					dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+					HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+					if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
+						logger.error("Failed to delete the external archive link for path: " + downloadTask.getPath());
+					} else {
+						logger.info("download task: [taskId={}] Successfully deleted external archive link data object for path: {}", downloadTask.getId(), downloadTask.getPath());
+					}
 				}
 			}
 
