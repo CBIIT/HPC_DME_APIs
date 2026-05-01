@@ -711,6 +711,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return responseDTO;
 	}
 
+	/**
+	 * Downloads a data object from an external archive source (e.g., S3).
+	 *
+	 * This method handles the complex workflow of downloading files from external storage systems
+	 * by creating temporary archive links in the DME system. The process involves:
+	 * 1. Validating S3 archive configuration for external storage access
+	 * 2. Validating the external download path and deriving DME paths
+	 * 3. Creating a temporary archive link registration if it doesn't already exist
+	 * 4. Executing the download using the temporary archive link
+	 * 5. Cleaning up temporary registrations if download fails
+	 *
+	 * The method ensures that permanent archive links don't already exist for the target path
+	 * and manages temporary archive links in a designated external archive link directory.
+	 * If a download fails and a temporary registration was created, it will be automatically
+	 * cleaned up to avoid orphaned entries.
+	 *
+	 * @param path The full external path to the data object to download. This should be a
+	 *             path that includes the POSIX prefix defined in the S3 archive configuration.
+	 * @param downloadRequest The download request containing destination information and download options.
+	 *                        The request will be modified to set the external archive flag.
+	 * @return HpcDataObjectDownloadResponseDTO containing the download task ID and destination location
+	 * @throws HpcException If:
+	 *         - S3 configuration is invalid or not found for the path
+	 *         - Configuration validation fails (missing required fields, invalid settings)
+	 *         - Path validation fails (invalid format, permanent link already exists)
+	 *         - External archive link directory is not configured
+	 *         - Archive link registration fails
+	 *         - Download task creation fails
+	 */
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
@@ -738,18 +767,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
 			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
+		boolean registrationCreated = false;
+		// Registration Step: Build details for Registering the Archive link for the file in the external archive
 		try {
-				// Registration Step: Build details for Registering the Archive link for the file in the external archive
-				dmePath = downloadDetails.get("dmePath");
-				// Check if the derived file path for the external archive link does not already exist in DME
+				// Check if the temporary archive link already exists in DME
 				downloadArchiveLinkPath = downloadDetails.get("downloadArchiveLinkPath");
 				HpcDataObject downloadArchiveLink = dataManagementService.getDataObject(downloadArchiveLinkPath);
 				if(downloadArchiveLink == null) {
-					// Archive link for the external file does not exist in DME, proceed with registration of the link
+					// The temporary archive link does not exist in DME, proceed with the registration
 					HpcFileLocation sourceLocation = new HpcFileLocation();
 					sourceLocation.setFileContainerId(downloadDetails.get("bucket"));
-					sourceLocation.setFileId(dmePath.substring(1));
+					sourceLocation.setFileId(downloadDetails.get("dmePath").substring(1));
 					HpcUploadSource uploadSource = new HpcUploadSource();
 					uploadSource.setSourceLocation(sourceLocation);
 					HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
@@ -764,8 +792,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						logger.error("Registration of Archive link has failed for path: " + downloadArchiveLinkPath);
 						throw new HpcException("Registration of Archive link has failed for path: " + downloadArchiveLinkPath, HpcErrorType.INVALID_REQUEST_INPUT);
 					}
+					registrationCreated = true;
 				} else {
-					// If the download archive link already exists, no need to register again
+					// The archive link already exists, there is no need to register again
 					logger.info("Download archive link already exists for path: " + downloadArchiveLinkPath);
 				}
 		} catch (HpcException e) {
@@ -774,12 +803,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		try {
-			// Download the external data files with the help of the registered links in the previous step
+			// Download Step:
 			downloadRequest.setExternalArchiveFlag(true);
 			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest);
 		} catch (HpcException e) {
-			logger.error("Failed to download data object from external source: " + path + ". " + e.getMessage(), e);
-			throw new HpcException("Failed to download data object from external source for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+			logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+			if(registrationCreated) {
+				HpcDataObjectDeleteResponseDTO deleteResponse = deleteDataObject(downloadArchiveLinkPath, false, null);
+				if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
+					logger.error("Failed to delete the temporary archive link of path: " + downloadArchiveLinkPath);
+				} else {
+					logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
+				}
+			}
+			throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		return downloadResponse;
@@ -792,10 +829,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * then derives the data management base path, S3 bucket, and other configuration details
 	 * based on the provided HpcDataTransferConfiguration and user-supplied path.
 	 *
-	 * @param s3ArchiveConfiguration The S3 archive configuration used to resolve data
-	 *                               management configuration and target bucket.
-	 * @param path                   The user-provided path for the data object or
-	 *                               collection to be downloaded.
+	 * @param s3ArchiveConfiguration The S3 archive configuration record
+	 * @param path  The user-provided path for the external download request
 	 * @return A map containing the validated external download configuration details with keys:
 	 *         "posixPath", "basePath", and "bucket".
 	 *
