@@ -2713,11 +2713,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					dataTransferDownloadReport.getBytesTransferred());
 
 			if(downloadTask.getExternalArchiveFlag()) {
-				// If this is an external archive download, delete the data object from iRODS after the download is completed/failed.
-				// A check is made before deleting the archive link data object to make sure there are no other external archive download tasks for this path.
-				// If there are other active external archive download tasks for this path, the data object will not be deleted until the last external archive download task is completed/failed.
+				/*
+				 * External Archive Download Cleanup Logic:
+				 *
+				 * For external archive downloads, the data object must be deleted after
+				 * the download completes (whether successful or failed). However, we must
+				 * ensure no other active external archive download tasks exist for the same path
+				 * before performing the deletion.
+				 *
+				 * If multiple download tasks are active for the same path, deletion is deferred
+				 * until the final task completes to prevent data corruption.
+				 */
 				int numberOfActiveExternalDownloadTasksForPath = dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath());
-				logger.info("download task: [taskId={}] - external archive download completed/failed. [count={}]. [path={}]",
+				logger.info("download task: [taskId={}] - number of other active external archive download tasks [count={}] downloading for the same [path={}]",
 				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
