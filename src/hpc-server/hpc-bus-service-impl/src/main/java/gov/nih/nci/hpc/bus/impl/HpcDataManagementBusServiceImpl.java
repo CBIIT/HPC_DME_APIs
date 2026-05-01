@@ -712,7 +712,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
-	 * Downloads a data object from an external archive source (e.g., S3).
+	 * Downloads a data object from an external archive source 
 	 *
 	 * This method handles the complex workflow of downloading files from external storage systems
 	 * by creating temporary archive links in the DME system. The process involves:
@@ -748,7 +748,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String downloadArchiveLinkPath = null;
 
-		String dmePath = "";
 		try {
 			s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(path);
 		} catch (HpcException e) {
