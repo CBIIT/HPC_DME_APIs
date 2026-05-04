@@ -1956,6 +1956,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getDataObjectDownloadTask().getRetryTaskId());
+			downloadStatus.setExternalArchiveFlag(taskStatus.getDataObjectDownloadTask().getExternalArchiveFlag());
 			downloadStatus.setPriority(taskStatus.getDataObjectDownloadTask().getPriority());
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
@@ -1973,6 +1974,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setSize(taskStatus.getResult().getSize());
 			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
+			downloadStatus.setExternalArchiveFlag(taskStatus.getResult().getExternalArchiveFlag());
 			downloadStatus.setRetryable(
 					(taskStatus.getResult().getGoogleDriveDownloadDestination() != null
 							&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken()))
