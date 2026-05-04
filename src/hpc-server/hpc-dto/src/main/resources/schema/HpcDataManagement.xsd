@@ -480,6 +480,7 @@
 				<xsd:element name="retryUserId" type="xsd:string" />
 				<xsd:element name="priority" type="xsd:int" minOccurs="0" />
 				<xsd:element name="retryable" type="xsd:boolean" />
+				<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
