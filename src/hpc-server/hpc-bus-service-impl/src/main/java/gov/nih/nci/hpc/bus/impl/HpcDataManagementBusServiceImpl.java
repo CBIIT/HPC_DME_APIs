@@ -726,8 +726,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *
 	 * The method ensures that permanent archive links don't already exist for the target path
 	 * and manages temporary archive links in a designated external archive link directory.
-	 * If a download fails and a temporary registration was created, it will be automatically
-	 * cleaned up to avoid orphaned entries.
+	 * If the creation of a download task fails and a temporary archive link registration has been created, 
+	 * it will be deleted.
 	 *
 	 * @param path The full external path to the data object to download. This must include
 	 *             the POSIX prefix defined in the S3 archive configuration to allow proper
@@ -743,7 +743,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *         - Path validation fails (empty path after POSIX prefix removal)
 	 *         - Permanent archive link already exists for the derived DME path
 	 *         - Archive link registration fails during temporary link creation
-	 *         - Download task creation or execution fails
+	 *         - Download task creation fails
 	 */
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
@@ -833,18 +833,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
-	 * Validates S3 archive configuration for external downloads and derives configuration details.
+	 * Validates S3 archive configuration for external downloads and extracts configuration details.
 	 * 
-	 * Validates that the S3 archive configuration is properly set up for external storage access,
-	 * then derives the data management base path, S3 bucket, and other configuration details
-	 * based on the provided HpcDataTransferConfiguration and user-supplied path.
+	 * This method performs comprehensive validation of the S3 archive configuration to ensure
+	 * it is properly set up for external storage access. The validations include:
+	 * 
+	 * Upon successful validation, extracts and returns the POSIX path, base path, and S3 bucket
+	 * information needed for external download processing.
 	 *
-	 * @param s3ArchiveConfiguration The S3 archive configuration record
-	 * @param path  The user-provided path for the external download request
+	 * @param s3ArchiveConfiguration The S3 archive configuration record to validate and extract from
+	 * @param path The user-provided path for the external download request (used for error reporting)
 	 * @return A map containing the validated external download configuration details with keys:
-	 *         "posixPath", "basePath", and "bucket".
+	 *         "posixPath" (POSIX path from S3 configuration),
+	 *         "basePath" (base path from data management configuration), and
+	 *         "bucket" (S3 bucket from archive destination).
 	 *
-	 * @throws HpcException on service failure or invalid configuration.
+	 * @throws HpcException If any validation fails, including:
+	 *         - Null or invalid S3 archive configuration
+	 *         - External storage flag not enabled
+	 *         - Missing or empty required configuration properties
+	 *         - Invalid or missing data management configuration
+	 *         - Unconfigured external archive link directory property
 	 */
 	private Map<String, String> validateAndExtractConfigForExternalDownloads(HpcDataTransferConfiguration s3ArchiveConfiguration, String path) throws HpcException {
 		Map<String, String> configDetails = new HashMap<>();
