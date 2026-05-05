@@ -787,7 +787,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					// The temporary archive link does not exist in DME, proceed with the registration
 					HpcFileLocation sourceLocation = new HpcFileLocation();
 					sourceLocation.setFileContainerId(configDetails.get("bucket"));
-					sourceLocation.setFileId(dmePath);
+					sourceLocation.setFileId(dmePath.substring(1));
 					HpcUploadSource uploadSource = new HpcUploadSource();
 					uploadSource.setSourceLocation(sourceLocation);
 					HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
