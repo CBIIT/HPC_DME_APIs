@@ -2730,11 +2730,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
-					HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
-					if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
-						logger.error("Failed to delete the external archive link for path: " + downloadTask.getPath());
-					} else {
-						logger.info("download task: [taskId={}] Successfully deleted external archive link data object for path: {}", downloadTask.getId(), downloadTask.getPath());
+					try{
+						HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+						if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
+							logger.error("Failed to delete the external archive link for path: " + downloadTask.getPath());
+						} else {
+							logger.info("download task: [taskId={}] Successfully deleted external archive link data object for path: {}", downloadTask.getId(), downloadTask.getPath());
+						}
+					} catch (HpcException e) {
+						logger.error("Failed to delete data object after download from external archive: " + e.getMessage() + " for path: " + downloadTask.getPath(), e);
 					}
 				}
 			}
