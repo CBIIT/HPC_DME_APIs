@@ -94,6 +94,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -2713,18 +2714,33 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					dataTransferDownloadReport.getBytesTransferred());
 
 			if(downloadTask.getExternalArchiveFlag()) {
-				// If this is an external archive download, delete the data object from iRODS after the download is completed/failed.
-				// Also a check is made before deleting the archive link data object to make sure there are no other external archive download tasks for this path.
-				// This is to avoid deleting the data object while there are still active external archive download tasks for this data object.
-				int numberOfActiveDownloadTasksForPath = dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath());
-				logger.info("ticket 2168: download task: [count={}] - external archive download completed/failed. Deleting data object from iRODS: {}",
-						numberOfActiveDownloadTasksForPath, downloadTask.getPath());
-				logger.info("ticket 2168: download task: [taskId={}] - external archive download completed/failed. Deleting data object from iRODS: {}",
-				downloadTask.getId(), downloadTask.getPath());
 
-				if(numberOfActiveDownloadTasksForPath == 0) {
-					logger.info(" ticket 2168: deleting data object");
-					dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+				/*
+				 * External Archive Download Cleanup Logic:
+				 *
+				 * For external archive downloads, the data object must be deleted after
+				 * the download completes (whether successful or failed). However, we must
+				 * ensure no other active external archive download tasks exist for the same path
+				 * before performing the deletion.
+				 *
+				 * If multiple download tasks are active for the same path, deletion is deferred
+				 * until the final task completes to prevent data corruption.
+				 */
+				int numberOfActiveExternalDownloadTasksForPath = dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath());
+				logger.info("download task: [taskId={}] - number of other active external archive download tasks [count={}] downloading for the same [path={}]",
+				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
+
+				if(numberOfActiveExternalDownloadTasksForPath == 0) {
+					try{
+						HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+						if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
+							logger.error("Failed to delete the external archive link for path: " + downloadTask.getPath());
+						} else {
+							logger.info("download task: [taskId={}] Successfully deleted external archive link data object for path: {}", downloadTask.getId(), downloadTask.getPath());
+						}
+					} catch (HpcException e) {
+						logger.error("Failed to delete data object after download from external archive: " + e.getMessage() + " for path: " + downloadTask.getPath(), e);
+					}
 				}
 			}
 
