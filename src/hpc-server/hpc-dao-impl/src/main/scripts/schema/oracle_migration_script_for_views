@@ -1,6 +1,6 @@
 create view R_BROWSE_META_MAIN as
 SELECT data.data_id                                                                     AS id,
-       (cast(coll.coll_name as varchar2(2700)) || cast('/' as varchar2(1))) || cast(data.data_name as varchar2(2700)) AS path,
+       coll.coll_name || '/' || data.data_name                                          AS path,
        cast(meta_size.meta_attr_value as number(19))                                    AS data_size,
        to_timestamp(meta_uploaded.meta_attr_value,'MM-DD-YYYY HH24:MI:SS') AS uploaded,
        case when meta_softlink.META_ATTR_VALUE is not null then 1 else 0 end as softlink
@@ -18,17 +18,22 @@ FROM r_data_main data
     JOIN r_meta_main meta_softlink ON meta_softlink.meta_id = map_softlink.meta_id AND
                                   meta_softlink.meta_attr_name = 'link_source_path')
                    ON map_softlink.object_id = data.data_id
-UNION
-SELECT coll.coll_id                                                             AS id,
-       coll.coll_name                                                           AS path,
-       cast(NULL as number(19))                                                 AS data_size,
-       NEW_TIME(to_timestamp('1970-01-01', 'YYYY-MM-DD') + numtodsinterval(coll.modify_ts, 'SECOND'), 'GMT', 'EST') AS uploaded,
-       case when meta_softlink.META_ATTR_VALUE is not null then 1 else 0 end as softlink
+UNION ALL
+SELECT coll.coll_id                                                                                                 AS id,
+       coll.coll_name                                                                                               AS path,
+       sum(coll_size.TOTALSIZE)                                                                                     AS data_size,
+       NEW_TIME(to_timestamp('1970-01-01', 'YYYY-MM-DD') + numtodsinterval(coll.modify_ts, 'SECOND'), 'GMT',
+                'EST')                                                                                              AS uploaded,
+       case when meta_softlink.META_ATTR_VALUE is not null then 1 else 0 end                                        as softlink
 FROM r_coll_main coll
-        LEFT JOIN (r_objt_metamap map_softlink
+         LEFT JOIN (r_objt_metamap map_softlink
     JOIN r_meta_main meta_softlink ON meta_softlink.meta_id = map_softlink.meta_id AND
-                                  meta_softlink.meta_attr_name = 'link_source_path')
-                   ON map_softlink.object_id = coll.coll_id;
+                                      meta_softlink.meta_attr_name = 'link_source_path')
+                   ON map_softlink.object_id = coll.coll_id
+         LEFT JOIN r_report_collection_size coll_size ON coll_size.COLL_NAME = coll.COLL_NAME
+group by coll.coll_id, coll.coll_name,
+         NEW_TIME(to_timestamp('1970-01-01', 'YYYY-MM-DD') + numtodsinterval(coll.modify_ts, 'SECOND'), 'GMT', 'EST'),
+         case when meta_softlink.META_ATTR_VALUE is not null then 1 else 0 end;
                    
                    
 create or replace view irods.hpc_data_hierarchy_meta_main_v as
