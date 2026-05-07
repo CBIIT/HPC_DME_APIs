@@ -420,6 +420,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		retry = false;
 	}
 	
+	model.addAttribute("downloadSize", MiscUtil.addHumanReadableSize(Long.toString(downloadTask.getDataSize()), true));
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     return "dataobjectdownloadtask";
   }
@@ -482,6 +483,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+    model.addAttribute("downloadSize", MiscUtil.addHumanReadableSize(Long.toString(downloadTask.getDataSize()), true));
     model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
     model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
     return "dataobjectsdownloadtask";
@@ -550,6 +552,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+    model.addAttribute("downloadSize", MiscUtil.addHumanReadableSize(Long.toString(downloadTask.getDataSize()), true));
     model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
     model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
     return "dataobjectsdownloadtask";
@@ -601,6 +604,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
 	    model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
 	    model.addAttribute("hpcOrigDataObjectsDownloadStatusDTOs", previousTasks);
+	    model.addAttribute("downloadSize", MiscUtil.addHumanReadableSize(Long.toString(downloadTask.getDataSize()), true));
 	    model.addAttribute("hpcDataObjectsDownloadBytesTransferred", MiscUtil.addHumanReadableSize(Long.toString(completedItemsSize), true));
 	    model.addAttribute("pendingItemsCount", totalItemsCount - completedItemsCount);
 	    return "dataobjectsdownloadtask";
