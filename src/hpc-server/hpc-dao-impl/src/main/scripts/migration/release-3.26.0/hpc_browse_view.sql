@@ -12,8 +12,7 @@
 -- @version $Id$
 --
 
-DROP VIEW IRODS.R_BROWSE_META_MAIN;
-create view IRODS.R_BROWSE_META_MAIN as
+create or replace view IRODS.R_BROWSE_META_MAIN as
 SELECT data.data_id                                                                     AS id,
        coll.coll_name || '/' || data.data_name                                          AS path,
        cast(meta_size.meta_attr_value as number(19))                                    AS data_size,
