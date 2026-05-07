@@ -207,7 +207,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_ALL_COLLECTION_DOWNLOAD_REQUESTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, null as COMPLETED, "
 			+ "null as RESULT, null as MESSAGE, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, STATUS, TOTAL_BYTES_TRANSFERRED, DATA_SIZE from HPC_COLLECTION_DOWNLOAD_TASK order by CREATED";
 
-	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, MESSAGE, DATA_SIZE "
+	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS, DESTINATION_TYPE, RETRY_USER_ID, EXTERNAL_ARCHIVE_FLAG, MESSAGE, DATA_SIZE "
 			+ "from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and (TASK.DOC = ? or TASK.USER_ID = ?) and "
 			+ "COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
@@ -226,7 +226,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "(DATA_TRANSFER_STATUS = 'IN_PROGRESS' OR DATA_TRANSFER_TYPE = 'GLOBUS') and DESTINATION_TYPE = 'GLOBUS' and USER_ID = ? and PATH = ? ";
 
 	private static final String GET_EXTERNAL_DATA_OBJECT_DOWNLOAD_TASKS_COUNT_BY_PATH_SQL = "select count(*) from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "EXTERNAL_ARCHIVE_FLAG = 1 and PATH = ?";
+			+ "EXTERNAL_ARCHIVE_FLAG = '1' and PATH = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? and "
 			+ "STATUS = ? and IN_PROCESS = ?";
@@ -678,7 +678,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		if (rs.getObject("RETRY_USER_ID") != null) {
 			userDownloadRequest.setRetryUserId(rs.getString("RETRY_USER_ID"));
 		}
-		if (rs.getObject("EXTERNAL_ARCHIVE_FLAG") != null) {
+		if (hasColumnWithValue(rs, "EXTERNAL_ARCHIVE_FLAG") && rs.getObject("EXTERNAL_ARCHIVE_FLAG") != null) {
 			userDownloadRequest.setExternalArchiveFlag(rs.getBoolean("EXTERNAL_ARCHIVE_FLAG"));
 		}
 		if (rs.getObject("DATA_SIZE") != null) {
