@@ -2738,7 +2738,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							logger.info("download task: [taskId={}] Successfully deleted external archive link data object for path: {}", downloadTask.getId(), downloadTask.getPath());
 						}
 					} catch (HpcException e) {
-						logger.error("Failed to delete data object after download from external archive: " + e.getMessage() + " for path: " + downloadTask.getPath(), e);
+						logger.error("Failed to delete data object after download from external archive for path: " + downloadTask.getPath() + ". Error: " + e.getMessage(), e);
+						notificationService.sendNotification(new HpcException(
+                        "Failure to delete data object after download from external archive for path " + downloadTask.getPath() + ". Error: " + e.getMessage(),
+                                HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
 					}
 				}
 			}
