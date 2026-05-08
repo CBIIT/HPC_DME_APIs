@@ -2732,12 +2732,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
 					try{
+						int x = 0;
+						if(x==0) {
+							throw new HpcException("Simulated failure to delete data object after download from external archive for path: " + downloadTask.getPath(),
+									HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS);
+						}
 						HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
-						int x =0;
-					if (x==0) {
-						throw new HpcException("Simulated exception for testing error handling during external archive download cleanup logic.",
-								HpcErrorType.INVALID_REQUEST_INPUT);
-					}						
 					if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
 							logger.error("Failed to delete the external archive link for path: " + downloadTask.getPath());
 						} else {
@@ -2745,7 +2745,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						}
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive: " + e.getMessage() + " for path: " + downloadTask.getPath(), e);
-						notificationService.sendNotification(e);
+						notificationService.sendNotification(new HpcException(
+						"Simulated failure to delete data object after download from external archive for path: " + downloadTask.getPath(),
+								HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+									
+
 					}
 				}
 			}

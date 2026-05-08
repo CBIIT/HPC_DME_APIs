@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * HPC Notification Application Service Implementation.
@@ -367,6 +369,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
 
   @Override
   public void sendNotification(HpcException exception, boolean notifyStorageAdmins) {
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    logger.info("An exception occurred: {}", gson.toJson(exception));
     if (exception.getIntegratedSystem() != null) {
       logger.info("Sending a notification to system admin: {}", exception.getMessage());
 
