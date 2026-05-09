@@ -729,7 +729,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * If the creation of a download task fails and a temporary archive link registration has been created, 
 	 * it will be deleted.
 	 *
-	 * @param path The full external path to the data object to download. This must include
+	 * @param userProvidedPath The full external path to the data object to download. This must include
 	 *             the POSIX prefix defined in the S3 archive configuration to allow proper
 	 *             path derivation and validation.
 	 * @param downloadRequest The download request containing destination information and download options.
@@ -746,7 +746,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *         - Download task creation fails
 	 */
 	@Override
-	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String userProvidedPath, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		Map<String, String> configDetails = null;
@@ -756,21 +756,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Find the appropriate S3 data transfer configuration for the external path
 		try {
-			s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(path);
+			s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(userProvidedPath);
 		} catch (HpcException e) {
-			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
-			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+			logger.error("Invalid S3 configuration for external download for path: " + userProvidedPath + ". " + e.getMessage(), e);
+			throw new HpcException("Invalid S3 configuration for external download for path: " + userProvidedPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		// Extract and validate S3 archive configuration details for external download
 		try {
-			configDetails = validateAndExtractConfigForExternalDownloads(s3ArchiveConfiguration, path);
+			configDetails = validateAndExtractConfigForExternalDownloads(s3ArchiveConfiguration, userProvidedPath);
 		} catch (HpcException e) {
 			logger.error("Failed validation of Configuration record values for external download: " + e.getMessage(), e);
 			throw new HpcException("Failed validation of Configuration record values for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		// Validate that no permanent archive link already exists for the derived DME path
 		try {
-			dmePath = validateNoPermanentArchiveLinkExists(path, configDetails);
+			dmePath = buildAndValidatePermanentArchiveLink(userProvidedPath, configDetails);
 		} catch (HpcException e) {
 			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
 			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -817,7 +817,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadRequest.setExternalArchiveFlag(true);
 			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest);
 		} catch (HpcException e) {
-			logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+			logger.error("Failed to create download task for external download path: " + userProvidedPath + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
 			if(registrationCreated) {
 				HpcDataObjectDeleteResponseDTO deleteResponse = deleteDataObject(downloadArchiveLinkPath, false, null);
 				if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
@@ -826,7 +826,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
 				}
 			}
-			throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Failed to create download task for external download for path: " + userProvidedPath + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		return downloadResponse;
@@ -921,7 +921,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * 3. Validates that no permanent archive link already exists for the derived DME path
 	 * 4. Returns the derived DME path for use in external download operations
 	 *
-	 * @param path          The full user-provided path for external download validation.
+	 * @param userProvidedPath          The full user-provided path for external download validation.
 	 * @param configDetails A map containing configuration details from S3 archive configuration,
 	 *                      including "posixPath" and "basePath" keys. This map is read-only
 	 *                      and will not be modified.
@@ -930,12 +930,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                      - Empty path after POSIX prefix removal
 	 *                      - Permanent archive link already exists for the derived path
 	 */
-	private String validateNoPermanentArchiveLinkExists(String path, Map<String, String> configDetails) throws HpcException {
+	private String buildAndValidatePermanentArchiveLink(String userProvidedPath, Map<String, String> configDetails) throws HpcException {
 		String posixPath = configDetails.get("posixPath");
-		String pathWithPosixPathRemoved = path.substring(posixPath.length());
+		String pathWithPosixPathRemoved = userProvidedPath.substring(posixPath.length());
 		if(StringUtils.isEmpty(pathWithPosixPathRemoved)) {
-			logger.warn("Path after POSIX prefix is empty for path: " + path);
-			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			logger.warn("Path after POSIX prefix is empty for path: " + userProvidedPath);
+			throw new HpcException("Path after POSIX prefix is empty for path: " + userProvidedPath, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		String dmePath = configDetails.get("basePath") +  pathWithPosixPathRemoved;
 
