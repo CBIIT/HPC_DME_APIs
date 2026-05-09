@@ -195,6 +195,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	 */
 	private void createDownloadTask(HpcDataObjectDownloadRequest downloadRequest) throws HpcException {
 
+		logger.info("Creating download task for streaming download, path: {}, userId: {}, externalArchiveFlag: {}",
+				downloadRequest.getPath(), downloadRequest.getUserId(), downloadRequest.getExternalArchiveFlag());
+
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 		downloadTask.setDownloadFilePath(null);
 		downloadTask.setUserId(downloadRequest.getUserId());
@@ -215,6 +218,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setFirstHopRetried(false);
 		downloadTask.setRetryTaskId(downloadRequest.getRetryTaskId());
 		downloadTask.setRetryUserId(downloadRequest.getRetryUserId());
+		downloadTask.setExternalArchiveFlag(downloadRequest.getExternalArchiveFlag());
 
 		if (downloadTask.getS3DownloadDestination() != null) {
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
