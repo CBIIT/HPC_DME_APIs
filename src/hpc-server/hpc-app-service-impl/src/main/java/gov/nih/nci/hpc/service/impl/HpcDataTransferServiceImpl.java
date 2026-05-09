@@ -577,7 +577,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
+			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchiveFlag)
 			throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
@@ -608,6 +608,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setCompletionEvent(completionEvent);
 		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
+		downloadRequest.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Create a download response.
 		HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
@@ -1041,6 +1042,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return dataDownloadDAO.getDataObjectDownloadTaskResultByCollectionDownloadTaskId(taskId);
 	}
 
+	// # 2168
+	@Override
+	public int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException {
+		return dataDownloadDAO.getDownloadTasksCountForExternalArchiveByPath(path);
+	}
+
 	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
@@ -1234,6 +1241,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setFirstHopRetried(downloadTask.getFirstHopRetried());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
+		taskResult.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
@@ -4401,6 +4409,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setCreated(Calendar.getInstance());
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
+			downloadTask.setExternalArchiveFlag(firstHopDownloadRequest.getExternalArchiveFlag());
 			downloadTask.setFirstHopRetried(false);
 			downloadTask.setS3DownloadTaskServerId(
 					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
