@@ -31,6 +31,9 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 
 /**
  * A data transfer listener for async downloads. The streaming is done from the
@@ -66,6 +69,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -282,6 +286,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		}
 
 		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
+		logger.info("2169: after update download task: " + gson.toJson(downloadTask));
 	}
 
 	/**
@@ -292,6 +297,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 	 * @param bytesTransferred Total bytes transfered in this download task.
 	 */
 	private void completeDownloadTask(HpcDownloadResult result, String message, long bytesTransferred) {
+		logger.info("2169: streaming download task: {} - transfer completed with [transfer-type={}, destination-type={}]",
+				downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());	
 		try {
 			if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
 				// The task was cancelled / removed from the DB. Do some cleanup.
