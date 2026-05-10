@@ -630,6 +630,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void startS3DataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are received and type
 		// is S3.
+		logger.info("2169: Starting S3 data object download tasks");
 		processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3);
 	}
 
@@ -1519,6 +1520,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 */
 	private void processDataObjectDownloadTasks(HpcDataTransferDownloadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType) throws HpcException {
+			logger.info("2169: Starting to process data object download tasks with status: {} and transfer type: {}", dataTransferStatus, dataTransferType);
+
 		// Iterate through all the data object download tasks that are in-progress.
 		List<HpcDataObjectDownloadTask> downloadTasks = null;
 		Date runTimestamp = new Date();
@@ -2713,7 +2716,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					dataTransferDownloadReport.getBytesTransferred());
 
+			logger.info("2169:  external archive flag = " + downloadTask.getExternalArchiveFlag() + " for path: " + downloadTask.getPath() + " after download completion");
+
 			if(downloadTask.getExternalArchiveFlag()) {
+					logger.info("2169: deleting Archive link data object for path: " + downloadTask.getPath() + " after external archive download completion");
 
 				/*
 				 * External Archive Download Cleanup Logic:
@@ -2731,13 +2737,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
-					try{
-						int x = 0;
-						if(x==0) {
-							throw new HpcException("Simulated failure to delete data object after download from external archive for path: " + downloadTask.getPath(),
-									HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS);
-						}
-						HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
+				try{
+					HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
 					if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
 							logger.error("Failed to delete the external archive link for path: " + downloadTask.getPath());
 						} else {
