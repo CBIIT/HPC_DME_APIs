@@ -770,7 +770,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		// Validate that no permanent archive link already exists for the derived DME path
 		try {
-			dmePath = buildAndValidatePermanentArchiveLink(userProvidedPath, configDetails);
+			dmePath = buildPermanentArchiveLinkPath(userProvidedPath, configDetails);
+			if(permanentArchiveLinkExists(dmePath)) {
+				throw new HpcException("Permanent or default Archive Link for " + dmePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		} catch (HpcException e) {
 			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
 			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -781,10 +784,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean registrationCreated = false;
 		// Registration Step: Build details for Registering the Archive link for the file in the external archive
 		try {
-				// Check if the temporary archive link already exists in DME, if not create a registration for it
-				HpcDataObject downloadArchiveLink = dataManagementService.getDataObject(downloadArchiveLinkPath);
-				if(downloadArchiveLink == null) {
-					// The temporary archive link does not exist in DME, proceed with the registration
+				// Check if the temporary archive link does not exist before creating a registration. If it exists, the archive link will be reused
+				if(temporaryArchiveLinkDoesNotExists(downloadArchiveLinkPath)) {
+					// Build registration request
 					HpcFileLocation sourceLocation = new HpcFileLocation();
 					sourceLocation.setFileContainerId(configDetails.get("bucket"));
 					sourceLocation.setFileId(dmePath.substring(1));
@@ -818,6 +820,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest);
 		} catch (HpcException e) {
 			logger.error("Failed to create download task for external download path: " + userProvidedPath + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+			// If download task creation fails and a registration was created for the temporary archive link, delete the registration to clean up
 			if(registrationCreated) {
 				HpcDataObjectDeleteResponseDTO deleteResponse = deleteDataObject(downloadArchiveLinkPath, false, null);
 				if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
@@ -832,30 +835,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return downloadResponse;
 	}
 
+	private boolean temporaryArchiveLinkDoesNotExists (String path) throws HpcException {
+		return dataManagementService.getDataObject(path) == null;
+	}
+
 	/**
 	 * Validates S3 archive configuration for external downloads and extracts configuration details.
-	 * 
-	 * This method performs comprehensive validation of the S3 archive configuration to ensure
-	 * it is properly set up for external storage access. The validations include:
 	 * 
 	 * Upon successful validation, extracts and returns the POSIX path, base path, and S3 bucket
 	 * information needed for external download processing.
 	 *
 	 * @param s3ArchiveConfiguration The S3 archive configuration record to validate and extract from
-	 * @param path The user-provided path for the external download request (used for error reporting)
+	 * @param userProvidedPath The user-provided path for the external download request (used for error reporting)
 	 * @return A map containing the validated external download configuration details with keys:
 	 *         "posixPath" (POSIX path from S3 configuration),
 	 *         "basePath" (base path from data management configuration), and
 	 *         "bucket" (S3 bucket from archive destination).
 	 *
-	 * @throws HpcException If any validation fails, including:
-	 *         - Null or invalid S3 archive configuration
-	 *         - External storage flag not enabled
-	 *         - Missing or empty required configuration properties
-	 *         - Invalid or missing data management configuration
-	 *         - Unconfigured external archive link directory property
+	 * @throws HpcException If any validation fails
 	 */
-	private Map<String, String> validateAndExtractConfigForExternalDownloads(HpcDataTransferConfiguration s3ArchiveConfiguration, String path) throws HpcException {
+	private Map<String, String> validateAndExtractConfigForExternalDownloads(HpcDataTransferConfiguration s3ArchiveConfiguration, String userProvidedPath) throws HpcException {
 		Map<String, String> configDetails = new HashMap<>();
 		try {
 			// Get the S3 archive configuration
@@ -893,12 +892,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				configDetails.put("bucket", bucket);
 
 			} else {
-				logger.warn("S3 archive configuration not found for path: " + path);
-				throw new HpcException("S3 archive configuration not found for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+				logger.warn("S3 archive configuration not found for path: " + userProvidedPath);
+				throw new HpcException("S3 archive configuration not found for path: " + userProvidedPath, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		} catch (HpcException e) {
 			logger.error(
-					"Failed to retrieve S3 configuration. Path: " + path + ", configuration ID: "
+					"Failed to retrieve S3 configuration. Path: " + userProvidedPath + ", configuration ID: "
 							+ (s3ArchiveConfiguration != null ? s3ArchiveConfiguration.getId() : "null"),
 					e);
 			throw e;
@@ -913,39 +912,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
-	 * Validates that no permanent archive link exists for the derived DME path.
+	 * Builds the derived DME path for external download processing.
 	 *
 	 * This method performs the following operations:
 	 * 1. Removes the POSIX prefix from the provided path to get the relative path
 	 * 2. Constructs the DME path by combining the base path with the relative path
-	 * 3. Validates that no permanent archive link already exists for the derived DME path
-	 * 4. Returns the derived DME path for use in external download operations
+	 * 3. Returns the derived DME path for use in external download operations
 	 *
-	 * @param userProvidedPath          The full user-provided path for external download validation.
-	 * @param configDetails A map containing configuration details from S3 archive configuration,
-	 *                      including "posixPath" and "basePath" keys. This map is read-only
-	 *                      and will not be modified.
+	 * @param userProvidedPath The full user-provided path for external download processing.
+	 * @param configDetails A map containing configuration details. It is readonly.
 	 * @return The derived DME path constructed from the base path and relative path.
-	 * @throws HpcException If validation fails due to:
-	 *                      - Empty path after POSIX prefix removal
-	 *                      - Permanent archive link already exists for the derived path
+	 * @throws HpcException If validation fails due to empty path after POSIX prefix removal.
 	 */
-	private String buildAndValidatePermanentArchiveLink(String userProvidedPath, Map<String, String> configDetails) throws HpcException {
+	private String buildPermanentArchiveLinkPath(String userProvidedPath, Map<String, String> configDetails) throws HpcException {
 		String posixPath = configDetails.get("posixPath");
 		String pathWithPosixPathRemoved = userProvidedPath.substring(posixPath.length());
 		if(StringUtils.isEmpty(pathWithPosixPathRemoved)) {
 			logger.warn("Path after POSIX prefix is empty for path: " + userProvidedPath);
 			throw new HpcException("Path after POSIX prefix is empty for path: " + userProvidedPath, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		String dmePath = configDetails.get("basePath") +  pathWithPosixPathRemoved;
+		return configDetails.get("basePath") +  pathWithPosixPathRemoved;
+	}
 
-		// Validate that the default or permanent file path for the external archive link does not already exist. If it does, then the download request will be rejected.
-		HpcDataObject permanentArchiveLink = dataManagementService.getDataObject(dmePath);
-		if(permanentArchiveLink != null) {
-			throw new HpcException("Permanent or default Archive Link for " + dmePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		return dmePath;
+	private boolean permanentArchiveLinkExists(String path) throws HpcException {
+		return dataManagementService.getDataObject(path) != null;
 	}
 
 	@Override
