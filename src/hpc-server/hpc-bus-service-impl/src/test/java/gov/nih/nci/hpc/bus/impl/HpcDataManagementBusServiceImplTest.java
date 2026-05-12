@@ -502,7 +502,7 @@ class HpcDataManagementBusServiceImplTest {
         field.set(service, "/tmp/ext-links");
 
         var s3Config = mock(gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration.class);
-        when(dataManagementService.findDataTransferConfigurationForExternalPath(anyString())).thenReturn(s3Config);
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(anyString())).thenReturn(s3Config);
         when(s3Config.getExternalStorage()).thenReturn(true);
         when(s3Config.getPosixPath()).thenReturn("/mnt/VAST");
         when(s3Config.getDataManagementConfigurationId()).thenReturn("dm-config-id");

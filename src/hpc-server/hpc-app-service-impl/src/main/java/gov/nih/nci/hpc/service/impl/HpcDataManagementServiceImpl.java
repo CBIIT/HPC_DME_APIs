@@ -1210,7 +1210,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	 *                      or if the input path validation fails.
 	 */
 	@Override
-	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path) throws HpcException  {
+	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path) throws HpcException  {
 		HpcDataTransferConfiguration dataTransferConfiguration = null;
 		try{
 			if (StringUtils.isEmpty(path)) {
