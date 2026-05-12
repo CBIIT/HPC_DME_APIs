@@ -588,7 +588,7 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 
-	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path)  throws HpcException;
+	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path)  throws HpcException;
 
 	/**
 	 * Get data management configuration ID by base path.
