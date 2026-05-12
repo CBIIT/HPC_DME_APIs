@@ -756,7 +756,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Find the appropriate S3 data transfer configuration for the external path
 		try {
-			s3ArchiveConfiguration = dataManagementService.findDataTransferConfigurationForExternalPath(userProvidedPath);
+			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(userProvidedPath);
 		} catch (HpcException e) {
 			logger.error("Invalid S3 configuration for external download for path: " + userProvidedPath + ". " + e.getMessage(), e);
 			throw new HpcException("Invalid S3 configuration for external download for path: " + userProvidedPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
