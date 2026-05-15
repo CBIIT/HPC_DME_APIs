@@ -2713,39 +2713,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					dataTransferDownloadReport.getBytesTransferred());
 
-			if(downloadTask.getExternalArchiveFlag()) {
-				/*
-				 * External Archive Download Cleanup Logic:
-				 *
-				 * For external archive downloads, the data object must be deleted after
-				 * the download completes (whether successful or failed). However, we must
-				 * ensure no other active external archive download tasks exist for the same path
-				 * before performing the deletion.
-				 *
-				 * If multiple download tasks are active for the same path, deletion is deferred
-				 * until the final task completes to prevent data corruption.
-				 */
-				int numberOfActiveExternalDownloadTasksForPath = dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath());
-				logger.info("download task: [taskId={}] - number of other active external archive download tasks [count={}] downloading for the same [path={}]",
-				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
-
-				if(numberOfActiveExternalDownloadTasksForPath == 0) {
-					try{
-						HpcDataObjectDeleteResponseDTO deleteResponse = dataManagementBusService.deleteDataObject(downloadTask.getPath(), false, null);
-						if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
-							logger.error("Failed to delete the external archive link for path: " + downloadTask.getPath());
-						} else {
-							logger.info("download task: [taskId={}] Successfully deleted external archive link data object for path: {}", downloadTask.getId(), downloadTask.getPath());
-						}
-					} catch (HpcException e) {
-						logger.error("Failed to delete data object after download from external archive for path: " + downloadTask.getPath() + ". Error: " + e.getMessage(), e);
-						notificationService.sendNotification(new HpcException(
-                        "Failure to delete data object after download from external archive for path " + downloadTask.getPath() + ". Error: " + e.getMessage(),
-                                HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
-					}
-				}
-			}
-
 			// Send a download completion event (if requested to).
 			if (downloadTask.getCompletionEvent()) {
 				addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
