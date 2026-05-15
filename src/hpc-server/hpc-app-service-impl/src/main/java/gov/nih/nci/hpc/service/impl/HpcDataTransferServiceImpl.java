@@ -119,7 +119,8 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 /**
  * HPC Data Transfer Service Implementation.
  *
@@ -146,6 +147,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// Box 'My Box' ID.
 	private static final String MY_BOX_ID = "MyBox";
+
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -795,6 +798,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		logger.info("in deleteDataObjectMetadata for fileLocation: {}, dataTransferType: {}, configurationId: {}, s3ArchiveConfigurationId: {}",
+				gson.toJson(fileLocation), dataTransferType, configurationId, s3ArchiveConfigurationId);
 		// Input validation.
 		if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1143,6 +1148,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		boolean archiveLinkDeletionSuccess = false;
 		try {
 			// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
+			logger.info("Clearing S3 metadata for data object at path: {} archiveLocation: {}", path, gson.toJson(archiveLocation));
 			HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(archiveLocation,
 							transferType,
 							configurationId,
@@ -1177,7 +1183,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				 * until the final task completes to prevent data corruption.
 				 */
 				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath());
-				logger.info("download task: [taskId={}] - number of other active external archive download tasks [count={}] downloading for the same [path={}]",
+				logger.info("external download task: [taskId={}] - number of other active external archive download tasks [count={}] downloading for the same [path={}]",
 				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
