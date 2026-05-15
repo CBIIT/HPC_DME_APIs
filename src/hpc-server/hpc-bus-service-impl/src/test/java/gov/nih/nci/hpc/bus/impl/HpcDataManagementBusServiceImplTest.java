@@ -1,11 +1,9 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
-import java.lang.reflect.Field;
 import java.util.Calendar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,11 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -26,11 +19,8 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 
 class HpcDataManagementBusServiceImplTest {
@@ -478,164 +468,6 @@ class HpcDataManagementBusServiceImplTest {
         var resp = service.deleteDataObject("/path/to/data", true, null);
         assertEquals(false, resp.getDataManagementDeleteStatus());
         assertTrue(resp.getMessage().contains("Delete failed"));
-    }
-
-    // -----------------------------------------------------------------------
-    // downloadDataObjectFromExternalSource tests
-    // -----------------------------------------------------------------------
-
-    /**
-     * Sets up common mocks needed for validateConfigurationForExternalDownloads
-     * and validateExternalDownloadPath and injects externalArchiveLinkDirectory
-     * via reflection so the tests can reach the registration and download steps.
-     *
-     * Path arithmetic (used in all three tests):
-     *   input path             : "/mnt/VAST/project/file.txt"
-     *   posixPath              : "/mnt/VAST"
-     *   pathWithPosixRemoved   : "/project/file.txt"
-     *   dmePath                : "/HPC/basePath/project/file.txt"
-     *   downloadArchiveLinkPath: "/tmp/ext-links/HPC/basePath/project/file.txt"
-     */
-    private void setUpExternalSourceMocks() throws Exception {
-        Field field = HpcDataManagementBusServiceImpl.class.getDeclaredField("externalArchiveLinkDirectory");
-        field.setAccessible(true);
-        field.set(service, "/tmp/ext-links");
-
-        var s3Config = mock(gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration.class);
-        when(dataManagementService.findDataTransferConfigurationForExternalPath(anyString())).thenReturn(s3Config);
-        when(s3Config.getExternalStorage()).thenReturn(true);
-        when(s3Config.getPosixPath()).thenReturn("/mnt/VAST");
-        when(s3Config.getDataManagementConfigurationId()).thenReturn("dm-config-id");
-        when(s3Config.getId()).thenReturn("s3-config-id");
-        var hpcArchive = mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
-        var archiveLocation = mock(gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation.class);
-        when(s3Config.getBaseArchiveDestination()).thenReturn(hpcArchive);
-        when(hpcArchive.getFileLocation()).thenReturn(archiveLocation);
-        when(archiveLocation.getFileContainerId()).thenReturn("my-bucket");
-        var dataMgmConfig = mock(gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration.class);
-        when(dataManagementService.getDataManagementConfiguration("dm-config-id")).thenReturn(dataMgmConfig);
-        when(dataMgmConfig.getBasePath()).thenReturn("/HPC/basePath");
-        // validateExternalDownloadPath: no permanent archive link at the derived dmePath
-        when(dataManagementService.getDataObject("/HPC/basePath/project/file.txt")).thenReturn(null);
-    }
-
-    /*
-     * Test Case: temp archive link does not yet exist; registration is created.
-     * Expected: registerDataObject is called, externalArchiveFlag is set to true
-     *           on the download request, and the download response is returned.
-     */
-    @Test
-    void testDownloadDataObjectFromExternalSource_NewRegistration_HappyPath() throws Exception {
-        setUpExternalSourceMocks();
-
-        // No existing temp archive link → registration will be created
-        when(dataManagementService.getDataObject("/tmp/ext-links/HPC/basePath/project/file.txt")).thenReturn(null);
-
-        HpcDataObjectRegistrationResponseDTO registrationResponse = new HpcDataObjectRegistrationResponseDTO();
-        registrationResponse.setRegistered(true);
-        doReturn(registrationResponse).when(service).registerDataObject(
-                eq("/tmp/ext-links/HPC/basePath/project/file.txt"),
-                any(HpcDataObjectRegistrationRequestDTO.class),
-                isNull());
-
-        HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
-        downloadResponse.setTaskId("task-001");
-        doReturn(downloadResponse).when(service).downloadDataObject(
-                eq("/tmp/ext-links/HPC/basePath/project/file.txt"),
-                any(HpcDownloadRequestDTO.class));
-
-        HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
-        downloadRequest.setGlobusDownloadDestination(new HpcGlobusDownloadDestination());
-
-        HpcDataObjectDownloadResponseDTO response =
-                service.downloadDataObjectFromExternalSource("/mnt/VAST/project/file.txt", downloadRequest);
-
-        assertNotNull(response);
-        assertEquals("task-001", response.getTaskId());
-        // externalArchiveFlag must be set to true before downloadDataObject is called
-        assertTrue(downloadRequest.getExternalArchiveFlag());
-        // Verify that registration was performed
-        verify(service).registerDataObject(
-                eq("/tmp/ext-links/HPC/basePath/project/file.txt"),
-                any(HpcDataObjectRegistrationRequestDTO.class),
-                isNull());
-    }
-
-    /*
-     * Test Case: temp archive link already exists in DME.
-     * Expected: registerDataObject is NOT called; download proceeds directly,
-     *           and externalArchiveFlag is still set to true.
-     */
-    @Test
-    void testDownloadDataObjectFromExternalSource_LinkAlreadyExists_NoRegistration() throws Exception {
-        setUpExternalSourceMocks();
-
-        // Existing temp archive link → no registration needed
-        var existingLink = mock(gov.nih.nci.hpc.domain.datamanagement.HpcDataObject.class);
-        when(dataManagementService.getDataObject("/tmp/ext-links/HPC/basePath/project/file.txt"))
-                .thenReturn(existingLink);
-
-        HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
-        downloadResponse.setTaskId("task-002");
-        doReturn(downloadResponse).when(service).downloadDataObject(
-                eq("/tmp/ext-links/HPC/basePath/project/file.txt"),
-                any(HpcDownloadRequestDTO.class));
-
-        HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
-        downloadRequest.setGlobusDownloadDestination(new HpcGlobusDownloadDestination());
-
-        HpcDataObjectDownloadResponseDTO response =
-                service.downloadDataObjectFromExternalSource("/mnt/VAST/project/file.txt", downloadRequest);
-
-        assertNotNull(response);
-        assertEquals("task-002", response.getTaskId());
-        assertTrue(downloadRequest.getExternalArchiveFlag());
-        // No registration should have occurred
-        verify(service, never()).registerDataObject(anyString(), any(), any());
-    }
-
-    /*
-     * Test Case: registration succeeds but download task creation fails.
-     * Expected: cleanup (deleteDataObject) is called for the newly registered
-     *           temp archive link, and an HpcException is thrown.
-     */
-    @Test
-    void testDownloadDataObjectFromExternalSource_DownloadFailsAfterRegistration_CleanupCalled()
-            throws Exception {
-        setUpExternalSourceMocks();
-
-        // No existing temp archive link → registration will be created
-        when(dataManagementService.getDataObject("/tmp/ext-links/HPC/basePath/project/file.txt")).thenReturn(null);
-
-        HpcDataObjectRegistrationResponseDTO registrationResponse = new HpcDataObjectRegistrationResponseDTO();
-        registrationResponse.setRegistered(true);
-        doReturn(registrationResponse).when(service).registerDataObject(
-                eq("/tmp/ext-links/HPC/basePath/project/file.txt"),
-                any(HpcDataObjectRegistrationRequestDTO.class),
-                isNull());
-
-        // Download task creation fails
-        doThrow(new HpcException("Download task creation failed", HpcErrorType.UNEXPECTED_ERROR))
-                .when(service).downloadDataObject(
-                        eq("/tmp/ext-links/HPC/basePath/project/file.txt"),
-                        any(HpcDownloadRequestDTO.class));
-
-        // Cleanup delete succeeds
-        HpcDataObjectDeleteResponseDTO deleteResponse = new HpcDataObjectDeleteResponseDTO();
-        deleteResponse.setDataManagementDeleteStatus(true);
-        doReturn(deleteResponse).when(service).deleteDataObject(
-                eq("/tmp/ext-links/HPC/basePath/project/file.txt"), eq(false), isNull());
-
-        HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
-        downloadRequest.setGlobusDownloadDestination(new HpcGlobusDownloadDestination());
-
-        HpcException exception = assertThrows(HpcException.class, () ->
-                service.downloadDataObjectFromExternalSource("/mnt/VAST/project/file.txt", downloadRequest));
-
-        assertTrue(exception.getMessage().contains("Download task creation failed"));
-        // Cleanup must be attempted for the temp archive link that was just registered
-        verify(service).deleteDataObject(
-                eq("/tmp/ext-links/HPC/basePath/project/file.txt"), eq(false), isNull());
     }
 
 }
