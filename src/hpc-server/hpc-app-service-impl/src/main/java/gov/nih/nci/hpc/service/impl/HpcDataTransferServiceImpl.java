@@ -1139,6 +1139,65 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
 	}
 
+	private boolean deleteArchiveLink(String path, HpcFileLocation archiveLocation, HpcDataTransferType transferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		boolean archiveLinkDeletionSuccess = false;
+		try {
+			// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
+			HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(archiveLocation,
+							transferType,
+							configurationId,
+							s3ArchiveConfigurationId);
+			if (!clearMetadataResponse.getMetadataClearStatus()) {
+				throw new HpcException("Failed to clear S3 metadata for data object at path: " + path, HpcErrorType.UNEXPECTED_ERROR);
+			} else {
+				// Successfully cleared the metadata, proceed to delete the data management record from iRODS
+				dataManagementService.delete(path, false);
+				logger.info("Successfully deleted data object at path: {} from IRODS", path);
+			}
+			archiveLinkDeletionSuccess = true;
+		} catch (Exception e) {
+			logger.error("Failed to delete archive linked file at path: {} error: {}", path, e.getMessage(), e);
+		}
+		return archiveLinkDeletionSuccess;
+	}
+
+	private boolean deleteTemporaryArchiveLink(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+		if (!downloadTask.getExternalArchiveFlag()) {
+			return false;
+		}
+		boolean temporaryArchiveLinkDeleted= false;
+			if(downloadTask.getExternalArchiveFlag()) {
+				/*
+				 * External Archive Download Cleanup Logic:
+				 *
+				 * For external archive downloads, the data object must be deleted after
+				 * the download completes (whether successful or failed). However, we must
+				 * ensure no other active external archive download tasks exist for the same path
+				 * before performing the deletion.
+				 *
+				 * If multiple download tasks are active for the same path, deletion is deferred
+				 * until the final task completes to prevent data corruption.
+				 */
+				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath());
+				logger.info("download task: [taskId={}] - number of other active external archive download tasks [count={}] downloading for the same [path={}]",
+				 downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
+
+				if(numberOfActiveExternalDownloadTasksForPath == 0) {
+					try{
+						temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), downloadTask.getArchiveLocation(), downloadTask.getDataTransferType(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
+					} catch (HpcException e) {
+						logger.error("Failed to delete data object after download from external archive for path: " + downloadTask.getPath() + ". Error: " + e.getMessage(), e);
+						notificationService.sendNotification(new HpcException(
+                        "Failure to delete data object after download from external archive for path " + downloadTask.getPath() + ". Error: " + e.getMessage(),
+                                HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+					}
+				}
+			}
+
+		return temporaryArchiveLinkDeleted;
+	}
+
+
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
@@ -1267,6 +1326,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
+
+		// If it is an external archive download, delete the temporary archive link if no other active download tasks exist for the same path.
+		if (downloadTask.getExternalArchiveFlag() && downloadTask.getArchiveLocation() != null) {
+			try {
+				securityService.executeAsSystemAccount(Optional.empty(), () -> {
+					if(deleteTemporaryArchiveLink(downloadTask)) {
+						logger.info("download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
+						 downloadTask.getId(), downloadTask.getPath());
+					} else {
+						logger.info("download task: [taskId={}] - temporary archive link deletion skipped for path: {} since other active download tasks exist for the same path",
+						 downloadTask.getId(), downloadTask.getPath());
+					}
+				});
+			} catch (HpcException e) {
+				logger.error("Failed to delete data object at path: {} error: {}", downloadTask.getPath(), e.getMessage(), e);
+			}
+		}
 
 		// Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
