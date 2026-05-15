@@ -1161,7 +1161,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return archiveLinkDeletionSuccess;
 	}
 
-	private boolean deleteTemporaryArchiveLink(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+	private boolean deleteTemporaryArchiveLinkIfNoActiveDownloads(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		if (!downloadTask.getExternalArchiveFlag()) {
 			return false;
 		}
@@ -1331,7 +1331,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (downloadTask.getExternalArchiveFlag() && downloadTask.getArchiveLocation() != null) {
 			try {
 				securityService.executeAsSystemAccount(Optional.empty(), () -> {
-					if(deleteTemporaryArchiveLink(downloadTask)) {
+					if(deleteTemporaryArchiveLinkIfNoActiveDownloads(downloadTask)) {
 						logger.info("download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
 						 downloadTask.getId(), downloadTask.getPath());
 					} else {
