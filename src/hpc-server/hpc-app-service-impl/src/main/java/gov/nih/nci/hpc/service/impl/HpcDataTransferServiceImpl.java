@@ -1168,8 +1168,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		boolean temporaryArchiveLinkDeleted= false;
 			if(downloadTask.getExternalArchiveFlag()) {
 				/*
-				 * External Archive Download Cleanup Logic:
-				 *
 				 * For external archive downloads, the data object must be deleted after
 				 * the download completes (whether successful or failed). However, we must
 				 * ensure no other active external archive download tasks exist for the same path
@@ -1184,7 +1182,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
 					try{
-						temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), downloadTask.getArchiveLocation(), downloadTask.getDataTransferType(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
+						temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), downloadTask.getArchiveLocation(), HpcDataTransferType.S_3, downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: " + downloadTask.getPath() + ". Error: " + e.getMessage(), e);
 						notificationService.sendNotification(new HpcException(
@@ -1332,7 +1330,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			try {
 				securityService.executeAsSystemAccount(Optional.empty(), () -> {
 					if(deleteTemporaryArchiveLinkIfNoActiveDownloads(downloadTask)) {
-						logger.info("download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
+						logger.info("external archive download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
 						 downloadTask.getId(), downloadTask.getPath());
 					} else {
 						logger.info("download task: [taskId={}] - temporary archive link deletion skipped for path: {} since other active download tasks exist for the same path",
