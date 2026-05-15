@@ -1179,49 +1179,21 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		return new ArrayList<>(dataManagementConfigurationLocator.values());
 	}
 
-	/**
-	 * Finds the appropriate S3 data transfer configuration for an external path.
-	 *
-	 * This method searches through all available data management configurations to locate
-	 * the S3 archive configuration that matches the provided external path and supports
-	 * external storage. The matching is performed by checking if the input path starts
-	 * with the POSIX path defined in each S3 configuration.
-	 *
-	 * Process:
-	 * 1. Validate input path - return null immediately if path is null or empty
-	 * 2. Iterate through all data management configurations
-	 * 3. Extract S3 upload configuration ID from each configuration
-	 * 4. Skip configurations that have no S3 upload configuration ID
-	 * 5. Retrieve the S3 archive configuration using the configuration ID
-	 * 6. Validate that the configuration exists and is enabled for external storage
-	 * 7. Validate that the configuration has a defined POSIX path
-	 * 8. Check if the input path starts with the configuration's POSIX path
-	 * 9. Return the first matching configuration found
-	 * 10. Log and handle any exceptions that occur during processing
-	 * 11. Return null if no matching configuration is found or errors occur
-	 *
-	 * @param path The external file system path to find configuration for.
-	 *             Can be null or empty (will return null result immediately).
-	 * @return The matching HpcDataTransferConfiguration for S3 archive operations
-	 *         that supports external storage, or null if no matching configuration
-	 *         is found, path is null/empty, or an error occurs.
-	 * @throws HpcException If there is an error accessing configuration data,
-	 *                      if the configuration locator encounters an internal error,
-	 *                      or if the input path validation fails.
-	 */
 	@Override
-	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path) throws HpcException  {
+	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path) throws HpcException  {
 		HpcDataTransferConfiguration dataTransferConfiguration = null;
 		try{
 			if (StringUtils.isEmpty(path)) {
 				return null;
 			}
+			// Return the first matching external S3 archive configuration whose mounted
+			// POSIX path matches the requested external path.
 			for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
 				String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
 				if (dataTransferConfigurationId != null) {
 					HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
 					if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getExternalStorage() &&
-							dataTransferConfigurationCandidate.getPosixPath() != null && path.startsWith(dataTransferConfigurationCandidate.getPosixPath())) {
+							StringUtils.isNotEmpty(dataTransferConfigurationCandidate.getPosixPath()) && path.startsWith(dataTransferConfigurationCandidate.getPosixPath())) {
 						dataTransferConfiguration = dataTransferConfigurationCandidate;
 						break;
 					}
