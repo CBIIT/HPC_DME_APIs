@@ -119,8 +119,7 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+
 /**
  * HPC Data Transfer Service Implementation.
  *
@@ -147,8 +146,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// Box 'My Box' ID.
 	private static final String MY_BOX_ID = "MyBox";
-
-	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -798,8 +795,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
-		logger.info("in deleteDataObjectMetadata for fileLocation: {}, dataTransferType: {}, configurationId: {}, s3ArchiveConfigurationId: {}",
-				gson.toJson(fileLocation), dataTransferType, configurationId, s3ArchiveConfigurationId);
+
 		// Input validation.
 		if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1144,13 +1140,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
 	}
 
-	private boolean deleteArchiveLink(String path, HpcFileLocation archiveLocation, HpcDataTransferType transferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+	private boolean deleteArchiveLink(String path, HpcFileLocation archiveLocation, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 		boolean archiveLinkDeletionSuccess = false;
 		try {
 			// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
-			logger.info("Clearing S3 metadata for data object at path: {} archiveLocation: {}", path, gson.toJson(archiveLocation));
 			HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(archiveLocation,
-							transferType,
+							HpcDataTransferType.S_3,
 							configurationId,
 							s3ArchiveConfigurationId);
 			if (!clearMetadataResponse.getMetadataClearStatus()) {
@@ -1171,9 +1166,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (!downloadTask.getExternalArchiveFlag()) {
 			return false;
 		}
-		logger.info("external download task: [task={}]", gson.toJson(downloadTask));
-		logger.info("Before deleting data object for path: {} dataObject: {}", downloadTask.getPath(), gson.toJson(dataManagementService.getDataObject(downloadTask.getPath())));
-
 		boolean temporaryArchiveLinkDeleted= false;
 			if(downloadTask.getExternalArchiveFlag()) {
 				/*
@@ -1192,8 +1184,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
 					try{
 						HpcFileLocation archiveLinkLocation = getArchiveLocation(downloadTask.getPath());
-						logger.info("external download archiveLinkLocation: [archiveLinkLocation={}]", gson.toJson(archiveLinkLocation));
-						temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), archiveLinkLocation, HpcDataTransferType.S_3, downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
+						temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), archiveLinkLocation, downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: " + downloadTask.getPath() + ". Error: " + e.getMessage(), e);
 						notificationService.sendNotification(new HpcException(
@@ -1210,8 +1201,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
-
-		logger.info("external download completeDataObjectDownloadTask task: [task={}]", gson.toJson(downloadTask));
 
 		// Input validation
 		if (downloadTask == null) {
