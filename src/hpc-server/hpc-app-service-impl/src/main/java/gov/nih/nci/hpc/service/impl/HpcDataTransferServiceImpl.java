@@ -1171,6 +1171,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (!downloadTask.getExternalArchiveFlag()) {
 			return false;
 		}
+		logger.info("external download task: [task={}]", gson.toJson(downloadTask));
+		logger.info("Before deleting data object for path: {} dataObject: {}", downloadTask.getPath(), gson.toJson(dataManagementService.getDataObject(downloadTask.getPath())));
+
 		boolean temporaryArchiveLinkDeleted= false;
 			if(downloadTask.getExternalArchiveFlag()) {
 				/*
@@ -1188,7 +1191,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 				if(numberOfActiveExternalDownloadTasksForPath == 0) {
 					try{
-						temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), downloadTask.getArchiveLocation(), HpcDataTransferType.S_3, downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
+						HpcFileLocation archiveLinkLocation = getArchiveLocation(downloadTask.getPath());
+						logger.info("external download archiveLinkLocation: [archiveLinkLocation={}]", gson.toJson(archiveLinkLocation));
+						temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), archiveLinkLocation, HpcDataTransferType.S_3, downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: " + downloadTask.getPath() + ". Error: " + e.getMessage(), e);
 						notificationService.sendNotification(new HpcException(
@@ -1205,6 +1210,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
+
+		logger.info("external download completeDataObjectDownloadTask task: [task={}]", gson.toJson(downloadTask));
 
 		// Input validation
 		if (downloadTask == null) {
