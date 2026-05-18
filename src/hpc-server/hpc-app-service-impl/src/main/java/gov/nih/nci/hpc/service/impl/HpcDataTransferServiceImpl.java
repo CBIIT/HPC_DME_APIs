@@ -1158,6 +1158,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			archiveLinkDeletionSuccess = true;
 		} catch (Exception e) {
 			logger.error("Failed to delete archive linked file at path: {} error: {}", path, e.getMessage(), e);
+			throw new HpcException("Failed to delete archive linked file at path: " + path + ". Error: " + e.getMessage(),
+					HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}
 		return archiveLinkDeletionSuccess;
 	}
@@ -1193,6 +1195,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						"Failure to delete data object after download from external archive for path "
 								+ downloadTask.getPath() + ". Error: " + e.getMessage(),
 						HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+				throw new HpcException("Failed to delete data object after download from external archive for path: "
+						+ downloadTask.getPath() + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 			}
 		}
 
