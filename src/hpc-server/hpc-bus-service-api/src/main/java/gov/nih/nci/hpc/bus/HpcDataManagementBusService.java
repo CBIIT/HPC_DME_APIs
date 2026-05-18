@@ -478,6 +478,19 @@ public interface HpcDataManagementBusService {
 			String collectionDownloadTaskId) throws HpcException;
 
 	/**
+	 * Download Data Object from External Source. In this overloaded method, the request invoker will be
+	 * notified (if subscribed) when the download is complete. To specify a
+	 * different user-id and turn off notification, use the other overloaded method.
+	 *
+	 * @param path            The data object path.
+	 * @param downloadRequest The download request DTO.
+	 * @return Download ResponseDTO
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+			throws HpcException;
+
+	/**
 	 * Get Data object download task status.
 	 *
 	 * @param taskId The data object download task ID.

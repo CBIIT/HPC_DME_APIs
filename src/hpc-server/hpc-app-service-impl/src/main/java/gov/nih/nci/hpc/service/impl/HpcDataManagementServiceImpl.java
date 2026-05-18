@@ -1180,6 +1180,33 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
+	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path) throws HpcException  {
+		HpcDataTransferConfiguration dataTransferConfiguration = null;
+		try{
+			if (StringUtils.isEmpty(path)) {
+				return null;
+			}
+			// Return the first matching external S3 archive configuration whose mounted
+			// POSIX path matches the requested external path.
+			for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
+				String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
+				if (dataTransferConfigurationId != null) {
+					HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
+					if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getExternalStorage() &&
+							StringUtils.isNotEmpty(dataTransferConfigurationCandidate.getPosixPath()) && path.startsWith(dataTransferConfigurationCandidate.getPosixPath())) {
+						dataTransferConfiguration = dataTransferConfigurationCandidate;
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error finding matching S3 configuration for path: {}", path, e);
+			throw new HpcException("Error finding matching S3 configuration for path", HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
+		return dataTransferConfiguration;
+	}
+
+	@Override
 	public String findDataManagementConfigurationId(String path) {
 		if (StringUtils.isEmpty(path)) {
 			return null;
