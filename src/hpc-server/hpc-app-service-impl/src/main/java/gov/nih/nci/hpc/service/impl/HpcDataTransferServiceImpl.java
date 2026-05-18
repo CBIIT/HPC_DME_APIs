@@ -1043,7 +1043,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return dataDownloadDAO.getDataObjectDownloadTaskResultByCollectionDownloadTaskId(taskId);
 	}
 
-	// # 2168
 	@Override
 	public int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException {
 		return dataDownloadDAO.getDownloadTasksCountForExternalArchiveByPath(path);
