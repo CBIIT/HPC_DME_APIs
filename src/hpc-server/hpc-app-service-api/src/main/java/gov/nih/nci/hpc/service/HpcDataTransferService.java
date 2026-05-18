@@ -202,7 +202,7 @@ public interface HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
+			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchiveFlag) throws HpcException;
 
 	/**
 	 * Generate a (pre-signed) download URL for a data object file.
@@ -454,6 +454,15 @@ public interface HpcDataTransferService {
 	 */
 	List<HpcDownloadTaskResult> getDataObjectDownloadTaskResultsByCollectionDownloadTaskId(String taskId)
 			throws HpcException;
+
+	/**
+	 * Get the count of data object download tasks associated with an external archive path.
+	 *
+	 * @param path The external archive path
+	 * @return The count of data object download tasks.
+	 * @throws HpcException on service failure.
+	 */
+	int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException;
 
 	/**
 	 * Get next data object download task to process given data transfer status and
