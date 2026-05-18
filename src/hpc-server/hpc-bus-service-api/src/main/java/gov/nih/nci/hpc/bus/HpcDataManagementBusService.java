@@ -456,6 +456,20 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
+	 * Download Data Object. In this overloaded method, the request invoker will be
+	 * notified (if subscribed) when the download is complete. To specify a
+	 * different user-id and turn off notification, use the other overloaded method.
+	 *
+	 * @param path            The data object path.
+	 * @param downloadRequest The download request DTO.
+	 * @param externalArchiveFlag      If true, the data object is in an external archive and the download will be handled differently.
+	 * @return Download ResponseDTO
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest, boolean externalArchiveFlag)
+			throws HpcException;
+
+	/**
 	 * Download Data Object.
 	 *
 	 * @param path                     The data object path.
@@ -476,6 +490,31 @@ public interface HpcDataManagementBusService {
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
 			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
 			String collectionDownloadTaskId) throws HpcException;
+
+
+
+	/**
+	 * Download Data Object.
+	 *
+	 * @param path                     The data object path.
+	 * @param downloadRequest          The download request DTO.
+	 * @param retryTaskId              The previous task ID if this is a retry
+	 *                                 request
+	 * @param userId                   The user submitting the request.
+	 * @param retryUserId              The user retrying the request if this is a
+	 *                                 retry request
+	 * @param completionEvent          If true, an event will be added when async
+	 *                                 download is complete.
+	 * @param collectionDownloadTaskId (Optional) The collection download task ID if
+	 *                                 this request is part of a collection download
+	 *                                 task
+	 * @param externalArchiveFlag      If true, the data object is in an external
+	 * @return Download ResponseDTO
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
+			String collectionDownloadTaskId, boolean externalArchiveFlag) throws HpcException;
 
 	/**
 	 * Download Data Object from External Source. In this overloaded method, the request invoker will be
