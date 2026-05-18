@@ -714,6 +714,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
+		if (downloadRequest == null) {
+			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		// Validate that the downloadArchiveLinkBasePath property is configured, as it is required for saving the temporary archive links for external downloads.
 		if (StringUtils.isEmpty(downloadArchiveLinkBasePath)) {
 			logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
@@ -727,6 +730,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Find the matching S3 data transfer configuration for the external path
 		try {
 			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
+			if(s3ArchiveConfiguration == null) {
+				logger.warn("No matching S3 archive configuration found for external download path: " + path);
+				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		} catch (HpcException e) {
 			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
