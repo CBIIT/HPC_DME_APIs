@@ -1179,23 +1179,33 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		return new ArrayList<>(dataManagementConfigurationLocator.values());
 	}
 
+	private boolean isMatchingPosixPath(String path, String posixPath) {
+		if (!path.startsWith(posixPath)) {
+			return false;
+		}
+		return path.length() == posixPath.length() || path.charAt(posixPath.length()) == '/';
+	}
+
 	@Override
 	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path) throws HpcException  {
 		HpcDataTransferConfiguration dataTransferConfiguration = null;
+		int longestMatchingPosixPathLength = -1;
 		try{
 			if (StringUtils.isEmpty(path)) {
 				return null;
 			}
-			// Return the first matching external S3 archive configuration whose mounted
-			// POSIX path matches the requested external path.
+			// Return the most specific matching external S3 archive configuration whose mounted
+			// POSIX path matches the requested external path on a path boundary.
 			for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
 				String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
 				if (dataTransferConfigurationId != null) {
 					HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
 					if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getExternalStorage() &&
-							StringUtils.isNotEmpty(dataTransferConfigurationCandidate.getPosixPath()) && path.startsWith(dataTransferConfigurationCandidate.getPosixPath())) {
+							StringUtils.isNotEmpty(dataTransferConfigurationCandidate.getPosixPath()) &&
+							isMatchingPosixPath(path, dataTransferConfigurationCandidate.getPosixPath()) &&
+							dataTransferConfigurationCandidate.getPosixPath().length() > longestMatchingPosixPathLength) {
 						dataTransferConfiguration = dataTransferConfigurationCandidate;
-						break;
+						longestMatchingPosixPathLength = dataTransferConfigurationCandidate.getPosixPath().length();
 					}
 				}
 			}
