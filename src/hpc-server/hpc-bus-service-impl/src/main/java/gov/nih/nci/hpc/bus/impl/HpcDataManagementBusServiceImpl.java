@@ -770,8 +770,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Download Step
 		try {
-			downloadRequest.setExternalArchiveFlag(true);
-			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest);
+			boolean externalArchiveFlag = true;
+			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
 		} catch (HpcException e) {
 			logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
 				HpcDataObjectDeleteResponseDTO deleteResponse = deleteDataObject(downloadArchiveLinkPath, false, null);
@@ -1727,13 +1727,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
 		return downloadDataObject(path, downloadRequest, null,
-				securityService.getRequestInvoker().getNciAccount().getUserId(), null, true, null);
+				securityService.getRequestInvoker().getNciAccount().getUserId(), null, true, null, false);
+	}
+
+	@Override
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest, boolean externalArchiveFlag)
+			throws HpcException {
+		return downloadDataObject(path, downloadRequest, null,
+				securityService.getRequestInvoker().getNciAccount().getUserId(), null, true, null, externalArchiveFlag);
 	}
 
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
 			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
 			String collectionDownloadTaskId) throws HpcException {
+		return downloadDataObject(path, downloadRequest, retryTaskId, userId, retryUserId, completionEvent,
+				collectionDownloadTaskId, false);
+	}
+
+	@Override
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
+			String collectionDownloadTaskId, boolean externalArchiveFlag) throws HpcException {
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1769,7 +1784,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				completionEvent, collectionDownloadTaskId,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
 				metadata.getDeepArchiveStatus(),
-				downloadRequest.getExternalArchiveFlag() != null ? downloadRequest.getExternalArchiveFlag() : false );
+				externalArchiveFlag );
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
