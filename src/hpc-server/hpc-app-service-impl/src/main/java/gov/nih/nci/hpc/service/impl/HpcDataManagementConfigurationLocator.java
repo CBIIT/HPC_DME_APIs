@@ -237,6 +237,18 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	}
 
 	/**
+	 * Update data management model JSON columns for a base path and reload cache.
+	 *
+	 * @param basePath           The base path.
+	 * @param modelColumnsValues The model column values.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException {
+		dataManagementConfigurationDAO.updateDataManagementModel(basePath, modelColumnsValues);
+		reload();
+	}
+
+	/**
 	 * Get S3 Archive configuration by ID.
 	 *
 	 * @param s3ArchiveConfigurationId The S3 archive configuration ID.

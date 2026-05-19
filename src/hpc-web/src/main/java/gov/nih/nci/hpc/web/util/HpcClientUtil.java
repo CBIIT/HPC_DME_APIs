@@ -370,12 +370,71 @@ public class HpcClientUtil {
 
     if (restResponse == null || restResponse.getStatus() != 200)
       return null;
+    return toDOCModel(restResponse);
+  }
+
+  public static HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL, String basePath,
+      String hpcCertPath, String hpcCertPassword) {
+    try {
+      String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcModelURL)
+          .pathSegment("{basePath}")
+          .buildAndExpand(basePath)
+          .encode()
+          .toUri()
+          .toURL()
+          .toExternalForm();
+      WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+      Response restResponse = client.get();
+      if (restResponse == null || restResponse.getStatus() != 200)
+        return null;
+      return toDOCModel(restResponse);
+    } catch (Exception e) {
+      logger.error("Failed to get DOC Model for basePath {}", basePath, e);
+      throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
+    }
+  }
+
+  public static void updateDOCModel(String token, String hpcModelURL, String basePath, String dataHierarchy,
+      String collectionMetadataValidationRules, String dataObjectMetadataValidationRules, String hpcCertPath,
+      String hpcCertPassword) {
+    try {
+      String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcModelURL)
+          .pathSegment("{basePath}")
+          .buildAndExpand(basePath)
+          .encode()
+          .toUri()
+          .toURL()
+          .toExternalForm();
+      WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+      Map<String, String> modelColumns = new HashMap<>();
+      modelColumns.put("dataHierarchy", dataHierarchy);
+      modelColumns.put("collectionMetadataValidationRules", collectionMetadataValidationRules);
+      modelColumns.put("dataObjectMetadataValidationRules", dataObjectMetadataValidationRules);
+      Response restResponse = client.invoke("PUT", modelColumns);
+      if (restResponse == null) {
+        throw new HpcWebException("Failed to update DOC Model: empty server response");
+      }
+      if (restResponse.getStatus() != 200) {
+        MappingJsonFactory factory = new MappingJsonFactory();
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+        throw new HpcWebException("Failed to update DOC Model: " + exception.getMessage());
+      }
+    } catch (Exception e) {
+      logger.error("Failed to update DOC Model for basePath {}", basePath, e);
+      throw new HpcWebException("Failed to update DOC Model due to: " + e.getMessage());
+    }
+  }
+
+  private static HpcDataManagementModelDTO toDOCModel(Response restResponse) {
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
     } catch (IllegalStateException | IOException e) {
-    	logger.error("Failed to get DOC Model ", e);
+      logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     }
     try {
@@ -384,10 +443,10 @@ public class HpcClientUtil {
       logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     } catch (JsonProcessingException e) {
-    	logger.error("Failed to get DOC Model ", e);
+      logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     } catch (IOException e) {
-    	logger.error("Failed to get DOC Model ", e);
+      logger.error("Failed to get DOC Model ", e);
       throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
     }
   }

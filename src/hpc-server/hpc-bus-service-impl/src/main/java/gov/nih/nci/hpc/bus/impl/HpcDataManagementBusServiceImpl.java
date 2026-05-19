@@ -2295,6 +2295,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return dataManagementModel;
 	}
 
+	@Override
+	public void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException {
+		dataManagementService.updateDataManagementModel(basePath, modelColumnsValues);
+	}
+
 	private HpcDataManagementRulesDTO getDataManagementRules(HpcDataManagementConfiguration dataManagementConfiguration,
 			Boolean metadataRules) throws HpcException {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
