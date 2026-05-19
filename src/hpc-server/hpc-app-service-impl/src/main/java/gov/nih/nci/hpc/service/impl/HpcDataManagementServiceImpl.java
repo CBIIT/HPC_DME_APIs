@@ -1180,6 +1180,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
+	public void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException {
+		dataManagementConfigurationLocator.updateDataManagementModel(basePath, modelColumnsValues);
+	}
+
+	@Override
 	public String findDataManagementConfigurationId(String path) {
 		if (StringUtils.isEmpty(path)) {
 			return null;

@@ -568,6 +568,15 @@ public interface HpcDataManagementService {
 	public List<HpcDataManagementConfiguration> getDataManagementConfigurations();
 
 	/**
+	 * Update data management model JSON columns for a given base path.
+	 *
+	 * @param basePath           The base path.
+	 * @param modelColumnsValues The model column values.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException;
+
+	/**
 	 * Find data management configuration ID for a given path. This is searched by
 	 * matching the given path to all configuration base paths. If any configuration
 	 * base path is found to be the 'base path' of the given path, then the
