@@ -239,7 +239,9 @@
 				<entry key="getDataManagementModel"
 					value="${hpc.ws.rs.auth.data-management.get-data-management-model}" />
 				<entry key="getDataManagementModels"
-					value="${hpc.ws.rs.auth.data-management.get-data-management-models}" />	
+					value="${hpc.ws.rs.auth.data-management.get-data-management-models}" />
+				<entry key="updateDataManagementModel"
+					value="${hpc.ws.rs.auth.data-management.update-data-management-model}" />
 				<entry key="movePaths"
 					value="${hpc.ws.rs.auth.data-management.move-paths}" />
 				<entry key="moveCollection"
