@@ -22,17 +22,25 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
+import gov.nih.nci.hpc.web.model.HpcDocModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.model.Views;
@@ -71,6 +79,7 @@ public class HpcDocController extends AbstractHpcController {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
@@ -118,6 +127,49 @@ public class HpcDocController extends AbstractHpcController {
 
 		return "doc";
 	}
+
+	@GetMapping("/model")
+	public String model(@RequestParam("basePath") String basePath, Model model, BindingResult bindingResult,
+			HttpSession session) {
+		if (!validateSession(model, bindingResult, session)) {
+			return "login";
+		}
+		final String authToken = (String) session.getAttribute("hpcUserToken");
+		try {
+			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL, basePath,
+					this.sslCertPath, this.sslCertPassword);
+			HpcDocModel docModel = toDocModel(modelDTO, basePath);
+			model.addAttribute("docModel", docModel);
+		} catch (Exception e) {
+			model.addAttribute("error", e.getMessage());
+			logger.error(e.getMessage(), e);
+		}
+		return "docmodel";
+	}
+
+	@PostMapping("/model")
+	public String updateModel(@Valid @ModelAttribute("docModel") HpcDocModel docModel,
+			Model model, BindingResult bindingResult, HttpSession session) {
+		if (!validateSession(model, bindingResult, session)) {
+			return "login";
+		}
+		final String authToken = (String) session.getAttribute("hpcUserToken");
+		try {
+			HpcClientUtil.updateDOCModel(authToken, this.hpcModelURL, docModel.getBasePath(), docModel.getDataHierarchy(),
+					docModel.getCollectionMetadataValidationRules(), docModel.getDataObjectMetadataValidationRules(),
+					this.sslCertPath, this.sslCertPassword);
+			hpcModelBuilder.updateDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
+			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
+					docModel.getBasePath(), this.sslCertPath, this.sslCertPassword);
+			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
+			model.addAttribute("success", "Model updated successfully.");
+		} catch (Exception e) {
+			model.addAttribute("docModel", docModel);
+			model.addAttribute("error", e.getMessage());
+			logger.error(e.getMessage(), e);
+		}
+		return "docmodel";
+	}
 	
 	@JsonView(Views.Public.class)
 	@PostMapping(value = "/refreshInvestigators")
@@ -142,6 +194,34 @@ public class HpcDocController extends AbstractHpcController {
 			logger.error(e.getMessage(), e);
 		} 
 		return result;
+	}
+
+	private boolean validateSession(Model model, BindingResult bindingResult, HttpSession session) {
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		if (user == null) {
+			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+			bindingResult.addError(error);
+			model.addAttribute("hpcLogin", new HpcLogin());
+			return false;
+		}
+		return true;
+	}
+
+	private HpcDocModel toDocModel(HpcDataManagementModelDTO modelDTO, String basePath) throws Exception {
+		if (modelDTO == null || modelDTO.getDocRules().isEmpty() || modelDTO.getDocRules().get(0).getRules().isEmpty()) {
+			throw new HpcWebException("No data management model found for base path: " + basePath);
+		}
+		HpcDocDataManagementRulesDTO docRules = modelDTO.getDocRules().get(0);
+		HpcDataManagementRulesDTO rules = docRules.getRules().get(0);
+		HpcDocModel docModel = new HpcDocModel();
+		docModel.setDoc(docRules.getDoc());
+		docModel.setBasePath(rules.getBasePath());
+		docModel.setDataHierarchy(objectMapper.writeValueAsString(rules.getDataHierarchy()));
+		docModel.setCollectionMetadataValidationRules(
+				objectMapper.writeValueAsString(rules.getCollectionMetadataValidationRules()));
+		docModel.setDataObjectMetadataValidationRules(
+				objectMapper.writeValueAsString(rules.getDataObjectMetadataValidationRules()));
+		return docModel;
 	}
 	
 
