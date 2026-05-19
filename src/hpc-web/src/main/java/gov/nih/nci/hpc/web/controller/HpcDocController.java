@@ -129,9 +129,8 @@ public class HpcDocController extends AbstractHpcController {
 	}
 
 	@GetMapping("/model")
-	public String model(@RequestParam("basePath") String basePath, Model model, BindingResult bindingResult,
-			HttpSession session) {
-		if (!validateSession(model, bindingResult, session)) {
+	public String model(@RequestParam("basePath") String basePath, Model model, HttpSession session) {
+		if (!validateSession(model, session)) {
 			return "login";
 		}
 		final String authToken = (String) session.getAttribute("hpcUserToken");
@@ -201,6 +200,15 @@ public class HpcDocController extends AbstractHpcController {
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
+			model.addAttribute("hpcLogin", new HpcLogin());
+			return false;
+		}
+		return true;
+	}
+
+	private boolean validateSession(Model model, HttpSession session) {
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		if (user == null) {
 			model.addAttribute("hpcLogin", new HpcLogin());
 			return false;
 		}
