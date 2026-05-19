@@ -934,6 +934,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
+	public Response updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) {
+		try {
+			dataManagementBusService.updateDataManagementModel(toNormalizedPath(basePath), modelColumnsValues);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(null, false);
+	}
+
+	@Override
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) {
 		HpcBulkMoveResponseDTO bulkMoveResponse = null;
 		try {
