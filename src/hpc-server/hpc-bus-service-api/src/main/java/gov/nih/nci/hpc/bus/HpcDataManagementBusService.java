@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import java.io.File;
+import java.util.Map;
 
 import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -585,6 +586,15 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	HpcDataManagementModelDTO getDataManagementModel(String basePath, Boolean metadataRules) throws HpcException;
+
+	/**
+	 * Update data management model JSON column values for a basePath.
+	 *
+	 * @param basePath           The base path.
+	 * @param modelColumnsValues The model column values.
+	 * @throws HpcException on service failure.
+	 */
+	void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException;
 
 	/**
 	 * Move a path of either a data object or a collection.

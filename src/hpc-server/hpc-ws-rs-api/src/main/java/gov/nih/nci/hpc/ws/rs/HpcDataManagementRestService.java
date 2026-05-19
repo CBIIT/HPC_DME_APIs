@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -818,6 +819,19 @@ public interface HpcDataManagementRestService {
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	Response getDataManagementModel(@PathParam("basePath") String basePath,
 			@QueryParam("metadataRules") Boolean metadataRules);
+
+	/**
+	 * Update data management model columns for a base path.
+	 *
+	 * @param basePath           The base path.
+	 * @param modelColumnsValues The 3 model column values.
+	 * @return The REST service response.
+	 */
+	@PUT
+	@Path("/dm/model/{basePath}")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	Response updateDataManagementModel(@PathParam("basePath") String basePath, Map<String, String> modelColumnsValues);
 
 	/**
 	 * Move a list of data objects and/or collections.

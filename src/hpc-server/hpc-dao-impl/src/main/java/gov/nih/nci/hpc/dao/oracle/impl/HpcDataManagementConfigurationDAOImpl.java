@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -49,6 +50,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
 	// SQL Queries.
 	private static final String GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL = "select * from HPC_DATA_MANAGEMENT_CONFIGURATION";
+	private static final String UPDATE_DATA_MANAGEMENT_MODEL_SQL = "update HPC_DATA_MANAGEMENT_CONFIGURATION set DATA_HIERARCHY = ?, COLLECTION_METADATA_VALIDATION_RULES = ?, DATA_OBJECT_METADATA_VALIDATION_RULES = ? where BASE_PATH = ?";
 	private static final String GET_S3_ARCHIVE_CONFIGURATIONS_SQL = "select * from HPC_S3_ARCHIVE_CONFIGURATION";
 	private static final String GET_DISTINGUISHED_NAME_SEARCH_SQL = "select * from HPC_DISTINGUISHED_NAME_SEARCH";
 
@@ -208,6 +210,23 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get distinguished name searches: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException {
+		try {
+			int updatedRows = jdbcTemplate.update(UPDATE_DATA_MANAGEMENT_MODEL_SQL, modelColumnsValues.get("dataHierarchy"),
+					modelColumnsValues.get("collectionMetadataValidationRules"),
+					modelColumnsValues.get("dataObjectMetadataValidationRules"), basePath);
+			if (updatedRows == 0) {
+				throw new HpcException("No data management configuration found for basePath " + basePath,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to update data management model: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}

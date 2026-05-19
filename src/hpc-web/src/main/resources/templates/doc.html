@@ -110,9 +110,9 @@
                                 	    <th:block th:each="rule: ${docRule.rules}">
                                     	  <tr>
                                             <td th:text="${docRule.doc}"></td>
-                                            <td th:text="${rule.basePath}"></td>
-                                    	  </tr>  
-                                	  </th:block>
+                                            <td><a th:href="@{/doc/model(basePath=${rule.basePath})}" th:text="${rule.basePath}"></a></td>
+                                     	  </tr>  
+                                 	  </th:block>
                                 	</th:block>
                             	  </table>
                         		</div>

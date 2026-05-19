@@ -10,6 +10,7 @@
 package gov.nih.nci.hpc.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -48,4 +49,13 @@ public interface HpcDataManagementConfigurationDAO {
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcDistinguishedNameSearch> getDistinguishedNameSearches() throws HpcException;
+
+	/**
+	 * Update data management model JSON columns for a base path.
+	 *
+	 * @param basePath           The base path.
+	 * @param modelColumnsValues The model column values.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException;
 }
