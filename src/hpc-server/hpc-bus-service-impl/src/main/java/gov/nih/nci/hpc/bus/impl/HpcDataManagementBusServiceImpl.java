@@ -774,11 +774,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
 		} catch (HpcException e) {
 			logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
-				HpcDataObjectDeleteResponseDTO deleteResponse = deleteDataObject(downloadArchiveLinkPath, false, null);
-				if (deleteResponse == null || !deleteResponse.getDataManagementDeleteStatus()) {
-					logger.error("Failed to delete the temporary archive link of path: " + downloadArchiveLinkPath);
-				} else {
+				boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
+				if (archiveLinkDeleted) {
 					logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
+				} else {
+					logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
 				}
 			throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -5039,6 +5039,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		return basePath +  pathWithPosixPathPrefixRemoved;
+	}
+
+	private boolean deleteExternalArchiveLink(String downloadArchiveLinkPath) {
+		boolean archiveLinkDeleted = false;
+		try {
+		HpcDataObject dataObject = dataManagementService.getDataObject(downloadArchiveLinkPath);
+
+		// Validate the data object exists in iRODs.
+		if (dataObject == null) {
+			throw new HpcException("Data object doesn't exist: " + downloadArchiveLinkPath, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the metadata for this data object.
+		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(downloadArchiveLinkPath, false);
+		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
+		archiveLinkDeleted = dataTransferService.deleteTemporaryArchiveLinkIfNoActiveDownloads(downloadArchiveLinkPath, systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+		if (archiveLinkDeleted) {
+			logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
+		} else {
+			logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
+		}
+		} catch (HpcException e) {
+			logger.error("Failed to delete the temporary archive link of path: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+		}
+		return archiveLinkDeleted;
 	}
 
 }

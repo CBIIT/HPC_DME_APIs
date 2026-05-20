@@ -1163,11 +1163,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return archiveLinkDeletionSuccess;
 	}
 
-	private boolean deleteTemporaryArchiveLinkIfNoActiveDownloads(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		if (!downloadTask.getExternalArchiveFlag()) {
-			return false;
-		}
-
+	public boolean deleteTemporaryArchiveLinkIfNoActiveDownloads(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
 		/*
 		 * For external archive downloads, the data object must be deleted after
@@ -1178,24 +1174,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		 * If multiple download tasks are active for the same path, deletion is deferred
 		 * until the final task completes to prevent data corruption.
 		 */
-		int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(downloadTask.getPath());
-		logger.info("external download task: [taskId={}] - number of other active external archive download tasks [count={}] downloading for the same [path={}]",
-				downloadTask.getId(), numberOfActiveExternalDownloadTasksForPath, downloadTask.getPath());
+		int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+		logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
 
 		if (numberOfActiveExternalDownloadTasksForPath == 0) {
 			try {
-				HpcFileLocation archiveLinkLocation = getArchiveLocation(downloadTask.getPath());
-				temporaryArchiveLinkDeleted = deleteArchiveLink(downloadTask.getPath(), archiveLinkLocation,
-						downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId());
+				HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
+				temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+						configurationId, s3ConfigurationId);
 			} catch (HpcException e) {
 				logger.error("Failed to delete data object after download from external archive for path: "
-						+ downloadTask.getPath() + ". Error: " + e.getMessage(), e);
+						+ path + ". Error: " + e.getMessage(), e);
 				notificationService.sendNotification(new HpcException(
 						"Failure to delete data object after download from external archive for path "
-								+ downloadTask.getPath() + ". Error: " + e.getMessage(),
+								+ path + ". Error: " + e.getMessage(),
 						HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
 				throw new HpcException("Failed to delete data object after download from external archive for path: "
-						+ downloadTask.getPath() + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+						+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 			}
 		}
 
@@ -1335,12 +1330,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// If it is an external archive download, delete the temporary archive link if no other active download tasks exist for the same path.
 		if (downloadTask.getExternalArchiveFlag() && downloadTask.getArchiveLocation() != null) {
 			try {
+				logger.info("external archive download task: [taskId={}] - checking if there are no active downloads for path: {}",
+						downloadTask.getId(), downloadTask.getPath());
 				securityService.executeAsSystemAccount(Optional.empty(), () -> {
-					if(deleteTemporaryArchiveLinkIfNoActiveDownloads(downloadTask)) {
+					if(deleteTemporaryArchiveLinkIfNoActiveDownloads(downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
 						logger.info("external archive download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
 						 downloadTask.getId(), downloadTask.getPath());
 					} else {
-						logger.info("download task: [taskId={}] - temporary archive link deletion skipped for path: {} since other active download tasks exist for the same path",
+						logger.info("external download task: [taskId={}] - temporary archive link deletion skipped for path: {} since other active download tasks exist for the same path",
 						 downloadTask.getId(), downloadTask.getPath());
 					}
 				});
