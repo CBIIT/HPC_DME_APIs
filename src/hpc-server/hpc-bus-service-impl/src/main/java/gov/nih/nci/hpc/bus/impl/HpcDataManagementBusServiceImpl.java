@@ -5044,26 +5044,32 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private boolean deleteExternalArchiveLink(String downloadArchiveLinkPath) {
 		boolean archiveLinkDeleted = false;
 		try {
-		HpcDataObject dataObject = dataManagementService.getDataObject(downloadArchiveLinkPath);
+			HpcDataObject dataObject = dataManagementService.getDataObject(downloadArchiveLinkPath);
 
-		// Validate the data object exists in iRODs.
-		if (dataObject == null) {
-			throw new HpcException("Data object doesn't exist: " + downloadArchiveLinkPath, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
+			// Validate the data object exists in iRODs.
+			if (dataObject == null) {
+				throw new HpcException("Data object doesn't exist: " + downloadArchiveLinkPath,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 
-		// Get the metadata for this data object.
-		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(downloadArchiveLinkPath, false);
-		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+			// Get the metadata for this data object.
+			HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(downloadArchiveLinkPath,
+					false);
+			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 
-		archiveLinkDeleted = dataTransferService.deleteTemporaryArchiveLinkIfNoActiveDownloads(downloadArchiveLinkPath, systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
-		if (archiveLinkDeleted) {
-			logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
-		} else {
-			logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
-		}
+			archiveLinkDeleted = dataTransferService.deleteTemporaryArchiveLink(
+					downloadArchiveLinkPath, systemGeneratedMetadata.getConfigurationId(),
+					systemGeneratedMetadata.getS3ArchiveConfigurationId());
+			if (archiveLinkDeleted) {
+				logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
+			} else {
+				logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath
+						+ " since other active download tasks exist for the same path");
+			}
 		} catch (HpcException e) {
-			logger.error("Failed to delete the temporary archive link of path: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+			logger.error("Failed to delete the temporary archive link of path: " + downloadArchiveLinkPath + ". "
+					+ e.getMessage(), e);
 		}
 		return archiveLinkDeleted;
 	}

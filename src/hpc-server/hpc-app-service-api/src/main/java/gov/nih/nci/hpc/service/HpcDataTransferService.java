@@ -543,7 +543,7 @@ public interface HpcDataTransferService {
 	 * @return True if the temporary archive link was deleted, or false otherwise.
 	 * @throws HpcException on service failure.
 	 */
-	public boolean deleteTemporaryArchiveLinkIfNoActiveDownloads(String path, String configurationId, String s3ConfigurationId) throws HpcException;
+	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException;
 
 	/**
 	 * Complete an async (Globus / S3 / Google Drive) data object download task : 1.
