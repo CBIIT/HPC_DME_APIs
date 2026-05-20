@@ -786,33 +786,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return downloadResponse;
 	}
 
-	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String dmePath, String bucket) throws HpcException {
-		HpcFileLocation sourceLocation = new HpcFileLocation();
-		sourceLocation.setFileContainerId(bucket);
-		sourceLocation.setFileId(dmePath.substring(1));
-		HpcUploadSource uploadSource = new HpcUploadSource();
-		uploadSource.setSourceLocation(sourceLocation);
-		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
-		registrationRequest.setArchiveLinkSource(uploadSource);
-		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
-		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null);
-		if(registrationResponseDTO != null && registrationResponseDTO.getRegistered() == true){
-			logger.info("Registered the external download link for path: " + downloadArchiveLinkPath);
-		} else {
-			logger.error("Registration of Archive link has failed for path: " + downloadArchiveLinkPath);
-			throw new HpcException("Registration of Archive link has failed for path: " + downloadArchiveLinkPath, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-	}
-
-	private String buildPermanentArchiveLinkPath(String path, String basePath, String posixPath) throws HpcException {
-		String pathWithPosixPathPrefixRemoved = path.substring(posixPath.length());
-		if(StringUtils.isEmpty(pathWithPosixPathPrefixRemoved)) {
-			logger.warn("Path after POSIX prefix is empty for path: " + path);
-			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		return basePath +  pathWithPosixPathPrefixRemoved;
-	}
-
 
 	@Override
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) throws HpcException {
@@ -5039,6 +5012,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return uploadResponse;
+	}
+
+	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String dmePath, String bucket) throws HpcException {
+		HpcFileLocation sourceLocation = new HpcFileLocation();
+		sourceLocation.setFileContainerId(bucket);
+		sourceLocation.setFileId(dmePath.substring(1));
+		HpcUploadSource uploadSource = new HpcUploadSource();
+		uploadSource.setSourceLocation(sourceLocation);
+		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
+		registrationRequest.setArchiveLinkSource(uploadSource);
+		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
+		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null);
+		if(registrationResponseDTO != null && registrationResponseDTO.getRegistered() == true){
+			logger.info("Registered the external download link for path: " + downloadArchiveLinkPath);
+		} else {
+			logger.error("Registration of Archive link has failed for path: " + downloadArchiveLinkPath);
+			throw new HpcException("Registration of Archive link has failed for path: " + downloadArchiveLinkPath, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+	}
+
+	private String buildPermanentArchiveLinkPath(String path, String basePath, String posixPath) throws HpcException {
+		String pathWithPosixPathPrefixRemoved = path.substring(posixPath.length());
+		if(StringUtils.isEmpty(pathWithPosixPathPrefixRemoved)) {
+			logger.warn("Path after POSIX prefix is empty for path: " + path);
+			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		return basePath +  pathWithPosixPathPrefixRemoved;
 	}
 
 }
