@@ -1179,13 +1179,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		return new ArrayList<>(dataManagementConfigurationLocator.values());
 	}
 
-	private boolean isMatchingPosixPath(String path, String posixPath) {
-		if (!path.startsWith(posixPath)) {
-			return false;
-		}
-		return path.length() == posixPath.length() || path.charAt(posixPath.length()) == '/';
-	}
-
 	@Override
 	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path) throws HpcException  {
 		HpcDataTransferConfiguration dataTransferConfiguration = null;
@@ -1630,5 +1623,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			}
 
 		}
+	}
+
+	private boolean isMatchingPosixPath(String path, String posixPath) {
+		if (!path.startsWith(posixPath)) {
+			return false;
+		}
+		return path.length() == posixPath.length() || path.charAt(posixPath.length()) == '/';
 	}
 }
