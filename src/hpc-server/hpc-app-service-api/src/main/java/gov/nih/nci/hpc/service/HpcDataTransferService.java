@@ -462,7 +462,7 @@ public interface HpcDataTransferService {
 	 * @return The count of data object download tasks.
 	 * @throws HpcException on service failure.
 	 */
-	int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException;
+	public int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException;
 
 	/**
 	 * Get next data object download task to process given data transfer status and
@@ -532,6 +532,18 @@ public interface HpcDataTransferService {
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, String configurationId) throws HpcException;
+
+
+	/**
+	 * Delete temporary archive link only when there are no active downloads.
+	 *
+	 * @param path              The archive path of the temporary link.
+	 * @param configurationId   The data management configuration ID.
+	 * @param s3ConfigurationId (Optional) The S3 archive configuration ID.
+	 * @return True if the temporary archive link was deleted, or false otherwise.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean deleteTemporaryArchiveLinkIfNoActiveDownloads(String path, String configurationId, String s3ConfigurationId) throws HpcException;
 
 	/**
 	 * Complete an async (Globus / S3 / Google Drive) data object download task : 1.
