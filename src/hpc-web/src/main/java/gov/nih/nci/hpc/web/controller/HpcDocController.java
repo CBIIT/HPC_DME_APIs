@@ -140,6 +140,7 @@ public class HpcDocController extends AbstractHpcController {
 			HpcDocModel docModel = toDocModel(modelDTO, basePath);
 			model.addAttribute("docModel", docModel);
 		} catch (Exception e) {
+			model.addAttribute("docModel", new HpcDocModel());
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
