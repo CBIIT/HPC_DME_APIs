@@ -1163,7 +1163,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return archiveLinkDeletionSuccess;
 	}
 
-	public boolean deleteTemporaryArchiveLinkIfNoActiveDownloads(String path, String configurationId, String s3ConfigurationId) throws HpcException {
+	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
 		/*
 		 * For external archive downloads, the data object must be deleted after
@@ -1333,7 +1333,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				logger.info("external archive download task: [taskId={}] - checking if there are no active downloads for path: {}",
 						downloadTask.getId(), downloadTask.getPath());
 				securityService.executeAsSystemAccount(Optional.empty(), () -> {
-					if(deleteTemporaryArchiveLinkIfNoActiveDownloads(downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
+					if(deleteTemporaryArchiveLink(downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
 						logger.info("external archive download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
 						 downloadTask.getId(), downloadTask.getPath());
 					} else {
