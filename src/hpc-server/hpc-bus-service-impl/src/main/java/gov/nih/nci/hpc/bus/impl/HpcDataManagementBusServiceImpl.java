@@ -1825,6 +1825,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setRetryTaskId(taskStatus.getDataObjectDownloadTask().getRetryTaskId());
 			downloadStatus.setExternalArchiveFlag(taskStatus.getDataObjectDownloadTask().getExternalArchiveFlag());
 			downloadStatus.setPriority(taskStatus.getDataObjectDownloadTask().getPriority());
+			downloadStatus.setDataSize(taskStatus.getDataObjectDownloadTask().getSize());
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
 			downloadStatus.setPath(taskStatus.getResult().getPath());
@@ -1847,6 +1848,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken()))
 							|| (taskStatus.getResult().getGoogleCloudStorageDestination() != null
 									&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken())));
+			downloadStatus.setDataSize(taskStatus.getResult().getSize());
 		}
 
 		return downloadStatus;
@@ -3119,6 +3121,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 			downloadStatus.setPriority(taskStatus.getCollectionDownloadTask().getPriority());
 			downloadStatus.setCancellationRequested(dataTransferService.getCollectionDownloadTaskCancellationRequested(taskId));
+		    downloadStatus.setDataSize(taskStatus.getCollectionDownloadTask().getDataSize());
 			
 			// Get the status of the individual data object download tasks if the collection status
 			// is not yet ACTIVE, because the collection items field does not get populated before that
@@ -3212,6 +3215,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken()))
 							|| (taskStatus.getResult().getGoogleCloudStorageDestination() != null
 									&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken())));
+			downloadStatus.setDataSize(taskStatus.getResult().getSize());
 		}
 
 		return downloadStatus;
