@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
@@ -138,11 +140,14 @@ public class HpcDocController extends AbstractHpcController {
 			return "login";
 		}
 		final String authToken = (String) session.getAttribute("hpcUserToken");
+		final String userId = (String) session.getAttribute("hpcUserId");
 		try {
-			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
-					this.sslCertPath, this.sslCertPassword);
-			List<String> basePaths = getBasePaths(modelDTO);
-			String effectiveBasePath = resolveEffectiveBasePath(basePath, basePaths, session);
+			HpcDataManagementModelDTO modelDTO = getModelDTO(session);
+			HpcPermission[] hpcPermissions = {HpcPermission.OWN, HpcPermission.WRITE, HpcPermission.READ};
+			populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "basePaths",
+					sslCertPath, sslCertPassword, session, hpcModelBuilder);
+			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
+			String effectiveBasePath = resolveEffectiveBasePath(basePath, session);
 			HpcDocModel docModel = toDocModel(modelDTO, effectiveBasePath);
 			model.addAttribute("docModel", docModel);
 			model.addAttribute("basePaths", basePaths);
@@ -168,6 +173,7 @@ public class HpcDocController extends AbstractHpcController {
 			return "docmodel";
 		}
 		final String authToken = (String) session.getAttribute("hpcUserToken");
+		final String userId = (String) session.getAttribute("hpcUserId");
 		try {
 			HpcClientUtil.updateDOCModel(authToken, this.hpcModelURL, docModel.getBasePath(), docModel.getDataHierarchy(),
 					docModel.getCollectionMetadataValidationRules(), docModel.getDataObjectMetadataValidationRules(),
@@ -175,8 +181,13 @@ public class HpcDocController extends AbstractHpcController {
 			hpcModelBuilder.updateDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
 			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
 					this.sslCertPath, this.sslCertPassword);
+			session.setAttribute("userDOCModel", modelDTO);
+			HpcPermission[] hpcPermissions = {HpcPermission.OWN, HpcPermission.WRITE, HpcPermission.READ};
+			populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "basePaths",
+					sslCertPath, sslCertPassword, session, hpcModelBuilder);
+			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
 			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
-			model.addAttribute("basePaths", getBasePaths(modelDTO));
+			model.addAttribute("basePaths", basePaths);
 			model.addAttribute("success", "Model updated successfully.");
 		} catch (Exception e) {
 			model.addAttribute("docModel", docModel);
@@ -270,37 +281,13 @@ public class HpcDocController extends AbstractHpcController {
 		return docModel;
 	}
 
-	private List<String> getBasePaths(HpcDataManagementModelDTO modelDTO) {
-		List<String> basePaths = new ArrayList<String>();
-		if (modelDTO == null || modelDTO.getDocRules() == null) {
-			return basePaths;
-		}
-		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-			if (docRule == null || docRule.getRules() == null) {
-				continue;
-			}
-			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-				if (rule == null || !StringUtils.hasText(rule.getBasePath())) {
-					continue;
-				}
-				basePaths.add(rule.getBasePath());
-			}
-		}
-		return basePaths;
-	}
-
-	private String resolveEffectiveBasePath(String basePath, List<String> basePaths, HttpSession session) {
-		if (StringUtils.hasText(basePath) && (basePaths == null || basePaths.isEmpty() || basePaths.contains(basePath))) {
+	private String resolveEffectiveBasePath(String basePath, HttpSession session) {
+		if (StringUtils.hasText(basePath)) {
 			return basePath;
 		}
-		Object userObj = session.getAttribute("user");
-		HpcUserDTO user = userObj instanceof HpcUserDTO ? (HpcUserDTO) userObj : (HpcUserDTO) session.getAttribute("hpcUser");
-		if (user != null && StringUtils.hasText(user.getDefaultBasepath())
-				&& (basePaths == null || basePaths.isEmpty() || basePaths.contains(user.getDefaultBasepath()))) {
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		if (user != null && StringUtils.hasText(user.getDefaultBasepath())) {
 			return user.getDefaultBasepath();
-		}
-		if (basePaths != null && !basePaths.isEmpty()) {
-			return basePaths.get(0);
 		}
 		return null;
 	}
