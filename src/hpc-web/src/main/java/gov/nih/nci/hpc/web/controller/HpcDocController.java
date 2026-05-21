@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -129,18 +130,19 @@ public class HpcDocController extends AbstractHpcController {
 	}
 
 	@GetMapping("/model")
-	public String model(@RequestParam("basePath") String basePath, Model model, BindingResult bindingResult,
+	public String model(@RequestParam("basePath") String basePath, Model model,
 			HttpSession session) {
-		if (!validateSession(model, bindingResult, session)) {
+		if (!validateSession(model, session)) {
 			return "login";
 		}
 		final String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
-			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL, basePath,
+			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
 					this.sslCertPath, this.sslCertPassword);
 			HpcDocModel docModel = toDocModel(modelDTO, basePath);
 			model.addAttribute("docModel", docModel);
 		} catch (Exception e) {
+			model.addAttribute("docModel", new HpcDocModel());
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
@@ -148,7 +150,8 @@ public class HpcDocController extends AbstractHpcController {
 	}
 
 	@PostMapping("/model")
-	public String updateModel(@Valid @ModelAttribute("docModel") HpcDocModel docModel,
+	public String updateModel(@RequestBody(required = false) String body,
+							  @Valid @ModelAttribute("docModel") HpcDocModel docModel,
 			Model model, BindingResult bindingResult, HttpSession session) {
 		if (!validateSession(model, bindingResult, session)) {
 			return "login";
@@ -160,7 +163,7 @@ public class HpcDocController extends AbstractHpcController {
 					this.sslCertPath, this.sslCertPassword);
 			hpcModelBuilder.updateDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
 			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
-					docModel.getBasePath(), this.sslCertPath, this.sslCertPassword);
+					this.sslCertPath, this.sslCertPassword);
 			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
 			model.addAttribute("success", "Model updated successfully.");
 		} catch (Exception e) {
@@ -170,7 +173,7 @@ public class HpcDocController extends AbstractHpcController {
 		}
 		return "docmodel";
 	}
-	
+
 	@JsonView(Views.Public.class)
 	@PostMapping(value = "/refreshInvestigators")
 	@ResponseBody
@@ -206,13 +209,45 @@ public class HpcDocController extends AbstractHpcController {
 		}
 		return true;
 	}
+	
+	private boolean validateSession(Model model, HttpSession session) {
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		if (user == null) {
+			model.addAttribute("hpcLogin", new HpcLogin());
+			return false;
+		}
+		return true;
+	}
 
 	private HpcDocModel toDocModel(HpcDataManagementModelDTO modelDTO, String basePath) throws Exception {
-		if (modelDTO == null || modelDTO.getDocRules().isEmpty() || modelDTO.getDocRules().get(0).getRules().isEmpty()) {
+
+		if (modelDTO == null || modelDTO.getDocRules() == null || modelDTO.getDocRules().isEmpty()) {
 			throw new HpcWebException("No data management model found for base path: " + basePath);
 		}
-		HpcDocDataManagementRulesDTO docRules = modelDTO.getDocRules().get(0);
-		HpcDataManagementRulesDTO rules = docRules.getRules().get(0);
+		HpcDocDataManagementRulesDTO docRules = null;
+		HpcDataManagementRulesDTO rules = null;
+		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+			if (docRule == null || docRule.getRules() == null) {
+				continue;
+			}
+			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+				if (rule == null) {
+					continue;
+				}
+				if (!StringUtils.hasText(basePath) || basePath.equals(rule.getBasePath())) {
+					docRules = docRule;
+					rules = rule;
+					break;
+				}
+			}
+			if (rules != null) {
+				break;
+			}
+		}
+		if (rules == null || docRules == null) {
+			throw new HpcWebException("No data management model found for base path: " + basePath);
+		}
+
 		HpcDocModel docModel = new HpcDocModel();
 		docModel.setDoc(docRules.getDoc());
 		docModel.setBasePath(rules.getBasePath());
