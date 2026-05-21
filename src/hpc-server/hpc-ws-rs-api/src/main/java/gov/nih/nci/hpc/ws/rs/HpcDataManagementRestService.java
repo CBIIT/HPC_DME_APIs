@@ -566,6 +566,22 @@ public interface HpcDataManagementRestService {
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest, @Context MessageContext mc);
 
 	/**
+	 * Download a data object from an External Source
+	 *
+	 * @param path            The data object path.
+	 * @param downloadRequest The download request.
+	 * @param mc              The message context.
+	 * @return The REST service response w/ either a file attached or
+	 *         HpcDataObjectDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/ext/dataObject/{path:.*}/download")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8, application/octet-stream")
+	public Response downloadDataObjectFromExternalSource(@PathParam("path") String path,
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest, @Context MessageContext mc);
+
+	/**
 	 * Get Data object download task status.
 	 *
 	 * @param taskId The data object download task ID.
