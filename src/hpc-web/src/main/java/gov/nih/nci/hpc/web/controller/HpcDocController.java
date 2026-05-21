@@ -13,6 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +133,7 @@ public class HpcDocController extends AbstractHpcController {
 	}
 
 	@GetMapping("/model")
-	public String model(@RequestParam("basePath") String basePath, Model model, HttpSession session) {
+	public String model(@RequestParam(value = "basePath", required = false) String basePath, Model model, HttpSession session) {
 		if (!validateSession(model, session)) {
 			return "login";
 		}
@@ -138,10 +141,14 @@ public class HpcDocController extends AbstractHpcController {
 		try {
 			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
 					this.sslCertPath, this.sslCertPassword);
-			HpcDocModel docModel = toDocModel(modelDTO, basePath);
+			List<String> basePaths = getBasePaths(modelDTO);
+			String effectiveBasePath = resolveEffectiveBasePath(basePath, basePaths, session);
+			HpcDocModel docModel = toDocModel(modelDTO, effectiveBasePath);
 			model.addAttribute("docModel", docModel);
+			model.addAttribute("basePaths", basePaths);
 		} catch (Exception e) {
 			model.addAttribute("docModel", new HpcDocModel());
+			model.addAttribute("basePaths", new ArrayList<String>());
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
@@ -154,6 +161,12 @@ public class HpcDocController extends AbstractHpcController {
 		if (!validateSession(model, bindingResult, session)) {
 			return "login";
 		}
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		if (user == null || !"SYSTEM_ADMIN".equals(user.getUserRole())) {
+			model.addAttribute("error", "Only SYSTEM_ADMIN users can update models.");
+			model.addAttribute("basePaths", new ArrayList<String>());
+			return "docmodel";
+		}
 		final String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
 			HpcClientUtil.updateDOCModel(authToken, this.hpcModelURL, docModel.getBasePath(), docModel.getDataHierarchy(),
@@ -163,9 +176,11 @@ public class HpcDocController extends AbstractHpcController {
 			HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
 					this.sslCertPath, this.sslCertPassword);
 			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
+			model.addAttribute("basePaths", getBasePaths(modelDTO));
 			model.addAttribute("success", "Model updated successfully.");
 		} catch (Exception e) {
 			model.addAttribute("docModel", docModel);
+			model.addAttribute("basePaths", new ArrayList<String>());
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
@@ -253,6 +268,41 @@ public class HpcDocController extends AbstractHpcController {
 		docModel.setDataObjectMetadataValidationRules(
 				objectMapper.writeValueAsString(rules.getDataObjectMetadataValidationRules()));
 		return docModel;
+	}
+
+	private List<String> getBasePaths(HpcDataManagementModelDTO modelDTO) {
+		List<String> basePaths = new ArrayList<String>();
+		if (modelDTO == null || modelDTO.getDocRules() == null) {
+			return basePaths;
+		}
+		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+			if (docRule == null || docRule.getRules() == null) {
+				continue;
+			}
+			for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+				if (rule == null || !StringUtils.hasText(rule.getBasePath())) {
+					continue;
+				}
+				basePaths.add(rule.getBasePath());
+			}
+		}
+		return basePaths;
+	}
+
+	private String resolveEffectiveBasePath(String basePath, List<String> basePaths, HttpSession session) {
+		if (StringUtils.hasText(basePath) && (basePaths == null || basePaths.isEmpty() || basePaths.contains(basePath))) {
+			return basePath;
+		}
+		Object userObj = session.getAttribute("user");
+		HpcUserDTO user = userObj instanceof HpcUserDTO ? (HpcUserDTO) userObj : (HpcUserDTO) session.getAttribute("hpcUser");
+		if (user != null && StringUtils.hasText(user.getDefaultBasepath())
+				&& (basePaths == null || basePaths.isEmpty() || basePaths.contains(user.getDefaultBasepath()))) {
+			return user.getDefaultBasepath();
+		}
+		if (basePaths != null && !basePaths.isEmpty()) {
+			return basePaths.get(0);
+		}
+		return null;
 	}
 	
 
