@@ -32,7 +32,6 @@
 							<div class="panel-heading">
 								<h2>
 									<span th:text="${docModel != null ? docModel.basePath : ''}"></span>
-									<a class="btn btn-link btn-sm pull-right" th:href="@{/doc}">Back to DOC</a>
 								</h2>
 							</div>
 							<div class="panel-body">
@@ -66,6 +65,7 @@
 									<div class="form-group">
 										<div class="col-lg-offset-3 col-lg-9">
 											<button type="submit" class="btn btn-primary">Submit</button>
+											<a id="cancelBtn" class="btn btn-default" th:href="@{/doc/model(basePath=*{basePath})}">Cancel</a>
 										</div>
 									</div>
 								</form>
@@ -81,8 +81,16 @@
 	<script th:src="@{/js/bootstrap/3.3.7/bootstrap.min.js}"></script>
 	<script th:src="@{/js/scripts.js}"></script>
 	<script>
+		function prettyJson(id) {
+			var el = document.getElementById(id);
+			if (!el) return;
+			try { el.value = JSON.stringify(JSON.parse(el.value), null, 4); } catch(e) {}
+		}
 		$(document).ready(function(){
 			$('#sub-menu-admin').addClass("active");
+			prettyJson('dataHierarchy');
+			prettyJson('collectionMetadataValidationRules');
+			prettyJson('dataObjectMetadataValidationRules');
 		});
 	</script>
 </body>
