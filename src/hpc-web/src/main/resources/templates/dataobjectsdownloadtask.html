@@ -194,6 +194,11 @@
 											for="${hpcDataObjectsDownloadStatusDTO.getDestinationLocation().getFileId()}"
 											th:text="${hpcDataObjectsDownloadStatusDTO.getDestinationLocation().getFileId()}"></label>
 									</div>
+									<div class="col-md-12 form-group" th:if="${downloadSize != null}">
+										<label for="Name">Download Size:</label> <label
+											for="${downloadSize}"
+											th:text="${downloadSize}"></label>
+									</div>
 									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getResult() != null}">
 										<label for="Name">Transfer Status:</label> <label id="regComplete"
 											for="${hpcDataObjectsDownloadStatusDTO.getResult()}"
