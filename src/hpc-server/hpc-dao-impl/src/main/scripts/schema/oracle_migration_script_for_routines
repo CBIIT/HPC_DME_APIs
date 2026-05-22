@@ -2,11 +2,16 @@ create or replace PROCEDURE refresh_daily_materialized_view AS
 
 BEGIN
 
-	DBMS_MVIEW.REFRESH('R_DATA_HIERARCHY_META_MAIN',
+    EXECUTE IMMEDIATE 'alter materialized view irods.hpc_data_inherited_meta_main_mv compile';
+    
+    DBMS_MVIEW.REFRESH('HPC_DATA_META_MAIN_MV, HPC_ELIGIBLE_DATA_OBJECTS_MV',
+                        METHOD => 'F', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
+
+    DBMS_MVIEW.REFRESH('HPC_DATA_INHERITED_META_MAIN_MV',
                         METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE, PARALLELISM => 4);
 
 	DBMS_MVIEW.REFRESH('R_DATA_HIERARCHY_USER_META_MAIN,
-                        R_COLL_HIERARCHY_DATA_OWNER,
+	                    R_COLL_HIERARCHY_DATA_OWNER,
                         R_REPORT_COLL_REGISTERED_BY,
                         R_REPORT_COLL_REGISTERED_BY_BASEPATH,
                         R_REPORT_COLL_REGISTERED_BY_DOC,

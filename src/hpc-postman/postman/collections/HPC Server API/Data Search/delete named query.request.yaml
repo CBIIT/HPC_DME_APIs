@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Named Query
+method: DELETE
+url: '{{baseUrl}}{{basePath}}/query/{{queryName}}'
+order: 9000
+pathVariables:
+  - key: queryName
+    value: 'myQuery'

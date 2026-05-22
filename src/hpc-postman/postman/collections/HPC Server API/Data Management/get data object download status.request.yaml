@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Data Object Download Status
+method: GET
+url: '{{baseUrl}}{{basePath}}/dataObject/download/{{taskId}}'
+order: 15000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: taskId
+    value: 'task-id-here'

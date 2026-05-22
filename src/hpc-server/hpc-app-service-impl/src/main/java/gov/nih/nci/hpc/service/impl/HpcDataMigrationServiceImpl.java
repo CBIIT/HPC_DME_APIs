@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.google.common.collect.Iterables;
 
 import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
@@ -32,15 +34,19 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataMigrationService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -84,6 +90,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	// The Security Application Service Instance.
 	@Autowired
 	private HpcSecurityService securityService = null;
+
+	// The Data Management Application Service Instance.
+	@Autowired
+	private HpcDataManagementService dataManagementService = null;
 
 	// A configured ID representing the server performing a migration task.
 	@Value("${hpc.service.serverId}")
@@ -441,7 +451,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		int taskCount = dataMigrationDAO.cleanupDataMigrationTasks();
 		logger.info("Cleaned up {} data migration tasks", taskCount);
-
+		
+		// Reset any in-process metadata attribute migration
+		dataMigrationDAO.resetStagedMetadataAttribute();
 	}
 
 	@Override
@@ -631,5 +643,88 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
 		return migrationTask;
+	}
+	
+	@Override
+	public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes()
+			throws HpcException {
+
+		List<HpcStagedMetadataAttribute> stagedMetadataEntries = dataMigrationDAO.getStagedMetadataAttributes();
+		logger.info("{} staged metadata attributes retrieved.", stagedMetadataEntries.size());
+		
+		return stagedMetadataEntries;
+	}
+	
+	@Override
+	public void addStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute, boolean isCollection,
+			String configurationId, String collectionType) throws HpcException {
+
+		// Construct metadata entry to add.
+		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+		HpcMetadataEntry entry = new HpcMetadataEntry();
+		entry.setAttribute(stagedMetadataAttribute.getAttribute());
+		entry.setValue(stagedMetadataAttribute.getValue());
+		metadataEntries.add(entry);
+
+		// Call addMetadata method to add the staged metadata entry to the relevant data object or collection
+		// with allowSystemMetadata set to true to allow adding metadata with reserved attributes
+		if (isCollection) {
+			// Get the metadata for this collection.
+			HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(stagedMetadataAttribute.getPath());
+
+			// Update the metadata.
+			boolean updated = true;
+			String message = null;
+			try {
+				metadataService.updateCollectionMetadata(stagedMetadataAttribute.getPath(), metadataEntries,
+						configurationId, true);
+			} catch (HpcException e) {
+				// Collection metadata update failed. Capture this in the audit record.
+				updated = false;
+				message = e.getMessage();
+			} finally {
+				// Add an audit record of this update collection attempt.
+				dataManagementService.addAuditRecord(stagedMetadataAttribute.getPath(), HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
+						metadataService.getCollectionMetadataEntries(stagedMetadataAttribute.getPath()), null, updated, null, message, "add-staged-metadata-task", null,
+						null);
+			}
+			
+		} else {
+			// Get the metadata for this data object.
+			HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(stagedMetadataAttribute.getPath(), true);
+
+			// Update the metadata.
+			boolean updated = true;
+			String message = null;
+			try {
+				metadataService.updateDataObjectMetadata(stagedMetadataAttribute.getPath(), metadataEntries,
+						configurationId, collectionType, false, true);
+			} catch (HpcException e) {
+				// Data object metadata update failed. Capture this in the audit record.
+				updated = false;
+				message = e.getMessage();
+			} finally {
+				// Add an audit record of this update collection attempt.
+				dataManagementService.addAuditRecord(stagedMetadataAttribute.getPath(), HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
+						metadataService.getDataObjectMetadataEntries(stagedMetadataAttribute.getPath(), true), null, updated, null, message, "add-staged-metadata-task", null,
+						null);
+			}
+		}
+
+	}
+	
+	@Override
+	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+			throws HpcException {
+
+		return dataMigrationDAO.claimStagedMetadataAttribute(stagedMetadataAttribute);
+	}
+
+	@Override
+	public void cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
+
+		int count = dataMigrationDAO.cleanupStagedMetadataAttribute(stagedMetadataAttribute);
+		logger.info("{} staged metadata attribute cleaned up.", count);
+
 	}
 }
