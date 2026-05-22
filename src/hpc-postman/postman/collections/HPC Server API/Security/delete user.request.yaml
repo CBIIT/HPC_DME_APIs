@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete User
+method: DELETE
+url: '{{baseUrl}}{{basePath}}/user/{{nciUserId}}'
+order: 6000
+pathVariables:
+  - key: nciUserId
+    value: 'userId'

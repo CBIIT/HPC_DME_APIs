@@ -110,6 +110,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemTokens;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
@@ -202,6 +203,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// The compressed archive extractor. Used to extract files from TAR/TGZ/ZIP.
 	@Autowired
 	private HpcCompressedArchiveExtractor compressedArchiveExtractor = null;
+
+	// The Data Management Proxy instance.
+	@Autowired
+	private HpcDataManagementProxy dataManagementProxy = null;
 
 	// The pattern convenient class to support string pattern matching
 	@Autowired
@@ -1634,10 +1639,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
-
+		Long collectionSize = metadataService.getCollectionSizeForPath(dataManagementProxy.getAbsolutePath(path));
+		downloadTask.setDataSize(collectionSize != null ? collectionSize : 0L);
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
-
 		return downloadTask;
 	}
 
@@ -1671,10 +1676,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+		downloadTask.setDataSize(getTotalSizeOfCollectionPaths(collectionPaths));
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
-
 		return downloadTask;
 	}
 
@@ -1709,6 +1714,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
+		downloadTask.setDataSize(getTotalSizeOfDataObjectPaths(dataObjectPaths));
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 
@@ -1833,6 +1839,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(downloadTaskResult.getPath());
 		downloadTask.setDoc(downloadTaskResult.getDoc());
 		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
+		downloadTask.setDataSize(getTotalSizeOfDataObjectItems(downloadTaskResult.getItems()));
 
 		// Set the configuration ID for collection(s) retry.
 		String configurationId = null;
@@ -2331,6 +2338,70 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// ---------------------------------------------------------------------//
 
 	/**
+	 * Compute the total size of the given list of collections
+	 *
+	 * @param collectionPaths paths of the collections
+	 *
+	 * @return total size of the specified collections
+	 * @throws HpcException
+	 */
+	private Long getTotalSizeOfCollectionPaths(List<String> collectionPaths) throws HpcException {
+		Long totalSize = 0L;
+
+		Map<String, Long> collectionSizeCache = new HashMap<>();
+		for(String path: collectionPaths) {
+			String absolutePath = dataManagementProxy.getAbsolutePath(path);
+			Long collectionSize = collectionSizeCache.get(absolutePath);
+			if (collectionSize == null) {
+				collectionSize = metadataService.getCollectionSizeForPath(absolutePath);
+				collectionSizeCache.put(absolutePath, collectionSize);
+				totalSize += collectionSize;
+			}
+		}
+
+		return totalSize;
+	}
+
+
+	private Long getTotalSizeOfDataObjectPaths (List<String> dataObjectPaths) throws HpcException {
+		Long totalSize = 0L;
+
+		Map<String, Long> dataObjectSizeCache = new HashMap<>();
+		for(String path: dataObjectPaths) {
+			String absolutePath = dataManagementProxy.getAbsolutePath(path);
+			Long dataObjectSize = dataObjectSizeCache.get(absolutePath);
+			if (dataObjectSize == null) {
+				dataObjectSize = metadataService.getDataObjectSizeForPath(absolutePath);
+				dataObjectSizeCache.put(absolutePath, dataObjectSize);
+				totalSize += dataObjectSize;
+			}
+		}
+		return totalSize;
+	}
+
+
+	private Long getTotalSizeOfDataObjectItems (List<HpcCollectionDownloadTaskItem> items)
+			throws HpcException {
+		Long totalSize = 0L;
+
+		Map<String, Long> dataObjectSizeCache = new HashMap<>();
+		for(HpcCollectionDownloadTaskItem item: items) {
+			if(!item.getResult().equals(HpcDownloadResult.COMPLETED)) {
+				String path = item.getPath();
+				String absolutePath = dataManagementProxy.getAbsolutePath(path);
+				Long dataObjectSize = dataObjectSizeCache.get(absolutePath);
+				if (dataObjectSize == null) {
+					dataObjectSize = metadataService.getDataObjectSizeForPath(absolutePath);
+					dataObjectSizeCache.put(absolutePath, dataObjectSize);
+					totalSize += dataObjectSize;
+				}
+			}
+		}
+		return totalSize;
+	}
+
+
+	/**
 	 * Get the data transfer authenticated token if cached. If it's not cached or
 	 * expired, get a token by authenticating.
 	 *
@@ -2702,6 +2773,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		return pathAttributes;
 	}
+
 
 	private void checkForDuplicateCollectionDownloadRequests(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination) throws HpcException {

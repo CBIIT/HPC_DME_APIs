@@ -172,4 +172,12 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void restartDataMigrationTasks() throws HpcException;
+	
+	/**
+	 * Process staged metadata attributes.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processStagedMetadataAttributes() throws HpcException;
+
 }

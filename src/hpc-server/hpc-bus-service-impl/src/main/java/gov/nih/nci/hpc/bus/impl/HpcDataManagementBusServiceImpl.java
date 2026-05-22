@@ -1782,6 +1782,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setRetryUserId(taskStatus.getDataObjectDownloadTask().getRetryUserId());
 			downloadStatus.setRetryTaskId(taskStatus.getDataObjectDownloadTask().getRetryTaskId());
 			downloadStatus.setPriority(taskStatus.getDataObjectDownloadTask().getPriority());
+			downloadStatus.setDataSize(taskStatus.getDataObjectDownloadTask().getSize());
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
 			downloadStatus.setPath(taskStatus.getResult().getPath());
@@ -1803,6 +1804,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken()))
 							|| (taskStatus.getResult().getGoogleCloudStorageDestination() != null
 									&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken())));
+			downloadStatus.setDataSize(taskStatus.getResult().getSize());
 		}
 
 		return downloadStatus;
@@ -1986,7 +1988,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			boolean deletionAllowed = dataManagementService
 					.getDataManagementConfiguration(systemGeneratedMetadata.getConfigurationId()).getDeletionAllowed();
 			deletionAllowed = deletionAllowed & !force;
-			if (!deletionAllowed && dataObject.getCreatedAt().before(cutOffDate)) {
+			Calendar dataTransferCompleted = systemGeneratedMetadata.getDataTransferCompleted();
+			if (!deletionAllowed && dataTransferCompleted != null && dataTransferCompleted.before(cutOffDate)) {
 				String message = "The data object at " + path
 						+ " is not eligible for deletion because the file is at least 90 days old.";
 				logger.error(message);
@@ -3183,6 +3186,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 			downloadStatus.setPriority(taskStatus.getCollectionDownloadTask().getPriority());
 			downloadStatus.setCancellationRequested(dataTransferService.getCollectionDownloadTaskCancellationRequested(taskId));
+		    downloadStatus.setDataSize(taskStatus.getCollectionDownloadTask().getDataSize());
 
 			// Get the status of the individual data object download tasks if the collection status
 			// is not yet ACTIVE, because the collection items field does not get populated before that
@@ -3276,6 +3280,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleDriveDownloadDestination().getAccessToken()))
 							|| (taskStatus.getResult().getGoogleCloudStorageDestination() != null
 									&& StringUtils.isNotEmpty(taskStatus.getResult().getGoogleCloudStorageDestination().getAccessToken())));
+			downloadStatus.setDataSize(taskStatus.getResult().getSize());
 		}
 
 		return downloadStatus;
@@ -3835,10 +3840,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean updated = true;
 		String message = null;
 		try {
+			//If system admin, allow system metadata update, otherwise only allow user metadata update.
+			HpcRequestInvoker invoker = securityService.getRequestInvoker();
+			boolean allowSystemMetadataUpdate = HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole());
 			if (!metadataContained(metadataEntries, metadataBefore.getSelfMetadataEntries())) {
 				synchronized (this) {
 					metadataService.updateCollectionMetadata(path, metadataEntries,
-							systemGeneratedMetadata.getConfigurationId());
+							systemGeneratedMetadata.getConfigurationId(), allowSystemMetadataUpdate);
 				}
 			} else {
 				logger.info(
@@ -3901,8 +3909,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean updated = true;
 		String message = null;
 		try {
+			//If system admin, allow system metadata update, otherwise only allow user metadata update.
+			HpcRequestInvoker invoker = securityService.getRequestInvoker();
+			boolean allowSystemMetadataUpdate = HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole());
 			metadataService.updateDataObjectMetadata(path, metadataEntries,
-					systemGeneratedMetadata.getConfigurationId(), collectionType, false);
+					systemGeneratedMetadata.getConfigurationId(), collectionType, false, allowSystemMetadataUpdate);
 
 		} catch (HpcException e) {
 			// Data object metadata update failed. Capture this in the audit record.

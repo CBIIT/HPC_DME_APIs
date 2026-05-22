@@ -1,0 +1,22 @@
+$kind: http-request
+name: Register Collection
+method: PUT
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}'
+order: 2000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'
+body:
+  type: json
+  content: |-
+    {
+      "metadataEntries": [
+        { "attribute": "collection_type", "value": "Project" },
+        { "attribute": "pi_name", "value": "John Doe" }
+      ]
+    }

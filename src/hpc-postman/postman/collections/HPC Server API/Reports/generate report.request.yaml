@@ -1,0 +1,20 @@
+$kind: http-request
+name: Generate Report
+method: POST
+url: '{{baseUrl}}{{basePath}}/report'
+order: 1000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "type": "HPC_USAGE",
+      "fromDate": "2024-01-01",
+      "toDate": "2024-12-31",
+      "doc": "NCI",
+      "path": "/NCI"
+    }

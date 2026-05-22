@@ -1,0 +1,4 @@
+$kind: collection
+name: Data Tiering
+description: Tier data objects and collections to Glacier cold storage.
+order: 8000

@@ -1,0 +1,4 @@
+$kind: collection
+name: Reports
+description: Generate usage and activity reports.
+order: 6000
