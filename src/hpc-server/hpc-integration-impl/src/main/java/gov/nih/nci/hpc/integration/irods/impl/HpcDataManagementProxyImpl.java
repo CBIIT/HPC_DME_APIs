@@ -227,8 +227,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			}
 
 			if (!avuDatas.isEmpty()) {
-				irodsConnection.getCollectionAO(authenticatedToken)
-						.addBulkAVUMetadataToCollection(getAbsolutePath(path), avuDatas);
+				// Add bulk metadata to iRODS, and validate the result.
+				for (BulkAVUOperationResponse addAvuResponse : irodsConnection.getCollectionAO(authenticatedToken)
+						.addBulkAVUMetadataToCollection(getAbsolutePath(path), avuDatas)) {
+					if (addAvuResponse.getResultStatus() != ResultStatus.OK) {
+						// Add metadata failed.
+						String message = "Failed to add metadata to a collection [" + path + "]: "
+								+ addAvuResponse.getResultStatus() + " - " + addAvuResponse.getMessage();
+						throw new HpcException(message, HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS);
+					}
+				}
 			}
 
 		} catch (JargonException e) {
@@ -1154,15 +1162,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
 		hpcDataObject.setCollectionName(getRelativePath(irodsDataObject.getCollectionName()));
 		hpcDataObject.setAbsolutePath(getRelativePath(irodsDataObject.getAbsolutePath()));
-		hpcDataObject.setDataSize(irodsDataObject.getDataSize());
-		hpcDataObject.setDataPath(irodsDataObject.getDataPath());
 		hpcDataObject.setDataOwnerName(irodsDataObject.getDataOwnerName());
-
-		Calendar createdAt = Calendar.getInstance();
-		if (irodsDataObject.getCreatedAt() != null) {
-			createdAt.setTime(irodsDataObject.getCreatedAt());
-			hpcDataObject.setCreatedAt(createdAt);
-		}
 
 		return hpcDataObject;
 	}

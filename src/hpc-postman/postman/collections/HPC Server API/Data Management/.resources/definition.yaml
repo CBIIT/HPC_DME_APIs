@@ -1,0 +1,4 @@
+$kind: collection
+name: Data Management
+description: Collection and data object CRUD, permissions, downloads, and bulk operations.
+order: 2000
