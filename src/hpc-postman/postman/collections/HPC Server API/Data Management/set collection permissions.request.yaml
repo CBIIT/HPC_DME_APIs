@@ -1,0 +1,20 @@
+$kind: http-request
+name: Set Collection Permissions
+method: POST
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}/acl'
+order: 9000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'
+body:
+  type: json
+  content: |-
+    {
+      "userPermissions": [{ "userId": "userId1", "permission": "READ" }],
+      "groupPermissions": []
+    }

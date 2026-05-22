@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Metadata Attributes
+method: GET
+url: '{{baseUrl}}{{basePath}}/metadataAttributes'
+order: 10000
+headers:
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: levelLabel
+    value: ''
+    disabled: true

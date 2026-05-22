@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Group
+method: DELETE
+url: '{{baseUrl}}{{basePath}}/group/{{groupName}}'
+order: 15000
+pathVariables:
+  - key: groupName
+    value: 'myGroup'

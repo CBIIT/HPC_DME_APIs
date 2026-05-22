@@ -1,0 +1,4 @@
+$kind: collection
+name: Security
+description: User management, group management, and authentication endpoints.
+order: 1000

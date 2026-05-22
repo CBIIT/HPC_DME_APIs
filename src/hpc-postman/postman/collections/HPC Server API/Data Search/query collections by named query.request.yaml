@@ -1,0 +1,24 @@
+$kind: http-request
+name: Query Collections By Named Query
+method: GET
+url: '{{baseUrl}}{{basePath}}/collection/query/{{queryName}}'
+order: 2000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: queryName
+    value: 'myQuery'
+queryParams:
+  - key: detailedResponse
+    value: 'false'
+    disabled: true
+  - key: page
+    value: '1'
+    disabled: true
+  - key: pageSize
+    value: '100'
+    disabled: true
+  - key: totalCount
+    value: 'true'
+    disabled: true

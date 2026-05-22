@@ -55,9 +55,10 @@ public interface HpcMetadataService {
 	 * @param metadataEntries The metadata entries to update.
 	 * @param configurationId The configuration to apply validation rules. Metadata
 	 *                        validation rules are configuration specific.
+	 * @param allowSystemMetadata True if system metadata update is allowed.
 	 * @throws HpcException on service failure.
 	 */
-	public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
+	public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId, boolean allowSystemMetadata)
 			throws HpcException;
 
 	/**
@@ -310,10 +311,11 @@ public interface HpcMetadataService {
 	 * @param extractedMetadata True if the data object is updated w/ extracted
 	 *                          metadata (this is optionally performed during data
 	 *                          object registration)
+	 * @param allowSystemMetadata True if system metadata update is allowed.
 	 * @throws HpcException on service failure.
 	 */
 	public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId,
-			String collectionType, boolean extractedMetadata) throws HpcException;
+			String collectionType, boolean extractedMetadata, boolean allowSystemMetadata) throws HpcException;
 
 	/**
 	 * Get metadata of a data object.
@@ -378,5 +380,25 @@ public interface HpcMetadataService {
 	 * @throws HpcException on database error.
 	 */
 	public void detectDupMetadataEntries() throws HpcException;
+
+	/**
+	 * Get the size of a collection from the specified path
+	 *
+	 * @param paths The collection path.
+	 *
+	 * @return The total size in bytes.
+	 * @throws HpcException on database error.
+	 */
+	public Long getCollectionSizeForPath(String path) throws HpcException;
+
+	/**
+	 * Get the size of a data object from the specified path.
+	 *
+	 * @param paths The dataObject path.
+	 *
+	 * @return The total size in bytes.
+	 * @throws HpcException on database error.
+	 */
+	public Long getDataObjectSizeForPath(String path) throws HpcException;
 
 }

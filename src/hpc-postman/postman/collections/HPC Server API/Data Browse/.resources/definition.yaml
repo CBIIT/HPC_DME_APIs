@@ -1,0 +1,4 @@
+$kind: collection
+name: Data Browse
+description: Bookmark management for quick access to frequently used paths.
+order: 4000

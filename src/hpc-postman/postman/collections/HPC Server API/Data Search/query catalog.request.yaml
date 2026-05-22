@@ -1,0 +1,19 @@
+$kind: http-request
+name: Query Catalog
+method: POST
+url: '{{baseUrl}}{{basePath}}/catalog/query'
+order: 11000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "path": "/NCI",
+      "page": 1,
+      "pageSize": 100,
+      "totalCount": true
+    }

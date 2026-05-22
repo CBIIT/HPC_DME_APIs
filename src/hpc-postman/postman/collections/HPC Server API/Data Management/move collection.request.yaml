@@ -1,0 +1,17 @@
+$kind: http-request
+name: Move Collection
+method: POST
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}/move/{{destinationPath}}'
+order: 6000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'
+  - key: destinationPath
+    value: 'NCI/newLocation'
+queryParams:
+  - key: alignArchivePath
+    value: 'false'
+    disabled: true

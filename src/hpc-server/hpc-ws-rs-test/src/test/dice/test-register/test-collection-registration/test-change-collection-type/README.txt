@@ -15,4 +15,4 @@
 
 Register a collection as project then try to change the type to Dataset.
 
-This should not be allowed
+This should be allowed for system admin

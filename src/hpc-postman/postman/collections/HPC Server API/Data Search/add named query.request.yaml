@@ -1,0 +1,26 @@
+$kind: http-request
+name: Add Named Query
+method: PUT
+url: '{{baseUrl}}{{basePath}}/query/{{queryName}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+pathVariables:
+  - key: queryName
+    value: 'myQuery'
+body:
+  type: json
+  content: |-
+    {
+      "compoundQuery": {
+        "operator": "AND",
+        "queries": [
+          { "attribute": "collection_type", "value": "Project", "operator": "EQUAL" }
+        ]
+      },
+      "detailedResponse": false,
+      "page": 1,
+      "pageSize": 100,
+      "totalCount": true
+    }

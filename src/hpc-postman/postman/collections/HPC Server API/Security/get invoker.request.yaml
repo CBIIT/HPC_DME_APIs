@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Invoker
+method: GET
+url: '{{baseUrl}}{{basePath}}/user'
+order: 2000
+headers:
+  - key: Accept
+    value: 'application/json'

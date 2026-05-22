@@ -1,0 +1,21 @@
+$kind: http-request
+name: Bulk Download Data Objects (v2)
+method: POST
+url: '{{baseUrl}}{{basePath}}/v2/download'
+order: 19000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "dataObjectPaths": ["/NCI/myCollection/file1.txt"],
+      "destinationType": "GOOGLE_DRIVE",
+      "googleDriveDestination": {
+        "accessToken": "{{googleAccessToken}}",
+        "folderName": "HPC-Download"
+      }
+    }
