@@ -402,6 +402,7 @@ public class HpcDownloadController extends AbstractHpcController {
                 destination.setDestinationLocation(location);
                 destination.setAccessToken(accessToken);
                 dto.setGoogleDriveDownloadDestination(destination);
+                logger.info("GoogleDrive file download json: " + gson.toJson(dto));
             } else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.GOOGLE_CLOUD_TYPE)) {
 				String refreshTokenDetailsGoogleCloud = (String)session.getAttribute("refreshTokenDetailsGoogleCloud");
 				HpcGoogleDownloadDestination googleCloudDestination = new HpcGoogleDownloadDestination();
