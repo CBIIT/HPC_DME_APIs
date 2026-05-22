@@ -101,6 +101,13 @@ public class HpcScheduledTasksImpl {
 		execute("processDataObjectMetadataUpdateMigrationReceived()",
 				dataMigrationBusService::processDataObjectMetadataUpdateMigrationReceived, logger);
 	}
+	
+	/** Process staged metadata attributes. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processStagedMetadataAttributes.delay}")
+	private void processStagedMetadataAttributes() {
+		execute("processStagedMetadataAttributes()",
+				dataMigrationBusService::processStagedMetadataAttributes, logger);
+	}
 
 	/**
 	 * Called by Spring dependency injection. Reset all active S3 upload/download in

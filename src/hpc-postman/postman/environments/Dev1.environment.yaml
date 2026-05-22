@@ -1,0 +1,14 @@
+name: Dev1
+values:
+  - key: baseUrl
+    value: 'https://fsdsgl-dmeap01d.ncifcrf.gov:7738'
+    enabled: true
+  - key: basePath
+    value: /hpc-server
+    enabled: true
+  - key: username
+    value: ''
+    enabled: true
+  - key: password
+    value: ''
+    enabled: true

@@ -1,0 +1,17 @@
+$kind: http-request
+name: Query Review
+method: POST
+url: '{{baseUrl}}{{basePath}}/review/query'
+order: 1000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: projectStatus
+    value: 'ACTIVE'
+    disabled: true
+  - key: dataCurator
+    value: ''
+    disabled: true

@@ -1,0 +1,11 @@
+$kind: http-request
+name: Send Review Reminder
+method: POST
+url: '{{baseUrl}}{{basePath}}/review/sendReminder'
+order: 2000
+headers:
+  - key: Accept
+    value: 'application/json'
+body:
+  type: text
+  content: 'userId'

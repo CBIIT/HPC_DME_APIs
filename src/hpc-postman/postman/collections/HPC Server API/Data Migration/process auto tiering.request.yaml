@@ -1,0 +1,14 @@
+$kind: http-request
+name: Process Auto Tiering
+method: POST
+url: '{{baseUrl}}{{basePath}}/autoTiering/:configurationId'
+order: 7000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: configurationId
+    value: 'c58691cd-9480-4a2f-8b99-e4b2c4b76dbc'
+    description: 'The data management configuration ID'

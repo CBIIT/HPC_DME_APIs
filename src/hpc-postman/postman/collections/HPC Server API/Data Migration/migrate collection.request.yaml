@@ -1,0 +1,19 @@
+$kind: http-request
+name: Migrate Collection
+method: POST
+url: '{{baseUrl}}{{basePath}}/collection/{{path}}/migrate'
+order: 2000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection'
+body:
+  type: json
+  content: |-
+    {
+      "configurationId": "target-config-id"
+    }

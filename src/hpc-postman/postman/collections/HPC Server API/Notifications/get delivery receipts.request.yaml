@@ -1,0 +1,15 @@
+$kind: http-request
+name: Get Delivery Receipts
+method: GET
+url: '{{baseUrl}}{{basePath}}/notification/deliveryReceipts'
+order: 3000
+headers:
+  - key: Accept
+    value: 'application/json'
+queryParams:
+  - key: page
+    value: '1'
+    disabled: true
+  - key: totalCount
+    value: 'true'
+    disabled: true

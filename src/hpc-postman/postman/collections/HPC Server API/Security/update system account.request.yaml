@@ -1,0 +1,19 @@
+$kind: http-request
+name: Update System Account
+method: PUT
+url: "{{baseUrl}}{{basePath}}/systemAccount"
+order: 18000
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "account": {
+            "username": "username",
+            "password": "pwd",
+            "integratedSystem": "VAST_NCIVS"
+        },
+        "dataTransferType": "S_3"
+        }

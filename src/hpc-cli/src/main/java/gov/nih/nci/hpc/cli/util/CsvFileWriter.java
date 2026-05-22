@@ -106,8 +106,6 @@ public class CsvFileWriter {
 				fileDataRecord.add(datafile.getCollectionId());
 				fileDataRecord.add(datafile.getAbsolutePath());
 				fileDataRecord.add(datafile.getCollectionName());
-				fileDataRecord.add(datafile.getCreatedAt());
-				fileDataRecord.add(datafile.getModifiedAt());
 				for (int i = 6; i < header.length; i++) {
 					HpcMetadataEntry entry = datafile.getMetadataAttrs().get(header[i]);
 					if (entry == null)

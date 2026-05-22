@@ -1,0 +1,11 @@
+$kind: http-request
+name: Tier Data Object
+method: POST
+url: '{{baseUrl}}{{basePath}}/dataObject/{{path}}/tier'
+order: 1000
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection/myFile.txt'

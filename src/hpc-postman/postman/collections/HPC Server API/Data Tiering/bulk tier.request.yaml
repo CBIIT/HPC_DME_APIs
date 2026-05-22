@@ -1,0 +1,17 @@
+$kind: http-request
+name: Bulk Tier Data Objects or Collections
+method: POST
+url: '{{baseUrl}}{{basePath}}/tier'
+order: 3000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "dataObjectPaths": ["/NCI/myCollection/file1.txt"],
+      "collectionPaths": []
+    }

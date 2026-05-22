@@ -1,0 +1,15 @@
+$kind: http-request
+name: Get Data Object
+method: GET
+url: '{{baseUrl}}{{basePath}}/dataObject/{{path}}'
+order: 1774715710737
+headers:
+  - key: Accept
+    value: 'application/json'
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection/myFile.txt'
+queryParams:
+  - key: includeAcl
+    value: 'false'
+    disabled: true

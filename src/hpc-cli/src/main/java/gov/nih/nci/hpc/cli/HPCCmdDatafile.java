@@ -323,8 +323,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 		header.add("collectionId");
 		header.add("absolutePath");
 		header.add("collectionName");
-		header.add("createdAt");
-		header.add("modifiedAt");
 
 		for (HpcDataObjectDTO dto : dtoObjects) {
 			List<HpcMetadataEntry> entries = dto.getMetadataEntries().getSelfMetadataEntries();
@@ -345,13 +343,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 			datafile.setCollectionId(Integer.toString(dto.getDataObject().getCollectionId()));
 			datafile.setAbsolutePath(dto.getDataObject().getAbsolutePath());
 			datafile.setCollectionName(dto.getDataObject().getCollectionName());
-			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
-			try {
-				datafile.setCreatedAt(dateFormat.format(dto.getDataObject().getCreatedAt().getTime()));
-//				datafile.setModifiedAt(dateFormat.format(dto.getDataObject().getUpdatedAt().getTime()));
-			} catch (Exception e) {
-				System.out.println("Failed to format date: " + dto.getDataObject().getCreatedAt().getTime());
-			}
 			Map<String, HpcMetadataEntry> mapEntries = new HashMap<String, HpcMetadataEntry>();
 			List<HpcMetadataEntry> entries = dto.getMetadataEntries().getSelfMetadataEntries();
 			for (HpcMetadataEntry entry : entries) {
