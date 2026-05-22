@@ -35,4 +35,6 @@ public interface HpcReportService {
    * @throws HpcException on service failure.
    */
   public void refreshViews() throws HpcException;
+
+
 }

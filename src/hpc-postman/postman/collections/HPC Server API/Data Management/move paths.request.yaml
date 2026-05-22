@@ -1,0 +1,21 @@
+$kind: http-request
+name: Move Paths (Bulk)
+method: POST
+url: '{{baseUrl}}{{basePath}}/move'
+order: 20000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Accept
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "moveRequests": [
+        {
+          "sourcePath": "/NCI/myCollection/file1.txt",
+          "destinationPath": "/NCI/newCollection/file1.txt"
+        }
+      ]
+    }

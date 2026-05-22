@@ -1,0 +1,16 @@
+$kind: collection
+name: HPC Server API
+description: |-
+  REST API for the HPC Data Management (HPC-DME) server.
+  Base URL: {{baseUrl}}{{basePath}}
+  Authentication: Basic Auth (NCI username/password).
+auth:
+  type: basic
+  credentials:
+    username: '{{vault:username}}'
+    password: '{{vault:password}}'
+variables:
+  baseUrl: 'https://localhost:7738'
+  basePath: '/hpc-server'
+  username: ''
+  password: ''
