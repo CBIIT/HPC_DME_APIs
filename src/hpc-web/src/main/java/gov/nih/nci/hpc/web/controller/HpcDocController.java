@@ -16,7 +16,6 @@ import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,12 +149,11 @@ public class HpcDocController extends AbstractHpcController {
 			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
 			String effectiveBasePath = resolveEffectiveBasePath(basePath, session);
 			HpcDocModel docModel = toDocModel(modelDTO, effectiveBasePath);
-			basePaths = buildBasePathsForView(basePaths, docModel.getBasePath());
 			model.addAttribute("docModel", docModel);
 			model.addAttribute("basePaths", basePaths);
 		} catch (Exception e) {
 			model.addAttribute("docModel", new HpcDocModel());
-			model.addAttribute("basePaths", buildBasePathsForView(null, resolveEffectiveBasePath(basePath, session)));
+			model.addAttribute("basePaths", new ArrayList<String>());
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
@@ -188,7 +186,6 @@ public class HpcDocController extends AbstractHpcController {
 			populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "basePaths",
 					sslCertPath, sslCertPassword, session, hpcModelBuilder);
 			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
-			basePaths = buildBasePathsForView(basePaths, docModel.getBasePath());
 			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
 			model.addAttribute("basePaths", basePaths);
 			model.addAttribute("success", "Model updated successfully.");
@@ -293,21 +290,6 @@ public class HpcDocController extends AbstractHpcController {
 			return user.getDefaultBasepath();
 		}
 		return null;
-	}
-
-	private Set<String> buildBasePathsForView(Set<String> sourceBasePaths, String selectedBasePath) {
-		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-		if (sourceBasePaths != null) {
-			for (String path : sourceBasePaths) {
-				if (StringUtils.hasText(path)) {
-					basePaths.add(path);
-				}
-			}
-		}
-		if (StringUtils.hasText(selectedBasePath)) {
-			basePaths.add(selectedBasePath);
-		}
-		return basePaths;
 	}
 	
 
