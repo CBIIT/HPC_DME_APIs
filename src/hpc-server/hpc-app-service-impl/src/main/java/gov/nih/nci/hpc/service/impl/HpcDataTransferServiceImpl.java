@@ -49,6 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.google.gson.Gson;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
@@ -120,6 +122,9 @@ import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
  * HPC Data Transfer Service Implementation.
  *
@@ -134,6 +139,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// archive)
 	private static final String OBJECT_ID_ATTRIBUTE = "uuid";
 	private static final String REGISTRAR_ID_ATTRIBUTE = "user_id";
+
+	private Gson gson = new Gson();
 
 	// Multiple upload source error message.
 	private static final String MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE = "Multiple upload source and/or generate upload request provided";
@@ -4499,6 +4506,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
 			}
+			logger.info("2168: In downloadDataObject in App:HpcDataTransfer " + gson.toJson(downloadTask));
 			dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 		}
 
