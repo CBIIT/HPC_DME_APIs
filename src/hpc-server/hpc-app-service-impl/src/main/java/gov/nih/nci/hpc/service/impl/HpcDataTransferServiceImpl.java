@@ -3667,6 +3667,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
+			logger.info("2168: After reset App:HpcDataTransfer " + gson.toJson(secondHopDownload.downloadTask));
+
 		} catch (HpcException e) {
 			// Cleanup the download task and rethrow.
 			completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), HpcDownloadResult.FAILED,
