@@ -1209,6 +1209,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
 
+		logger.info("2168: completeDataObjectDownloadTask App:HpcDataTransfer " + gson.toJson(downloadTask));
+
 		// Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
