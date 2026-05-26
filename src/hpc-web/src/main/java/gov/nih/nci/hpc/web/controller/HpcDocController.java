@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,6 +150,12 @@ public class HpcDocController extends AbstractHpcController {
 			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
 			String effectiveBasePath = resolveEffectiveBasePath(basePath, session);
 			HpcDocModel docModel = toDocModel(modelDTO, effectiveBasePath);
+			if (basePaths == null) {
+				basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+			}
+			if (basePaths.isEmpty() && StringUtils.hasText(docModel.getBasePath())) {
+				basePaths.add(docModel.getBasePath());
+			}
 			model.addAttribute("docModel", docModel);
 			model.addAttribute("basePaths", basePaths);
 		} catch (Exception e) {
@@ -186,6 +193,12 @@ public class HpcDocController extends AbstractHpcController {
 			populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "basePaths",
 					sslCertPath, sslCertPassword, session, hpcModelBuilder);
 			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
+			if (basePaths == null) {
+				basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+			}
+			if (basePaths.isEmpty() && StringUtils.hasText(docModel.getBasePath())) {
+				basePaths.add(docModel.getBasePath());
+			}
 			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
 			model.addAttribute("basePaths", basePaths);
 			model.addAttribute("success", "Model updated successfully.");
