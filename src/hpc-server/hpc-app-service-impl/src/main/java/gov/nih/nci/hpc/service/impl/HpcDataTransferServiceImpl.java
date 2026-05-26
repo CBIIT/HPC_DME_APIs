@@ -1328,7 +1328,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
 		// If it is an external archive download, delete the temporary archive link if no other active download tasks exist for the same path.
-		if (downloadTask.getExternalArchiveFlag() && downloadTask.getArchiveLocation() != null) {
+		if (downloadTask.getExternalArchiveFlag()) {
 			try {
 				logger.info("external archive download task: [taskId={}] - checking if there are no active downloads for path: {}",
 						downloadTask.getId(), downloadTask.getPath());
