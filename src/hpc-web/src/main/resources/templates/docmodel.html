@@ -38,7 +38,7 @@
 												<option th:each="path: ${basePaths}"
 													th:value="${path}"
 													th:text="${path}"
-													th:selected="${docModel != null and #strings.equals(path, docModel.basePath)}"></option>
+													th:selected="${#strings.equals(path, selectedBasePath)}"></option>
 											</select>
 										</div>
 									</div>
