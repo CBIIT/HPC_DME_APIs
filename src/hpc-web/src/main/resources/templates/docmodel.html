@@ -30,14 +30,15 @@
 					<div class="col-lg-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
-								<form class="form-horizontal" th:action="@{/doc/model}" method="GET" th:object="${docModel}">
+								<form class="form-horizontal" th:action="@{/doc/model}" method="GET">
 									<div class="form-group" style="margin-bottom: 0;">
 										<label class="control-label col-lg-2">Base Path</label>
 										<div class="col-lg-10">
-											<select id="basePathSelector" th:field="*{basePath}" class="form-control" onchange="this.form.submit()">
+											<select id="basePathSelector" name="basePath" class="form-control" onchange="this.form.submit()">
 												<option th:each="path: ${basePaths}"
 													th:value="${path}"
-													th:text="${path}"></option>
+													th:text="${path}"
+													th:selected="${docModel != null and #strings.equals(path, docModel.basePath)}"></option>
 											</select>
 										</div>
 									</div>
