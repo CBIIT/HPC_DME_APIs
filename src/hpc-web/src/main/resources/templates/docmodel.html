@@ -34,7 +34,8 @@
 									<div class="form-group" style="margin-bottom: 0;">
 										<label class="control-label col-lg-2">Base Path</label>
 										<div class="col-lg-10">
-											<select id="basePathSelector" name="basePath" class="form-control" onchange="this.form.submit()">
+											<select id="basePathSelector" name="basePath" class="form-control" onchange="this.form.submit()"
+												th:attr="data-selected-base-path=${selectedBasePath},data-doc-base-path=${docModel != null ? docModel.basePath : ''}">
 												<option th:each="path: ${basePaths}"
 													th:value="${path}"
 													th:text="${path}"
@@ -105,8 +106,31 @@
 			if (!el) return;
 			try { el.value = JSON.stringify(JSON.parse(el.value), null, 4); } catch(e) {}
 		}
+		function normalizeBasePath(value) {
+			if (!value) return '';
+			value = value.trim();
+			if (value.length > 1) {
+				value = value.replace(/\/+$/, '');
+			}
+			return value;
+		}
+		function applySelectedBasePath() {
+			var selectEl = document.getElementById('basePathSelector');
+			if (!selectEl) return;
+			var urlBasePath = new URLSearchParams(window.location.search).get('basePath');
+			var selectedBasePath = urlBasePath || selectEl.getAttribute('data-selected-base-path') || selectEl.getAttribute('data-doc-base-path');
+			var normalizedSelected = normalizeBasePath(selectedBasePath);
+			if (!normalizedSelected) return;
+			for (var i = 0; i < selectEl.options.length; i++) {
+				if (normalizeBasePath(selectEl.options[i].value) === normalizedSelected) {
+					selectEl.selectedIndex = i;
+					return;
+				}
+			}
+		}
 		$(document).ready(function(){
 			$('#sub-menu-admin').addClass("active");
+			applySelectedBasePath();
 			prettyJson('dataHierarchy');
 			prettyJson('collectionMetadataValidationRules');
 			prettyJson('dataObjectMetadataValidationRules');
