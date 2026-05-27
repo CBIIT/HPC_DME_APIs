@@ -168,6 +168,7 @@ public class HpcDocController extends AbstractHpcController {
 		if (!validateSession(model, bindingResult, session)) {
 			return "login";
 		}
+		String effectiveBasePath = resolveEffectiveBasePath(docModel.getBasePath(), session);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null || !"SYSTEM_ADMIN".equals(user.getUserRole())) {
 			model.addAttribute("error", "Only SYSTEM_ADMIN users can update models.");
@@ -188,14 +189,14 @@ public class HpcDocController extends AbstractHpcController {
 			populateUserBasePaths(modelDTO, authToken, userId, hpcPermissions, "basePaths",
 					sslCertPath, sslCertPassword, session, hpcModelBuilder);
 			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
-			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
+			model.addAttribute("docModel", toDocModel(modelDTO, effectiveBasePath));
 			model.addAttribute("basePaths", basePaths);
-			model.addAttribute("selectedBasePath", docModel.getBasePath());
+			model.addAttribute("selectedBasePath", effectiveBasePath);
 			model.addAttribute("success", "Model updated successfully.");
 		} catch (Exception e) {
 			model.addAttribute("docModel", docModel);
 			model.addAttribute("basePaths", new ArrayList<String>());
-			model.addAttribute("selectedBasePath", docModel.getBasePath());
+			model.addAttribute("selectedBasePath", effectiveBasePath);
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
@@ -296,6 +297,7 @@ public class HpcDocController extends AbstractHpcController {
 		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user != null && StringUtils.hasText(user.getDefaultBasepath())) {
+			session.setAttribute("basePathSelected", user.getDefaultBasepath());
 			return user.getDefaultBasepath();
 		}
 		return null;
