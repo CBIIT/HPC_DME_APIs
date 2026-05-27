@@ -4287,6 +4287,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			logger.info("download task: [taskId={}] - 2 Hop download created. Path at scratch space: {}",
 					downloadTask.getId(), sourceFile.getAbsolutePath());
+
+			logger.info("2168: In HpcSecondHopDownload in App:HpcDataTransfer " + gson.toJson(downloadTask));
 		}
 
 		// ---------------------------------------------------------------------//
@@ -4510,7 +4512,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
 			}
-			logger.info("2168: In downloadDataObject in App:HpcDataTransfer " + gson.toJson(downloadTask));
+			logger.info("2168: In createDownloadTask in App:HpcDataTransfer " + gson.toJson(downloadTask));
 			dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 		}
 
@@ -4545,6 +4547,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 			this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 			this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
+
+			logger.info("2168: In updateDownloadTask in App:HpcDataTransfer " + gson.toJson(downloadTask));
+
+			logger.info("2168: In updateDownloadTask this.downloadTaak in App:HpcDataTransfer " + gson.toJson(this.downloadTask));
 
 			dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		}
