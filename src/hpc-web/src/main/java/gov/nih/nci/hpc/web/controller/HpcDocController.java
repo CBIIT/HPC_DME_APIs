@@ -151,9 +151,11 @@ public class HpcDocController extends AbstractHpcController {
 			HpcDocModel docModel = toDocModel(modelDTO, effectiveBasePath);
 			model.addAttribute("docModel", docModel);
 			model.addAttribute("basePaths", basePaths);
+			model.addAttribute("selectedBasePath", effectiveBasePath);
 		} catch (Exception e) {
 			model.addAttribute("docModel", new HpcDocModel());
 			model.addAttribute("basePaths", new ArrayList<String>());
+			model.addAttribute("selectedBasePath", resolveEffectiveBasePath(basePath, session));
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
@@ -188,10 +190,12 @@ public class HpcDocController extends AbstractHpcController {
 			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
 			model.addAttribute("docModel", toDocModel(modelDTO, docModel.getBasePath()));
 			model.addAttribute("basePaths", basePaths);
+			model.addAttribute("selectedBasePath", docModel.getBasePath());
 			model.addAttribute("success", "Model updated successfully.");
 		} catch (Exception e) {
 			model.addAttribute("docModel", docModel);
 			model.addAttribute("basePaths", new ArrayList<String>());
+			model.addAttribute("selectedBasePath", docModel.getBasePath());
 			model.addAttribute("error", e.getMessage());
 			logger.error(e.getMessage(), e);
 		}
@@ -283,7 +287,12 @@ public class HpcDocController extends AbstractHpcController {
 
 	private String resolveEffectiveBasePath(String basePath, HttpSession session) {
 		if (StringUtils.hasText(basePath)) {
+			session.setAttribute("basePathSelected", basePath);
 			return basePath;
+		}
+		String selectedBasePath = (String) session.getAttribute("basePathSelected");
+		if (StringUtils.hasText(selectedBasePath)) {
+			return selectedBasePath;
 		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user != null && StringUtils.hasText(user.getDefaultBasepath())) {
