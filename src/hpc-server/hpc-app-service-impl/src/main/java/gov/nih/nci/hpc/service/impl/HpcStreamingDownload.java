@@ -18,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.gson.Gson;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -66,6 +67,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -232,6 +235,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		}
 
 		dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
+		logger.info("2168: createDownloadTask App:HpcStreaming " + gson.toJson(downloadTask));
 	}
 
 	/**
@@ -283,6 +287,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		}
 
 		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
+		logger.info("2168: updateDownloadTask App:HpcStreaming " + gson.toJson(downloadTask));
+
 	}
 
 	/**
@@ -298,6 +304,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 				// The task was cancelled / removed from the DB. Do some cleanup.
 				FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 			}
+
+		logger.info("2168: completeDownloadTask App:HpcStreaming " + gson.toJson(downloadTask));
 
 			Calendar completed = Calendar.getInstance();
 			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
