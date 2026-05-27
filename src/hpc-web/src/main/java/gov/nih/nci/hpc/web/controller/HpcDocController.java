@@ -297,7 +297,6 @@ public class HpcDocController extends AbstractHpcController {
 		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user != null && StringUtils.hasText(user.getDefaultBasepath())) {
-			session.setAttribute("basePathSelected", user.getDefaultBasepath());
 			return user.getDefaultBasepath();
 		}
 		return null;
