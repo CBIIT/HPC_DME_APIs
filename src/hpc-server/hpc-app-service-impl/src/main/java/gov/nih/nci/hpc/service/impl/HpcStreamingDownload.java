@@ -288,7 +288,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
 		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		logger.info("2168: updateDownloadTask App:HpcStreaming " + gson.toJson(downloadTask));
-
+		this.downloadTask.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 	}
 
 	/**
