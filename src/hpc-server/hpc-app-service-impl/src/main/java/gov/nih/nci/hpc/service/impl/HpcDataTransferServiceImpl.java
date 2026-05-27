@@ -1209,8 +1209,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
 			HpcDownloadResult result, String message, Calendar completed, long bytesTransferred) throws HpcException {
 
-		logger.info("2168: completeDataObjectDownloadTask App:HpcDataTransfer " + gson.toJson(downloadTask));
-
 		// Input validation
 		if (downloadTask == null) {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -3669,8 +3667,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						secondHopDownload.downloadTask.getDestinationType(), secondHopDownload.downloadTask.getPath());
 			}
 
-			logger.info("2168: After reset App:HpcDataTransfer " + gson.toJson(secondHopDownload.downloadTask));
-
 		} catch (HpcException e) {
 			// Cleanup the download task and rethrow.
 			completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), HpcDownloadResult.FAILED,
@@ -4287,8 +4283,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			logger.info("download task: [taskId={}] - 2 Hop download created. Path at scratch space: {}",
 					downloadTask.getId(), sourceFile.getAbsolutePath());
-
-			logger.info("2168: In HpcSecondHopDownload in App:HpcDataTransfer " + gson.toJson(downloadTask));
 		}
 
 		// ---------------------------------------------------------------------//
@@ -4512,7 +4506,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus)) {
 				downloadTask.setRestoreRequested(true);
 			}
-			logger.info("2168: In createDownloadTask in App:HpcDataTransfer " + gson.toJson(downloadTask));
 			dataDownloadDAO.createDataObjectDownloadTask(downloadTask);
 		}
 
@@ -4547,10 +4540,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 			this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 			this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
-
-			logger.info("2168: In updateDownloadTask in App:HpcDataTransfer " + gson.toJson(downloadTask));
-
-			logger.info("2168: In updateDownloadTask this.downloadTaak in App:HpcDataTransfer " + gson.toJson(this.downloadTask));
 
 			dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		}
