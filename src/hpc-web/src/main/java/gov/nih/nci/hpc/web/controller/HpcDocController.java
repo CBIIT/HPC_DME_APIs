@@ -87,6 +87,11 @@ public class HpcDocController extends AbstractHpcController {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
+	@ModelAttribute("docModel")
+	public HpcDocModel docModel() {
+		return new HpcDocModel();
+	}
+
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -172,7 +177,9 @@ public class HpcDocController extends AbstractHpcController {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null || !"SYSTEM_ADMIN".equals(user.getUserRole())) {
 			model.addAttribute("error", "Only SYSTEM_ADMIN users can update models.");
+			model.addAttribute("docModel", docModel);
 			model.addAttribute("basePaths", new ArrayList<String>());
+			model.addAttribute("selectedBasePath", effectiveBasePath);
 			return "docmodel";
 		}
 		final String authToken = (String) session.getAttribute("hpcUserToken");
