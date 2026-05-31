@@ -39,13 +39,12 @@ public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
 
 	// SQL Queries.
 	private static final String GET_FILES_NOT_ACCESSED_SQL =
-			"select replace(search_path, ?, '') || name as path " +
-			"from \"vast-big-catalog-bucket|vast_big_catalog_schema\".\"vast_big_catalog_table\" " +
+			"select parent_path || name as path " +
+			"from \"vast-big-catalog-bucket/vast_big_catalog_schema\".\"vast_big_catalog_table\" " +
 			"where element_type = 'FILE' " +
 			"and atime < current_timestamp - INTERVAL '{months}' MONTH " +
-			"and search_path like ? " +
-			"and name NOT LIKE '%/'";
-
+			"and parent_path LIKE ?";
+			
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -76,9 +75,11 @@ public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
 	@Override
 	public List<String> getFilesNotAccessed(String searchPath, Integer monthsNotAccessed) throws HpcException {
 		try {
+			logger.error("ERAN " + GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()));
+
 			return jdbcTemplate.queryForList(
 					GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()),
-					String.class, searchPath, searchPath);
+					String.class, searchPath + '%');
 
 		} catch (DataAccessException e) {
 			throw new HpcException(

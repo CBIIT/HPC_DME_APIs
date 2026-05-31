@@ -1,2 +1,9 @@
 $kind: collection
-name: 'HPC Server API'
+name: HPC Server API
+auth:
+  - id: 236c22c3-dd78-4b41-8176-a23ea4721e7b
+    type: basic
+    name: Basic Auth
+    credentials:
+      username: "{{username}}"
+      password: "{{password}}"

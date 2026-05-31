@@ -1,20 +1,11 @@
 $kind: http-request
 name: Authenticate
 method: GET
-url: '{{baseUrl}}{{basePath}}/authenticate'
+url: "{{baseUrl}}{{basePath}}/authenticate"
 body:
   type: json
   content: ""
-auth:
-  type: basic
-  credentials:
-    - key: username
-      value: '{{vault:username}}'
-    - key: password
-      value: '{{vault:password}}'
 order: 1000
 headers:
-  - key: Accept
-    value: application/json
-  - key: Content-Type
-    value: application/json
+  Accept: application/json
+  Content-Type: application/json
