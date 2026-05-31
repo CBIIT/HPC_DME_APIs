@@ -577,7 +577,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
+			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchiveFlag)
 			throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
@@ -608,6 +608,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadRequest.setCompletionEvent(completionEvent);
 		downloadRequest.setCollectionDownloadTaskId(collectionDownloadTaskId);
 		downloadRequest.setSize(size);
+		downloadRequest.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Create a download response.
 		HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
@@ -794,6 +795,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcSetArchiveObjectMetadataResponse deleteDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+
 		// Input validation.
 		if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1042,6 +1044,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException {
+		return dataDownloadDAO.getDownloadTasksCountForExternalArchiveByPath(path);
+	}
+
+	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
 			throws HpcException {
@@ -1131,6 +1138,65 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public boolean getCollectionDownloadTaskCancellationRequested(String taskId) throws HpcException {
 			return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
 	}
+
+	private boolean deleteArchiveLink(String path, HpcFileLocation archiveLocation, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		boolean archiveLinkDeletionSuccess = false;
+		try {
+			// Clear S3 metadata fields like x-amz-meta-user-id and x-amz-meta-uuid
+			HpcSetArchiveObjectMetadataResponse clearMetadataResponse = deleteDataObjectMetadata(archiveLocation,
+							HpcDataTransferType.S_3,
+							configurationId,
+							s3ArchiveConfigurationId);
+			if (!clearMetadataResponse.getMetadataClearStatus()) {
+				throw new HpcException("Failed to clear S3 metadata for data object at path: " + path, HpcErrorType.UNEXPECTED_ERROR);
+			} else {
+				// Successfully cleared the metadata, proceed to delete the data management record from iRODS
+				dataManagementService.delete(path, false);
+				logger.info("Successfully deleted data object at path: {} from IRODS", path);
+			}
+			archiveLinkDeletionSuccess = true;
+		} catch (Exception e) {
+			logger.error("Failed to delete archive linked file at path: {} error: {}", path, e.getMessage(), e);
+			throw new HpcException("Failed to delete archive linked file at path: " + path + ". Error: " + e.getMessage(),
+					HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}
+		return archiveLinkDeletionSuccess;
+	}
+
+	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
+		boolean temporaryArchiveLinkDeleted = false;
+		/*
+		 * For external archive downloads, the data object must be deleted after
+		 * the download completes (whether successful or failed). However, we must
+		 * ensure no other active external archive download tasks exist for the same path
+		 * before performing the deletion.
+		 *
+		 * If multiple download tasks are active for the same path, deletion is deferred
+		 * until the final task completes to prevent data corruption.
+		 */
+		int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+		logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
+
+		if (numberOfActiveExternalDownloadTasksForPath == 0) {
+			try {
+				HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
+				temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+						configurationId, s3ConfigurationId);
+			} catch (HpcException e) {
+				logger.error("Failed to delete data object after download from external archive for path: "
+						+ path + ". Error: " + e.getMessage(), e);
+				notificationService.sendNotification(new HpcException(
+						"Failure to delete data object after download from external archive for path "
+								+ path + ". Error: " + e.getMessage(),
+						HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+				throw new HpcException("Failed to delete data object after download from external archive for path: "
+						+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+			}
+		}
+
+		return temporaryArchiveLinkDeleted;
+	}
+
 
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
@@ -1234,6 +1300,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setFirstHopRetried(downloadTask.getFirstHopRetried());
 		taskResult.setRetryTaskId(downloadTask.getRetryTaskId());
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
+		taskResult.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(toIntExact(bytesTransferred * 1000
@@ -1259,6 +1326,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
+
+		// If it is an external archive download, delete the temporary archive link if no other active download tasks exist for the same path.
+		if (downloadTask.getExternalArchiveFlag()) {
+			try {
+				logger.info("external archive download task: [taskId={}] - checking if there are no active downloads for path: {}",
+						downloadTask.getId(), downloadTask.getPath());
+				securityService.executeAsSystemAccount(Optional.empty(), () -> {
+					if(deleteTemporaryArchiveLink(downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
+						logger.info("external archive download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
+						 downloadTask.getId(), downloadTask.getPath());
+					} else {
+						logger.info("external download task: [taskId={}] - temporary archive link deletion skipped for path: {} since other active download tasks exist for the same path",
+						 downloadTask.getId(), downloadTask.getPath());
+					}
+				});
+			} catch (HpcException e) {
+				logger.error("Failed to delete data object at path: {} error: {}", downloadTask.getPath(), e.getMessage(), e);
+			}
+		}
 
 		// Remove from HPC_GLOBUS_TRANSFER_TASK if Globus request
 		if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
@@ -4401,6 +4487,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setCreated(Calendar.getInstance());
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
+			downloadTask.setExternalArchiveFlag(firstHopDownloadRequest.getExternalArchiveFlag());
 			downloadTask.setFirstHopRetried(false);
 			downloadTask.setS3DownloadTaskServerId(
 					dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)
