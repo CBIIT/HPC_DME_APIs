@@ -579,17 +579,17 @@ public interface HpcDataManagementService {
 	public String findDataManagementConfigurationId(String path);
 
 	/**
-	 * Find data management configuration for a given external path. This is searched by
-	 * matching the given path to all configuration posix paths. If any configuration
-	 * posix path is found to be the 'posix path' of the given path, then the
-	 * corresponding configuration is returned
+	 * Returns HpcDataTransferConfiguration for the given external path. This is searched by
+	 * matching the posix path of HpcDataTransferConfiguration to the start of a given path. If any configuration 
+	 * is found where its posix path matches the beginning of the provided path, that configuration is returned.
 	 *
-	 * @param path the external path to find a config for.
-	 * @return A configuration if matched by posix path, or null otherwise
+	 * @param path The external path to find a data transfer configuration for.
+	 * @return HpcDataTransferConfiguration if a matching configuration is found, null otherwise.
+	 * @throws HpcException on service failure.
 	 */
-	public HpcDataManagementConfiguration findDataManagementConfigurationFromExternalPath(String path);
 
-	
+	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path)  throws HpcException;
+
 	/**
 	 * Get data management configuration ID by base path.
 	 *
