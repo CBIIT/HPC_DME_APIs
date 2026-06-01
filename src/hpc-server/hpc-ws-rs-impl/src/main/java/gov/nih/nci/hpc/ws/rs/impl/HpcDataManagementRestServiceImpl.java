@@ -674,6 +674,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return downloadResponse(downloadResponse, messageContext);
 	}
 
+	@Override
+	public Response downloadDataObjectFromExternalSource(String path,
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest,
+			MessageContext messageContext) {
+		HpcDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.downloadDataObjectFromExternalSource(toNormalizedPath(path), downloadRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return downloadResponse(downloadResponse, messageContext);
+	}
+
 	@Deprecated
 	@Override
 	public Response getDataObjectDownloadStatusV1(String taskId) {

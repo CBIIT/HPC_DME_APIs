@@ -99,7 +99,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private static final String SUCCEEDED_STATUS = "SUCCEEDED";
 	private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
 	private static final String OK_STATUS = "OK";
-	private static final String NOT_DIRECTORY_GLOBUS_CODE = "ExternalError.RestDirListingFailed.NotDirectory";
+	private static final String NOT_DIRECTORY_GLOBUS_CODE = "ExternalError.DirListingFailed.NotDirectory";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
