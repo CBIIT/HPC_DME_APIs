@@ -56,12 +56,16 @@ public class ConfigFileReader {
 		} else if(testingEnvironment.equals("UAT")){
 			url = properties.getProperty("urlUAT");
 		} else {
-			throw new RuntimeException("Please specify testingEnvironment in the Configuration.properties file.");
+			//throw new RuntimeException("Please specify testingEnvironment in the Configuration.properties file.");
+			 url = "http://localhost:8080/";
+			 System.out.println("Unknown testingEnvironment specified in the Configuration.properties file. Defaulting to localhost:8080");
 		}
-		if (url != null && !url.isEmpty())
+		/*if (url != null && !url.isEmpty())
 			return url;
 		else
 			throw new RuntimeException("url not specified in the Configuration.properties file.");
+		 */
+		return url;
 	}
 
 	public String getToken() {
@@ -76,13 +80,18 @@ public class ConfigFileReader {
 		if (role == null || role.isEmpty()) {
 			throw new RuntimeException("User Role is Empty. The Feature should define a User Role");
 		}
+		String testingEnvironment = properties.getProperty("testingEnvironment");
+		if(testingEnvironment == null || testingEnvironment.isBlank()) {
+			throw new RuntimeException("Please specify testingEnvironment in the Configuration.properties file.");
+		}
+		testingEnvironment = testingEnvironment.trim();
 		String token="";
 		if(role.equals(UserRole.USER_ROLE)) {
-			token = properties.getProperty("userTokenUAT");
+			token = properties.getProperty("userToken" + testingEnvironment);
 		} else if (role.equals(UserRole.GROUP_ADMIN_ROLE)) {
-			token = properties.getProperty("groupAdminTokenUAT");
+			token = properties.getProperty("groupAdminToken" + testingEnvironment);
 		} else if (role.equals(UserRole.SYSTEM_ADMIN_ROLE)){
-			token = properties.getProperty("systemAdminTokenUAT");
+			token = properties.getProperty("systemAdminToken" + testingEnvironment);
 		} else {
 			throw new RuntimeException("Unknown Role");
 		}
@@ -108,6 +117,22 @@ public class ConfigFileReader {
 		String refreshTokenString = gson.toJson(refreshTokenObj);
 		refreshTokenString = properties.getProperty("googleRefreshTokenBlock"); // TEMP CODE
 		return refreshTokenString;
+	}
+
+	public String getBoxAccessToken() {
+		String boxAccessToken = properties.getProperty("boxAccessToken");
+		if (boxAccessToken != null)
+			return boxAccessToken;
+		else
+			throw new RuntimeException("boxAccessToken not specified in the Configuration.properties file.");
+	}
+
+	public String getBoxRefreshToken() {
+		String boxRefreshToken = properties.getProperty("boxRefreshToken");
+		if (boxRefreshToken != null)
+			return boxRefreshToken;
+		else
+			throw new RuntimeException("boxRefreshToken not specified in the Configuration.properties file.");
 	}
 
 	public String getAwsAccessKey() {
