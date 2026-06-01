@@ -402,7 +402,6 @@ public class HpcDownloadController extends AbstractHpcController {
 				account.setHost(downloadFile.getAsperaHost());
 				destination.setAccount(account);
 				dto.setAsperaDownloadDestination(destination);
-				logger.debug("JSON for Aspera Download: " + gson.toJson(dto));
 			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.GOOGLE_DRIVE_TYPE)) {
   			    String accessToken = (String)session.getAttribute("accessToken");
   			    HpcGoogleDownloadDestination destination = new HpcGoogleDownloadDestination();
@@ -421,7 +420,6 @@ public class HpcDownloadController extends AbstractHpcController {
 				googleCloudDestination.setDestinationLocation(location);
 				googleCloudDestination.setAccessToken(refreshTokenDetailsGoogleCloud);
 				dto.setGoogleCloudStorageDownloadDestination(googleCloudDestination);
-				logger.info("GoogleCloud file download json: " + gson.toJson(dto));
 			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals(HpcAuthorizationService.BOX_TYPE)) {
 				String accessBoxToken = (String)session.getAttribute("accessBoxToken");
 				String refreshBoxToken = (String)session.getAttribute("refreshBoxToken");
@@ -433,7 +431,6 @@ public class HpcDownloadController extends AbstractHpcController {
 				boxDestination.setAccessToken(accessBoxToken);
 				boxDestination.setRefreshToken(refreshBoxToken);
 				dto.setBoxDownloadDestination(boxDestination);
-				logger.info("boxDestination download json: " + gson.toJson(dto));
 			}
 			if("collection".equals(downloadFile.getDownloadType())) {
 				if (downloadFile.getDownloadDestinationType() != null
