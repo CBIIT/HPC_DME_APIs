@@ -351,6 +351,15 @@ public interface HpcDataDownloadDAO {
 			throws HpcException;
 
 	/**
+	 * Get external data object download tasks count for a specific path.
+	 *
+	 * @param path The archive path to download from.
+	 * @return A total count of external data object download tasks.
+	 * @throws HpcException on database error.
+	 */
+	public int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException;
+
+	/**
 	 * Set a collection download task in-process value.
 	 *
 	 * @param id        The collection download task ID.
