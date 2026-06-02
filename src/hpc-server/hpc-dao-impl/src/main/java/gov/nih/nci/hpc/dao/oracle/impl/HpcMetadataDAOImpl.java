@@ -269,7 +269,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "FROM hpc_data_meta_main "
 			+ "GROUP BY object_id, meta_id having count(*) > 1";
 
-	private static final String GET_DATA_OBJECT_SIZE_FOR_PATH_SQL = "select TO_NUMBER(META_ATTR_VALUE) from HPC_DATA_META_MAIN_MV where object_path = ? and meta_attr_name='source_file_size'";
+	//Retrieve size with directive to block Oracle's real time MV Log merging to optimize performance for large lists
+	private static final String GET_DATA_OBJECT_SIZE_FOR_PATH_SQL = "select /*+ FRESH_ONLY */ TO_NUMBER(META_ATTR_VALUE) from HPC_DATA_META_MAIN_MV where object_path = ? and meta_attr_name='source_file_size'";
 
 	private static final String GET_COLLECTION_SIZE_FOR_PATH_SQL = "SELECT SUM(TOTALSIZE) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
 
