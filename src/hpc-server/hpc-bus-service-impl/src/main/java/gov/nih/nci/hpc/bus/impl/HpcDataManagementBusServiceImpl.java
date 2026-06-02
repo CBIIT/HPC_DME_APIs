@@ -77,6 +77,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
@@ -785,6 +786,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return downloadResponse;
 	}
+
+	@Override
+	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+	        throws HpcException {
+		HpcCollectionDownloadResponseDTO responseDTO = null;
+		try{
+			if (downloadRequest == null) {
+				throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			// Validate that the downloadArchiveLinkBasePath property is configured, as it is required for saving the temporary archive links for external downloads.
+			if (StringUtils.isEmpty(downloadArchiveLinkBasePath)) {
+				logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
+				throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+		} catch (HpcException e) {
+			logger.error("Failed to download collection from external source: " + path, e);
+			throw e;
+		}
+		return responseDTO;
+	}
+
 
 
 	@Override
