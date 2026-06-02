@@ -33,9 +33,14 @@ const GridComponent = () => {
   const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
 
 
+  const normalizePath = (path) => {
+    if (!path) return path;
+    return path.replace(/\\/g, '/');
+  };
+
   const handleSpanClick = (event) => {
     const currentParams = new URLSearchParams(searchParams.toString());
-    currentParams.set('path', event.currentTarget.id);
+    currentParams.set('path', normalizePath(event.currentTarget.id));
     router.push(url + `?${currentParams.toString()}`);
   };
 
@@ -45,7 +50,7 @@ const GridComponent = () => {
           {!props.data.isDirectory ?
               <span> {props.data.name}</span>
               :
-              <span id={props.data.path} role="button" onClick={handleSpanClick} >
+              <span id={normalizePath(props.data.path)} role="button" onClick={handleSpanClick} >
               <i className="icon_folder me-2"></i>
                 {props.data.name}
             </span>
@@ -154,7 +159,7 @@ const GridComponent = () => {
   const handleBackButtonClick = (event) => {
     const currentParams = new URLSearchParams(searchParams.toString());
     const path = event.currentTarget.id.length < basePath.length ? basePath : event.currentTarget.id;
-    currentParams.set('path', path);
+    currentParams.set('path', normalizePath(path));
     router.push(url + `?${currentParams.toString()}`);
   };
 
@@ -209,7 +214,7 @@ const GridComponent = () => {
   return (
       <>
 
-        <h3><a id={parentPath} href="#" onClick={handleBackButtonClick}><span className="m-3" ><FontAwesomeIcon icon={faAngleLeft} /></span></a>
+        <h3><a id={normalizePath(parentPath)} href="#" onClick={handleBackButtonClick}><span className="m-3" ><FontAwesomeIcon icon={faAngleLeft} /></span></a>
           {relativePath}</h3>
         <div className="ps-3" style={{ width: "98%", height: "520px" }}>
           <AgGridReact gridOptions={gridOptions}
