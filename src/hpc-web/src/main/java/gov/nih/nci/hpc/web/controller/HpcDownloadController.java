@@ -94,6 +94,8 @@ public class HpcDownloadController extends AbstractHpcController {
 	private String webServerName;
 	@Value("${gov.nih.nci.hpc.asperaBucket}")
 	private String asperaBucket;
+	@Value("${gov.nih.nci.hpc.server.external.dataObject}")
+	private String dataObjectExternalDownloadServiceURL;
 
 	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
 	private Gson gson = new Gson();
@@ -360,9 +362,15 @@ public class HpcDownloadController extends AbstractHpcController {
 				result.setMessage("Invalid user session, expired. Please login again.");
 				return result;
 			}
-			final String basisURL = "collection".equals(downloadFile
+			//If this is an external archive download, we need to call the /ext URL
+            String external = downloadFile.getExternal();
+            boolean externalArchive = false;
+    		if(StringUtils.isNoneEmpty(external)) {
+    			externalArchive = Boolean.parseBoolean(external);
+    		}
+			final String basisURL = externalArchive ? this.dataObjectExternalDownloadServiceURL: ("collection".equals(downloadFile
         .getDownloadType()) ? this.collectionDownloadServiceURL :
-        this.dataObjectDownloadServiceURL;
+        this.dataObjectDownloadServiceURL);
       final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
         .path("/{dme-archive-path}/download").buildAndExpand(downloadFile
         .getDestinationPath()).encode().toUri().toURL().toExternalForm();
@@ -458,16 +466,6 @@ public class HpcDownloadController extends AbstractHpcController {
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :
                         HpcDownloadTaskType.DATA_OBJECT.name();
             
-            //TODO YURI If this is an external archive download, we need to call the /ext URL
-            String external = downloadFile.getExternal();
-            boolean externalArchive = false;
-    		if(StringUtils.isNoneEmpty(external)) {
-    			externalArchive = Boolean.parseBoolean(external);
-    		}
-    		if(externalArchive) {
-    			result.setMessage("External Archive Download task requested: " + downloadFile.getDestinationPath());
-    			return result;
-    		}
 			return HpcClientUtil.downloadDataFile(authToken, serviceURL, dto, downloadTaskType, sslCertPath, sslCertPassword);
 		} catch (HttpStatusCodeException e) {
 			result.setMessage("Download request is not successful: " + e.getMessage());
