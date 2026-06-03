@@ -5027,6 +5027,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
+		registrationRequest.setCreateParentCollections(true);
 		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null);
 		if(registrationResponseDTO != null && registrationResponseDTO.getRegistered() == true){
 			logger.info("Registered the external download link for path: " + downloadArchiveLinkPath);
