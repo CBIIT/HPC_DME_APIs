@@ -3,7 +3,7 @@
 		<div id="radioset">
 			<p>Transfer Type:</p>
 			<div class="pull-left radioMargin"
-				th:if="${downloadType == 'datafile'}">
+				th:if="${downloadType == 'datafile' and external != 'true'}">
 				<label class="radio-inline"><input type="radio"
 					id="searchTypeSync" name="searchType" value="sync"
 					onChange="display('sync')" checked="checked" />Local

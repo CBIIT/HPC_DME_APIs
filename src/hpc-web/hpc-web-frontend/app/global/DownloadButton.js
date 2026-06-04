@@ -8,17 +8,28 @@ import { GridContext } from './GridContext';
 export default function DownloadButton() {
     const { selectedRows } = useContext(GridContext);
 
+	const normalizePath = (path) => {
+	  if (!path) return path;
+	  return path.replace(/\\/g, '/');
+	};
+
     const handleDownload = async () => {
-        if (selectedRows.length > 0) {
+        if (selectedRows.length > 1 ) {
+			console.log('More than 1 row selected.');
+		} else if (selectedRows.length === 0) {
+			console.log('No row selected.');
+		} else if (!selectedRows[0].isDirectory) {
             const selectedRowData = selectedRows[0];
-            const url = selectedRowData.isDirectory ?
-                '/download?ext=true&type=collection&path=' + selectedRowData.path :
-                '/download?ext=true&type=datafile&downloadFilePath=' + selectedRowData.path;
+            const url = selectedRowData.archived ?
+                '/download?type=datafile&downloadFilePath=' + normalizePath(selectedRowData.archivePath) :
+                '/download?ext=true&type=datafile&downloadFilePath=' + normalizePath(selectedRowData.path);
             window.open(url, '_blank', 'noopener noreferrer');
             console.log('Selected row data:', selectedRowData);
-        } else {
-            console.log('No row selected.');
-        }
+
+		} else if (selectedRows[0].isDirectory){
+			alert('Downloading directories is not supported. Please select a file to download.');
+		}
+		
         console.log("Download clicked");
     };
 
