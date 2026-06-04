@@ -456,7 +456,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						</div>
 					<form class="form-horizontal" id="simplesearchform" action="#"
 						role="form" th:action="@{/criteria}" th:object="${hpcSearch}"
-						method="post" enctype="multipart/form-data">
+						method="post">
 						<input type="hidden" id="actionType" name="actionType" value="pagination"/>
 						<input type="hidden" id="pageNumber" name="pageNumber"/>
 						<input type="hidden" id="pageSize" name="pageSize"/>
@@ -465,7 +465,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 					</form> 
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
-						method="post" enctype="multipart/form-data">
+						method="post">
 						<input type="hidden" id="selectedFilePaths1" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType" name="downloadType" value=""/>
 						<input type="hidden" id="searchType" name="searchType" value=""/>
@@ -475,7 +475,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 					</form>
 					<form class="form-horizontal" id="bulkPermissionsform" action="#"
 						role="form" th:action="@{/bulkpermissions}" 
-						method="post" enctype="multipart/form-data">
+						method="post">
 						<input type="hidden" id="selectedFilePaths2" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType2" name="downloadType" value=""/>
 						<input type="hidden" id="searchType2" name="searchType" value=""/>
@@ -485,7 +485,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 					</form> 
 					<form class="form-horizontal" id="bulkMetadataform" action="#"
 						role="form" th:action="@{/bulkupdatemetadata}"
-						method="post" enctype="multipart/form-data">
+						method="post">
 						<input type="hidden" id="selectedFilePaths3" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType3" name="downloadType" value=""/>
 						<input type="hidden" id="searchType3" name="searchType" value=""/>
@@ -497,7 +497,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
-						method="post" enctype="multipart/form-data">
+						method="post">
 					</form> 
 					</div>
 

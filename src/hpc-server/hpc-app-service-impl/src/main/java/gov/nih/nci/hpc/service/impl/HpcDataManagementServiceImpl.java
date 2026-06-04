@@ -1182,6 +1182,35 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public void updateDataManagementModel(String basePath, Map<String, String> modelColumnsValues) throws HpcException {
 		dataManagementConfigurationLocator.updateDataManagementModel(basePath, modelColumnsValues);
+        }	
+
+        public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path) throws HpcException  {
+		HpcDataTransferConfiguration dataTransferConfiguration = null;
+		int longestMatchingPosixPathLength = -1;
+		try{
+			if (StringUtils.isEmpty(path)) {
+				return null;
+			}
+			// Return the most specific matching external S3 archive configuration whose mounted
+			// POSIX path matches the requested external path on a path boundary.
+			for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
+				String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
+				if (dataTransferConfigurationId != null) {
+					HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
+					if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getExternalStorage() &&
+							StringUtils.isNotEmpty(dataTransferConfigurationCandidate.getPosixPath()) &&
+							isMatchingPosixPath(path, dataTransferConfigurationCandidate.getPosixPath()) &&
+							dataTransferConfigurationCandidate.getPosixPath().length() > longestMatchingPosixPathLength) {
+						dataTransferConfiguration = dataTransferConfigurationCandidate;
+						longestMatchingPosixPathLength = dataTransferConfigurationCandidate.getPosixPath().length();
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error finding matching S3 configuration for path: {}", path, e);
+			throw new HpcException("Error finding matching S3 configuration for path", HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
+		return dataTransferConfiguration;
 	}
 
 	@Override
@@ -1598,5 +1627,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			}
 
 		}
+	}
+
+	private boolean isMatchingPosixPath(String path, String posixPath) {
+		if (!path.startsWith(posixPath)) {
+			return false;
+		}
+		return path.length() == posixPath.length() || path.charAt(posixPath.length()) == '/';
 	}
 }
