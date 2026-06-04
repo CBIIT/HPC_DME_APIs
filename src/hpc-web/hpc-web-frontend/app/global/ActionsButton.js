@@ -6,12 +6,16 @@ import { useContext } from "react";
 import { GridContext } from "./GridContext";
 
 export default function ActionsButton() {
+	const normalizePath = (path) => {
+	    if (!path) return path;
+	    return path.replace(/\\/g, '/');
+	  };
     const { selectedRows } = useContext(GridContext);
     const handleCopyPath = async () => {
         if (selectedRows.length > 0) {
             const selectedRowData = selectedRows[0];
             console.log('Selected row data:', selectedRowData);
-            navigator.clipboard.writeText(selectedRowData.path);
+            navigator.clipboard.writeText(normalizePath(selectedRowData.path));
         } else {
             console.log('No row selected.');
         }
@@ -21,8 +25,8 @@ export default function ActionsButton() {
         if (selectedRows.length > 0) {
             const selectedRowData = selectedRows[0];
             const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?
-                '/usage.html?path=' + selectedRowData.path :
-                '/usage?path=' + selectedRowData.path;
+                '/usage.html?path=' + normalizePath(selectedRowData.path) :
+                '/usage?path=' + normalizePath(selectedRowData.path);
             window.open(url, '_blank', 'noopener noreferrer');
             console.log('Selected row data:', selectedRowData);
         } else {

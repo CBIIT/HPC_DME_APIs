@@ -26,6 +26,11 @@ const GridComponent = () => {
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
+  
+  const normalizePath = (path) => {
+    if (!path) return path;
+    return path.replace(/\\/g, '/');
+  };
 
   const myTheme = themeQuartz.withParams({
     backgroundColor: '#ffffff',
@@ -51,7 +56,7 @@ const GridComponent = () => {
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/usage/calcTotalSize?path=';
     const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
-    const param = searchParams.get('path');
+    const param = normalizePath(searchParams.get('path'));
 
     if(!useExternalApi) {
       fetch("/usage.json") // Fetch data from server
