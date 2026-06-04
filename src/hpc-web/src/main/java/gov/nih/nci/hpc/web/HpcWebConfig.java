@@ -59,8 +59,8 @@ public class HpcWebConfig implements WebMvcConfigurer {
 
 	 @Override
      public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	   registry.addResourceHandler("/config/api-docs.json").
-  		addResourceLocations("classpath:/config");
+	   registry.addResourceHandler("/config/{filename:api-docs.json}").
+  		addResourceLocations("classpath:/config/");
      }
 	 
 	 @Bean

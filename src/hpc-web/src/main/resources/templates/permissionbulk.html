@@ -113,8 +113,7 @@
 										<div class="col-md-12 form-group">
 											<form class="form-horizontal" id="permissionsform" action="#"
 												role="form" th:action="@{/assignbulkpermissions}"
-												th:object="${permissions}" method="POST"
-												enctype="multipart/form-data">
+												th:object="${permissions}" method="POST">
 												<input type="hidden" th:field="*{type}" />
 												<input type="hidden" name="downloadType" id="downloadType"
 													th:value="${hpcDownloadDatafile.downloadType}" />
