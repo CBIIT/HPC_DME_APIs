@@ -9,10 +9,9 @@
  */
 package gov.nih.nci.hpc.web;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * <p>
@@ -33,6 +32,12 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 public class NextStaticController {
 
+    @GetMapping({"/", "/global", "/usage"})
+    public String forwardKnownPages(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return "forward:" + uri + ".html";
+    }
+
     /**
      * Forward extensionless nested routes to their .html equivalents.
      * 
@@ -46,48 +51,38 @@ public class NextStaticController {
      * @return forward to the .html file or null to use default handling
      */
     @GetMapping(value = "/**/{path:[^\\.]*}")
-    public String forwardToHtml(HttpServletRequest request) {
+    public String forwardExtensionlessPages(HttpServletRequest request) {
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
-        
-        // Remove context path from URI for comparison
+
         String pathWithoutContext = uri;
-        if (contextPath != null && !contextPath.isEmpty() && !contextPath.equals("/")) {
-            if (uri.startsWith(contextPath)) {
-                pathWithoutContext = uri.substring(contextPath.length());
-            }
+        if (contextPath != null && !contextPath.isEmpty() && !"/".equals(contextPath) && uri.startsWith(contextPath)) {
+            pathWithoutContext = uri.substring(contextPath.length());
         }
-        
-        // Exclude API routes
-        if (pathWithoutContext.startsWith("/api/")) {
+
+        // Do not rewrite API, swagger, Next internals, or static folders.
+        if (pathWithoutContext.startsWith("/api/")
+                || pathWithoutContext.startsWith("/swagger-ui")
+                || pathWithoutContext.startsWith("/_next/")
+                || pathWithoutContext.startsWith("/static/")
+                || pathWithoutContext.startsWith("/public/")
+                || pathWithoutContext.startsWith("/css/")
+                || pathWithoutContext.startsWith("/js/")
+                || pathWithoutContext.startsWith("/img/")
+                || pathWithoutContext.startsWith("/fonts/")) {
             return null;
         }
-        
-        // Exclude Next.js internal routes
-        if (pathWithoutContext.startsWith("/_next/")) {
+
+        // Skip files and extension-based resources (.txt, .js, .css, .ico, etc.).
+        if (pathWithoutContext.contains(".")) {
             return null;
         }
-        
-        // Exclude static asset routes
-        if (pathWithoutContext.startsWith("/static/") || 
-            pathWithoutContext.startsWith("/public/") ||
-            pathWithoutContext.startsWith("/css/") ||
-            pathWithoutContext.startsWith("/js/") ||
-            pathWithoutContext.startsWith("/img/") ||
-            pathWithoutContext.startsWith("/fonts/") ||
-            pathWithoutContext.startsWith("/swagger-ui/")) {
+
+        // Restrict catch-all rewrite to known exported pages to avoid accidental 404 forwards.
+        if (!"/global".equals(pathWithoutContext) && !"/usage".equals(pathWithoutContext) && !"/".equals(pathWithoutContext)) {
             return null;
         }
-        
-        // Exclude files with extensions and special files
-        if (pathWithoutContext.contains(".") ||
-            pathWithoutContext.equals("/favicon.ico") ||
-            pathWithoutContext.equals("/robots.txt") ||
-            pathWithoutContext.equals("/sitemap.xml")) {
-            return null;
-        }
-        
-        // Forward to .html file
+
         return "forward:" + uri + ".html";
     }
 }
