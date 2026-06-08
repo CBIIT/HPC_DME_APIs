@@ -17,7 +17,7 @@ const ActionsBar = ({isOpen}) => {
     const searchParams = useSearchParams();
     const [browseTextValue, setBrowseTextValue] = useState('');
     const [filterTextValue, setFilterTextValue] = useState('');
-    const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
+    const url = '/global';
 
     useEffect(() => {
         if(gridApi) {

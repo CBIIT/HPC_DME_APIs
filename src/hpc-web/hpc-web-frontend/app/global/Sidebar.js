@@ -17,7 +17,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
     } = useSessionContext();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
+    const url = '/global';
 
     const handleArchiveClick = (event) => {
         setBasePath(event.currentTarget.id);
