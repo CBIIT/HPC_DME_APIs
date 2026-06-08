@@ -397,6 +397,17 @@ public interface HpcDataManagementBusService {
 			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException;
 
 	/**
+	 * Bulk Data object registration.
+	 *
+	 * @param bulkDataObjectRegistrationRequest The bulk registration request.
+	 * @param externalArchiveFlag      If true, the data objects are in an external archive and the registration will be handled differently.
+	 * @return A registration response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
+			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, boolean externalArchiveFlag) throws HpcException;
+
+	/**
 	 * Get data objects registration task status.
 	 *
 	 * @param taskId The registration task ID.
