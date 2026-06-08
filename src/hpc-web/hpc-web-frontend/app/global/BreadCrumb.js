@@ -17,7 +17,7 @@ const BreadCrumb = () => {
     const [fullPaths, setFullPaths] = useState([]);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const url = process.env.NEXT_PUBLIC_DME_WEB_URL === '' ?  '/global.html' : '/global';
+    const url = '/global';
 
     useEffect(() => {
         if(!absolutePath || !basePath) {
