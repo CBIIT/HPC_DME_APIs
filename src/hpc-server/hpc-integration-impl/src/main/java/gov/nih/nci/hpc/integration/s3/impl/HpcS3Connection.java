@@ -89,7 +89,7 @@ public class HpcS3Connection {
 	private Boolean useTcpKeepAlive = false;
 
 	// The max number of error retries
-	@Value("{hpc.integration.s3.maxErrorRetries}")
+	@Value("${hpc.integration.s3.maxErrorRetries}")
 	private Integer maxErrorRetries = null;
 
 	// The max number of http connections
