@@ -85,7 +85,7 @@ public class HpcS3Connection {
 	private Integer connectionTimeout = null;
 
 	// The TCP keep alive timer setting
-	@Value("$(hpc.integration.s3.useTcpKeepAlive}")
+	@Value("${hpc.integration.s3.useTcpKeepAlive}")
 	private Boolean useTcpKeepAlive = false;
 
 	// The max number of error retries
