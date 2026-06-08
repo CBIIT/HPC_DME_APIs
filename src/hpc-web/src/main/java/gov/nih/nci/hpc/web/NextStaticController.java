@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class NextStaticController {
 
-    @GetMapping({"/", "/global", "/usage"})
+    @GetMapping({"/global", "/usage"})
     public String forwardKnownPages(HttpServletRequest request) {
         String uri = request.getRequestURI();
         return "forward:" + uri + ".html";
@@ -77,9 +77,14 @@ public class NextStaticController {
         if (pathWithoutContext.contains(".")) {
             return null;
         }
+        
+        // Restrict catch-all rewrite to login page
+        if ("/login".equals(pathWithoutContext) || pathWithoutContext.startsWith("/login/")) {
+            return null;
+        }
 
         // Restrict catch-all rewrite to known exported pages to avoid accidental 404 forwards.
-        if (!"/global".equals(pathWithoutContext) && !"/usage".equals(pathWithoutContext) && !"/".equals(pathWithoutContext)) {
+        if (!"/global".equals(pathWithoutContext) && !"/usage".equals(pathWithoutContext)) {
             return null;
         }
 
