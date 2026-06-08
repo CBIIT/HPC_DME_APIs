@@ -15,21 +15,42 @@ export default function SessionProvider({children}) {
 
         if(useExternalApi) {
             const fetchData = async () => {
-
+                let redirectToLogin = false;
                 try {
                     const response = await fetch(sessionUrl, {
                         credentials: 'include',
                     });
+
+                    // Interceptor issues a 302 to /login when session is expired or not authenticated.
+                    // fetch follows the redirect automatically; detect it by checking response.redirected + final URL.
+                    if (response.redirected && response.url.includes('/login')) {
+                        redirectToLogin = true;
+                        return;
+                    }
+
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
+
                     const json = await response.json();
+
+                    // No authenticated user in session map → treat as expired/unauthenticated.
+                    if (!json.hpcUserId) {
+                        redirectToLogin = true;
+                        return;
+                    }
+
                     setSession(json);
                 } catch (e) {
                     setMessage(e.message);
                     console.error("Fetch session info: ", e);
                 } finally {
-                    setLoading(false);
+                    if (redirectToLogin) {
+                        // Keep loading=true so children never flash before the redirect completes.
+                        window.location.href = '/login';
+                    } else {
+                        setLoading(false);
+                    }
                 }
             }
 
@@ -53,7 +74,7 @@ export default function SessionProvider({children}) {
     };
 
     return (
-        <SessionContext.Provider value={{session, message, setMessage, isSidebarOpen, saveSidebarSession}}>
+        <SessionContext.Provider value={{session, loading, message, setMessage, isSidebarOpen, saveSidebarSession}}>
             {children}
         </SessionContext.Provider>
     );

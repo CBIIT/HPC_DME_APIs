@@ -1,4 +1,6 @@
 "use client";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { GridProvider } from './GridContext';
 import GridComponent from "./GridComponent";
 import Sidebar from "./Sidebar";
@@ -7,11 +9,21 @@ import { useSessionContext } from '../SessionContext';
 import ErrorAlert from '../ErrorAlert';
 
 export default function Global() {
+    const router = useRouter();
+    const { session, loading, isSidebarOpen, saveSidebarSession, message, setMessage } = useSessionContext();
+    const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
 
-    const {isSidebarOpen, saveSidebarSession} = useSessionContext();
-    const {
-        message, setMessage
-    } = useSessionContext();
+    // Redirect to login if session has expired or user is not authenticated.
+    useEffect(() => {
+        if (!loading && useExternalApi && !session?.hpcUser) {
+            router.replace('/login');
+        }
+    }, [loading, session, useExternalApi, router]);
+
+    // Keep the page blank while the redirect is in progress.
+    if (!loading && useExternalApi && !session?.hpcUser) {
+        return null;
+    }
 
     const toggleSidebar = () => {
         saveSidebarSession(!isSidebarOpen);
@@ -36,5 +48,6 @@ export default function Global() {
                 </div>
             </GridProvider>
         </div>
-);
+    );
 }
+
