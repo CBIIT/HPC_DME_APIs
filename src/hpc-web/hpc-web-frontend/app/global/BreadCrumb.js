@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import { GridContext } from "./GridContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {useSessionContext} from "../SessionContext";
 
 
@@ -20,9 +20,13 @@ const BreadCrumb = () => {
 		session,
 	    setMessage
 	  } = useSessionContext();
-    const router = useRouter();
     const searchParams = useSearchParams();
     const url = '/global';
+
+    const navigateToGlobal = (params) => {
+        const queryString = params?.toString();
+        window.location.href = queryString ? `${url}?${queryString}` : url;
+    };
 
     useEffect(() => {
         if(!absolutePath || !basePath) {
@@ -42,16 +46,18 @@ const BreadCrumb = () => {
     }, [basePath, absolutePath]);
 
     const handleBreadCrumbClick = (event) => {
-		// Session expired or not authenticated: go to global entry/login page.
-		if (!session?.hpcUser) {
+        event.preventDefault();
+
+        // Session expired or not authenticated: go to global entry/login page.
+		/*if (!session?.hpcUser) {
 			setMessage('Session expired. Please sign in again.');
-		    router.push(url);
-		    return;
-		}
+			navigateToGlobal();
+			return;
+		}*/
 		
         const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('path', event.currentTarget.id);
-        router.push(url + `?${currentParams.toString()}`);
+        navigateToGlobal(currentParams);
     };
 
     return (
