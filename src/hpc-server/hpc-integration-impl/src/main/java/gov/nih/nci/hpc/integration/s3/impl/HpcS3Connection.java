@@ -96,6 +96,9 @@ public class HpcS3Connection {
 	@Value("${hpc.integration.s3.maxConnections}")
 	private Integer maxConnections = null;
 
+	//Prevent the client from dropping lagging connections
+	@Value("${hpc.integration.s3.validateAfterInactivityMillis}")
+	private Integer validateAfterInactivityMillis = null;
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
@@ -249,6 +252,7 @@ public class HpcS3Connection {
 			config.setMaxConnections(maxConnections);
 			config.setConnectionTimeout(connectionTimeout);
 			config.setMaxErrorRetry(maxErrorRetries);
+			config.withValidateAfterInactivityMillis(validateAfterInactivityMillis);
 			AmazonS3 s3Client = null;
 			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 				s3Client = AmazonS3EncryptionClientV2Builder.standard()
