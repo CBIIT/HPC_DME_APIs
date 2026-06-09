@@ -4,7 +4,7 @@
 import { useContext, useEffect, useState } from "react";
 import { GridContext } from "./GridContext";
 import BreadCrumb from "./BreadCrumb";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSessionContext } from "../SessionContext";
 
 const Sidebar = ({isOpen, toggleSidebar}) => {
@@ -15,17 +15,25 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
     const {
         setMessage
     } = useSessionContext();
-    const router = useRouter();
     const searchParams = useSearchParams();
     const url = '/global';
 
+    const navigateToGlobal = (params) => {
+        const queryString = params?.toString();
+        const target = queryString ? `${url}?${queryString}` : url;
+        const current = `${window.location.pathname}${window.location.search}`;
+        if (current !== target) {
+            window.location.href = target;
+        }
+    };
+
     const handleArchiveClick = (event) => {
+        event.preventDefault();
         setBasePath(event.currentTarget.id);
         const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('path', event.currentTarget.id);
-        router.push(url + `?${currentParams.toString()}`);
+        navigateToGlobal(currentParams);
     };
-
 
     useEffect(() => {
         const archiveURL = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/externalArchives';
@@ -40,7 +48,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                     setBasePath(data[0] || '');
                     const currentParams = new URLSearchParams(searchParams.toString());
                     currentParams.set('path', data[0] || '');
-                    router.push(url + `?${currentParams.toString()}`);
+                    navigateToGlobal(currentParams);
                     setAbsolutePath(data[0] || '');
                 });
         } else {
@@ -60,7 +68,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
                         setAbsolutePath(json[0] || '');
                         const currentParams = new URLSearchParams(searchParams.toString());
                         currentParams.set('path', json[0] || '');
-                        router.push(url + `?${currentParams.toString()}`);
+                        navigateToGlobal(currentParams);
                     } else  {
                         setAbsolutePath(param);
                         for (const archive of json) {

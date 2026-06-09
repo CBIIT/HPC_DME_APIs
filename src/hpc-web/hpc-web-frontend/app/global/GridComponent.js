@@ -7,7 +7,7 @@ import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-communi
 import { GridContext } from './GridContext';
 import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {useSessionContext} from "../SessionContext";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -29,10 +29,13 @@ const GridComponent = () => {
   const [relativePath, setRelativePath] = useState(null);
   const [loading, setLoading] = useState(true);
   const [parentPath, setParentPath] = useState(null);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const url = '/global';
 
+  const navigateToGlobal = (params) => {
+    const queryString = params?.toString();
+    window.location.href = queryString ? `${url}?${queryString}` : url;
+  };
 
   const normalizePath = (path) => {
     if (!path) return path;
@@ -41,15 +44,15 @@ const GridComponent = () => {
 
   const handleSpanClick = (event) => {
 	// Session expired or not authenticated: go to global entry/login page.
-	if (!session?.hpcUser) {
+	/*if (!session?.hpcUser) {
 	    setMessage('Session expired. Please sign in again.');
-	    router.push(url);
+	    navigateToGlobal();
 	    return;
-	}
+	}*/
 	  
     const currentParams = new URLSearchParams(searchParams.toString());
     currentParams.set('path', normalizePath(event.currentTarget.id));
-    router.push(url + `?${currentParams.toString()}`);
+    navigateToGlobal(currentParams);
   };
 
   function folderNameRenderer(props) {
@@ -168,14 +171,14 @@ const GridComponent = () => {
 	// Session expired or not authenticated: go to global entry/login page.
 	if (!session?.hpcUser) {
 	    setMessage('Session expired. Please sign in again.');
-	    router.push(url);
+	    navigateToGlobal();
 	    return;
 	}
 		
     const currentParams = new URLSearchParams(searchParams.toString());
     const path = event.currentTarget.id.length < basePath.length ? basePath : event.currentTarget.id;
     currentParams.set('path', normalizePath(path));
-    router.push(url + `?${currentParams.toString()}`);
+    navigateToGlobal(currentParams);
   };
 
   useEffect(() => {
