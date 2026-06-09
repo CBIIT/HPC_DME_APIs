@@ -7,17 +7,21 @@ import { faSearch, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {useState, useCallback, useContext, useEffect} from "react";
 import { GridContext } from "@/app/global/GridContext";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 
 const ActionsBar = ({isOpen}) => {
 
     const {gridApi, absolutePath, setAbsolutePath } = useContext(GridContext);
-    const router = useRouter();
     const searchParams = useSearchParams();
     const [browseTextValue, setBrowseTextValue] = useState('');
     const [filterTextValue, setFilterTextValue] = useState('');
     const url = '/global';
+
+    const navigateToGlobal = (params) => {
+        const queryString = params?.toString();
+        window.location.href = queryString ? `${url}?${queryString}` : url;
+    };
 
     useEffect(() => {
         if(gridApi) {
@@ -36,7 +40,7 @@ const ActionsBar = ({isOpen}) => {
         } else {
             const currentParams = new URLSearchParams(searchParams.toString());
             currentParams.set('path', path);
-            router.push(url + `?${currentParams.toString()}`);
+            navigateToGlobal(currentParams);
         }
     };
 
