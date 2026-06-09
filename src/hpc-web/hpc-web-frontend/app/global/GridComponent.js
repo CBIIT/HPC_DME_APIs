@@ -23,6 +23,7 @@ const GridComponent = () => {
     setAbsolutePath
   } = useContext(GridContext);
   const {
+	session,
     setMessage
   } = useSessionContext();
   const [relativePath, setRelativePath] = useState(null);
@@ -39,6 +40,13 @@ const GridComponent = () => {
   };
 
   const handleSpanClick = (event) => {
+	// Session expired or not authenticated: go to global entry/login page.
+	if (!session?.hpcUser) {
+	    setMessage('Session expired. Please sign in again.');
+	    router.push(url);
+	    return;
+	}
+	  
     const currentParams = new URLSearchParams(searchParams.toString());
     currentParams.set('path', normalizePath(event.currentTarget.id));
     router.push(url + `?${currentParams.toString()}`);
@@ -157,6 +165,13 @@ const GridComponent = () => {
   }, [gridApi, setSelectedRows]);
 
   const handleBackButtonClick = (event) => {
+	// Session expired or not authenticated: go to global entry/login page.
+	if (!session?.hpcUser) {
+	    setMessage('Session expired. Please sign in again.');
+	    router.push(url);
+	    return;
+	}
+		
     const currentParams = new URLSearchParams(searchParams.toString());
     const path = event.currentTarget.id.length < basePath.length ? basePath : event.currentTarget.id;
     currentParams.set('path', normalizePath(path));
