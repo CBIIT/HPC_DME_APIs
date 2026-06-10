@@ -31,6 +31,8 @@ const GridComponent = () => {
   const [parentPath, setParentPath] = useState(null);
   const searchParams = useSearchParams();
   const url = '/global';
+  const globalListApiUrl = useMemo(() => process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/list?path=', []);
+  const useExternalApi = useMemo(() => process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true', []);
 
   const navigateToGlobal = (params) => {
     const queryString = params?.toString();
@@ -182,8 +184,6 @@ const GridComponent = () => {
   };
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/list?path=';
-    const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
     const param = searchParams.get('path');
     setAbsolutePath(param);
 
@@ -204,7 +204,7 @@ const GridComponent = () => {
           if (gridApi) {
             gridApi.setGridOption("loading", true)
           }
-          const response = await fetch(url + param, {
+          const response = await fetch(globalListApiUrl + param, {
             credentials: 'include',
           });
           if (!response.ok) {
@@ -227,7 +227,7 @@ const GridComponent = () => {
       }
       fetchData().then((rowData) => setRowData(rowData));
     }
-  }, [searchParams]);
+  }, [searchParams, gridApi, setAbsolutePath, setMessage, setRowData, globalListApiUrl, useExternalApi]);
 
   return (
       <>

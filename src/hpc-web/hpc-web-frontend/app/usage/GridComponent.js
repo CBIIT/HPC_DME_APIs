@@ -1,7 +1,7 @@
 "use client";
 
 import { AgGridReact } from 'ag-grid-react';
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { themeQuartz, AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { useSearchParams } from 'next/navigation';
 import {useSessionContext} from "../SessionContext";
@@ -14,6 +14,8 @@ const GridComponent = () => {
   const [loading, setLoading] = useState(true);
   const {setMessage} = useSessionContext();
   const searchParams = useSearchParams();
+  const usageApiUrl = useMemo(() => process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/usage/calcTotalSize?path=', []);
+  const useExternalApi = useMemo(() => process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true', []);
 
   function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '-';
@@ -54,8 +56,6 @@ const GridComponent = () => {
   ]);
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/usage/calcTotalSize?path=';
-    const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
     const param = normalizePath(searchParams.get('path'));
 
     if(!useExternalApi) {
@@ -66,7 +66,7 @@ const GridComponent = () => {
     } else {
       const fetchData = async () => {
         try {
-          const response = await fetch(url + param, {
+          const response = await fetch(usageApiUrl + param, {
             credentials: 'include',
           });
           if (!response.ok) {
@@ -84,7 +84,7 @@ const GridComponent = () => {
       }
       fetchData().then((rowData) => setRowData(rowData));
     }
-  }, [searchParams]);
+  }, [searchParams, setMessage, usageApiUrl, useExternalApi]);
 
   return (
     <div className="p-4" style={{ width: "100%", height: "123px" }}>
