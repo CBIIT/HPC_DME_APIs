@@ -30,7 +30,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * Unified browse controller to return user external archive to front end
+ * Calculate total size controller to get a size of external archive folder/files
  * </p>
  *
  * @author <a href="mailto:Yuri.Dinh@nih.gov">Yuri Dinh</a>
