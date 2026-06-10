@@ -1,7 +1,7 @@
 //Sidebar.js
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GridContext } from "./GridContext";
 import BreadCrumb from "./BreadCrumb";
 import { useSearchParams } from "next/navigation";
@@ -17,6 +17,8 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
     } = useSessionContext();
     const searchParams = useSearchParams();
     const url = '/global';
+    const archiveURL = useMemo(() => process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/externalArchives', []);
+    const useExternalApi = useMemo(() => process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true', []);
 
     const navigateToGlobal = (params) => {
         const queryString = params?.toString();
@@ -36,8 +38,6 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
     };
 
     useEffect(() => {
-        const archiveURL = process.env.NEXT_PUBLIC_DME_WEB_URL + '/api/global/externalArchives';
-        const useExternalApi = process.env.NEXT_PUBLIC_DME_USE_EXTERNAL_API === 'true';
         const param = searchParams.get('path');
 
         if(!useExternalApi) {
@@ -86,7 +86,7 @@ const Sidebar = ({isOpen, toggleSidebar}) => {
             }
             fetchData();
         }
-    }, []);
+    }, [searchParams, setAbsolutePath, setBasePath, setMessage, archiveURL, useExternalApi]);
 
     return (
         <div className="flex">

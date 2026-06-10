@@ -5,7 +5,7 @@ import ActionsButton from "./ActionsButton";
 import DownloadButton from "./DownloadButton";
 import { faSearch, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {useState, useCallback, useContext, useEffect} from "react";
+import {useState, useContext, useEffect} from "react";
 import { GridContext } from "@/app/global/GridContext";
 import { useSearchParams } from "next/navigation";
 
@@ -32,7 +32,7 @@ const ActionsBar = ({isOpen}) => {
         }
     }, [gridApi, filterTextValue]);
 
-    const onBrowseTextBoxChanged= async () => {
+    const onBrowseTextBoxChanged = () => {
         const path = browseTextValue;
         console.log("Browse to path: ", path);
         if(path === '') {
@@ -44,11 +44,14 @@ const ActionsBar = ({isOpen}) => {
         }
     };
 
-    const handleEnterPress = (event) => {
-        setBrowseTextValue(document.getElementById("browse-text-box").value);
+    const handleBrowseTextKeyDown = (event) => {
         if (event.key === 'Enter') {
             onBrowseTextBoxChanged();
         }
+    };
+
+    const handleBrowseTextChange = (event) => {
+        setBrowseTextValue(event.target.value);
     };
 
     const handleBrowseTextClear = () => {
@@ -73,9 +76,9 @@ const ActionsBar = ({isOpen}) => {
                                     placeholder="Browse to Path"
                                     style={{ paddingLeft: '35px', width: '100%' }}
                                     id="browse-text-box"
-                                    onKeyDown={handleEnterPress}
+                                    onKeyDown={handleBrowseTextKeyDown}
                                     value={browseTextValue}
-                                    onChange={handleEnterPress}
+                                    onChange={handleBrowseTextChange}
                                 />
                                 {browseTextValue && ( // Conditionally render the clear button
                                     <button className="clear-button" onClick={handleBrowseTextClear}>
