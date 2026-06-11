@@ -270,9 +270,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "FROM hpc_data_meta_main "
 			+ "GROUP BY object_id, meta_id having count(*) > 1";
 
-	private static final String GET_DATA_OBJECT_SIZE_FOR_PATH_SQL = "select NVL(TO_NUMBER(META_ATTR_VALUE), 0) from HPC_DATA_META_MAIN where object_path = ? and meta_attr_name='source_file_size'";
+	//Retrieve size with directive to block Oracle's real time MV Log merging to optimize performance for large lists
+	private static final String GET_DATA_OBJECT_SIZE_FOR_PATH_SQL = "select /*+ FRESH_ONLY */ TO_NUMBER(META_ATTR_VALUE) from HPC_DATA_META_MAIN_MV where object_path = ? and meta_attr_name='source_file_size'";
 
-	private static final String GET_COLLECTION_SIZE_FOR_PATH_SQL = "SELECT NVL(SUM(TOTALSIZE), 0) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
+	private static final String GET_COLLECTION_SIZE_FOR_PATH_SQL = "SELECT SUM(TOTALSIZE) FROM R_REPORT_COLLECTION_SIZE WHERE coll_name = ?";
 
 	private static final String INSERT_DATA_META_MAIN_SQL = "insert into HPC_DATA_META_MAIN "
 			+ "(OBJECT_ID,OBJECT_PATH,COLL_ID,META_ID,DATA_LEVEL,LEVEL_LABEL,META_ATTR_NAME,META_ATTR_VALUE,META_ATTR_UNIT) "
@@ -850,8 +851,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public Long getDataObjectSizeForPath(String dataObjectPath) throws HpcException {
 		try {
-			Long dataObjectSize = jdbcTemplate.queryForObject(GET_DATA_OBJECT_SIZE_FOR_PATH_SQL, Long.class, dataObjectPath);
-			return dataObjectSize != null ? dataObjectSize : 0L;
+
+			// Query returns a List containing 0 or 1 elements
+	        List<Long> results = jdbcTemplate.query(
+	            GET_DATA_OBJECT_SIZE_FOR_PATH_SQL,
+	            (rs, rowNum) -> {
+	                long value = rs.getLong(1);
+	                return rs.wasNull() ? 0L : value; // Safe fallback if column is NULL
+	            },
+	            dataObjectPath
+	        );
+
+	        // If the list is empty (no row found), return 0L; otherwise, return the value
+	        return results.stream().findFirst().orElse(0L);
 
 		} catch (Exception e) {
 			String errorMessage = "Failed to get size for dataObjectPath: " + dataObjectPath;
@@ -864,8 +876,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public Long getCollectionSizeForPath(String collectionPath) throws HpcException {
 		try {
-			Long collectionSize = jdbcTemplate.queryForObject(GET_COLLECTION_SIZE_FOR_PATH_SQL, Long.class, collectionPath);
-			return collectionSize != null ? collectionSize : 0L;
+
+			// Query returns a List containing 0 or 1 elements
+	        List<Long> results = jdbcTemplate.query(
+	            GET_COLLECTION_SIZE_FOR_PATH_SQL,
+	            (rs, rowNum) -> {
+	                long value = rs.getLong(1);
+	                return rs.wasNull() ? 0L : value; // Safe fallback if column is NULL
+	            },
+	            collectionPath
+	        );
+
+	        // If the list is empty (no row found), return 0L; otherwise, return the value
+	        return results.stream().findFirst().orElse(0L);
 
 		} catch (Exception e) {
 			String errorMessage = "Failed to get size for collectionPath: " + collectionPath;
