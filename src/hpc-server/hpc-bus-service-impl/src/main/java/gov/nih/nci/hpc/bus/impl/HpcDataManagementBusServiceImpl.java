@@ -2755,8 +2755,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		
 		HpcListObjectsResponseDTO listObjectsResponse = new HpcListObjectsResponseDTO();
 		
-		// Validate the path and get the corresponding archive path from the configuration
-		String archivePath = validateExternalPath(externalPath, false);
+		// Validate the external path
+		validateExternalPath(externalPath, false);
+		
+		// Get the corresponding archive path from the configuration if any
+		String archivePath = getExistingArchivePathFromExternalPath(externalPath, false);
 		
 		// Construct the File location
 		HpcFileLocation fileLocation = new HpcFileLocation();
@@ -2809,8 +2812,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
             fileLocation.setFileId(externalPath);
             
-	        // Validate the path and get the corresponding archive path from the configuration
-			String archivePath = validateExternalPath(externalPath, true);
+	        // Validate the external path
+			validateExternalPath(externalPath, true);
+			
+			// Get the corresponding archive path from the configuration if any
+			String archivePath = getExistingArchivePathFromExternalPath(externalPath, true);
 			
 			HpcCalculateTotalSizeEntry calculateTotalSizeEntry = new HpcCalculateTotalSizeEntry();
 			calculateTotalSizeEntry.setPath(externalPath);
@@ -5251,15 +5257,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private HpcCalculateTotalSizeEntry calculateTotalSizeAndCount(HpcCalculateTotalSizeEntry calculateTotalSizeEntry,
 			HpcFileLocation fileLocation) throws HpcException {
 
+		// Retrieve the list of objects in the directory
 		List<HpcListObjectsEntry> directoryListing = dataTransferService.listDirectory(fileLocation);
 		
+		// Iterate through each entry in the directory listing
 		for(HpcListObjectsEntry entry: directoryListing) {
 			if (entry.getIsDirectory()) {
+				// If entry is a directory, recursively calculate size and count for subdirectory
 				HpcFileLocation childLocation = new HpcFileLocation();
-				childLocation.setFileContainerId("External"); // This is not used for local path but required for validation
+				childLocation.setFileContainerId("External");
 				childLocation.setFileId(entry.getPath());
+				// Recursively calculate total size and count for this subdirectory
 				calculateTotalSizeEntry = calculateTotalSizeAndCount(calculateTotalSizeEntry, childLocation);
 			} else {
+				// If entry is a file, add its size to the total and increment object count
 				calculateTotalSizeEntry.setSize(calculateTotalSizeEntry.getSize()+ entry.getSize());
 				calculateTotalSizeEntry.setObjectCount(calculateTotalSizeEntry.getObjectCount() + 1);
 			}
@@ -5316,6 +5327,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDataTransferConfiguration dataTransferConfiguration =
           dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath);
       if (dataTransferConfiguration == null) {
+    	logger.error("External path not configured in DME: " + externalPath);
         throw new HpcException("External path not configured in DME: " + externalPath,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
@@ -5339,17 +5351,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * 
 	 * 1. The external path is accessible
 	 * 2. The user has own permission to the external path
-	 * 3. The archive path exists if external path does not
+	 * 3. If a file path is provided, allowFile flag must be true
 	 * 
 	 * @param externalPath The external path
 	 * @param allowFile True will pass the validation if the path is a file.
-	 * @return The corresponding archive path for the external path provided.
 	 * @throws HpcException, if validation fails
 	 */
-	private String validateExternalPath(String externalPath, boolean allowFile) throws HpcException {
-		
-		// Derive the archive path for the input path from the configuration
-		String archivePath = getArchivePathFromExternalPath(externalPath);
+	private void validateExternalPath(String externalPath, boolean allowFile) throws HpcException {
 		
 		// Validate the input path - ensure it is an existing folder or a file, if allowed.
 		HpcFileLocation fileLocation = new HpcFileLocation();
@@ -5357,17 +5365,43 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		fileLocation.setFileId(externalPath);
 		HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
 		
+		// Validate that if the path is a file, it is only allowed if allowFile flag is true
 		if (pathAttributes.getExists() && !pathAttributes.getIsDirectory() && !allowFile) {
           throw new HpcException("Invalid file location: " + externalPath, HpcErrorType.INVALID_REQUEST_INPUT);
         }
 		
-		// Validate that the invoker has own permission to the archive path
+		// Validate that the invoker has own permission to the external path
 		HpcRequestInvoker invoker = securityService.getRequestInvoker();
 		if(!HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole()) && pathAttributes.getExists() && !pathAttributes.getPermissions().getOwner().equals(invoker.getNciAccount().getUserId())) {
 			throw new HpcException(
 					"You do not have permission to access the external folder: " + externalPath,
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
+	}
+	
+	/**
+	 * Obtains the corresponding archive path for a given external path from the configuration.
+	 * 
+	 * This method validates that:
+	 * 1. The external path is configured in DME
+	 * 2. The user has access to the archive
+	 * 3. The archive path exists if the external path does not
+	 * 
+	 * @param externalPath The external path
+	 * @param allowFile True will allow returning empty string if the path is a file.
+	 * @return The corresponding archive path for the external path, or empty string if not archived yet
+	 * @throws HpcException if the path is not properly configured or does not exist
+	 */
+	private String getExistingArchivePathFromExternalPath(String externalPath, boolean allowFile) throws HpcException {
+		
+		// Derive the archive path for the input path from the configuration
+		String archivePath = getArchivePathFromExternalPath(externalPath);
+		
+		// Get path attributes to check if external path exists and its type
+		HpcFileLocation fileLocation = new HpcFileLocation();
+		fileLocation.setFileContainerId("External");
+		fileLocation.setFileId(externalPath);
+		HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
 		
 		// Check if the archive path is an existing file
 		if(allowFile) {
@@ -5378,14 +5412,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		  return archivePath;
 		}
 		
-    	// Check if the archive path exists
+    	// Check if the archive path exists as collection
 		boolean collectionExists = dataManagementService.collectionExists(archivePath);
        
 		if(!pathAttributes.getExists() && !collectionExists) {
             // Both the external path and archive path does not exist, throw an error
             throw new HpcException("Invalid file location: " + externalPath, HpcErrorType.INVALID_REQUEST_INPUT);
 		} else if (!collectionExists) {
-            // Path not archived yet. Remove archivePath
+            // Path not archived yet. Return empty string
             archivePath = "";
         }
 		
