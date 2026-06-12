@@ -829,19 +829,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String basePath = dataManagementConfiguration.getBasePath();
 		String posixPath = s3ArchiveConfiguration.getPosixPath();
 		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-		String dmeFolderPath = buildPermanentArchiveLinkPath(path, basePath, posixPath);
-		//String folderName = basePath.substring(1) + path.substring(posixPath.length());
-		HpcFileLocation directoryLocation = new HpcFileLocation();
-		directoryLocation.setFileContainerId(bucket);
-		directoryLocation.setFileId(dmeFolderPath.substring(1));
-		HpcScanDirectory s3ArchiveScanDirectory = new HpcScanDirectory();
-		s3ArchiveScanDirectory.setDirectoryLocation(directoryLocation);
-		HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem = new HpcDirectoryScanRegistrationItemDTO();
-		directoryScanRegistrationItem.setBasePath(basePath);
-		directoryScanRegistrationItem.setS3ArchiveScanDirectory(s3ArchiveScanDirectory);
-		directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
+		// Build the DirectoryScanRegistrationItem
+		buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, path, basePath, posixPath, bucket, s3ArchiveConfiguration.getId());
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		boolean externalArchiveFlag = true;
 		try{
@@ -857,7 +847,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		return registrationResponseDTO;
 	}
-
 
 	@Override
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) throws HpcException {
@@ -5176,6 +5165,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		return basePath +  pathWithPosixPathPrefixRemoved;
+	}
+
+	private void buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String path, String basePath, String posixPath, String bucket, String s3ArchiveConfigurationId) throws HpcException {
+		String dmeFolderPath = buildPermanentArchiveLinkPath(path, basePath, posixPath);
+		HpcFileLocation directoryLocation = new HpcFileLocation();
+		directoryLocation.setFileContainerId(bucket);
+		directoryLocation.setFileId(dmeFolderPath.substring(1));
+		HpcScanDirectory s3ArchiveScanDirectory = new HpcScanDirectory();
+		s3ArchiveScanDirectory.setDirectoryLocation(directoryLocation);
+		HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem = new HpcDirectoryScanRegistrationItemDTO();
+		directoryScanRegistrationItem.setBasePath(basePath);
+		directoryScanRegistrationItem.setS3ArchiveScanDirectory(s3ArchiveScanDirectory);
+		directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
+		registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
 	}
 
 	private boolean deleteExternalArchiveLink(String downloadArchiveLinkPath) {
