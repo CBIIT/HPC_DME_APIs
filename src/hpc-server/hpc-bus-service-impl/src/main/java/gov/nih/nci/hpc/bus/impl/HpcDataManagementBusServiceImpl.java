@@ -741,12 +741,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		String basePath = dataManagementConfiguration.getBasePath();
 		String posixPath = s3ArchiveConfiguration.getPosixPath();
 		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
 
 		try {
-			dmePath = buildPermanentArchiveLinkPath(path, basePath, posixPath);
+			dmePath = buildPermanentArchiveLinkPath(path, posixPath);
 			boolean permanentArchiveLinkExists = dataManagementService.getDataObject(dmePath) != null;
 			if(permanentArchiveLinkExists) {
 				throw new HpcException("Permanent or default Archive Link for " + dmePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -5158,13 +5157,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
-	private String buildPermanentArchiveLinkPath(String path, String basePath, String posixPath) throws HpcException {
+	private String buildPermanentArchiveLinkPath(String path, String posixPath) throws HpcException {
 		String pathWithPosixPathPrefixRemoved = path.substring(posixPath.length());
 		if(StringUtils.isEmpty(pathWithPosixPathPrefixRemoved)) {
 			logger.warn("Path after POSIX prefix is empty for path: " + path);
 			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		return basePath +  pathWithPosixPathPrefixRemoved;
+		return pathWithPosixPathPrefixRemoved;
 	}
 
 	private void buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String path, String basePath, String posixPath, String bucket, String s3ArchiveConfigurationId) throws HpcException {
