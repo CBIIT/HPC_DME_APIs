@@ -725,7 +725,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String downloadArchiveLinkPath = null;
-		String dmePath = null;
+		String filePath = null;
 
 		// Find the matching S3 data transfer configuration for the external path
 		try {
@@ -739,14 +739,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+		String basePath = dataManagementConfiguration.getBasePath();
 		String posixPath = s3ArchiveConfiguration.getPosixPath();
 		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
 
 		try {
-			dmePath = buildPermanentArchiveLinkPath(path, posixPath);
-			boolean permanentArchiveLinkExists = dataManagementService.getDataObject(dmePath) != null;
+			filePath = path.substring(posixPath.length());
+			if(StringUtils.isEmpty(filePath)) {
+				logger.warn("Path after POSIX prefix is empty for path: " + path);
+				throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			boolean permanentArchiveLinkExists = dataManagementService.getDataObject(basePath + filePath) != null;
 			if(permanentArchiveLinkExists) {
-				throw new HpcException("Permanent or default Archive Link for " + dmePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
+				throw new HpcException("Permanent or default Archive Link for " + filePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		} catch (HpcException e) {
 			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
@@ -754,13 +760,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Build temporary archive link path for external download
-		downloadArchiveLinkPath = downloadArchiveLinkBasePath + dmePath;
+		downloadArchiveLinkPath = downloadArchiveLinkBasePath + filePath;
 
 		// Registration Step
 		try {
 			boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 			if(temporaryArchiveLinkDoesNotExist) {
-				registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), dmePath, bucket);
+				registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
 			}
 		} catch (HpcException e) {
 			logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
@@ -5034,15 +5040,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.error("Registration of Archive link has failed for path: " + downloadArchiveLinkPath);
 			throw new HpcException("Registration of Archive link has failed for path: " + downloadArchiveLinkPath, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-	}
-
-	private String buildPermanentArchiveLinkPath(String path, String posixPath) throws HpcException {
-		String pathWithPosixPathPrefixRemoved = path.substring(posixPath.length());
-		if(StringUtils.isEmpty(pathWithPosixPathPrefixRemoved)) {
-			logger.warn("Path after POSIX prefix is empty for path: " + path);
-			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		return pathWithPosixPathPrefixRemoved;
 	}
 
 	private boolean deleteExternalArchiveLink(String downloadArchiveLinkPath) {
