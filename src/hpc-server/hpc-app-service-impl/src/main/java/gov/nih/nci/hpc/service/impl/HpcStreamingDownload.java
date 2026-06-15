@@ -215,6 +215,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		downloadTask.setFirstHopRetried(false);
 		downloadTask.setRetryTaskId(downloadRequest.getRetryTaskId());
 		downloadTask.setRetryUserId(downloadRequest.getRetryUserId());
+		downloadTask.setExternalArchiveFlag(downloadRequest.getExternalArchiveFlag());
 
 		if (downloadTask.getS3DownloadDestination() != null) {
 			downloadTask.setDataTransferType(HpcDataTransferType.S_3);
@@ -282,6 +283,8 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		}
 
 		dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
+
+		this.downloadTask.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 	}
 
 	/**
