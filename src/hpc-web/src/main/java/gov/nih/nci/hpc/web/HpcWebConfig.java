@@ -72,6 +72,9 @@ public class HpcWebConfig implements WebMvcConfigurer {
 	  @Override
 	  public void addCorsMappings(CorsRegistry registry) {
 
+		// This is to enable CORS for the API endpoints when the frontend server is running on a different origin.
+		// Used for development and testing purposes. In production, the frontend and backend are expected to be
+		// served from the same origin, so CORS is not needed.
 		if(StringUtils.isNotEmpty(frontendServer))
 			registry.addMapping("/api/**").allowedOrigins(frontendServer).allowedMethods("*")
 				.allowedHeaders("*")
