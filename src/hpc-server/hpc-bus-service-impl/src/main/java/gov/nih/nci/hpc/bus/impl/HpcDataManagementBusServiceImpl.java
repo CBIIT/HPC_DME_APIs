@@ -3202,6 +3202,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setPriority(taskStatus.getCollectionDownloadTask().getPriority());
 			downloadStatus.setCancellationRequested(dataTransferService.getCollectionDownloadTaskCancellationRequested(taskId));
 		    downloadStatus.setDataSize(taskStatus.getCollectionDownloadTask().getDataSize());
+			downloadStatus.setExternalArchiveFlag(taskStatus.getCollectionDownloadTask().getExternalArchiveFlag());
 			
 			// Get the status of the individual data object download tasks if the collection status
 			// is not yet ACTIVE, because the collection items field does not get populated before that
@@ -5167,7 +5168,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	private void buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String path, String basePath, String posixPath, String bucket, String s3ArchiveConfigurationId) throws HpcException {
-		String dmeFolderPath = buildPermanentArchiveLinkPath(path, basePath, posixPath);
+		String dmeFolderPath = path.substring(posixPath.length());
+		if(StringUtils.isEmpty(dmeFolderPath)) {
+			logger.warn("Path after POSIX prefix is empty for path: " + path);
+			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		HpcFileLocation directoryLocation = new HpcFileLocation();
 		directoryLocation.setFileContainerId(bucket);
 		directoryLocation.setFileId(dmeFolderPath.substring(1));
