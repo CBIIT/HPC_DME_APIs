@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -50,7 +49,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
@@ -1517,6 +1515,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 				globusRequest.setPath(downloadTask.getPath());
 				globusRequest.setDownload(true);
+				globusRequest.setUserId(downloadTask.getUserId());
 				globusTransferDAO.insertRequest(globusRequest);
 
 			}
@@ -2453,8 +2452,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			int numberOfUsersInQueue = dataDownloadDAO.getUserCountByDataTransferType(type);
 
 			//Else if the number of slots used by requester <= total number of slots/number of users, then proceed.
-			if(numberOfSlotsAllocatedForUser > transferAccountCount/numberOfUsersInQueue) {
-				logger.info("User {[]} already allocated {[]} slots, exceeded globus slot limit since {[]} users are in queue",
+			if(numberOfUsersInQueue > 0 &&
+					numberOfSlotsAllocatedForUser > transferAccountCount/numberOfUsersInQueue) {
+				logger.info("User {} already allocated {} slots, exceeded globus slot limit since {} users are in queue",
 							 userId, numberOfSlotsAllocatedForUser, numberOfUsersInQueue);
 				return false;
 			}
