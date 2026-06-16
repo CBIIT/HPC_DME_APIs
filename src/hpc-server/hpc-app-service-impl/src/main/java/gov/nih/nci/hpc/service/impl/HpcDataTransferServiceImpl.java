@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -48,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
@@ -1435,7 +1437,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				downloadRequest.setArchiveLocationFilePath(downloadTask.getDownloadFilePath());
 
 			} else {
-				// Check if transfer requests can be acceptable at this time (Globus only)
+				// Check if transfer requests can be acceptable at this time for this specific user (Globus only)
+				if(!userEligibleForToken(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(), downloadTask.getUserId())) {
+					logger.info(
+							"download task: [taskId={}] - transfer requests not accepted at this time for user {} [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getUserId(), downloadTask.getDataTransferType(),
+							downloadTask.getDestinationType());
+					return false;
+				}
+
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
 				// Check if transfer requests can be acceptable at this time.
@@ -2373,6 +2383,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Helper Methods
 	// ---------------------------------------------------------------------//
 
+
+	private boolean userEligibleForToken(HpcDataTransferType type, String hpcDataMgmtConfigId, String userId)
+			throws HpcException {
+
+		//Get the users who have been allocated Globus slots
+		List<String> usersAllocatedSlots = globusTransferDAO.getGlobusUsersAllocated();
+
+		if(usersAllocatedSlots.contains(userId)) {
+			//This user already has a Globus slot for data transfer, check if he can be provided more
+
+			//Get the configured number of system accounts
+			int transferAccountCount = systemAccountLocator.getSystemAccountCount(hpcDataMgmtConfigId);
+
+			//Get the number of slots allocated to this user
+			int numberOfSlotsAllocatedForUser = globusTransferDAO.getGlobusRequestCountForUser(userId);
+
+			//Total number of users in the download queue
+			int numberOfUsersInQueue = dataDownloadDAO.getUserCountByDataTransferType(type);
+
+			//Else if the number of slots used by requester <= total number of slots/number of users, then proceed.
+			if(numberOfSlotsAllocatedForUser > transferAccountCount/numberOfUsersInQueue) {
+				logger.info("User {[]} already allocated {[]} slots, exceeded globus slot limit since {[]} users are in queue",
+							 userId, numberOfSlotsAllocatedForUser, numberOfUsersInQueue);
+				return false;
+			}
+		};
+
+		return true;
+	}
+
 	/**
 	 * Compute the total size of the given list of collections
 	 *
@@ -2381,6 +2421,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @return total size of the specified collections
 	 * @throws HpcException
 	 */
+
 	private Long getTotalSizeOfCollectionPaths(List<String> collectionPaths) throws HpcException {
 		Long totalSize = 0L;
 

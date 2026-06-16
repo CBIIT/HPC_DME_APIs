@@ -188,6 +188,12 @@ public class HpcSystemAccountLocator {
 	}
 
 
+	public int getSystemAccountCount(String hpcDataMgmtConfigId) throws HpcException {
+
+		return accessProperPool(hpcDataMgmtConfigId).size();
+	}
+
+
 	// Populate the system accounts maps.
 	private void initSystemAccountsData() throws HpcException {
 		for (HpcIntegratedSystem system : HpcIntegratedSystem.values()) {
