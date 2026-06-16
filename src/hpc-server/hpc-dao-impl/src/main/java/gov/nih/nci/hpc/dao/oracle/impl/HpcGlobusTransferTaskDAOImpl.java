@@ -10,8 +10,11 @@
 
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,6 +48,10 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	private static final String GET_GLOBUS_ACCOUNTS_USED_SQL = "select GLOBUS_ACCOUNT,count(*) from HPC_GLOBUS_TRANSFER_TASK "
 			+ "group by GLOBUS_ACCOUNT order by count(*)";
 
+	private static final String GET_USERS_BY_DOWNLOAD_TYPE_SQL = "select DISTINCT USER_ID from HPC_GLOBUS_TRANSFER_TASK where USER_ID is NOT NULL and DOWNLOAD = ?";
+
+	private static final String GET_REQUEST_COUNT_BY_USER_AND_DOWNLOAD_TYPE_SQL = "select count(*) from HPC_GLOBUS_TRANSFER_TASK where USER_ID = ? and DOWNLOAD = ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -57,6 +64,9 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	private RowMapper<String> globusAccountsRowMapper = (rs, rowNum) -> {
 		return rs.getString("GLOBUS_ACCOUNT");
 	};
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -114,6 +124,31 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 			throw new HpcException(
 					"Failed to get globus accounts used from globus transfer task table: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public int getGlobusRequestCountByUser(String userId, boolean download) throws HpcException {
+		try {
+			Integer count = jdbcTemplate.queryForObject(GET_REQUEST_COUNT_BY_USER_AND_DOWNLOAD_TYPE_SQL, Integer.class,
+					userId, download);
+			return count != null ? count : 0;
+		} catch (Exception e) {
+			String errorMessage = "Failed to get count of globus requests for user: " + userId;
+			logger.error(errorMessage, e);
+			throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<String> getGlobusUsersAllocated(boolean download) throws HpcException {
+		try {
+			List<String> users = jdbcTemplate.queryForList(GET_USERS_BY_DOWNLOAD_TYPE_SQL, String.class, download);
+			return users != null ? users : Collections.emptyList();
+		} catch (Exception e) {
+			String errorMessage = "Failed to retrieve distinct users from Globus task queue.";
+			logger.error(errorMessage, e);
+			throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
