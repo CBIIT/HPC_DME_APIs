@@ -63,6 +63,6 @@ public interface HpcGlobusTransferTaskDAO {
 	 * @return The count of Globus transfer requests from a user
 	 * @throws HpcException
 	 */
-	public int getGlobusRequestCountForUser(String userId) throws HpcException;
+	int getGlobusRequestCountForUser(String userId) throws HpcException;
 
 }
