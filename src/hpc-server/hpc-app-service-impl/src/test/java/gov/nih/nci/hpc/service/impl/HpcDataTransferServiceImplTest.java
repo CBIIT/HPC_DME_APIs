@@ -369,7 +369,7 @@ public class HpcDataTransferServiceImplTest {
 		// Arrange
 		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Collections.emptyList());
+		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Collections.emptyList());
 
 		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
 		account.setUsername("test-globus-account");
@@ -402,8 +402,8 @@ public class HpcDataTransferServiceImplTest {
 		// Arrange
 		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Arrays.asList("userA", "userB"));
-		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(1); // 1 slot used
+		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Arrays.asList("userA", "userB"));
+		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(1); // 1 slot used
 		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(2); // 2 users
 		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(2); // quota = 2/2 = 1
 
@@ -438,8 +438,8 @@ public class HpcDataTransferServiceImplTest {
 		// Arrange
 		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Arrays.asList("userA", "userB"));
-		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(2); // 2 slots used
+		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Arrays.asList("userA", "userB"));
+		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(2); // 2 slots used
 		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(2); // 2 users
 		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(4); // quota = 4/2 = 2
 
@@ -474,9 +474,9 @@ public class HpcDataTransferServiceImplTest {
 		// Arrange
 		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated())
+		when(globusTransferDAOMock.getGlobusUsersAllocated(true))
 				.thenReturn(Arrays.asList("userA", "userB", "userC", "userD"));
-		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(2); // 2 slots used
+		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(2); // 2 slots used
 		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(4); // 4 users
 		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(4); // quota = 4/4 = 1
 
@@ -498,8 +498,8 @@ public class HpcDataTransferServiceImplTest {
 		// Arrange
 		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Arrays.asList("userA"));
-		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(1);
+		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Arrays.asList("userA"));
+		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(1);
 		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(0); // edge case
 		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(2);
 
