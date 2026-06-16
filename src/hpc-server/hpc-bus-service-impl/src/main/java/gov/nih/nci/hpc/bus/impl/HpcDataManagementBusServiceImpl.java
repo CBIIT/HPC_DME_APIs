@@ -1662,7 +1662,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId, userId, retryUserId,
 				completionEvent, collectionDownloadTaskId,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
-				metadata.getDeepArchiveStatus());
+				metadata.getDeepArchiveStatus(), false);
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
