@@ -8,6 +8,7 @@ public class HpcReportRequest {
 	private String user;
 	private String basepath;
 	private String path;
+	private String bucket;
 	private String fromDate;
 	private String toDate;
 	public boolean showArchiveSummary;
@@ -68,6 +69,14 @@ public class HpcReportRequest {
 
   public void setPath(String path) {
     this.path = path;
+  }
+
+  public String getBucket() {
+    return bucket;
+  }
+
+  public void setBucket(String bucket) {
+    this.bucket = bucket;
   }
 
   public boolean getShowArchiveSummary() {
