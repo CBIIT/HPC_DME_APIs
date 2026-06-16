@@ -352,6 +352,7 @@
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
