@@ -11,11 +11,17 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,13 +37,16 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
+import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
@@ -46,6 +55,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
@@ -80,6 +90,8 @@ public class HpcDataTransferServiceImplTest {
 	private HpcSystemAccountLocator systemAccountLocatorMock = null;
 	@Mock
 	private HpcDataDownloadDAO dataDownloadDAOMock = null;
+	@Mock
+	private HpcGlobusTransferTaskDAO globusTransferDAOMock = null;
 
 	private AutoCloseable closeable;
 	
@@ -357,7 +369,182 @@ public class HpcDataTransferServiceImplTest {
 		dataTransferServiceImpl.setSystemAccountLocator(systemAccountLocatorMock);
 		dataTransferServiceImpl.setDataDownloadDAO(dataDownloadDAOMock);
 		dataTransferServiceImpl.setDataManagementService(dataManagementServiceMock);
+		dataTransferServiceImpl.setGlobusTransferDAO(globusTransferDAOMock);
 
 		dataTransferService = dataTransferServiceImpl;
+	}
+
+	// ---------------------------------------------------------------------//
+	// Fair-Access (HPCDATAMGM-2148) Unit Tests
+	// ---------------------------------------------------------------------//
+
+	/**
+	 * Fair-access: requester is NOT in the Globus queue.
+	 * Expected: user is eligible; execution proceeds past the eligibility gate
+	 * (evidenced by getAuthenticatedToken being invoked).
+	 */
+	@Test
+	public void testFairAccess_UserNotInQueue_IsEligible() throws HpcException {
+		// Arrange
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+				.thenReturn(new HpcDataTransferConfiguration());
+		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Collections.emptyList());
+
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername("test-globus-account");
+		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
+		HpcTransferAcceptanceResponse response = () -> false;
+		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
+
+		// Act
+		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
+
+		// Assert – eligible users proceed past the fair-access gate (method returns false
+		// only because acceptsTransferRequests rejects, not because of eligibility).
+		assertFalse(result);
+		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
+	}
+
+	/**
+	 * Fair-access: requester IS in the Globus queue but slots used (1) is at or
+	 * below the fair-share quota (2 accounts / 2 users = 1).
+	 * Expected: user is eligible; execution proceeds past the eligibility gate.
+	 */
+	@Test
+	public void testFairAccess_UserBelowFairShare_IsEligible() throws HpcException {
+		// Arrange
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+				.thenReturn(new HpcDataTransferConfiguration());
+		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Arrays.asList("userA", "userB"));
+		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(1); // 1 slot used
+		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(2); // 2 users
+		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(2); // quota = 2/2 = 1
+
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername("test-globus-account");
+		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
+		HpcTransferAcceptanceResponse response = () -> false;
+		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
+
+		// Act
+		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
+
+		// Assert – user at the exact fair-share limit (1 <= 1) is eligible.
+		assertFalse(result);
+		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
+	}
+
+	/**
+	 * Fair-access: requester IS in the Globus queue with slots used (2) exactly
+	 * equal to the fair-share quota (4 accounts / 2 users = 2).
+	 * The algorithm uses strict greater-than, so equal is still eligible.
+	 * Expected: user is eligible; execution proceeds past the eligibility gate.
+	 */
+	@Test
+	public void testFairAccess_UserAtExactFairShareBoundary_IsEligible() throws HpcException {
+		// Arrange
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+				.thenReturn(new HpcDataTransferConfiguration());
+		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Arrays.asList("userA", "userB"));
+		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(2); // 2 slots used
+		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(2); // 2 users
+		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(4); // quota = 4/2 = 2
+
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername("test-globus-account");
+		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
+		HpcTransferAcceptanceResponse response = () -> false;
+		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
+
+		// Act
+		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
+
+		// Assert – 2 == 2 is NOT greater-than, so user is still eligible.
+		assertFalse(result);
+		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
+	}
+
+	/**
+	 * Fair-access: requester IS in the Globus queue and has used more slots (2)
+	 * than their fair share (4 accounts / 4 users = 1).
+	 * Expected: user is ineligible; continueDataObjectDownloadTask returns false
+	 * immediately without reaching getAuthenticatedToken.
+	 */
+	@Test
+	public void testFairAccess_UserExceedsFairShare_IsIneligible() throws HpcException {
+		// Arrange
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+				.thenReturn(new HpcDataTransferConfiguration());
+		when(globusTransferDAOMock.getGlobusUsersAllocated())
+				.thenReturn(Arrays.asList("userA", "userB", "userC", "userD"));
+		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(2); // 2 slots used
+		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(4); // 4 users
+		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(4); // quota = 4/4 = 1
+
+		// Act
+		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
+
+		// Assert – user exceeds fair share (2 > 1); must be rejected early.
+		assertFalse(result);
+		verify(systemAccountLocatorMock, never()).getSystemAccount(any(HpcDataTransferType.class), any());
+	}
+
+	/**
+	 * Fair-access: requester IS in the Globus task table but getUserCountByDataTransferType
+	 * returns 0 (race condition where the task was completed between queries).
+	 * Expected: no ArithmeticException; user is treated as eligible.
+	 */
+	@Test
+	public void testFairAccess_ZeroUsersInQueue_NoDivisionByZero() throws HpcException {
+		// Arrange
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+				.thenReturn(new HpcDataTransferConfiguration());
+		when(globusTransferDAOMock.getGlobusUsersAllocated()).thenReturn(Arrays.asList("userA"));
+		when(globusTransferDAOMock.getGlobusRequestCountForUser("userA")).thenReturn(1);
+		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(0); // edge case
+		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(2);
+
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername("test-globus-account");
+		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
+		HpcTransferAcceptanceResponse response = () -> false;
+		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
+
+		// Act – must not throw ArithmeticException
+		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
+
+		// Assert – zero-user guard treats the user as eligible; execution proceeds.
+		assertFalse(result);
+		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
+	}
+
+	/**
+	 * Build a minimal Globus data-object download task for fair-access tests.
+	 */
+	private HpcDataObjectDownloadTask buildGlobusDownloadTask(String userId, String configId) {
+		HpcDataObjectDownloadTask task = new HpcDataObjectDownloadTask();
+		task.setId("task-" + userId);
+		task.setUserId(userId);
+		task.setConfigurationId(configId);
+		task.setDataTransferType(HpcDataTransferType.GLOBUS);
+		task.setDestinationType(HpcDataTransferType.GLOBUS);
+
+		HpcFileLocation archiveLocation = new HpcFileLocation();
+		archiveLocation.setFileContainerId("testContainer");
+		archiveLocation.setFileId("testFile");
+		task.setArchiveLocation(archiveLocation);
+
+		HpcGlobusDownloadDestination dest = new HpcGlobusDownloadDestination();
+		HpcFileLocation destLoc = new HpcFileLocation();
+		destLoc.setFileContainerId("destContainer");
+		destLoc.setFileId("destFile");
+		dest.setDestinationLocation(destLoc);
+		task.setGlobusDownloadDestination(dest);
+
+		return task;
 	}
 }

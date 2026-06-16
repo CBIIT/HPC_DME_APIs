@@ -4268,6 +4268,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		this.dataManagementService = dataManagementService;
 	}
 
+	void setGlobusTransferDAO(HpcGlobusTransferTaskDAO globusTransferDAO) {
+		this.globusTransferDAO = globusTransferDAO;
+	}
+
 	// Second hop download.
 	private class HpcSecondHopDownload implements HpcDataTransferProgressListener {
 		// ---------------------------------------------------------------------//
