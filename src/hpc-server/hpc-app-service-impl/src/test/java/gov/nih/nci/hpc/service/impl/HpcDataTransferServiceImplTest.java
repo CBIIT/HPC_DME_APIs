@@ -10,10 +10,11 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -25,17 +26,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -64,7 +60,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HpcDataTransferServiceImplTest {
 
 	// ---------------------------------------------------------------------//
@@ -74,10 +70,6 @@ public class HpcDataTransferServiceImplTest {
 	// The app service under test.
 	// @InjectMocks
 	private HpcDataTransferService dataTransferService = null;
-
-	// Expected exception rule.
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
 
 	// Mocks.
 	@Mock
@@ -92,18 +84,6 @@ public class HpcDataTransferServiceImplTest {
 	private HpcDataDownloadDAO dataDownloadDAOMock = null;
 	@Mock
 	private HpcGlobusTransferTaskDAO globusTransferDAOMock = null;
-
-	private AutoCloseable closeable;
-	
-	@BeforeEach
-    void setUp() {
-        closeable = MockitoAnnotations.openMocks(this);
-    }
-    
-    @AfterEach
-    void tearDown() throws Exception {
-        closeable.close();
-    }
     
 	// ---------------------------------------------------------------------//
 	// Unit Tests
@@ -118,11 +98,10 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testUploadDataObjectNoSourceOrAttachment() throws HpcException {
-		expectedException.expect(HpcException.class);
-		expectedException.expectMessage("No data transfer source or data attachment provided or upload URL requested");
-
-		dataTransferService.uploadDataObject(null, null, null, null, null, null, false, null, null, null, null,
-				"testObjectId", null, null, null, null);
+		HpcException ex = assertThrows(HpcException.class, () ->
+				dataTransferService.uploadDataObject(null, null, null, null, null, null, false, null, null, null, null,
+						"testObjectId", null, null, null, null));
+		assertTrue(ex.getMessage().contains("No data transfer source or data attachment provided or upload URL requested"));
 	}
 
 	/**
@@ -134,12 +113,11 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testUploadDataObjectInvalidS3UploadSource() throws HpcException {
-		expectedException.expect(HpcException.class);
-		expectedException.expectMessage("Invalid S3 upload source");
-
 		HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
-		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null, null,
-				null, "dataObjectId", null, null, null, null);
+		HpcException ex = assertThrows(HpcException.class, () ->
+				dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null,
+						null, null, "dataObjectId", null, null, null, null));
+		assertTrue(ex.getMessage().contains("Invalid S3 upload source"));
 	}
 
 	/**
@@ -202,10 +180,9 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testGenerateDownloadRequestURLNullDataTransferType() throws HpcException {
-		expectedException.expect(HpcException.class);
-		expectedException.expectMessage("Invalid generate download URL request");
-
-		dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), null, 2000, "", "");
+		HpcException ex = assertThrows(HpcException.class, () ->
+				dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), null, 2000, "", ""));
+		assertTrue(ex.getMessage().contains("Invalid generate download URL request"));
 	}
 
 	/**
@@ -217,11 +194,10 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testGenerateDownloadRequestURLInvalidArchiveLocation() throws HpcException {
-		expectedException.expect(HpcException.class);
-		expectedException.expectMessage("Invalid generate download URL request");
-
-		dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), HpcDataTransferType.S_3,
-				1000, "", "");
+		HpcException ex = assertThrows(HpcException.class, () ->
+				dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(),
+						HpcDataTransferType.S_3, 1000, "", ""));
+		assertTrue(ex.getMessage().contains("Invalid generate download URL request"));
 	}
 
 	/**
@@ -267,10 +243,12 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testDownloadDataObjectNullDataTransferType() throws HpcException {
-		expectedException.expect(HpcException.class);
-		expectedException.expectMessage("Invalid data transfer request");
-		dataTransferService.downloadDataObject("", null, null, null, null, null, null, null, null, null, null, null, "",
-				"", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null, false);
+
+		HpcException ex = assertThrows(HpcException.class, () ->
+				dataTransferService.downloadDataObject("", null, null, null, null, null, null, null, null, null, null,
+						null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null));
+		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
+
 	}
 
 	/**
@@ -282,10 +260,12 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testDownloadDataObjectInvalidArchiveLocation() throws HpcException {
-		expectedException.expect(HpcException.class);
-		expectedException.expectMessage("Invalid data transfer request");
-		dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null, null, null, null,
-				null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null, false);
+
+		HpcException ex = assertThrows(HpcException.class, () ->
+				dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null, null, null,
+						null, null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null));
+		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
+
 	}
 
 	/**
@@ -357,7 +337,7 @@ public class HpcDataTransferServiceImplTest {
 	// Helper Methods
 	// ---------------------------------------------------------------------//
 
-	@Before
+	@BeforeEach
 	public void init() throws HpcException {
 		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new HashMap<>();
 		dataTransferProxies.put(HpcDataTransferType.GLOBUS, dataTransferProxyMock);
