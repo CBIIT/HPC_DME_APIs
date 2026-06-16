@@ -67,6 +67,10 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 
   @Override
   public HpcReportsDTO generateReport(HpcReportRequestDTO criteriaDTO) throws HpcException {
+    if (criteriaDTO == null)
+      throw new HpcException("Invalid criteria to generate report",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+
     HpcRequestInvoker invoker = securityService.getRequestInvoker();
     if (invoker == null) {
       throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
@@ -80,10 +84,6 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
               HpcErrorType.UNAUTHORIZED_REQUEST);
       }
     }
-
-    if (criteriaDTO == null)
-      throw new HpcException("Invalid criteria to generate report",
-          HpcErrorType.INVALID_REQUEST_INPUT);
 
     if (criteriaDTO.getType() == null)
       throw new HpcException("Report type is missing", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -167,10 +167,28 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
             HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    if (criteriaDTO.getType().equals(HpcReportType.LAST_ACCESS_DATA_OBJECT_REPORT)) {
+      if (criteriaDTO.getUser() != null && !criteriaDTO.getUser().isEmpty()) {
+        throw new HpcException("User is not allowed for LAST_ACCESS_DATA_OBJECT_REPORT",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
     HpcReportCriteria criteria = new HpcReportCriteria();
-    criteria.getDocs().addAll(criteriaDTO.getDoc());
+    if (criteriaDTO.getDoc() != null) {
+      criteria.getDocs().addAll(criteriaDTO.getDoc());
+    }
     criteria.setType(criteriaDTO.getType());
-    criteria.setPath(criteriaDTO.getPath());
+    if (criteriaDTO.getCollectionPath() != null && !criteriaDTO.getCollectionPath().isEmpty()) {
+      criteria.setCollectionPath(criteriaDTO.getCollectionPath());
+      criteria.setPath(criteriaDTO.getCollectionPath());
+    } else {
+      criteria.setPath(criteriaDTO.getPath());
+    }
+    criteria.setBasePath(criteriaDTO.getBasePath());
+    criteria.setBucket(criteriaDTO.getBucket());
+    criteria.setSortBy(criteriaDTO.getSortBy());
+    criteria.setSortOrder(criteriaDTO.getSortOrder());
     criteria.setIsMachineReadable(true);
     if (criteriaDTO.getReportColumns() != null && !criteriaDTO.getReportColumns().isEmpty()) {
       for(HpcReportEntryAttribute reportColumn : criteriaDTO.getReportColumns()) {
@@ -180,12 +198,14 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
     Calendar fromcal = null;
     Calendar tocal = null;
     try {
-      if (criteriaDTO.getFromDate() != null && criteriaDTO.getToDate() != null) {
+      if (criteriaDTO.getFromDate() != null) {
         SimpleDateFormat fromFormat = new SimpleDateFormat("M/dd/yyyy");
-        SimpleDateFormat toFormat = new SimpleDateFormat("M/dd/yyyy");
         fromFormat.parse(criteriaDTO.getFromDate());
         fromcal = fromFormat.getCalendar();
         criteria.setFromDate(fromcal);
+      }
+      if (criteriaDTO.getToDate() != null) {
+        SimpleDateFormat toFormat = new SimpleDateFormat("M/dd/yyyy");
         toFormat.parse(criteriaDTO.getToDate());
         tocal = toFormat.getCalendar();
         criteria.setToDate(tocal);
@@ -194,7 +214,9 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       throw new HpcException("Failed to parse date value " + e.getMessage(),
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    criteria.getUsers().addAll(criteriaDTO.getUser());
+    if (criteriaDTO.getUser() != null) {
+      criteria.getUsers().addAll(criteriaDTO.getUser());
+    }
 
     List<HpcReport> reports = reportService.generateReport(criteria);
     HpcReportsDTO dto = new HpcReportsDTO();

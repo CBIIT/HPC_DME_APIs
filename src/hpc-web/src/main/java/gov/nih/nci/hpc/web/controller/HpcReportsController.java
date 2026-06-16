@@ -224,6 +224,30 @@ public class HpcReportsController extends AbstractHpcController {
 			if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER)) {
 				requestDTO.setPath("ALL");
 			}
+			if (requestDTO.getType().equals(HpcReportType.LAST_ACCESS_DATA_OBJECT_REPORT)) {
+				if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")
+						&& !reportRequest.getDoc().isEmpty()) {
+					requestDTO.getDoc().add(reportRequest.getDoc());
+				}
+				if (reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")
+						&& !reportRequest.getBasepath().isEmpty()) {
+					requestDTO.setBasePath(reportRequest.getBasepath());
+				}
+				if (reportRequest.getPath() != null && !reportRequest.getPath().trim().isEmpty()) {
+					requestDTO.setCollectionPath(reportRequest.getPath().trim());
+					requestDTO.setPath(reportRequest.getPath().trim());
+				}
+				if (reportRequest.getBucket() != null && !reportRequest.getBucket().trim().isEmpty()) {
+					requestDTO.setBucket(reportRequest.getBucket().trim());
+				}
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.LAST_ACCESSED_DATE);
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.LAST_DOWNLOADED_BY);
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.DOWNLOAD_COUNT);
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.DOC);
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.BASE_PATH);
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.BUCKET);
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.DATA_SIZE);
+			}
 			if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)) {
 				requestDTO = setReportColumnsForIndividualReports(requestDTO, reportRequest.getShowArchiveSummary());
 			}
@@ -253,7 +277,8 @@ public class HpcReportsController extends AbstractHpcController {
 				requestDTO.setPath(reportRequest.getPath());
 			}
 
-			if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1")) {
+			if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1")
+					&& !reportRequest.getUser().isEmpty()) {
 				requestDTO.getUser().add(reportRequest.getUser());
 			}
 			if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty()) {
@@ -271,8 +296,9 @@ public class HpcReportsController extends AbstractHpcController {
 				HpcReportsDTO reports = parser.readValueAs(HpcReportsDTO.class);
 				if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATA_OWNER))) {
 					model.addAttribute("reports", translateDataOwnerReports(reports.getReports()));
-				}
-				if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
+				} else if (requestDTO.getType().equals(HpcReportType.LAST_ACCESS_DATA_OBJECT_REPORT)) {
+					model.addAttribute("reports", translateLastAccessReports(reports.getReports()));
+				} else if ((requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
 						&& reportRequest.getDoc().equals("All"))
 						|| (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
 								&& reportRequest.getBasepath().equals("All"))) {
@@ -447,6 +473,30 @@ public class HpcReportsController extends AbstractHpcController {
 					}
 				}
 			}
+			tReports.add(dto);
+		}
+		return tReports;
+	}
+
+	private List<HpcReportDTO> translateLastAccessReports(List<HpcReportDTO> reports) {
+		List<HpcReportDTO> tReports = new ArrayList<>();
+		for (HpcReportDTO dto : reports) {
+			List<HpcReportEntryDTO> entries = dto.getReportEntries();
+			List<HpcReportEntryDTO> translatedEntries = new ArrayList<>();
+			for (String attributeName : new String[] { "LAST_ACCESSED_DATE", "LAST_DOWNLOADED_BY", "DOWNLOAD_COUNT",
+					"DOC", "BASE_PATH", "BUCKET", "DATA_SIZE" }) {
+				for (HpcReportEntryDTO entry : entries) {
+					if (entry.getAttribute().equals(attributeName)) {
+						if (env.getProperty(attributeName) != null) {
+							entry.setAttribute(env.getProperty(attributeName));
+						}
+						translatedEntries.add(entry);
+						break;
+					}
+				}
+			}
+			dto.getReportEntries().clear();
+			dto.getReportEntries().addAll(translatedEntries);
 			tReports.add(dto);
 		}
 		return tReports;

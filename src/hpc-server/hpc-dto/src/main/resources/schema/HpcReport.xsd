@@ -29,13 +29,18 @@
 				<xsd:element name="type" type="hpc-domain-report:HpcReportType" />
 				<xsd:element name="doc"
 				             type="xsd:string"
-					         minOccurs="1" maxOccurs="unbounded" />
+					         minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="user"
 				             type="xsd:string"
-					         minOccurs="1" maxOccurs="unbounded" />
-				<xsd:element name="fromDate" type="xsd:string" />
-				<xsd:element name="toDate" type="xsd:string" />
-				<xsd:element name="path" type="xsd:string" />
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="fromDate" type="xsd:string" minOccurs="0" />
+				<xsd:element name="toDate" type="xsd:string" minOccurs="0" />
+				<xsd:element name="path" type="xsd:string" minOccurs="0" />
+				<xsd:element name="basePath" type="xsd:string" minOccurs="0" />
+				<xsd:element name="collectionPath" type="xsd:string" minOccurs="0" />
+				<xsd:element name="bucket" type="xsd:string" minOccurs="0" />
+				<xsd:element name="sortBy" type="xsd:string" minOccurs="0" />
+				<xsd:element name="sortOrder" type="xsd:string" minOccurs="0" />
 				<xsd:element name="reportColumns"
 							type="hpc-domain-report:HpcReportEntryAttribute"
 							minOccurs="0" maxOccurs="unbounded" />
