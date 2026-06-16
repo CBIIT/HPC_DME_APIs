@@ -10,10 +10,11 @@ from trino.auth import BasicAuthentication
 import boto3
 boto3.compat.filter_python_deprecation_warnings()
 from botocore.exceptions import ClientError
+import urllib3
 
 CATALOG = "vast"
-SCHEMA = 'vast-audit-log-bucket|vast_audit_log_schema'
-TAG_KEY = "trueatime"
+SCHEMA = 'vast-audit-log-bucket/vast_audit_log_schema'
+TAG_KEY = "dme_access_time"
 
 
 def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, dry_run: bool = False):
@@ -90,13 +91,18 @@ def main(argv=None):
     parser.add_argument("--password", default=None, help="Trino password (if omitted, will prompt securely)")
     parser.add_argument("--view-path", required=True, help="If set, only print/tag objects whose path starts with this prefix, e.g. /testdir/. Note, this gets parsed from the path")
     parser.add_argument("--bucket", required=True, help="S3 bucket name to tag")
+    parser.add_argument("--object-id", required=True, help="Base path prefix for S3 object keys, e.g. AUTO-TIERING")
     parser.add_argument("--s3-endpoint", required=True, help="Custom S3 endpoint URL, e.g. https://my-vast-s3.example.com")
     parser.add_argument("--access-key", required=True, help="S3 access key ID")
     parser.add_argument("--secret-key", required=True, help="S3 secret access key")
     parser.add_argument("--dry-run", action="store_true", help="Do not modify tags; just log actions")
+    parser.add_argument("--insecure", action="store_true", help="Skip SSL certificate verification for Trino and S3 connections")
 
 
     args = parser.parse_args(argv)
+
+    if args.insecure:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     password = args.password or getpass.getpass(prompt=f"Trino password for {args.user}: ")
 
@@ -124,7 +130,7 @@ def main(argv=None):
         user=args.user,
         auth=BasicAuthentication(args.user, password),
         http_scheme="https",
-        verify=False,
+        verify=(not args.insecure),
         catalog=CATALOG,
         schema=SCHEMA,
     )
@@ -137,18 +143,23 @@ def main(argv=None):
         "s3",
         endpoint_url=args.s3_endpoint,
         aws_access_key_id=args.access_key,
-        aws_secret_access_key=args.secret_key
+        aws_secret_access_key=args.secret_key,
+        verify=(not args.insecure),
     )
 
     # Example: consume the cursor, or you can return it from a function instead.
     rows = cursor.fetchall()
     for file_path, latest_time in rows:
-        key = file_path.removeprefix(args.view_path).lstrip("/")
+        relative = file_path.removeprefix(args.view_path).lstrip("/")
 
         # Skip if the result is empty (means the row is exactly the view path itself)
-        if not key:
+        if not relative:
             print(f"SKIP directory or empty key from path: {file_path}")
             continue
+
+        # Construct the full S3 key using object-id as the base path prefix
+        object_id = args.object_id.strip("/")
+        key = f"{object_id}/{relative}" if object_id else relative
 
         # Optionally also skip “directory marker” keys if you don’t want to tag them:
         if key.endswith("/"):
