@@ -65,6 +65,7 @@
     var basePath = [[${basePath}]];
     var scrollLoc = [[${scrollLoc}]];
     var userBookmarks = [[${userBookmarks}]];
+    var externalArchives = [[${externalArchives}]];
     var refresh = null;
     var loadmore = null;
     var detail = true;
@@ -292,6 +293,18 @@ $(document).on('mousemove', function (e) {
   margin-right: 1em;
 }
 
+#externalArchiveContent {
+  margin-top: 2em;
+}
+
+#externalArchiveDiv > a {
+  margin-left: 2em;
+}
+
+#toggleExternalArchive > i {
+  margin-right: 1em;
+}
+
 .ui-grid {
   height: auto;
    .ui-grid-viewport {
@@ -445,6 +458,14 @@ cursor: pointer;
                       </span>
                       <br/>
                       <div id="bookmarksDiv"></div>
+                    </div>
+                    <div id="externalArchiveContent">
+                      <span id="toggleExternalArchive">
+                        <i class="glyphicon glyphicon-folder-open"></i>
+                        External Archives
+                      </span>
+                      <br/>
+                      <div id="externalArchiveDiv"></div>
                     </div>
 									</div>
 									<ul id="myMenu" class="dropdown-menu" style="position: fixed;" role="menu" aria-labelledby="dLabel">
@@ -754,6 +775,9 @@ $('#tree1').bind('tree.init', function() {
 	if ($('#bookmarksDiv:visible').length > 0) {
     	refreshBookmarks(userBookmarks)
 	}
+	if ($('#externalArchiveDiv:visible').length > 0) {
+    	refreshExternalArchive(externalArchives)
+	}
 	var tree = $('#tree1').tree('getTree');
 	if(tree.children != null && tree.children.length > 0) {
 	    var topNode = tree.children[0];
@@ -786,6 +810,22 @@ function refreshBookmarks(userBookmarks) {
 	                                                     .replace("bm-name", userBookmarks[i].name);
 	      $("#bookmarksDiv").append(aBookmarkLink);
 	      $("#bookmarksDiv").append("<br/>");
+	    }
+    }
+	
+}
+
+function refreshExternalArchive(externalArchives) {
+	
+	$("#externalArchiveDiv").empty();
+    var aExternalArchiveLink;
+    if(externalArchives != null) {
+	    for (i = 0; i < externalArchives.length; i++) {
+	      var linkHref = '/global.html?path=' + percentEncodePath(externalArchives[i]);
+	      aExternalArchiveLink = "<a href='ext-path'>ext-name</a>".replace("ext-path", linkHref)
+	                                                     .replace("ext-name", externalArchives[i]);
+	      $("#externalArchiveDiv").append(aExternalArchiveLink);
+	      $("#externalArchiveDiv").append("<br/>");
 	    }
     }
 	
@@ -844,6 +884,33 @@ var menuAPI = $('#tree1').jqTreeContextMenu($('#myMenu'), {
     $('#bookmarksDiv').toggle();
   });
 
+  $('#toggleExternalArchive').bind('click', function() {
+	    
+
+	    if ($('#externalArchiveDiv:visible').length > 0) {
+	      $('#toggleExternalArchive > i').removeClass('glyphicon-folder-open');
+	      $('#toggleExternalArchive > i').addClass('glyphicon-folder-close');
+	    } else {
+	      $.ajax({
+	          type : "GET",
+	          dataType: "json",
+	          url : "/api/global/externalArchives",
+	          success : function(data) {
+	       
+	          	var archives = data;
+	          	refreshExternalArchive(archives)
+	          	$('#toggleExternalArchive > i').removeClass('glyphicon-folder-close');
+	            $('#toggleExternalArchive > i').addClass('glyphicon-folder-open');
+	          
+	          },
+	    	  error : function(e) {
+	    		 console.log('ERROR: ', e);
+	    	  }
+	      });
+	    }
+	    $('#externalArchiveDiv').toggle();
+	  });
+  
   $('#validhierarchyModal').on('hidden.bs.modal', function(e)
   { 
 	$(this).removeData();
