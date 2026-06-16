@@ -1,0 +1,88 @@
+//BreadCrumb.js
+"use client";
+
+
+import { useContext, useEffect, useState } from "react";
+import { GridContext } from "./GridContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
+import { useSearchParams } from "next/navigation";
+import {useSessionContext} from "../SessionContext";
+
+
+const BreadCrumb = () => {
+
+    const {absolutePath, basePath } = useContext(GridContext);
+    const [folder, setFolder] = useState(null);
+    const [tokens, setTokens] = useState([]);
+    const [fullPaths, setFullPaths] = useState([]);
+	const {
+		session,
+	    setMessage
+	  } = useSessionContext();
+    const searchParams = useSearchParams();
+    const url = '/global';
+
+    const navigateToGlobal = (params) => {
+        const queryString = params?.toString();
+        window.location.href = queryString ? `${url}?${queryString}` : url;
+    };
+
+    useEffect(() => {
+        if(!absolutePath || !basePath) {
+            return;
+        }
+        let pathAfterBasePath = absolutePath.slice(basePath.length);
+        let segments = pathAfterBasePath.split('/').filter(segment => segment !== '');
+        let linkPaths = [];
+        setFolder(segments.pop());
+        for (let i = 0; i < segments.length; i++) {
+            linkPaths.push(basePath + '/' + segments.slice(0, i + 1).join('/'));
+        }
+        setTokens([]);
+        setFullPaths([]);
+        setTokens(segments);
+        setFullPaths(linkPaths);
+    }, [basePath, absolutePath]);
+
+    const handleBreadCrumbClick = (event) => {
+        event.preventDefault();
+
+        // Session expired or not authenticated: go to global entry/login page.
+		/*if (!session?.hpcUser) {
+			setMessage('Session expired. Please sign in again.');
+			navigateToGlobal();
+			return;
+		}*/
+		
+        const currentParams = new URLSearchParams(searchParams.toString());
+        currentParams.set('path', event.currentTarget.id);
+        navigateToGlobal(currentParams);
+    };
+
+    return (
+        <div className="col pt-3">
+            <ol className="dme-breadcrumb">
+                <a id={basePath} href="#" onClick={handleBreadCrumbClick}
+                   className="text-blue-600 hover:text-blue-600 text-break">
+                    {basePath}
+                </a>
+                <span className="ms-3 me-3"><FontAwesomeIcon icon={faAngleRight} /></span>
+                {tokens.map((token, i) => (
+                    <li key={i} className="list-unstyled">
+                        <a id={fullPaths[i]} href="#" onClick={handleBreadCrumbClick}
+                           className="text-blue-600 hover:text-blue-600 text-break">
+                            {token}
+                        </a>
+                        <span className="m-3" ><FontAwesomeIcon icon={faAngleRight} /></span>
+                    </li>
+                ))}
+                <span id={folder}>
+                    {folder}
+                </span>
+            </ol>
+        </div>
+    );
+};
+
+export default BreadCrumb;
