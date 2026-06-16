@@ -190,7 +190,8 @@ public class HpcSystemAccountLocator {
 
 	public int getSystemAccountCount(String hpcDataMgmtConfigId) throws HpcException {
 
-		return accessProperPool(hpcDataMgmtConfigId).size();
+		List<PooledSystemAccountWrapper> pool = accessProperPool(hpcDataMgmtConfigId);
+		return pool != null ? pool.size() : 0;
 	}
 
 

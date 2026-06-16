@@ -853,7 +853,7 @@ comment on column HPC_GLOBUS_TRANSFER_TASK.DATA_TRANSFER_REQUEST_ID is 'The glob
 comment on column HPC_GLOBUS_TRANSFER_TASK.PATH is 'The DME path';
 comment on column HPC_GLOBUS_TRANSFER_TASK.DOWNLOAD is 'An indicator if the transfer is a download task or an upload task';
 comment on column HPC_GLOBUS_TRANSFER_TASK.CREATED is 'The date and time the request was created';
-comment on column HPC_GLOBUS_TRANSFER_TASK.USER_ID is 'The user ID requesting the transfer';
+comment on column HPC_GLOBUS_TRANSFER_TASK.USER_ID is 'The user ID of the requester queued for Globus transfer';
 
 create index HPC_GLOBUS_TRANSFER_TASK_GLOBUS_ACCOUNT_IDX
     on irods.hpc_globus_transfer_task (globus_account);

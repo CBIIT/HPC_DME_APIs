@@ -1875,6 +1875,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 		globusRequest.setPath(collectionDownloadTask.getPath());
 		globusRequest.setDownload(true);
+		globusRequest.setUserId(collectionDownloadTask.getUserId());
 		globusTransferDAO.insertRequest(globusRequest);
 	}
 
@@ -2809,6 +2810,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 			globusRequest.setPath(uploadRequest.getPath());
 			globusRequest.setDownload(false);
+			globusRequest.setUserId(uploadRequest.getUserId());
 			globusTransferDAO.insertRequest(globusRequest);
 		}
 
