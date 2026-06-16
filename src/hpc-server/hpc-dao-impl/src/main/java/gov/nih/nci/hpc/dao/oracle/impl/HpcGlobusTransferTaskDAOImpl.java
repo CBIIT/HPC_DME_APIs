@@ -48,9 +48,9 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	private static final String GET_GLOBUS_ACCOUNTS_USED_SQL = "select GLOBUS_ACCOUNT,count(*) from HPC_GLOBUS_TRANSFER_TASK "
 			+ "group by GLOBUS_ACCOUNT order by count(*)";
 
-	private static final String GET_USERS_IN_GLOBUS_TASK_QUEUE_SQL = "select DISTINCT USER_ID from HPC_GLOBUS_TRANSFER_TASK ";
+	private static final String GET_USERS_IN_GLOBUS_TASK_QUEUE_SQL = "select DISTINCT USER_ID from HPC_GLOBUS_TRANSFER_TASK where USER_ID is not null and DOWNLOAD = '1'";
 
-	private static final String GET_REQUEST_COUNT_BY_USER_SQL = "select count(*) from HPC_GLOBUS_TRANSFER_TASK WHERE USER_ID = ?";
+	private static final String GET_REQUEST_COUNT_BY_USER_SQL = "select count(*) from HPC_GLOBUS_TRANSFER_TASK where USER_ID = ? and DOWNLOAD = '1'";
 
 	// ---------------------------------------------------------------------//
 	// Instance members

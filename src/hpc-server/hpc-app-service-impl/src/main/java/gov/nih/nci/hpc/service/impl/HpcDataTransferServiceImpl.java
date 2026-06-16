@@ -2437,6 +2437,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private boolean userEligibleForToken(HpcDataTransferType type, String hpcDataMgmtConfigId, String userId)
 			throws HpcException {
 
+		// Fair-access is only enforced for Globus transfers.
+		if (!HpcDataTransferType.GLOBUS.equals(type)) {
+			return true;
+		}
+
 		//Get the users who have been allocated Globus slots
 		List<String> usersAllocatedSlots = globusTransferDAO.getGlobusUsersAllocated();
 
