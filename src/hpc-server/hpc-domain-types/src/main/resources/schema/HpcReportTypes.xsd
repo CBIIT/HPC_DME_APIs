@@ -31,6 +31,7 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_DATA_OWNER" />
+			<xsd:enumeration value="LAST_ACCESS_DATA_OBJECT_REPORT" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -47,6 +48,11 @@
 			<xsd:element name="attributes"
 			             type="hpc-domain-report:HpcReportEntryAttribute"
 			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="basePath" type="xsd:string" minOccurs="0" />
+			<xsd:element name="collectionPath" type="xsd:string" minOccurs="0" />
+			<xsd:element name="bucket" type="xsd:string" minOccurs="0" />
+			<xsd:element name="sortBy" type="xsd:string" minOccurs="0" />
+			<xsd:element name="sortOrder" type="xsd:string" minOccurs="0" />
 			<xsd:element name="fromDate" type="xsd:date" />
 			<xsd:element name="ToDate" type="xsd:date" />
 			<xsd:element name="isMachineReadable" type="xsd:boolean" />
@@ -84,6 +90,13 @@
 			<xsd:enumeration value="TO_DATE" />
 			<xsd:enumeration value="TYPE" />
 			<xsd:enumeration value="DOC" />
+			<xsd:enumeration value="PATH" />
+			<xsd:enumeration value="LAST_ACCESSED_DATE" />
+			<xsd:enumeration value="LAST_DOWNLOADED_BY" />
+			<xsd:enumeration value="DOWNLOAD_COUNT" />
+			<xsd:enumeration value="BASE_PATH" />
+			<xsd:enumeration value="BUCKET" />
+			<xsd:enumeration value="DATA_SIZE" />
 			<xsd:enumeration value="USER_ID" />
 			<xsd:enumeration value="TOTAL_DATA_SIZE" />
 			<xsd:enumeration value="TOTAL_NUM_OF_REGISTERED_USERS" />
