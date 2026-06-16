@@ -19,6 +19,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.text.SimpleDateFormat;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -268,6 +271,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String LAST_ACCESS_REPORT_BASE_SQL = "SELECT PATH, LAST_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
 			+ "FROM HPC_DATA_OBJECT_LAST_ACCESS_MV";
+
+	private static final Set<String> LAST_ACCESS_SORT_COLUMNS = new HashSet<>(Arrays.asList("LAST_ACCESSED_DATE",
+			"PATH", "DOC", "BASE_PATH", "BUCKET", "DOWNLOAD_COUNT", "DATA_SIZE"));
 
 	/////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
 	private static final String BASE_PATHS_SQL = "select BASE_PATH from HPC_DATA_MANAGEMENT_CONFIGURATION";
@@ -893,10 +899,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		String sortOrder = "DESC";
 		if (criteria.getSortBy() != null) {
 			String requestedSortBy = criteria.getSortBy().trim().toUpperCase();
-			if (requestedSortBy.equals("LAST_ACCESSED_DATE") || requestedSortBy.equals("PATH")
-					|| requestedSortBy.equals("DOC") || requestedSortBy.equals("BASE_PATH")
-					|| requestedSortBy.equals("BUCKET") || requestedSortBy.equals("DOWNLOAD_COUNT")
-					|| requestedSortBy.equals("DATA_SIZE")) {
+			if (LAST_ACCESS_SORT_COLUMNS.contains(requestedSortBy)) {
 				sortBy = requestedSortBy;
 			}
 		}
