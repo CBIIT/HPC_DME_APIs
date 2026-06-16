@@ -245,7 +245,7 @@ public class HpcDataTransferServiceImplTest {
 	public void testDownloadDataObjectNullDataTransferType() throws HpcException {
 		HpcException ex = assertThrows(HpcException.class, () ->
 				dataTransferService.downloadDataObject("", null, null, null, null, null, null, null, null, null, null,
-						null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null, false));
+						null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null));
 		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
 	}
 
@@ -260,8 +260,7 @@ public class HpcDataTransferServiceImplTest {
 	public void testDownloadDataObjectInvalidArchiveLocation() throws HpcException {
 		HpcException ex = assertThrows(HpcException.class, () ->
 				dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null, null, null,
-						null, null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null,
-						false));
+						null, null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null));
 		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
 	}
 
@@ -321,7 +320,7 @@ public class HpcDataTransferServiceImplTest {
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject("/test/path",
 				archiveLocation, null, s3loadDestination, null, null, null, null, null, HpcDataTransferType.S_3,
 				"testConfigId", "", null, "testUserId", null, false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED,
-				null, false);
+				null);
 
 		// Assert expected result.
 		assertNull(downloadResponse.getDownloadTaskId());
