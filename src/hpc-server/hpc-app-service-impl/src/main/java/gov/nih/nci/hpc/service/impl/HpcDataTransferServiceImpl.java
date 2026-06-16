@@ -2443,7 +2443,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		//Get the users who have been allocated Globus slots
-		List<String> usersAllocatedSlots = globusTransferDAO.getGlobusUsersAllocated();
+		List<String> usersAllocatedSlots = globusTransferDAO.getGlobusUsersAllocated(true);
 
 		if(usersAllocatedSlots.contains(userId)) {
 			//This user already has a Globus slot for data transfer, check if he can be provided more
@@ -2452,16 +2452,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			int transferAccountCount = systemAccountLocator.getSystemAccountCount(hpcDataMgmtConfigId);
 
 			//Get the number of slots allocated to this user
-			int numberOfSlotsAllocatedForUser = globusTransferDAO.getGlobusRequestCountForUser(userId);
+			int numberOfSlotsAllocatedForUser = globusTransferDAO.getGlobusRequestCountByUser(userId, true);
 
 			//Total number of users in the download queue
-			int numberOfUsersInQueue = dataDownloadDAO.getUserCountByDataTransferType(type);
+			int numberOfDistinctUsersInQueue = dataDownloadDAO.getUserCountByDataTransferType(type);
 
 			//Else if the number of slots used by requester <= total number of slots/number of users, then proceed.
-			if(numberOfUsersInQueue > 0 &&
-					numberOfSlotsAllocatedForUser > transferAccountCount/numberOfUsersInQueue) {
+			if(numberOfDistinctUsersInQueue > 0 &&
+				numberOfSlotsAllocatedForUser > transferAccountCount/numberOfDistinctUsersInQueue) {
 				logger.info("User {} already allocated {} slots, exceeded globus slot limit since {} users are in queue",
-							 userId, numberOfSlotsAllocatedForUser, numberOfUsersInQueue);
+					userId, numberOfSlotsAllocatedForUser, numberOfDistinctUsersInQueue);
 				return false;
 			}
 		};
