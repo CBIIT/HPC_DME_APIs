@@ -246,7 +246,7 @@ public class HpcDataTransferServiceImplTest {
 
 		HpcException ex = assertThrows(HpcException.class, () ->
 				dataTransferService.downloadDataObject("", null, null, null, null, null, null, null, null, null, null,
-						null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null));
+						null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null, false));
 		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
 
 	}
@@ -263,7 +263,8 @@ public class HpcDataTransferServiceImplTest {
 
 		HpcException ex = assertThrows(HpcException.class, () ->
 				dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null, null, null,
-						null, null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null));
+						null, null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null,
+						false));
 		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
 
 	}
