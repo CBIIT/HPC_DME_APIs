@@ -204,6 +204,7 @@ body.loading .overlay{
 								<option value="-1">---Select Report Type---</option>
 								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
 								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
+								<option value="LAST_ACCESS_DATA_OBJECT_REPORT" th:selected="${reportRequest.getReportType() == 'LAST_ACCESS_DATA_OBJECT_REPORT'}">Last Access Data Object Report</option>
 								<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
 								<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
 								<option value="USAGE_SUMMARY_BY_DATE_RANGE"
@@ -266,6 +267,12 @@ body.loading .overlay{
 							</div>
 						</div>
 						<!---  Collection Path End -->
+						<div style="display: none" id="bucketDiv">
+							<div class="col-sm-4">
+								<label><b>Bucket:</b></label>
+								<input type="text" name="bucket" id="bucket" class="form-control" th:value="${reportRequest.getBucket()}" />
+							</div>
+						</div>
 					</div> <!-- First Row End -->
 					<!-- Second Row Begin -->
 					<div class="row">			
@@ -316,7 +323,7 @@ body.loading .overlay{
 					<input type="hidden" id="actionType" name="actionType" />	 
 				</form>
 				<div style="width: 1000px; margin-left: 1%;"
-					th:if="${reports != null and reports.size() == 1}">
+					th:if="${reports != null and reports.size() == 1 and reportRequest.getReportType() != 'LAST_ACCESS_DATA_OBJECT_REPORT'}">
 					<table class="table">
 						<tbody>
 							<tr id='attrRow0' th:each="report : ${reports}">
@@ -349,7 +356,7 @@ body.loading .overlay{
 				<!-- Start BasePath or DOC Grid -->
 				
 				<div 
-				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER'}">
+				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() != 'USAGE_SUMMARY_BY_DATA_OWNER' and reportRequest.getReportType() != 'LAST_ACCESS_DATA_OBJECT_REPORT'}">
 
 					<table id="reportgrid" class="display" style="width:100%; display: none">
 						<caption style="font-weight:bold" th:text="${reportName} + ' (' + ${reports[0].fromDate} + ' to ' +  ${reports[0].toDate} + ')'"></caption>		
@@ -380,6 +387,34 @@ body.loading .overlay{
 					</table>
 				</div>
 				<!-- End BasePath or DOC Grid -->
+				<!-- Start Last Access Data Object Grid -->
+				<div th:if="${reports != null and reports.size() > 0 and reportRequest.getReportType() == 'LAST_ACCESS_DATA_OBJECT_REPORT'}">
+					<table id="reportgrid" class="display" style="width:100%; display: none">
+						<caption style="font-weight:bold" th:text="${reportName}"></caption>
+						<thead>
+							<tr>
+								<td class="column-heading" th:text="Index"></td>
+								<td class="column-heading" th:text="'Path'"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="report : ${reports}">
+							   <td></td>
+							   <td th:text="${report.getPath()}"></td>
+							   <td th:utext="${entry.value}" th:each="entry : ${report.reportEntries}"></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td class="column-heading" th:text="Index"></td>
+								<td class="column-heading" th:text="'Path'"></td>
+								<th style="color: black" th:text="${entry.attribute}" th:each="entry : ${reports[0].reportEntries}"></th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+				<!-- End Last Access Data Object Grid -->
 				<!-- Start Data Owner Grid -->
 				<div 
 				   th:if="${reports != null and reports.size() > 1 and reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">
@@ -529,6 +564,14 @@ body.loading .overlay{
 								titleAttr: 'Copy to Clipboard',
 							},
 							{
+								extend: 'csvHtml5',
+								filename: exportFileName,
+								title: null,
+								text: 'CSV',
+								messageTop: reportHeaderTitle,
+								titleAttr: 'Export to CSV',
+							},
+							{
 								extend: 'excelHtml5',
 								filename: exportFileName,
 								title: null,
@@ -562,6 +605,7 @@ body.loading .overlay{
 		var reportHeaderTitle = "";
 		var noSortColumns = [-1];
 		var visibleColumns = [1];
+		var defaultOrder = [ [ 1, 'asc' ] ];
 		const d = new Date();
 		let pretag = "DME_";
 		let tag = `_${(new Date().toJSON().slice(0,10))}`;
@@ -642,6 +686,19 @@ body.loading .overlay{
 				exportOptions = {columns: [':visible:not(:nth-last-child(2))']} // Donot export the 8th column, contains button for displaying Archive Summary
 				showHideCols = [2,4,5,6,7]; // Exclude first three columns from show/hide. It starts from 4th column. Also exclude 8th column - the Archive Summary button
 				break;
+			case 'LAST_ACCESS_DATA_OBJECT_REPORT':
+				exportFileName = pretag + "Last_Access_Data_Object" + tag;
+				reportHeaderTitle = "Last Access Data Object Report";
+				visibleColumns = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+				colDefs = [
+						{"targets": 0, "searchable": false, "orderable": false, "visible": true },
+						{"targets": visibleColumns, "visible": true},
+						{"targets": '_all', "visible": true}
+					];
+				exportOptions = { columns: ':visible' };
+				showHideCols = [':gt(1)'];
+				defaultOrder = [ [ 2, 'desc' ] ];
+				break;
 			default:
 				break;
 		}
@@ -670,6 +727,15 @@ body.loading .overlay{
 					titleAttr: 'Copy to Clipboard',
 				},
 				{
+					extend: 'csvHtml5',
+					filename: exportFileName,
+					title: null,
+					text: 'CSV',
+					messageTop: messageTopDateRange,
+					titleAttr: 'Export to CSV',
+					exportOptions: exportOptions
+				},
+				{
 					extend: 'excelHtml5',
 					filename: exportFileName,
 					title: null,
@@ -685,7 +751,7 @@ body.loading .overlay{
 					columns: showHideCols
 				},
 				],
-				"order": [ [ 1, 'asc' ] ],
+				"order": defaultOrder,
 				"columnDefs": colDefs,
 				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],     // page length options
 				"initComplete": function() {
@@ -871,6 +937,7 @@ body.loading .overlay{
     	var userListEle = document.getElementById("userList");
     	var basepathListEle = document.getElementById("basepathList");
     	var pathEle = document.getElementById("collectionPath");
+		var bucketEle = document.getElementById("bucketDiv");
 		var assaySummaryCheckboxEle = document.getElementById("assaySummaryCheckbox");
       	var selectedValue = reportType;
       	if(selected != reportType) {
@@ -886,6 +953,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			bucketEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC")
@@ -896,6 +964,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			bucketEle.style.display = "none";
 			var doc = document.getElementById("doc").value;
 			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
 				assaySummaryCheckboxEle.style.display = "none";
@@ -911,6 +980,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			bucketEle.style.display = "none";
 			var doc = document.getElementById("doc").value;
 			if(doc === null || doc === undefined || doc === '' || doc === 'All') {
 				assaySummaryCheckboxEle.style.display = "none";
@@ -926,6 +996,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			bucketEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
@@ -936,6 +1007,7 @@ body.loading .overlay{
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			bucketEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "none";
 			if ($('#user option').length == 1) {
 					let uri = '/reports/getUsers';
@@ -965,6 +1037,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		pathEle.style.display = "none";
       		basepathListEle.style.display = "block";
+			bucketEle.style.display = "none";
 			var basepath = document.getElementById("basepath").value;
 			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
 				assaySummaryCheckbox.style.display = "none";
@@ -980,6 +1053,7 @@ body.loading .overlay{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "block";
+			bucketEle.style.display = "none";
 			var basepath = document.getElementById("basepath").value;
 			if(basepath === null || basepath === undefined || basepath === '' || basepath === 'All') {
 				assaySummaryCheckbox.style.display = "none";
@@ -995,6 +1069,7 @@ body.loading .overlay{
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "block";
+			bucketEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
@@ -1005,8 +1080,20 @@ body.loading .overlay{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		pathEle.style.display = "block";
+			bucketEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "block";
       	}
+		else if(selectedValue == "LAST_ACCESS_DATA_OBJECT_REPORT")
+		{
+			userListEle.style.display = "none";
+			docListEle.style.display = "block";
+			basepathListEle.style.display = "block";
+			fromDateEle.style.display = "block";
+			toDateEle.style.display = "block";
+			pathEle.style.display = "block";
+			bucketEle.style.display = "block";
+			assaySummaryCheckboxEle.style.display = "none";
+		}
       	else
       	{
       		docListEle.style.display = "none";
@@ -1016,6 +1103,7 @@ body.loading .overlay{
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
       		pathEle.style.display = "none";
+			bucketEle.style.display = "none";
 			assaySummaryCheckboxEle.style.display = "none";
       	}
       	
@@ -1079,6 +1167,9 @@ body.loading .overlay{
 				var updatedPath = $("#path").val().slice(0, -1);
 				$("#path").val(updatedPath);
 			}
+		}
+		else if(reportType == "LAST_ACCESS_DATA_OBJECT_REPORT"){
+			document.getElementById("user").value = "-1";
 		}
 		$("input[name=docs]").val(listOfDocs);
 		$("input[name=basepaths]").val(listOfBasepaths);
