@@ -20,6 +20,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -256,6 +257,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String REMOVE_GOOGLE_ACCESS_TOKEN_FROM_DOWNLOAD_TASK_RESULT_SQL =
 			"update HPC_DOWNLOAD_TASK_RESULT set GOOGLE_ACCESS_TOKEN='' where GOOGLE_ACCESS_TOKEN is not null and COMPLETED < sysdate  - (?/24)";
 	
+	private static final String GET_USER_COUNT_BY_DATA_TRANSFER_TYPE_SQL = "select COUNT(DISTINCT USER_ID) FROM HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_TYPE = ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -1695,6 +1698,26 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			throw new HpcException("Failed to remove google access tokens retained for " + googleAccessTokenRetentionPeriod + " hours",
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
+	}
+
+
+	@Override
+	public int getUserCountByDataTransferType(HpcDataTransferType type) throws HpcException {
+	    try {
+	        Integer count = jdbcTemplate.queryForObject(
+	            GET_USER_COUNT_BY_DATA_TRANSFER_TYPE_SQL,
+	            Integer.class,
+	            type.value()
+	        );
+
+	        // Guard against a potential null wrapper, returning 0 if null
+	        return count != null ? count : 0;
+
+	    } catch (Exception e) {
+	        String errorMessage = "Failed to count users for data transfer type: " + type;
+	        logger.error(errorMessage, e);
+	        throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+	    }
 	}
 	
 	// ---------------------------------------------------------------------//
