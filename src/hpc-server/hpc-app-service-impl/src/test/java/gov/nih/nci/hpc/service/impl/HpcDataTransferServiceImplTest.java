@@ -394,7 +394,12 @@ public class HpcDataTransferServiceImplTest {
 		account.setUsername("test-globus-account");
 		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
 		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = () -> false;
+		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
+			@Override
+			public boolean canAcceptTransfer() {
+				return false;
+			}
+		};
 		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
 
 		// Act
@@ -425,7 +430,12 @@ public class HpcDataTransferServiceImplTest {
 		account.setUsername("test-globus-account");
 		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
 		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = () -> false;
+		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
+			@Override
+			public boolean canAcceptTransfer() {
+				return false;
+			}
+		};
 		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
 
 		// Act
@@ -456,7 +466,12 @@ public class HpcDataTransferServiceImplTest {
 		account.setUsername("test-globus-account");
 		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
 		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = () -> false;
+		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
+			@Override
+			public boolean canAcceptTransfer() {
+				return false;
+			}
+		};
 		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
 
 		// Act
@@ -511,7 +526,12 @@ public class HpcDataTransferServiceImplTest {
 		account.setUsername("test-globus-account");
 		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
 		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = () -> false;
+		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
+			@Override
+			public boolean canAcceptTransfer() {
+				return false;
+			}
+		};
 		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
 
 		// Act – must not throw ArithmeticException
