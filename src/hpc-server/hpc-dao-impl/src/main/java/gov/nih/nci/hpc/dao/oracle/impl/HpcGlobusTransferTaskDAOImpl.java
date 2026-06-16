@@ -40,8 +40,8 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 
 	// SQL Queries.
 	public static final String INSERT_REQUEST_SQL = "insert into HPC_GLOBUS_TRANSFER_TASK ( "
-			+ "GLOBUS_ACCOUNT, DATA_TRANSFER_REQUEST_ID, PATH, DOWNLOAD, "
-			+ "CREATED) values (?, ?, ?, ?, sysdate)";
+			+ "GLOBUS_ACCOUNT, DATA_TRANSFER_REQUEST_ID, PATH, DOWNLOAD, USER_ID, "
+			+ "CREATED) values (?, ?, ?, ?, ?, sysdate)";
 
 	private static final String DELETE_REQUEST_SQL = "delete from HPC_GLOBUS_TRANSFER_TASK where DATA_TRANSFER_REQUEST_ID = ?";
 
@@ -50,7 +50,7 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 
 	private static final String GET_USERS_IN_GLOBUS_TASK_QUEUE_SQL = "select DISTINCT USER_ID from HPC_GLOBUS_TRANSFER_TASK ";
 
-	private static final String GET_REQUEST_COUNT_BY_USER_SQL = "select count(*) from GLOBUS_TRANSFER_TASK WHERE USER_ID = ?";
+	private static final String GET_REQUEST_COUNT_BY_USER_SQL = "select count(*) from HPC_GLOBUS_TRANSFER_TASK WHERE USER_ID = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -91,7 +91,7 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	public void insertRequest(HpcGlobusTransferTask request) throws HpcException {
 		try {
 			jdbcTemplate.update(INSERT_REQUEST_SQL, request.getGlobusAccount(), request.getDataTransferRequestId(),
-					request.getPath(), request.getDownload());
+					request.getPath(), request.getDownload(), request.getUserId());
 
 		} catch (DataAccessException e) {
 			throw new HpcException(
