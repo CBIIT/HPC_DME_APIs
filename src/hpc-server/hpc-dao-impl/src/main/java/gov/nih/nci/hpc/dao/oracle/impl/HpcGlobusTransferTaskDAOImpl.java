@@ -131,39 +131,30 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	@Override
 	public int getGlobusRequestCountByUser(String userId, boolean download) throws HpcException {
 		try {
-			Integer count = jdbcTemplate.queryForObject(
-			    GET_REQUEST_COUNT_BY_USER_AND_DOWNLOAD_TYPE_SQL,
-			    Integer.class,
-			    userId,
-			    download
-			);
-
+			Integer count = jdbcTemplate.queryForObject(GET_REQUEST_COUNT_BY_USER_AND_DOWNLOAD_TYPE_SQL, Integer.class,
+					userId, download);
 			return count != null ? count : 0;
-
+			
 		} catch (Exception e) {
 			String errorMessage = "Failed to get count of globus requests for user: " + userId;
-	        logger.error(errorMessage, e);
-	        throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+			logger.error(errorMessage, e);
+			throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+
 		}
 	}
 
 	@Override
 	public List<String> getGlobusUsersAllocated(boolean download) throws HpcException {
-	    try {
-	        List<String> users = jdbcTemplate.queryForList(
-	            GET_USERS_BY_DOWNLOAD_TYPE_SQL,
-	            String.class,
-	            download
-	        );
 
-	        return users != null ? users : Collections.emptyList();
-
-	    } catch (Exception e) {
-	        String errorMessage = "Failed to retrieve distinct users from Globus task queue.";
-	        logger.error(errorMessage, e);
-	        throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-	    }
+		try {
+			List<String> users = jdbcTemplate.queryForList(GET_USERS_BY_DOWNLOAD_TYPE_SQL, String.class, download);
+			return users != null ? users : Collections.emptyList();
+			
+		} catch (Exception e) {
+			String errorMessage = "Failed to retrieve distinct users from Globus task queue.";
+			logger.error(errorMessage, e);
+			throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
 	}
-
 
 }

@@ -51,7 +51,7 @@ public interface HpcGlobusTransferTaskDAO {
 	/**
 	 * Get Globus users in the task queue
 	 *
-	 * @param download Whether the requests are fownload or upload
+	 * @param download Whether the requests are download or upload
 	 * @return The list of Globus users in the task queue
 	 * @throws HpcException on database error.
 	 */
@@ -60,10 +60,10 @@ public interface HpcGlobusTransferTaskDAO {
 	/**
 	 * Get the count of Globus transfer requests from a user
 	 *
-	 * @param userId
-	 * @param download Whether the requests are upload or download
+	 * @param userId   The user ID
+	 * @param download Whether the requests are download or upload
 	 * @return The count of Globus transfer requests from a user
-	 * @throws HpcException
+	 * @throws HpcException on database error.
 	 */
 	int getGlobusRequestCountByUser(String userId, boolean download) throws HpcException;
 
