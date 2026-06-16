@@ -48,9 +48,9 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	private static final String GET_GLOBUS_ACCOUNTS_USED_SQL = "select GLOBUS_ACCOUNT,count(*) from HPC_GLOBUS_TRANSFER_TASK "
 			+ "group by GLOBUS_ACCOUNT order by count(*)";
 
-	private static final String GET_USERS_IN_GLOBUS_TASK_QUEUE_SQL = "select DISTINCT USER_ID from HPC_GLOBUS_TRANSFER_TASK where USER_ID is not null and DOWNLOAD = '1'";
+	private static final String GET_USERS_BY_DOWNLOAD_TYPE_SQL = "select DISTINCT USER_ID from HPC_GLOBUS_TRANSFER_TASK where USER_ID is NOT NULL and DOWNLOAD = ?";
 
-	private static final String GET_REQUEST_COUNT_BY_USER_SQL = "select count(*) from HPC_GLOBUS_TRANSFER_TASK where USER_ID = ? and DOWNLOAD = '1'";
+	private static final String GET_REQUEST_COUNT_BY_USER_AND_DOWNLOAD_TYPE_SQL = "select count(*) from HPC_GLOBUS_TRANSFER_TASK where USER_ID = ? and DOWNLOAD = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -129,12 +129,13 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 
 
 	@Override
-	public int getGlobusRequestCountForUser(String userId) throws HpcException {
+	public int getGlobusRequestCountByUser(String userId, boolean download) throws HpcException {
 		try {
 			Integer count = jdbcTemplate.queryForObject(
-			    GET_REQUEST_COUNT_BY_USER_SQL,
+			    GET_REQUEST_COUNT_BY_USER_AND_DOWNLOAD_TYPE_SQL,
 			    Integer.class,
-			    userId
+			    userId,
+			    download
 			);
 
 			return count != null ? count : 0;
@@ -147,11 +148,12 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	}
 
 	@Override
-	public List<String> getGlobusUsersAllocated() throws HpcException {
+	public List<String> getGlobusUsersAllocated(boolean download) throws HpcException {
 	    try {
 	        List<String> users = jdbcTemplate.queryForList(
-	            GET_USERS_IN_GLOBUS_TASK_QUEUE_SQL,
-	            String.class
+	            GET_USERS_BY_DOWNLOAD_TYPE_SQL,
+	            String.class,
+	            download
 	        );
 
 	        return users != null ? users : Collections.emptyList();
