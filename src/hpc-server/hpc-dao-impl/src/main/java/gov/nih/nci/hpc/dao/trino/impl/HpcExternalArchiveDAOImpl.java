@@ -75,8 +75,6 @@ public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
 	@Override
 	public List<String> getFilesNotAccessed(String searchPath, Integer monthsNotAccessed) throws HpcException {
 		try {
-			logger.error("ERAN " + GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()));
-
 			return jdbcTemplate.queryForList(
 					GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()),
 					String.class, searchPath + '%');
