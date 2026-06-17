@@ -8,7 +8,7 @@ public class HpcReportRequest {
 	private String user;
 	private String basepath;
 	private String path;
-	private String bucket;
+	private boolean includeAWSBucket;
 	private String fromDate;
 	private String toDate;
 	public boolean showArchiveSummary;
@@ -71,12 +71,12 @@ public class HpcReportRequest {
     this.path = path;
   }
 
-  public String getBucket() {
-    return bucket;
+  public boolean includeAWSBucket() {
+    return includeAWSBucket;
   }
 
-  public void setBucket(String bucket) {
-    this.bucket = bucket;
+  public void setIncludeAWSBucket(boolean includeAWSBucket) {
+    this.includeAWSBucket = includeAWSBucket;
   }
 
   public boolean getShowArchiveSummary() {
