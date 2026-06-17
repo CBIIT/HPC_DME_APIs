@@ -2454,14 +2454,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			//Get the number of slots allocated to this user
 			int numberOfSlotsAllocatedForUser = globusTransferDAO.getGlobusRequestCountByUser(userId, true);
 
-			//Total number of users in the download queue
-			int numberOfDistinctUsersInQueue = dataDownloadDAO.getUserCountByDataTransferType(type);
+			//Get total number of distinct users with Globus transfer type in the download task table.
+			//These are users who are either using one or more Globus slots or are waiting for them.
+			int totalUsersForGlobusTransfers = dataDownloadDAO.getUserCountByDataTransferType(type);
 
-			//Else if the number of slots used by requester <= total number of slots/number of users, then proceed.
-			if(numberOfDistinctUsersInQueue > 0 &&
-				numberOfSlotsAllocatedForUser > transferAccountCount/numberOfDistinctUsersInQueue) {
+			//If the number of slots used by requester <= total number of slots/number of users, then proceed.
+			if(totalUsersForGlobusTransfers > 0 &&
+				numberOfSlotsAllocatedForUser > transferAccountCount/totalUsersForGlobusTransfers) {
 				logger.info("User {} already allocated {} slots, exceeded globus slot limit since {} users are in queue",
-					userId, numberOfSlotsAllocatedForUser, numberOfDistinctUsersInQueue);
+					userId, numberOfSlotsAllocatedForUser, totalUsersForGlobusTransfers);
 				return false;
 			}
 		};
