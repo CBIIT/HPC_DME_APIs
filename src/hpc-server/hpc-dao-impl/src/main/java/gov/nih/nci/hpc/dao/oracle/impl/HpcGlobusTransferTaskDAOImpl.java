@@ -129,13 +129,7 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 
 
 	@Override
-	public int getGlobusRequestCountByUser(String userId, boolean download) throws HpcException {
-		try {
-			Integer count = jdbcTemplate.queryForObject(GET_REQUEST_COUNT_BY_USER_AND_DOWNLOAD_TYPE_SQL, Integer.class,
-					userId, download);
-			return count != null ? count : 0;
-			
-		} catch (Exception e) {
+		} catch (DataAccessException e) {
 			String errorMessage = "Failed to get count of globus requests for user: " + userId;
 			logger.error(errorMessage, e);
 			throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
