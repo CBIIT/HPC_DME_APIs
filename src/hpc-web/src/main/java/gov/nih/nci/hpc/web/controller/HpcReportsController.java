@@ -237,9 +237,7 @@ public class HpcReportsController extends AbstractHpcController {
 					requestDTO.setCollectionPath(reportRequest.getPath().trim());
 					requestDTO.setPath(reportRequest.getPath().trim());
 				}
-				if (reportRequest.getBucket() != null && !reportRequest.getBucket().trim().isEmpty()) {
-					requestDTO.setBucket(reportRequest.getBucket().trim());
-				}
+				requestDTO.setIncludeAWSBucket(reportRequest.includeAWSBucket());
 				requestDTO.getReportColumns().add(HpcReportEntryAttribute.LAST_ACCESSED_DATE);
 				requestDTO.getReportColumns().add(HpcReportEntryAttribute.LAST_DOWNLOADED_BY);
 				requestDTO.getReportColumns().add(HpcReportEntryAttribute.DOWNLOAD_COUNT);

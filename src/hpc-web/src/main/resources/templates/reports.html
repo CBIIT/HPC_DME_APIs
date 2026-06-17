@@ -269,8 +269,10 @@ body.loading .overlay{
 						<!---  Collection Path End -->
 						<div style="display: none" id="bucketDiv">
 							<div class="col-sm-4">
-								<label><b>Bucket:</b></label>
-								<input type="text" name="bucket" id="bucket" class="form-control" th:value="${reportRequest.getBucket()}" />
+								<input type="checkbox" name="includeAWSBucket" id="includeAWSBucket" th:checked="${reportRequest.includeAWSBucket()}" />
+								<label style="padding-left: 3px;" for="includeAWSBucket">
+									<b>Include AWS Bucket</b>
+								</label>
 							</div>
 						</div>
 					</div> <!-- First Row End -->
@@ -922,7 +924,8 @@ body.loading .overlay{
 
 	  function showArchiveSummaryCheckbox(pathOrDocType) {
 		$("#assaySummaryCheckboxId").prop('checked', false);
-		if (pathOrDocType === "All"){
+		var reportType = document.getElementById("reportType").value;
+		if (reportType === "LAST_ACCESS_DATA_OBJECT_REPORT" || pathOrDocType === "All"){
 			document.getElementById("assaySummaryCheckbox").style.display = "none";
 		} else {
 			document.getElementById("assaySummaryCheckbox").style.display = "block";
