@@ -50,7 +50,7 @@
 			             minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="basePath" type="xsd:string" minOccurs="0" />
 			<xsd:element name="collectionPath" type="xsd:string" minOccurs="0" />
-			<xsd:element name="bucket" type="xsd:string" minOccurs="0" />
+			<xsd:element name="includeAWSBucket" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="sortBy" type="xsd:string" minOccurs="0" />
 			<xsd:element name="sortOrder" type="xsd:string" minOccurs="0" />
 			<xsd:element name="fromDate" type="xsd:date" />
