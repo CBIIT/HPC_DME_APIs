@@ -4526,7 +4526,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw new HpcException("Permanent or default Archive Link for " + dmePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			// Build temporary archive link path for external download
-			String downloadArchiveLinkPath = downloadArchiveLinkBasePath + dmePath;
+			String downloadArchiveLinkPath = downloadArchiveLinkBasePath + '/' + registrationItem.getArchiveLinkSource().getSourceLocation().getFileId();
 			boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 			if (temporaryArchiveLinkDoesNotExist) {
 				registrationItem.setPath(downloadArchiveLinkPath);
@@ -4537,12 +4537,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().isEmpty()) {
 			logger.info("All registration items have existing temporary archive links. Skipping registration.");
 			return 0;
-		}
-		if(bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems() != null && !bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().isEmpty()) {
-			for (HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem : bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()) {
-				String dmeDirectoryPath = downloadArchiveLinkBasePath +directoryScanRegistrationItem.getS3ArchiveScanDirectory().getDirectoryLocation().getFileId();
-				directoryScanRegistrationItem.getS3ArchiveScanDirectory().getDirectoryLocation().setFileId(downloadArchiveLinkBasePath + dmeDirectoryPath);
-			}
 		}
 
 		return bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().size();
@@ -5330,6 +5324,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Registration of Archive link has failed for path: " + downloadArchiveLinkPath, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 	}
+
+    private void buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String path, String basePath, String posixPath, String bucket, String s3ArchiveConfigurationId) throws HpcException {
+        String dmeFolderPath = path.substring(posixPath.length());
+        if(StringUtils.isEmpty(dmeFolderPath)) {
+            logger.warn("Path after POSIX prefix is empty for path: " + path);
+            throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        HpcFileLocation directoryLocation = new HpcFileLocation();
+        directoryLocation.setFileContainerId(bucket);
+        directoryLocation.setFileId(dmeFolderPath.substring(1));
+        HpcScanDirectory s3ArchiveScanDirectory = new HpcScanDirectory();
+        s3ArchiveScanDirectory.setDirectoryLocation(directoryLocation);
+        HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem = new HpcDirectoryScanRegistrationItemDTO();
+        directoryScanRegistrationItem.setBasePath(basePath);
+        directoryScanRegistrationItem.setS3ArchiveScanDirectory(s3ArchiveScanDirectory);
+        directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
+        registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
+    }
 
 	private boolean deleteExternalArchiveLink(String downloadArchiveLinkPath) {
 		boolean archiveLinkDeleted = false;
