@@ -844,7 +844,7 @@ create table HPC_GLOBUS_TRANSFER_TASK
     PATH                      VARCHAR2(2700)   not null,
     DOWNLOAD                  CHAR default '0' not null,
     CREATED                   TIMESTAMP(6)     not null,
-    USER_ID                  VARCHAR2(50)     not null
+    USER_ID                  VARCHAR2(50)
 );
 
 comment on table HPC_GLOBUS_TRANSFER_TASK is 'Lists all ongoing Globus transfer requests';
