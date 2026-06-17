@@ -26,11 +26,17 @@ def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, d
     try:
         existing = s3.get_object_tagging(Bucket=bucket, Key=key).get("TagSet", [])
     except ClientError as e:
-        # If the object doesn't exist, skip
-        if e.response.get("Error", {}).get("Code") in ("NoSuchKey", "404"):
+        error_code = e.response.get("Error", {}).get("Code", "")
+        error_msg = e.response.get("Error", {}).get("Message", "")
+        if error_code in ("NoSuchKey", "404"):
             print(f"SKIP missing object: s3://{bucket}/{key}")
-            return
-        raise
+        elif error_code in ("AccessDenied", "403"):
+            print(f"ERROR s3://{bucket}/{key} - GetObjectTagging access denied. "
+                  f"Ensure the S3 access key has s3:GetObjectTagging and s3:PutObjectTagging permissions. "
+                  f"({error_code}: {error_msg})")
+        else:
+            print(f"ERROR s3://{bucket}/{key} - Failed to get tags: {error_code}: {error_msg}")
+        return
 
     # Merge/update by Key
     merged = {t["Key"]: t["Value"] for t in existing}
@@ -38,11 +44,21 @@ def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, d
     new_tagset = [{"Key": k, "Value": v} for k, v in merged.items()]
 
     print(f"tag s3://{bucket}/{key} -> {tag_key}={tag_value}")
-    s3.put_object_tagging(
-        Bucket=bucket,
-        Key=key,
-        Tagging={"TagSet": new_tagset},
-    )
+    try:
+        s3.put_object_tagging(
+            Bucket=bucket,
+            Key=key,
+            Tagging={"TagSet": new_tagset},
+        )
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code", "")
+        error_msg = e.response.get("Error", {}).get("Message", "")
+        if error_code in ("AccessDenied", "403"):
+            print(f"ERROR s3://{bucket}/{key} - PutObjectTagging access denied. "
+                  f"Ensure the S3 access key has s3:PutObjectTagging permission. "
+                  f"({error_code}: {error_msg})")
+        else:
+            print(f"ERROR s3://{bucket}/{key} - Failed to set tags: {error_code}: {error_msg}")
 
 
 def parse_since_arg(since: str) -> str:
