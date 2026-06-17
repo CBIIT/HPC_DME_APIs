@@ -186,7 +186,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       criteria.setPath(criteriaDTO.getPath());
     }
     criteria.setBasePath(criteriaDTO.getBasePath());
-    criteria.setBucket(criteriaDTO.getBucket());
+    criteria.setIncludeAWSBucket(criteriaDTO.getIncludeAWSBucket());
     criteria.setSortBy(criteriaDTO.getSortBy());
     criteria.setSortOrder(criteriaDTO.getSortOrder());
     criteria.setIsMachineReadable(true);
