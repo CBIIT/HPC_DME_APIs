@@ -1701,6 +1701,15 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 
 	@Override
+	public int getUserCountByDataTransferType(HpcDataTransferType type) throws HpcException {
+	    try {
+	        Integer count = jdbcTemplate.queryForObject(
+	            GET_USER_COUNT_BY_DATA_TRANSFER_TYPE_SQL,
+	            Integer.class,
+	            type.value()
+	        );
+	        return count != null ? count : 0;
+
 	    } catch (DataAccessException e) {
 	        String errorMessage = "Failed to count users for data transfer type: " + type;
 	        logger.error(errorMessage, e);
