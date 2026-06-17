@@ -269,10 +269,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String REFRESH_VIEWS_SQL = "call REFRESH_DAILY_MATERIALIZED_VIEW()";
 
-	private static final String LAST_ACCESS_REPORT_BASE_SQL = "SELECT PATH, LAST_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
+	private static final String LAST_ACCESS_REPORT_BASE_SQL = "SELECT PATH, EFFECTIVE_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
 			+ "FROM HPC_DATA_OBJECT_LAST_ACCESS_MV";
 
-	private static final Set<String> LAST_ACCESS_SORT_COLUMNS = new HashSet<>(Arrays.asList("LAST_ACCESSED_DATE",
+	private static final Set<String> LAST_ACCESS_SORT_COLUMNS = new HashSet<>(Arrays.asList("EFFECTIVE_ACCESSED_DATE",
 			"PATH", "DOC", "BASE_PATH", "BUCKET", "DOWNLOAD_COUNT", "DATA_SIZE"));
 
 	/////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
@@ -847,7 +847,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			fromDate.set(Calendar.MINUTE, 0);
 			fromDate.set(Calendar.SECOND, 0);
 			fromDate.set(Calendar.MILLISECOND, 0);
-			predicates.add("LAST_ACCESSED_DATE >= ?");
+			predicates.add("EFFECTIVE_ACCESSED_DATE >= ?");
 			args.add(fromDate.getTime());
 		}
 
@@ -857,7 +857,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			toDate.set(Calendar.MINUTE, 59);
 			toDate.set(Calendar.SECOND, 59);
 			toDate.set(Calendar.MILLISECOND, 999);
-			predicates.add("LAST_ACCESSED_DATE <= ?");
+			predicates.add("EFFECTIVE_ACCESSED_DATE <= ?");
 			args.add(toDate.getTime());
 		}
 
@@ -886,16 +886,16 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			args.add(normalizedPath + "/%");
 		}
 
-		if (criteria.getBucket() != null && !criteria.getBucket().trim().isEmpty()) {
-			predicates.add("BUCKET = ?");
-			args.add(criteria.getBucket().trim());
+		if (criteria.getIncludeAWSBucket() != null && !criteria.getIncludeAWSBucket()) {
+			predicates.add("BUCKET NOT LIKE ?");
+			args.add("%aws%");
 		}
 
 		if (!predicates.isEmpty()) {
 			sql.append(" WHERE ").append(String.join(" AND ", predicates));
 		}
 
-		String sortBy = "LAST_ACCESSED_DATE";
+		String sortBy = "EFFECTIVE_ACCESSED_DATE";
 		String sortOrder = "DESC";
 		if (criteria.getSortBy() != null) {
 			String requestedSortBy = criteria.getSortBy().trim().toUpperCase();
@@ -917,7 +917,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			report.setDoc(row.get("DOC") != null ? row.get("DOC").toString() : null);
 
 			String lastAccessedDate = "";
-			Object lastAccessedDateValue = row.get("LAST_ACCESSED_DATE");
+			Object lastAccessedDateValue = row.get("EFFECTIVE_ACCESSED_DATE");
 			if (lastAccessedDateValue instanceof Date) {
 				lastAccessedDate = timestampFormat.format((Date) lastAccessedDateValue);
 			}
