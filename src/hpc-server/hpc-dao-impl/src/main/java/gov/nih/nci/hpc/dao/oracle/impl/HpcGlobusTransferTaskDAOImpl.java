@@ -138,13 +138,7 @@ public class HpcGlobusTransferTaskDAOImpl implements HpcGlobusTransferTaskDAO {
 	}
 
 	@Override
-	public List<String> getGlobusUsersAllocated(boolean download) throws HpcException {
-
-		try {
-			List<String> users = jdbcTemplate.queryForList(GET_USERS_BY_DOWNLOAD_TYPE_SQL, String.class, download);
-			return users != null ? users : Collections.emptyList();
-			
-		} catch (Exception e) {
+		} catch (DataAccessException e) {
 			String errorMessage = "Failed to retrieve distinct users from Globus task queue.";
 			logger.error(errorMessage, e);
 			throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
