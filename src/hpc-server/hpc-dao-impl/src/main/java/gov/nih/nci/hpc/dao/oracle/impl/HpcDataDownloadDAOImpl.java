@@ -256,6 +256,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String REMOVE_GOOGLE_ACCESS_TOKEN_FROM_DOWNLOAD_TASK_RESULT_SQL =
 			"update HPC_DOWNLOAD_TASK_RESULT set GOOGLE_ACCESS_TOKEN='' where GOOGLE_ACCESS_TOKEN is not null and COMPLETED < sysdate  - (?/24)";
 	
+	private static final String GET_USER_COUNT_BY_DATA_TRANSFER_TYPE_SQL = "select COUNT(DISTINCT USER_ID) FROM HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_TYPE = ?";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -1695,6 +1697,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			throw new HpcException("Failed to remove google access tokens retained for " + googleAccessTokenRetentionPeriod + " hours",
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
+	}
+
+
+	@Override
+	public int getUserCountByDataTransferType(HpcDataTransferType type) throws HpcException {
+	    try {
+	        Integer count = jdbcTemplate.queryForObject(
+	            GET_USER_COUNT_BY_DATA_TRANSFER_TYPE_SQL,
+	            Integer.class,
+	            type.value()
+	        );
+	        return count != null ? count : 0;
+
+	    } catch (DataAccessException e) {
+	        String errorMessage = "Failed to count users for data transfer type: " + type;
+	        logger.error(errorMessage, e);
+	        throw new HpcException(errorMessage, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+	    }
 	}
 	
 	// ---------------------------------------------------------------------//
