@@ -643,7 +643,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
 				downloadRequest.getAppendPathToDownloadDestination(),
-				downloadRequest.getAppendCollectionNameToDownloadDestination(), externalArchiveFlag);
+				downloadRequest.getAppendCollectionNameToDownloadDestination(), false);
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
