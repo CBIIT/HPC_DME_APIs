@@ -105,6 +105,8 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import com.google.gson.Gson;
+
 
 /**
  * HPC System Business Service Implementation.
@@ -724,6 +726,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						}
 					});
 		}
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void processExternalDownloadTasks() throws HpcException {
+		// Iterate through all the external download requests that were submitted (not
+		// processed yet).
+        Gson gson = new Gson();
+		for (HpcCollectionDownloadTask downloadTask : dataTransferService
+				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)) {
+			logger.info("External collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
+					downloadTask.getType());
+					logger.info("2172 downloadTask = " + gson.toJson(downloadTask));
+
+				}
+
 	}
 
 	@Override
