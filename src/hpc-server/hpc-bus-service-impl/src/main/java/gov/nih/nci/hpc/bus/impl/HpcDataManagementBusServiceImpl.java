@@ -594,6 +594,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return totalSizeAndDataObjectCountReport;
 	}
 
+
 	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollection(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
@@ -642,7 +643,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 				securityService.getRequestInvoker().getNciAccount().getUserId(), metadata.getConfigurationId(),
 				downloadRequest.getAppendPathToDownloadDestination(),
-				downloadRequest.getAppendCollectionNameToDownloadDestination());
+				downloadRequest.getAppendCollectionNameToDownloadDestination(), externalArchiveFlag);
 
 		// Create and return a DTO with the request receipt.
 		HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -846,6 +847,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return downloadResponse;
 	}
 
+
 	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 	        throws HpcException {
@@ -859,17 +861,42 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
 				throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObjectsExternal(path, downloadRequest);
-			 if(responseDTO != null) {
-			 }
+			//HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerCollectionFromExternal(path);
+
+
 		} catch (HpcException e) {
 			logger.error("Failed to download collection from external source: " + path, e);
 			throw e;
 		}
+
+		// Download Step
+		try {
+			boolean externalArchiveFlag = true;
+			//downloadResponseDTO = downloadCollection(path, downloadRequest, externalArchiveFlag);
+		// Submit a collection download task.
+		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadExternal(path,
+				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
+				downloadRequest.getGoogleDriveDownloadDestination(),
+				downloadRequest.getGoogleCloudStorageDownloadDestination(),
+				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
+				securityService.getRequestInvoker().getNciAccount().getUserId(),
+				Boolean.TRUE.equals(downloadRequest.getAppendPathToDownloadDestination()),
+				Boolean.TRUE.equals(downloadRequest.getAppendCollectionNameToDownloadDestination()), HpcDownloadTaskType.COLLECTION);
+
+		// Create and return a DTO with the request receipt.
+		responseDTO = new HpcCollectionDownloadResponseDTO();
+		responseDTO.setTaskId(collectionDownloadTask.getId());
+		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+
 		return responseDTO;
+
+		} catch (HpcException e) {
+			logger.error("Failed to create download task for external download path: " + path + '.' + e.getMessage(), e);
+			throw new HpcException("Failed to create download task for external download for path: " + path  + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 	}
 
-	private HpcBulkDataObjectRegistrationResponseDTO registerDataObjectsExternal(String path, HpcDownloadRequestDTO downloadRequest) throws HpcException{
+	private HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternal(String path) throws HpcException{
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		// Find the matching S3 data transfer configuration for the external path
 		try {
