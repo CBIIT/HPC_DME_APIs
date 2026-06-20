@@ -192,6 +192,7 @@ public interface HpcDataTransferService {
 	 *                                              data object
 	 * @param deepArchiveStatus                     The deep archive status of the
 	 *                                              data object
+	 * @param externalArchiveFlag 					If set to true, the file is in an external archive
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
@@ -666,6 +667,7 @@ public interface HpcDataTransferService {
 	 *                                              used in the destination path,
 	 *                                              otherwise just the object name
 	 *                                              will be used.
+	 * @param externalArchiveFlag					If set to true, 
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -675,7 +677,48 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException;
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException;
+
+	/**
+	 * Submit a request to download a collection.
+	 *
+	 * @param path                                  The collection path.
+	 * @param globusDownloadDestination             The user requested Glopbus
+	 *                                              download destination.
+	 * @param s3DownloadDestination                 The user requested S3 download
+	 *                                              destination.
+	 * @param googleDriveDownloadDestination        The user requested Google Drive
+	 *                                              download destination.
+	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
+	 *                                              Storage download destination.
+	 * @param asperaDownloadDestination             The user requested Aspera
+	 *                                              download destination.
+	 * @param boxDownloadDestination                The user requested Box download
+	 *                                              destination.
+	 * @param userId                                The user ID submitting the
+	 *                                              download request.
+	 * @param configurationId                       The configuration ID (needed to
+	 *                                              determine the archive connection
+	 *                                              config).
+	 * @param appendPathToDownloadDestination       If true, the (absolute) object
+	 *                                              path will be used in the
+	 *                                              destination path, otherwise just
+	 *                                              the object name will be used.
+	 * @param appendPathToDownloadDestination       If true, the collection name
+	 *                                              (containing this object) will be
+	 *                                              used in the destination path,
+	 *                                              otherwise just the object name
+	 *                                              will be used.
+	 * @return The submitted collection download task.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollectionDownloadTask downloadExternal(String path,
+			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			String userId,  boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination, HpcDownloadTaskType type) throws HpcException;
 
 	/**
 	 * Submit a request to download collections.
