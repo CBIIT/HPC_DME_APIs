@@ -184,6 +184,13 @@ public interface HpcSystemBusService {
 	public void restartCollectionDownloadTasks() throws HpcException;
 
 	/**
+	 * Process external download tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processExternalDownloadTasks() throws HpcException;
+
+	/**
 	 * Process collection download tasks that received. i.e. kick off the download
 	 * of individual data objects under each requested collection.
 	 *
