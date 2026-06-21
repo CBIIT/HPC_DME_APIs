@@ -730,6 +730,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
+	@HpcExecuteAsSystemAccount
 	public void processExternalDownloadTasks() throws HpcException {
 		// Iterate through all the external download requests that were submitted (not
 		// processed yet).
@@ -739,7 +740,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			logger.info("External collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
 					downloadTask.getType());
 					//logger.info("2172 downloadTask = " + gson.toJson(downloadTask));
-					HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService.registerCollectionFromExternalSource(downloadTask.getPath());
+					HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService.registerCollectionFromExternalSource(downloadTask.getPath(), downloadTask.getUserId());
 					logger.info("2172 registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
 				}
 
