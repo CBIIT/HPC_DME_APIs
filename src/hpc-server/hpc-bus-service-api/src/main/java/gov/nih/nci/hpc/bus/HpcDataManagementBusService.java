@@ -165,6 +165,16 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
+	 * Download a collection tree.
+	 *
+	 * @param path The collection path.
+	 * @return Registration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path)
+			throws HpcException;
+
+			/**
 	 * Download data objects or collections. Note: API doesn't support mixed, so
 	 * user expected to provide a list of data objects or a list of collections, not
 	 * both.

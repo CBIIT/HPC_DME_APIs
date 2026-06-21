@@ -94,6 +94,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -738,8 +739,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)) {
 			logger.info("External collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
 					downloadTask.getType());
-					logger.info("2172 downloadTask = " + gson.toJson(downloadTask));
-
+					//logger.info("2172 downloadTask = " + gson.toJson(downloadTask));
+					HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService.registerCollectionFromExternalSource(downloadTask.getPath());
+					logger.info("2172 registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
 				}
 
 	}
