@@ -873,13 +873,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		try {
 			boolean externalArchiveFlag = true;
 			//downloadResponseDTO = downloadCollection(path, downloadRequest, externalArchiveFlag);
+			String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		// Submit a collection download task.
 		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadExternal(path,
 				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 				downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
-				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
-				securityService.getRequestInvoker().getNciAccount().getUserId(),
+				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), userId,
 				Boolean.TRUE.equals(downloadRequest.getAppendPathToDownloadDestination()),
 				Boolean.TRUE.equals(downloadRequest.getAppendCollectionNameToDownloadDestination()), HpcDownloadTaskType.COLLECTION);
 
@@ -896,7 +896,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
-	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path) throws HpcException{
+	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path, String userId) throws HpcException{
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		// Find the matching S3 data transfer configuration for the external path
 		try {
@@ -920,7 +920,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		boolean externalArchiveFlag = true;
 		try{
-			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, externalArchiveFlag);
+			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, externalArchiveFlag, userId);
 			 if(registrationResponseDTO != null && !CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
 				 logger.info("Successfully completed the Registration step for external collection download for path: " + path);
 			 } else {
@@ -1575,12 +1575,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
 			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException {
-		return registerDataObjects(bulkDataObjectRegistrationRequest, false);
+		return registerDataObjects(bulkDataObjectRegistrationRequest, false, null);
 	}
 
 	@Override
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
-			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, boolean externalArchiveFlag) throws HpcException {
+			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, boolean externalArchiveFlag, String userId) throws HpcException {
 		// Input validation.
 		if (bulkDataObjectRegistrationRequest == null
 				|| (bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().isEmpty()
@@ -1669,10 +1669,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+		// TODO change,temporary fix
+		if(userId==null) {
+			HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+			userId = invokerNciAccount.getUserId();
+		}
 
 		// Submit a data objects registration task and return a response DTO.
-		responseDTO.setTaskId(dataManagementService.registerDataObjects(invokerNciAccount.getUserId(),
+		responseDTO.setTaskId(dataManagementService.registerDataObjects(userId,
 				bulkDataObjectRegistrationRequest.getUiURL(), dataObjectRegistrationRequests));
 
 		return responseDTO;
