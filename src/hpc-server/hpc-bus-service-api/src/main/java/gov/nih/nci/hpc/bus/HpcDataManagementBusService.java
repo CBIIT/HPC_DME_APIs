@@ -171,7 +171,7 @@ public interface HpcDataManagementBusService {
 	 * @return Registration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path)
+	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path, String userId)
 			throws HpcException;
 
 			/**
@@ -427,7 +427,7 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
-			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, boolean externalArchiveFlag) throws HpcException;
+			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, boolean externalArchiveFlag, String userId) throws HpcException;
 
 	/**
 	 * Get data objects registration task status.
