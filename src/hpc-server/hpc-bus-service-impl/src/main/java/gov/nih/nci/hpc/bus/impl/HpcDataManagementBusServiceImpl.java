@@ -896,7 +896,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
-	private HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternal(String path) throws HpcException{
+	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path) throws HpcException{
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		// Find the matching S3 data transfer configuration for the external path
 		try {
