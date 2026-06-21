@@ -730,7 +730,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
-	@HpcExecuteAsSystemAccount
 	public void processExternalDownloadTasks() throws HpcException {
 		// Iterate through all the external download requests that were submitted (not
 		// processed yet).
