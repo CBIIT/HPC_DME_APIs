@@ -1437,7 +1437,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				downloadRequest.setArchiveLocationFilePath(downloadTask.getDownloadFilePath());
 
 			} else {
-				// Check if transfer requests can be acceptable at this time (Globus only)
+				// Check if transfer requests can be acceptable at this time for this specific user (Globus only)
+				if(!userEligibleForToken(downloadTask.getDataTransferType(), downloadTask.getConfigurationId(), downloadTask.getUserId())) {
+					logger.info(
+							"download task: [taskId={}] - transfer requests not accepted at this time for user {} [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getUserId(), downloadTask.getDataTransferType(),
+							downloadTask.getDestinationType());
+					return false;
+				}
+
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
 						downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId());
 				// Check if transfer requests can be acceptable at this time.
@@ -1507,6 +1515,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 				globusRequest.setPath(downloadTask.getPath());
 				globusRequest.setDownload(true);
+				globusRequest.setUserId(downloadTask.getUserId());
 				globusTransferDAO.insertRequest(globusRequest);
 
 			}
@@ -1898,6 +1907,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 		globusRequest.setPath(collectionDownloadTask.getPath());
 		globusRequest.setDownload(true);
+		globusRequest.setUserId(collectionDownloadTask.getUserId());
 		globusTransferDAO.insertRequest(globusRequest);
 	}
 
@@ -2455,6 +2465,43 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Helper Methods
 	// ---------------------------------------------------------------------//
 
+
+	private boolean userEligibleForToken(HpcDataTransferType type, String hpcDataMgmtConfigId, String userId)
+			throws HpcException {
+
+		// Fair-access is only enforced for Globus transfers.
+		if (!HpcDataTransferType.GLOBUS.equals(type)) {
+			return true;
+		}
+
+		//Get the users who have been allocated Globus slots
+		List<String> usersAllocatedSlots = globusTransferDAO.getGlobusUsersAllocated(true);
+
+		if(usersAllocatedSlots.contains(userId)) {
+			//This user already has a Globus slot for data transfer, check if he can be provided more
+
+			//Get the configured number of system accounts
+			int transferAccountCount = systemAccountLocator.getSystemAccountCount(hpcDataMgmtConfigId);
+
+			//Get the number of slots allocated to this user
+			int numberOfSlotsAllocatedForUser = globusTransferDAO.getGlobusRequestCountByUser(userId, true);
+
+			//Get total number of distinct users with Globus transfer type in the download task table.
+			//These are users who are either using one or more Globus slots or are waiting for them.
+			int totalUsersForGlobusTransfers = dataDownloadDAO.getUserCountByDataTransferType(type);
+
+			//If the number of slots used by requester <= total number of slots/number of users, then proceed.
+			if(totalUsersForGlobusTransfers > 0 &&
+				numberOfSlotsAllocatedForUser > transferAccountCount/totalUsersForGlobusTransfers) {
+				logger.info("User {} already allocated {} slots, exceeded globus slot limit since {} users are in queue",
+					userId, numberOfSlotsAllocatedForUser, totalUsersForGlobusTransfers);
+				return false;
+			}
+		};
+
+		return true;
+	}
+
 	/**
 	 * Compute the total size of the given list of collections
 	 *
@@ -2463,6 +2510,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @return total size of the specified collections
 	 * @throws HpcException
 	 */
+
 	private Long getTotalSizeOfCollectionPaths(List<String> collectionPaths) throws HpcException {
 		Long totalSize = 0L;
 
@@ -2800,6 +2848,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			globusRequest.setGlobusAccount(getDataTransferAuthenticatedToken(authenticatedToken).getSystemAccountId());
 			globusRequest.setPath(uploadRequest.getPath());
 			globusRequest.setDownload(false);
+			globusRequest.setUserId(uploadRequest.getUserId());
 			globusTransferDAO.insertRequest(globusRequest);
 		}
 
@@ -4255,6 +4304,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	void setDataManagementService(HpcDataManagementService dataManagementService) {
 		this.dataManagementService = dataManagementService;
+	}
+
+	void setGlobusTransferDAO(HpcGlobusTransferTaskDAO globusTransferDAO) {
+		this.globusTransferDAO = globusTransferDAO;
 	}
 
 	// Second hop download.
