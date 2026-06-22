@@ -26,7 +26,10 @@ with eligible_objects as (
     select object_id,
            object_path,
            coll_id
-    from irods.hpc_eligible_data_objects_mv
+    from irods.hpc_data_meta_main_mv
+    where META_ATTR_NAME='data_transfer_status'
+    and META_ATTR_VALUE='ARCHIVED'
+    and OBJECT_PATH not like '/ncifprodZone/home/DME_Deleted_Archive/%'
 ),
 upload_events as (
     select
