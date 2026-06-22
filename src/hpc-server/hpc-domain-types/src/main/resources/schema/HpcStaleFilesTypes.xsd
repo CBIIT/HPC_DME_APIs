@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcStaleFilesTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:NCIDataVault@mail.nih.gov">NCI Data Vault</a>
+ * @version $Id: $
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" jxb:version="3.0"
+	xmlns:hpc-domain-stalefiles="http://hpc.nci.nih.gov/domain/stalefiles"
+	targetNamespace="http://hpc.nci.nih.gov/domain/stalefiles"
+	elementFormDefault="unqualified">
+
+	<!-- Entry representing a stale-file age bucket for the pie chart -->
+	<xsd:complexType name="HpcStalePieChartEntry">
+		<xsd:sequence>
+			<xsd:element name="staleBucketLabel" type="xsd:string" />
+			<xsd:element name="staleBucketOrder" type="xsd:int" />
+			<xsd:element name="fileCount" type="xsd:long" />
+			<xsd:element name="percentage" type="xsd:double" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<!-- Entry representing a subfolder + stale-file age bucket for the bar chart -->
+	<xsd:complexType name="HpcStaleBarChartEntry">
+		<xsd:sequence>
+			<xsd:element name="subfolder" type="xsd:string" />
+			<xsd:element name="staleBucketLabel" type="xsd:string" />
+			<xsd:element name="staleBucketOrder" type="xsd:int" />
+			<xsd:element name="fileCount" type="xsd:long" />
+			<xsd:element name="percentage" type="xsd:double" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>
