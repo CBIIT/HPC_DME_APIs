@@ -735,15 +735,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through all the external download requests that were submitted (not
 		// processed yet).
         Gson gson = new Gson();
-		for (HpcCollectionDownloadTask downloadTask : dataTransferService
-				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)) {
-			logger.info("External collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
-					downloadTask.getType());
-					//logger.info("2172 downloadTask = " + gson.toJson(downloadTask));
-					HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService.registerCollectionFromExternalSource(downloadTask.getPath(), downloadTask.getUserId());
-					logger.info("2172 registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
-				}
-
+		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)
+				.forEach(downloadTask -> {
+					try {
+						logger.info("External collection download task: [taskId={}] - started processing [{}]",
+								downloadTask.getId(), downloadTask.getType());
+						HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
+								.registerCollectionFromExternalSource(downloadTask);
+						logger.info("2172 registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
+					} catch (HpcException e) {
+						logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
+					}
+				});
 	}
 
 	@Override
