@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="HPC Data Management - Stale Files Dashboard" />
+<meta name="author" content="SVG, Inc" />
+<link rel="shortcut icon" href="img/favicon.png" />
+
+<title>NCI Data Management Environment</title>
+
+<!-- Bootstrap CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<!-- bootstrap theme -->
+<link href="css/bootstrap-theme.css" rel="stylesheet" />
+<!-- font icon -->
+<link href="css/elegant-icons-style.css" rel="stylesheet" />
+<link href="css/font-awesome.min.css" rel="stylesheet" />
+<!-- Custom styles -->
+<link href="css/widgets.css" rel="stylesheet" />
+<link href="css/style.css" rel="stylesheet" />
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+
+<script src="js/jquery/3.1.1/jquery.min.js"></script>
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+.stale-breadcrumb {
+    background: #f5f5f5;
+    padding: 8px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+.stale-breadcrumb a {
+    color: #2a72a5;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.stale-breadcrumb span.separator {
+    margin: 0 5px;
+    color: #999;
+}
+.stale-breadcrumb span.current {
+    color: #555;
+    font-weight: bold;
+}
+.chart-container {
+    position: relative;
+    min-height: 300px;
+}
+.chart-loading {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.7);
+    font-size: 18px;
+    color: #666;
+    z-index: 10;
+}
+.stale-leaf-msg {
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #555;
+    text-align: center;
+    display: none;
+}
+#staleBarChart {
+    cursor: pointer;
+}
+</style>
+
+</head>
+<body th:attr="data-basepaths=${basepaths != null ? #strings.arrayJoin(basepaths.toArray(), '|||') : ''}">
+
+	<!-- container section start -->
+	<section id="container" class="">
+		<div th:insert="~{header :: header}"></div>
+		<!--main content start-->
+		<section id="main-content">
+			<section class="wrapper">
+
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h2>
+									<i class="fa fa-clock-o" style="color:#c0392b;"></i>
+									<strong>Stale Files Dashboard</strong>
+								</h2>
+							</div>
+							<div class="panel-body">
+
+								<!-- Base Path selector -->
+								<div class="form-group">
+									<label for="basePathSelect"><strong>Select Base Path:</strong></label>
+									<select id="basePathSelect" class="form-control" style="max-width: 500px;">
+										<option value="">-- Select a Base Path --</option>
+										<option th:each="bp : ${basepaths}" th:value="${bp}" th:text="${bp}"></option>
+									</select>
+								</div>
+
+								<!-- Breadcrumb -->
+								<div class="stale-breadcrumb" id="breadcrumbContainer" style="display:none;">
+									<span id="breadcrumbContent"></span>
+								</div>
+
+								<!-- Charts row -->
+								<div class="row" id="chartsRow" style="display:none;">
+
+									<!-- Pie chart -->
+									<div class="col-md-4">
+										<div class="panel panel-default">
+											<div class="panel-heading">
+												<h4><strong>File Access Age Distribution</strong></h4>
+												<small class="text-muted">Summary for selected path and all descendants</small>
+											</div>
+											<div class="panel-body">
+												<div class="chart-container" style="height:300px;">
+													<div class="chart-loading" id="pieLoading">
+														<i class="fa fa-spin fa-spinner"></i>&nbsp;Loading...
+													</div>
+													<canvas id="stalePieChart"></canvas>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<!-- Bar chart -->
+									<div class="col-md-8">
+										<div class="panel panel-default">
+											<div class="panel-heading">
+												<h4><strong>Files by Subfolder</strong></h4>
+												<small class="text-muted">Click a subfolder to drill down</small>
+											</div>
+											<div class="panel-body">
+												<div class="stale-leaf-msg" id="leafMessage">
+													<i class="fa fa-info-circle"></i>
+													No deeper subfolders. This is a leaf folder.
+												</div>
+												<div class="chart-container" style="min-height:350px;">
+													<div class="chart-loading" id="barLoading">
+														<i class="fa fa-spin fa-spinner"></i>&nbsp;Loading...
+													</div>
+													<canvas id="staleBarChart"></canvas>
+												</div>
+											</div>
+										</div>
+									</div>
+
+								</div><!-- /charts row -->
+
+							</div><!-- /panel-body -->
+						</div><!-- /panel -->
+					</div><!-- /col -->
+				</div><!-- /row -->
+
+			</section>
+			<div th:insert="~{footer :: footer}"></div>
+		</section>
+		<!--main content end-->
+	</section>
+	<!-- container section end -->
+
+	<script src="js/scripts.js"></script>
+	<script type="text/javascript" src="js/hpcStaleFiles.js"></script>
+	<script>
+	$(document).ready(function () {
+		$('#sub-menu-stalefiles').addClass("active");
+	});
+	</script>
+
+</body>
+</html>
