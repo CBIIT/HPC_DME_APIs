@@ -896,8 +896,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
-	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path, String userId) throws HpcException{
+	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
+		String path = downloadTask.getPath();
+		String userId = downloadTask.getUserId();
 		// Find the matching S3 data transfer configuration for the external path
 		try {
 			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
@@ -914,6 +916,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String basePath = dataManagementConfiguration.getBasePath();
 		String posixPath = s3ArchiveConfiguration.getPosixPath();
 		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+
+		String collectionPath = path.substring(posixPath.length());
+		if(StringUtils.isEmpty(collectionPath)) {
+			logger.warn("Path after POSIX prefix is empty for path: " + path);
+			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		collectionPath = basePath + collectionPath;
+		downloadTask.setPath(collectionPath);
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
 		// Build the DirectoryScanRegistrationItem
 		buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, path, basePath, posixPath, bucket, s3ArchiveConfiguration.getId());
@@ -930,6 +940,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL_REGISTRATION);
+		dataTransferService.updateCollectionDownloadTask(downloadTask);
 		return registrationResponseDTO;
 	}
 

@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -171,7 +172,7 @@ public interface HpcDataManagementBusService {
 	 * @return Registration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(String path, String userId)
+	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask)
 			throws HpcException;
 
 			/**
