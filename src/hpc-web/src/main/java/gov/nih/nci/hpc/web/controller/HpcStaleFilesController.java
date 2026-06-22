@@ -148,7 +148,13 @@ public class HpcStaleFilesController extends AbstractHpcController {
             }
         } catch (Exception e) {
             logger.error("Error retrieving stale files pie chart data: {}", e.getMessage(), e);
-            return "{\"error\":\"" + e.getMessage() + "\"}";
+            try {
+                ObjectMapper errMapper = new ObjectMapper();
+                return errMapper.writeValueAsString(
+                        java.util.Collections.singletonMap("error", e.getMessage()));
+            } catch (Exception je) {
+                return "{\"error\":\"Internal error\"}";
+            }
         }
     }
 
@@ -195,7 +201,13 @@ public class HpcStaleFilesController extends AbstractHpcController {
             }
         } catch (Exception e) {
             logger.error("Error retrieving stale files bar chart data: {}", e.getMessage(), e);
-            return "{\"error\":\"" + e.getMessage() + "\"}";
+            try {
+                ObjectMapper errMapper = new ObjectMapper();
+                return errMapper.writeValueAsString(
+                        java.util.Collections.singletonMap("error", e.getMessage()));
+            } catch (Exception je) {
+                return "{\"error\":\"Internal error\"}";
+            }
         }
     }
 }
