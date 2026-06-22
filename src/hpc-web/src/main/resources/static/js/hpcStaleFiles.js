@@ -27,6 +27,13 @@
         4: '#7b1010'  // Dark red: over 365 days
     };
 
+    var BUCKET_LABELS = {
+        1: 'Green: accessed within 90 days',
+        2: 'Yellow: 90-180 days',
+        3: 'Red: 180-365 days',
+        4: 'Dark red: over 365 days'
+    };
+
     var BUCKET_ORDER = [1, 2, 3, 4];
 
     // -------------------------------------------------------------------------
@@ -206,16 +213,9 @@
         });
 
         // Build one dataset per bucket order (1-4)
-        var bucketLabels = {
-            1: 'Green: accessed within 90 days',
-            2: 'Yellow: 90-180 days',
-            3: 'Red: 180-365 days',
-            4: 'Dark red: over 365 days'
-        };
-
         var datasets = BUCKET_ORDER.map(function (order) {
             return {
-                label: bucketLabels[order],
+                label: BUCKET_LABELS[order],
                 backgroundColor: BUCKET_COLORS[order],
                 data: subfolderSet.map(function (sub) {
                     return (lookup[sub] && lookup[sub][order]) ? lookup[sub][order].count : 0;
@@ -293,8 +293,6 @@
         currentPath = path;
         loadCharts(currentBasePath, currentPath);
     }
-    // Expose for inline onclick in breadcrumb HTML
-    window.breadcrumbNavigate = breadcrumbNavigate;
 
     // -------------------------------------------------------------------------
     // Update breadcrumb display
@@ -316,15 +314,20 @@
             if (isLast) {
                 html += '<span class="current">' + escapeHtml(part) + '</span>';
             } else {
-                var pathSnapshot = accumulated;
-                html += '<a onclick="breadcrumbNavigate(\'' +
-                    escapeAttr(pathSnapshot) + '\')">' + escapeHtml(part) + '</a>';
+                html += '<a href="#" data-path="' + escapeAttr(accumulated) +
+                    '">' + escapeHtml(part) + '</a>';
                 html += '<span class="separator">/</span>';
             }
         });
 
         $('#breadcrumbContent').html(html);
     }
+
+    // Attach breadcrumb click handler via event delegation (no inline onclick)
+    $(document).on('click', '#breadcrumbContent a[data-path]', function (e) {
+        e.preventDefault();
+        breadcrumbNavigate($(this).data('path'));
+    });
 
     // -------------------------------------------------------------------------
     // Utility: HTML-escape a string for display
