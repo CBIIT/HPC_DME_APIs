@@ -42,9 +42,10 @@ public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
 			"select parent_path || name as path " +
 			"from \"vast-big-catalog-bucket/vast_big_catalog_schema\".\"vast_big_catalog_table\" " +
 			"where element_type = 'FILE' " +
-			"and atime < current_timestamp - INTERVAL '{months}' MONTH " +
-			"and parent_path LIKE ?";
-			
+			"and parent_path LIKE ? " +
+			"and (user_tags['dme_access_time'] is null " +
+			"or CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{months}' MONTH)";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
