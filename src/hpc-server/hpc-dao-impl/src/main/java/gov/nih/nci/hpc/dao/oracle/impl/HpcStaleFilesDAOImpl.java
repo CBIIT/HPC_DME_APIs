@@ -80,40 +80,47 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 	// Bar chart SQL: extracts the first immediate subfolder under currentPath
 	// for each file, then groups by subfolder and stale-access bucket.
 	private static final String BAR_CHART_SQL =
-		"with bucketed_files as ( " +
+		"with params as ( " +
+		"    select ? as base_path_filter, " +
+		"           ? as path_prefix " +
+		"    from dual " +
+		")," +
+		"bucketed_files as ( " +
 		"    select " +
-		"           path, " +
-		"           base_path, " +
-		"           bucket, " +
-		"           doc, " +
-		"           effective_accessed_date, " +
+		"           h.path, " +
+		"           h.base_path, " +
+		"           h.bucket, " +
+		"           h.doc, " +
+		"           h.effective_accessed_date, " +
+		"           p.path_prefix, " +
 		"           case " +
-		"               when effective_accessed_date >= systimestamp - numtodsinterval(90, 'DAY') " +
+		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(90, 'DAY') " +
 		"                    then 'Green: accessed within 90 days' " +
-		"               when effective_accessed_date >= systimestamp - numtodsinterval(180, 'DAY') " +
+		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(180, 'DAY') " +
 		"                    then 'Yellow: 90-180 days' " +
-		"               when effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
+		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
 		"                    then 'Red: 180-365 days' " +
 		"               else 'Dark red: over 365 days' " +
 		"           end as stale_bucket_label, " +
 		"           case " +
-		"               when effective_accessed_date >= systimestamp - numtodsinterval(90, 'DAY') " +
+		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(90, 'DAY') " +
 		"                    then 1 " +
-		"               when effective_accessed_date >= systimestamp - numtodsinterval(180, 'DAY') " +
+		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(180, 'DAY') " +
 		"                    then 2 " +
-		"               when effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
+		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
 		"                    then 3 " +
 		"               else 4 " +
 		"           end as stale_bucket_order " +
-		"    from irods.hpc_data_object_last_access_mv " +
-		"    where effective_accessed_date is not null " +
-		"      and base_path = ? " +
-		"      and path like ? || '/%' " +
+		"    from irods.hpc_data_object_last_access_mv h" +
+		"    cross join params p " +
+		"    where h.effective_accessed_date is not null " +
+		"      and h.base_path = p.base_path_filter " +
+		"      and h.path like p.path_prefix || '/%' " +
 		"), " +
 		"subfolder_counts as ( " +
 		"    select " +
 		"           regexp_substr( " +
-		"               substr(path, length(?) + 2), " +
+		"               substr(path, length(path_prefix) + 2), " +
 		"               '[^/]+', " +
 		"               1, " +
 		"               1 " +
@@ -124,7 +131,7 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 		"    from bucketed_files " +
 		"    group by " +
 		"           regexp_substr( " +
-		"               substr(path, length(?) + 2), " +
+		"               substr(path, length(path_prefix) + 2), " +
 		"               '[^/]+', " +
 		"               1, " +
 		"               1 " +
@@ -208,7 +215,7 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 			// currentPath is bound 4 times: once in path LIKE, twice in substr(path, length(?)+2)
 			// in SELECT and GROUP BY clauses.
 			return jdbcTemplate.query(BAR_CHART_SQL, barChartRowMapper,
-					basePath, currentPath, currentPath, currentPath);
+					basePath, currentPath);
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to query stale files bar chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
