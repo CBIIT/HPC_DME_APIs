@@ -2792,7 +2792,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Prepare the response
 		if(collection != null && collection.getDataObjectsTotalRecords() + collection.getSubCollectionsTotalRecords() > 0) {
 			
-			// If it is an archive link record (path is also in directory listing), don't add to the contents
+			// If it is an archive link or archived record (path is also in directory listing), don't add to the contents
 			listObjectsResponse.getContents().addAll(populateListObjectEntries(externalPath, collection.getSubCollections(), true, listingPaths));
 			listObjectsResponse.getContents().addAll(populateListObjectEntries(externalPath, collection.getDataObjects(), false, listingPaths));
 		}
