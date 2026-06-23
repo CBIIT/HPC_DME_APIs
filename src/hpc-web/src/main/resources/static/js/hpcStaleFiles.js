@@ -261,18 +261,21 @@
                         }
                     }
                 },
-                onClick: function (event, elements) {
-                    if (elements && elements.length > 0) {
-                        var idx = elements[0].index;
-                        var subfolder = subfolderSet[idx];
-                        if (subfolder) {
-                            drillDown(subfolder);
+                onClick: function (event, activeElements) {
+                    if (activeElements && activeElements.length > 0) {
+                        var element = activeElements[0];
+                        var idx = element.index;
+                        if (idx !== undefined && idx < subfolderSet.length) {
+                            var subfolder = subfolderSet[idx];
+                            if (subfolder) {
+                                drillDown(subfolder);
+                            }
                         }
                     }
                 },
-                onHover: function (event, elements) {
+                onHover: function (event, activeElements) {
                     var canvas = document.getElementById('staleBarChart');
-                    canvas.style.cursor = (elements && elements.length > 0) ? 'pointer' : 'default';
+                    canvas.style.cursor = (activeElements && activeElements.length > 0) ? 'pointer' : 'default';
                 }
             }
         });
