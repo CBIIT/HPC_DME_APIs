@@ -36,6 +36,85 @@
 
     var BUCKET_ORDER = [1, 2, 3, 4];
 
+    function pad2(num) {
+        return (num < 10 ? '0' : '') + num;
+    }
+
+    function formatDateYYYYMMDD(date) {
+        return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate());
+    }
+
+    function formatDateMMDDYYYY(date) {
+        return pad2(date.getMonth() + 1) + '/' + pad2(date.getDate()) + '/' + date.getFullYear();
+    }
+
+    // Returns inclusive date range based on stale bucket order.
+    function getDateRangeForBucket(bucketOrder) {
+        var now = new Date();
+        var end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var start;
+
+        if (bucketOrder === 1) {
+            start = new Date(end);
+            start.setDate(start.getDate() - 90);
+            return { from: formatDateMMDDYYYY(start), to: formatDateMMDDYYYY(end) };
+        }
+
+        if (bucketOrder === 2) {
+            start = new Date(end);
+            start.setDate(start.getDate() - 180);
+            var to2 = new Date(end);
+            to2.setDate(to2.getDate() - 91);
+            return { from: formatDateMMDDYYYY(start), to: formatDateMMDDYYYY(to2) };
+        }
+
+        if (bucketOrder === 3) {
+            start = new Date(end);
+            start.setDate(start.getDate() - 365);
+            var to3 = new Date(end);
+            to3.setDate(to3.getDate() - 181);
+            return { from: formatDateMMDDYYYY(start), to: formatDateMMDDYYYY(to3) };
+        }
+
+        // bucket 4: older than 365 days
+        var to4 = new Date(end);
+        to4.setDate(to4.getDate() - 366);
+        return { from: '', to: formatDateMMDDYYYY(to4) };
+    }
+
+    function submitLastAccessReportSearch(path, bucketOrder) {
+        var range = getDateRangeForBucket(bucketOrder);
+        var actionPath = '/reports';
+
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = actionPath;
+        form.style.display = 'none';
+
+        var add = function (name, value) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        };
+
+        // Report identity
+        add('report', 'LAST_ACCESS_DATA_OBJECT_REPORT');
+        add('reportType', 'LAST_ACCESS_DATA_OBJECT_REPORT');
+
+        // Path criteria (common aliases used by existing forms/controllers)
+        add('path', path);
+        add('basePath', currentBasePath);
+
+        // Date criteria aliases
+        add('fromDate', range.from);
+        add('toDate', range.to);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     // -------------------------------------------------------------------------
     // Initialization
     // -------------------------------------------------------------------------
@@ -261,24 +340,84 @@
                         }
                     }
                 },
-                onClick: function (event, activeElements) {
-                    if (activeElements && activeElements.length > 0) {
-                        var element = activeElements[0];
-                        var idx = element.index;
-                        if (idx !== undefined && idx < subfolderSet.length) {
-                            var subfolder = subfolderSet[idx];
-                            if (subfolder) {
-                                drillDown(subfolder);
-                            }
-                        }
-                    }
-                },
-                onHover: function (event, activeElements) {
-                    var canvas = document.getElementById('staleBarChart');
-                    canvas.style.cursor = (activeElements && activeElements.length > 0) ? 'pointer' : 'default';
-                }
+                // Drill-down is handled only when clicking y-axis labels (see canvas handlers below)
+                onClick: null,
+                onHover: null
             }
         });
+
+        // Make only y-axis labels clickable (not bars) by hit-testing the label zone.
+        var getLabelIndexFromEvent = function (evt) {
+            if (!barChart || !barChart.chartArea || !barChart.scales || !barChart.scales.y) {
+                return -1;
+            }
+
+            var chartArea = barChart.chartArea;
+            var yScale = barChart.scales.y;
+            var pos = Chart.helpers.getRelativePosition(evt, barChart);
+
+            // Label region is left of the plotting area.
+            if (!pos || pos.x >= chartArea.left || pos.y < chartArea.top || pos.y > chartArea.bottom) {
+                return -1;
+            }
+
+            var idx = yScale.getValueForPixel(pos.y);
+            if (idx === null || idx === undefined || isNaN(idx)) {
+                return -1;
+            }
+
+            idx = Math.round(idx);
+            return (idx >= 0 && idx < subfolderSet.length) ? idx : -1;
+        };
+
+        var getBarHitFromEvent = function (evt) {
+            if (!barChart || !barChart.chartArea) {
+                return null;
+            }
+            var elements = barChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+            if (!elements || elements.length === 0) {
+                return null;
+            }
+
+            var first = elements[0];
+            if (first.index === undefined || first.datasetIndex === undefined) {
+                return null;
+            }
+
+            var subfolder = subfolderSet[first.index];
+            var bucketOrder = BUCKET_ORDER[first.datasetIndex];
+            if (!subfolder || !bucketOrder) {
+                return null;
+            }
+
+            return {
+                subfolder: subfolder,
+                bucketOrder: bucketOrder
+            };
+        };
+
+        canvas.onclick = function (evt) {
+            var labelIdx = getLabelIndexFromEvent(evt);
+            if (labelIdx >= 0) {
+                drillDown(subfolderSet[labelIdx]);
+                return;
+            }
+
+            var barHit = getBarHitFromEvent(evt);
+            if (barHit) {
+                submitLastAccessReportSearch(currentPath + '/' + barHit.subfolder, barHit.bucketOrder);
+            }
+        };
+
+        canvas.onmousemove = function (evt) {
+            var labelIdx = getLabelIndexFromEvent(evt);
+            if (labelIdx >= 0) {
+                canvas.style.cursor = 'pointer';
+                return;
+            }
+            var barHit = getBarHitFromEvent(evt);
+            canvas.style.cursor = barHit ? 'pointer' : 'default';
+        }
     }
 
     // -------------------------------------------------------------------------
