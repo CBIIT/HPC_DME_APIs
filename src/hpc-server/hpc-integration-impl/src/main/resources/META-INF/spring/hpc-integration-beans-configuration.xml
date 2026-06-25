@@ -120,6 +120,14 @@
 		  <constructor-arg value="${hpc.integration.oidc.userinfo.attribute}" index="3" />
 	</bean>
 	
+	<!-- Hugging Face Text Embedding Proxy -->
+	<bean id="hpcTextEmbeddingProxy"
+		  class="gov.nih.nci.hpc.integration.huggingface.impl.HpcTextEmbeddingProxyImpl" >
+		  <constructor-arg value="${hpc.integration.huggingface.accessToken}" index="0" />
+		  <constructor-arg value="${hpc.integration.huggingface.embeddingModelId}" index="1" />
+		  <constructor-arg value="${hpc.integration.huggingface.timeoutSeconds}" index="2" />
+	</bean>
+	
 	<!--  HPC iRODS Connection -->
 	<bean id="hpcIRODSConnection" 
 	      class="gov.nih.nci.hpc.integration.irods.impl.HpcIRODSConnection" >
