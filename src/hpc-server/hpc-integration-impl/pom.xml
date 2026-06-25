@@ -169,6 +169,11 @@
 	       <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
 	       <artifactId>jackson-jakarta-rs-json-provider</artifactId>
 	    </dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-hugging-face</artifactId>
+			<version>0.35.0</version>
+		</dependency>
 	    <dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
