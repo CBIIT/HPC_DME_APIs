@@ -475,10 +475,11 @@ public interface HpcDataManagementBusService {
 	 * @param path            The data object path.
 	 * @param downloadRequest The download request DTO.
 	 * @param externalArchiveFlag      If true, the data object is in an external archive and the download will be handled differently.
+	 * @param userInputtedExternalPath  The user inputted external path for the data object. This is only set for external archive downloads.
 	 * @return Download ResponseDTO
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest, boolean externalArchiveFlag)
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest, boolean externalArchiveFlag, String userInputtedExternalPath)
 			throws HpcException;
 
 	/**
@@ -521,12 +522,13 @@ public interface HpcDataManagementBusService {
 	 *                                 this request is part of a collection download
 	 *                                 task
 	 * @param externalArchiveFlag      If true, the data object is in an external
+	 * @param userInputtedExternalPath  The user inputted external path for the data object. This is only set for external archive downloads.
 	 * @return Download ResponseDTO
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
 			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
-			String collectionDownloadTaskId, boolean externalArchiveFlag) throws HpcException;
+			String collectionDownloadTaskId, boolean externalArchiveFlag, String userInputtedExternalPath) throws HpcException;
 
 	/**
 	 * Download Data Object from External Source. In this overloaded method, the request invoker will be
