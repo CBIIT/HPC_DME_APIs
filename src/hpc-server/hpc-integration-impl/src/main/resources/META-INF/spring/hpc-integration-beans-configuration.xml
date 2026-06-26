@@ -128,6 +128,17 @@
 		  <constructor-arg value="${hpc.integration.huggingface.timeoutSeconds}" index="2" />
 	</bean>
 	
+	<!-- Qdrant Vector Store Proxy -->
+	<bean id="hpcVectorStoreProxy"
+		  class="gov.nih.nci.hpc.integration.qdrant.impl.HpcVectorStoreProxyImpl" >
+		  <constructor-arg value="${hpc.integration.qdrant.host}" index="0" />
+		  <constructor-arg value="${hpc.integration.qdrant.port}" index="1" />
+		  <constructor-arg value="${hpc.integration.qdrant.collectionName}" index="2" />
+		  <constructor-arg value="${hpc.integration.qdrant.useTls}" index="3" />
+		  <constructor-arg value="${hpc.integration.qdrant.apiKey}" index="4" />
+		  <constructor-arg value="${hpc.integration.qdrant.minScore}" index="5" />
+	</bean>
+	
 	<!--  HPC iRODS Connection -->
 	<bean id="hpcIRODSConnection" 
 	      class="gov.nih.nci.hpc.integration.irods.impl.HpcIRODSConnection" >

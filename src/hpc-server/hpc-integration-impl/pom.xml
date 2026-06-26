@@ -172,7 +172,12 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-hugging-face</artifactId>
-			<version>1.16.2-beta26</version>
+			<version>0.35.0</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-qdrant</artifactId>
+			<version>0.35.0</version>
 		</dependency>
 	    <dependency>
 			<groupId>com.googlecode.json-simple</groupId>
