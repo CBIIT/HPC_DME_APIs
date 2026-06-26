@@ -6,6 +6,8 @@ import java.util.List;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
+import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
+import dev.langchain4j.store.embedding.EmbeddingSearchResult;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -119,8 +121,10 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
         try {
             float[] floatArray = toFloatArray(queryVector);
             Embedding queryEmbedding = Embedding.from(floatArray);
-            List<EmbeddingMatch<TextSegment>> matches = embeddingStore.findRelevant(queryEmbedding, maxResults,
-                    minScore);
+            EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder().queryEmbedding(queryEmbedding)
+                    .maxResults(maxResults).minScore(minScore).build();
+            EmbeddingSearchResult<TextSegment> searchResult = embeddingStore.search(searchRequest);
+            List<EmbeddingMatch<TextSegment>> matches = searchResult.matches();
 
             List<String> collectionIds = new ArrayList<>(matches.size());
             for (EmbeddingMatch<TextSegment> match : matches) {
