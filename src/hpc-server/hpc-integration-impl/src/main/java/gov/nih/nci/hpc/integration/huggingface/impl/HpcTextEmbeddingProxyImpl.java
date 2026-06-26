@@ -31,7 +31,7 @@ public class HpcTextEmbeddingProxyImpl implements HpcTextEmbeddingProxy {
     @Override
     public List<Float> getEmbeddingVector(String text) throws HpcException {
         if (text == null || text.isBlank()) {
-            throw new HpcException("Input text cannot be blank", HpcErrorType.INVALID_REQUEST_INPUT_PARAMETER);
+            throw new HpcException("Input text cannot be blank", HpcErrorType.INVALID_REQUEST_INPUT);
         }
 
         try {
