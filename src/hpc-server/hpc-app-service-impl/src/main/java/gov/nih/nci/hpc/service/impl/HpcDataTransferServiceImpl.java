@@ -250,6 +250,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.googleAccessTokenRetentionPeriod}")
 	private Integer googleAccessTokenRetentionPeriod = null;
 
+	@Value("${hpc.bus.downloadArchiveLinkBasePath}")
+	private String downloadArchiveLinkBasePath = null;
+
+
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -1181,8 +1185,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (numberOfActiveExternalDownloadTasksForPath == 0) {
 			try {
-				HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
-				temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+				HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(s3ConfigurationId);
+				String temporaryArchiveLinkPath = path.replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
+				logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
+				HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
+				temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
 						configurationId, s3ConfigurationId);
 			} catch (HpcException e) {
 				logger.error("Failed to delete data object after download from external archive for path: "
