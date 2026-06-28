@@ -71,7 +71,7 @@ public class HpcScheduledTasksImpl {
 	/** Process received collection list migration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.migration.cron.processCollectionListMigrationReceived.delay}")
 	private void processCollectionListMigrationReceivedTask() {
-		execute("processDataObjectListMigrationReceivedTask()",
+		execute("processCollectionListMigrationReceivedTask()",
 				dataMigrationBusService::processCollectionListMigrationReceived, logger);
 	}
 
