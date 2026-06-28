@@ -25,6 +25,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAutoTieringSearchSource;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -148,7 +149,19 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setDataManagementConfigurationId(rs.getString("DATA_MANAGEMENT_CONFIGURATION_ID"));
 		s3Configuration.setExternalStorage(rs.getBoolean("EXTERNAL_STORAGE"));
 		s3Configuration.setPosixPath(rs.getString("POSIX_PATH"));
-		s3Configuration.setAutoTieringSearchPath(rs.getString("AUTO_TIERING_SEARCH_PATH"));
+		String autoTieringSearchSourcePath = rs.getString("AUTO_TIERING_SEARCH_SOURCE_PATH");
+		if (autoTieringSearchSourcePath != null && autoTieringSearchSourcePath.contains(":")) {
+			String[] parts = autoTieringSearchSourcePath.split(":", 2);
+			try {
+				s3Configuration.setAutoTieringSearchSource(HpcAutoTieringSearchSource.fromValue(parts[0]));
+				s3Configuration.setAutoTieringSearchPath(parts[1]);
+			} catch (IllegalArgumentException e) {
+				throw new SQLException(
+						"Invalid AUTO_TIERING_SEARCH_SOURCE_PATH value: " + autoTieringSearchSourcePath
+								+ ". Source must be one of: "
+								+ java.util.Arrays.toString(HpcAutoTieringSearchSource.values()));
+			}
+		}
 		s3Configuration.setAutoTieringInactivityMonths(rs.getInt("AUTO_TIERING_INACTIVITY_MONTHS"));
 
 		return s3Configuration;

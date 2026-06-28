@@ -84,6 +84,7 @@
 	<bean id="hpcReviewDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReviewDAOImpl" /> 
 	<bean id="hpcQueryConfigDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcQueryConfigDAOImpl" />
 	<bean id="hpcGlobusTransferTaskDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGlobusTransferTaskDAOImpl" />
-	<bean id="hpcExternalArchiveDAO" class="gov.nih.nci.hpc.dao.trino.impl.HpcExternalArchiveDAOImpl"
+	<bean id="hpcTrinoAutoTieringDAO" class="gov.nih.nci.hpc.dao.trino.impl.HpcAutoTieringDAOImpl"
 		  init-method="dbConnect" />
+	<bean id="hpcOracleAutoTieringDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcAutoTieringDAOImpl" />
 </beans>

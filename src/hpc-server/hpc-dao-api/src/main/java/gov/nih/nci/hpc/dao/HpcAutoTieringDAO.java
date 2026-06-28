@@ -22,7 +22,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public interface HpcExternalArchiveDAO {
+public interface HpcAutoTieringDAO {
 	/**
 	 * Query for files in the external archive that have not been accessed within
 	 * the specified time period. These files are candidates for auto-tiering migration

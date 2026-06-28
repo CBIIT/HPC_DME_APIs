@@ -2,6 +2,7 @@
 import argparse
 import sys
 import getpass
+import traceback
 from datetime import datetime, timezone
 
 from trino.dbapi import connect
@@ -17,7 +18,7 @@ SCHEMA = 'vast-audit-log-bucket/vast_audit_log_schema'
 TAG_KEY = "dme_access_time"
 
 
-def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, dry_run: bool = False):
+def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, dry_run: bool = False, stacktrace: bool = False):
     if dry_run:
         print(f"DRYRUN tag s3://{bucket}/{key} -> {tag_key}={tag_value}")
         return
@@ -36,6 +37,8 @@ def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, d
                   f"({error_code}: {error_msg})")
         else:
             print(f"ERROR s3://{bucket}/{key} - Failed to get tags: {error_code}: {error_msg}")
+        if stacktrace:
+            traceback.print_exc()
         return
 
     # Merge/update by Key
@@ -59,6 +62,8 @@ def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, d
                   f"({error_code}: {error_msg})")
         else:
             print(f"ERROR s3://{bucket}/{key} - Failed to set tags: {error_code}: {error_msg}")
+        if stacktrace:
+            traceback.print_exc()
 
 
 def parse_since_arg(since: str) -> str:
@@ -113,6 +118,7 @@ def main(argv=None):
     parser.add_argument("--secret-key", required=True, help="S3 secret access key")
     parser.add_argument("--dry-run", action="store_true", help="Do not modify tags; just log actions")
     parser.add_argument("--insecure", action="store_true", help="Skip SSL certificate verification for Trino and S3 connections")
+    parser.add_argument("--stacktrace", action="store_true", help="Print full stack trace on errors")
 
 
     args = parser.parse_args(argv)
@@ -192,6 +198,7 @@ def main(argv=None):
             tag_key=TAG_KEY,
             tag_value=tag_value,
             dry_run=args.dry_run,
+            stacktrace=args.stacktrace,
         )
 
 if __name__ == "__main__":
