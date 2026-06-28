@@ -55,6 +55,7 @@
 			<xsd:element name="dataManagementConfigurationId" type="xsd:string" />
 			<xsd:element name="externalStorage" type="xsd:boolean" />
 			<xsd:element name="posixPath" type="xsd:string" />
+			<xsd:element name="autoTieringSearchSource" type="hpc-domain-datamanagement:HpcAutoTieringSearchSource" />
 			<xsd:element name="autoTieringSearchPath" type="xsd:string" />
 			<xsd:element name="autoTieringInactivityMonths" type="xsd:int" minOccurs="0" />
 		</xsd:sequence>
