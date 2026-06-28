@@ -1,5 +1,5 @@
 /**
- * HpcExternalArchiveDAOImpl.java
+ * HpcAutoTieringDAOImpl.java
  *
  * <p>
  * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
@@ -8,9 +8,9 @@
  * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
-package gov.nih.nci.hpc.dao.trino.impl;
+package gov.nih.nci.hpc.dao.oracle.impl;
 
-import gov.nih.nci.hpc.dao.HpcExternalArchiveDAO;
+import gov.nih.nci.hpc.dao.HpcAutoTieringDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -24,27 +24,25 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
 
 /**
- * HPC External Archive DAO Implementation.
+ * HPC Auto Tiering DAO Oracle Implementation.
  *
- * <p>This implementation queries external archives (VAST managed archives mounted via NFS on the
- * DME server) to identify files that have not been accessed within a specified time period, for
+ * <p>This implementation queries the Oracle materialized view HPC_DATA_OBJECT_LAST_ACCESS_MV
+ * to identify files that have not been accessed within a specified time period, for
  * auto-tiering migration to S3 Glacier Deep Archive.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
+public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
 	private static final String GET_FILES_NOT_ACCESSED_SQL =
-			"select parent_path || name as path " +
-			"from \"vast-big-catalog-bucket/vast_big_catalog_schema\".\"vast_big_catalog_table\" " +
-			"where element_type = 'FILE' " +
-			"and parent_path LIKE ? " +
-			"and (user_tags['dme_access_time'] is null " +
-			"or CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{months}' MONTH)";
+			"SELECT path FROM HPC_DATA_OBJECT_LAST_ACCESS_MV " +
+			"WHERE path LIKE ? " +
+			"AND (effective_accessed_date IS NULL " +
+			"OR effective_accessed_date < current_timestamp - INTERVAL '{months}' MONTH)";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -52,25 +50,25 @@ public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
-	@Qualifier("hpcTrinoJdbcTemplate")
+	@Qualifier("hpcOracleJdbcTemplate")
 	private JdbcTemplate jdbcTemplate = null;
 
 	// The logger instance.
-	private static final Logger logger = LoggerFactory.getLogger(HpcExternalArchiveDAOImpl.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(HpcAutoTieringDAOImpl.class.getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
 
 	/** Constructor for Spring Dependency Injection. */
-	private HpcExternalArchiveDAOImpl() {}
+	private HpcAutoTieringDAOImpl() {}
 
 	// ---------------------------------------------------------------------//
 	// Methods
 	// ---------------------------------------------------------------------//
 
 	// ---------------------------------------------------------------------//
-	// HpcExternalArchiveDAO Interface Implementation
+	// HpcAutoTieringDAO Interface Implementation
 	// ---------------------------------------------------------------------//
 
 	@Override
@@ -78,33 +76,15 @@ public class HpcExternalArchiveDAOImpl implements HpcExternalArchiveDAO {
 		try {
 			return jdbcTemplate.queryForList(
 					GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()),
-					String.class, searchPath + '%');
+					String.class, searchPath);
 
 		} catch (DataAccessException e) {
 			throw new HpcException(
-					"Failed to query files not accessed in external archive [searchPath=" + searchPath +
+					"Failed to query files not accessed in Oracle [searchPath=" + searchPath +
 					", monthsNotAccessed=" + monthsNotAccessed + "]: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.VAST, e);
-		}
-	}
-
-	// ---------------------------------------------------------------------//
-	// Helper Methods
-	// ---------------------------------------------------------------------//
-
-	/**
-	 * Verify connection to Trino DB. Called by Spring as init-method.
-	 *
-	 * @throws HpcException If it failed to connect to the database.
-	 */
-	@SuppressWarnings("unused")
-	private void dbConnect() throws HpcException {
-		try {
-			jdbcTemplate.getDataSource().getConnection();
-
-		} catch (Exception e) {
-			throw new HpcException("Failed to connect to Trino DB. Check connection & credentials config",
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.VAST, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 }
+
+

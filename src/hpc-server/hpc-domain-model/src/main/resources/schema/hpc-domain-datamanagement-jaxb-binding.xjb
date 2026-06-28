@@ -92,6 +92,9 @@
       <jaxb:bindings node="//xsd:complexType[@name='HpcCalculateTotalSizeEntry']">
          <jaxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCalculateTotalSizeEntry" />
       </jaxb:bindings>
+      <jaxb:bindings node="//xsd:simpleType[@name='HpcAutoTieringSearchSource']">
+        <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcAutoTieringSearchSource" />
+      </jaxb:bindings>
 	</jaxb:bindings>
    
 	<jaxb:bindings schemaLocation="HpcMetadataTypes.xsd">

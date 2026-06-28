@@ -10,11 +10,14 @@ package gov.nih.nci.hpc.service.impl;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,8 +29,9 @@ import org.springframework.beans.factory.annotation.Value;
 import com.google.common.collect.Iterables;
 
 import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
-import gov.nih.nci.hpc.dao.HpcExternalArchiveDAO;
+import gov.nih.nci.hpc.dao.HpcAutoTieringDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAutoTieringSearchSource;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
@@ -97,9 +101,18 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Autowired
 	private HpcSecurityService securityService = null;
 
-	// External Archive DAO.
+	// Auto-tiering DAOs mapped by search source.
+	// Each S3 archive configuration specifies a search source (ORACLE or TRINO) to query for
+	// files eligible for auto-tiering. This map allows selecting the appropriate DAO at runtime.
 	@Autowired
-	private HpcExternalArchiveDAO externalArchiveDAO = null;
+	@Qualifier("hpcOracleAutoTieringDAO")
+	private HpcAutoTieringDAO oracleAutoTieringDAO = null;
+
+	@Autowired
+	@Qualifier("hpcTrinoAutoTieringDAO")
+	private HpcAutoTieringDAO trinoAutoTieringDAO = null;
+
+	private Map<HpcAutoTieringSearchSource, HpcAutoTieringDAO> autoTieringDAOs = null;
 
 	// The Data Management Application Service Instance.
 	@Autowired
@@ -130,6 +143,17 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	 * @throws HpcException Constructor is disabled.
 	 */
 	private HpcDataMigrationServiceImpl() throws HpcException {
+	}
+
+	// ---------------------------------------------------------------------//
+	// Post Construction Initialization
+	// ---------------------------------------------------------------------//
+
+	@PostConstruct
+	private void init() {
+		autoTieringDAOs = new EnumMap<>(HpcAutoTieringSearchSource.class);
+		autoTieringDAOs.put(HpcAutoTieringSearchSource.ORACLE, oracleAutoTieringDAO);
+		autoTieringDAOs.put(HpcAutoTieringSearchSource.TRINO, trinoAutoTieringDAO);
 	}
 
 	// ---------------------------------------------------------------------//
@@ -722,6 +746,17 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			throw new HpcException("Auto-tiering inactivity months is not defined for S3 configuration: " + s3ArchiveConfigurationId,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		if (s3Configuration.getAutoTieringSearchSource() == null) {
+			throw new HpcException("Auto-tiering search source is not defined for S3 configuration: " + s3ArchiveConfigurationId,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the appropriate DAO based on the configured search source.
+		HpcAutoTieringDAO autoTieringDAO = autoTieringDAOs.get(s3Configuration.getAutoTieringSearchSource());
+		if (autoTieringDAO == null) {
+			throw new HpcException("No auto-tiering DAO found for search source: " + s3Configuration.getAutoTieringSearchSource(),
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
 
 		// Build the map of file paths to HpcFileLocation - these are the data objects to be auto-tiered.
 		String basePath = dataManagementConfiguration.getBasePath();
@@ -730,7 +765,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 		Map<String, HpcFileLocation> autoTieringDataObjects = new HashMap<>();
 		// Query for files not accessed within the specified period and create the map of data obejcts to return.
-		externalArchiveDAO.getFilesNotAccessed(
+		autoTieringDAO.getFilesNotAccessed(
 				s3Configuration.getAutoTieringSearchPath(),
 				s3Configuration.getAutoTieringInactivityMonths()).forEach(searchRelativePath -> {
 			// Construct HpcFileLocation of the data object to be auto-tiered.
