@@ -52,5 +52,14 @@
                 <jaxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute"/>
             </jaxb:bindings>
     </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="HpcLastAccessTypes.xsd">
+            <jaxb:bindings node="//xsd:complexType[@name='HpcLastAccessPieChartEntry']">
+                <jaxb:class ref="gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessPieChartEntry"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xsd:complexType[@name='HpcLastAccessBarChartEntry']">
+                <jaxb:class ref="gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessBarChartEntry"/>
+            </jaxb:bindings>
+    </jaxb:bindings>
     
 </jaxb:bindings>

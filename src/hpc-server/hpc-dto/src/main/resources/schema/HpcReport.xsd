@@ -15,12 +15,16 @@
 	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" jxb:version="3.0"
 	xmlns:hpc-domain-report="http://hpc.nci.nih.gov/domain/report"
+	xmlns:hpc-domain-lastaccess="http://hpc.nci.nih.gov/domain/lastaccess"
 	xmlns:hpc-dto-report="http://hpc.nci.nih.gov/dto/report"
 	targetNamespace="http://hpc.nci.nih.gov/dto/report" 
 	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/report"
 		        schemaLocation="HpcReportTypes.xsd" />
+		        
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/lastaccess"
+		        schemaLocation="HpcLastAccessTypes.xsd" />
 
 	<!-- Notification Subscriptions DTO -->
 	<xsd:element name="HpcReportRequestDTO">
@@ -82,5 +86,26 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<!-- Last Access Pie Chart DTO -->
+	<xsd:element name="HpcLastAccessPieChartDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="pieChartEntries"
+				             type="hpc-domain-lastaccess:HpcLastAccessPieChartEntry"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- Last Access Bar Chart DTO -->
+	<xsd:element name="HpcLastAccessBarChartDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="barChartEntries"
+				             type="hpc-domain-lastaccess:HpcLastAccessBarChartEntry"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 	
 </xsd:schema>
