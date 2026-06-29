@@ -1,14 +1,16 @@
 $kind: http-request
 name: Process Auto Tiering
 method: POST
-url: '{{baseUrl}}{{basePath}}/autoTiering/:configurationId'
+url: "{{baseUrl}}{{basePath}}/autoTiering/:configurationId"
+auth:
+  type: inherit
+  credentials:
+    id: 236c22c3-dd78-4b41-8176-a23ea4721e7b
 order: 7000
 headers:
-  - key: Content-Type
-    value: 'application/json'
-  - key: Accept
-    value: 'application/json'
+  Content-Type: application/json
+  Accept: application/json
 pathVariables:
   - key: configurationId
-    value: 'c58691cd-9480-4a2f-8b99-e4b2c4b76dbc'
-    description: 'The data management configuration ID'
+    value: c58691cd-9480-4a2f-8b99-e4b2c4b76dbc
+    description: The data management configuration ID

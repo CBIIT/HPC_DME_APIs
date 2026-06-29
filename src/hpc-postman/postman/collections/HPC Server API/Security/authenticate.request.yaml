@@ -5,6 +5,11 @@ url: "{{baseUrl}}{{basePath}}/authenticate"
 body:
   type: json
   content: ""
+auth:
+  type: basic
+  credentials:
+    username: "{{vault:username}}"
+    password: "{{vault:password}}"
 order: 1000
 headers:
   Accept: application/json
