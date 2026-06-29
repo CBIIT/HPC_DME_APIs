@@ -80,6 +80,26 @@ public class HpcS3Connection {
 	@Value("${hpc.integration.s3.socketTimeout}")
 	private Integer socketTimeout = null;
 
+	// The connection timeout
+	@Value("${hpc.integration.s3.connectionTimeout}")
+	private Integer connectionTimeout = null;
+
+	// The TCP keep alive timer setting
+	@Value("${hpc.integration.s3.useTcpKeepAlive}")
+	private Boolean useTcpKeepAlive = false;
+
+	// The max number of error retries
+	@Value("${hpc.integration.s3.maxErrorRetries}")
+	private Integer maxErrorRetries = null;
+
+	// The max number of http connections
+	@Value("${hpc.integration.s3.maxConnections}")
+	private Integer maxConnections = null;
+
+	//Prevent the client from dropping lagging connections
+	@Value("${hpc.integration.s3.validateAfterInactivityMillis}")
+	private Integer validateAfterInactivityMillis = null;
+
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
 
@@ -228,6 +248,11 @@ public class HpcS3Connection {
 			// Instantiate a S3 client.
 			ClientConfiguration config = new ClientConfiguration();
 			config.setSocketTimeout(socketTimeout);
+			config.setUseTcpKeepAlive(useTcpKeepAlive);
+			config.setMaxConnections(maxConnections);
+			config.setConnectionTimeout(connectionTimeout);
+			config.setMaxErrorRetry(maxErrorRetries);
+			config.withValidateAfterInactivityMillis(validateAfterInactivityMillis);
 			AmazonS3 s3Client = null;
 			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 				s3Client = AmazonS3EncryptionClientV2Builder.standard()
