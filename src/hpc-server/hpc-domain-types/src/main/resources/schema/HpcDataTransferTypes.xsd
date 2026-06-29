@@ -128,7 +128,6 @@
 			<xsd:enumeration value="ACTIVE" />
 			<xsd:enumeration value="GLOBUS_BUNCHING" />
 			<xsd:enumeration value="RECEIVED_EXTERNAL" />
-			<xsd:enumeration value="RECEIVED_EXTERNAL_REGISTRATION" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
