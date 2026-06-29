@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessBarChartEntry;
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessPieChartEntry;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -35,6 +37,29 @@ public interface HpcReportService {
    * @throws HpcException on service failure.
    */
   public void refreshViews() throws HpcException;
+  
+  /**
+   * Get last access pie chart data for the given base path and current drill-down path.
+   *
+   * @param basePath    The base path to scope results.
+   * @param currentPath The current drill-down path.
+   * @return List of pie chart entries.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath)
+          throws HpcException;
+
+  /**
+   * Get last access bar chart data for immediate subfolders under the current path.
+   *
+   * @param basePath    The base path to scope results.
+   * @param currentPath The current drill-down path.
+   * @return List of bar chart entries.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath)
+          throws HpcException;
+  
 
 
 }

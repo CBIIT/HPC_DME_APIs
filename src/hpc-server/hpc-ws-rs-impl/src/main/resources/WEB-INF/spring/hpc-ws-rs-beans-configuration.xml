@@ -114,7 +114,6 @@
 		<entry key="http://hpc.nci.nih.gov/dto/datasearch" value="gov.nih.nci.hpc.dto.datasearch" />
 		<entry key="http://hpc.nci.nih.gov/dto/databrowse" value="gov.nih.nci.hpc.dto.databrowse" />
 		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
-		<entry key="http://hpc.nci.nih.gov/dto/stalefiles" value="gov.nih.nci.hpc.dto.stalefiles" />
 		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
 		<entry key="http://hpc.nci.nih.gov/dto/catalog" value="gov.nih.nci.hpc.dto.catalog" />
 		<entry key="http://hpc.nci.nih.gov/dto/review" value="gov.nih.nci.hpc.dto.review" />
@@ -126,7 +125,7 @@
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
 		<entry key="http://hpc.nci.nih.gov/domain/datatransfer" value="gov.nih.nci.hpc.domain.datatransfer" />
 		<entry key="http://hpc.nci.nih.gov/domain/notification" value="gov.nih.nci.hpc.domain.notification" />
-		<entry key="http://hpc.nci.nih.gov/domain/stalefiles" value="gov.nih.nci.hpc.domain.stalefiles" />
+		<entry key="http://hpc.nci.nih.gov/domain/lastaccess" value="gov.nih.nci.hpc.domain.lastaccess" />
 		<entry key="http://hpc.nci.nih.gov/domain/report" value="gov.nih.nci.hpc.domain.report" />
 		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 		<entry key="http://hpc.nci.nih.gov/domain/catalog" value="gov.nih.nci.hpc.domain.catalog" />
@@ -303,9 +302,8 @@
 
 				<!-- Report Service Authorizations -->
 				<entry key="generateReport" value="${hpc.ws.rs.auth.report.generate-report}" />
-				<!-- Stale Files Service Authorizations -->
-				<entry key="getPieChartData" value="${hpc.ws.rs.auth.stalefiles.get-pie-chart-data}" />
-				<entry key="getBarChartData" value="${hpc.ws.rs.auth.stalefiles.get-bar-chart-data}" />
+				<entry key="getLastAccessPieChartData" value="${hpc.ws.rs.auth.report.get-pie-chart-data}" />
+				<entry key="getLastAccessBarChartData" value="${hpc.ws.rs.auth.report.get-bar-chart-data}" />
 				
 				<!-- Review Service Authorizations -->
 				<entry key="queryReview" value="${hpc.ws.rs.auth.review.query-review}" />
@@ -347,7 +345,6 @@
 	<bean id="hpcDataBrowseRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataBrowseRestServiceImpl" />
 	<bean id="hpcNotificationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
-	<bean id="hpcStaleFilesRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcStaleFilesRestServiceImpl" />
 	<bean id="hpcDataMigrationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataMigrationRestServiceImpl" />
 	<bean id="hpcDataTieringRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataTieringRestServiceImpl" />
 	<bean id="hpcReviewRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReviewRestServiceImpl" />
@@ -362,7 +359,6 @@
 			<ref bean="hpcDataBrowseRestService" />
 			<ref bean="hpcNotificationRestService" />
 			<ref bean="hpcReportRestService" />
-			<ref bean="hpcStaleFilesRestService" />
 			<ref bean="hpcDataMigrationRestService" />
 			<ref bean="hpcDataTieringRestService" />
 			<ref bean="hpcReviewRestService" />
