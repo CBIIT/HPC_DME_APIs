@@ -1,7 +1,7 @@
 /**
- * hpcStaleFiles.js
+ * hpcLastAccess.js
  *
- * JavaScript for the Stale Files Dashboard.
+ * JavaScript for the Last Accessed Collection Report.
  * Provides pie chart (summary) and bar chart (drill-down by subfolder)
  * using Chart.js, backed by AJAX calls to the hpc-web controller.
  */
@@ -148,7 +148,7 @@
     function fetchPieData(basePath, path) {
         $('#pieLoading').show();
         $.ajax({
-            url: '/staleFiles/pieChartData',
+            url: '/lastAccess/pieChartData',
             method: 'GET',
             data: { basePath: basePath, currentPath: path },
             dataType: 'json',
@@ -174,7 +174,7 @@
         $('#barLoading').show();
         $('#leafMessage').hide();
         $.ajax({
-            url: '/staleFiles/barChartData',
+            url: '/lastAccess/barChartData',
             method: 'GET',
             data: { basePath: basePath, currentPath: path },
             dataType: 'json',
@@ -200,13 +200,13 @@
         var entries = (data && data.pieChartEntries) ? data.pieChartEntries : [];
 
         // Sort by bucket order
-        entries.sort(function (a, b) { return a.staleBucketOrder - b.staleBucketOrder; });
+        entries.sort(function (a, b) { return a.bucketOrder - b.bucketOrder; });
 
         var labels = entries.map(function (e) {
-            return e.staleBucketLabel + ' (' + e.percentage + '%)';
+            return e.bucketLabel + ' (' + e.percentage + '%)';
         });
         var counts = entries.map(function (e) { return e.fileCount; });
-        var colors = entries.map(function (e) { return BUCKET_COLORS[e.staleBucketOrder] || '#999'; });
+        var colors = entries.map(function (e) { return BUCKET_COLORS[e.bucketOrder] || '#999'; });
 
         if (pieChart) {
             pieChart.destroy();
@@ -236,7 +236,7 @@
                         callbacks: {
                             label: function (context) {
                                 var entry = entries[context.dataIndex];
-                                return entry.staleBucketLabel + ': ' + entry.fileCount +
+                                return entry.bucketLabel + ': ' + entry.fileCount +
                                     ' files (' + entry.percentage + '%)';
                             }
                         }
@@ -285,9 +285,9 @@
         var lookup = {};
         entries.forEach(function (e) {
             if (!lookup[e.subfolder]) { lookup[e.subfolder] = {}; }
-            lookup[e.subfolder][e.staleBucketOrder] = {
+            lookup[e.subfolder][e.bucketOrder] = {
                 count: e.fileCount,
-                label: e.staleBucketLabel
+                label: e.bucketLabel
             };
         });
 

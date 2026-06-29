@@ -1,5 +1,6 @@
 /**
- * HpcStaleFilesDAOImpl.java
+/**
+ * HpcLastAccessDAOImpl.java
  *
  * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
@@ -17,25 +18,25 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import gov.nih.nci.hpc.dao.HpcStaleFilesDAO;
+import gov.nih.nci.hpc.dao.HpcLastAccessDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.stalefiles.HpcStalePieChartEntry;
-import gov.nih.nci.hpc.domain.stalefiles.HpcStaleBarChartEntry;
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessPieChartEntry;
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessBarChartEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
- * HPC Stale Files DAO Implementation.
+ * HPC Last Access DAO Implementation.
  *
  * @author <a href="mailto:NCIDataVault@mail.nih.gov">NCI Data Vault</a>
  */
-public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
+public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 
 	// -------------------------------------------------------------------------//
 	// Constants
 	// -------------------------------------------------------------------------//
 
-	// Pie chart SQL: groups all files under basePath/currentPath by stale-access bucket.
+	// Pie chart SQL: groups all files under basePath/currentPath by last-access bucket.
 	// base_path = ? scopes to the authoritative base path.
 	// path LIKE ? || '/%' scopes to the current drill-down path and all descendants.
 	private static final String PIE_CHART_SQL =
@@ -53,7 +54,7 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 		"               when effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
 		"                    then 'Red: 180-365 days' " +
 		"               else 'Dark red: over 365 days' " +
-		"           end as stale_bucket_label, " +
+		"           end as bucket_label, " +
 		"           case " +
 		"               when effective_accessed_date >= systimestamp - numtodsinterval(90, 'DAY') " +
 		"                    then 1 " +
@@ -62,23 +63,23 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 		"               when effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
 		"                    then 3 " +
 		"               else 4 " +
-		"           end as stale_bucket_order " +
+		"           end as bucket_order " +
 		"    from irods.hpc_data_object_last_access_mv " +
 		"    where effective_accessed_date is not null " +
 		"      and base_path = ? " +
 		"      and path like ? || '/%' " +
 		") " +
 		"select " +
-		"       stale_bucket_label, " +
-		"       stale_bucket_order, " +
+		"       bucket_label, " +
+		"       bucket_order, " +
 		"       count(*) as file_count, " +
 		"       round(count(*) * 100 / sum(count(*)) over (), 2) as percentage " +
 		"from bucketed_files " +
-		"group by stale_bucket_label, stale_bucket_order " +
-		"order by stale_bucket_order";
+		"group by bucket_label, bucket_order " +
+		"order by bucket_order";
 
 	// Bar chart SQL: extracts the first immediate subfolder under currentPath
-	// for each file, then groups by subfolder and stale-access bucket.
+	// for each file, then groups by subfolder and last-access bucket.
 	private static final String BAR_CHART_SQL =
 		"with params as ( " +
 		"    select ? as base_path_filter, " +
@@ -101,7 +102,7 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
 		"                    then 'Red: 180-365 days' " +
 		"               else 'Dark red: over 365 days' " +
-		"           end as stale_bucket_label, " +
+		"           end as bucket_label, " +
 		"           case " +
 		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(90, 'DAY') " +
 		"                    then 1 " +
@@ -110,7 +111,7 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 		"               when h.effective_accessed_date >= systimestamp - numtodsinterval(365, 'DAY') " +
 		"                    then 3 " +
 		"               else 4 " +
-		"           end as stale_bucket_order " +
+		"           end as bucket_order " +
 		"    from irods.hpc_data_object_last_access_mv h" +
 		"    cross join params p " +
 		"    where h.effective_accessed_date is not null " +
@@ -125,8 +126,8 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 		"               1, " +
 		"               1 " +
 		"           ) as subfolder, " +
-		"           stale_bucket_label, " +
-		"           stale_bucket_order, " +
+		"           bucket_label, " +
+		"           bucket_order, " +
 		"           count(*) as file_count " +
 		"    from bucketed_files " +
 		"    group by " +
@@ -136,13 +137,13 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 		"               1, " +
 		"               1 " +
 		"           ), " +
-		"           stale_bucket_label, " +
-		"           stale_bucket_order " +
+		"           bucket_label, " +
+		"           bucket_order " +
 		") " +
 		"select " +
 		"       subfolder, " +
-		"       stale_bucket_label, " +
-		"       stale_bucket_order, " +
+		"       bucket_label, " +
+		"       bucket_order, " +
 		"       file_count, " +
 		"       round(file_count * 100 / sum(file_count) over (), 2) as percentage " +
 		"from subfolder_counts " +
@@ -161,21 +162,21 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// Row mapper for pie chart entries.
-	private RowMapper<HpcStalePieChartEntry> pieChartRowMapper = (rs, rowNum) -> {
-		HpcStalePieChartEntry entry = new HpcStalePieChartEntry();
-		entry.setStaleBucketLabel(rs.getString("stale_bucket_label"));
-		entry.setStaleBucketOrder(rs.getInt("stale_bucket_order"));
+	private RowMapper<HpcLastAccessPieChartEntry> pieChartRowMapper = (rs, rowNum) -> {
+		HpcLastAccessPieChartEntry entry = new HpcLastAccessPieChartEntry();
+		entry.setBucketLabel(rs.getString("bucket_label"));
+		entry.setBucketOrder(rs.getInt("bucket_order"));
 		entry.setFileCount(rs.getLong("file_count"));
 		entry.setPercentage(rs.getDouble("percentage"));
 		return entry;
 	};
 
 	// Row mapper for bar chart entries.
-	private RowMapper<HpcStaleBarChartEntry> barChartRowMapper = (rs, rowNum) -> {
-		HpcStaleBarChartEntry entry = new HpcStaleBarChartEntry();
+	private RowMapper<HpcLastAccessBarChartEntry> barChartRowMapper = (rs, rowNum) -> {
+		HpcLastAccessBarChartEntry entry = new HpcLastAccessBarChartEntry();
 		entry.setSubfolder(rs.getString("subfolder"));
-		entry.setStaleBucketLabel(rs.getString("stale_bucket_label"));
-		entry.setStaleBucketOrder(rs.getInt("stale_bucket_order"));
+		entry.setBucketLabel(rs.getString("bucket_label"));
+		entry.setBucketOrder(rs.getInt("bucket_order"));
 		entry.setFileCount(rs.getLong("file_count"));
 		entry.setPercentage(rs.getDouble("percentage"));
 		return entry;
@@ -186,7 +187,7 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 	// -------------------------------------------------------------------------//
 
 	/** Constructor for Spring Dependency Injection. */
-	private HpcStaleFilesDAOImpl() {
+	private HpcLastAccessDAOImpl() {
 	}
 
 	// -------------------------------------------------------------------------//
@@ -194,22 +195,22 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 	// -------------------------------------------------------------------------//
 
 	// -------------------------------------------------------------------------//
-	// HpcStaleFilesDAO Interface Implementation
+	// HpcLastAccessDAO Interface Implementation
 	// -------------------------------------------------------------------------//
 
 	@Override
-	public List<HpcStalePieChartEntry> getPieChartData(String basePath, String currentPath)
+	public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath)
 			throws HpcException {
 		try {
 			return jdbcTemplate.query(PIE_CHART_SQL, pieChartRowMapper, basePath, currentPath);
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to query stale files pie chart data: " + e.getMessage(),
+			throw new HpcException("Failed to query last access pie chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
 	@Override
-	public List<HpcStaleBarChartEntry> getBarChartData(String basePath, String currentPath)
+	public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath)
 			throws HpcException {
 		try {
 			// currentPath is bound 4 times: once in path LIKE, twice in substr(path, length(?)+2)
@@ -217,7 +218,7 @@ public class HpcStaleFilesDAOImpl implements HpcStaleFilesDAO {
 			return jdbcTemplate.query(BAR_CHART_SQL, barChartRowMapper,
 					basePath, currentPath);
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to query stale files bar chart data: " + e.getMessage(),
+			throw new HpcException("Failed to query last access bar chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}

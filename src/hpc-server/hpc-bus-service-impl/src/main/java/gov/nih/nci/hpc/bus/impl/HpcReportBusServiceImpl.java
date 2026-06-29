@@ -28,6 +28,10 @@ import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
+import gov.nih.nci.hpc.dto.report.HpcLastAccessBarChartDTO;
+import gov.nih.nci.hpc.dto.report.HpcLastAccessPieChartDTO;
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessPieChartEntry;
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessBarChartEntry;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -243,6 +247,52 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       dto.getReports().add(dtoreport);
     }
     return dto;
+  }
+  
+  @Override
+  public HpcLastAccessPieChartDTO getLastAccessPieChartData(String basePath, String currentPath)
+          throws HpcException {
+      HpcRequestInvoker invoker = securityService.getRequestInvoker();
+      if (invoker == null) {
+          throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
+      }
+
+      if (basePath == null || basePath.isEmpty()) {
+          throw new HpcException("basePath is required", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (currentPath == null || currentPath.isEmpty()) {
+          throw new HpcException("currentPath is required", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+
+      List<HpcLastAccessPieChartEntry> entries =
+              reportService.getLastAccessPieChartData(basePath, currentPath);
+
+      HpcLastAccessPieChartDTO dto = new HpcLastAccessPieChartDTO();
+      dto.getPieChartEntries().addAll(entries);
+      return dto;
+  }
+
+  @Override
+  public HpcLastAccessBarChartDTO getLastAccessBarChartData(String basePath, String currentPath)
+          throws HpcException {
+      HpcRequestInvoker invoker = securityService.getRequestInvoker();
+      if (invoker == null) {
+          throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
+      }
+
+      if (basePath == null || basePath.isEmpty()) {
+          throw new HpcException("basePath is required", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (currentPath == null || currentPath.isEmpty()) {
+          throw new HpcException("currentPath is required", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+
+      List<HpcLastAccessBarChartEntry> entries =
+              reportService.getLastAccessBarChartData(basePath, currentPath);
+
+      HpcLastAccessBarChartDTO dto = new HpcLastAccessBarChartDTO();
+      dto.getBarChartEntries().addAll(entries);
+      return dto;
   }
 
   private boolean isDateValid(String dateToValidate, String dateFromat) {
