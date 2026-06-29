@@ -143,8 +143,8 @@
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>${basedir}/src/main/resources/schema/HpcStaleFilesTypes.xsd</xsd>
-									<packagename>gov.nih.nci.hpc.domain.stalefiles</packagename>
+									<xsd>${basedir}/src/main/resources/schema/HpcLastAccessTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.lastaccess</packagename>
 									<bindingFile>${basedir}/src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>

@@ -8,9 +8,12 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import gov.nih.nci.hpc.dao.HpcLastAccessDAO;
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessBarChartEntry;
+import gov.nih.nci.hpc.domain.lastaccess.HpcLastAccessPieChartEntry;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
@@ -38,8 +41,11 @@ public class HpcReportServiceImpl implements HpcReportService {
   // Instance members
   // ---------------------------------------------------------------------//
 
-  // The Event DAO instance.
+  // The Report DAO instance.
   @Autowired private HpcReportsDAO reportsDAO = null;
+  
+//The Last Access DAO instance.
+  @Autowired private HpcLastAccessDAO lastAccessDAO = null;
 
   // ---------------------------------------------------------------------//
   // Constructors
@@ -86,5 +92,17 @@ public class HpcReportServiceImpl implements HpcReportService {
   @Override
   public void refreshViews() throws HpcException {
     reportsDAO.refreshViews();
+  }
+  
+  @Override
+  public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath)
+          throws HpcException {
+      return lastAccessDAO.getLastAccessPieChartData(basePath, currentPath);
+  }
+
+  @Override
+  public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath)
+          throws HpcException {
+      return lastAccessDAO.getLastAccessBarChartData(basePath, currentPath);
   }
 }

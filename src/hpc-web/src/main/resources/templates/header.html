@@ -109,7 +109,7 @@
 						    </a>
 						</li>
 						<li id="sub-menu-stalefiles" class="sub-menu" th:if="${session} != null and (${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN')">
-						    <a th:href="@{/staleFiles}" class=""> <i
+						    <a th:href="@{/lastAccess}" class=""> <i
 								class="fa fa-clock-o"></i> <span>Stale Files</span>
 						    </a>
 						</li>
