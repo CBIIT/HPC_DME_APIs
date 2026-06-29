@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.report.HpcLastAccessBarChartDTO;
+import gov.nih.nci.hpc.dto.report.HpcLastAccessPieChartDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -27,4 +29,26 @@ public interface HpcReportBusService {
    * @throws HpcException on service failure.
    */
   public HpcReportsDTO generateReport(HpcReportRequestDTO criteria) throws HpcException;
+  
+  /**
+   * Get last access files pie chart data for the given base path and current drill-down path.
+   *
+   * @param basePath    The base path to scope results.
+   * @param currentPath The current drill-down path.
+   * @return Pie chart DTO.
+   * @throws HpcException on service failure.
+   */
+  public HpcLastAccessPieChartDTO getLastAccessPieChartData(String basePath, String currentPath)
+          throws HpcException;
+
+  /**
+   * Get last access files bar chart data for immediate subfolders under the current path.
+   *
+   * @param basePath    The base path to scope results.
+   * @param currentPath The current drill-down path.
+   * @return Bar chart DTO.
+   * @throws HpcException on service failure.
+   */
+  public HpcLastAccessBarChartDTO getLastAccessBarChartData(String basePath, String currentPath)
+          throws HpcException;
 }
