@@ -777,7 +777,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			autoTieringDataObjects.put(basePath + searchRelativePath, fileLocation);
 		});
 
-		logger.info("Found {} files for auto-tiering for configuration: {}", autoTieringDataObjects.size(), configurationId);
+		logger.info("Found {} files for auto-tiering [configurationId={}, searchSource={}, searchPath={}, inactivityMonths={}]",
+				autoTieringDataObjects.size(), configurationId, s3Configuration.getAutoTieringSearchSource(),
+				s3Configuration.getAutoTieringSearchPath(), s3Configuration.getAutoTieringInactivityMonths());
 		return autoTieringDataObjects;
 	}
 	
