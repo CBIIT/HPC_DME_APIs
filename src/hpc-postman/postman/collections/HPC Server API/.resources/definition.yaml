@@ -5,5 +5,7 @@ auth:
     type: basic
     name: Basic Auth
     credentials:
-      username: "{{username}}"
-      password: "{{password}}"
+      username: "{{vault:username}}"
+      password: "{{vault:password}}"
+    rules:
+      url: "*"
