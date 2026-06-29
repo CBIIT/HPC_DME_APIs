@@ -13,6 +13,8 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcReportBusService;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
+import gov.nih.nci.hpc.dto.report.HpcLastAccessBarChartDTO;
+import gov.nih.nci.hpc.dto.report.HpcLastAccessPieChartDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcReportRestService;
 
@@ -71,4 +73,26 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
 
 		return okResponse(report , true);
 	}
+	
+	@Override
+    public Response getLastAccessPieChartData(String basePath, String currentPath) {
+        HpcLastAccessPieChartDTO dto = null;
+        try {
+            dto = reportBusService.getLastAccessPieChartData(basePath, currentPath);
+        } catch (HpcException e) {
+            return errorResponse(e);
+        }
+        return okResponse(dto, true);
+    }
+
+    @Override
+    public Response getLastAccessBarChartData(String basePath, String currentPath) {
+        HpcLastAccessBarChartDTO dto = null;
+        try {
+            dto = reportBusService.getLastAccessBarChartData(basePath, currentPath);
+        } catch (HpcException e) {
+            return errorResponse(e);
+        }
+        return okResponse(dto, true);
+    }
 }
