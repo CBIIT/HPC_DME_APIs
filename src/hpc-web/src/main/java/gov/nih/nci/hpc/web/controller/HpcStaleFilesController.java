@@ -57,11 +57,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  */
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/staleFiles")
+@RequestMapping("/lastAccess")
 public class HpcStaleFilesController extends AbstractHpcController {
 
-    @Value("${gov.nih.nci.hpc.server.stalefiles}")
-    private String staleFilesServiceURL;
+    @Value("${gov.nih.nci.hpc.server.report}")
+    private String reportServiceURL;
 
     @Value("${gov.nih.nci.hpc.server.model}")
     private String hpcModelURL;
@@ -76,7 +76,7 @@ public class HpcStaleFilesController extends AbstractHpcController {
             BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
         String authToken = (String) session.getAttribute("hpcUserToken");
         if (authToken == null) {
-            return "redirect:/login?returnPath=staleFiles";
+            return "redirect:/login?returnPath=lastAccess";
         }
         HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
         if (user == null) {
@@ -84,7 +84,7 @@ public class HpcStaleFilesController extends AbstractHpcController {
             bindingResult.addError(error);
             HpcLogin hpcLogin = new HpcLogin();
             model.addAttribute("hpcLogin", hpcLogin);
-            return "redirect:/login?returnPath=staleFiles";
+            return "redirect:/login?returnPath=lastAccess";
         }
 
         model.addAttribute("userRole", user.getUserRole());
@@ -102,7 +102,7 @@ public class HpcStaleFilesController extends AbstractHpcController {
         basepaths.sort(String.CASE_INSENSITIVE_ORDER);
         model.addAttribute("basepaths", basepaths);
 
-        return "stalefiles";
+        return "lastaccess";
     }
 
     /**
@@ -126,7 +126,7 @@ public class HpcStaleFilesController extends AbstractHpcController {
         }
         try {
             String requestURL = UriComponentsBuilder
-                    .fromHttpUrl(staleFilesServiceURL + "/pieChart")
+                    .fromHttpUrl(reportServiceURL + "/lastAccessPieChart")
                     .queryParam("basePath", basePath)
                     .queryParam("currentPath", currentPath)
                     .build().encode().toUri().toURL().toExternalForm();
@@ -179,7 +179,7 @@ public class HpcStaleFilesController extends AbstractHpcController {
         }
         try {
             String requestURL = UriComponentsBuilder
-                    .fromHttpUrl(staleFilesServiceURL + "/barChart")
+                    .fromHttpUrl(reportServiceURL + "/lastAccessBarChart")
                     .queryParam("basePath", basePath)
                     .queryParam("currentPath", currentPath)
                     .build().encode().toUri().toURL().toExternalForm();
