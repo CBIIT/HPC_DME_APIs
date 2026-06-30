@@ -204,7 +204,8 @@ body.loading .overlay{
 								<option value="-1">---Select Report Type---</option>
 								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
 								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
-								<option value="LAST_ACCESS_DATA_OBJECT_REPORT" th:selected="${reportRequest.getReportType() == 'LAST_ACCESS_DATA_OBJECT_REPORT'}">Last Access Data Object Report</option>
+								<option value="LAST_ACCESS_COLLECTION_REPORT" th:selected="${reportRequest.getReportType() == 'LAST_ACCESS_COLLECTION_REPORT'}">Last Accessed Collection Report</option>
+								<option value="LAST_ACCESS_DATA_OBJECT_REPORT" th:selected="${reportRequest.getReportType() == 'LAST_ACCESS_DATA_OBJECT_REPORT'}">Last Accessed Data Object Report</option>
 								<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
 								<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
 								<option value="USAGE_SUMMARY_BY_DATE_RANGE"
@@ -1096,6 +1097,12 @@ body.loading .overlay{
 			pathEle.style.display = "block";
 			bucketEle.style.display = "block";
 			assaySummaryCheckboxEle.style.display = "none";
+		}
+		else if(selectedValue == "LAST_ACCESS_COLLECTION_REPORT")
+				{
+					$("#spinner").show();
+					window.location.href = "/lastAccess";
+					return;
 		}
       	else
       	{

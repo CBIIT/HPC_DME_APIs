@@ -50,7 +50,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * Controller for the Stale Files Dashboard.
+ * Controller for the Last Accessed Collection Report.
  * </p>
  *
  * @author <a href="mailto:NCIDataVault@mail.nih.gov">NCI Data Vault</a>
@@ -58,7 +58,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @Controller
 @EnableAutoConfiguration
 @RequestMapping("/lastAccess")
-public class HpcStaleFilesController extends AbstractHpcController {
+public class HpcLastAccessController extends AbstractHpcController {
 
     @Value("${gov.nih.nci.hpc.server.report}")
     private String reportServiceURL;
@@ -142,12 +142,12 @@ public class HpcStaleFilesController extends AbstractHpcController {
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 return mapper.writeValueAsString(parser.readValueAs(Object.class));
             } else {
-                logger.error("Stale files pie chart request failed with status: {}",
+                logger.error("Last accessed collection pie chart request failed with status: {}",
                         restResponse.getStatus());
                 return "{\"error\":\"Failed to retrieve pie chart data\"}";
             }
         } catch (Exception e) {
-            logger.error("Error retrieving stale files pie chart data: {}", e.getMessage(), e);
+            logger.error("Error retrieving last accessed collection pie chart data: {}", e.getMessage(), e);
             try {
                 ObjectMapper errMapper = new ObjectMapper();
                 return errMapper.writeValueAsString(
@@ -195,12 +195,12 @@ public class HpcStaleFilesController extends AbstractHpcController {
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 return mapper.writeValueAsString(parser.readValueAs(Object.class));
             } else {
-                logger.error("Stale files bar chart request failed with status: {}",
+                logger.error("Last accessed collection bar chart request failed with status: {}",
                         restResponse.getStatus());
                 return "{\"error\":\"Failed to retrieve bar chart data\"}";
             }
         } catch (Exception e) {
-            logger.error("Error retrieving stale files bar chart data: {}", e.getMessage(), e);
+            logger.error("Error retrieving last accessed collection bar chart data: {}", e.getMessage(), e);
             try {
                 ObjectMapper errMapper = new ObjectMapper();
                 return errMapper.writeValueAsString(
