@@ -141,6 +141,8 @@
 		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="0" />
 		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="1" />
 	</bean>
+	<bean id="hpcVectorSearchService" class="gov.nih.nci.hpc.service.impl.HpcVectorSearchServiceImpl" />
+	<bean id="hpcVectorIngestionService" class="gov.nih.nci.hpc.service.impl.HpcVectorIngestionServiceImpl" />
 	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
 	<bean id="hpcDataBrowseService" class="gov.nih.nci.hpc.service.impl.HpcDataBrowseServiceImpl" />
 	
