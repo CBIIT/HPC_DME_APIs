@@ -144,7 +144,12 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setDataManagementConfigurationId(rs.getString("DATA_MANAGEMENT_CONFIGURATION_ID"));
 		s3Configuration.setExternalStorage(rs.getBoolean("EXTERNAL_STORAGE"));
 		s3Configuration.setPosixPath(rs.getString("POSIX_PATH"));
-
+	      //TODO Remove
+        if(s3Configuration.getDataManagementConfigurationId().equals("9a78d7c4-f015-4325-b2e4-1b62572991d0")) {
+            s3Configuration.setPosixPath("/Users/dinhys/data/CMM_Data");
+            s3Configuration.setExternalStorage(true);
+        }
+        
 		return s3Configuration;
 	};
 
