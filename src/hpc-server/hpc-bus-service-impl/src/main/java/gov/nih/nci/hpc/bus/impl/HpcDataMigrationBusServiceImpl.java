@@ -1455,7 +1455,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                     bulkAutoTieringTask.getId(), bulkAutoTieringTask.getAlignArchivePath(),
                     null, null, bulkAutoTieringTask.getRetryUserId(),
                     false, null, null,
-                    true, autoTieringEntry.getValue());
+                    autoTieringEntry.getValue() != null, autoTieringEntry.getValue());
 
             logger.info("Data object auto-tiering task - {}: created", dataObjectMigrationTask.getId());
         }
