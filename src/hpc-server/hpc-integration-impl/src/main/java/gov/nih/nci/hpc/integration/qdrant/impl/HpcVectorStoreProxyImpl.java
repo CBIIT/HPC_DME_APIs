@@ -3,6 +3,8 @@ package gov.nih.nci.hpc.integration.qdrant.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
@@ -28,7 +30,8 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
     private static final double DEFAULT_MIN_SCORE = 0.7;
 
     // The Qdrant embedding-store connection (injected).
-    private final HpcEmbeddingStore hpcEmbeddingStore;
+    @Autowired
+    private HpcEmbeddingStore hpcEmbeddingStore = null;
 
     private final double minScore;
 
@@ -39,16 +42,10 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
     /**
      * Spring-injection constructor.
      *
-     * @param hpcEmbeddingStore the Qdrant embedding store connection to use.
      * @param minScore          Minimum similarity score threshold (0–1). Values
      *                          less than or equal to zero fall back to the default.
-     * @throws HpcException if {@code hpcEmbeddingStore} is {@code null}.
      */
-    public HpcVectorStoreProxyImpl(HpcEmbeddingStore hpcEmbeddingStore, double minScore) throws HpcException {
-        if (hpcEmbeddingStore == null) {
-            throw new HpcException("HpcEmbeddingStore must be configured", HpcErrorType.SPRING_CONFIGURATION_ERROR);
-        }
-        this.hpcEmbeddingStore = hpcEmbeddingStore;
+    public HpcVectorStoreProxyImpl(double minScore) throws HpcException {
         this.minScore = minScore > 0 ? minScore : DEFAULT_MIN_SCORE;
     }
 
