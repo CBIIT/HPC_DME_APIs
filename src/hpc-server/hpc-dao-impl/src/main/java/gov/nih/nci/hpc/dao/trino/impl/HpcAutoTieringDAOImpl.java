@@ -78,7 +78,7 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 		try {
 			return jdbcTemplate.queryForList(
 					GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()),
-					String.class, searchPath);
+					String.class, searchPath + "%");
 
 		} catch (DataAccessException e) {
 			throw new HpcException(
