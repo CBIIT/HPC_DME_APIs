@@ -75,10 +75,10 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
 	}
 	
 	@Override
-    public Response getLastAccessPieChartData(String basePath, String currentPath) {
+    public Response getLastAccessPieChartData(String basePath, String currentPath, Boolean includeAWSBucket) {
         HpcLastAccessPieChartDTO dto = null;
         try {
-            dto = reportBusService.getLastAccessPieChartData(basePath, currentPath);
+            dto = reportBusService.getLastAccessPieChartData(basePath, currentPath, includeAWSBucket != null ? includeAWSBucket : false);
         } catch (HpcException e) {
             return errorResponse(e);
         }
@@ -86,10 +86,10 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
     }
 
     @Override
-    public Response getLastAccessBarChartData(String basePath, String currentPath) {
+    public Response getLastAccessBarChartData(String basePath, String currentPath, Boolean includeAWSBucket) {
         HpcLastAccessBarChartDTO dto = null;
         try {
-            dto = reportBusService.getLastAccessBarChartData(basePath, currentPath);
+            dto = reportBusService.getLastAccessBarChartData(basePath, currentPath, includeAWSBucket != null ? includeAWSBucket : false);
         } catch (HpcException e) {
             return errorResponse(e);
         }
