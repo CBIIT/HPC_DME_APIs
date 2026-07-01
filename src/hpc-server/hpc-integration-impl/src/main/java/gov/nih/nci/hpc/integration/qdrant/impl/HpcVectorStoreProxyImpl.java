@@ -8,7 +8,6 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingSearchResult;
-import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcVectorStoreProxy;
@@ -28,10 +27,9 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
     // Default minimum similarity score to include a result.
     private static final double DEFAULT_MIN_SCORE = 0.7;
 
-    // Metadata key used to carry the HPC collection ID in Qdrant payloads.
-    static final String COLLECTION_ID_METADATA_KEY = "hpcCollectionId";
+    // The Qdrant embedding-store connection (injected).
+    private final HpcEmbeddingStore hpcEmbeddingStore;
 
-    private final QdrantEmbeddingStore embeddingStore;
     private final double minScore;
 
     // ---------------------------------------------------------------------//
@@ -41,37 +39,16 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
     /**
      * Spring-injection constructor.
      *
-     * @param host           Qdrant server host.
-     * @param port           Qdrant gRPC port (default 6334).
-     * @param collectionName Name of the Qdrant collection to use.
-     * @param useTls         Whether to use TLS for the Qdrant connection.
-     * @param apiKey         Qdrant API key (may be empty for local instances).
-     * @param minScore       Minimum similarity score threshold (0–1). Values less
-     *                       than or equal to zero fall back to the default.
-     * @throws HpcException if the Qdrant store cannot be initialised.
+     * @param hpcEmbeddingStore the Qdrant embedding store connection to use.
+     * @param minScore          Minimum similarity score threshold (0–1). Values
+     *                          less than or equal to zero fall back to the default.
+     * @throws HpcException if {@code hpcEmbeddingStore} is {@code null}.
      */
-    public HpcVectorStoreProxyImpl(String host, int port, String collectionName, boolean useTls, String apiKey,
-            double minScore) throws HpcException {
-        if (host == null || host.isBlank()) {
-            throw new HpcException("Qdrant host must be configured", HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    public HpcVectorStoreProxyImpl(HpcEmbeddingStore hpcEmbeddingStore, double minScore) throws HpcException {
+        if (hpcEmbeddingStore == null) {
+            throw new HpcException("HpcEmbeddingStore must be configured", HpcErrorType.SPRING_CONFIGURATION_ERROR);
         }
-        if (collectionName == null || collectionName.isBlank()) {
-            throw new HpcException("Qdrant collection name must be configured", HpcErrorType.SPRING_CONFIGURATION_ERROR);
-        }
-
-        try {
-            QdrantEmbeddingStore.Builder builder = QdrantEmbeddingStore.builder().host(host).port(port)
-                    .collectionName(collectionName).useTls(useTls).payloadTextKey(COLLECTION_ID_METADATA_KEY);
-
-            if (apiKey != null && !apiKey.isBlank()) {
-                builder = builder.apiKey(apiKey);
-            }
-
-            this.embeddingStore = builder.build();
-        } catch (Exception e) {
-            throw new HpcException("Failed to initialise Qdrant embedding store", HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
-        }
-
+        this.hpcEmbeddingStore = hpcEmbeddingStore;
         this.minScore = minScore > 0 ? minScore : DEFAULT_MIN_SCORE;
     }
 
@@ -101,7 +78,7 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
             // Store the collectionId as the TextSegment text; payloadTextKey maps it to the
             // Qdrant payload field so we can retrieve it on search.
             TextSegment segment = TextSegment.from(collectionId);
-            embeddingStore.add(embedding, segment);
+            hpcEmbeddingStore.getEmbeddingStore().add(embedding, segment);
         } catch (HpcException e) {
             throw e;
         } catch (Exception e) {
@@ -123,7 +100,7 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
             Embedding queryEmbedding = Embedding.from(floatArray);
             EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder().queryEmbedding(queryEmbedding)
                     .maxResults(maxResults).minScore(minScore).build();
-            EmbeddingSearchResult<TextSegment> searchResult = embeddingStore.search(searchRequest);
+            EmbeddingSearchResult<TextSegment> searchResult = hpcEmbeddingStore.getEmbeddingStore().search(searchRequest);
             List<EmbeddingMatch<TextSegment>> matches = searchResult.matches();
 
             List<String> collectionIds = new ArrayList<>(matches.size());
