@@ -110,6 +110,9 @@
         // Date criteria aliases
         add('fromDate', range.from);
         add('toDate', range.to);
+		
+		// includeAWSBucket Flag
+		add('includeAWSBucket', getIncludeAWSBucketFlag())
 
         document.body.appendChild(form);
         form.submit();
@@ -137,6 +140,12 @@
             currentPath = selected;
             loadCharts(currentBasePath, currentPath);
         });
+
+        $('#includeAWSBucket').on('change', function () {
+            if (currentBasePath) {
+                loadCharts(currentBasePath, currentPath || currentBasePath);
+            }
+        });
     });
 
     // -------------------------------------------------------------------------
@@ -149,6 +158,10 @@
         fetchBarData(basePath, path);
     }
 
+    function getIncludeAWSBucketFlag() {
+        return $('#includeAWSBucket').is(':checked');
+    }
+
     // -------------------------------------------------------------------------
     // Fetch pie chart data
     // -------------------------------------------------------------------------
@@ -157,7 +170,7 @@
         $.ajax({
             url: '/lastAccess/pieChartData',
             method: 'GET',
-            data: { basePath: basePath, currentPath: path },
+            data: { basePath: basePath, currentPath: path, includeAWSBucket: getIncludeAWSBucketFlag() },
             dataType: 'json',
             success: function (data) {
                 $('#pieLoading').hide();
@@ -183,7 +196,7 @@
         $.ajax({
             url: '/lastAccess/barChartData',
             method: 'GET',
-            data: { basePath: basePath, currentPath: path },
+            data: { basePath: basePath, currentPath: path, includeAWSBucket: getIncludeAWSBucketFlag() },
             dataType: 'json',
             success: function (data) {
                 $('#barLoading').hide();

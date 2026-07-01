@@ -30,10 +30,11 @@ public interface HpcLastAccessDAO {
      *
      * @param basePath    The base path to scope results (base_path = ?).
      * @param currentPath The current drill-down path (path LIKE currentPath || '/%').
+     * @param includeAWSBucket Flag to include AWS bucket data in the results.
      * @return List of pie chart entries grouped by last-access bucket.
      * @throws HpcException on database error.
      */
-    public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath)
+    public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath, boolean includeAWSBucket)
             throws HpcException;
 
     /**
@@ -41,9 +42,10 @@ public interface HpcLastAccessDAO {
      *
      * @param basePath    The base path to scope results (base_path = ?).
      * @param currentPath The current drill-down path for subfolder extraction.
+     * @param includeAWSBucket Flag to include AWS bucket data in the results.
      * @return List of bar chart entries grouped by subfolder and last-access bucket.
      * @throws HpcException on database error.
      */
-    public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath)
+    public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath, boolean includeAWSBucket)
             throws HpcException;
 }

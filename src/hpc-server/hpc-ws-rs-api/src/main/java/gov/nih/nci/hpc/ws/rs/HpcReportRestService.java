@@ -41,6 +41,7 @@ public interface HpcReportRestService {
    *
    * @param basePath    The base path to scope results.
    * @param currentPath The current drill-down path.
+   * @param includeAWSBucket Whether to include AWS bucket in the results.
    * @return The REST service response w/ HpcLastAccessPieChartDTO entity.
    */
   @GET
@@ -48,13 +49,15 @@ public interface HpcReportRestService {
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getLastAccessPieChartData(
           @QueryParam("basePath") String basePath,
-          @QueryParam("currentPath") String currentPath);
+          @QueryParam("currentPath") String currentPath,
+          @QueryParam("includeAWSBucket") Boolean includeAWSBucket);
 
   /**
    * Get last access files bar chart data for immediate subfolders under the current path.
    *
    * @param basePath    The base path to scope results.
    * @param currentPath The current drill-down path.
+   * @param includeAWSBucket Whether to include AWS bucket in the results.
    * @return The REST service response w/ HpcLastAccessBarChartDTO entity.
    */
   @GET
@@ -62,6 +65,7 @@ public interface HpcReportRestService {
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getLastAccessBarChartData(
           @QueryParam("basePath") String basePath,
-          @QueryParam("currentPath") String currentPath);
+          @QueryParam("currentPath") String currentPath,
+          @QueryParam("includeAWSBucket") Boolean includeAWSBucket);
   
 }
