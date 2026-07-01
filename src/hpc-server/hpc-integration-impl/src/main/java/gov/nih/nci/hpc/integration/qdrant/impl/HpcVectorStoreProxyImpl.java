@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
@@ -33,27 +34,15 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
     @Autowired
     private HpcEmbeddingStore hpcEmbeddingStore = null;
 
-    private final double minScore;
+    @Value("${hpc.integration.qdrant.minScore}")
+    private double minScore = DEFAULT_MIN_SCORE;
 
     // ---------------------------------------------------------------------//
     // Constructors
     // ---------------------------------------------------------------------//
 
-    /**
-     * Spring-injection constructor.
-     *
-     * @param minScore          Minimum similarity score threshold (0–1). Values
-     *                          less than or equal to zero fall back to the default.
-     */
-    public HpcVectorStoreProxyImpl(double minScore) throws HpcException {
-        this.minScore = minScore > 0 ? minScore : DEFAULT_MIN_SCORE;
-    }
-
-    /**
-     * Default constructor is disabled.
-     */
-    private HpcVectorStoreProxyImpl() throws HpcException {
-        throw new HpcException("Default constructor disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    /** Default Constructor. */
+    private HpcVectorStoreProxyImpl() {
     }
 
     // ---------------------------------------------------------------------//
@@ -96,7 +85,7 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
             float[] floatArray = toFloatArray(queryVector);
             Embedding queryEmbedding = Embedding.from(floatArray);
             EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder().queryEmbedding(queryEmbedding)
-                    .maxResults(maxResults).minScore(minScore).build();
+                    .maxResults(maxResults).minScore(minScore > 0 ? minScore : DEFAULT_MIN_SCORE).build();
             EmbeddingSearchResult<TextSegment> searchResult = hpcEmbeddingStore.getEmbeddingStore().search(searchRequest);
             List<EmbeddingMatch<TextSegment>> matches = searchResult.matches();
 
