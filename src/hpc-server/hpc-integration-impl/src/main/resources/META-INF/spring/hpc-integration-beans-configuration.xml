@@ -141,8 +141,7 @@
 	<!-- Qdrant Vector Store Proxy -->
 	<bean id="hpcVectorStoreProxy"
 		  class="gov.nih.nci.hpc.integration.qdrant.impl.HpcVectorStoreProxyImpl" >
-		  <constructor-arg ref="hpcEmbeddingStore" index="0" />
-		  <constructor-arg value="${hpc.integration.qdrant.minScore}" index="1" />
+		  <constructor-arg value="${hpc.integration.qdrant.minScore}" index="0" />
 	</bean>
 	
 	<!--  HPC iRODS Connection -->
