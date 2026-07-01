@@ -119,6 +119,7 @@ public class HpcLastAccessController extends AbstractHpcController {
     public String getPieChartData(
             @RequestParam("basePath") String basePath,
             @RequestParam("currentPath") String currentPath,
+            @RequestParam(value = "includeAWSBucket", required = false, defaultValue = "false") boolean includeAWSBucket,
             HttpSession session, HttpServletRequest request) {
         String authToken = (String) session.getAttribute("hpcUserToken");
         if (authToken == null) {
@@ -129,6 +130,7 @@ public class HpcLastAccessController extends AbstractHpcController {
                     .fromHttpUrl(reportServiceURL + "/lastAccessPieChart")
                     .queryParam("basePath", basePath)
                     .queryParam("currentPath", currentPath)
+                    .queryParam("includeAWSBucket", includeAWSBucket)
                     .build().encode().toUri().toURL().toExternalForm();
 
             WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
@@ -172,6 +174,7 @@ public class HpcLastAccessController extends AbstractHpcController {
     public String getBarChartData(
             @RequestParam("basePath") String basePath,
             @RequestParam("currentPath") String currentPath,
+            @RequestParam(value = "includeAWSBucket", required = false, defaultValue = "false") boolean includeAWSBucket,
             HttpSession session, HttpServletRequest request) {
         String authToken = (String) session.getAttribute("hpcUserToken");
         if (authToken == null) {
@@ -182,6 +185,7 @@ public class HpcLastAccessController extends AbstractHpcController {
                     .fromHttpUrl(reportServiceURL + "/lastAccessBarChart")
                     .queryParam("basePath", basePath)
                     .queryParam("currentPath", currentPath)
+                    .queryParam("includeAWSBucket", includeAWSBucket)
                     .build().encode().toUri().toURL().toExternalForm();
 
             WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);

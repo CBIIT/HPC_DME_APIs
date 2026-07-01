@@ -43,10 +43,11 @@ public interface HpcReportService {
    *
    * @param basePath    The base path to scope results.
    * @param currentPath The current drill-down path.
+   * @param includeAWSBucket Whether to include AWS bucket in the results.
    * @return List of pie chart entries.
    * @throws HpcException on service failure.
    */
-  public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath)
+  public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath, boolean includeAWSBucket)
           throws HpcException;
 
   /**
@@ -54,10 +55,11 @@ public interface HpcReportService {
    *
    * @param basePath    The base path to scope results.
    * @param currentPath The current drill-down path.
+   * @param includeAWSBucket Whether to include AWS bucket in the results.
    * @return List of bar chart entries.
    * @throws HpcException on service failure.
    */
-  public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath)
+  public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath, boolean includeAWSBucket)
           throws HpcException;
   
 

@@ -68,6 +68,7 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"    where effective_accessed_date is not null " +
 		"      and base_path = ? " +
 		"      and path like ? || '/%' " +
+		"      and bucket not like ? " +
 		") " +
 		"select " +
 		"       bucket_label, " +
@@ -83,7 +84,8 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 	private static final String BAR_CHART_SQL =
 		"with params as ( " +
 		"    select ? as base_path_filter, " +
-		"           ? as path_prefix " +
+		"           ? as path_prefix, " +
+		"           ? as bucket_filter" +
 		"    from dual " +
 		")," +
 		"bucketed_files as ( " +
@@ -117,6 +119,7 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"    where h.effective_accessed_date is not null " +
 		"      and h.base_path = p.base_path_filter " +
 		"      and h.path like p.path_prefix || '/%' " +
+		"      and h.bucket not like p.bucket_filter " +
 		"), " +
 		"subfolder_counts as ( " +
 		"    select " +
@@ -199,10 +202,10 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 	// -------------------------------------------------------------------------//
 
 	@Override
-	public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath)
+	public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath, boolean includeAWSBucket)
 			throws HpcException {
 		try {
-			return jdbcTemplate.query(PIE_CHART_SQL, pieChartRowMapper, basePath, currentPath);
+			return jdbcTemplate.query(PIE_CHART_SQL, pieChartRowMapper, basePath, currentPath,includeAWSBucket ? "/" : "%aws%");
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to query last access pie chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
@@ -210,13 +213,13 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 	}
 
 	@Override
-	public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath)
+	public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath, boolean includeAWSBucket)
 			throws HpcException {
 		try {
 			// currentPath is bound 4 times: once in path LIKE, twice in substr(path, length(?)+2)
 			// in SELECT and GROUP BY clauses.
 			return jdbcTemplate.query(BAR_CHART_SQL, barChartRowMapper,
-					basePath, currentPath);
+					basePath, currentPath, includeAWSBucket ? "/" : "%aws%");
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to query last access bar chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
