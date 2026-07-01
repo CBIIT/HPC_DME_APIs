@@ -25,6 +25,10 @@
 <script src="js/jquery/3.1.1/jquery.min.js"></script>
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
 
+<!-- Select2 CSS and JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -102,8 +106,8 @@
 								<!-- Base Path selector -->
 								<div class="form-group">
 									<label for="basePathSelect"><strong>Select Base Path:</strong></label>
-									<select id="basePathSelect" class="form-control" style="max-width: 500px;">
-										<option value="">-- Select a Base Path --</option>
+									<select id="basePathSelect" class="form-control" style="max-width: 500px;" data-placeholder="-----------------Select Base Path-----------------">
+										<option value=""></option>
 										<option th:each="bp : ${basepaths}" th:value="${bp}" th:text="${bp}"></option>
 									</select>
 								</div>
