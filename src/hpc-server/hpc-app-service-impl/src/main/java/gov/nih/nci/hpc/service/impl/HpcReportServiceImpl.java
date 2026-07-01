@@ -95,14 +95,14 @@ public class HpcReportServiceImpl implements HpcReportService {
   }
   
   @Override
-  public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath)
+  public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath, boolean includeAWSBucket)
           throws HpcException {
-      return lastAccessDAO.getLastAccessPieChartData(basePath, currentPath);
+      return lastAccessDAO.getLastAccessPieChartData(basePath, currentPath, includeAWSBucket);
   }
 
   @Override
-  public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath)
+  public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath, boolean includeAWSBucket)
           throws HpcException {
-      return lastAccessDAO.getLastAccessBarChartData(basePath, currentPath);
+      return lastAccessDAO.getLastAccessBarChartData(basePath, currentPath, includeAWSBucket);
   }
 }

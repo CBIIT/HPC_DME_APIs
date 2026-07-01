@@ -250,7 +250,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
   }
   
   @Override
-  public HpcLastAccessPieChartDTO getLastAccessPieChartData(String basePath, String currentPath)
+  public HpcLastAccessPieChartDTO getLastAccessPieChartData(String basePath, String currentPath, boolean includeAWSBucket)
           throws HpcException {
       HpcRequestInvoker invoker = securityService.getRequestInvoker();
       if (invoker == null) {
@@ -265,7 +265,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       }
 
       List<HpcLastAccessPieChartEntry> entries =
-              reportService.getLastAccessPieChartData(basePath, currentPath);
+              reportService.getLastAccessPieChartData(basePath, currentPath, includeAWSBucket);
 
       HpcLastAccessPieChartDTO dto = new HpcLastAccessPieChartDTO();
       dto.getPieChartEntries().addAll(entries);
@@ -273,7 +273,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
   }
 
   @Override
-  public HpcLastAccessBarChartDTO getLastAccessBarChartData(String basePath, String currentPath)
+  public HpcLastAccessBarChartDTO getLastAccessBarChartData(String basePath, String currentPath, boolean includeAWSBucket)
           throws HpcException {
       HpcRequestInvoker invoker = securityService.getRequestInvoker();
       if (invoker == null) {
@@ -288,7 +288,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       }
 
       List<HpcLastAccessBarChartEntry> entries =
-              reportService.getLastAccessBarChartData(basePath, currentPath);
+              reportService.getLastAccessBarChartData(basePath, currentPath, includeAWSBucket);
 
       HpcLastAccessBarChartDTO dto = new HpcLastAccessBarChartDTO();
       dto.getBarChartEntries().addAll(entries);

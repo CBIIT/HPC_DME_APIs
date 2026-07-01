@@ -269,10 +269,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String REFRESH_VIEWS_SQL = "call REFRESH_DAILY_MATERIALIZED_VIEW()";
 
-	private static final String LAST_ACCESS_REPORT_BASE_SQL = "SELECT PATH, EFFECTIVE_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
+	private static final String LAST_ACCESS_DATA_OBJECT_REPORT_BASE_SQL = "SELECT PATH, EFFECTIVE_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
 			+ "FROM HPC_DATA_OBJECT_LAST_ACCESS_MV";
 
-	private static final Set<String> LAST_ACCESS_SORT_COLUMNS = new HashSet<>(Arrays.asList("EFFECTIVE_ACCESSED_DATE",
+	private static final Set<String> LAST_ACCESS_DATA_OBJECT_SORT_COLUMNS = new HashSet<>(Arrays.asList("EFFECTIVE_ACCESSED_DATE",
 			"PATH", "DOC", "BASE_PATH", "BUCKET", "DOWNLOAD_COUNT", "DATA_SIZE"));
 
 	/////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
@@ -767,6 +767,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return results;
 	}
 
+	@Override
 	public List<HpcReport> generatReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
 
@@ -834,9 +835,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return reports;
 	}
 
+	@Override
 	public List<HpcReport> generateLastAccessDataObjectReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
-		StringBuilder sql = new StringBuilder(LAST_ACCESS_REPORT_BASE_SQL);
+		StringBuilder sql = new StringBuilder(LAST_ACCESS_DATA_OBJECT_REPORT_BASE_SQL);
 		List<Object> args = new ArrayList<>();
 		List<String> predicates = new ArrayList<>();
 		SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -899,7 +901,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		String sortOrder = "DESC";
 		if (criteria.getSortBy() != null) {
 			String requestedSortBy = criteria.getSortBy().trim().toUpperCase();
-			if (LAST_ACCESS_SORT_COLUMNS.contains(requestedSortBy)) {
+			if (LAST_ACCESS_DATA_OBJECT_SORT_COLUMNS.contains(requestedSortBy)) {
 				sortBy = requestedSortBy;
 			}
 		}
