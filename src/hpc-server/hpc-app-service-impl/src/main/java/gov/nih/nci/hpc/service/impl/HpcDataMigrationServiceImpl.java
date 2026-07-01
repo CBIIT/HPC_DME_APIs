@@ -769,7 +769,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		// Query for files not accessed within the specified period and create the map of data obejcts to return.
 		autoTieringDAO.getFilesNotAccessed(
 				s3Configuration.getAutoTieringSearchPath(),
-				s3Configuration.getAutoTieringInactivityMonths()).forEach(path -> {
+				s3Configuration.getAutoTieringInactivityMonths(),
+				dataManagementConfiguration.getS3AutoTieringConfigurationId()).forEach(path -> {
 				if(isExternalArchive) {
 					// Construct HpcFileLocation of the data object in the external archive to be auto-tiered.
 					HpcFileLocation fileLocation = new HpcFileLocation();
