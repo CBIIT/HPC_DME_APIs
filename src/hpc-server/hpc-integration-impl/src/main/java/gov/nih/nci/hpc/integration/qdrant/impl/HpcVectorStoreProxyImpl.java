@@ -66,7 +66,7 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
             TextSegment segment = TextSegment.from(collectionId);
             hpcEmbeddingStore.getEmbeddingStore().add(embedding, segment);
         } catch (Exception e) {
-            throw new HpcException("Failed to store vector in Qdrant", HpcErrorType.UNEXPECTED_ERROR, e);
+            throw new HpcException("Failed to store vector for collection " + collectionId + " in Qdrant", HpcErrorType.UNEXPECTED_ERROR, e);
         }
     }
 
@@ -95,7 +95,7 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
             }
             return collectionIds;
         } catch (Exception e) {
-            throw new HpcException("Failed to query Qdrant vector store", HpcErrorType.UNEXPECTED_ERROR, e);
+            throw new HpcException("Failed to query Qdrant vector store " + queryVector, HpcErrorType.UNEXPECTED_ERROR, e);
         }
     }
 
