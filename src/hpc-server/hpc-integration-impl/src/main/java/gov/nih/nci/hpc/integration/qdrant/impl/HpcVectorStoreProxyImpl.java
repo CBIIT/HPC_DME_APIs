@@ -65,8 +65,6 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
             // Qdrant payload field so we can retrieve it on search.
             TextSegment segment = TextSegment.from(collectionId);
             hpcEmbeddingStore.getEmbeddingStore().add(embedding, segment);
-        } catch (HpcException e) {
-            throw e;
         } catch (Exception e) {
             throw new HpcException("Failed to store vector in Qdrant", HpcErrorType.UNEXPECTED_ERROR, e);
         }
@@ -96,8 +94,6 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
                 }
             }
             return collectionIds;
-        } catch (HpcException e) {
-            throw e;
         } catch (Exception e) {
             throw new HpcException("Failed to query Qdrant vector store", HpcErrorType.UNEXPECTED_ERROR, e);
         }
