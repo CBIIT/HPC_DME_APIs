@@ -105,7 +105,7 @@
 
         // Path criteria (common aliases used by existing forms/controllers)
         add('path', path);
-        add('basePath', currentBasePath);
+        add('basepath', currentBasePath);
 
         // Date criteria aliases
         add('fromDate', range.from);
@@ -119,6 +119,13 @@
     // Initialization
     // -------------------------------------------------------------------------
     $(document).ready(function () {
+        // Initialize Select2 dropdown
+        $('#basePathSelect').select2({
+            placeholder: '-----------------Select Base Path-----------------',
+            allowClear: true,
+            width: '500px'
+        });
+
         $('#basePathSelect').on('change', function () {
             var selected = $(this).val();
             if (!selected) {
