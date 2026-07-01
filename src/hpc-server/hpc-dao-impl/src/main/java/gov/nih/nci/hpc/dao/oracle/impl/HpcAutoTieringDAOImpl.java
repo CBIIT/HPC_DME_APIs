@@ -41,6 +41,7 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	private static final String GET_FILES_NOT_ACCESSED_SQL =
 			"SELECT path FROM HPC_DATA_OBJECT_LAST_ACCESS_MV " +
 			"WHERE path LIKE ? " +
+			"AND (S3_ARCHIVE_CONFIGURATION_ID IS NULL OR S3_ARCHIVE_CONFIGURATION_ID != ?) " +
 			"AND (effective_accessed_date IS NULL " +
 			"OR effective_accessed_date < current_timestamp - INTERVAL '{months}' MONTH)";
 
@@ -72,11 +73,11 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public List<String> getFilesNotAccessed(String searchPath, Integer monthsNotAccessed) throws HpcException {
+	public List<String> getFilesNotAccessed(String searchPath, Integer monthsNotAccessed, String s3ArchiveConfigurationId) throws HpcException {
 		try {
 			return jdbcTemplate.queryForList(
 					GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()),
-					String.class, searchPath + "%");
+					String.class, searchPath + "%", s3ArchiveConfigurationId);
 
 		} catch (DataAccessException e) {
 			throw new HpcException(
