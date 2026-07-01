@@ -1,16 +1,16 @@
 $kind: http-request
-name: Process Auto Tiering
-method: POST
+name: Process Auto Tiering (Oracle)
 url: "{{baseUrl}}{{basePath}}/autoTiering/:configurationId"
-auth:
-  type: inherit
-  credentials:
-    id: 236c22c3-dd78-4b41-8176-a23ea4721e7b
-order: 7000
+method: POST
 headers:
   Content-Type: application/json
   Accept: application/json
 pathVariables:
   - key: configurationId
-    value: c58691cd-9480-4a2f-8b99-e4b2c4b76dbc
+    value: 63fdccdd-64b8-477f-9e5c-450c4dccf748
     description: The data management configuration ID
+auth:
+  type: inherit
+  credentials:
+    id: 236c22c3-dd78-4b41-8176-a23ea4721e7b
+order: 505169433335878

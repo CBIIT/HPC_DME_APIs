@@ -100,6 +100,10 @@ public class HpcS3Connection {
 	@Value("${hpc.integration.s3.validateAfterInactivityMillis}")
 	private Integer validateAfterInactivityMillis = null;
 
+	// Disable SSL certificate checking (for development/testing only)
+	@Value("${hpc.integration.s3.disableCertChecking}")
+	private Boolean disableCertChecking = false;
+
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
 
@@ -253,6 +257,9 @@ public class HpcS3Connection {
 			config.setConnectionTimeout(connectionTimeout);
 			config.setMaxErrorRetry(maxErrorRetries);
 			config.withValidateAfterInactivityMillis(validateAfterInactivityMillis);
+			if (Boolean.TRUE.equals(disableCertChecking)) {
+				System.setProperty("com.amazonaws.sdk.disableCertChecking", "true");
+			}
 			AmazonS3 s3Client = null;
 			if (!StringUtils.isEmpty(encryptionAlgorithm) && !StringUtils.isEmpty(encryptionKey)) {
 				s3Client = AmazonS3EncryptionClientV2Builder.standard()
