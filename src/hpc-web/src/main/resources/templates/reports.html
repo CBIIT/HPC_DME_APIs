@@ -692,7 +692,7 @@ body.loading .overlay{
 			case 'LAST_ACCESS_DATA_OBJECT_REPORT':
 				exportFileName = pretag + "Last_Access_Data_Object" + tag;
 				reportHeaderTitle = "Last Accessed Data Object Report";
-				visibleColumns = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+				visibleColumns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 				colDefs = [
 						{"targets": 0, "searchable": false, "orderable": false, "visible": true },
 						{"targets": visibleColumns, "visible": true},
@@ -700,7 +700,7 @@ body.loading .overlay{
 					];
 				exportOptions = { columns: ':visible' };
 				showHideCols = [':gt(1)'];
-				defaultOrder = [ [ 2, 'desc' ] ]; // column 2 is LAST_ACCESSED_DATE
+				defaultOrder = [ [ 3, 'desc' ] ]; // column 2 is LAST_ACCESSED_DATE
 				break;
 			default:
 				break;

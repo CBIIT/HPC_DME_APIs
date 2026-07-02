@@ -91,6 +91,7 @@
 			<xsd:enumeration value="TYPE" />
 			<xsd:enumeration value="DOC" />
 			<xsd:enumeration value="PATH" />
+			<xsd:enumeration value="UPLOADED_DATE" />
 			<xsd:enumeration value="LAST_ACCESSED_DATE" />
 			<xsd:enumeration value="LAST_DOWNLOADED_BY" />
 			<xsd:enumeration value="DOWNLOAD_COUNT" />
