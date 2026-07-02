@@ -269,7 +269,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String REFRESH_VIEWS_SQL = "call REFRESH_DAILY_MATERIALIZED_VIEW()";
 
-	private static final String LAST_ACCESS_DATA_OBJECT_REPORT_BASE_SQL = "SELECT PATH, EFFECTIVE_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
+	private static final String LAST_ACCESS_DATA_OBJECT_REPORT_BASE_SQL = "SELECT PATH, UPLOADED_DATE, EFFECTIVE_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
 			+ "FROM HPC_DATA_OBJECT_LAST_ACCESS_MV";
 
 	private static final Set<String> LAST_ACCESS_DATA_OBJECT_SORT_COLUMNS = new HashSet<>(Arrays.asList("EFFECTIVE_ACCESSED_DATE",
@@ -918,6 +918,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			report.setPath(row.get("PATH") != null ? row.get("PATH").toString() : null);
 			report.setDoc(row.get("DOC") != null ? row.get("DOC").toString() : null);
 
+			String uploadedDate = "";
+            Object uploadedDateValue = row.get("UPLOADED_DATE");
+            if (uploadedDateValue instanceof Date) {
+              uploadedDate = timestampFormat.format((Date) uploadedDateValue);
+            }
+            addLastAccessEntry(report, HpcReportEntryAttribute.UPLOADED_DATE, uploadedDate);
+            
 			String lastAccessedDate = "";
 			Object lastAccessedDateValue = row.get("EFFECTIVE_ACCESSED_DATE");
 			if (lastAccessedDateValue instanceof Date) {
