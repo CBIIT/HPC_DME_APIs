@@ -773,12 +773,14 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				dataManagementConfiguration.getS3AutoTieringConfigurationId()).forEach(path -> {
 				if(isExternalArchive) {
 					// Construct HpcFileLocation of the data object in the external archive to be auto-tiered.
-					HpcFileLocation fileLocation = new HpcFileLocation();
-					fileLocation.setFileContainerId(bucket);
-					fileLocation.setFileId(objectIdPrefix + path.replaceFirst(s3Configuration.getAutoTieringSearchPath(), ""));
+				HpcFileLocation fileLocation = new HpcFileLocation();
+				fileLocation.setFileContainerId(bucket);
+				String searchPath = s3Configuration.getAutoTieringSearchPath();
+				String relativePath = path.startsWith(searchPath) ? path.substring(searchPath.length()) : path;
+				fileLocation.setFileId(objectIdPrefix + relativePath);
 
-					// Calculate the DME path (to be registered) for this data object in the external archive.
-					autoTieringDataObjects.put(basePath + path, fileLocation);
+				// Calculate the DME path (to be registered) for this data object in the external archive.
+				autoTieringDataObjects.put(basePath + path, fileLocation);
 				} else {
 					// This is auto-tiering of a data object in DME internal archive - just return the DME path
 					autoTieringDataObjects.put(path, null);
