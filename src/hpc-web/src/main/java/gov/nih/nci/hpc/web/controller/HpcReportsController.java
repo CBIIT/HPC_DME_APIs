@@ -238,6 +238,7 @@ public class HpcReportsController extends AbstractHpcController {
 					requestDTO.setPath(reportRequest.getPath().trim());
 				}
 				requestDTO.setIncludeAWSBucket(reportRequest.includeAWSBucket());
+				requestDTO.getReportColumns().add(HpcReportEntryAttribute.UPLOADED_DATE);
 				requestDTO.getReportColumns().add(HpcReportEntryAttribute.LAST_ACCESSED_DATE);
 				requestDTO.getReportColumns().add(HpcReportEntryAttribute.LAST_DOWNLOADED_BY);
 				requestDTO.getReportColumns().add(HpcReportEntryAttribute.DOWNLOAD_COUNT);
@@ -481,7 +482,7 @@ public class HpcReportsController extends AbstractHpcController {
 		for (HpcReportDTO dto : reports) {
 			List<HpcReportEntryDTO> entries = dto.getReportEntries();
 			List<HpcReportEntryDTO> translatedEntries = new ArrayList<>();
-			for (String attributeName : new String[] { "LAST_ACCESSED_DATE", "LAST_DOWNLOADED_BY", "DOWNLOAD_COUNT",
+			for (String attributeName : new String[] { "UPLOADED_DATE", "LAST_ACCESSED_DATE", "LAST_DOWNLOADED_BY", "DOWNLOAD_COUNT",
 					"DOC", "BASE_PATH", "BUCKET", "DATA_SIZE" }) {
 				for (HpcReportEntryDTO entry : entries) {
 					if (entry.getAttribute().equals(attributeName)) {
