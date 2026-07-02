@@ -20,6 +20,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="IN_PROGRESS" />
+			<xsd:enumeration value="AUTO_TIERING_RECEIVED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -31,6 +32,7 @@
 			<xsd:enumeration value="COLLECTION_LIST" />
 			<xsd:enumeration value="BULK_METADATA_UPDATE" />
 			<xsd:enumeration value="DATA_OBJECT_METADATA_UPDATE" />
+			<xsd:enumeration value="BULK_AUTO_TIERING" />
 		</xsd:restriction>
 	</xsd:simpleType>
 

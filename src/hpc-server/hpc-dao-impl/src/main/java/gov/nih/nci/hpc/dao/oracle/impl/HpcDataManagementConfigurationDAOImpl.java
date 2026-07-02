@@ -19,11 +19,13 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAutoTieringSearchSource;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -57,8 +59,9 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+      @Autowired
+      @Qualifier("hpcOracleJdbcTemplate")
+      private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
 	@Autowired
@@ -73,6 +76,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		dataManagementConfiguration.setS3UploadConfigurationId(rs.getString("S3_UPLOAD_ARCHIVE_CONFIGURATION_ID"));
 		dataManagementConfiguration
 				.setS3DefaultDownloadConfigurationId(rs.getString("S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID"));
+		dataManagementConfiguration
+				.setS3AutoTieringConfigurationId(rs.getString("S3_AUTO_TIERING_ARCHIVE_CONFIGURATION_ID"));
 		dataManagementConfiguration.setCreateArchiveMetadata(rs.getBoolean("CREATE_ARCHIVE_METADATA"));
 		dataManagementConfiguration.setRegistrationEventWithDownloadRequestURL(
 				rs.getBoolean("REGISTRATION_EVENT_WITH_DOWNLOAD_REQUEST_URL"));
@@ -144,6 +149,21 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setDataManagementConfigurationId(rs.getString("DATA_MANAGEMENT_CONFIGURATION_ID"));
 		s3Configuration.setExternalStorage(rs.getBoolean("EXTERNAL_STORAGE"));
 		s3Configuration.setPosixPath(rs.getString("POSIX_PATH"));
+		String autoTieringSearchSourcePath = rs.getString("AUTO_TIERING_SEARCH_SOURCE_PATH");
+		if (autoTieringSearchSourcePath != null && autoTieringSearchSourcePath.contains(":")) {
+			String[] parts = autoTieringSearchSourcePath.split(":", 2);
+			try {
+				s3Configuration.setAutoTieringSearchSource(HpcAutoTieringSearchSource.fromValue(parts[0]));
+				s3Configuration.setAutoTieringSearchPath(parts[1]);
+			} catch (IllegalArgumentException e) {
+				throw new SQLException(
+						"Invalid AUTO_TIERING_SEARCH_SOURCE_PATH value: " + autoTieringSearchSourcePath
+								+ ". Source must be one of: "
+								+ java.util.Arrays.toString(HpcAutoTieringSearchSource.values()));
+			}
+		}
+		// Set the inactivity months for auto-tiering query. SQL Null will be set as 0 intenationaly.
+		s3Configuration.setAutoTieringInactivityMonths(rs.getInt("AUTO_TIERING_INACTIVITY_MONTHS"));
 
 		return s3Configuration;
 	};

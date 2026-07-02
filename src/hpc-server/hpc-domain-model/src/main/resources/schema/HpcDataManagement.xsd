@@ -54,7 +54,10 @@
 			<xsd:element name="hyperfileArchive" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="dataManagementConfigurationId" type="xsd:string" />
 			<xsd:element name="externalStorage" type="xsd:boolean" />
-			<xsd:element name="posixPath" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="posixPath" type="xsd:string" />
+			<xsd:element name="autoTieringSearchSource" type="hpc-domain-datamanagement:HpcAutoTieringSearchSource" />
+			<xsd:element name="autoTieringSearchPath" type="xsd:string" />
+			<xsd:element name="autoTieringInactivityMonths" type="xsd:int" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -66,8 +69,8 @@
 				<xsd:element name="basePath" type="xsd:string" />
 				<xsd:element name="archiveDataTransferType"
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="s3UploadConfigurationId" type="xsd:string" />
 				<xsd:element name="s3DefaultDownloadConfigurationId" type="xsd:string" />
+				<xsd:element name="s3AutoTieringConfigurationId" type="xsd:string" minOccurs="0" />
 				<xsd:element name="globusConfiguration"
 					type="hpc-domain-model:HpcDataTransferConfiguration" />
 				<xsd:element name="collectionMetadataValidationRules"

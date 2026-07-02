@@ -147,5 +147,17 @@ public class HpcDataMigrationRestServiceImpl extends HpcRestServiceImpl implemen
 
 		return okResponse(migrationResponse, false);
 	}
-	
+
+	@Override
+	public Response processAutoTiering(String configurationId) {
+		HpcMigrationResponseDTO migrationResponse = null;
+		try {
+			migrationResponse = dataMigrationBusService.processAutoTiering(configurationId);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(migrationResponse, false);
+	}
 }

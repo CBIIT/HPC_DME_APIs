@@ -126,4 +126,16 @@ public interface HpcDataMigrationRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response migrateMetadata(HpcMetadataMigrationRequestDTO metadataMigrationRequest);
+
+	/**
+	 * Process auto-tiering for a specific data management configuration.
+	 *
+	 * @param configurationId The data management configuration ID.
+	 * @return The REST service response.
+	 */
+	@POST
+	@Path("/autoTiering/{configurationId}")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response processAutoTiering(@PathParam("configurationId") String configurationId);
 }

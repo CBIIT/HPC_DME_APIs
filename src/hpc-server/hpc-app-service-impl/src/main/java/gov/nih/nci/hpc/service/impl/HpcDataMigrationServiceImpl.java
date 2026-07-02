@@ -8,13 +8,24 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.collect.Iterables;
+import gov.nih.nci.hpc.dao.HpcAutoTieringDAO;
+import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAutoTieringSearchSource;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
+import gov.nih.nci.hpc.domain.datatransfer.*;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.*;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.service.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,35 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.google.common.collect.Iterables;
+import javax.annotation.PostConstruct;
+import java.util.*;
 
-import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
-import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
-import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
-import gov.nih.nci.hpc.service.HpcDataManagementService;
-import gov.nih.nci.hpc.service.HpcDataMigrationService;
-import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.service.HpcMetadataService;
-import gov.nih.nci.hpc.service.HpcSecurityService;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 
 /**
  * HPC Data Search Application Service Implementation.
@@ -58,673 +44,811 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
-	// ---------------------------------------------------------------------//
-	// Instance members
-	// ---------------------------------------------------------------------//
-
-	// Data Migration DAO.
-	@Autowired
-	private HpcDataMigrationDAO dataMigrationDAO = null;
-
-	// S3 data transfer proxy.
-	@Autowired
-	@Qualifier("hpcS3DataTransferProxy")
-	private HpcDataTransferProxy s3DataTransferProxy = null;
-
-	// System Accounts locator.
-	@Autowired
-	private HpcSystemAccountLocator systemAccountLocator = null;
-
-	// Data management configuration locator.
-	@Autowired
-	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
-
-	// The Metadata Application Service Instance.
-	@Autowired
-	private HpcMetadataService metadataService = null;
-
-	// The Data Transfer Application Service Instance.
-	@Autowired
-	private HpcDataTransferService dataTransferService = null;
-
-	// The Security Application Service Instance.
-	@Autowired
-	private HpcSecurityService securityService = null;
-
-	// The Data Management Application Service Instance.
-	@Autowired
-	private HpcDataManagementService dataManagementService = null;
-
-	// A configured ID representing the server performing a migration task.
-	@Value("${hpc.service.serverId}")
-	private String serverId = null;
-
-	// A list of servers running the data migration scheduled tasks
-	@Value("${hpc.service.dataMigration.serverIds}")
-	private String dataMigrationServerIds = null;
-
-	// A cycle iterator (round robin) of data migration server IDs to assign
-	// migration tasks to.
-	private Iterator<String> dataMigrationServerIdCycleIter = null;
-
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
-	// ---------------------------------------------------------------------//
-	// Constructors
-	// ---------------------------------------------------------------------//
-
-	/**
-	 * Default Constructor for Spring Dependency Injection.
-	 *
-	 * @throws HpcException Constructor is disabled.
-	 */
-	private HpcDataMigrationServiceImpl() throws HpcException {
-	}
-
-	// ---------------------------------------------------------------------//
-	// Methods
-	// ---------------------------------------------------------------------//
-
-	// ---------------------------------------------------------------------//
-	// HpcDataMigrationService Interface Implementation
-	// ---------------------------------------------------------------------//
-
-	@Override
-	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
-			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
-			boolean alignArchivePath, long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
-			String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId) throws HpcException {
-		// Check if a task already exist.
-		HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
-				path);
-		if (migrationTask != null) {
-			logger.info(
-					"Data object migration task exists for in a bulk metadata migration task. : path - {}, bulk-metadata-task-id - {}, data-object-metadata-task-id - {}",
-					path, collectionMigrationTaskId, migrationTask.getId());
-			return migrationTask;
-		}
-
-		// Check if the task already completed.
-		migrationTask = new HpcDataMigrationTask();
-		String taskId = dataMigrationDAO.getDataObjectMigrationTaskResultId(collectionMigrationTaskId, path);
-		if (!StringUtils.isEmpty(taskId)) {
-			logger.info(
-					"Data object migration task completed for in a bulk metadata migration task: path - {}, bulk-metadata-task-id - {}, data-object-metadata-task-id - {}",
-					path, collectionMigrationTaskId, taskId);
-			migrationTask.setId(taskId);
-			return migrationTask;
-		}
-
-		// Create and persist a migration task.
-		migrationTask.setPath(path);
-		migrationTask.setUserId(userId);
-		migrationTask.setConfigurationId(configurationId);
-		migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
-		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
-		migrationTask.setCreated(Calendar.getInstance());
-		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
-		migrationTask.setType(metadataUpdateRequest ? HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE
-				: HpcDataMigrationType.DATA_OBJECT);
-		migrationTask.setParentId(collectionMigrationTaskId);
-		migrationTask.setAlignArchivePath(alignArchivePath);
-		migrationTask.setPercentComplete(0);
-		migrationTask.setSize(size);
-		migrationTask.setRetryTaskId(retryTaskId);
-		migrationTask.setRetryUserId(retryUserId);
-		migrationTask.setMetadataFromArchiveFileContainerId(metadataFromArchiveFileContainerId);
-		migrationTask.setMetadataToArchiveFileContainerId(metadataToArchiveFileContainerId);
-
-		// Persist the task.
-		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
-		return migrationTask;
-	}
-
-	@Override
-	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
-			throws HpcException {
-
-		List<HpcDataMigrationTask> dataMigrationTasks = dataMigrationDAO.getDataMigrationTasks(status, type, serverId);
-		logger.info("{} Data Migration Tasks retrieved for [{}, {}, {}]", dataMigrationTasks.size(), status, type,
-				serverId);
-
-		return dataMigrationTasks;
-	}
-
-	@Override
-	public void assignDataMigrationTasks() throws HpcException {
-		// If needed, re-setting the cycle iterator of migration server IDs.
-		if (dataMigrationServerIdCycleIter == null) {
-			if (StringUtils.isEmpty(dataMigrationServerIds)) {
-				throw new HpcException(
-						"No migration servers are configured. Check hpc.service.dataMigration.serverIds property",
-						HpcErrorType.SPRING_CONFIGURATION_ERROR);
-			}
-			String[] serverIds = dataMigrationServerIds.split(",");
-			logger.info("{} Data migration servers configured: {}", serverIds.length, dataMigrationServerIds);
-			dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
-		}
-
-		for (HpcDataMigrationTask dataMigrationTask : dataMigrationDAO.getUnassignedDataMigrationTasks()) {
-			String assignedServerId = dataMigrationServerIdCycleIter.next();
-			dataMigrationDAO.setDataMigrationTaskServerId(dataMigrationTask.getId(), assignedServerId);
-
-			logger.info("Data migration: task - {} [{}] assigned to {}", dataMigrationTask.getId(),
-					dataMigrationTask.getType(), assignedServerId);
-		}
-	}
-
-	@Override
-	public void migrateDataObject(HpcDataMigrationTask dataObjectMigrationTask) throws HpcException {
-		if (!dataObjectMigrationTask.getAlignArchivePath() && dataObjectMigrationTask.getToS3ArchiveConfigurationId()
-				.equals(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
-			// Migration not needed.
-			completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, null, null, null);
-			return;
-		}
-
-		// Get the data transfer configuration for both source and target S3 archives in
-		// this migration task. Note that it's the same in the case of archive path
-		// alignment
-		HpcDataTransferConfiguration fromS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
-				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
-						dataObjectMigrationTask.getFromS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
-		if (StringUtils.isEmpty(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
-			dataObjectMigrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveDataTransferConfiguration.getId());
-		}
-
-		HpcDataTransferConfiguration toS3ArchiveDataTransferConfiguration = !dataObjectMigrationTask
-				.getAlignArchivePath()
-						? dataManagementConfigurationLocator.getDataTransferConfiguration(
-								dataObjectMigrationTask.getConfigurationId(),
-								dataObjectMigrationTask.getToS3ArchiveConfigurationId(), HpcDataTransferType.S_3)
-						: fromS3ArchiveDataTransferConfiguration;
-
-		// Get the data transfer system accounts to access both source and target
-		// S3 archives in
-		// this migration task.
-		HpcIntegratedSystemAccount fromS3ArchiveDataTransferSystemAccount = systemAccountLocator
-				.getSystemAccount(fromS3ArchiveDataTransferConfiguration.getArchiveProvider());
-		HpcIntegratedSystemAccount toS3ArchiveDataTransferSystemAccount = systemAccountLocator
-				.getSystemAccount(toS3ArchiveDataTransferConfiguration.getArchiveProvider());
-
-		// Obtain authenticated tokens to both source/target archives of this migration
-		// task.
-		Object fromS3ArchiveAuthToken = s3DataTransferProxy.authenticate(fromS3ArchiveDataTransferSystemAccount,
-				fromS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
-				fromS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
-				fromS3ArchiveDataTransferConfiguration.getEncryptionKey());
-		Object toS3ArchiveAuthToken = !dataObjectMigrationTask.getAlignArchivePath() ? s3DataTransferProxy.authenticate(
-				toS3ArchiveDataTransferSystemAccount, toS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
-				toS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
-				toS3ArchiveDataTransferConfiguration.getEncryptionKey()) : fromS3ArchiveAuthToken;
-
-		// Get the System generated metadata of the data object in migration.
-		HpcSystemGeneratedMetadata metadata = metadataService
-				.getDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath());
-		dataObjectMigrationTask.setDataObjectId(metadata.getObjectId());
-		dataObjectMigrationTask.setRegistrarId(metadata.getRegistrarId());
-		dataObjectMigrationTask.setFromS3ArchiveLocation(metadata.getArchiveLocation());
-
-		// Generate a URL to the data object in archive we are migrating from.
-		String sourceURL = s3DataTransferProxy.generateDownloadRequestURL(fromS3ArchiveAuthToken,
-				metadata.getArchiveLocation(), fromS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
-				fromS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration());
-
-		// Create an S3 upload source object out of the data object in the S3 archive we
-		// are migrating from.
-		HpcStreamingUploadSource uploadSource = new HpcStreamingUploadSource();
-		uploadSource.setSourceURL(sourceURL);
-		uploadSource.setSourceSize(metadata.getSourceSize());
-		uploadSource.setSourceLocation(metadata.getArchiveLocation());
-
-		// Create an upload request to the S3 archive we are migrating into
-		HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
-		uploadRequest.setPath(dataObjectMigrationTask.getPath());
-		uploadRequest.setCallerObjectId(metadata.getCallerObjectId());
-		uploadRequest.setDataObjectId(metadata.getObjectId());
-		uploadRequest.setSourceSize(metadata.getSourceSize());
-		uploadRequest.setUserId(metadata.getRegistrarId());
-		uploadRequest.setS3UploadSource(uploadSource);
-
-		// Upload the data object into the S3 archive we are migrating to, and update
-		// the task w/ new archive location.
-		HpcDataMigrationProgressListener progressListener = new HpcDataMigrationProgressListener(
-				dataObjectMigrationTask, this, fromS3ArchiveAuthToken, toS3ArchiveAuthToken);
-		dataObjectMigrationTask.setToS3ArchiveLocation(s3DataTransferProxy.uploadDataObject(toS3ArchiveAuthToken,
-				uploadRequest, toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
-				toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
-				dataTransferService.generateArchiveMetadata(dataObjectMigrationTask.getConfigurationId(),
-						dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId()),
-				toS3ArchiveDataTransferConfiguration.getEncryptedTransfer(),
-				toS3ArchiveDataTransferConfiguration.getStorageClass()).getArchiveLocation());
-
-		logger.info("Archive migration started: {} - {}:{} -> {}:{}", dataObjectMigrationTask.getId(),
-				dataObjectMigrationTask.getFromS3ArchiveLocation().getFileContainerId(),
-				dataObjectMigrationTask.getFromS3ArchiveLocation().getFileId(),
-				dataObjectMigrationTask.getToS3ArchiveLocation().getFileContainerId(),
-				dataObjectMigrationTask.getToS3ArchiveLocation().getFileId());
-
-		// Update the task and persist.
-		dataObjectMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
-		dataMigrationDAO.upsertDataMigrationTask(dataObjectMigrationTask);
-	}
-
-	@Override
-	public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
-			HpcDataMigrationResult result, String message, Object fromS3ArchiveAuthToken, Object toS3ArchiveAuthToken)
-			throws HpcException {
-		if (!dataObjectMigrationTask.getType().equals(HpcDataMigrationType.DATA_OBJECT)) {
-			throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
-		}
-
-		if (result.equals(HpcDataMigrationResult.COMPLETED)) {
-			try {
-
-				// Add metadata to the object in the target S3 archive.
-				HpcArchiveObjectMetadata objectMetadata = !dataObjectMigrationTask.getAlignArchivePath()
-						? dataTransferService.addSystemGeneratedMetadataToDataObject(
-								dataObjectMigrationTask.getToS3ArchiveLocation(), HpcDataTransferType.S_3,
-								dataObjectMigrationTask.getConfigurationId(),
-								dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
-								dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId())
-								.getArchiveObjectMetadata()
-						: new HpcArchiveObjectMetadata();
-
-				// Update the system metadata w/ the new S3 archive id, location and
-				// deep-archive status/date after migration.
-				String checksum = objectMetadata.getChecksum();
-				HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
-				Calendar deepArchiveDate = deepArchiveStatus != null ? Calendar.getInstance() : null;
-
-				securityService.executeAsSystemAccount(Optional.empty(),
-						() -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
-								dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
-								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
-								deepArchiveStatus, deepArchiveDate, null));
-
-				// Delete the data object from the source S3 archive.
-				dataTransferService.deleteDataObject(dataObjectMigrationTask.getFromS3ArchiveLocation(),
-						HpcDataTransferType.S_3, dataObjectMigrationTask.getConfigurationId(),
-						dataObjectMigrationTask.getFromS3ArchiveConfigurationId());
-
-			} catch (HpcException e) {
-				message = "Failed to complete data migration for task: " + dataObjectMigrationTask.getId() + " ["
-						+ e.getMessage() + " ] - " + dataObjectMigrationTask.getPath();
-				logger.error(message, e);
-				result = HpcDataMigrationResult.FAILED;
-			}
-		}
-
-		// Delete the task and insert a result record.
-		dataMigrationDAO.deleteDataMigrationTask(dataObjectMigrationTask.getId());
-		dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMigrationTask, Calendar.getInstance(), result,
-				message);
-
-		// Shutdown the transfer managers.
-		try {
-			if (fromS3ArchiveAuthToken != null) {
-				s3DataTransferProxy.shutdown(fromS3ArchiveAuthToken);
-			}
-			if (toS3ArchiveAuthToken != null) {
-				s3DataTransferProxy.shutdown(toS3ArchiveAuthToken);
-			}
-		} catch (HpcException e) {
-			logger.error("Failed to shutdown TransferManager", e);
-		}
-	}
-
-	@Override
-	public void completeDataObjectMetadataUpdateTask(HpcDataMigrationTask dataObjectMetadataUpdateTask,
-			HpcDataMigrationResult result, String message) throws HpcException {
-		if (!dataObjectMetadataUpdateTask.getType().equals(HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE)) {
-			throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
-		}
-
-		if (result.equals(HpcDataMigrationResult.COMPLETED)) {
-			try {
-
-				// Update metadata to the object in the target S3 archive.
-				securityService.executeAsSystemAccount(Optional.empty(),
-						() -> metadataService.updateDataObjectSystemGeneratedMetadata(
-								dataObjectMetadataUpdateTask.getPath(),
-								dataObjectMetadataUpdateTask.getToS3ArchiveLocation(), null, null, null, null, null,
-								null, null, null, dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), null,
-								null, null));
-
-			} catch (HpcException e) {
-				message = "Failed to complete metadata update for task: " + dataObjectMetadataUpdateTask.getId() + " ["
-						+ e.getMessage() + " ] - " + dataObjectMetadataUpdateTask.getPath();
-				logger.error(message, e);
-				result = HpcDataMigrationResult.FAILED;
-			}
-		}
-
-		// Delete the task and insert a result record.
-		dataMigrationDAO.deleteDataMigrationTask(dataObjectMetadataUpdateTask.getId());
-		dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMetadataUpdateTask, Calendar.getInstance(), result,
-				message);
-	}
-
-	@Override
-	public void completeBulkMigrationTask(HpcDataMigrationTask bulkMigrationTask, String message) throws HpcException {
-		// Determine the bulk migration result.
-		HpcDataMigrationResult result = HpcDataMigrationResult.COMPLETED;
-		if (!StringUtils.isEmpty(message)) {
-			result = HpcDataMigrationResult.FAILED;
-		} else if (!dataMigrationDAO.getDataObjectMigrationTasks(bulkMigrationTask.getId()).isEmpty()) {
-			// bulk migration task still in progress. At least one data object
-			// migration task is still active.
-			logger.info("Bulk migration task still in progress: {} - {}", bulkMigrationTask.getId(),
-					bulkMigrationTask.getType());
-			return;
-		} else {
-			// Get a map of result counts for data object migrations that are associated w/
-			// this bulk migration.
-			Map<HpcDataMigrationResult, Integer> resultsCount = dataMigrationDAO
-					.getCollectionMigrationResultCount(bulkMigrationTask.getId());
-
-			if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.FAILED)).orElse(0) > 0) {
-				// All data object migration tasks under this bulk migration task
-				// completed, but at least one failed.
-				result = HpcDataMigrationResult.FAILED;
-			} else if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED)).orElse(0) + Optional
-					.ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE))
-					.orElse(0) > 0) {
-				// All data object migration tasks under this bulk migration task
-				// completed, but at least one ignored.
-				result = HpcDataMigrationResult.COMPLETED_IGNORED_ITEMS;
-			}
-		}
-
-		// Delete the task and insert a result record.
-		dataMigrationDAO.deleteDataMigrationTask(bulkMigrationTask.getId());
-		dataMigrationDAO.upsertDataMigrationTaskResult(bulkMigrationTask, Calendar.getInstance(), result, message);
-	}
-
-	@Override
-	public void resetMigrationTasksInProcess() throws HpcException {
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false, serverId, 0,
-				HpcDataMigrationStatus.RECEIVED);
-		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0,
-				HpcDataMigrationStatus.RECEIVED);
-
-		int taskCount = dataMigrationDAO.cleanupDataMigrationTasks();
-		logger.info("Cleaned up {} data migration tasks", taskCount);
-		
-		// Reset any in-process metadata attribute migration
-		dataMigrationDAO.resetStagedMetadataAttribute();
-	}
-
-	@Override
-	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
-			String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId,
-			Boolean retryFailedItemsOnly) throws HpcException {
-		// Create and persist a migration task.
-		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
-		migrationTask.setPath(path);
-		migrationTask.setUserId(userId);
-		migrationTask.setConfigurationId(configurationId);
-		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
-		migrationTask.setCreated(Calendar.getInstance());
-		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
-		migrationTask.setType(HpcDataMigrationType.COLLECTION);
-		migrationTask.setAlignArchivePath(alignArchivePath);
-		migrationTask.setPercentComplete(0);
-		migrationTask.setSize(null);
-		migrationTask.setRetryTaskId(retryTaskId);
-		migrationTask.setRetryUserId(retryUserId);
-		migrationTask.setRetryFailedItemsOnly(retryFailedItemsOnly);
-
-		// Persist the task.
-		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
-		return migrationTask;
-	}
-
-	@Override
-	public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
-			Boolean retryFailedItemsOnly) throws HpcException {
-		// Create and persist a migration task.
-		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
-		migrationTask.getDataObjectPaths().addAll(dataObjectPaths);
-		migrationTask.setUserId(userId);
-		migrationTask.setConfigurationId(configurationId);
-		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
-		migrationTask.setCreated(Calendar.getInstance());
-		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
-		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT_LIST);
-		migrationTask.setAlignArchivePath(false);
-		migrationTask.setPercentComplete(0);
-		migrationTask.setSize(null);
-		migrationTask.setRetryTaskId(retryTaskId);
-		migrationTask.setRetryUserId(retryUserId);
-		migrationTask.setRetryFailedItemsOnly(retryFailedItemsOnly);
-
-		// Persist the task.
-		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
-		return migrationTask;
-	}
-
-	@Override
-	public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
-			String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
-			Boolean retryFailedItemsOnly) throws HpcException {
-		// Create and persist a migration task.
-		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
-		migrationTask.getCollectionPaths().addAll(collectionPaths);
-		migrationTask.setUserId(userId);
-		migrationTask.setConfigurationId(configurationId);
-		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
-		migrationTask.setCreated(Calendar.getInstance());
-		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
-		migrationTask.setType(HpcDataMigrationType.COLLECTION_LIST);
-		migrationTask.setAlignArchivePath(false);
-		migrationTask.setPercentComplete(0);
-		migrationTask.setSize(null);
-		migrationTask.setRetryTaskId(retryTaskId);
-		migrationTask.setRetryUserId(retryUserId);
-		migrationTask.setRetryFailedItemsOnly(retryFailedItemsOnly);
-
-		// Persist the task.
-		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
-		return migrationTask;
-	}
-
-	@Override
-	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException {
-		dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
-	}
-
-	@Override
-	public void updateDataMigrationTaskProgress(HpcDataMigrationTask dataMigrationTask, long bytesTransferred)
-			throws HpcException {
-		// Input validation.
-		if (dataMigrationTask == null || !HpcDataMigrationType.DATA_OBJECT.equals(dataMigrationTask.getType())
-				|| dataMigrationTask.getSize() <= 0 || bytesTransferred <= 0
-				|| bytesTransferred > dataMigrationTask.getSize()) {
-			return;
-		}
-
-		// Calculate the percent complete.
-		int percentComplete = Math.round(100 * (float) bytesTransferred / dataMigrationTask.getSize());
-		if (percentComplete != dataMigrationTask.getPercentComplete()) {
-			dataMigrationTask.setPercentComplete(percentComplete);
-
-			// Persist.
-			dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
-
-			if (!StringUtils.isEmpty(dataMigrationTask.getParentId())) {
-				// Update the parent migration task percent complete.
-				dataMigrationDAO.updateBulkDataMigrationTaskPercentComplete(dataMigrationTask.getParentId());
-			}
-
-			logger.debug("Migration task: {} - % complete - {}", dataMigrationTask.getId(),
-					dataMigrationTask.getPercentComplete());
-		}
-	}
-
-	@Override
-	public boolean markInProcess(HpcDataMigrationTask dataObjectMigrationTask, boolean inProcess) throws HpcException {
-		// Only set in-process to true if this task in a RECEIVED status, and the
-		// in-process not already true.
-		boolean updated = true;
-
-		if (!inProcess || (!dataObjectMigrationTask.getInProcess()
-				&& dataObjectMigrationTask.getStatus().equals(HpcDataMigrationStatus.RECEIVED))) {
-			updated = dataMigrationDAO.setDataMigrationTaskInProcess(dataObjectMigrationTask.getId(), inProcess);
-		}
-
-		if (updated) {
-			dataObjectMigrationTask.setInProcess(inProcess);
-		}
-
-		return updated;
-	}
-
-	@Override
-	public HpcDataMigrationTaskStatus getMigrationTaskStatus(String taskId, HpcDataMigrationType taskType)
-			throws HpcException {
-		if (taskType == null || StringUtils.isEmpty(taskId)) {
-			throw new HpcException("Null migration task ID or type", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		HpcDataMigrationTaskStatus taskStatus = new HpcDataMigrationTaskStatus();
-
-		HpcDataMigrationTaskResult taskResult = dataMigrationDAO.getDataMigrationTaskResult(taskId, taskType);
-		if (taskResult != null) {
-			// Task completed or failed. Return the result.
-			taskStatus.setInProgress(false);
-			taskStatus.setResult(taskResult);
-			return taskStatus;
-		}
-
-		HpcDataMigrationTask task = dataMigrationDAO.getDataMigrationTask(taskId, taskType);
-		if (task != null) {
-			// Task is in progress. Return it.
-			taskStatus.setInProgress(true);
-			taskStatus.setTask(task);
-			return taskStatus;
-		}
-
-		// Task not found.
-		return null;
-	}
-
-	@Override
-	public List<HpcDataMigrationTaskResult> getDataMigrationResults(String collectionMigrationTaskId,
-			HpcDataMigrationResult result) throws HpcException {
-		return dataMigrationDAO.getDataMigrationResults(collectionMigrationTaskId, result);
-	}
-
-	@Override
-	public HpcDataMigrationTask createMetadataMigrationTask(String fromS3ArchiveConfigurationId,
-			String toS3ArchiveConfigurationId, String fromArchiveFileContainerId, String toArchiveFileContainerId,
-			String archiveFileIdPattern, String userId) throws HpcException {
-		// Create and persist a migration task.
-		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
-		migrationTask.setPath(null);
-		migrationTask.setUserId(userId);
-		migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
-		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
-		migrationTask.setCreated(Calendar.getInstance());
-		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
-		migrationTask.setType(HpcDataMigrationType.BULK_METADATA_UPDATE);
-		migrationTask.setAlignArchivePath(false);
-		migrationTask.setPercentComplete(0);
-		migrationTask.setSize(null);
-		migrationTask.setRetryTaskId(null);
-		migrationTask.setRetryUserId(null);
-		migrationTask.setRetryFailedItemsOnly(null);
-		migrationTask.setMetadataFromArchiveFileContainerId(fromArchiveFileContainerId);
-		migrationTask.setMetadataToArchiveFileContainerId(toArchiveFileContainerId);
-		migrationTask.setMetadataArchiveFileIdPattern(archiveFileIdPattern);
-
-		// Persist the task.
-		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
-		return migrationTask;
-	}
-	
-	@Override
-	public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes()
-			throws HpcException {
-
-		List<HpcStagedMetadataAttribute> stagedMetadataEntries = dataMigrationDAO.getStagedMetadataAttributes();
-		logger.info("{} staged metadata attributes retrieved.", stagedMetadataEntries.size());
-		
-		return stagedMetadataEntries;
-	}
-	
-	@Override
-	public void addStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute, boolean isCollection,
-			String configurationId, String collectionType) throws HpcException {
-
-		// Construct metadata entry to add.
-		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-		HpcMetadataEntry entry = new HpcMetadataEntry();
-		entry.setAttribute(stagedMetadataAttribute.getAttribute());
-		entry.setValue(stagedMetadataAttribute.getValue());
-		metadataEntries.add(entry);
-
-		// Call addMetadata method to add the staged metadata entry to the relevant data object or collection
-		// with allowSystemMetadata set to true to allow adding metadata with reserved attributes
-		if (isCollection) {
-			// Get the metadata for this collection.
-			HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(stagedMetadataAttribute.getPath());
-
-			// Update the metadata.
-			boolean updated = true;
-			String message = null;
-			try {
-				metadataService.updateCollectionMetadata(stagedMetadataAttribute.getPath(), metadataEntries,
-						configurationId, true);
-			} catch (HpcException e) {
-				// Collection metadata update failed. Capture this in the audit record.
-				updated = false;
-				message = e.getMessage();
-			} finally {
-				// Add an audit record of this update collection attempt.
-				dataManagementService.addAuditRecord(stagedMetadataAttribute.getPath(), HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-						metadataService.getCollectionMetadataEntries(stagedMetadataAttribute.getPath()), null, updated, null, message, "add-staged-metadata-task", null,
-						null);
-			}
-			
-		} else {
-			// Get the metadata for this data object.
-			HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(stagedMetadataAttribute.getPath(), true);
-
-			// Update the metadata.
-			boolean updated = true;
-			String message = null;
-			try {
-				metadataService.updateDataObjectMetadata(stagedMetadataAttribute.getPath(), metadataEntries,
-						configurationId, collectionType, false, true);
-			} catch (HpcException e) {
-				// Data object metadata update failed. Capture this in the audit record.
-				updated = false;
-				message = e.getMessage();
-			} finally {
-				// Add an audit record of this update collection attempt.
-				dataManagementService.addAuditRecord(stagedMetadataAttribute.getPath(), HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
-						metadataService.getDataObjectMetadataEntries(stagedMetadataAttribute.getPath(), true), null, updated, null, message, "add-staged-metadata-task", null,
-						null);
-			}
-		}
-
-	}
-	
-	@Override
-	public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
-			throws HpcException {
-
-		return dataMigrationDAO.claimStagedMetadataAttribute(stagedMetadataAttribute);
-	}
-
-	@Override
-	public void cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
-
-		int count = dataMigrationDAO.cleanupStagedMetadataAttribute(stagedMetadataAttribute);
-		logger.info("{} staged metadata attribute cleaned up.", count);
-
-	}
+    // ---------------------------------------------------------------------//
+    // Instance members
+    // ---------------------------------------------------------------------//
+
+    // Data Migration DAO.
+    @Autowired
+    private HpcDataMigrationDAO dataMigrationDAO = null;
+
+    // S3 data transfer proxy.
+    @Autowired
+    @Qualifier("hpcS3DataTransferProxy")
+    private HpcDataTransferProxy s3DataTransferProxy = null;
+
+    // System Accounts locator.
+    @Autowired
+    private HpcSystemAccountLocator systemAccountLocator = null;
+
+    // Data management configuration locator.
+    @Autowired
+    private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
+
+    // The Metadata Application Service Instance.
+    @Autowired
+    private HpcMetadataService metadataService = null;
+
+    // The Data Transfer Application Service Instance.
+    @Autowired
+    private HpcDataTransferService dataTransferService = null;
+
+    // The Security Application Service Instance.
+    @Autowired
+    private HpcSecurityService securityService = null;
+
+    // Auto-tiering DAOs mapped by search source.
+    // Each S3 archive configuration specifies a search source (ORACLE or TRINO) to query for
+    // files eligible for auto-tiering. This map allows selecting the appropriate DAO at runtime.
+    @Autowired
+    @Qualifier("hpcOracleAutoTieringDAO")
+    private HpcAutoTieringDAO oracleAutoTieringDAO = null;
+
+    @Autowired
+    @Qualifier("hpcTrinoAutoTieringDAO")
+    private HpcAutoTieringDAO trinoAutoTieringDAO = null;
+
+    private Map<HpcAutoTieringSearchSource, HpcAutoTieringDAO> autoTieringDAOs = null;
+
+    // The Data Management Application Service Instance.
+    @Autowired
+    private HpcDataManagementService dataManagementService = null;
+
+    // A configured ID representing the server performing a migration task.
+    @Value("${hpc.service.serverId}")
+    private String serverId = null;
+
+    // A list of servers running the data migration scheduled tasks
+    @Value("${hpc.service.dataMigration.serverIds}")
+    private String dataMigrationServerIds = null;
+
+    // A cycle iterator (round robin) of data migration server IDs to assign
+    // migration tasks to.
+    private Iterator<String> dataMigrationServerIdCycleIter = null;
+
+    // The logger instance.
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+    // ---------------------------------------------------------------------//
+    // Constructors
+    // ---------------------------------------------------------------------//
+
+    /**
+     * Default Constructor for Spring Dependency Injection.
+     *
+     * @throws HpcException Constructor is disabled.
+     */
+    private HpcDataMigrationServiceImpl() throws HpcException {
+    }
+
+    // ---------------------------------------------------------------------//
+    // Post Construction Initialization
+    // ---------------------------------------------------------------------//
+
+    @PostConstruct
+    private void init() {
+        autoTieringDAOs = new EnumMap<>(HpcAutoTieringSearchSource.class);
+        autoTieringDAOs.put(HpcAutoTieringSearchSource.ORACLE, oracleAutoTieringDAO);
+        autoTieringDAOs.put(HpcAutoTieringSearchSource.TRINO, trinoAutoTieringDAO);
+    }
+
+    // ---------------------------------------------------------------------//
+    // Methods
+    // ---------------------------------------------------------------------//
+
+    // ---------------------------------------------------------------------//
+    // HpcDataMigrationService Interface Implementation
+    // ---------------------------------------------------------------------//
+
+    @Override
+    public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
+                                                              String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId,
+                                                              boolean alignArchivePath, Long size, String retryTaskId, String retryUserId, boolean metadataUpdateRequest,
+                                                              String metadataFromArchiveFileContainerId, String metadataToArchiveFileContainerId,
+                                                              boolean externalArchiveAutoTieringRequest, HpcFileLocation fromS3ArchiveLocation) throws HpcException {
+        // Check if a task already exist.
+        HpcDataMigrationTask migrationTask = dataMigrationDAO.getDataObjectMigrationTask(collectionMigrationTaskId,
+                path);
+        if (migrationTask != null) {
+            logger.info(
+                    "Data object migration task exists for in a bulk metadata migration task. : path - {}, bulk-metadata-task-id - {}, data-object-metadata-task-id - {}",
+                    path, collectionMigrationTaskId, migrationTask.getId());
+            return migrationTask;
+        }
+
+        // Check if the task already completed.
+        migrationTask = new HpcDataMigrationTask();
+        String taskId = dataMigrationDAO.getDataObjectMigrationTaskResultId(collectionMigrationTaskId, path);
+        if (!StringUtils.isEmpty(taskId)) {
+            logger.info(
+                    "Data object migration task completed for in a bulk metadata migration task: path - {}, bulk-metadata-task-id - {}, data-object-metadata-task-id - {}",
+                    path, collectionMigrationTaskId, taskId);
+            migrationTask.setId(taskId);
+            return migrationTask;
+        }
+
+        // Validate auto tiering request from external archive.
+        if (externalArchiveAutoTieringRequest && !isValidFileLocation(fromS3ArchiveLocation)) {
+            throw new HpcException("Auto tiering requested w/o an external file location",
+                    HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+
+        // Create and persist a migration task.
+        migrationTask.setPath(path);
+        migrationTask.setUserId(userId);
+        migrationTask.setConfigurationId(configurationId);
+        migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
+        migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+        migrationTask.setCreated(Calendar.getInstance());
+        migrationTask.setStatus(externalArchiveAutoTieringRequest ? HpcDataMigrationStatus.AUTO_TIERING_RECEIVED :
+                HpcDataMigrationStatus.RECEIVED);
+        migrationTask.setType(metadataUpdateRequest ? HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE
+                : HpcDataMigrationType.DATA_OBJECT);
+        migrationTask.setParentId(collectionMigrationTaskId);
+        migrationTask.setAlignArchivePath(alignArchivePath);
+        migrationTask.setPercentComplete(0);
+        migrationTask.setSize(size);
+        migrationTask.setRetryTaskId(retryTaskId);
+        migrationTask.setRetryUserId(retryUserId);
+        migrationTask.setMetadataFromArchiveFileContainerId(metadataFromArchiveFileContainerId);
+        migrationTask.setMetadataToArchiveFileContainerId(metadataToArchiveFileContainerId);
+        migrationTask.setFromS3ArchiveLocation(fromS3ArchiveLocation);
+
+        // Persist the task.
+        dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+        return migrationTask;
+    }
+
+    @Override
+    public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
+            throws HpcException {
+
+        List<HpcDataMigrationTask> dataMigrationTasks = dataMigrationDAO.getDataMigrationTasks(status, type, serverId);
+        logger.info("{} Data Migration Tasks retrieved for [{}, {}, {}]", dataMigrationTasks.size(), status, type,
+                serverId);
+
+        return dataMigrationTasks;
+    }
+
+    @Override
+    public void assignDataMigrationTasks() throws HpcException {
+        // If needed, re-setting the cycle iterator of migration server IDs.
+        if (dataMigrationServerIdCycleIter == null) {
+            if (StringUtils.isEmpty(dataMigrationServerIds)) {
+                throw new HpcException(
+                        "No migration servers are configured. Check hpc.service.dataMigration.serverIds property",
+                        HpcErrorType.SPRING_CONFIGURATION_ERROR);
+            }
+            String[] serverIds = dataMigrationServerIds.split(",");
+            logger.info("{} Data migration servers configured: {}", serverIds.length, dataMigrationServerIds);
+            dataMigrationServerIdCycleIter = Iterables.cycle(serverIds).iterator();
+        }
+
+        for (HpcDataMigrationTask dataMigrationTask : dataMigrationDAO.getUnassignedDataMigrationTasks()) {
+            String assignedServerId = dataMigrationServerIdCycleIter.next();
+            dataMigrationDAO.setDataMigrationTaskServerId(dataMigrationTask.getId(), assignedServerId);
+
+            logger.info("Data migration: task - {} [{}] assigned to {}", dataMigrationTask.getId(),
+                    dataMigrationTask.getType(), assignedServerId);
+        }
+    }
+
+    @Override
+    public void migrateDataObject(HpcDataMigrationTask dataObjectMigrationTask) throws HpcException {
+        if (!dataObjectMigrationTask.getAlignArchivePath() && dataObjectMigrationTask.getToS3ArchiveConfigurationId()
+                .equals(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
+            // Migration not needed.
+            completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, null, null, null);
+            return;
+        }
+
+        // Get the data transfer configuration for both source and target S3 archives in
+        // this migration task. Note that it's the same in the case of archive path
+        // alignment
+        HpcDataTransferConfiguration fromS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
+                .getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
+                        dataObjectMigrationTask.getFromS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
+        if (StringUtils.isEmpty(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
+            dataObjectMigrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveDataTransferConfiguration.getId());
+        }
+
+        HpcDataTransferConfiguration toS3ArchiveDataTransferConfiguration = !dataObjectMigrationTask
+                .getAlignArchivePath()
+                ? dataManagementConfigurationLocator.getDataTransferConfiguration(
+                dataObjectMigrationTask.getConfigurationId(),
+                dataObjectMigrationTask.getToS3ArchiveConfigurationId(), HpcDataTransferType.S_3)
+                : fromS3ArchiveDataTransferConfiguration;
+
+        // Get the data transfer system accounts to access both source and target
+        // S3 archives in
+        // this migration task.
+        HpcIntegratedSystemAccount fromS3ArchiveDataTransferSystemAccount = systemAccountLocator
+                .getSystemAccount(fromS3ArchiveDataTransferConfiguration.getArchiveProvider());
+        HpcIntegratedSystemAccount toS3ArchiveDataTransferSystemAccount = systemAccountLocator
+                .getSystemAccount(toS3ArchiveDataTransferConfiguration.getArchiveProvider());
+
+        // Obtain authenticated tokens to both source/target archives of this migration
+        // task.
+        Object fromS3ArchiveAuthToken = s3DataTransferProxy.authenticate(fromS3ArchiveDataTransferSystemAccount,
+                fromS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
+                fromS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
+                fromS3ArchiveDataTransferConfiguration.getEncryptionKey());
+        Object toS3ArchiveAuthToken = !dataObjectMigrationTask.getAlignArchivePath() ? s3DataTransferProxy.authenticate(
+                toS3ArchiveDataTransferSystemAccount, toS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
+                toS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
+                toS3ArchiveDataTransferConfiguration.getEncryptionKey()) : fromS3ArchiveAuthToken;
+
+        // Get the System generated metadata of the data object in migration.
+        HpcSystemGeneratedMetadata metadata = metadataService
+                .getDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath());
+        dataObjectMigrationTask.setDataObjectId(metadata.getObjectId());
+        dataObjectMigrationTask.setRegistrarId(metadata.getRegistrarId());
+        dataObjectMigrationTask.setFromS3ArchiveLocation(metadata.getArchiveLocation());
+
+        // Generate a URL to the data object in archive we are migrating from.
+        String sourceURL = s3DataTransferProxy.generateDownloadRequestURL(fromS3ArchiveAuthToken,
+                metadata.getArchiveLocation(), fromS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
+                fromS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration());
+
+        // Create an S3 upload source object out of the data object in the S3 archive we
+        // are migrating from.
+        HpcStreamingUploadSource uploadSource = new HpcStreamingUploadSource();
+        uploadSource.setSourceURL(sourceURL);
+        uploadSource.setSourceSize(metadata.getSourceSize());
+        uploadSource.setSourceLocation(metadata.getArchiveLocation());
+
+        // Create an upload request to the S3 archive we are migrating into
+        HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
+        uploadRequest.setPath(dataObjectMigrationTask.getPath());
+        uploadRequest.setCallerObjectId(metadata.getCallerObjectId());
+        uploadRequest.setDataObjectId(metadata.getObjectId());
+        uploadRequest.setSourceSize(metadata.getSourceSize());
+        uploadRequest.setUserId(metadata.getRegistrarId());
+        uploadRequest.setS3UploadSource(uploadSource);
+
+        // Upload the data object into the S3 archive we are migrating to, and update
+        // the task w/ new archive location.
+        HpcDataMigrationProgressListener progressListener = new HpcDataMigrationProgressListener(
+                dataObjectMigrationTask, this, fromS3ArchiveAuthToken, toS3ArchiveAuthToken);
+        dataObjectMigrationTask.setToS3ArchiveLocation(s3DataTransferProxy.uploadDataObject(toS3ArchiveAuthToken,
+                uploadRequest, toS3ArchiveDataTransferConfiguration.getBaseArchiveDestination(),
+                toS3ArchiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
+                dataTransferService.generateArchiveMetadata(dataObjectMigrationTask.getConfigurationId(),
+                        dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId()),
+                toS3ArchiveDataTransferConfiguration.getEncryptedTransfer(),
+                toS3ArchiveDataTransferConfiguration.getStorageClass()).getArchiveLocation());
+
+        logger.info("Archive migration started: {} - {}:{} -> {}:{}", dataObjectMigrationTask.getId(),
+                dataObjectMigrationTask.getFromS3ArchiveLocation().getFileContainerId(),
+                dataObjectMigrationTask.getFromS3ArchiveLocation().getFileId(),
+                dataObjectMigrationTask.getToS3ArchiveLocation().getFileContainerId(),
+                dataObjectMigrationTask.getToS3ArchiveLocation().getFileId());
+
+        // Update the task and persist.
+        dataObjectMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
+        dataMigrationDAO.upsertDataMigrationTask(dataObjectMigrationTask);
+    }
+
+    @Override
+    public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
+                                                HpcDataMigrationResult result, String message, Object fromS3ArchiveAuthToken, Object toS3ArchiveAuthToken)
+            throws HpcException {
+        if (!dataObjectMigrationTask.getType().equals(HpcDataMigrationType.DATA_OBJECT)) {
+            throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
+        }
+
+        if (result.equals(HpcDataMigrationResult.COMPLETED)) {
+            try {
+
+                // Add metadata to the object in the target S3 archive.
+                HpcArchiveObjectMetadata objectMetadata = !dataObjectMigrationTask.getAlignArchivePath()
+                        ? dataTransferService.addSystemGeneratedMetadataToDataObject(
+                                dataObjectMigrationTask.getToS3ArchiveLocation(), HpcDataTransferType.S_3,
+                                dataObjectMigrationTask.getConfigurationId(),
+                                dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
+                                dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId())
+                        .getArchiveObjectMetadata()
+                        : new HpcArchiveObjectMetadata();
+
+                // Update the system metadata w/ the new S3 archive id, location and
+                // deep-archive status/date after migration.
+                String checksum = objectMetadata.getChecksum();
+                HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
+                Calendar deepArchiveDate = deepArchiveStatus != null ? Calendar.getInstance() : null;
+
+                securityService.executeAsSystemAccount(Optional.empty(),
+                        () -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
+                                dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
+                                null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
+                                deepArchiveStatus, deepArchiveDate, null));
+
+                // Delete the data object from the source S3 archive.
+                dataTransferService.deleteDataObject(dataObjectMigrationTask.getFromS3ArchiveLocation(),
+                        HpcDataTransferType.S_3, dataObjectMigrationTask.getConfigurationId(),
+                        dataObjectMigrationTask.getFromS3ArchiveConfigurationId());
+
+            } catch (HpcException e) {
+                message = "Failed to complete data migration for task: " + dataObjectMigrationTask.getId() + " ["
+                        + e.getMessage() + " ] - " + dataObjectMigrationTask.getPath();
+                logger.error(message, e);
+                result = HpcDataMigrationResult.FAILED;
+            }
+        }
+
+        // Delete the task and insert a result record.
+        dataMigrationDAO.deleteDataMigrationTask(dataObjectMigrationTask.getId());
+        dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMigrationTask, Calendar.getInstance(), result,
+                message);
+
+        // Shutdown the transfer managers.
+        try {
+            if (fromS3ArchiveAuthToken != null) {
+                s3DataTransferProxy.shutdown(fromS3ArchiveAuthToken);
+            }
+            if (toS3ArchiveAuthToken != null) {
+                s3DataTransferProxy.shutdown(toS3ArchiveAuthToken);
+            }
+        } catch (HpcException e) {
+            logger.error("Failed to shutdown TransferManager", e);
+        }
+    }
+
+    @Override
+    public void completeDataObjectMetadataUpdateTask(HpcDataMigrationTask dataObjectMetadataUpdateTask,
+                                                     HpcDataMigrationResult result, String message) throws HpcException {
+        if (!dataObjectMetadataUpdateTask.getType().equals(HpcDataMigrationType.DATA_OBJECT_METADATA_UPDATE)) {
+            throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
+        }
+
+        if (result.equals(HpcDataMigrationResult.COMPLETED)) {
+            try {
+
+                // Update metadata to the object in the target S3 archive.
+                securityService.executeAsSystemAccount(Optional.empty(),
+                        () -> metadataService.updateDataObjectSystemGeneratedMetadata(
+                                dataObjectMetadataUpdateTask.getPath(),
+                                dataObjectMetadataUpdateTask.getToS3ArchiveLocation(), null, null, null, null, null,
+                                null, null, null, dataObjectMetadataUpdateTask.getToS3ArchiveConfigurationId(), null,
+                                null, null));
+
+            } catch (HpcException e) {
+                message = "Failed to complete metadata update for task: " + dataObjectMetadataUpdateTask.getId() + " ["
+                        + e.getMessage() + " ] - " + dataObjectMetadataUpdateTask.getPath();
+                logger.error(message, e);
+                result = HpcDataMigrationResult.FAILED;
+            }
+        }
+
+        // Delete the task and insert a result record.
+        dataMigrationDAO.deleteDataMigrationTask(dataObjectMetadataUpdateTask.getId());
+        dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMetadataUpdateTask, Calendar.getInstance(), result,
+                message);
+    }
+
+    @Override
+    public void completeBulkMigrationTask(HpcDataMigrationTask bulkMigrationTask, String message) throws HpcException {
+        // Determine the bulk migration result.
+        HpcDataMigrationResult result = HpcDataMigrationResult.COMPLETED;
+        if (!StringUtils.isEmpty(message)) {
+            result = HpcDataMigrationResult.FAILED;
+        } else if (!dataMigrationDAO.getDataObjectMigrationTasks(bulkMigrationTask.getId()).isEmpty()) {
+            // bulk migration task still in progress. At least one data object
+            // migration task is still active.
+            logger.info("Bulk migration task still in progress: {} - {}", bulkMigrationTask.getId(),
+                    bulkMigrationTask.getType());
+            return;
+        } else {
+            // Get a map of result counts for data object migrations that are associated w/
+            // this bulk migration.
+            Map<HpcDataMigrationResult, Integer> resultsCount = dataMigrationDAO
+                    .getCollectionMigrationResultCount(bulkMigrationTask.getId());
+
+            if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.FAILED)).orElse(0) > 0) {
+                // All data object migration tasks under this bulk migration task
+                // completed, but at least one failed.
+                result = HpcDataMigrationResult.FAILED;
+            } else if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED)).orElse(0) + Optional
+                    .ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED_METADATA_MIGRATION_TRANSFER_INCOMPLETE))
+                    .orElse(0) > 0) {
+                // All data object migration tasks under this bulk migration task
+                // completed, but at least one ignored.
+                result = HpcDataMigrationResult.COMPLETED_IGNORED_ITEMS;
+            }
+        }
+
+        // Delete the task and insert a result record.
+        dataMigrationDAO.deleteDataMigrationTask(bulkMigrationTask.getId());
+        dataMigrationDAO.upsertDataMigrationTaskResult(bulkMigrationTask, Calendar.getInstance(), result, message);
+    }
+
+    @Override
+    public void resetMigrationTasksInProcess() throws HpcException {
+        dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS, false, serverId, 0,
+                HpcDataMigrationStatus.RECEIVED);
+        dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.RECEIVED, false, serverId, 0,
+                HpcDataMigrationStatus.RECEIVED);
+
+        int taskCount = dataMigrationDAO.cleanupDataMigrationTasks();
+        logger.info("Cleaned up {} data migration tasks", taskCount);
+
+        // Reset any in-process metadata attribute migration
+        dataMigrationDAO.resetStagedMetadataAttribute();
+    }
+
+    @Override
+    public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
+                                                              String toS3ArchiveConfigurationId, boolean alignArchivePath, String retryTaskId, String retryUserId,
+                                                              Boolean retryFailedItemsOnly) throws HpcException {
+        // Create and persist a migration task.
+        HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+        migrationTask.setPath(path);
+        migrationTask.setUserId(userId);
+        migrationTask.setConfigurationId(configurationId);
+        migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+        migrationTask.setCreated(Calendar.getInstance());
+        migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+        migrationTask.setType(HpcDataMigrationType.COLLECTION);
+        migrationTask.setAlignArchivePath(alignArchivePath);
+        migrationTask.setPercentComplete(0);
+        migrationTask.setSize(null);
+        migrationTask.setRetryTaskId(retryTaskId);
+        migrationTask.setRetryUserId(retryUserId);
+        migrationTask.setRetryFailedItemsOnly(retryFailedItemsOnly);
+
+        // Persist the task.
+        dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+        return migrationTask;
+    }
+
+    @Override
+    public HpcDataMigrationTask createDataObjectsMigrationTask(List<String> dataObjectPaths, String userId,
+                                                               String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
+                                                               Boolean retryFailedItemsOnly) throws HpcException {
+        // Create and persist a migration task.
+        HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+        migrationTask.getDataObjectPaths().addAll(dataObjectPaths);
+        migrationTask.setUserId(userId);
+        migrationTask.setConfigurationId(configurationId);
+        migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+        migrationTask.setCreated(Calendar.getInstance());
+        migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+        migrationTask.setType(HpcDataMigrationType.DATA_OBJECT_LIST);
+        migrationTask.setAlignArchivePath(false);
+        migrationTask.setPercentComplete(0);
+        migrationTask.setSize(null);
+        migrationTask.setRetryTaskId(retryTaskId);
+        migrationTask.setRetryUserId(retryUserId);
+        migrationTask.setRetryFailedItemsOnly(retryFailedItemsOnly);
+
+        // Persist the task.
+        dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+        return migrationTask;
+    }
+
+    @Override
+    public HpcDataMigrationTask createCollectionsMigrationTask(List<String> collectionPaths, String userId,
+                                                               String configurationId, String toS3ArchiveConfigurationId, String retryTaskId, String retryUserId,
+                                                               Boolean retryFailedItemsOnly) throws HpcException {
+        // Create and persist a migration task.
+        HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+        migrationTask.getCollectionPaths().addAll(collectionPaths);
+        migrationTask.setUserId(userId);
+        migrationTask.setConfigurationId(configurationId);
+        migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+        migrationTask.setCreated(Calendar.getInstance());
+        migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+        migrationTask.setType(HpcDataMigrationType.COLLECTION_LIST);
+        migrationTask.setAlignArchivePath(false);
+        migrationTask.setPercentComplete(0);
+        migrationTask.setSize(null);
+        migrationTask.setRetryTaskId(retryTaskId);
+        migrationTask.setRetryUserId(retryUserId);
+        migrationTask.setRetryFailedItemsOnly(retryFailedItemsOnly);
+
+        // Persist the task.
+        dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+        return migrationTask;
+    }
+
+    @Override
+    public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException {
+        dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+    }
+
+    @Override
+    public void updateDataMigrationTaskProgress(HpcDataMigrationTask dataMigrationTask, long bytesTransferred)
+            throws HpcException {
+        // Input validation.
+        if (dataMigrationTask == null || !HpcDataMigrationType.DATA_OBJECT.equals(dataMigrationTask.getType())
+                || dataMigrationTask.getSize() <= 0 || bytesTransferred <= 0
+                || bytesTransferred > dataMigrationTask.getSize()) {
+            return;
+        }
+
+        // Calculate the percent complete.
+        int percentComplete = Math.round(100 * (float) bytesTransferred / dataMigrationTask.getSize());
+        if (percentComplete != dataMigrationTask.getPercentComplete()) {
+            dataMigrationTask.setPercentComplete(percentComplete);
+
+            // Persist.
+            dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
+
+            if (!StringUtils.isEmpty(dataMigrationTask.getParentId())) {
+                // Update the parent migration task percent complete.
+                dataMigrationDAO.updateBulkDataMigrationTaskPercentComplete(dataMigrationTask.getParentId());
+            }
+
+            logger.debug("Migration task: {} - % complete - {}", dataMigrationTask.getId(),
+                    dataMigrationTask.getPercentComplete());
+        }
+    }
+
+    @Override
+    public boolean markInProcess(HpcDataMigrationTask dataObjectMigrationTask, boolean inProcess) throws HpcException {
+        // Only set in-process to true if this task in a RECEIVED status, and the
+        // in-process not already true.
+        boolean updated = true;
+
+        if (!inProcess || (!dataObjectMigrationTask.getInProcess()
+                && dataObjectMigrationTask.getStatus().equals(HpcDataMigrationStatus.RECEIVED))) {
+            updated = dataMigrationDAO.setDataMigrationTaskInProcess(dataObjectMigrationTask.getId(), inProcess);
+        }
+
+        if (updated) {
+            dataObjectMigrationTask.setInProcess(inProcess);
+        }
+
+        return updated;
+    }
+
+    @Override
+    public HpcDataMigrationTaskStatus getMigrationTaskStatus(String taskId, HpcDataMigrationType taskType)
+            throws HpcException {
+        if (taskType == null || StringUtils.isEmpty(taskId)) {
+            throw new HpcException("Null migration task ID or type", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+
+        HpcDataMigrationTaskStatus taskStatus = new HpcDataMigrationTaskStatus();
+
+        HpcDataMigrationTaskResult taskResult = dataMigrationDAO.getDataMigrationTaskResult(taskId, taskType);
+        if (taskResult != null) {
+            // Task completed or failed. Return the result.
+            taskStatus.setInProgress(false);
+            taskStatus.setResult(taskResult);
+            return taskStatus;
+        }
+
+        HpcDataMigrationTask task = dataMigrationDAO.getDataMigrationTask(taskId, taskType);
+        if (task != null) {
+            // Task is in progress. Return it.
+            taskStatus.setInProgress(true);
+            taskStatus.setTask(task);
+            return taskStatus;
+        }
+
+        // Task not found.
+        return null;
+    }
+
+    @Override
+    public List<HpcDataMigrationTaskResult> getDataMigrationResults(String collectionMigrationTaskId,
+                                                                    HpcDataMigrationResult result) throws HpcException {
+        return dataMigrationDAO.getDataMigrationResults(collectionMigrationTaskId, result);
+    }
+
+    @Override
+    public HpcDataMigrationTask createMetadataMigrationTask(String fromS3ArchiveConfigurationId,
+                                                            String toS3ArchiveConfigurationId, String fromArchiveFileContainerId, String toArchiveFileContainerId,
+                                                            String archiveFileIdPattern, String userId) throws HpcException {
+        // Create and persist a migration task.
+        HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+        migrationTask.setPath(null);
+        migrationTask.setUserId(userId);
+        migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
+        migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+        migrationTask.setCreated(Calendar.getInstance());
+        migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+        migrationTask.setType(HpcDataMigrationType.BULK_METADATA_UPDATE);
+        migrationTask.setAlignArchivePath(false);
+        migrationTask.setPercentComplete(0);
+        migrationTask.setSize(null);
+        migrationTask.setRetryTaskId(null);
+        migrationTask.setRetryUserId(null);
+        migrationTask.setRetryFailedItemsOnly(null);
+        migrationTask.setMetadataFromArchiveFileContainerId(fromArchiveFileContainerId);
+        migrationTask.setMetadataToArchiveFileContainerId(toArchiveFileContainerId);
+        migrationTask.setMetadataArchiveFileIdPattern(archiveFileIdPattern);
+
+        // Persist the task.
+        dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+        return migrationTask;
+    }
+
+    @Override
+    public HpcDataMigrationTask createBulkAutoTieringTask(String configurationId, String fromS3ArchiveConfigurationId,
+                                                          String toS3ArchiveConfigurationId, String userId) throws HpcException {
+        // Create and persist a bulk auto-tiering task.
+        HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+        migrationTask.setConfigurationId(configurationId);
+        migrationTask.setUserId(userId);
+        migrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveConfigurationId);
+        migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+        migrationTask.setCreated(Calendar.getInstance());
+        migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+        migrationTask.setType(HpcDataMigrationType.BULK_AUTO_TIERING);
+        migrationTask.setPath(null);
+        migrationTask.setAlignArchivePath(false);
+        migrationTask.setPercentComplete(0);
+        migrationTask.setSize(null);
+        migrationTask.setRetryTaskId(null);
+        migrationTask.setRetryUserId(null);
+        migrationTask.setRetryFailedItemsOnly(null);
+        migrationTask.setMetadataFromArchiveFileContainerId(null);
+        migrationTask.setMetadataToArchiveFileContainerId(null);
+        migrationTask.setMetadataArchiveFileIdPattern(null);
+
+        // Persist the task.
+        dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+        return migrationTask;
+    }
+
+    @Override
+    public Map<String, HpcFileLocation> getDataObjectsForAutoTiering(String configurationId,
+                                                                     String s3ArchiveConfigurationId) throws HpcException {
+        logger.info("getDataObjectsForAutoTiering called with configurationId: {}, s3ArchiveConfigurationId: {}",
+                configurationId, s3ArchiveConfigurationId);
+
+        // Get the data management configuration.
+        HpcDataManagementConfiguration dataManagementConfiguration = dataManagementConfigurationLocator.get(configurationId);
+        if (dataManagementConfiguration == null) {
+            throw new HpcException("Data management configuration not found for ID: " + configurationId,
+                    HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+
+        // Get the S3 data transfer configuration
+        HpcDataTransferConfiguration s3Configuration = dataManagementConfigurationLocator
+                .getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, HpcDataTransferType.S_3);
+        if (s3Configuration == null) {
+            throw new HpcException("S3 archive configuration not found for ID: " + s3ArchiveConfigurationId,
+                    HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+
+        // Validate search path and inactivity months are defined
+        if (StringUtils.isEmpty(s3Configuration.getAutoTieringSearchPath())) {
+            throw new HpcException("Auto-tiering search path is not defined for S3 configuration: " + s3ArchiveConfigurationId,
+                    HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        if (s3Configuration.getAutoTieringInactivityMonths() == null) {
+            throw new HpcException("Auto-tiering inactivity months is not defined for S3 configuration: " + s3ArchiveConfigurationId,
+                    HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        if (s3Configuration.getAutoTieringSearchSource() == null) {
+            throw new HpcException("Auto-tiering search source is not defined for S3 configuration: " + s3ArchiveConfigurationId,
+                    HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+
+        // Get the appropriate DAO based on the configured search source.
+        HpcAutoTieringDAO autoTieringDAO = autoTieringDAOs.get(s3Configuration.getAutoTieringSearchSource());
+        if (autoTieringDAO == null) {
+            throw new HpcException("No auto-tiering DAO found for search source: " + s3Configuration.getAutoTieringSearchSource(),
+                    HpcErrorType.UNEXPECTED_ERROR);
+        }
+
+        // Build the map of file paths to HpcFileLocation - these are the data objects to be auto-tiered.
+        String basePath = dataManagementConfiguration.getBasePath();
+        String bucket = s3Configuration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+        String objectIdPrefix = s3Configuration.getBaseArchiveDestination().getFileLocation().getFileId();
+
+        Map<String, HpcFileLocation> autoTieringDataObjects = new HashMap<>();
+        boolean isExternalArchive = HpcAutoTieringSearchSource.TRINO.equals(s3Configuration.getAutoTieringSearchSource());
+
+        // Query for files not accessed within the specified period and create the map of data obejcts to return.
+        autoTieringDAO.getFilesNotAccessed(
+                s3Configuration.getAutoTieringSearchPath(),
+                s3Configuration.getAutoTieringInactivityMonths(),
+                dataManagementConfiguration.getS3AutoTieringConfigurationId()).forEach(path -> {
+            if (isExternalArchive) {
+                // Construct HpcFileLocation of the data object in the external archive to be auto-tiered.
+                HpcFileLocation fileLocation = new HpcFileLocation();
+                fileLocation.setFileContainerId(bucket);
+                String searchPath = s3Configuration.getAutoTieringSearchPath();
+                String relativePath = path.startsWith(searchPath) ? path.substring(searchPath.length()) : path;
+                fileLocation.setFileId(objectIdPrefix + relativePath);
+
+                // Calculate the DME path (to be registered) for this data object in the external archive.
+                autoTieringDataObjects.put(basePath + path, fileLocation);
+            } else {
+                // This is auto-tiering of a data object in DME internal archive - just return the DME path
+                autoTieringDataObjects.put(path, null);
+            }
+        });
+
+        logger.info("Found {} files for auto-tiering [configurationId={}, searchSource={}, searchPath={}, inactivityMonths={}]",
+                autoTieringDataObjects.size(), configurationId, s3Configuration.getAutoTieringSearchSource(),
+                s3Configuration.getAutoTieringSearchPath(), s3Configuration.getAutoTieringInactivityMonths());
+        return autoTieringDataObjects;
+    }
+
+    @Override
+    public List<HpcStagedMetadataAttribute> getStagedMetadataAttributes()
+            throws HpcException {
+
+        List<HpcStagedMetadataAttribute> stagedMetadataEntries = dataMigrationDAO.getStagedMetadataAttributes();
+        logger.info("{} staged metadata attributes retrieved.", stagedMetadataEntries.size());
+
+        return stagedMetadataEntries;
+    }
+
+    @Override
+    public void addStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute, boolean isCollection,
+                                           String configurationId, String collectionType) throws HpcException {
+
+        // Construct metadata entry to add.
+        List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+        HpcMetadataEntry entry = new HpcMetadataEntry();
+        entry.setAttribute(stagedMetadataAttribute.getAttribute());
+        entry.setValue(stagedMetadataAttribute.getValue());
+        metadataEntries.add(entry);
+
+        // Call addMetadata method to add the staged metadata entry to the relevant data object or collection
+        // with allowSystemMetadata set to true to allow adding metadata with reserved attributes
+        if (isCollection) {
+            // Get the metadata for this collection.
+            HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(stagedMetadataAttribute.getPath());
+
+            // Update the metadata.
+            boolean updated = true;
+            String message = null;
+            try {
+                metadataService.updateCollectionMetadata(stagedMetadataAttribute.getPath(), metadataEntries,
+                        configurationId, true);
+            } catch (HpcException e) {
+                // Collection metadata update failed. Capture this in the audit record.
+                updated = false;
+                message = e.getMessage();
+            } finally {
+                // Add an audit record of this update collection attempt.
+                dataManagementService.addAuditRecord(stagedMetadataAttribute.getPath(), HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
+                        metadataService.getCollectionMetadataEntries(stagedMetadataAttribute.getPath()), null, updated, null, message, "add-staged-metadata-task", null,
+                        null);
+            }
+
+        } else {
+            // Get the metadata for this data object.
+            HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(stagedMetadataAttribute.getPath(), true);
+
+            // Update the metadata.
+            boolean updated = true;
+            String message = null;
+            try {
+                metadataService.updateDataObjectMetadata(stagedMetadataAttribute.getPath(), metadataEntries,
+                        configurationId, collectionType, false, true);
+            } catch (HpcException e) {
+                // Data object metadata update failed. Capture this in the audit record.
+                updated = false;
+                message = e.getMessage();
+            } finally {
+                // Add an audit record of this update collection attempt.
+                dataManagementService.addAuditRecord(stagedMetadataAttribute.getPath(), HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
+                        metadataService.getDataObjectMetadataEntries(stagedMetadataAttribute.getPath(), true), null, updated, null, message, "add-staged-metadata-task", null,
+                        null);
+            }
+        }
+
+    }
+
+    @Override
+    public boolean claimStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute)
+            throws HpcException {
+
+        return dataMigrationDAO.claimStagedMetadataAttribute(stagedMetadataAttribute);
+    }
+
+    @Override
+    public void cleanupStagedMetadataAttribute(HpcStagedMetadataAttribute stagedMetadataAttribute) throws HpcException {
+
+        int count = dataMigrationDAO.cleanupStagedMetadataAttribute(stagedMetadataAttribute);
+        logger.info("{} staged metadata attribute cleaned up.", count);
+    }
 }
+
