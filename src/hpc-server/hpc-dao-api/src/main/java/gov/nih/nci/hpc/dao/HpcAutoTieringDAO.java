@@ -1,5 +1,5 @@
 /**
- * HpcExternalArchiveDAO.java
+ * HpcAutoTieringDAO.java
  *
  * <p>
  * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
