@@ -162,6 +162,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 								+ java.util.Arrays.toString(HpcAutoTieringSearchSource.values()));
 			}
 		}
+		// Set the inactivity months for auto-tiering query. SQL Null will be set as 0 intenationaly.
 		s3Configuration.setAutoTieringInactivityMonths(rs.getInt("AUTO_TIERING_INACTIVITY_MONTHS"));
 
 		return s3Configuration;
