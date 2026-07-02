@@ -36,6 +36,17 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 public interface HpcMetadataDAO {
 	/**
+	 * Resolve a collection path from an incoming collection identifier.
+	 * <p>
+	 * Supports iRODS collection ID and DME ID (dme_data_id).
+	 *
+	 * @param collectionId The incoming collection identifier.
+	 * @return The resolved collection path, or null when not found.
+	 * @throws HpcException on database error.
+	 */
+	public String getCollectionPathByCollectionId(String collectionId) throws HpcException;
+
+	/**
 	 * Get collection Paths by compound metadata query. Only collection Paths
 	 * accessible to the user are returned.
 	 *

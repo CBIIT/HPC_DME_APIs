@@ -19,12 +19,11 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcVectorIngestionService {
 
     /**
-     * Generate an embedding vector from the provided text and store it in the
+     * Generate an embedding vector from collection metadata and store it in the
      * vector store with the associated collection ID.
      *
      * @param collectionId HPC collection ID.
-     * @param text         Source text to embed.
      * @throws HpcException on service failure.
      */
-    public void indexCollection(String collectionId, String text) throws HpcException;
+    public void indexCollection(String collectionId) throws HpcException;
 }

@@ -13,19 +13,27 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcTextEmbeddingProxy;
 import gov.nih.nci.hpc.integration.HpcVectorStoreProxy;
+import gov.nih.nci.hpc.service.HpcMetadataService;
 
 /**
  * HPC Vector Ingestion Service Implementation Test.
@@ -34,52 +42,109 @@ import gov.nih.nci.hpc.integration.HpcVectorStoreProxy;
 public class HpcVectorIngestionServiceImplTest {
 
     private static final String COLLECTION_ID = "COLL_123";
-    private static final String TEXT = "sample collection text";
+    private static final String COLLECTION_PATH = "/path/to/collection";
+    private static final String TEMPLATE = "Embed this metadata: {{metadata}}";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+
+    @InjectMocks
+    private HpcVectorIngestionServiceImpl service;
 
     @Mock
     private HpcTextEmbeddingProxy hpcTextEmbeddingProxy;
     @Mock
     private HpcVectorStoreProxy hpcVectorStoreProxy;
+    @Mock
+    private HpcMetadataDAO hpcMetadataDAO;
+    @Mock
+    private HpcMetadataService hpcMetadataService;
+    @Mock
+    private HpcMetadataNormalizationLocator hpcMetadataNormalizationLocator;
 
     @Test
     public void testIndexCollectionBlankCollectionId() throws HpcException {
-        HpcVectorIngestionServiceImpl service = createService();
-
         expectedException.expect(HpcException.class);
         expectedException.expectMessage("Collection ID cannot be blank");
 
-        service.indexCollection(" ", TEXT);
+        service.indexCollection(" ");
     }
 
     @Test
-    public void testIndexCollectionBlankText() throws HpcException {
-        HpcVectorIngestionServiceImpl service = createService();
+    public void testIndexCollectionPathResolutionFailure() throws HpcException {
+        ReflectionTestUtils.setField(service, "embeddingTemplate", TEMPLATE);
+        when(hpcMetadataDAO.getCollectionPathByCollectionId(COLLECTION_ID)).thenReturn(null);
 
         expectedException.expect(HpcException.class);
-        expectedException.expectMessage("Input text cannot be blank");
+        expectedException.expectMessage("Collection path not found for collection ID: " + COLLECTION_ID);
 
-        service.indexCollection(COLLECTION_ID, " ");
+        service.indexCollection(COLLECTION_ID);
     }
 
     @Test
-    public void testIndexCollectionSuccess() throws HpcException {
-        HpcVectorIngestionServiceImpl service = createService();
+    public void testIndexCollectionMetadataRetrievalFailure() throws HpcException {
+        ReflectionTestUtils.setField(service, "embeddingTemplate", TEMPLATE);
+        when(hpcMetadataDAO.getCollectionPathByCollectionId(COLLECTION_ID)).thenReturn(COLLECTION_PATH);
+        when(hpcMetadataService.getCollectionMetadataEntries(COLLECTION_PATH))
+                .thenThrow(new HpcException("metadata failure", HpcErrorType.UNEXPECTED_ERROR));
+
+        expectedException.expect(HpcException.class);
+        expectedException.expectMessage("metadata failure");
+
+        service.indexCollection(COLLECTION_ID);
+    }
+
+    @Test
+    public void testIndexCollectionNormalizationHitAndTemplateRendering() throws HpcException {
+        ReflectionTestUtils.setField(service, "embeddingTemplate", TEMPLATE);
         List<Float> embeddingVector = Arrays.asList(0.1f, 0.2f, 0.3f);
-        when(hpcTextEmbeddingProxy.getEmbeddingVector(TEXT)).thenReturn(embeddingVector);
+        HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+        metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("tumor_type", "Lung"));
+        metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("assay", "RNASeq"));
+        metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("ignored_system", "x"));
 
-        service.indexCollection(COLLECTION_ID, TEXT);
+        Map<String, String> normalizationMap = new LinkedHashMap<>();
+        normalizationMap.put("tumor_type", "disease_type");
 
-        verify(hpcTextEmbeddingProxy).getEmbeddingVector(TEXT);
+        when(hpcMetadataDAO.getCollectionPathByCollectionId(COLLECTION_ID)).thenReturn(COLLECTION_PATH);
+        when(hpcMetadataService.getCollectionMetadataEntries(COLLECTION_PATH)).thenReturn(metadataEntries);
+        when(hpcMetadataService.toUserProvidedMetadataEntries(metadataEntries.getSelfMetadataEntries()))
+                .thenReturn(metadataEntries.getSelfMetadataEntries().subList(0, 2));
+        when(hpcMetadataNormalizationLocator.getNormalizationMapping()).thenReturn(normalizationMap);
+        when(hpcTextEmbeddingProxy.getEmbeddingVector("Embed this metadata: assay: RNASeq; disease_type: Lung"))
+                .thenReturn(embeddingVector);
+
+        service.indexCollection(COLLECTION_ID);
+
+        verify(hpcTextEmbeddingProxy).getEmbeddingVector("Embed this metadata: assay: RNASeq; disease_type: Lung");
         verify(hpcVectorStoreProxy).storeVector(embeddingVector, COLLECTION_ID);
     }
 
-    private HpcVectorIngestionServiceImpl createService() {
-        HpcVectorIngestionServiceImpl service = new HpcVectorIngestionServiceImpl();
-        ReflectionTestUtils.setField(service, "hpcTextEmbeddingProxy", hpcTextEmbeddingProxy);
-        ReflectionTestUtils.setField(service, "hpcVectorStoreProxy", hpcVectorStoreProxy);
-        return service;
+    @Test
+    public void testIndexCollectionNormalizationMiss() throws HpcException {
+        ReflectionTestUtils.setField(service, "embeddingTemplate", TEMPLATE);
+        List<Float> embeddingVector = Arrays.asList(0.1f, 0.2f, 0.3f);
+        HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+        metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("sample_type", "Tumor"));
+
+        when(hpcMetadataDAO.getCollectionPathByCollectionId(COLLECTION_ID)).thenReturn(COLLECTION_PATH);
+        when(hpcMetadataService.getCollectionMetadataEntries(COLLECTION_PATH)).thenReturn(metadataEntries);
+        when(hpcMetadataService.toUserProvidedMetadataEntries(metadataEntries.getSelfMetadataEntries()))
+                .thenReturn(metadataEntries.getSelfMetadataEntries());
+        when(hpcMetadataNormalizationLocator.getNormalizationMapping()).thenReturn(new LinkedHashMap<>());
+        when(hpcTextEmbeddingProxy.getEmbeddingVector("Embed this metadata: sample_type: Tumor"))
+                .thenReturn(embeddingVector);
+
+        service.indexCollection(COLLECTION_ID);
+
+        verify(hpcTextEmbeddingProxy).getEmbeddingVector("Embed this metadata: sample_type: Tumor");
+        verify(hpcVectorStoreProxy).storeVector(embeddingVector, COLLECTION_ID);
+    }
+
+    private HpcMetadataEntry toMetadataEntry(String attribute, String value) {
+        HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+        metadataEntry.setAttribute(attribute);
+        metadataEntry.setValue(value);
+        return metadataEntry;
     }
 }
