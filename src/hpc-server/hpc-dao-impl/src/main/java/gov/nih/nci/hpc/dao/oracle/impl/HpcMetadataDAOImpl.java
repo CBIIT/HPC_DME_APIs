@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,7 +27,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.CollectionUtils;
-import org.springframework.dao.DataAccessException;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -223,6 +223,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "where user_main.USER_ID = groups.USER_ID and groups.GROUP_USER_ID = obj_access.USER_ID "
 			+ "and obj_access.object_id = coll_main.COLL_ID and user_main.USER_NAME = ?)";
 
+	private static final String GET_COLLECTION_PATH_BY_IRODS_ID_SQL = "select coll_name from r_coll_main where coll_id = ?";
+
+	private static final String GET_COLLECTION_PATH_BY_DME_ID_SQL = "select object_path from r_coll_hierarchy_meta_main "
+			+ "where meta_attr_name = 'dme_data_id' and meta_attr_value = ? and data_level = 1";
+
 	private static final String GET_HIERARCHICAL_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_data_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
@@ -293,6 +298,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String DELETE_DATA_META_MAIN_SQL = "delete from HPC_DATA_META_MAIN where object_path = ?";
 
 	private static final String DELETE_DATA_META_MAIN_UNDER_COLL_SQL = "delete from HPC_DATA_META_MAIN where object_path like ?";
+
+	private static final Pattern NUMERIC_ID_PATTERN = Pattern.compile("^\\d+$");
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -579,6 +586,25 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	// ---------------------------------------------------------------------//
 	// HpcMetadataDAO Interface Implementation
 	// ---------------------------------------------------------------------//
+
+	@Override
+	public String getCollectionPathByCollectionId(String collectionId) throws HpcException {
+		if (StringUtils.isBlank(collectionId)) {
+			return null;
+		}
+
+		String trimmedCollectionId = collectionId.trim();
+		if (NUMERIC_ID_PATTERN.matcher(trimmedCollectionId).matches()) {
+			String path = getSinglePath(GET_COLLECTION_PATH_BY_IRODS_ID_SQL, trimmedCollectionId,
+					"Failed to get collection path by iRODS collection ID");
+			if (!StringUtils.isBlank(path)) {
+				return path;
+			}
+		}
+
+		return getSinglePath(GET_COLLECTION_PATH_BY_DME_ID_SQL, trimmedCollectionId,
+				"Failed to get collection path by DME collection ID");
+	}
 
 	@Override
 	public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
@@ -1280,6 +1306,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection/data-object Paths: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	private String getSinglePath(String query, String id, String errorMessage) throws HpcException {
+		try {
+			List<String> paths = jdbcTemplate.query(query, objectPathRowMapper, id);
+			return paths != null && !paths.isEmpty() ? paths.get(0) : null;
+
+		} catch (DataAccessException e) {
+			throw new HpcException(errorMessage + ": " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
