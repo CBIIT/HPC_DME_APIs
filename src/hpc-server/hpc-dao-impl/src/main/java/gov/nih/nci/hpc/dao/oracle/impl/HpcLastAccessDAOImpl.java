@@ -45,6 +45,7 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"           doc, " +
 		"           base_path, " +
 		"           bucket, " +
+		"           data_size, " +
 		"           effective_accessed_date, " +
 		"           case " +
 		"               when effective_accessed_date >= systimestamp - numtodsinterval(90, 'DAY') " +
@@ -74,7 +75,9 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"       bucket_label, " +
 		"       bucket_order, " +
 		"       count(*) as file_count, " +
-		"       round(count(*) * 100 / sum(count(*)) over (), 2) as percentage " +
+		"       round(count(*) * 100 / sum(count(*)) over (), 2) as percentage, " +
+		"       sum(data_size) as data_size, " +
+		"       round(sum(data_size) * 100 / sum(sum(data_size)) over (), 2) as data_size_percentage " +
 		"from bucketed_files " +
 		"group by bucket_label, bucket_order " +
 		"order by bucket_order";
@@ -94,6 +97,7 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"           h.base_path, " +
 		"           h.bucket, " +
 		"           h.doc, " +
+		"           h.data_size, " +
 		"           h.effective_accessed_date, " +
 		"           p.path_prefix, " +
 		"           case " +
@@ -131,7 +135,8 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"           ) as subfolder, " +
 		"           bucket_label, " +
 		"           bucket_order, " +
-		"           count(*) as file_count " +
+		"           count(*) as file_count, " +
+		"           sum(data_size) as data_size " +
 		"    from bucketed_files " +
 		"    group by " +
 		"           regexp_substr( " +
@@ -148,7 +153,9 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"       bucket_label, " +
 		"       bucket_order, " +
 		"       file_count, " +
-		"       round(file_count * 100 / sum(file_count) over (), 2) as percentage " +
+		"       round(file_count * 100 / sum(file_count) over (), 2) as percentage, " +
+		"       data_size, " +
+		"       round(data_size * 100 / sum(data_size) over (), 2) as data_size_percentage " +
 		"from subfolder_counts " +
 		"where subfolder is not null " +
 		"order by subfolder";
@@ -171,6 +178,8 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		entry.setBucketOrder(rs.getInt("bucket_order"));
 		entry.setFileCount(rs.getLong("file_count"));
 		entry.setPercentage(rs.getDouble("percentage"));
+		entry.setDataSize(rs.getLong("data_size"));
+		entry.setDataSizePercentage(rs.getDouble("data_size_percentage"));
 		return entry;
 	};
 
@@ -182,6 +191,8 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		entry.setBucketOrder(rs.getInt("bucket_order"));
 		entry.setFileCount(rs.getLong("file_count"));
 		entry.setPercentage(rs.getDouble("percentage"));
+		entry.setDataSize(rs.getLong("data_size"));
+		entry.setDataSizePercentage(rs.getDouble("data_size_percentage"));
 		return entry;
 	};
 
