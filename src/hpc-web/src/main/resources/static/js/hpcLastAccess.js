@@ -48,6 +48,15 @@
         return pad2(date.getMonth() + 1) + '/' + pad2(date.getDate()) + '/' + date.getFullYear();
     }
 
+    // Format bytes to human-readable format (B, KB, MB, GB, TB)
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        var k = 1024;
+        var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
     // Returns inclusive date range based on stale bucket order.
     function getDateRangeForBucket(bucketOrder) {
         var now = new Date();
@@ -222,10 +231,11 @@
         // Sort by bucket order
         entries.sort(function (a, b) { return a.bucketOrder - b.bucketOrder; });
 
+        // Use dataSize and dataSizePercentage for chart ratios
         var labels = entries.map(function (e) {
-            return e.bucketLabel + ' (' + e.percentage + '%)';
+            return e.bucketLabel + ' (' + e.dataSizePercentage + '%)';
         });
-        var counts = entries.map(function (e) { return e.fileCount; });
+        var dataSizes = entries.map(function (e) { return e.dataSize; });
         var colors = entries.map(function (e) { return BUCKET_COLORS[e.bucketOrder] || '#999'; });
 
         if (pieChart) {
@@ -239,7 +249,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    data: counts,
+                    data: dataSizes,
                     backgroundColor: colors,
                     borderWidth: 1
                 }]
@@ -256,8 +266,9 @@
                         callbacks: {
                             label: function (context) {
                                 var entry = entries[context.dataIndex];
-                                return entry.bucketLabel + ': ' + entry.fileCount +
-                                    ' files (' + entry.percentage + '%)';
+                                return entry.bucketLabel + ': ' + formatBytes(entry.dataSize) +
+                                    ' (' + entry.dataSizePercentage + '%)' +
+                                    '\n' + entry.fileCount + ' files';
                             }
                         }
                     }
@@ -301,23 +312,24 @@
         });
         subfolderSet.sort();
 
-        // Build a lookup: subfolder -> bucketOrder -> fileCount
+        // Build a lookup: subfolder -> bucketOrder -> { fileCount, dataSize, label }
         var lookup = {};
         entries.forEach(function (e) {
             if (!lookup[e.subfolder]) { lookup[e.subfolder] = {}; }
             lookup[e.subfolder][e.bucketOrder] = {
-                count: e.fileCount,
+                fileCount: e.fileCount,
+                dataSize: e.dataSize,
                 label: e.bucketLabel
             };
         });
 
-        // Build one dataset per bucket order (1-4)
+        // Build one dataset per bucket order (1-4) using dataSize for chart height
         var datasets = BUCKET_ORDER.map(function (order) {
             return {
                 label: BUCKET_LABELS[order],
                 backgroundColor: BUCKET_COLORS[order],
                 data: subfolderSet.map(function (sub) {
-                    return (lookup[sub] && lookup[sub][order]) ? lookup[sub][order].count : 0;
+                    return (lookup[sub] && lookup[sub][order]) ? lookup[sub][order].dataSize : 0;
                 })
             };
         });
@@ -341,7 +353,7 @@
                 scales: {
                     x: {
                         stacked: true,
-                        title: { display: true, text: 'File Count' }
+                        title: { display: true, text: 'Data Size' }
                     },
                     y: {
                         stacked: true
@@ -355,7 +367,11 @@
                     tooltip: {
                         callbacks: {
                             label: function (context) {
-                                return context.dataset.label + ': ' + context.raw + ' files';
+                                var subfolder = subfolderSet[context.dataIndex];
+                                var bucketOrder = BUCKET_ORDER[context.datasetIndex];
+                                var info = lookup[subfolder][bucketOrder];
+                                return context.dataset.label + ': ' + formatBytes(context.raw) +
+                                    ' (' + info.fileCount + ' files)';
                             }
                         }
                     }
