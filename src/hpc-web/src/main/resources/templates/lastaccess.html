@@ -31,6 +31,10 @@
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- jsPDF for PDF export -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<!-- SheetJS for Excel export -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 .stale-breadcrumb {
@@ -111,6 +115,15 @@
 										<option th:each="bp : ${basepaths}" th:value="${bp}" th:text="${bp}"></option>
 									</select>
 								</div>
+
+                                <div class="form-group">
+                                    <button type="button" id="exportPdfBtn" class="btn btn-default" title="Export pie and bar charts to PDF">
+                                        <i class="fa fa-file-pdf-o"></i> Export PDF
+                                    </button>
+                                    <button type="button" id="exportExcelBtn" class="btn btn-default" title="Export chart data to Excel">
+                                        <i class="fa fa-file-excel-o"></i> Export Excel
+                                    </button>
+                                </div>
 
 								<div class="form-group">
 									<div class="checkbox" style="margin-top: 0;">
