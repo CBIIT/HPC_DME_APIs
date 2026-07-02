@@ -16,6 +16,8 @@
     var currentPath = '';
     var pieChart = null;
     var barChart = null;
+    var latestPieEntries = [];
+    var latestBarEntries = [];
 
     // -------------------------------------------------------------------------
     // Color map for stale-access buckets (order 1-4)
@@ -155,6 +157,16 @@
                 loadCharts(currentBasePath, currentPath || currentBasePath);
             }
         });
+
+        $('#exportPdfBtn').on('click', function (e) {
+            e.preventDefault();
+            exportChartsToPdf();
+        });
+
+        $('#exportExcelBtn').on('click', function (e) {
+            e.preventDefault();
+            exportDataToExcel();
+        });
     });
 
     // -------------------------------------------------------------------------
@@ -230,6 +242,7 @@
 
         // Sort by bucket order
         entries.sort(function (a, b) { return a.bucketOrder - b.bucketOrder; });
+        latestPieEntries = entries.slice();
 
         // Use dataSize and dataSizePercentage for chart ratios
         var labels = entries.map(function (e) {
@@ -284,6 +297,7 @@
     // -------------------------------------------------------------------------
     function renderBarChart(data) {
         var entries = (data && data.barChartEntries) ? data.barChartEntries : [];
+        latestBarEntries = entries.slice();
 
         if (barChart) {
             barChart.destroy();
@@ -523,6 +537,121 @@
     // -------------------------------------------------------------------------
     function escapeAttr(str) {
         return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function exportChartsToPdf() {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            console.error('jsPDF library is not available.');
+            return;
+        }
+
+        var pieCanvas = document.getElementById('stalePieChart');
+        var barCanvas = document.getElementById('staleBarChart');
+        if (!pieCanvas && !barCanvas) {
+            console.warn('No charts found to export.');
+            return;
+        }
+
+        var jsPDF = window.jspdf.jsPDF;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        var pageWidth = doc.internal.pageSize.getWidth();
+        var pageHeight = doc.internal.pageSize.getHeight();
+        var margin = 30;
+        var y = margin;
+
+        var now = new Date();
+        doc.setFontSize(14);
+        doc.text('Last Accessed Collection Report', margin, y);
+        y += 18;
+        doc.setFontSize(10);
+        doc.text('Path: ' + (currentPath || currentBasePath || ''), margin, y);
+        y += 14;
+        doc.text('Generated: ' + now.toLocaleString(), margin, y);
+        y += 16;
+
+        function addChart(title, canvas, preferredHeight) {
+            if (!canvas) {
+                return;
+            }
+            var availableWidth = pageWidth - (margin * 2);
+            var height = preferredHeight;
+            if (!height) {
+                var ratio = canvas.width ? (canvas.height / canvas.width) : 0.6;
+                height = availableWidth * ratio;
+            }
+
+            if (y + 20 + height > pageHeight - margin) {
+                doc.addPage();
+                y = margin;
+            }
+
+            doc.setFontSize(11);
+            doc.text(title, margin, y);
+            y += 8;
+            doc.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', margin, y, availableWidth, height);
+            y += height + 16;
+        }
+
+        addChart('Pie Chart', pieCanvas, 220);
+        addChart('Bar Chart', barCanvas, 320);
+        doc.save('last-access-report-' + formatDateYYYYMMDD(now) + '.pdf');
+    }
+
+    function exportDataToExcel() {
+        if (!window.XLSX) {
+            console.error('SheetJS XLSX library is not available.');
+            return;
+        }
+
+        var wb = window.XLSX.utils.book_new();
+
+        var pieRows = latestPieEntries.map(function (e) {
+            return {
+                BucketOrder: e.bucketOrder,
+                BucketLabel: e.bucketLabel,
+                DataSizeBytes: e.dataSize,
+                DataSizeHuman: formatBytes(e.dataSize || 0),
+                DataSizePercentage: e.dataSizePercentage,
+                FileCount: e.fileCount
+            };
+        });
+        if (pieRows.length === 0) {
+            pieRows.push({
+                BucketOrder: '',
+                BucketLabel: '',
+                DataSizeBytes: '',
+                DataSizeHuman: '',
+                DataSizePercentage: '',
+                FileCount: ''
+            });
+        }
+
+        var barRows = latestBarEntries.map(function (e) {
+            return {
+                Subfolder: e.subfolder || '',
+                BucketOrder: e.bucketOrder,
+                BucketLabel: e.bucketLabel,
+                DataSizeBytes: e.dataSize,
+                DataSizeHuman: formatBytes(e.dataSize || 0),
+                FileCount: e.fileCount
+            };
+        });
+        if (barRows.length === 0) {
+            barRows.push({
+                Subfolder: '',
+                BucketOrder: '',
+                BucketLabel: '',
+                DataSizeBytes: '',
+                DataSizeHuman: '',
+                FileCount: ''
+            });
+        }
+
+        window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(pieRows), 'Pie Data');
+        window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(barRows), 'Bar Data');
+
+        var now = new Date();
+        window.XLSX.writeFile(wb, 'last-access-report-' + formatDateYYYYMMDD(now) + '.xlsx');
     }
 
 }());
