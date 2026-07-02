@@ -20,6 +20,8 @@ import java.util.concurrent.Executors;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.AmazonClientException;
@@ -106,6 +108,9 @@ public class HpcS3Connection {
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -258,6 +263,7 @@ public class HpcS3Connection {
 			config.setMaxErrorRetry(maxErrorRetries);
 			config.withValidateAfterInactivityMillis(validateAfterInactivityMillis);
 			if (Boolean.TRUE.equals(disableCertChecking)) {
+				logger.warn("SSL certificate checking is disabled for S3 connections. This is not recommended for production environments.");
 				System.setProperty("com.amazonaws.sdk.disableCertChecking", "true");
 			}
 			AmazonS3 s3Client = null;
