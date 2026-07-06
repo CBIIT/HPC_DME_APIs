@@ -67,23 +67,21 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"           end as bucket_order " +
 		"    from irods.hpc_data_object_last_access_mv " +
 		"    where effective_accessed_date is not null " +
-		"      and base_path = ? " +
-		"      and path like ? || '/%' " +
+		"      and (? is null or base_path = ?) " +
+		"      and (? is null or path like ? || '/%') " +
 		"      and bucket not like ? " +
 		") " +
 		"select " +
 		"       bucket_label, " +
 		"       bucket_order, " +
 		"       count(*) as file_count, " +
-		"       round(count(*) * 100 / sum(count(*)) over (), 2) as percentage, " +
+		"       nvl(round(count(*) * 100 / nullif(sum(count(*)) over (), 0), 2), 0) as percentage, " +
 		"       sum(data_size) as data_size, " +
-		"       round(sum(data_size) * 100 / sum(sum(data_size)) over (), 2) as data_size_percentage " +
+		"       nvl(round(sum(data_size) * 100 / nullif(sum(sum(data_size)) over (), 0), 2), 0) as data_size_percentage " +
 		"from bucketed_files " +
 		"group by bucket_label, bucket_order " +
 		"order by bucket_order";
 
-	// Bar chart SQL: extracts the first immediate subfolder under currentPath
-	// for each file, then groups by subfolder and last-access bucket.
 	private static final String BAR_CHART_SQL =
 		"with params as ( " +
 		"    select ? as base_path_filter, " +
@@ -121,30 +119,26 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"    from irods.hpc_data_object_last_access_mv h" +
 		"    cross join params p " +
 		"    where h.effective_accessed_date is not null " +
-		"      and h.base_path = p.base_path_filter " +
-		"      and h.path like p.path_prefix || '/%' " +
+		"      and (p.base_path_filter is null or h.base_path = p.base_path_filter) " +
+		"      and (p.path_prefix is null or h.path like p.path_prefix || '/%') " +
 		"      and h.bucket not like p.bucket_filter " +
 		"), " +
 		"subfolder_counts as ( " +
 		"    select " +
-		"           regexp_substr( " +
-		"               substr(path, length(path_prefix) + 2), " +
-		"               '[^/]+', " +
-		"               1, " +
-		"               1 " +
-		"           ) as subfolder, " +
+		"           case " +
+		"               when path_prefix is null then regexp_substr(path, '[^/]+', 1, 1) " +
+		"               else regexp_substr(substr(path, length(path_prefix) + 2), '[^/]+', 1, 1) " +
+		"           end as subfolder, " +
 		"           bucket_label, " +
 		"           bucket_order, " +
 		"           count(*) as file_count, " +
 		"           sum(data_size) as data_size " +
 		"    from bucketed_files " +
 		"    group by " +
-		"           regexp_substr( " +
-		"               substr(path, length(path_prefix) + 2), " +
-		"               '[^/]+', " +
-		"               1, " +
-		"               1 " +
-		"           ), " +
+		"           case " +
+		"               when path_prefix is null then regexp_substr(path, '[^/]+', 1, 1) " +
+		"               else regexp_substr(substr(path, length(path_prefix) + 2), '[^/]+', 1, 1) " +
+		"           end, " +
 		"           bucket_label, " +
 		"           bucket_order " +
 		") " +
@@ -153,9 +147,9 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"       bucket_label, " +
 		"       bucket_order, " +
 		"       file_count, " +
-		"       round(file_count * 100 / sum(file_count) over (), 2) as percentage, " +
+		"       nvl(round(file_count * 100 / nullif(sum(file_count) over (), 0), 2), 0) as percentage, " +
 		"       data_size, " +
-		"       round(data_size * 100 / sum(data_size) over (), 2) as data_size_percentage " +
+		"       nvl(round(data_size * 100 / nullif(sum(data_size) over (), 0), 2), 0) as data_size_percentage " +
 		"from subfolder_counts " +
 		"where subfolder is not null " +
 		"order by subfolder";
@@ -216,7 +210,8 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 	public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath, boolean includeAWSBucket)
 			throws HpcException {
 		try {
-			return jdbcTemplate.query(PIE_CHART_SQL, pieChartRowMapper, basePath, currentPath,includeAWSBucket ? "/" : "%aws%");
+			return jdbcTemplate.query(PIE_CHART_SQL, pieChartRowMapper,
+					basePath, basePath, currentPath, currentPath, includeAWSBucket ? "/" : "%aws%");
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to query last access pie chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);

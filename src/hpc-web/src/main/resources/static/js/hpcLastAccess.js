@@ -116,14 +116,16 @@
 
         // Path criteria (common aliases used by existing forms/controllers)
         add('path', path);
-        add('basepath', currentBasePath);
+        if (currentBasePath && currentBasePath !== 'ALL') {
+            add('basepath', currentBasePath);
+        }
 
         // Date criteria aliases
         add('fromDate', range.from);
         add('toDate', range.to);
-		
-		// includeAWSBucket Flag
-		add('includeAWSBucket', getIncludeAWSBucketFlag())
+
+        // includeAWSBucket Flag
+        add('includeAWSBucket', getIncludeAWSBucketFlag())
 
         document.body.appendChild(form);
         form.submit();
@@ -143,18 +145,20 @@
         $('#basePathSelect').on('change', function () {
             var selected = $(this).val();
             if (!selected) {
+                currentBasePath = '';
+                currentPath = '';
                 $('#chartsRow').hide();
                 $('#breadcrumbContainer').hide();
                 return;
             }
             currentBasePath = selected;
-            currentPath = selected;
+            currentPath = (selected === 'ALL') ? '' : selected;
             loadCharts(currentBasePath, currentPath);
         });
 
         $('#includeAWSBucket').on('change', function () {
             if (currentBasePath) {
-                loadCharts(currentBasePath, currentPath || currentBasePath);
+                loadCharts(currentBasePath, currentPath);
             }
         });
 
@@ -170,9 +174,43 @@
     });
 
     // -------------------------------------------------------------------------
+    // Reset (destroy + clear) both charts
+    // -------------------------------------------------------------------------
+    function resetCharts() {
+        if (pieChart) {
+            pieChart.destroy();
+            pieChart = null;
+        }
+        if (barChart) {
+            barChart.destroy();
+            barChart = null;
+        }
+        latestPieEntries = [];
+        latestBarEntries = [];
+
+        // Clear pie canvas
+        var pieCanvas = document.getElementById('stalePieChart');
+        if (pieCanvas) {
+            var pieCtx = pieCanvas.getContext('2d');
+            pieCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
+        }
+
+        // Clear bar canvas
+        var barCanvas = document.getElementById('staleBarChart');
+        if (barCanvas) {
+            var barCtx = barCanvas.getContext('2d');
+            barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+            barCanvas.height = 0;
+        }
+
+        $('#leafMessage').hide();
+    }
+
+    // -------------------------------------------------------------------------
     // Load both charts for the given basePath and currentPath
     // -------------------------------------------------------------------------
     function loadCharts(basePath, path) {
+        resetCharts();
         $('#chartsRow').show();
         updateBreadcrumb(path);
         fetchPieData(basePath, path);
@@ -188,10 +226,15 @@
     // -------------------------------------------------------------------------
     function fetchPieData(basePath, path) {
         $('#pieLoading').show();
+        var params = {
+            basePath: basePath || '',
+            currentPath: path || '',
+            includeAWSBucket: getIncludeAWSBucketFlag()
+        };
         $.ajax({
             url: '/lastAccess/pieChartData',
             method: 'GET',
-            data: { basePath: basePath, currentPath: path, includeAWSBucket: getIncludeAWSBucketFlag() },
+            data: params,
             dataType: 'json',
             success: function (data) {
                 $('#pieLoading').hide();
@@ -214,10 +257,15 @@
     function fetchBarData(basePath, path) {
         $('#barLoading').show();
         $('#leafMessage').hide();
+        var params = {
+            basePath: basePath || 'ALL',
+            currentPath: path || '',
+            includeAWSBucket: getIncludeAWSBucketFlag()
+        };
         $.ajax({
             url: '/lastAccess/barChartData',
             method: 'GET',
-            data: { basePath: basePath, currentPath: path, includeAWSBucket: getIncludeAWSBucketFlag() },
+            data: params,
             dataType: 'json',
             success: function (data) {
                 $('#barLoading').hide();
@@ -474,7 +522,18 @@
     // Drill down into a subfolder
     // -------------------------------------------------------------------------
     function drillDown(subfolder) {
-        currentPath = currentPath + '/' + subfolder;
+        var newPath = currentPath + '/' + subfolder;
+
+        if (currentBasePath === 'ALL') {
+            // First drill-down from ALL: the clicked top-level path becomes the new basePath.
+            currentBasePath = newPath;
+            currentPath = newPath;
+            // Sync the dropdown display without re-firing our change handler.
+            $('#basePathSelect').val(currentBasePath).trigger('change.select2');
+        } else {
+            currentPath = newPath;
+        }
+
         loadCharts(currentBasePath, currentPath);
     }
 
@@ -482,6 +541,9 @@
     // Navigate to an ancestor path via breadcrumb click
     // -------------------------------------------------------------------------
     function breadcrumbNavigate(path) {
+        if (!currentBasePath) {
+            return;
+        }
         currentPath = path;
         loadCharts(currentBasePath, currentPath);
     }
