@@ -100,6 +100,7 @@ public class HpcLastAccessController extends AbstractHpcController {
             }
         }
         basepaths.sort(String.CASE_INSENSITIVE_ORDER);
+        basepaths.add(0, "ALL");
         model.addAttribute("basepaths", basepaths);
 
         return "lastaccess";
@@ -126,12 +127,14 @@ public class HpcLastAccessController extends AbstractHpcController {
             return "{\"error\":\"Unauthorized\"}";
         }
         try {
-            String requestURL = UriComponentsBuilder
+            UriComponentsBuilder requestBuilder = UriComponentsBuilder
                     .fromHttpUrl(reportServiceURL + "/lastAccessPieChart")
-                    .queryParam("basePath", basePath)
-                    .queryParam("currentPath", currentPath)
-                    .queryParam("includeAWSBucket", includeAWSBucket)
-                    .build().encode().toUri().toURL().toExternalForm();
+                    .queryParam("includeAWSBucket", includeAWSBucket);
+            
+            requestBuilder.queryParam("basePath", !"ALL".equalsIgnoreCase(basePath) ? basePath: "")
+                    .queryParam("currentPath", !"ALL".equalsIgnoreCase(basePath) ? currentPath: "");
+
+            String requestURL = requestBuilder.build().encode().toUri().toURL().toExternalForm();
 
             WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
             client.header("Authorization", "Bearer " + authToken);
@@ -181,12 +184,14 @@ public class HpcLastAccessController extends AbstractHpcController {
             return "{\"error\":\"Unauthorized\"}";
         }
         try {
-            String requestURL = UriComponentsBuilder
+            UriComponentsBuilder requestBuilder = UriComponentsBuilder
                     .fromHttpUrl(reportServiceURL + "/lastAccessBarChart")
-                    .queryParam("basePath", basePath)
-                    .queryParam("currentPath", currentPath)
-                    .queryParam("includeAWSBucket", includeAWSBucket)
-                    .build().encode().toUri().toURL().toExternalForm();
+                    .queryParam("includeAWSBucket", includeAWSBucket);
+            
+            requestBuilder.queryParam("basePath", !"ALL".equalsIgnoreCase(basePath) ? basePath: "")
+            .queryParam("currentPath", !"ALL".equalsIgnoreCase(basePath) ? currentPath: "");
+            
+            String requestURL = requestBuilder.build().encode().toUri().toURL().toExternalForm();
 
             WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
             client.header("Authorization", "Bearer " + authToken);
