@@ -257,13 +257,6 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
           throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
       }
 
-      if (basePath == null || basePath.isEmpty()) {
-          throw new HpcException("basePath is required", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-      if (currentPath == null || currentPath.isEmpty()) {
-          throw new HpcException("currentPath is required", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-
       List<HpcLastAccessPieChartEntry> entries =
               reportService.getLastAccessPieChartData(basePath, currentPath, includeAWSBucket);
 
@@ -278,13 +271,6 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       HpcRequestInvoker invoker = securityService.getRequestInvoker();
       if (invoker == null) {
           throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
-      }
-
-      if (basePath == null || basePath.isEmpty()) {
-          throw new HpcException("basePath is required", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-      if (currentPath == null || currentPath.isEmpty()) {
-          throw new HpcException("currentPath is required", HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
       List<HpcLastAccessBarChartEntry> entries =
