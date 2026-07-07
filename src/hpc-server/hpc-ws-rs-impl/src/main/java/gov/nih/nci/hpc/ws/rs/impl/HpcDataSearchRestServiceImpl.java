@@ -34,6 +34,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcNaturalLanguageQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
 
@@ -104,6 +105,21 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl implements 
 			collections = dataSearchBusService.getCollections(decodeString(queryName), detailedResponse, page, pageSize,
 					totalCount);
 
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(
+				!collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty() ? collections
+						: null,
+				true);
+	}
+
+	@Override
+	public Response queryCollectionsByNaturalLanguage(HpcNaturalLanguageQueryDTO naturalLanguageQuery) {
+		HpcCollectionListDTO collections = null;
+		try {
+			collections = dataSearchBusService.getCollectionsByNaturalLanguageQuery(naturalLanguageQuery);
 		} catch (HpcException e) {
 			return errorResponse(e);
 		}

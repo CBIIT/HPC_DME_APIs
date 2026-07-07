@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcNaturalLanguageQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -51,6 +52,16 @@ public interface HpcDataSearchBusService {
 	 */
 	public HpcCollectionListDTO getCollections(String queryName, Boolean detailedResponse, Integer page,
 			Integer pageSize, Boolean totalCount) throws HpcException;
+
+	/**
+	 * Get Collections by natural language query.
+	 *
+	 * @param naturalLanguageQueryDTO The natural language query DTO.
+	 * @return A list of Collection DTO ordered by semantic relevance.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollectionListDTO getCollectionsByNaturalLanguageQuery(
+			HpcNaturalLanguageQueryDTO naturalLanguageQueryDTO) throws HpcException;
 
 	/**
 	 * Get data objects by compound metadata query.

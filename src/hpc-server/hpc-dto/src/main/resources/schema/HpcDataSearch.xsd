@@ -56,4 +56,18 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>		
+
+	<!-- Natural Language Query -->
+	<xsd:element name="HpcNaturalLanguageQueryDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+			    <xsd:element name="queryText" type="xsd:string" />
+			    <xsd:element name="maxResults" type="xsd:int" minOccurs="0" />
+			    <xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
+			    <xsd:element name="page" type="xsd:int" minOccurs="0" />
+			    <xsd:element name="pageSize" type="xsd:int" minOccurs="0" />
+			    <xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>
