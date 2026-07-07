@@ -70,12 +70,14 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcNaturalLanguageQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcCatalogService;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
+import gov.nih.nci.hpc.service.HpcVectorSearchService;
 import gov.nih.nci.hpc.service.impl.HpcRequestContext;
 
 /**
@@ -86,6 +88,7 @@ import gov.nih.nci.hpc.service.impl.HpcRequestContext;
 public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
 	private static final int USER_QUERY_SEARCH_RESULTS_PAGE_SIZE = 10000;
+	private static final int DEFAULT_NLQ_MAX_RESULTS = 100;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -106,6 +109,10 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	// Data Management Bus Service instance.
 	@Autowired
 	private HpcDataManagementBusService dataManagementBusService = null;
+
+	// Vector Search Application Service instance.
+	@Autowired
+	private HpcVectorSearchService vectorSearchService = null;
 
 	// Notification Application service instance.
 	@Autowired
@@ -197,6 +204,50 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	public HpcCollectionListDTO getCollections(String queryName, Boolean detailedResponse, Integer page,
 			Integer pageSize, Boolean totalCount) throws HpcException {
 		return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
+	}
+
+	@Override
+	public HpcCollectionListDTO getCollectionsByNaturalLanguageQuery(
+			HpcNaturalLanguageQueryDTO naturalLanguageQueryDTO) throws HpcException {
+		// Input validation.
+		if (naturalLanguageQueryDTO == null
+				|| StringUtils.isBlank(naturalLanguageQueryDTO.getQueryText())) {
+			throw new HpcException("Null or blank natural language query text",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		int page = naturalLanguageQueryDTO.getPage() != null ? naturalLanguageQueryDTO.getPage() : 1;
+		if (page < 1) {
+			throw new HpcException("Invalid search results page requested",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		int pageSize = naturalLanguageQueryDTO.getPageSize() != null ? naturalLanguageQueryDTO.getPageSize() : 0;
+		boolean totalCount = naturalLanguageQueryDTO.getTotalCount() != null
+				&& naturalLanguageQueryDTO.getTotalCount();
+		boolean detailedResponse = naturalLanguageQueryDTO.getDetailedResponse() != null
+				&& naturalLanguageQueryDTO.getDetailedResponse();
+		int maxResults = naturalLanguageQueryDTO.getMaxResults() != null
+				&& naturalLanguageQueryDTO.getMaxResults() > 0 ? naturalLanguageQueryDTO.getMaxResults()
+						: DEFAULT_NLQ_MAX_RESULTS;
+
+		// Execute the vector search to get all ordered matching collection paths.
+		List<String> allPaths = vectorSearchService.queryCollections(
+				naturalLanguageQueryDTO.getQueryText(), maxResults);
+
+		// Apply pagination to the result set.
+		int limit = dataSearchService.getSearchResultsPageSize(pageSize);
+		int offset = (page - 1) * limit;
+		List<String> pagePaths = allPaths.subList(Math.min(offset, allPaths.size()),
+				Math.min(offset + limit, allPaths.size()));
+
+		// Build and return the collection list DTO.
+		HpcCollectionListDTO collectionsDTO = toCollectionListDTO(pagePaths, detailedResponse);
+		collectionsDTO.setPage(page);
+		collectionsDTO.setLimit(limit);
+		if (totalCount) {
+			collectionsDTO.setTotalCount(allPaths.size());
+		}
+		return collectionsDTO;
 	}
 
 	@Override

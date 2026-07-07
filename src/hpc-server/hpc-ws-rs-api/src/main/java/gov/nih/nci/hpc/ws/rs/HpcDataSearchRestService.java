@@ -20,6 +20,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import gov.nih.nci.hpc.dto.catalog.HpcCatalogRequestDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcNaturalLanguageQueryDTO;
 
 /**
  * HPC Data Search REST Service Interface.
@@ -61,6 +62,18 @@ public interface HpcDataSearchRestService {
       @QueryParam("pageSize") Integer pageSize,
       @QueryParam("totalCount") Boolean totalCount);
 
+
+  /**
+   * Get collections by natural language query.
+   *
+   * @param naturalLanguageQuery A natural language query DTO.
+   * @return The REST service response w/ HpcCollectionListDTO entity.
+   */
+  @POST
+  @Path("/collection/query/naturalLanguage")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response queryCollectionsByNaturalLanguage(HpcNaturalLanguageQueryDTO naturalLanguageQuery);
 
   /**
    * Get data objects by compound metadata query.
