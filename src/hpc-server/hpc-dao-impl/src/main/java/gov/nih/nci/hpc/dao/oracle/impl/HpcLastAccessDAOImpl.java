@@ -224,10 +224,12 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 	public List<HpcLastAccessBarChartEntry> getLastAccessBarChartData(String basePath, String currentPath, boolean includeAWSBucket)
 			throws HpcException {
 		try {
+			String basePathFilter = (basePath != null && !basePath.trim().isEmpty()) ? basePath : null;
+			String currentPathFilter = (currentPath != null && !currentPath.trim().isEmpty()) ? currentPath : null;
 			// currentPath is bound 4 times: once in path LIKE, twice in substr(path, length(?)+2)
 			// in SELECT and GROUP BY clauses.
 			return jdbcTemplate.query(BAR_CHART_SQL, barChartRowMapper,
-					basePath, currentPath, includeAWSBucket ? "/" : "%aws%");
+					basePathFilter, currentPathFilter, includeAWSBucket ? "/" : "%aws%");
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to query last access bar chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
