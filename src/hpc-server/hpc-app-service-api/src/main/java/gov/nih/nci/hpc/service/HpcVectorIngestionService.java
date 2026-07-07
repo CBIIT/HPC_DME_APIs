@@ -20,10 +20,10 @@ public interface HpcVectorIngestionService {
 
     /**
      * Generate an embedding vector from collection metadata and store it in the
-     * vector store with the associated collection ID.
+     * vector store with the associated collection path.
      *
-     * @param collectionId HPC collection ID.
+     * @param collectionPath HPC collection path.
      * @throws HpcException on service failure.
      */
-    public void indexCollection(String collectionId) throws HpcException;
+    public void indexCollection(String collectionPath) throws HpcException;
 }
