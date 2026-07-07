@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -43,9 +42,6 @@ public class HpcVectorIngestionServiceImpl implements HpcVectorIngestionService 
     private HpcVectorStoreProxy hpcVectorStoreProxy = null;
 
     @Autowired
-    private HpcMetadataDAO hpcMetadataDAO = null;
-
-    @Autowired
     private HpcMetadataService hpcMetadataService = null;
 
     @Autowired
@@ -57,25 +53,19 @@ public class HpcVectorIngestionServiceImpl implements HpcVectorIngestionService 
     private static final String METADATA_PLACEHOLDER = "{{metadata}}";
 
     @Override
-    public void indexCollection(String collectionId) throws HpcException {
-        if (collectionId == null || collectionId.isBlank()) {
-            throw new HpcException("Collection ID cannot be blank", HpcErrorType.INVALID_REQUEST_INPUT);
+    public void indexCollection(String collectionPath) throws HpcException {
+        if (collectionPath == null || collectionPath.isBlank()) {
+            throw new HpcException("Collection path cannot be blank", HpcErrorType.INVALID_REQUEST_INPUT);
         }
 
-        String path = hpcMetadataDAO.getCollectionPathByCollectionId(collectionId);
-        if (StringUtils.isBlank(path)) {
-            throw new HpcException("Collection path not found for collection ID: " + collectionId,
-                    HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-
-        HpcMetadataEntries metadataEntries = hpcMetadataService.getCollectionMetadataEntries(path);
+        HpcMetadataEntries metadataEntries = hpcMetadataService.getCollectionMetadataEntries(collectionPath);
         List<HpcMetadataEntry> userMetadataEntries = metadataEntries != null
                 ? hpcMetadataService.toUserProvidedMetadataEntries(metadataEntries.getSelfMetadataEntries())
                 : new ArrayList<>();
         String embeddingText = getEmbeddingText(userMetadataEntries);
 
         List<Float> vector = hpcTextEmbeddingProxy.getEmbeddingVector(embeddingText);
-        hpcVectorStoreProxy.storeVector(vector, collectionId);
+        hpcVectorStoreProxy.storeVector(vector, collectionPath);
     }
 
     private String getEmbeddingText(List<HpcMetadataEntry> metadataEntries) {
