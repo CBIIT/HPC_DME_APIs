@@ -152,14 +152,8 @@ public class HpcLastAccessController extends AbstractHpcController {
                 return "{\"error\":\"Failed to retrieve pie chart data\"}";
             }
         } catch (Exception e) {
-            logger.error("Error retrieving last accessed collection pie chart data: {}", e.getMessage(), e);
-            try {
-                ObjectMapper errMapper = new ObjectMapper();
-                return errMapper.writeValueAsString(
-                        java.util.Collections.singletonMap("error", e.getMessage()));
-            } catch (Exception je) {
-                return "{\"error\":\"Internal error\"}";
-            }
+            logger.error("Error retrieving last accessed collection pie chart data", e);
+            return "{\"error\":\"Internal error\"}";
         }
     }
 
