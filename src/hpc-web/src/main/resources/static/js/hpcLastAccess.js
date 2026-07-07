@@ -50,12 +50,12 @@
         return pad2(date.getMonth() + 1) + '/' + pad2(date.getDate()) + '/' + date.getFullYear();
     }
 
-    // Format bytes to human-readable format (B, KB, MB, GB, TB)
+    // Format bytes to human-readable format (B, KB, MB, GB, TB, PB)
     function formatBytes(bytes) {
         if (bytes === 0) return '0 B';
         var k = 1024;
-        var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        var i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
         return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     }
 
@@ -367,7 +367,7 @@
         var subfolderSet = [];
         var seenSubs = {};
         entries.forEach(function (e) {
-            if (e.subfolder && !seenSubs[e.subfolder]) {
+            if (e.subfolder && e.subfolder !== 'h' && !seenSubs[e.subfolder]) {
                 seenSubs[e.subfolder] = true;
                 subfolderSet.push(e.subfolder);
             }
@@ -654,8 +654,101 @@
             y += height + 16;
         }
 
+        function addBarPivotTable() {
+            if (!latestBarEntries || latestBarEntries.length === 0) {
+                return;
+            }
+
+            // Keep bucket columns in fixed report order.
+            var bucketLabels = BUCKET_ORDER
+                .map(function (order) { return BUCKET_LABELS[order]; })
+                .filter(function (label) {
+                    return latestBarEntries.some(function (e) { return e && e.bucketLabel === label; });
+                });
+
+            if (bucketLabels.length === 0) {
+                return;
+            }
+
+            var subfolderMap = {};
+            latestBarEntries.forEach(function (e) {
+                if (!e || !e.subfolder) {
+                    return;
+                }
+                if (!subfolderMap[e.subfolder]) {
+                    subfolderMap[e.subfolder] = {};
+                }
+                subfolderMap[e.subfolder][e.bucketLabel] = formatBytes(e.dataSize || 0);
+            });
+
+            var subfolders = Object.keys(subfolderMap).sort();
+            if (subfolders.length === 0) {
+                return;
+            }
+
+            var columns = ['Subfolder'].concat(bucketLabels);
+            var tableWidth = pageWidth - (margin * 2);
+            var colWidth = tableWidth / columns.length;
+            var lineHeight = 11;
+            var cellPadX = 2;
+            var cellPadY = 2;
+
+            var ensureSpace = function (neededHeight) {
+                if (y + neededHeight > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
+            };
+
+            var drawRow = function (rowValues, isHeader) {
+                var wrappedByCol = rowValues.map(function (value, idx) {
+                    var maxWidth = Math.max(colWidth - (cellPadX * 2), 10);
+                    return doc.splitTextToSize(String(value || ''), maxWidth);
+                });
+
+                var maxLines = 1;
+                wrappedByCol.forEach(function (lines) {
+                    if (lines.length > maxLines) {
+                        maxLines = lines.length;
+                    }
+                });
+
+                var rowHeight = (maxLines * lineHeight) + (cellPadY * 2);
+                ensureSpace(rowHeight);
+
+                doc.setFontSize(isHeader ? 9 : 8);
+                wrappedByCol.forEach(function (lines, idx) {
+                    var x = margin + (idx * colWidth);
+                    var textY = y + cellPadY + lineHeight - 2;
+                    doc.text(lines, x + cellPadX, textY);
+                });
+
+                y += rowHeight;
+            };
+
+            ensureSpace(26);
+            doc.setFontSize(11);
+            doc.text('Bar Data by Subfolder', margin, y);
+            y += 12;
+
+            drawRow(columns, true);
+
+            subfolders.forEach(function (subfolder) {
+                var row = columns.map(function (col, idx) {
+                    if (idx === 0) {
+                        return subfolder;
+                    }
+                    return subfolderMap[subfolder][col] || '0 B';
+                });
+                drawRow(row, false);
+            });
+
+            y += 8;
+        }
+
         addChart('Pie Chart', pieCanvas, 220);
         addChart('Bar Chart', barCanvas, 320);
+        addBarPivotTable();
         doc.save('last-access-report-' + formatDateYYYYMMDD(now) + '.pdf');
     }
 
@@ -667,50 +760,41 @@
 
         var wb = window.XLSX.utils.book_new();
 
-        var pieRows = latestPieEntries.map(function (e) {
-            return {
-                BucketOrder: e.bucketOrder,
-                BucketLabel: e.bucketLabel,
-                DataSizeBytes: e.dataSize,
-                DataSizeHuman: formatBytes(e.dataSize || 0),
-                DataSizePercentage: e.dataSizePercentage,
-                FileCount: e.fileCount
-            };
-        });
-        if (pieRows.length === 0) {
-            pieRows.push({
-                BucketOrder: '',
-                BucketLabel: '',
-                DataSizeBytes: '',
-                DataSizeHuman: '',
-                DataSizePercentage: '',
-                FileCount: ''
+        var bucketLabels = BUCKET_ORDER
+            .map(function (order) { return BUCKET_LABELS[order]; })
+            .filter(function (label) {
+                return latestBarEntries.some(function (e) { return e && e.bucketLabel === label; });
             });
+
+        var subfolderMap = {};
+        latestBarEntries.forEach(function (e) {
+            if (!e || !e.subfolder || e.subfolder === 'h') {
+                return;
+            }
+            if (!subfolderMap[e.subfolder]) {
+                subfolderMap[e.subfolder] = {};
+            }
+            subfolderMap[e.subfolder][e.bucketLabel] = formatBytes(e.dataSize || 0);
+        });
+
+        var subfolders = Object.keys(subfolderMap).sort();
+        var rows = subfolders.map(function (subfolder) {
+            var row = { Subfolder: subfolder };
+            bucketLabels.forEach(function (label) {
+                row[label] = subfolderMap[subfolder][label] || '0 B';
+            });
+            return row;
+        });
+
+        if (rows.length === 0) {
+            var emptyRow = { Subfolder: '' };
+            bucketLabels.forEach(function (label) {
+                emptyRow[label] = '';
+            });
+            rows.push(emptyRow);
         }
 
-        var barRows = latestBarEntries.map(function (e) {
-            return {
-                Subfolder: e.subfolder || '',
-                BucketOrder: e.bucketOrder,
-                BucketLabel: e.bucketLabel,
-                DataSizeBytes: e.dataSize,
-                DataSizeHuman: formatBytes(e.dataSize || 0),
-                FileCount: e.fileCount
-            };
-        });
-        if (barRows.length === 0) {
-            barRows.push({
-                Subfolder: '',
-                BucketOrder: '',
-                BucketLabel: '',
-                DataSizeBytes: '',
-                DataSizeHuman: '',
-                FileCount: ''
-            });
-        }
-
-        window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(pieRows), 'Pie Data');
-        window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(barRows), 'Bar Data');
+        window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(rows), 'Subfolder Summary');
 
         var now = new Date();
         window.XLSX.writeFile(wb, 'last-access-report-' + formatDateYYYYMMDD(now) + '.xlsx');
