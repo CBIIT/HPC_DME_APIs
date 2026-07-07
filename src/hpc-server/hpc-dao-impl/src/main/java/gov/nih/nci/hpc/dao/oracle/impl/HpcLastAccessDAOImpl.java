@@ -210,8 +210,10 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 	public List<HpcLastAccessPieChartEntry> getLastAccessPieChartData(String basePath, String currentPath, boolean includeAWSBucket)
 			throws HpcException {
 		try {
+			String basePathFilter = (basePath != null && !basePath.trim().isEmpty()) ? basePath : null;
+			String currentPathFilter = (currentPath != null && !currentPath.trim().isEmpty()) ? currentPath : null;
 			return jdbcTemplate.query(PIE_CHART_SQL, pieChartRowMapper,
-					basePath, basePath, currentPath, currentPath, includeAWSBucket ? "/" : "%aws%");
+					basePathFilter, basePathFilter, currentPathFilter, currentPathFilter, includeAWSBucket ? "/" : "%aws%");
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to query last access pie chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
