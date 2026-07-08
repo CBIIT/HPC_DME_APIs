@@ -71,7 +71,7 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
     }
 
     @Override
-    public List<String> findCollectionIds(List<Float> queryVector, int maxResults) throws HpcException {
+    public List<String> findCollectionPaths(List<Float> queryVector, int maxResults) throws HpcException {
         if (queryVector == null || queryVector.isEmpty()) {
             throw new HpcException("Query vector cannot be empty", HpcErrorType.INVALID_REQUEST_INPUT);
         }
@@ -87,13 +87,13 @@ public class HpcVectorStoreProxyImpl implements HpcVectorStoreProxy {
             EmbeddingSearchResult<TextSegment> searchResult = hpcEmbeddingStore.getEmbeddingStore().search(searchRequest);
             List<EmbeddingMatch<TextSegment>> matches = searchResult.matches();
 
-            List<String> collectionIds = new ArrayList<>(matches.size());
+            List<String> collectionPaths = new ArrayList<>(matches.size());
             for (EmbeddingMatch<TextSegment> match : matches) {
                 if (match.embedded() != null && match.embedded().text() != null) {
-                    collectionIds.add(match.embedded().text());
+                    collectionPaths.add(match.embedded().text());
                 }
             }
-            return collectionIds;
+            return collectionPaths;
         } catch (Exception e) {
             throw new HpcException("Failed to query Qdrant vector store " + queryVector, HpcErrorType.UNEXPECTED_ERROR, e);
         }
