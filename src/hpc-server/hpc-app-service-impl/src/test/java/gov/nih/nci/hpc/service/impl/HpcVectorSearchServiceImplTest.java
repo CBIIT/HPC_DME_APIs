@@ -68,15 +68,15 @@ public class HpcVectorSearchServiceImplTest {
     public void testQueryCollectionsSuccess() throws HpcException {
         HpcVectorSearchServiceImpl service = createService();
         List<Float> queryVector = Arrays.asList(0.4f, 0.5f, 0.6f);
-        List<String> collectionIds = Arrays.asList("COLL_1", "COLL_2");
+        List<String> collectionPaths = Arrays.asList("COLL_1", "COLL_2");
         when(hpcTextEmbeddingProxy.getEmbeddingVector(QUERY_TEXT)).thenReturn(queryVector);
-        when(hpcVectorStoreProxy.findCollectionIds(queryVector, 2)).thenReturn(collectionIds);
+        when(hpcVectorStoreProxy.findCollectionPaths(queryVector, 2)).thenReturn(collectionPaths);
 
         List<String> results = service.queryCollections(QUERY_TEXT, 2);
 
-        assertEquals(collectionIds, results);
+        assertEquals(collectionPaths, results);
         verify(hpcTextEmbeddingProxy).getEmbeddingVector(QUERY_TEXT);
-        verify(hpcVectorStoreProxy).findCollectionIds(queryVector, 2);
+        verify(hpcVectorStoreProxy).findCollectionPaths(queryVector, 2);
     }
 
     private HpcVectorSearchServiceImpl createService() {

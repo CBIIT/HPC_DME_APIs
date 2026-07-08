@@ -17,7 +17,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  * <p>
  * HPC vector store proxy interface. Provides operations to persist embedding
  * vectors paired with an HPC collection ID, and to retrieve matching collection
- * IDs for a given query vector.
+ * paths for a given query vector.
  * </p>
  */
 public interface HpcVectorStoreProxy {
@@ -32,13 +32,13 @@ public interface HpcVectorStoreProxy {
     public void storeVector(List<Float> vector, String collectionId) throws HpcException;
 
     /**
-     * Find collection IDs whose stored vectors are most similar to the given query
-     * vector.
+     * Find collection paths whose stored vectors are most similar to the given
+     * query vector.
      *
      * @param queryVector Pre-computed embedding of the natural-language query.
      * @param maxResults  Maximum number of results to return.
-     * @return Ordered list of collection IDs (most similar first).
+     * @return Ordered list of collection paths (most similar first).
      * @throws HpcException on vector-store failures.
      */
-    public List<String> findCollectionIds(List<Float> queryVector, int maxResults) throws HpcException;
+    public List<String> findCollectionPaths(List<Float> queryVector, int maxResults) throws HpcException;
 }
