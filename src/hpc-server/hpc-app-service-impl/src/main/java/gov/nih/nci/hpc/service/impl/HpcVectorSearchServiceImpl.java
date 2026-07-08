@@ -42,6 +42,6 @@ public class HpcVectorSearchServiceImpl implements HpcVectorSearchService {
         }
 
         List<Float> queryVector = hpcTextEmbeddingProxy.getEmbeddingVector(queryText);
-        return hpcVectorStoreProxy.findCollectionIds(queryVector, maxResults);
+        return hpcVectorStoreProxy.findCollectionPaths(queryVector, maxResults);
     }
 }

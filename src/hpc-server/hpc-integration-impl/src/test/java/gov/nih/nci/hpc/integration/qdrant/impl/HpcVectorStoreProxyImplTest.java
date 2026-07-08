@@ -47,31 +47,31 @@ class HpcVectorStoreProxyImplTest {
     }
 
     @Test
-    void findCollectionIdsShouldRejectNullOrEmptyQueryVector() throws Exception {
+    void findCollectionPathsShouldRejectNullOrEmptyQueryVector() throws Exception {
         HpcVectorStoreProxyImpl proxy = newProxy();
 
-        HpcException exception = assertThrows(HpcException.class, () -> proxy.findCollectionIds(null, 10));
+        HpcException exception = assertThrows(HpcException.class, () -> proxy.findCollectionPaths(null, 10));
 
         assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exception.getErrorType());
         assertEquals("Query vector cannot be empty", exception.getMessage());
     }
 
     @Test
-    void findCollectionIdsShouldRejectNonPositiveMaxResults() throws Exception {
+    void findCollectionPathsShouldRejectNonPositiveMaxResults() throws Exception {
         HpcVectorStoreProxyImpl proxy = newProxy();
 
-        HpcException exception = assertThrows(HpcException.class, () -> proxy.findCollectionIds(List.of(1.0f), 0));
+        HpcException exception = assertThrows(HpcException.class, () -> proxy.findCollectionPaths(List.of(1.0f), 0));
 
         assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exception.getErrorType());
         assertEquals("maxResults must be greater than zero", exception.getMessage());
     }
 
     @Test
-    void findCollectionIdsShouldWrapUnexpectedErrors() throws Exception {
+    void findCollectionPathsShouldWrapUnexpectedErrors() throws Exception {
         HpcVectorStoreProxyImpl proxy = newProxy();
 
         HpcException exception = assertThrows(HpcException.class,
-                () -> proxy.findCollectionIds(List.of(1.0f, 2.0f), 5));
+                () -> proxy.findCollectionPaths(List.of(1.0f, 2.0f), 5));
 
         assertEquals(HpcErrorType.UNEXPECTED_ERROR, exception.getErrorType());
         assertInstanceOf(NullPointerException.class, exception.getCause());
