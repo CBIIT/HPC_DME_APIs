@@ -713,7 +713,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
                     HpcErrorType.INVALID_REQUEST_INPUT);
         }
 
-        // Validate search path and inactivity months are defined
+        // Validate search source, path and inactivity months are defined.
         if (StringUtils.isEmpty(s3Configuration.getAutoTieringSearchPath())) {
             throw new HpcException("Auto-tiering search path is not defined for S3 configuration: " + s3ArchiveConfigurationId,
                     HpcErrorType.INVALID_REQUEST_INPUT);
@@ -740,14 +740,13 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
         String objectIdPrefix = s3Configuration.getBaseArchiveDestination().getFileLocation().getFileId();
 
         Map<String, HpcFileLocation> autoTieringDataObjects = new HashMap<>();
-        boolean isExternalArchive = HpcAutoTieringSearchSource.TRINO.equals(s3Configuration.getAutoTieringSearchSource());
 
         // Query for files not accessed within the specified period and create the map of data obejcts to return.
         autoTieringDAO.getFilesNotAccessed(
                 s3Configuration.getAutoTieringSearchPath(),
                 s3Configuration.getAutoTieringInactivityMonths(),
                 dataManagementConfiguration.getS3AutoTieringConfigurationId()).forEach(path -> {
-            if (isExternalArchive) {
+            if (HpcAutoTieringSearchSource.TRINO.equals(s3Configuration.getAutoTieringSearchSource())) {
                 // Construct HpcFileLocation of the data object in the external archive to be auto-tiered.
                 HpcFileLocation fileLocation = new HpcFileLocation();
                 fileLocation.setFileContainerId(bucket);
@@ -756,8 +755,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
                 fileLocation.setFileId(objectIdPrefix + relativePath);
 
                 // Calculate the DME path (to be registered) for this data object in the external archive.
-                autoTieringDataObjects.put(basePath + path, fileLocation);
-            } else {
+                autoTieringDataObjects.put(basePath + relativePath, fileLocation);
+
+            } else if (HpcAutoTieringSearchSource.ORACLE.equals(s3Configuration.getAutoTieringSearchSource())) {
                 // This is auto-tiering of a data object in DME internal archive - just return the DME path
                 autoTieringDataObjects.put(path, null);
             }

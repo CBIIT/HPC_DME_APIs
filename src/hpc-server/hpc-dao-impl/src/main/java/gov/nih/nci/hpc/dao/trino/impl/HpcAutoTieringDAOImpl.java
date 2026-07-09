@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -54,6 +55,10 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	@Autowired
 	@Qualifier("hpcTrinoJdbcTemplate")
 	private JdbcTemplate jdbcTemplate = null;
+
+	// Flag indicating whether Trino is available.
+	@Value("${hpc.dao.trino.available:true}")
+	private Boolean trinoAvailable = null;
 
 	// The logger instance.
 	private static final Logger logger = LoggerFactory.getLogger(HpcAutoTieringDAOImpl.class.getName());
@@ -99,6 +104,11 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	 */
 	@SuppressWarnings("unused")
 	private void dbConnect() throws HpcException {
+		if (Boolean.FALSE.equals(trinoAvailable)) {
+			logger.info("Trino is not available. Skipping DB connection test");
+			return;
+		}
+
 		try {
 			jdbcTemplate.getDataSource().getConnection();
 
