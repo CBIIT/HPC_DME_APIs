@@ -378,6 +378,18 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl implements 
 		return okResponse(null, false);
 	}
 
+	@Override
+	public Response indexCollection(String path) {
+		try {
+			dataSearchBusService.indexCollection(toNormalizedPath(path));
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(null, false);
+	}
+
 	private String decodeString(String encodedValue) throws HpcException {
 		try {
 			return URLDecoder.decode(encodedValue, "UTF-8");
