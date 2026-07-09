@@ -283,6 +283,7 @@
 				<entry key="refreshMetadataViews"
 					value="${hpc.ws.rs.auth.data-search.refresh-metadata-views}" />
 				<entry key="emailExport" value="${hpc.ws.rs.auth.data-search.email-export}" />
+				<entry key="indexCollection" value="${hpc.ws.rs.auth.data-search.index-collection}" />
 
 				<!-- Data Browse Service Authorizations -->
 				<entry key="addBookmark" value="${hpc.ws.rs.auth.data-browse.add-bookmark}" />

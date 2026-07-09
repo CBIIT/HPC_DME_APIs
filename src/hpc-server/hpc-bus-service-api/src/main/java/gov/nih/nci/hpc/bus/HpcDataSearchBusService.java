@@ -220,4 +220,13 @@ public interface HpcDataSearchBusService {
 	 */
 	public void sendCurrentQueryResults(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) throws HpcException;
 
+	/**
+	 * Generate an embedding vector from a collection's metadata and store it in the
+	 * vector store.
+	 *
+	 * @param collectionPath The HPC collection path to index.
+	 * @throws HpcException on service failure.
+	 */
+	public void indexCollection(String collectionPath) throws HpcException;
+
 }

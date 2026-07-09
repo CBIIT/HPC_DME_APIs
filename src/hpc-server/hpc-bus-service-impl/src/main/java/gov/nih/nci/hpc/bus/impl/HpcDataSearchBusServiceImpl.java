@@ -77,6 +77,7 @@ import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
+import gov.nih.nci.hpc.service.HpcVectorIngestionService;
 import gov.nih.nci.hpc.service.HpcVectorSearchService;
 import gov.nih.nci.hpc.service.impl.HpcRequestContext;
 
@@ -113,6 +114,10 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 	// Vector Search Application Service instance.
 	@Autowired
 	private HpcVectorSearchService vectorSearchService = null;
+
+	// Vector Ingestion Application Service instance.
+	@Autowired
+	private HpcVectorIngestionService vectorIngestionService = null;
 
 	// Notification Application service instance.
 	@Autowired
@@ -1172,5 +1177,14 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		if (totalCount % limit != 0)
 			total++;
 		return total;
+	}
+
+	@Override
+	public void indexCollection(String collectionPath) throws HpcException {
+		if (StringUtils.isBlank(collectionPath)) {
+			throw new HpcException("Collection path cannot be blank", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		vectorIngestionService.indexCollection(collectionPath);
 	}
 }
