@@ -291,4 +291,14 @@ public interface HpcDataSearchRestService {
   @POST
   @Path("/refreshMetadataViews")
   public Response refreshMetadataViews();
+
+  /**
+   * Generate and store the embedding vector for a collection's metadata.
+   *
+   * @param path The collection path.
+   * @return The REST service response.
+   */
+  @POST
+  @Path("/collection/index/{path:.*}")
+  public Response indexCollection(@PathParam("path") String path);
 }
