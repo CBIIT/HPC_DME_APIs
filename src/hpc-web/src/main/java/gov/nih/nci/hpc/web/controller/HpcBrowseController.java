@@ -650,6 +650,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
 					listChildEntry.setFileSize(Long.toString(listEntry.getDataSize()));
+					listChildEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(Long.valueOf(listEntry.getDataSize()).toString(), true));
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     if(listEntry.getCreatedAt() != null)
                       listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
