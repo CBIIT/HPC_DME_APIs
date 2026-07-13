@@ -121,9 +121,6 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 
 
 /**
@@ -1498,6 +1495,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
 			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			if (downloadTask.getExternalArchiveFlag()){
+				HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(downloadTask.getS3ArchiveConfigurationId());
+				String temporaryArchiveLinkPath = downloadRequest.getPath().replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
+				downloadRequest.setArchiveLocation(getArchiveLocation(temporaryArchiveLinkPath));
+			} else {
+				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			}
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 			logger.info("2168: In continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadRequest = {} {} ", downloadRequest.getPath(), downloadRequest.getArchiveLocation());			
 		}
