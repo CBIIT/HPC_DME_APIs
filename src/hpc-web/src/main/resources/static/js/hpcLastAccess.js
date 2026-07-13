@@ -142,6 +142,8 @@
             width: '500px'
         });
 
+        toggleExportButtons();
+
         $('#basePathSelect').on('change', function () {
             var selected = $(this).val();
             if (!selected) {
@@ -149,10 +151,12 @@
                 currentPath = '';
                 $('#chartsRow').hide();
                 $('#breadcrumbContainer').hide();
+                toggleExportButtons();
                 return;
             }
             currentBasePath = selected;
             currentPath = (selected === 'ALL') ? '' : selected;
+            toggleExportButtons();
             loadCharts(currentBasePath, currentPath);
         });
 
@@ -172,6 +176,15 @@
             exportDataToExcel();
         });
     });
+
+    function getIncludeAWSBucketFlag() {
+        return $('#includeAWSBucket').is(':checked');
+    }
+
+    function toggleExportButtons() {
+        var hasBasePath = !!$('#basePathSelect').val();
+        $('#exportPdfBtn, #exportExcelBtn').prop('disabled', !hasBasePath);
+    }
 
     // -------------------------------------------------------------------------
     // Reset (destroy + clear) both charts
@@ -215,10 +228,6 @@
         updateBreadcrumb(path);
         fetchPieData(basePath, path);
         fetchBarData(basePath, path);
-    }
-
-    function getIncludeAWSBucketFlag() {
-        return $('#includeAWSBucket').is(':checked');
     }
 
     // -------------------------------------------------------------------------
@@ -530,6 +539,7 @@
             currentPath = newPath;
             // Sync the dropdown display without re-firing our change handler.
             $('#basePathSelect').val(currentBasePath).trigger('change.select2');
+            toggleExportButtons();
         } else {
             currentPath = newPath;
         }

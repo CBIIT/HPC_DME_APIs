@@ -1,5 +1,5 @@
 /**
- * HpcStaleFilesController.java
+ * HpcLastAccessController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
