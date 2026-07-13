@@ -121,6 +121,10 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -1392,6 +1396,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public boolean continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		// Recreate the download request from the task (that was persisted).
+		logger.info("2168: In continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask externalArchiveFlag = " + downloadTask.getExternalArchiveFlag());
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
@@ -1494,6 +1499,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// mounted file system.
 			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
+			logger.info("2168: In continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadRequest = {} {} ", downloadRequest.getPath(), downloadRequest.getArchiveLocation());			
 		}
 
 		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage
@@ -1509,6 +1515,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Submit a data object download request.
 		try {
+			logger.info("2168: Submit a data object download request transfer type = " + downloadRequest.getDataTransferType());
 			String dataTransferRequestId = dataTransferProxies.get(downloadRequest.getDataTransferType())
 					.downloadDataObject(authenticatedToken, downloadRequest, baseArchiveDestination, progressListener,
 							encryptedTransfer);
@@ -3539,6 +3546,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void performS3AsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataTransferType dataTransferType, HpcDataObjectDownloadResponse response,
 			HpcDataTransferConfiguration dataTransferConfiguration) throws HpcException {
+		
+		logger.info("2168: In performS3AsynchronousDownload downloadRequest path = " + downloadRequest.getPath());
 
 		HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
 				this);
