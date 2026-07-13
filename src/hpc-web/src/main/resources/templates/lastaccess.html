@@ -117,10 +117,10 @@
 								</div>
 
                                 <div class="form-group">
-                                    <button type="button" id="exportPdfBtn" class="btn btn-default" title="Export pie and bar charts to PDF">
+                                    <button type="button" id="exportPdfBtn" class="btn btn-default" title="Export pie and bar charts to PDF" disabled>
                                         <i class="fa fa-file-pdf-o"></i> Export PDF
                                     </button>
-                                    <button type="button" id="exportExcelBtn" class="btn btn-default" title="Export chart data to Excel">
+                                    <button type="button" id="exportExcelBtn" class="btn btn-default" title="Export chart data to Excel" disabled>
                                         <i class="fa fa-file-excel-o"></i> Export Excel
                                     </button>
                                 </div>
@@ -201,6 +201,14 @@
 	<script>
 	$(document).ready(function () {
 		$('#sub-menu-stalefiles').addClass("active");
+
+		function toggleExportButtons() {
+			var hasBasePath = !!$('#basePathSelect').val();
+			$('#exportPdfBtn, #exportExcelBtn').prop('disabled', !hasBasePath);
+		}
+
+		toggleExportButtons();
+		$('#basePathSelect').on('change', toggleExportButtons);
 	});
 	</script>
 
