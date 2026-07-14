@@ -150,7 +150,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		boolean collectionCreated = true;
 		try {
 			collectionCreated = dataManagementBusService.registerCollection(toNormalizedPath(path),
-					collectionRegistration);
+					collectionRegistration,
+					collectionRegistration != null
+							&& Boolean.TRUE.equals(collectionRegistration.getGenerateMetadataVector()));
 
 		} catch (HpcException e) {
 			return errorResponse(e);

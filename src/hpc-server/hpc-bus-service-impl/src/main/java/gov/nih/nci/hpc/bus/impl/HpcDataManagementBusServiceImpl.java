@@ -170,6 +170,7 @@ import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.service.HpcVectorIngestionService;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -228,6 +229,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Autowired
 	private HpcDataSearchService dataSearchService = null;
 
+	// Vector Ingestion Application Service instance.
+	@Autowired
+	private HpcVectorIngestionService vectorIngestionService = null;
+
 	// The limit on total number of collections and data objects in a single bulk
 	// metadata update request
 	@Value("${hpc.bus.bulkMetadataDataUpdateLimit}")
@@ -260,6 +265,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration)
 			throws HpcException {
+		return registerCollection(path, collectionRegistration, false);
+	}
+
+	@Override
+	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration,
+			boolean generateMetadataVector) throws HpcException {
 		// Determine the data management configuration to use based on the path.
 		String configurationId = dataManagementService.findDataManagementConfigurationId(path);
 		if (StringUtils.isEmpty(configurationId)) {
@@ -269,12 +280,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		return registerCollection(path, collectionRegistration, invokerNciAccount.getUserId(),
-				invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), configurationId);
+				invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(), configurationId,
+				generateMetadataVector);
 	}
 
 	@Override
 	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration, String userId,
 			String userName, String configurationId) throws HpcException {
+		return registerCollection(path, collectionRegistration, userId, userName, configurationId, false);
+	}
+
+	@Override
+	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration, String userId,
+			String userName, String configurationId, boolean generateMetadataVector) throws HpcException {
 		// Input validation.
 		validatePath(path);
 
@@ -358,6 +376,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 
 			updateCollection(path, collectionRegistration.getMetadataEntries(), userId);
+		}
+
+		if (created && generateMetadataVector) {
+			vectorIngestionService.indexCollection(path);
 		}
 
 		return created;
@@ -2776,6 +2798,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						getParentCollectionMetadataEntries(parentCollectionPath, parentCollectionsBulkMetadataEntries));
 				collectionRegistration.setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
 				collectionRegistration.setCreateParentCollections(true);
+				collectionRegistration.setGenerateMetadataVector(false);
 
 				// Register the parent collection.
 				registerCollection(parentCollectionPath, collectionRegistration, userId, userName, configurationId);
