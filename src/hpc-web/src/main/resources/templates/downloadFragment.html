@@ -3,7 +3,7 @@
 		<div id="radioset">
 			<p>Transfer Type:</p>
 			<div class="pull-left radioMargin"
-				th:if="${downloadType == 'datafile'}">
+				th:if="${downloadType == 'datafile' and external != 'true'}">
 				<label class="radio-inline"><input type="radio"
 					id="searchTypeSync" name="searchType" value="sync"
 					onChange="display('sync')" checked="checked" />Local
@@ -49,7 +49,7 @@
 
 <th:block th:fragment="globusHelpFragment">
     <div id="globus-help-links" style="display: none; margin-top: -15px; margin-bottom: 20px">
-        To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
+        To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/D4BwPg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
     </div>
 </th:block>
 
@@ -62,7 +62,7 @@
 				type="text" style="margin-left: 10px; margin-right: 5px;" class="form-control fieldWidth fieldMargin" name="endPointName" th:value="${endPointName}"
 				id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 			<a id="downloadlink"
-	             th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">
+	             th:href="@{../download(ext=${external},type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">
 	             Obtain from Globus (Optional)</a>
 		</div>
 		<div class="col-sm-12 column leftMargin" style="display: flex; align-items: center; margin-bottom: 10px;">
