@@ -187,6 +187,19 @@ public class HpcSystemAccountLocator {
 		return retSysAcct;
 	}
 
+	/**
+	 * Get the number of configured pooled system accounts for the given data management configuration.
+	 *
+	 * @param hpcDataMgmtConfigId The ID of specific data management configuration.
+	 * @return The number of pooled system accounts.
+	 * @throws HpcException on service failure.
+	 */
+	public int getSystemAccountCount(String hpcDataMgmtConfigId) throws HpcException {
+
+		List<PooledSystemAccountWrapper> pool = accessProperPool(hpcDataMgmtConfigId);
+		return pool != null ? pool.size() : 0;
+	}
+
 
 	// Populate the system accounts maps.
 	private void initSystemAccountsData() throws HpcException {

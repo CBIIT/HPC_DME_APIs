@@ -574,7 +574,6 @@ ul.sidebar-menu li.active a i {
     margin: 20px 10px 0 0;
 }
 .header {
-    position: fixed;
     left: 0;
     right: 0;
     z-index: 1002;

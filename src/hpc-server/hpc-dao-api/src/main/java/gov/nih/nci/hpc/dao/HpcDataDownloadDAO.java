@@ -551,4 +551,14 @@ public interface HpcDataDownloadDAO {
 	 */
 	public void removeGoogleAccessTokens(Integer googleAccessTokenRetentionPeriod) throws HpcException;
 
+
+	/**
+	 * Get the number of unique users for the given DataTransferType
+	 *
+	 * @param type The data transfer type to query for.
+	 * @return The count of users in download task table
+	 * @throws HpcException
+	 */
+	public int getUserCountByDataTransferType(HpcDataTransferType type) throws HpcException;
+
 }
