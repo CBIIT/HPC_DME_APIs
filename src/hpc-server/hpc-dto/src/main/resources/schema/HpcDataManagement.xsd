@@ -42,6 +42,8 @@
 					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
 				<xsd:element name="createParentCollections"
 					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="generateMetadataVector"
+					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="parentCollectionsBulkMetadataEntries"
 					type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 				<xsd:element name="linkSourcePath" type="xsd:string" />

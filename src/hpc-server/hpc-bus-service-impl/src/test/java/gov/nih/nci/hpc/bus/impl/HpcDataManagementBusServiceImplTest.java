@@ -12,17 +12,28 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
+import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
+import gov.nih.nci.hpc.service.HpcVectorIngestionService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 
 class HpcDataManagementBusServiceImplTest {
 
@@ -37,6 +48,18 @@ class HpcDataManagementBusServiceImplTest {
     private HpcDataManagementService dataManagementService;
     @Mock
     private HpcSecurityService securityService;
+    @Mock
+    private HpcDataManagementSecurityService dataManagementSecurityService;
+    @Mock
+    private HpcEventService eventService;
+    @Mock
+    private HpcReportService reportService;
+    @Mock
+    private HpcDataMigrationBusService migrationBusService;
+    @Mock
+    private HpcDataSearchService dataSearchService;
+    @Mock
+    private HpcVectorIngestionService vectorIngestionService;
 
     // The bus service under test.
     @InjectMocks
@@ -337,6 +360,70 @@ class HpcDataManagementBusServiceImplTest {
         doNothing().when(dataManagementService).delete(anyString(), anyBoolean());
         var resp = service.deleteDataObject("/path/to/data", true, null);
         assertEquals(true, resp.getDataManagementDeleteStatus());
+    }
+
+    @Test
+    void testRegisterCollection_GenerateMetadataVectorFalse_DoesNotIndex() throws Exception {
+        HpcCollectionRegistrationDTO collectionRegistration = createCollectionRegistration();
+
+        when(dataManagementService.createDirectory("/test/path")).thenReturn(true);
+        doNothing().when(metadataService).addMetadataToCollection(eq("/test/path"), anyList(), eq("configuration-id"));
+        doNothing().when(metadataService).addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
+                "configuration-id", null);
+        doNothing().when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
+
+        assertTrue(service.registerCollection("/test/path", collectionRegistration, "user", "User Name",
+                "configuration-id", false));
+
+        verify(vectorIngestionService, never()).indexCollection(anyString());
+    }
+
+    @Test
+    void testRegisterCollection_GenerateMetadataVectorTrue_IndexesNewCollection() throws Exception {
+        HpcCollectionRegistrationDTO collectionRegistration = createCollectionRegistration();
+
+        when(dataManagementService.createDirectory("/test/path")).thenReturn(true);
+        doNothing().when(metadataService).addMetadataToCollection(eq("/test/path"), anyList(), eq("configuration-id"));
+        doNothing().when(metadataService).addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
+                "configuration-id", null);
+        doNothing().when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
+
+        assertTrue(service.registerCollection("/test/path", collectionRegistration, "user", "User Name",
+                "configuration-id", true));
+
+        verify(vectorIngestionService).indexCollection("/test/path");
+    }
+
+    @Test
+    void testRegisterCollection_GenerateMetadataVectorTrue_DoesNotIndexUpdatedCollection() throws Exception {
+        HpcCollectionRegistrationDTO collectionRegistration = createCollectionRegistration();
+        HpcMetadataEntries metadataBefore = new HpcMetadataEntries();
+        metadataBefore.getSelfMetadataEntries().addAll(collectionRegistration.getMetadataEntries());
+        HpcSystemGeneratedMetadata systemGeneratedMetadata = new HpcSystemGeneratedMetadata();
+        systemGeneratedMetadata.setConfigurationId("configuration-id");
+        HpcRequestInvoker invoker = mock(HpcRequestInvoker.class);
+
+        when(dataManagementService.createDirectory("/test/path")).thenReturn(false);
+        when(metadataService.getCollectionMetadataEntries("/test/path")).thenReturn(metadataBefore);
+        when(metadataService.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries()))
+                .thenReturn(systemGeneratedMetadata);
+        when(securityService.getRequestInvoker()).thenReturn(invoker);
+        when(invoker.getUserRole()).thenReturn(HpcUserRole.USER);
+
+        assertTrue(!service.registerCollection("/test/path", collectionRegistration, "user", "User Name",
+                "configuration-id", true));
+
+        verify(vectorIngestionService, never()).indexCollection(anyString());
+        verify(metadataService, never()).updateCollectionMetadata(anyString(), anyList(), anyString(), anyBoolean());
+    }
+
+    private HpcCollectionRegistrationDTO createCollectionRegistration() {
+        HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
+        HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+        metadataEntry.setAttribute("collection_type");
+        metadataEntry.setValue("ParentCollection");
+        collectionRegistration.getMetadataEntries().add(metadataEntry);
+        return collectionRegistration;
     }
 
     @Test

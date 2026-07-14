@@ -82,6 +82,21 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
+	 * Register a Collection.
+	 *
+	 * @param path                   The collection's path.
+	 * @param collectionRegistration A DTO containing a list of metadata entries to
+	 *                               attach to the collection.
+	 * @param generateMetadataVector Generate and store a metadata vector for a newly
+	 *                               registered collection.
+	 * @return true if a new collection was registered, false if the collection
+	 *         already exists and its metadata got updated.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration,
+			boolean generateMetadataVector) throws HpcException;
+
+	/**
 	 * Register a Collection. In this overloaded method, the user-id, user Name, and
 	 * DOC are explicitly provided.
 	 *
@@ -97,6 +112,25 @@ public interface HpcDataManagementBusService {
 	 */
 	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration, String userId,
 			String userName, String configurationId) throws HpcException;
+
+	/**
+	 * Register a Collection. In this overloaded method, the user-id, user Name, and
+	 * DOC are explicitly provided.
+	 *
+	 * @param path                   The collection's path.
+	 * @param collectionRegistration A DTO containing a list of metadata entries to
+	 *                               attach to the collection.
+	 * @param userId                 The registrar user-id.
+	 * @param userName               The registrar name.
+	 * @param configurationId        The data management configuration ID.
+	 * @param generateMetadataVector Generate and store a metadata vector for a newly
+	 *                               registered collection.
+	 * @return true if a new collection was registered, false if the collection
+	 *         already exists and its metadata got updated.
+	 * @throws HpcException on service failure.
+	 */
+	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration, String userId,
+			String userName, String configurationId, boolean generateMetadataVector) throws HpcException;
 
 	/**
 	 * Get Collection.
