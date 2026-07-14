@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import org.neo4j.cypher.internal.compiler.v2_1.functions.E;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +25,6 @@ import org.springframework.web.servlet.ModelAndView;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportEntry;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
@@ -34,15 +32,15 @@ import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroup;
-import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
+import io.micrometer.common.util.StringUtils;
 
 public abstract class AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.ssl.cert}")
@@ -143,6 +141,7 @@ public abstract class AbstractHpcController {
 			HttpSession session, HpcModelBuilder hpcModelBuilder) {
 
 		Set<String> userBasePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		Set<String> userExternalArchives = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
         //Get this user's permissions for the base paths
         HpcUserPermsForCollectionsDTO permissions = (HpcUserPermsForCollectionsDTO) session.getAttribute("userDOCPermissions");
@@ -160,7 +159,21 @@ public abstract class AbstractHpcController {
                 }
             }
         }
+        
+        // For the base paths that this user has access to, check if there are any external archive paths.
+        for(HpcDocDataManagementRulesDTO docRule: modelDTO.getDocRules()) {
+          for(HpcDataManagementRulesDTO rule: docRule.getRules()) {
+            if(userBasePaths.contains(rule.getBasePath())) {
+              if(StringUtils.isNotEmpty(rule.getExternalArchivePath()))
+                userExternalArchives.add(rule.getExternalArchivePath());
+            }
+          }
+              
+        }
+            
         session.setAttribute(sessionAttribute, userBasePaths);
+        session.setAttribute("userExternalArchives", userExternalArchives);
+        
 
 	}
 	
