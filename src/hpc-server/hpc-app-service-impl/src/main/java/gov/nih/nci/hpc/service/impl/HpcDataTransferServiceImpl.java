@@ -1186,8 +1186,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (numberOfActiveExternalDownloadTasksForPath == 0) {
 			try {
-				HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(s3ConfigurationId);
-				String temporaryArchiveLinkPath = path.replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
+				String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(path, s3ConfigurationId);
 				logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
 				HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
 				temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
@@ -1494,10 +1493,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
-			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
 			if (downloadTask.getExternalArchiveFlag()){
-				HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(downloadTask.getS3ArchiveConfigurationId());
-				String temporaryArchiveLinkPath = downloadRequest.getPath().replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
+				String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(downloadRequest.getPath(), downloadTask.getS3ArchiveConfigurationId());
 				downloadRequest.setArchiveLocation(getArchiveLocation(temporaryArchiveLinkPath));
 			} else {
 				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
@@ -4691,6 +4688,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
+	}
+
+	private String getTemporaryArchiveLinkPath(String userInputtedPath, String s3ArchiveConfigurationId) throws HpcException {
+		String temporaryArchiveLinkPath = null;
+		try {
+			HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
+			temporaryArchiveLinkPath = userInputtedPath.replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
+		} catch (HpcException e) {
+			logger.error("Failed to determine temporary archive link path", e);
+		}
+		return temporaryArchiveLinkPath;
 	}
 	
 }
