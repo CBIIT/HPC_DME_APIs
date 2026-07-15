@@ -21,7 +21,7 @@ TAG_KEY = "dme_access_time"
 def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, dry_run: bool = False, stacktrace: bool = False):
     if dry_run:
         print(f"DRYRUN tag s3://{bucket}/{key} -> {tag_key}={tag_value}")
-        return
+        return False
 
     # Get existing tags (if any)
     try:
@@ -39,7 +39,7 @@ def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, d
             print(f"ERROR s3://{bucket}/{key} - Failed to get tags: {error_code}: {error_msg}")
         if stacktrace:
             traceback.print_exc()
-        return
+        return False
 
     # Merge/update by Key
     merged = {t["Key"]: t["Value"] for t in existing}
@@ -53,6 +53,7 @@ def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, d
             Key=key,
             Tagging={"TagSet": new_tagset},
         )
+        return True
     except ClientError as e:
         error_code = e.response.get("Error", {}).get("Code", "")
         error_msg = e.response.get("Error", {}).get("Message", "")
@@ -64,6 +65,7 @@ def upsert_object_tag(s3, bucket: str, key: str, tag_key: str, tag_value: str, d
             print(f"ERROR s3://{bucket}/{key} - Failed to set tags: {error_code}: {error_msg}")
         if stacktrace:
             traceback.print_exc()
+        return False
 
 
 def parse_since_arg(since: str) -> str:
@@ -142,6 +144,7 @@ def main(argv=None):
     SELECT path.path AS file_path, max("time") AS latest_time
     FROM vast_audit_log_table
     WHERE "time" >= current_timestamp - {interval_literal}
+    AND object_type = 'FILE'
     {where_view_path}
     GROUP BY path.path
     """
@@ -171,12 +174,14 @@ def main(argv=None):
 
     # Example: consume the cursor, or you can return it from a function instead.
     rows = cursor.fetchall()
+    attempted = 0
+    tagged = 0
     for file_path, latest_time in rows:
         relative = file_path.removeprefix(args.view_path).lstrip("/")
 
         # Skip if the result is empty (means the row is exactly the view path itself)
         if not relative:
-            print(f"SKIP directory or empty key from path: {file_path}")
+            print(f"SKIP empty key from path: {file_path}")
             continue
 
         # Construct the full S3 key using object-id as the base path prefix
@@ -191,7 +196,8 @@ def main(argv=None):
         # S3 tag values must be strings; latest_time may be datetime-like
         tag_value = str(latest_time)
 
-        upsert_object_tag(
+        attempted += 1
+        if upsert_object_tag(
             s3,
             bucket=args.bucket,
             key=key,
@@ -199,7 +205,18 @@ def main(argv=None):
             tag_value=tag_value,
             dry_run=args.dry_run,
             stacktrace=args.stacktrace,
-        )
+        ):
+            tagged += 1
+
+    if not args.dry_run:
+        print("-" * 60)
+        if tagged == attempted:
+            print(f"SUCCESS: tagged {tagged} objects")
+        else:
+            print(f"FAILED: tagged {tagged} objects out of {attempted}")
+            return 1
+
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
