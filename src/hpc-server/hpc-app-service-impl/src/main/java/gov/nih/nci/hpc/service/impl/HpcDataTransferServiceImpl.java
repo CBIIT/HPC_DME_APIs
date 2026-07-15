@@ -1392,7 +1392,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public boolean continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		// Recreate the download request from the task (that was persisted).
-		logger.info("2168: In continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask externalArchiveFlag = " + downloadTask.getExternalArchiveFlag());
 		HpcDataTransferProgressListener progressListener = null;
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
@@ -1500,7 +1499,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
 			}
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
-			logger.info("2168: In continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadRequest = {} {} ", downloadRequest.getPath(), downloadRequest.getArchiveLocation());			
 		}
 
 		// If the destination is S3 (AWS or 3rd Party), or Google Drive / Cloud Storage
@@ -3547,8 +3545,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private void performS3AsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataTransferType dataTransferType, HpcDataObjectDownloadResponse response,
 			HpcDataTransferConfiguration dataTransferConfiguration) throws HpcException {
-		
-		logger.info("2168: In performS3AsynchronousDownload downloadRequest path = " + downloadRequest.getPath());
 
 		HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
 				this);
