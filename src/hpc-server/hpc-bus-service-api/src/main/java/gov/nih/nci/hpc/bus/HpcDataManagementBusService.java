@@ -521,8 +521,7 @@ public interface HpcDataManagementBusService {
 	 * @param collectionDownloadTaskId (Optional) The collection download task ID if
 	 *                                 this request is part of a collection download
 	 *                                 task
-	 * @param externalArchiveFlag      If true, the data object is in an external
-	 * @param userInputtedExternalPath  The user inputted external path for the data object. This is only set for external archive downloads.
+	 * @param externalArchiveFlag      If true, the data object is in an external archive
 	 * @return Download ResponseDTO
 	 * @throws HpcException on service failure.
 	 */
