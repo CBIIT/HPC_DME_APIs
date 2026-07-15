@@ -122,6 +122,7 @@ import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcUtil;
 
+
 /**
  * HPC Data Transfer Service Implementation.
  *
@@ -249,6 +250,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Google access token retention period in hours available for retries
 	@Value("${hpc.service.dataTransfer.googleAccessTokenRetentionPeriod}")
 	private Integer googleAccessTokenRetentionPeriod = null;
+
+	@Value("${hpc.bus.downloadArchiveLinkBasePath}")
+	private String downloadArchiveLinkBasePath = null;
+
 
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
@@ -1181,8 +1186,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (numberOfActiveExternalDownloadTasksForPath == 0) {
 			try {
-				HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
-				temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+				String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(path, s3ConfigurationId);
+				logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
+				HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
+				temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
 						configurationId, s3ConfigurationId);
 			} catch (HpcException e) {
 				logger.error("Failed to delete data object after download from external archive for path: "
@@ -1485,7 +1492,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
-			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			if (downloadTask.getExternalArchiveFlag()){
+				String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(downloadRequest.getPath(), downloadTask.getS3ArchiveConfigurationId());
+				downloadRequest.setArchiveLocation(getArchiveLocation(temporaryArchiveLinkPath));
+			} else {
+				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			}
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
@@ -1502,6 +1514,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Submit a data object download request.
 		try {
+			logger.info("2168: Submit a data object download request transfer type = " + downloadRequest.getDataTransferType());
 			String dataTransferRequestId = dataTransferProxies.get(downloadRequest.getDataTransferType())
 					.downloadDataObject(authenticatedToken, downloadRequest, baseArchiveDestination, progressListener,
 							encryptedTransfer);
@@ -4671,6 +4684,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
+	}
+
+	private String getTemporaryArchiveLinkPath(String userInputtedPath, String s3ArchiveConfigurationId) throws HpcException {
+		String temporaryArchiveLinkPath = null;
+		try {
+			HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
+			temporaryArchiveLinkPath = userInputtedPath.replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
+		} catch (HpcException e) {
+			logger.error("Failed to determine temporary archive link path", e);
+		}
+		return temporaryArchiveLinkPath;
 	}
 	
 }
