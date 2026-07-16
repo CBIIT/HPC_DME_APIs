@@ -633,7 +633,7 @@
 
         var now = new Date();
         doc.setFontSize(14);
-        doc.text('Last Accessed Collection Report', margin, y);
+        doc.text('Collection Access Distribution Report', margin, y);
         y += 18;
         doc.setFontSize(10);
         doc.text('Path: ' + (currentPath || currentBasePath || ''), margin, y);
