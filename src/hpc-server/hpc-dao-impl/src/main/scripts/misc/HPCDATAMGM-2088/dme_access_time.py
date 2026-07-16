@@ -3,7 +3,6 @@ import argparse
 import sys
 import getpass
 import traceback
-from datetime import datetime, timezone
 
 from trino.dbapi import connect
 from trino.auth import BasicAuthentication
