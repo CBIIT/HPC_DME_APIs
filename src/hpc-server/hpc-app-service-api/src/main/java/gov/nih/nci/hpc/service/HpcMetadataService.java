@@ -71,6 +71,15 @@ public interface HpcMetadataService {
 	public void copyMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries) throws HpcException;
 
 	/**
+	 * Update a collection's system-generated metadata to record that a metadata
+	 * vector was successfully added.
+	 *
+	 * @param path The collection path.
+	 * @throws HpcException on service failure.
+	 */
+	public void setMetadataVectorAdded(String path) throws HpcException;
+
+	/**
 	 * Generate system metadata and attach to a collection. System generated
 	 * metadata is: 1. UUID. 2. Registrar user ID. 3. Registrar name. 4.
 	 * Configuration ID.

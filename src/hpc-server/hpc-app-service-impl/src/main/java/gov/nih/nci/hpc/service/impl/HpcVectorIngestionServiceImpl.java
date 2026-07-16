@@ -66,6 +66,7 @@ public class HpcVectorIngestionServiceImpl implements HpcVectorIngestionService 
 
         List<Float> vector = hpcTextEmbeddingProxy.getEmbeddingVector(embeddingText);
         hpcVectorStoreProxy.storeVector(vector, collectionPath);
+        hpcMetadataService.setMetadataVectorAdded(collectionPath);
     }
 
     private String getEmbeddingText(List<HpcMetadataEntry> metadataEntries) {
