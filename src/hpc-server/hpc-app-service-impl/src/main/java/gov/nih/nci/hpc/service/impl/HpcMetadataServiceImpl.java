@@ -33,6 +33,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_CREATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.COLLECTION_CREATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_VECTOR_ADDED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_EVENT_REQUIRED_ATTRIBUTE;
@@ -271,6 +272,19 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	}
 
 	@Override
+	public void setMetadataVectorAdded(String path) throws HpcException {
+		if (path == null) {
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+		addMetadataEntry(metadataEntries, toMetadataEntry(METADATA_VECTOR_ADDED_ATTRIBUTE, Boolean.TRUE.toString()));
+
+		dataManagementProxy.updateCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
+				metadataEntries);
+	}
+
+	@Override
 	public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(String path, String userId,
 			String userName, String configurationId, String linkSourcePath) throws HpcException {
 		// Input validation.
@@ -419,6 +433,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (metadataMap.get(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE) != null) {
 			systemGeneratedMetadata.setRegistrationEventRequired(
 					Boolean.valueOf(metadataMap.get(REGISTRATION_EVENT_REQUIRED_ATTRIBUTE)));
+		}
+
+		if (metadataMap.get(METADATA_VECTOR_ADDED_ATTRIBUTE) != null) {
+			systemGeneratedMetadata
+					.setMetadataVectorAdded(Boolean.valueOf(metadataMap.get(METADATA_VECTOR_ADDED_ATTRIBUTE)));
 		}
 
 		if (metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE) != null) {

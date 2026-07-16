@@ -395,6 +395,24 @@ class HpcDataManagementBusServiceImplTest {
     }
 
     @Test
+    void testRegisterCollection_GenerateMetadataVectorFailure_DoesNotFailRegistration() throws Exception {
+        HpcCollectionRegistrationDTO collectionRegistration = createCollectionRegistration();
+
+        when(dataManagementService.createDirectory("/test/path")).thenReturn(true);
+        doNothing().when(metadataService).addMetadataToCollection(eq("/test/path"), anyList(), eq("configuration-id"));
+        doNothing().when(metadataService).addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
+                "configuration-id", null);
+        doNothing().when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
+        doThrow(new HpcException("index failed", HpcErrorType.UNEXPECTED_ERROR))
+                .when(vectorIngestionService).indexCollection("/test/path");
+
+        assertTrue(service.registerCollection("/test/path", collectionRegistration, "user", "User Name",
+                "configuration-id", true));
+
+        verify(vectorIngestionService).indexCollection("/test/path");
+    }
+
+    @Test
     void testRegisterCollection_GenerateMetadataVectorTrue_DoesNotIndexUpdatedCollection() throws Exception {
         HpcCollectionRegistrationDTO collectionRegistration = createCollectionRegistration();
         HpcMetadataEntries metadataBefore = new HpcMetadataEntries();

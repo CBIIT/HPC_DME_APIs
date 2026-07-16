@@ -9,6 +9,9 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +104,7 @@ public class HpcVectorIngestionServiceImplTest {
 
         verify(hpcTextEmbeddingProxy).getEmbeddingVector("Embed this metadata: assay: RNASeq; disease_type: Lung");
         verify(hpcVectorStoreProxy).storeVector(embeddingVector, COLLECTION_PATH);
+        verify(hpcMetadataService).setMetadataVectorAdded(COLLECTION_PATH);
     }
 
     @Test
@@ -121,6 +125,31 @@ public class HpcVectorIngestionServiceImplTest {
 
         verify(hpcTextEmbeddingProxy).getEmbeddingVector("Embed this metadata: sample_type: Tumor");
         verify(hpcVectorStoreProxy).storeVector(embeddingVector, COLLECTION_PATH);
+        verify(hpcMetadataService).setMetadataVectorAdded(COLLECTION_PATH);
+    }
+
+    @Test
+    public void testIndexCollectionStoreVectorFailure_DoesNotSetMetadataVectorAdded() throws HpcException {
+        ReflectionTestUtils.setField(service, "embeddingTemplate", TEMPLATE);
+        List<Float> embeddingVector = Arrays.asList(0.1f, 0.2f, 0.3f);
+        HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+        metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("sample_type", "Tumor"));
+
+        when(hpcMetadataService.getCollectionMetadataEntries(COLLECTION_PATH)).thenReturn(metadataEntries);
+        when(hpcMetadataService.toUserProvidedMetadataEntries(metadataEntries.getSelfMetadataEntries()))
+                .thenReturn(metadataEntries.getSelfMetadataEntries());
+        when(hpcMetadataNormalizationLocator.getNormalizationMapping()).thenReturn(new LinkedHashMap<>());
+        when(hpcTextEmbeddingProxy.getEmbeddingVector("Embed this metadata: sample_type: Tumor"))
+                .thenReturn(embeddingVector);
+        doThrow(new HpcException("vector store failure", HpcErrorType.UNEXPECTED_ERROR))
+                .when(hpcVectorStoreProxy).storeVector(embeddingVector, COLLECTION_PATH);
+
+        try {
+            service.indexCollection(COLLECTION_PATH);
+            fail("Expected HpcException");
+        } catch (HpcException e) {
+            verify(hpcMetadataService, never()).setMetadataVectorAdded(COLLECTION_PATH);
+        }
     }
 
     private HpcMetadataEntry toMetadataEntry(String attribute, String value) {
