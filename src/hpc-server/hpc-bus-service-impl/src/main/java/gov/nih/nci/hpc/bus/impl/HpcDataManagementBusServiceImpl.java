@@ -379,7 +379,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		if (created && generateMetadataVector) {
-			vectorIngestionService.indexCollection(path);
+			try {
+				vectorIngestionService.indexCollection(path);
+			} catch (Exception e) {
+				logger.error("Failed to add metadata vector for collection: {}", path, e);
+			}
 		}
 
 		return created;
