@@ -1,3 +1,16 @@
+--
+-- hpc_data_object_last_access_mv.sql
+--
+-- Copyright SVG, Inc.
+-- Copyright Leidos Biomedical Research, Inc
+-- 
+-- Distributed under the OSI-approved BSD 3-Clause License.
+-- See http://ncip.github.com/HPC/LICENSE.txt for details.
+--
+--
+-- @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+--
+          
 create index irods.hpc_dtr_arc_2016_2022_type_path_completed_ix
     on irods.hpc_download_task_result_archive_2016_2022
        (type, path, completed) PARALLEL 4
@@ -26,7 +39,10 @@ with eligible_objects as (
     select object_id,
            object_path,
            coll_id
-    from irods.hpc_eligible_data_objects_mv
+    from irods.hpc_data_meta_main_mv
+    where META_ATTR_NAME='data_transfer_status'
+    and META_ATTR_VALUE='ARCHIVED'
+    and OBJECT_PATH not like '/ncifprodZone/home/DME_Deleted_Archive/%'
 ),
 upload_events as (
     select
@@ -44,6 +60,14 @@ archive_metadata as (
            meta_attr_value as bucket
     from irods.hpc_data_meta_main_mv
     where meta_attr_name = 'archive_file_container_id'
+),
+size_metadata as (
+    select
+           object_id,
+           object_path,
+           meta_attr_value as data_size
+    from irods.hpc_data_meta_main_mv
+    where meta_attr_name = 'source_file_size'
 ),
 configuration_events as (
     select
@@ -63,7 +87,6 @@ download_task_results_all as (
            type,
            path,
            completed,
-           data_size,
            archive_location_file_container_id,
            'HPC_DOWNLOAD_TASK_RESULT_ARCHIVE_2016_2022' as source_table,
            1 as source_priority
@@ -79,7 +102,6 @@ download_task_results_all as (
            type,
            path,
            completed,
-           data_size,
            archive_location_file_container_id,
            'HPC_DOWNLOAD_TASK_RESULT_ARCHIVE_2023' as source_table,
            2 as source_priority
@@ -95,7 +117,6 @@ download_task_results_all as (
            type,
            path,
            completed,
-           data_size,
            archive_location_file_container_id,
            'HPC_DOWNLOAD_TASK_RESULT_ARCHIVE_2024' as source_table,
            3 as source_priority
@@ -111,7 +132,6 @@ download_task_results_all as (
            type,
            path,
            completed,
-           data_size,
            archive_location_file_container_id,
            'HPC_DOWNLOAD_TASK_RESULT' as source_table,
            4 as source_priority
@@ -132,10 +152,6 @@ download_events as (
            max(user_id) keep (
                dense_rank last order by completed, source_priority, id
            ) as last_downloaded_by,
-
-           max(data_size) keep (
-               dense_rank last order by completed, source_priority, id
-           ) as data_size,
 
            max(archive_location_file_container_id) keep (
                dense_rank last order by completed, source_priority, id
@@ -171,7 +187,7 @@ select
        de.last_downloaded_by,
        de.last_download_source_table,
 
-       de.data_size,
+       sm.data_size,
        ce.doc,
        de.archive_location_file_container_id,
 
@@ -186,6 +202,8 @@ left join upload_events ue
        on ue.object_id = eo.object_id
 left join archive_metadata am
        on am.object_id = eo.object_id
+left join size_metadata sm
+       on sm.object_id = eo.object_id
 left join configuration_events ce
        on ce.object_id = eo.object_id
 left join download_events de
