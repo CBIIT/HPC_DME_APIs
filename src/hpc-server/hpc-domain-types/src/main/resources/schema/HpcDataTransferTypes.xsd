@@ -50,6 +50,7 @@
 			<xsd:enumeration value="URL_MULTI_PART" />
 			<xsd:enumeration value="FILE_SYSTEM" />
 			<xsd:enumeration value="ARCHIVE_LINK" />
+			<xsd:enumeration value="LEGACY" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
