@@ -41,8 +41,8 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	private static final String GET_FILES_NOT_ACCESSED_SQL =
 			"SELECT path FROM HPC_DATA_OBJECT_LAST_ACCESS_MV " +
 			"WHERE path LIKE ? AND S3_ARCHIVE_CONFIGURATION_ID != ? " +
-			"AND (effective_accessed_date IS NULL " +
-			"OR effective_accessed_date < current_timestamp - INTERVAL '{months}' MONTH)";
+			"AND effective_accessed_date < current_timestamp - INTERVAL '{inactivityMonths}' MONTH " +
+			"AND uploaded_date < current_timestamp - INTERVAL '{archivedMonths}' MONTH";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -72,16 +72,17 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public List<String> getFilesNotAccessed(String searchPath, Integer monthsNotAccessed, String s3ArchiveConfigurationId) throws HpcException {
+	public List<String> getFilesForAutoTiering(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException {
 		try {
 			return jdbcTemplate.queryForList(
-					GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()),
+					GET_FILES_NOT_ACCESSED_SQL.replace("{inactivityMonths}", inactivityMonths.toString())
+							.replace("{archivedMonths}", archivedMonths.toString()),
 					String.class, searchPath + "%", s3ArchiveConfigurationId);
 
 		} catch (DataAccessException e) {
 			throw new HpcException(
 					"Failed to query files not accessed in Oracle [searchPath=" + searchPath +
-					", monthsNotAccessed=" + monthsNotAccessed + "]: " + e.getMessage(),
+					", inactivityMonths=" + inactivityMonths + ", archivedMonths=" + archivedMonths + "]: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
