@@ -150,7 +150,13 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setExternalStorage(rs.getBoolean("EXTERNAL_STORAGE"));
 		s3Configuration.setPosixPath(rs.getString("POSIX_PATH"));
 		String autoTieringSearchSourcePath = rs.getString("AUTO_TIERING_SEARCH_SOURCE_PATH");
-		if (autoTieringSearchSourcePath != null && autoTieringSearchSourcePath.contains(":")) {
+		if (autoTieringSearchSourcePath != null) {
+			if (!autoTieringSearchSourcePath.contains(":")) {
+				throw new SQLException(
+						"Invalid AUTO_TIERING_SEARCH_SOURCE_PATH value: " + autoTieringSearchSourcePath
+								+ ". Expected format: <SOURCE>:<PATH>. Source must be one of: "
+								+ java.util.Arrays.toString(HpcAutoTieringSearchSource.values()));
+			}
 			String[] parts = autoTieringSearchSourcePath.split(":", 2);
 			try {
 				s3Configuration.setAutoTieringSearchSource(HpcAutoTieringSearchSource.fromValue(parts[0]));
