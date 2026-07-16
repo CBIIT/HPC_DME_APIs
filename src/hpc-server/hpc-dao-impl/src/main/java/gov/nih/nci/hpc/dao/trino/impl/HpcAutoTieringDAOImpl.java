@@ -45,7 +45,8 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 			"where element_type = 'FILE' " +
 			"and parent_path LIKE ? " +
 			"and (user_tags['dme_access_time'] is null " +
-			"or CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{months}' MONTH)";
+			"or CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{inactivityMonths}' MONTH) " +
+			"and ctime < current_timestamp - INTERVAL '{archivedMonths}' MONTH";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -79,16 +80,17 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public List<String> getFilesNotAccessed(String searchPath, Integer monthsNotAccessed, String s3ArchiveConfigurationId) throws HpcException {
+	public List<String> getFilesForAutoTiering(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException {
 		try {
 			return jdbcTemplate.queryForList(
-					GET_FILES_NOT_ACCESSED_SQL.replace("{months}", monthsNotAccessed.toString()),
+					GET_FILES_NOT_ACCESSED_SQL.replace("{inactivityMonths}", inactivityMonths.toString())
+							.replace("{archivedMonths}", archivedMonths.toString()),
 					String.class, searchPath + "%");
 
 		} catch (DataAccessException e) {
 			throw new HpcException(
 					"Failed to query files not accessed in external archive [searchPath=" + searchPath +
-					", monthsNotAccessed=" + monthsNotAccessed + "]: " + e.getMessage(),
+					", inactivityMonths=" + inactivityMonths + ", archivedMonths=" + archivedMonths + "]: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.VAST, e);
 		}
 	}

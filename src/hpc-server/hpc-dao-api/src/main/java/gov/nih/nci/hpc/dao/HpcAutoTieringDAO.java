@@ -25,16 +25,19 @@ import java.util.List;
  */
 public interface HpcAutoTieringDAO {
 	/**
-	 * Query for files that have not been accessed within the specified time period.
-	 * These files are candidates for auto-tiering migration to S3 Glacier Deep Archive.
+	 * Query for files that are candidates for auto-tiering migration to S3 Glacier Deep Archive.
+	 * These are files that have not been accessed within the specified inactivity period and have
+	 * been archived for at least the specified archived period.
 	 *
 	 * @param searchPath The search path to scan for files.
-	 * @param monthsNotAccessed The time period in months during which files were not accessed.
+	 * @param inactivityMonths The time period in months during which files were not accessed.
 	 *                          Files with last access time older than this will be returned.
+	 * @param archivedMonths The minimum time period in months a file must have been archived.
+	 *                       Only files archived at least this long ago will be returned.
 	 * @param s3ArchiveConfigurationId The S3 archive configuration ID to exclude. Only files
 	 *                                  NOT already in this S3 archive configuration are returned.
-	 * @return A list of file paths that have not been accessed within the specified time period.
+	 * @return A list of file paths that are candidates for auto-tiering.
 	 * @throws HpcException on service failure.
 	 */
-	List<String> getFilesNotAccessed(String searchPath, Integer monthsNotAccessed, String s3ArchiveConfigurationId) throws HpcException;
+	List<String> getFilesForAutoTiering(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException;
 }
