@@ -75,7 +75,6 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"       bucket_label, " +
 		"       bucket_order, " +
 		"       count(*) as file_count, " +
-		"       nvl(round(count(*) * 100 / nullif(sum(count(*)) over (), 0), 2), 0) as percentage, " +
 		"       sum(data_size) as data_size, " +
 		"       nvl(round(sum(data_size) * 100 / nullif(sum(sum(data_size)) over (), 0), 2), 0) as data_size_percentage " +
 		"from bucketed_files " +
@@ -147,7 +146,6 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		"       bucket_label, " +
 		"       bucket_order, " +
 		"       file_count, " +
-		"       nvl(round(file_count * 100 / nullif(sum(file_count) over (), 0), 2), 0) as percentage, " +
 		"       data_size, " +
 		"       nvl(round(data_size * 100 / nullif(sum(data_size) over (), 0), 2), 0) as data_size_percentage " +
 		"from subfolder_counts " +
@@ -171,7 +169,6 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		entry.setBucketLabel(rs.getString("bucket_label"));
 		entry.setBucketOrder(rs.getInt("bucket_order"));
 		entry.setFileCount(rs.getLong("file_count"));
-		entry.setPercentage(rs.getDouble("percentage"));
 		entry.setDataSize(rs.getLong("data_size"));
 		entry.setDataSizePercentage(rs.getDouble("data_size_percentage"));
 		return entry;
@@ -184,7 +181,6 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		entry.setBucketLabel(rs.getString("bucket_label"));
 		entry.setBucketOrder(rs.getInt("bucket_order"));
 		entry.setFileCount(rs.getLong("file_count"));
-		entry.setPercentage(rs.getDouble("percentage"));
 		entry.setDataSize(rs.getLong("data_size"));
 		entry.setDataSizePercentage(rs.getDouble("data_size_percentage"));
 		return entry;
