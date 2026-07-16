@@ -29,14 +29,8 @@
         4: '#7b1010'  // Dark red: over 365 days
     };
 
-    var BUCKET_LABELS = {
-        1: 'Green: accessed within 90 days',
-        2: 'Yellow: 90-180 days',
-        3: 'Red: 180-365 days',
-        4: 'Dark red: over 365 days'
-    };
-
-    var BUCKET_ORDER = [1, 2, 3, 4];
+    // Populated dynamically from the JSON response (bucketOrder -> bucketLabel)
+    var BUCKET_LABELS = {};
 
     function pad2(num) {
         return (num < 10 ? '0' : '') + num;
@@ -301,6 +295,11 @@
         entries.sort(function (a, b) { return a.bucketOrder - b.bucketOrder; });
         latestPieEntries = entries.slice();
 
+        // Populate BUCKET_LABELS from the response
+        entries.forEach(function (e) {
+            BUCKET_LABELS[e.bucketOrder] = e.bucketLabel;
+        });
+
         // Use dataSize and dataSizePercentage for chart ratios
         var labels = entries.map(function (e) {
             return e.bucketLabel + ' (' + e.dataSizePercentage + '%)';
@@ -356,6 +355,18 @@
         var entries = (data && data.barChartEntries) ? data.barChartEntries : [];
         latestBarEntries = entries.slice();
 
+        // Populate BUCKET_LABELS from the response
+        entries.forEach(function (e) {
+            if (e.bucketOrder && e.bucketLabel) {
+                BUCKET_LABELS[e.bucketOrder] = e.bucketLabel;
+            }
+        });
+
+        // Derive bucket orders present in this response, sorted ascending
+        var responseBucketOrders = Object.keys(BUCKET_LABELS)
+            .map(Number)
+            .sort(function (a, b) { return a - b; });
+
         if (barChart) {
             barChart.destroy();
             barChart = null;
@@ -394,8 +405,8 @@
             };
         });
 
-        // Build one dataset per bucket order (1-4) using dataSize for chart height
-        var datasets = BUCKET_ORDER.map(function (order) {
+        // Build one dataset per bucket order from response using dataSize for chart height
+        var datasets = responseBucketOrders.map(function (order) {
             return {
                 label: BUCKET_LABELS[order],
                 backgroundColor: BUCKET_COLORS[order],
@@ -439,7 +450,7 @@
                         callbacks: {
                             label: function (context) {
                                 var subfolder = subfolderSet[context.dataIndex];
-                                var bucketOrder = BUCKET_ORDER[context.datasetIndex];
+                                var bucketOrder = responseBucketOrders[context.datasetIndex];
                                 var info = lookup[subfolder][bucketOrder];
                                 return context.dataset.label + ': ' + formatBytes(context.raw) +
                                     ' (' + info.fileCount + ' files)';
@@ -492,7 +503,7 @@
             }
 
             var subfolder = subfolderSet[first.index];
-            var bucketOrder = BUCKET_ORDER[first.datasetIndex];
+            var bucketOrder = responseBucketOrders[first.datasetIndex];
             if (!subfolder || !bucketOrder) {
                 return null;
             }
@@ -669,8 +680,10 @@
                 return;
             }
 
-            // Keep bucket columns in fixed report order.
-            var bucketLabels = BUCKET_ORDER
+            // Keep bucket columns in response order (derived from BUCKET_LABELS populated by the JSON response).
+            var bucketLabels = Object.keys(BUCKET_LABELS)
+                .map(Number)
+                .sort(function (a, b) { return a - b; })
                 .map(function (order) { return BUCKET_LABELS[order]; })
                 .filter(function (label) {
                     return latestBarEntries.some(function (e) { return e && e.bucketLabel === label; });
@@ -770,7 +783,9 @@
 
         var wb = window.XLSX.utils.book_new();
 
-        var bucketLabels = BUCKET_ORDER
+        var bucketLabels = Object.keys(BUCKET_LABELS)
+            .map(Number)
+            .sort(function (a, b) { return a - b; })
             .map(function (order) { return BUCKET_LABELS[order]; })
             .filter(function (label) {
                 return latestBarEntries.some(function (e) { return e && e.bucketLabel === label; });
