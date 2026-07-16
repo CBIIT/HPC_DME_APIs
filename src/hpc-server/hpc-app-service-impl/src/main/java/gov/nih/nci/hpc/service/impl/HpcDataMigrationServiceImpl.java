@@ -722,6 +722,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
             throw new HpcException("Auto-tiering inactivity months is not defined for S3 configuration: " + s3ArchiveConfigurationId,
                     HpcErrorType.INVALID_REQUEST_INPUT);
         }
+        if (s3Configuration.getAutoTieringArchivedMonths() == null) {
+            throw new HpcException("Auto-tiering archived months is not defined for S3 configuration: " + s3ArchiveConfigurationId,
+                    HpcErrorType.INVALID_REQUEST_INPUT);
+        }
         if (s3Configuration.getAutoTieringSearchSource() == null) {
             throw new HpcException("Auto-tiering search source is not defined for S3 configuration: " + s3ArchiveConfigurationId,
                     HpcErrorType.INVALID_REQUEST_INPUT);
@@ -742,9 +746,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
         Map<String, HpcFileLocation> autoTieringDataObjects = new HashMap<>();
 
         // Query for files not accessed within the specified period and create the map of data obejcts to return.
-        autoTieringDAO.getFilesNotAccessed(
+        autoTieringDAO.getFilesForAutoTiering(
                 s3Configuration.getAutoTieringSearchPath(),
                 s3Configuration.getAutoTieringInactivityMonths(),
+                s3Configuration.getAutoTieringArchivedMonths(),
                 dataManagementConfiguration.getS3AutoTieringConfigurationId()).forEach(path -> {
             if (HpcAutoTieringSearchSource.TRINO.equals(s3Configuration.getAutoTieringSearchSource())) {
                 // Construct HpcFileLocation of the data object in the external archive to be auto-tiered.
@@ -763,9 +768,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
             }
         });
 
-        logger.info("Found {} files for auto-tiering [configurationId={}, searchSource={}, searchPath={}, inactivityMonths={}]",
+        logger.info("Found {} files for auto-tiering [configurationId={}, searchSource={}, searchPath={}, inactivityMonths={}, archivedMonths={}]",
                 autoTieringDataObjects.size(), configurationId, s3Configuration.getAutoTieringSearchSource(),
-                s3Configuration.getAutoTieringSearchPath(), s3Configuration.getAutoTieringInactivityMonths());
+                s3Configuration.getAutoTieringSearchPath(), s3Configuration.getAutoTieringInactivityMonths(),
+                s3Configuration.getAutoTieringArchivedMonths());
         return autoTieringDataObjects;
     }
 
