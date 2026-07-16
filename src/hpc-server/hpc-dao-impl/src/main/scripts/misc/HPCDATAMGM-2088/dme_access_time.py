@@ -131,7 +131,6 @@ def main(argv=None):
 
     interval_literal = parse_since_arg(args.since)
     where_view_path = ""
-    params = []
     if args.view_path:
         # Safely escape single quotes in the path value, then inline it
         safe_path = args.view_path.replace("'", "''")
