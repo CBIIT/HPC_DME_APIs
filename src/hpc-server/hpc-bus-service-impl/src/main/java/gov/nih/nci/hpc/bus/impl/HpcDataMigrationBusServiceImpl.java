@@ -661,12 +661,16 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
 		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			logger.error("Data object [{}] is a soft-link to [{}]. Migration is not supported for soft-links",
+					path, metadata.getLinkSourcePath());
 			throw new HpcException("Migration request is not supported for soft-links",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Migration supported only from S3 archive.
 		if (metadata.getDataTransferType() == null || !metadata.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+			logger.error("Data object [{}] has data transfer type [{}]. Migration is only supported from POSIX archive",
+					path, (metadata.getDataTransferType() == null ? "null" : metadata.getDataTransferType().value()));
 			throw new HpcException("Migration request is not supported from POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -674,10 +678,14 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// Validate the file is archived.
 		HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
 		if (dataTransferStatus == null) {
+			logger.error("Data object [{}] is missing data transfer status. Unable to validate if the data object is archived.",
+					path);
 			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
 		}
 		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)
 				&& !dataTransferStatus.equals(HpcDataTransferUploadStatus.DELETE_REQUESTED)) {
+			logger.error("Data object [{}] is not in archived or soft-deleted state. It is in [{}] state",
+					path, metadata.getDataTransferStatus().value());
 			throw new HpcException(
 					"Data Object [" + path + "] is not in archived or soft-deleted state. It is in "
 							+ metadata.getDataTransferStatus().value() + " state",
@@ -686,6 +694,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		// Validate a source-size system metadata is available.
 		if (metadata.getSourceSize() == null) {
+			logger.error("Data object [{}] is missing source size system-metadata. Migration cannot proceed.",
+					path);
 			throw new HpcException("Source size system-metadata is missing for data object to be migrated",
 					HpcErrorType.UNEXPECTED_ERROR);
 		}
