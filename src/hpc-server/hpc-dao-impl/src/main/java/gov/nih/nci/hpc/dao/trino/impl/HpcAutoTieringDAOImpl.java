@@ -45,8 +45,7 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 			"where element_type = 'FILE' " +
 			"and parent_path LIKE ? " +
 			"and (user_tags['dme_access_time'] is null " +
-			"or TRY_CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{inactivityMonths}' MONTH) " +
-
+			"or TRY_CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{inactivityMonths}' MONTH)";
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
