@@ -17,9 +17,7 @@ import java.util.List;
 /**
  * HPC Auto Tiering DAO Interface.
  *
- * This interface provides data access methods for querying files not been accessed within the specified time period.
- * Implementations of this interface can be used to identify files in external/internal archivesthat are candidates for
- * auto-tiering migration to S3 Glacier Deep Archive.
+	 * Implementations of this interface can be used to identify files in external/internal archives that are candidates for
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
