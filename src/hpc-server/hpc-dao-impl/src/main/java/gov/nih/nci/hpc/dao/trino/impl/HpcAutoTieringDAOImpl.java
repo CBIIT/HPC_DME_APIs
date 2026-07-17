@@ -39,13 +39,14 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String GET_FILES_NOT_ACCESSED_SQL =
+	private static final String GET_FILES_FOR_AUTO_TIERING_SQL =
 			"select parent_path || name as path " +
 			"from \"vast-big-catalog-bucket/vast_big_catalog_schema\".\"vast_big_catalog_table\" " +
 			"where element_type = 'FILE' " +
 			"and parent_path LIKE ? " +
 			"and (user_tags['dme_access_time'] is null " +
-			"or TRY_CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{inactivityMonths}' MONTH)";
+			"or TRY_CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{inactivityMonths}' MONTH) " +
+			"and ctime < current_timestamp - INTERVAL '{archivedMonths}' MONTH";
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -81,7 +82,7 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	public List<String> getFilesForAutoTiering(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException {
 		try {
 			return jdbcTemplate.queryForList(
-					GET_FILES_NOT_ACCESSED_SQL.replace("{inactivityMonths}", inactivityMonths.toString())
+					GET_FILES_FOR_AUTO_TIERING_SQL.replace("{inactivityMonths}", inactivityMonths.toString())
 							.replace("{archivedMonths}", archivedMonths.toString()),
 					String.class, searchPath + "%");
 
