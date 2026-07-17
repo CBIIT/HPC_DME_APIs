@@ -110,6 +110,29 @@ public class HpcScheduledTasksImpl {
 	}
 
 	/**
+	 * Process auto-tiering task. Retrieves all data management configurations with auto-tiering enabled
+	 * and creates a bulk auto-tiering migration task for each configuration.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processAutoTiering.delay}")
+	private void processAutoTieringTask() {
+		execute("processAutoTiering()", dataMigrationBusService::processAutoTiering, logger);
+	}
+
+	/** Process bulk auto-tiering migration task **/
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processBulkAutoTieringMigrationReceived.delay}")
+	private void processBulkAutoTieringMigrationReceivedTask() {
+		execute("processBulkAutoTieringMigrationReceived()",
+				dataMigrationBusService::processBulkAutoTieringMigrationReceived, logger);
+	}
+
+	/** Process received data object auto-tiering migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectAutoTieringMigrationReceived.delay}")
+	private void processDataObjectAutoTieringMigrationReceivedTask() {
+		execute("processDataObjectAutoTieringMigrationReceived()",
+				dataMigrationBusService::processDataObjectAutoTieringMigrationReceived, logger);
+	}
+
+	/**
 	 * Called by Spring dependency injection. Reset all active S3 upload/download in
 	 * progress tasks, so they are restarted following a server restart.
 	 */

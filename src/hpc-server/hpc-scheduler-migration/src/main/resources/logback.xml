@@ -1,7 +1,7 @@
 
 <configuration>
 
-    <property name="SCHEDULER_MIGRATION_SERVER_LOG" value="${catalina.base}/logs/hpc-server/hpc-scheduler-migration.log"/>
+    <property name="SCHEDULER_MIGRATION_SERVER_LOG" value="${catalina.home}/logs/hpc-server/hpc-scheduler-migration.log"/>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${SCHEDULER_MIGRATION_SERVER_LOG}</file>
