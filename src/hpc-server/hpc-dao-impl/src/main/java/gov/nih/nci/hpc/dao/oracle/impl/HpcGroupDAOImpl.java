@@ -20,6 +20,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -77,8 +78,9 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+    @Autowired
+    @Qualifier("hpcOracleJdbcTemplate")
+    private JdbcTemplate jdbcTemplate = null;
 
 	// Row mapper.
 	private SingleColumnRowMapper<String> rowMapper = new SingleColumnRowMapper<>();
