@@ -1514,7 +1514,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Submit a data object download request.
 		try {
-			logger.info("2168: Submit a data object download request transfer type = " + downloadRequest.getDataTransferType());
 			String dataTransferRequestId = dataTransferProxies.get(downloadRequest.getDataTransferType())
 					.downloadDataObject(authenticatedToken, downloadRequest, baseArchiveDestination, progressListener,
 							encryptedTransfer);
