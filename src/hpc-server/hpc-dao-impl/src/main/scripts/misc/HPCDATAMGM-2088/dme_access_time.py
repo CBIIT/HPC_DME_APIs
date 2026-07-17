@@ -111,7 +111,7 @@ def main(argv=None):
     parser.add_argument("--port", type=int, default=8080, help="Trino coordinator port")
     parser.add_argument("--user", required=True, help="Trino user")
     parser.add_argument("--password", default=None, help="Trino password (if omitted, will prompt securely)")
-    parser.add_argument("--view-path", required=True, help="If set, only print/tag objects whose path starts with this prefix, e.g. /testdir/. Note, this gets parsed from the path")
+    parser.add_argument("--view-path", required=True, help="Only print/tag objects whose path starts with this prefix, e.g. /testdir/.")
     parser.add_argument("--bucket", required=True, help="S3 bucket name to tag")
     parser.add_argument("--object-id", required=True, help="Base path prefix for S3 object keys, e.g. AUTO-TIERING")
     parser.add_argument("--s3-endpoint", required=True, help="Custom S3 endpoint URL, e.g. https://my-vast-s3.example.com")
