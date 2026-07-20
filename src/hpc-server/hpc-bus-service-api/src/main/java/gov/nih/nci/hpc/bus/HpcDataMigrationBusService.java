@@ -164,7 +164,6 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void assignMigrationServer() throws HpcException;
-	
 
 	/**
 	 * Restart data object and collection migration tasks that are in progress.
@@ -172,6 +171,36 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void restartDataMigrationTasks() throws HpcException;
+
+	/**
+	 * Process auto-tiering for all data management configurations
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processAutoTiering() throws HpcException;
+
+	/**
+	 * Process auto-tiering for a given data management configuration ID
+	 *
+	 * @param configurationId The data management configuration ID.
+	 * @return Migration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcMigrationResponseDTO processAutoTiering(String configurationId) throws HpcException;
+
+	/**
+	 * Process received bulk auto-tiering migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processBulkAutoTieringMigrationReceived() throws HpcException;
+
+	/**
+	 * Process received data object auto-tiering migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processDataObjectAutoTieringMigrationReceived() throws HpcException;
 	
 	/**
 	 * Process staged metadata attributes.
@@ -179,5 +208,4 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void processStagedMetadataAttributes() throws HpcException;
-
 }
