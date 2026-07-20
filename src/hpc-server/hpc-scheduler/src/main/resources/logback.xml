@@ -1,7 +1,7 @@
 
 <configuration>
 
-    <property name="SCHEDULER_SERVER_LOG" value="${catalina.base}/logs/hpc-server/hpc-scheduler.log"/>
+    <property name="SCHEDULER_SERVER_LOG" value="${catalina.home}/logs/hpc-server/hpc-scheduler.log"/>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${SCHEDULER_SERVER_LOG}</file>
