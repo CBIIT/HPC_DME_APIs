@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -422,8 +423,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+ @Autowired
+ @Qualifier("hpcOracleJdbcTemplate")
+ private JdbcTemplate jdbcTemplate = null;
 
 	private String iRodsBasePath = "";
 
