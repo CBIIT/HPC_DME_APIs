@@ -4690,7 +4690,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		String temporaryArchiveLinkPath = null;
 		try {
 			HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
-			temporaryArchiveLinkPath = userInputtedPath.replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
+			temporaryArchiveLinkPath = userInputtedPath.replace(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
 		} catch (HpcException e) {
 			logger.error("Failed to determine temporary archive link path", e);
 		}

@@ -417,6 +417,55 @@ public class HpcDataTransferServiceImplTest {
 	}
 
 	/**
+	 * deleteTemporaryArchiveLink should treat the S3 archive path as a literal string
+	 * when constructing the temporary archive link path.
+	 */
+	@Test
+	public void testDeleteTemporaryArchiveLinkSuccessWithRegexCharactersInPath() throws HpcException {
+		String path = "/archive/source[1]/path/file1";
+		String configId = "config-1";
+		String s3ConfigId = "s3-config-1";
+		String temporaryArchiveLinkPath = "/download/archive/file1";
+
+		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(0);
+
+		HpcDataTransferConfiguration s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+		s3ArchiveConfiguration.setPosixPath("/archive/source[1]/path");
+		when(dataManagementServiceMock.getS3ArchiveConfiguration(s3ConfigId)).thenReturn(s3ArchiveConfiguration);
+
+		HpcFileLocation archiveLocation = new HpcFileLocation();
+		archiveLocation.setFileContainerId("archive-container");
+		archiveLocation.setFileId("archive-file");
+
+		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+		metadata.setArchiveLocation(archiveLocation);
+		metadata.setLinkSourcePath("");
+		when(metadataServiceMock.getDataObjectSystemGeneratedMetadata(temporaryArchiveLinkPath)).thenReturn(metadata);
+
+		HpcDataTransferConfiguration transferConfiguration = new HpcDataTransferConfiguration();
+		transferConfiguration.setStorageClass("STANDARD");
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(configId, s3ConfigId,
+				HpcDataTransferType.S_3)).thenReturn(transferConfiguration);
+
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername("s3-system-account");
+		when(systemAccountLocatorMock.getSystemAccount(any())).thenReturn(account);
+		when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("token");
+
+		HpcSetArchiveObjectMetadataResponse clearMetadataResponse = new HpcSetArchiveObjectMetadataResponse();
+		clearMetadataResponse.setMetadataClearStatus(true);
+		when(dataTransferProxyMock.clearDataObjectMetadata(any(), eq(archiveLocation), eq("STANDARD")))
+				.thenReturn(clearMetadataResponse);
+
+		boolean deleted = ((HpcDataTransferServiceImpl) dataTransferService)
+				.deleteTemporaryArchiveLink(path, configId, s3ConfigId);
+
+		assertTrue(deleted);
+		verify(metadataServiceMock).getDataObjectSystemGeneratedMetadata(temporaryArchiveLinkPath);
+		verify(dataManagementServiceMock).delete(temporaryArchiveLinkPath, false);
+	}
+
+	/**
 	 * deleteTemporaryArchiveLink should notify and rethrow when metadata clearing
 	 * fails.
 	 */
