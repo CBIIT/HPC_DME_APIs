@@ -1805,7 +1805,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				false);
 
 		if (externalArchiveFlag) {
-			// Construct the user inputed path by replacing the downloadArchiveLinkBasePath with the S3 archive posix path.
+			// Construct the user inputted path by replacing the downloadArchiveLinkBasePath with the S3 archive posix path.
 			HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(metadata.getS3ArchiveConfigurationId());
 			path = path.replaceFirst(downloadArchiveLinkBasePath, s3Config.getPosixPath());
 		}
