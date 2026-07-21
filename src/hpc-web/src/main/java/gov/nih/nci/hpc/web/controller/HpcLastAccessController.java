@@ -1,0 +1,210 @@
+/**
+ * HpcLastAccessController.java
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ *
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for details.
+ */
+package gov.nih.nci.hpc.web.controller;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.core.Response;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.AjaxResponseBody;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
+
+/**
+ * <p>
+ * Controller for the Last Accessed Collection Report.
+ * </p>
+ *
+ * @author <a href="mailto:NCIDataVault@mail.nih.gov">NCI Data Vault</a>
+ */
+@Controller
+@EnableAutoConfiguration
+@RequestMapping("/lastAccess")
+public class HpcLastAccessController extends AbstractHpcController {
+
+    @Value("${gov.nih.nci.hpc.server.report}")
+    private String reportServiceURL;
+
+    @Value("${gov.nih.nci.hpc.server.model}")
+    private String hpcModelURL;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+    /**
+     * GET action to display the stale files dashboard page.
+     */
+    @RequestMapping(method = RequestMethod.GET)
+    public String home(@RequestBody(required = false) String q, Model model,
+            BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
+        String authToken = (String) session.getAttribute("hpcUserToken");
+        if (authToken == null) {
+            return "redirect:/login?returnPath=lastAccess";
+        }
+        HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+        if (user == null) {
+            ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+            bindingResult.addError(error);
+            HpcLogin hpcLogin = new HpcLogin();
+            model.addAttribute("hpcLogin", hpcLogin);
+            return "redirect:/login?returnPath=lastAccess";
+        }
+
+        model.addAttribute("userRole", user.getUserRole());
+
+        // Populate basepaths available to this user.
+        List<String> basepaths = new ArrayList<>();
+        for (HpcDocDataManagementRulesDTO docRule : getModelDTO(session).getDocRules()) {
+            if (user.getUserRole().equals("SYSTEM_ADMIN")
+                    || docRule.getDoc().equals(user.getDoc())) {
+                for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+                    basepaths.add(rule.getBasePath());
+                }
+            }
+        }
+        basepaths.sort(String.CASE_INSENSITIVE_ORDER);
+        basepaths.add(0, "ALL");
+        model.addAttribute("basepaths", basepaths);
+
+        return "lastaccess";
+    }
+
+    /**
+     * AJAX GET endpoint to retrieve pie chart data from the hpc-server.
+     *
+     * @param basePath    The base path selected by the user.
+     * @param currentPath The current drill-down path.
+     * @param session     The HTTP session.
+     * @param request     The HTTP request.
+     * @return JSON string of HpcStalePieChartDTO, or error JSON.
+     */
+    @GetMapping(value = "/pieChartData", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public String getPieChartData(
+            @RequestParam("basePath") String basePath,
+            @RequestParam("currentPath") String currentPath,
+            @RequestParam(value = "includeAWSBucket", required = false, defaultValue = "false") boolean includeAWSBucket,
+            HttpSession session, HttpServletRequest request) {
+        String authToken = (String) session.getAttribute("hpcUserToken");
+        if (authToken == null) {
+            return "{\"error\":\"Unauthorized\"}";
+        }
+        try {
+            UriComponentsBuilder requestBuilder = UriComponentsBuilder
+                    .fromHttpUrl(reportServiceURL + "/lastAccessPieChart")
+                    .queryParam("includeAWSBucket", includeAWSBucket);
+            
+            requestBuilder.queryParam("basePath", !"ALL".equalsIgnoreCase(basePath) ? basePath: "")
+                    .queryParam("currentPath", !"ALL".equalsIgnoreCase(basePath) ? currentPath: "");
+
+            String requestURL = requestBuilder.build().encode().toUri().toURL().toExternalForm();
+
+            WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
+            client.header("Authorization", "Bearer " + authToken);
+            Response restResponse = client.invoke("GET", null);
+
+            if (restResponse.getStatus() == 200) {
+                MappingJsonFactory factory = new MappingJsonFactory();
+                JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                return mapper.writeValueAsString(parser.readValueAs(Object.class));
+            } else {
+                logger.error("Last accessed collection pie chart request failed with status: {}",
+                        restResponse.getStatus());
+                return "{\"error\":\"Failed to retrieve pie chart data\"}";
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving last accessed collection pie chart data", e);
+            return "{\"error\":\"Internal error\"}";
+        }
+    }
+
+    /**
+     * AJAX GET endpoint to retrieve bar chart data from the hpc-server.
+     *
+     * @param basePath    The base path selected by the user.
+     * @param currentPath The current drill-down path.
+     * @param session     The HTTP session.
+     * @param request     The HTTP request.
+     * @return JSON string of HpcStaleBarChartDTO, or error JSON.
+     */
+    @GetMapping(value = "/barChartData", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public String getBarChartData(
+            @RequestParam("basePath") String basePath,
+            @RequestParam("currentPath") String currentPath,
+            @RequestParam(value = "includeAWSBucket", required = false, defaultValue = "false") boolean includeAWSBucket,
+            HttpSession session, HttpServletRequest request) {
+        String authToken = (String) session.getAttribute("hpcUserToken");
+        if (authToken == null) {
+            return "{\"error\":\"Unauthorized\"}";
+        }
+        try {
+            UriComponentsBuilder requestBuilder = UriComponentsBuilder
+                    .fromHttpUrl(reportServiceURL + "/lastAccessBarChart")
+                    .queryParam("includeAWSBucket", includeAWSBucket);
+            
+            requestBuilder.queryParam("basePath", !"ALL".equalsIgnoreCase(basePath) ? basePath: "")
+            .queryParam("currentPath", !"ALL".equalsIgnoreCase(basePath) ? currentPath: "");
+            
+            String requestURL = requestBuilder.build().encode().toUri().toURL().toExternalForm();
+
+            WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
+            client.header("Authorization", "Bearer " + authToken);
+            Response restResponse = client.invoke("GET", null);
+
+            if (restResponse.getStatus() == 200) {
+                MappingJsonFactory factory = new MappingJsonFactory();
+                JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                return mapper.writeValueAsString(parser.readValueAs(Object.class));
+            } else {
+                logger.error("Last accessed collection bar chart request failed with status: {}",
+                        restResponse.getStatus());
+                return "{\"error\":\"Failed to retrieve bar chart data\"}";
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving last accessed collection bar chart data", e);
+            return "{\"error\":\"Internal error\"}";
+        }
+    }
+}
